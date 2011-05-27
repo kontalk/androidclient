@@ -51,7 +51,8 @@ public class PollingThread extends Thread {
                         mListener.incoming(list);
                 }
 
-                Thread.sleep(1000);
+                if (mRunning)
+                    Thread.sleep(1000);
             } catch (Exception e) {
                 Log.e(getClass().getSimpleName(), "polling error", e);
             }
@@ -62,12 +63,18 @@ public class PollingThread extends Thread {
      * Shuts down this polling thread gracefully.
      */
     public synchronized void shutdown() {
+        Log.w(getClass().getSimpleName(), "shutting down");
         mRunning = false;
         try {
+            mClient.abort();
+            interrupt();
             join();
         }
         catch (InterruptedException e) {
             // ignored
         }
+
+        Log.w(getClass().getSimpleName(), "exiting");
+        mClient = null;
     }
 }

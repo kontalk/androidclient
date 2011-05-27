@@ -48,8 +48,7 @@ public class PollingTestActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        getTextView().append("stopping service...\n");
-
-        stopService(new Intent(this, MessageCenterService.class));
+        //getTextView().append("stopping service...\n");
+        //stopService(new Intent(this, MessageCenterService.class));
     }
 }

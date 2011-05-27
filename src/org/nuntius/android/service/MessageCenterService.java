@@ -13,6 +13,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 
 
 /**
@@ -32,7 +33,7 @@ public class MessageCenterService extends Service
      * This list will contain the received messages - avoiding multiple
      * received jobs.
      */
-    private List<String> mReceived;
+    private List<String> mReceived = new ArrayList<String>();
 
     /**
      * Not used.
@@ -56,8 +57,6 @@ public class MessageCenterService extends Service
         String token = (String) extras.get(EndpointServer.HEADER_AUTH_TOKEN);
         String serverUrl = (String) extras.get(EndpointServer.class.getName());
         EndpointServer server = new EndpointServer(serverUrl);
-
-        mReceived = new ArrayList<String>();
 
         // activate request worker if necessary
         if (mRequestWorker == null) {
@@ -83,11 +82,13 @@ public class MessageCenterService extends Service
         // stop polling thread
         if (mPollingThread != null) {
             mPollingThread.shutdown();
+            mPollingThread = null;
         }
 
         // stop request worker
         if (mRequestWorker != null) {
             mRequestWorker.shutdown();
+            mRequestWorker = null;
         }
     }
 
@@ -103,6 +104,7 @@ public class MessageCenterService extends Service
         }
 
         if (list.size() > 0) {
+            Log.w(getClass().getSimpleName(), "pushing receive confirmation");
             RequestJob job = new RequestJob("received", list);
             mRequestWorker.push(job);
         }
@@ -111,5 +113,6 @@ public class MessageCenterService extends Service
     @Override
     public void response(List<StatusResponse> statuses) {
         // TODO manage response statuses
+        Log.w(getClass().getSimpleName(), "statuses: " + statuses);
     }
 }

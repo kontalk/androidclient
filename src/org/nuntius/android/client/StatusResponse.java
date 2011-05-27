@@ -1,6 +1,5 @@
 package org.nuntius.android.client;
 
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -16,6 +15,5 @@ public class StatusResponse {
 
     public StatusResponse(int code) {
         this.code = code;
-        this.extra = new HashMap<String, String>();
     }
 }

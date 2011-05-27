@@ -47,11 +47,10 @@ public class EndpointServer {
      * @return the response
      * @throws IOException
      */
-    public HttpResponse request(String cmd,
+    public HttpRequestBase prepareRequest(String cmd,
             List<NameValuePair> params, String token,
             String content) throws IOException {
 
-        HttpClient client = new DefaultHttpClient();
         HttpRequestBase req;
 
         // compose uri
@@ -73,15 +72,7 @@ public class EndpointServer {
         if (token != null)
             req.addHeader(HEADER_AUTH_TOKEN, token);
 
-        // execute!
-        try {
-            return client.execute(req);
-        }
-        catch (ClientProtocolException e) {
-            IOException ie = new IOException("client protocol error");
-            ie.initCause(e);
-            throw ie;
-        }
+        return req;
     }
 
     /**
@@ -90,22 +81,26 @@ public class EndpointServer {
      * @return the response
      * @throws IOException
      */
-    public HttpResponse polling(String token) throws IOException {
-        HttpClient client = new DefaultHttpClient();
+    public HttpRequestBase preparePolling(String token) throws IOException {
         HttpGet req = new HttpGet(pollingURL);
 
         if (token != null)
             req.addHeader(HEADER_AUTH_TOKEN, token);
 
+        return req;
+    }
+
+    public HttpResponse execute(HttpRequestBase request) throws IOException {
         // execute!
         try {
-            return client.execute(req);
+            HttpClient client = new DefaultHttpClient();
+            return client.execute(request);
         }
         catch (ClientProtocolException e) {
             IOException ie = new IOException("client protocol error");
             ie.initCause(e);
             throw ie;
         }
-    }
 
+    }
 }

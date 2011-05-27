@@ -19,14 +19,10 @@ import org.w3c.dom.NodeList;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class PollingClient {
-
-    private EndpointServer mServer;
-    private String mAuthToken;
+public class PollingClient extends AbstractClient {
 
     public PollingClient(EndpointServer server, String token) {
-        mServer = server;
-        mAuthToken = token;
+        super(server, token);
     }
 
     /**
@@ -34,9 +30,13 @@ public class PollingClient {
      * @throws IOException
      */
     public List<AbstractMessage> poll() throws IOException {
-        HttpResponse response = mServer.polling(mAuthToken);
+
         List<AbstractMessage> list = null;
         try {
+            // http request!
+            currentRequest = mServer.preparePolling(mAuthToken);
+            HttpResponse response = mServer.execute(currentRequest);
+
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(response.getEntity().getContent());
@@ -71,7 +71,7 @@ public class PollingClient {
                     }
 
                     if (id != null && from != null && text != null && mime != null) {
-                        // adds the message to the list
+                        // add the message to the list
                         AbstractMessage msg = null;
 
                         if (mime == null || PlainTextMessage.MIME_TYPE.equals(mime)) {
@@ -94,6 +94,9 @@ public class PollingClient {
             IOException ie = new IOException("parse error");
             ie.initCause(e);
             throw ie;
+        }
+        finally {
+            currentRequest = null;
         }
 
         return list;
