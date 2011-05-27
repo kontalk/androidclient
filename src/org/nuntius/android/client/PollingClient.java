@@ -1,8 +1,8 @@
 package org.nuntius.android.client;
 
-import com.loopj.android.http.RequestParams;
+import java.io.IOException;
 
-import android.content.Context;
+import org.apache.http.HttpResponse;
 
 
 /**
@@ -10,18 +10,22 @@ import android.content.Context;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class PollingClient extends AbstractClient {
+public class PollingClient {
 
-    public PollingClient(Context context, EndpointServer server) {
-        super(context, server);
+    private EndpointServer mServer;
+    private String mAuthToken;
+
+    public PollingClient(EndpointServer server, String token) {
+        mServer = server;
+        mAuthToken = token;
     }
 
     /**
      * Polls server for new messages.
+     * @throws IOException
      */
-    public void polling() {
-        RequestParams params = new RequestParams();
-        params.header(HEADER_AUTH_TOKEN, mAuthToken);
-        super.get(mContext, mServer.getPollingURL(), params, mHandler);
+    public void poll() throws IOException {
+        HttpResponse response = mServer.polling(mAuthToken);
+        // TODO process response
     }
 }
