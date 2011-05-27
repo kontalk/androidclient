@@ -1,8 +1,17 @@
 package org.nuntius.android.client;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.http.HttpResponse;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -21,11 +30,72 @@ public class PollingClient {
     }
 
     /**
-     * Polls server for new messages.
+     * Polls the server for new messages.
      * @throws IOException
      */
-    public void poll() throws IOException {
+    public List<AbstractMessage> poll() throws IOException {
         HttpResponse response = mServer.polling(mAuthToken);
-        // TODO process response
+        List<AbstractMessage> list = null;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(response.getEntity().getContent());
+            Element body = doc.getDocumentElement();
+            NodeList children = body.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node node = (Node) children.item(i);
+                if ("m".equals(node.getNodeName())) {
+                    String id = null;
+                    String from = null;
+                    String text = null;
+                    String mime = null;
+                    List<String> group = null;
+
+                    // message!
+                    NodeList msgChildren = node.getChildNodes();
+                    for (int j = 0; j < msgChildren.getLength(); j++) {
+                        Element n2 = (Element) msgChildren.item(j);
+                        if ("i".equals(n2.getNodeName()))
+                            id = n2.getFirstChild().getNodeValue();
+                        else if ("s".equals(n2.getNodeName()))
+                            from = n2.getFirstChild().getNodeValue();
+                        else if ("c".equals(n2.getNodeName())) {
+                            text = n2.getFirstChild().getNodeValue();
+                            mime = n2.getAttribute("t");
+                        }
+                        else if ("g".equals(n2.getNodeName())) {
+                            if (group == null)
+                                group = new ArrayList<String>();
+                            group.add(n2.getFirstChild().getNodeValue());
+                        }
+                    }
+
+                    if (id != null && from != null && text != null && mime != null) {
+                        // adds the message to the list
+                        AbstractMessage msg = null;
+
+                        if (mime == null || PlainTextMessage.MIME_TYPE.equals(mime)) {
+                            msg = new PlainTextMessage(id, from, text, group);
+                        }
+
+                        if (msg != null) {
+                            if (list == null)
+                                list = new ArrayList<AbstractMessage>();
+                            list.add(msg);
+                        }
+
+                        // TODO send received confirmation
+                        //request.request("received", new String[] { "i", id }, null);
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            IOException ie = new IOException("parse error");
+            ie.initCause(e);
+            throw ie;
+        }
+
+        return list;
     }
 }

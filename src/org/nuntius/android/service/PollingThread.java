@@ -1,5 +1,8 @@
 package org.nuntius.android.service;
 
+import java.util.List;
+
+import org.nuntius.android.client.AbstractMessage;
 import org.nuntius.android.client.EndpointServer;
 import org.nuntius.android.client.PollingClient;
 
@@ -19,6 +22,7 @@ public class PollingThread extends Thread {
     private boolean mRunning;
 
     private PollingClient mClient;
+    private MessageListener mListener;
 
     public PollingThread(Context context, EndpointServer server) {
         this.mContext = context;
@@ -29,13 +33,24 @@ public class PollingThread extends Thread {
         this.mAuthToken = token;
     }
 
+    public void setMessageListener(MessageListener listener) {
+        this.mListener = listener;
+    }
+
     public void run() {
         mRunning = true;
         mClient = new PollingClient(mServer, mAuthToken);
 
         while(mRunning) {
             try {
-                mClient.poll();
+                List<AbstractMessage> list = mClient.poll();
+                if (list != null) {
+                    Log.i("PollingThread", list.toString());
+
+                    if (mListener != null)
+                        mListener.incoming(list);
+                }
+
                 Thread.sleep(1000);
             } catch (Exception e) {
                 Log.e(getClass().getSimpleName(), "polling error", e);

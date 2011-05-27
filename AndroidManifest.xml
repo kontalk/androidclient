@@ -13,7 +13,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name="service.MessageCenterService" android:label="@string/service_name"></service>
+        <service
+            android:label="@string/service_name"
+            android:name=".service.MessageCenterService"
+        />
 
 
     </application>
