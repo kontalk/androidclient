@@ -1,4 +1,4 @@
-package org.nuntius.android.client;
+package org.nuntius.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,9 +29,9 @@ public class PollingClient extends AbstractClient {
      * Polls the server for new messages.
      * @throws IOException
      */
-    public List<AbstractMessage> poll() throws IOException {
+    public List<AbstractMessage<?>> poll() throws IOException {
 
-        List<AbstractMessage> list = null;
+        List<AbstractMessage<?>> list = null;
         try {
             // http request!
             currentRequest = mServer.preparePolling(mAuthToken);
@@ -72,20 +72,18 @@ public class PollingClient extends AbstractClient {
 
                     if (id != null && from != null && text != null && mime != null) {
                         // add the message to the list
-                        AbstractMessage msg = null;
+                        AbstractMessage<?> msg = null;
 
                         if (mime == null || PlainTextMessage.MIME_TYPE.equals(mime)) {
                             msg = new PlainTextMessage(id, from, text, group);
                         }
+                        // else other mime types
 
                         if (msg != null) {
                             if (list == null)
-                                list = new ArrayList<AbstractMessage>();
+                                list = new ArrayList<AbstractMessage<?>>();
                             list.add(msg);
                         }
-
-                        // TODO send received confirmation
-                        //request.request("received", new String[] { "i", id }, null);
                     }
                 }
             }

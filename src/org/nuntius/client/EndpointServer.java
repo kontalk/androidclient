@@ -1,4 +1,4 @@
-package org.nuntius.android.client;
+package org.nuntius.client;
 
 import java.io.IOException;
 import java.util.List;

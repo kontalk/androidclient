@@ -1,9 +1,9 @@
-package org.nuntius.android.service;
+package org.nuntius.service;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.nuntius.android.client.*;
+import org.nuntius.client.*;
 
 import android.content.Context;
 import android.os.Handler;
@@ -52,7 +52,7 @@ public class RequestWorker extends Thread {
                         list = mClient.request(job.getCommand(), job.getParams(), job.getContent());
 
                         if (mListener != null)
-                            mListener.response(list);
+                            mListener.response(job, list);
                     } catch (IOException e) {
                         Log.e("RequestWorker", "request error", e);
                     }
@@ -67,8 +67,21 @@ public class RequestWorker extends Thread {
     }
 
     public void push(RequestJob job) {
-        // TODO find a better way to see when the looper is ready
-        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_REQUEST_JOB, job), 2000);
+        // max wait time 10 seconds
+        int retries = 20;
+
+        while(!isAlive() || retries <= 0) {
+            try {
+                // 500ms should do the job...
+                Thread.sleep(500);
+                Thread.yield();
+                retries--;
+            } catch (InterruptedException e) {
+                // interrupted - do not send message
+                return;
+            }
+        }
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_REQUEST_JOB, job));
     }
 
     /**

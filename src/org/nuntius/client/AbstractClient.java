@@ -1,4 +1,4 @@
-package org.nuntius.android.client;
+package org.nuntius.client;
 
 import org.apache.http.client.methods.HttpRequestBase;
 

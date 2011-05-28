@@ -1,10 +1,10 @@
-package org.nuntius.android.service;
+package org.nuntius.service;
 
 import java.util.List;
 
-import org.nuntius.android.client.AbstractMessage;
-import org.nuntius.android.client.EndpointServer;
-import org.nuntius.android.client.PollingClient;
+import org.nuntius.client.AbstractMessage;
+import org.nuntius.client.EndpointServer;
+import org.nuntius.client.PollingClient;
 
 import android.content.Context;
 import android.util.Log;
@@ -43,7 +43,7 @@ public class PollingThread extends Thread {
 
         while(mRunning) {
             try {
-                List<AbstractMessage> list = mClient.poll();
+                List<AbstractMessage<?>> list = mClient.poll();
                 if (list != null) {
                     Log.i("PollingThread", list.toString());
 

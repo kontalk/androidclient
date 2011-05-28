@@ -1,4 +1,4 @@
-package org.nuntius.android.service;
+package org.nuntius.service;
 
 import java.util.List;
 

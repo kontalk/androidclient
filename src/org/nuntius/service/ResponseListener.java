@@ -1,8 +1,8 @@
-package org.nuntius.android.service;
+package org.nuntius.service;
 
 import java.util.List;
 
-import org.nuntius.android.client.StatusResponse;
+import org.nuntius.client.StatusResponse;
 
 public interface ResponseListener {
 
@@ -10,5 +10,5 @@ public interface ResponseListener {
      * Manages the statuses receved from one request job.
      * @param statuses
      */
-    public void response(List<StatusResponse> statuses);
+    public void response(RequestJob job, List<StatusResponse> statuses);
 }

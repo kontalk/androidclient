@@ -1,15 +1,22 @@
-package org.nuntius.android.service;
+package org.nuntius;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.nuntius.android.client.AbstractMessage;
-import org.nuntius.android.client.EndpointServer;
-import org.nuntius.android.client.StatusResponse;
+import org.nuntius.provider.Messages;
+import org.nuntius.client.AbstractMessage;
+import org.nuntius.client.EndpointServer;
+import org.nuntius.client.StatusResponse;
+import org.nuntius.service.MessageListener;
+import org.nuntius.service.PollingThread;
+import org.nuntius.service.RequestJob;
+import org.nuntius.service.RequestWorker;
+import org.nuntius.service.ResponseListener;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -25,6 +32,8 @@ import android.util.Log;
  */
 public class MessageCenterService extends Service
         implements MessageListener, ResponseListener {
+
+    public static final String MESSAGE_RECEIVED = "org.nuntius.MESSAGE_RECEIVED";
 
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
@@ -93,13 +102,25 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public void incoming(List<AbstractMessage> messages) {
+    public void incoming(List<AbstractMessage<?>> messages) {
         List<NameValuePair> list = new ArrayList<NameValuePair>();
 
-        for (AbstractMessage msg : messages) {
-            if (!mReceived.contains(msg.getId())) {
-                list.add(new BasicNameValuePair("i[]", msg.getId()));
-                mReceived.add(msg.getId());
+        // access to mReceived list is protected
+        synchronized (mReceived) {
+            for (AbstractMessage<?> msg : messages) {
+                if (!mReceived.contains(msg.getId())) {
+                    list.add(new BasicNameValuePair("i[]", msg.getId()));
+                    mReceived.add(msg.getId());
+                    // broadcast message immediately
+                    broadcastMessage(msg);
+                    // TODO save to local storage
+                    ContentValues values = new ContentValues();
+                    values.put(Messages.Message.MESSAGE_ID, msg.getId());
+                    values.put(Messages.Message.PEER, msg.getSender());
+                    values.put(Messages.Message.MIME, msg.getMime());
+                    values.put(Messages.Message.CONTENT, msg.getTextContent());
+                    getContentResolver().insert(Messages.CONTENT_URI, values);
+                }
             }
         }
 
@@ -111,8 +132,38 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public void response(List<StatusResponse> statuses) {
-        // TODO manage response statuses
+    public synchronized void response(RequestJob job, List<StatusResponse> statuses) {
         Log.w(getClass().getSimpleName(), "statuses: " + statuses);
+
+        // received command
+        if ("received".equals(job.getCommand())) {
+            // access to mReceived list is protected
+            synchronized (mReceived) {
+                // single status - retrieve message id from request
+                if (statuses.size() == 1) {
+                    List<NameValuePair> params = job.getParams();
+                    for (NameValuePair par : params) {
+                        if ("i".equals(par.getName()))
+                            mReceived.remove(par.getValue());
+                    }
+                }
+                // multiple statuses - each status has its own message id
+                else {
+                    for (StatusResponse st : statuses) {
+                        if (st.extra != null) {
+                            String idToRemove = st.extra.get("i");
+                            if (idToRemove != null)
+                                mReceived.remove(idToRemove);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void broadcastMessage(AbstractMessage<?> message) {
+        Intent msg = new Intent(MESSAGE_RECEIVED);
+        msg.putExtras(message.toBundle());
+        sendBroadcast(msg);
     }
 }

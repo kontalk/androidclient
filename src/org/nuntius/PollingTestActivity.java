@@ -1,11 +1,13 @@
-package org.nuntius.android;
+package org.nuntius;
 
-import org.nuntius.android.client.EndpointServer;
-import org.nuntius.android.client.PollingClient;
-import org.nuntius.android.service.MessageCenterService;
+import org.nuntius.R;
+import org.nuntius.provider.Messages;
+import org.nuntius.client.EndpointServer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -43,6 +45,25 @@ public class PollingTestActivity extends Activity {
         intent.putExtra(EndpointServer.class.getName(), "http://10.0.2.2/serverimpl1");
         intent.putExtra(EndpointServer.HEADER_AUTH_TOKEN, testToken);
         startService(intent);
+
+        // An array specifying which columns to return.
+        String columns[] = new String[] { Messages.Message.MESSAGE_ID, Messages.Message.CONTENT };
+        Uri myUri = Messages.CONTENT_URI;
+        Cursor cur = managedQuery(myUri, columns, // Which columns to return
+                null, // WHERE clause; which rows to return(all rows)
+                null, // WHERE clause selection arguments (none)
+                null // Order-by clause (ascending by name)
+        );
+        if (cur.moveToFirst()) {
+            String id = null;
+            String userName = null;
+            do {
+                // Get the field values
+                id = cur.getString(cur.getColumnIndex(Messages.Message._ID));
+                userName = cur.getString(cur.getColumnIndex(Messages.Message.CONTENT));
+                getTextView().append("id: " + id + "\n" + userName + "\n");
+            } while (cur.moveToNext());
+        }
     }
 
     @Override

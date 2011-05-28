@@ -1,8 +1,8 @@
-package org.nuntius.android.service;
+package org.nuntius.service;
 
 import java.util.List;
 
-import org.nuntius.android.client.AbstractMessage;
+import org.nuntius.client.AbstractMessage;
 
 /**
  * Listener interface for message receivers.
@@ -15,5 +15,5 @@ public interface MessageListener {
      * Notifies pending incoming messages.
      * @param messages
      */
-    public void incoming(List<AbstractMessage> messages);
+    public void incoming(List<AbstractMessage<?>> messages);
 }

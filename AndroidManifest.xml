@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.nuntius.android"
+      package="org.nuntius"
       android:versionCode="1"
       android:versionName="1.0">
     <uses-sdk android:minSdkVersion="7"/>
@@ -15,9 +15,13 @@
         </activity>
         <service
             android:label="@string/service_name"
-            android:name=".service.MessageCenterService"
-        />
-
-
+            android:name="MessageCenterService"/>
+        <receiver android:name="IncomingTestReceiver">
+            <intent-filter>
+                <action android:name="org.nuntius.MESSAGE_RECEIVED"></action>
+            </intent-filter>
+        </receiver>
+        <provider android:name="MessagesProvider"
+            android:authorities="org.nuntius.MessagesProvider"/>
     </application>
 </manifest>
