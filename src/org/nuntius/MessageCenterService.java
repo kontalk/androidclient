@@ -5,10 +5,11 @@ import java.util.List;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.nuntius.provider.Messages;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
 import org.nuntius.client.StatusResponse;
+import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.provider.MyMessages.Threads;
 import org.nuntius.service.MessageListener;
 import org.nuntius.service.PollingThread;
 import org.nuntius.service.RequestJob;
@@ -115,10 +116,11 @@ public class MessageCenterService extends Service
                     broadcastMessage(msg);
                     // TODO save to local storage
                     ContentValues values = new ContentValues();
-                    values.put(Messages.Message.MESSAGE_ID, msg.getId());
-                    values.put(Messages.Message.PEER, msg.getSender());
-                    values.put(Messages.Message.MIME, msg.getMime());
-                    values.put(Messages.Message.CONTENT, msg.getTextContent());
+                    values.put(Messages.MESSAGE_ID, msg.getId());
+                    values.put(Messages.PEER, msg.getSender());
+                    values.put(Messages.MIME, msg.getMime());
+                    values.put(Messages.CONTENT, msg.getTextContent());
+                    values.put(Threads.UNREAD, true);
                     getContentResolver().insert(Messages.CONTENT_URI, values);
                 }
             }

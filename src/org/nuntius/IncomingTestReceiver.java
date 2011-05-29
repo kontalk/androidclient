@@ -31,7 +31,7 @@ public class IncomingTestReceiver extends BroadcastReceiver {
 
             CharSequence contentTitle = "New message";
             CharSequence contentText = msg.getTextContent();
-            Intent notificationIntent = new Intent(context, PollingTestActivity.class);
+            Intent notificationIntent = new Intent(context, ThreadsActivity.class);
             PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
             no.setLatestEventInfo(context.getApplicationContext(), contentTitle, contentText, contentIntent);
 
