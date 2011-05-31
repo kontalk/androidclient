@@ -8,7 +8,7 @@
 		    android:negativeButtonText="@android:string/cancel"
 		    android:title="@string/pref_network_uri"
 		    android:key="pref_network_uri"
-		    android:defaultValue="http://www.casaricci.it/messenger/"
+		    android:defaultValue="http://www.casaricci.it/messenger"
 		    android:singleLine="true" android:inputType="textUri"/>
     </PreferenceCategory>
 </PreferenceScreen>

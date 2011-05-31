@@ -10,6 +10,7 @@ import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
@@ -135,14 +136,22 @@ public class ConversationListActivity extends ListActivity {
         super.onResume();
         Log.i(TAG, "starting service");
 
-        Intent intent = new Intent(this, MessageCenterService.class);
-
         // get the URI from the preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String uri = prefs.getString("pref_network_uri", "http://10.0.2.2/serverimpl1");
+        prefs.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                if ("pref_network_uri".equals(key)) {
+                    // TODO what to do here??
+                }
+            }
+        });
 
+        Intent intent = new Intent(this, MessageCenterService.class);
+        String uri = prefs.getString("pref_network_uri", "http://10.0.2.2/serverimpl1");
         intent.putExtra(EndpointServer.class.getName(), uri);
         intent.putExtra(EndpointServer.HEADER_AUTH_TOKEN, testToken);
+
         startService(intent);
     }
 
