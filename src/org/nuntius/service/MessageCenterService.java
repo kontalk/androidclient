@@ -1,4 +1,4 @@
-package org.nuntius;
+package org.nuntius.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,12 +9,6 @@ import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.provider.MyMessages.Messages;
-import org.nuntius.provider.MyMessages.Threads;
-import org.nuntius.service.MessageListener;
-import org.nuntius.service.PollingThread;
-import org.nuntius.service.RequestJob;
-import org.nuntius.service.RequestWorker;
-import org.nuntius.service.ResponseListener;
 
 import android.app.Service;
 import android.content.ContentValues;
@@ -63,25 +57,27 @@ public class MessageCenterService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Bundle extras = intent.getExtras();
-        String token = (String) extras.get(EndpointServer.HEADER_AUTH_TOKEN);
-        String serverUrl = (String) extras.get(EndpointServer.class.getName());
-        EndpointServer server = new EndpointServer(serverUrl);
+        if (intent != null) {
+            Bundle extras = intent.getExtras();
+            String token = (String) extras.get(EndpointServer.HEADER_AUTH_TOKEN);
+            String serverUrl = (String) extras.get(EndpointServer.class.getName());
+            EndpointServer server = new EndpointServer(serverUrl);
 
-        // activate request worker if necessary
-        if (mRequestWorker == null) {
-            mRequestWorker = new RequestWorker(this, server);
-            mRequestWorker.setResponseListener(this);
-            mRequestWorker.setAuthToken(token);
-            mRequestWorker.start();
-        }
+            // activate request worker if necessary
+            if (mRequestWorker == null) {
+                mRequestWorker = new RequestWorker(this, server);
+                mRequestWorker.setResponseListener(this);
+                mRequestWorker.setAuthToken(token);
+                mRequestWorker.start();
+            }
 
-        // start polling thread if needed
-        if (mPollingThread == null) {
-            mPollingThread = new PollingThread(this, server);
-            mPollingThread.setMessageListener(this);
-            mPollingThread.setAuthToken(token);
-            mPollingThread.start();
+            // start polling thread if needed
+            if (mPollingThread == null) {
+                mPollingThread = new PollingThread(this, server);
+                mPollingThread.setMessageListener(this);
+                mPollingThread.setAuthToken(token);
+                mPollingThread.start();
+            }
         }
 
         return START_STICKY;
@@ -120,7 +116,9 @@ public class MessageCenterService extends Service
                     values.put(Messages.PEER, msg.getSender());
                     values.put(Messages.MIME, msg.getMime());
                     values.put(Messages.CONTENT, msg.getTextContent());
-                    values.put(Threads.UNREAD, true);
+                    values.put(Messages.UNREAD, true);
+                    values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+                    values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                     getContentResolver().insert(Messages.CONTENT_URI, values);
                 }
             }

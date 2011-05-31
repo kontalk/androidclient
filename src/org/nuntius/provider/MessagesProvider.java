@@ -1,11 +1,13 @@
-package org.nuntius;
+package org.nuntius.provider;
 
 import java.util.HashMap;
 
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.provider.MyMessages.Threads;
 
+
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
@@ -25,8 +27,8 @@ import android.util.Log;
  */
 public class MessagesProvider extends ContentProvider {
 
-    public static final String TAG = MessagesProvider.class.getSimpleName();
-    public static final String AUTHORITY = "org.nuntius.MessagesProvider";
+    private static final String TAG = MessagesProvider.class.getSimpleName();
+    public static final String AUTHORITY = "org.nuntius.messages";
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "messages.db";
@@ -44,27 +46,56 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> threadsProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
+
         // this table will contain all the messages
         private static final String SCHEMA_MESSAGES =
             "CREATE TABLE " + TABLE_MESSAGES + " (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "msgid TEXT NOT NULL UNIQUE, " +
+            "thread_id INTEGER NOT NULL, " +
+            "msg_id TEXT NOT NULL UNIQUE, " +
             "peer TEXT, " +
             "mime TEXT NOT NULL, " +
-            "content TEXT" +
+            "content TEXT," +
+            "direction INTEGER, " +
+            "unread INTEGER, " +
+            "timestamp INTEGER" +
             ");";
+
         // this table will contain the latest message from each conversation
         private static final String SCHEMA_THREADS =
             "CREATE TABLE " + TABLE_THREADS + " (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "msgid TEXT NOT NULL UNIQUE, " +
+            "msg_id TEXT NOT NULL UNIQUE, " +
             "peer TEXT NOT NULL UNIQUE, " +
             "direction INTEGER, " +
+            "count INTEGER, " +
             "unread INTEGER, " +
             "mime TEXT NOT NULL, " +
             "content TEXT, " +
             "timestamp INTEGER" +
             ");";
+
+        // updates the thread messages count
+        private static final String UPDATE_MESSAGES_COUNT =
+            "UPDATE " + TABLE_THREADS + " SET count = (" +
+            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id" +
+            ") WHERE _id = new.thread_id";
+
+        // updates the thread unread count
+        private static final String UPDATE_UNREAD_COUNT =
+            "UPDATE " + TABLE_THREADS + " SET unread = (" +
+            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id " +
+            "AND unread <> 0) WHERE _id = new.thread_id";
+
+        // this trigger will update the threads table to the current amount of messages
+        private static final String TRIGGER_THREADS_UPDATE_COUNT =
+            "CREATE TRIGGER update_thread_count_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
+            " BEGIN " + UPDATE_MESSAGES_COUNT + "; END;";
+
+        // this trigger will update the threads table to the current amount of unread messages
+        private static final String TRIGGER_THREADS_UPDATE_UNREAD =
+            "CREATE TRIGGER update_thread_unread_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
+            " BEGIN " + UPDATE_UNREAD_COUNT + "; END;";
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -74,6 +105,8 @@ public class MessagesProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
+            db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
+            db.execSQL(TRIGGER_THREADS_UPDATE_UNREAD);
         }
 
         @Override
@@ -133,10 +166,13 @@ public class MessagesProvider extends ContentProvider {
         if (initialValues == null) { throw new IllegalArgumentException("No data"); }
 
         ContentValues values = new ContentValues(initialValues);
-        if (values.get(Threads.UNREAD) != null)
-            values.remove(Threads.UNREAD);
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        // create the thread first
+        long threadId = updateThreads(db, values);
+        values.put(Messages.THREAD_ID, threadId);
+
+        // insert the new message now!
         long rowId = db.insert(TABLE_MESSAGES, null, values);
 
         if (rowId > 0) {
@@ -152,32 +188,46 @@ public class MessagesProvider extends ContentProvider {
     }
 
     /**
-     * TODO needs some fixes
+     * Updates the threads table, returning the thread id to associate with the new message.
      * @param db
      * @param values
-     * @return
+     * @return the thread id
      */
-    private boolean updateThreads(SQLiteDatabase db, ContentValues values) {
+    private long updateThreads(SQLiteDatabase db, ContentValues initialValues) {
+        ContentValues values = new ContentValues(initialValues);
         String peer = values.getAsString(Threads.PEER);
 
-        // update threads table
-        values.put(Threads.DIRECTION, new Integer(Threads.DIRECTION_IN));
-        values.put(Threads.TIMESTAMP, System.currentTimeMillis());
+        long threadId = 0;
+        if (values.containsKey(Messages.THREAD_ID)) {
+            threadId = values.getAsLong(Messages.THREAD_ID);
+            values.remove(Messages.THREAD_ID);
+        }
+
+        // this will be recalculated by the trigger
+        values.remove(Messages.UNREAD);
 
         // try to insert
         try {
-            db.insertOrThrow(TABLE_THREADS, null, values);
+            threadId = db.insertOrThrow(TABLE_THREADS, null, values);
             Log.w(TAG, "threads table inserted");
         }
         catch (SQLException e) {
             db.update(TABLE_THREADS, values, "peer = ?", new String[] { peer });
             Log.w(TAG, "threads table updated");
+
+            // retrieve the thread id
+            if (threadId <= 0) {
+                Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID }, "peer = ?", new String[] { peer }, null, null, null);
+                if (c.moveToFirst())
+                    threadId = c.getLong(0);
+                c.close();
+            }
         }
 
         // notify changes
-        Uri threadUri = Threads.getUri(peer);
+        Uri threadUri = ContentUris.withAppendedId(Threads.CONTENT_URI, threadId);
         getContext().getContentResolver().notifyChange(threadUri, null);
-        return true;
+        return threadId;
     }
 
     @Override
@@ -213,22 +263,27 @@ public class MessagesProvider extends ContentProvider {
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_THREADS, THREADS);
-        sUriMatcher.addURI(AUTHORITY, TABLE_THREADS + "/#", THREADS_PEER);
+        sUriMatcher.addURI(AUTHORITY, TABLE_THREADS + "/*", THREADS_PEER);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES, MESSAGES);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/#", MESSAGES_ID);
 
         messagesProjectionMap = new HashMap<String, String>();
         messagesProjectionMap.put(Messages._ID, Messages._ID);
+        messagesProjectionMap.put(Messages.THREAD_ID, Messages.THREAD_ID);
         messagesProjectionMap.put(Messages.MESSAGE_ID, Messages.MESSAGE_ID);
         messagesProjectionMap.put(Messages.PEER, Messages.PEER);
         messagesProjectionMap.put(Messages.MIME, Messages.MIME);
         messagesProjectionMap.put(Messages.CONTENT, Messages.CONTENT);
+        messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
+        messagesProjectionMap.put(Messages.DIRECTION, Messages.DIRECTION);
+        messagesProjectionMap.put(Messages.TIMESTAMP, Messages.TIMESTAMP);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
         threadsProjectionMap.put(Threads.MESSAGE_ID, Threads.MESSAGE_ID);
         threadsProjectionMap.put(Threads.PEER, Threads.PEER);
         threadsProjectionMap.put(Threads.DIRECTION, Threads.DIRECTION);
+        threadsProjectionMap.put(Threads.COUNT, Threads.COUNT);
         threadsProjectionMap.put(Threads.UNREAD, Threads.UNREAD);
         threadsProjectionMap.put(Threads.MIME, Threads.MIME);
         threadsProjectionMap.put(Threads.CONTENT, Threads.CONTENT);

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.nuntius.ui.ConversationListItem xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="?android:attr/listPreferredItemHeight"
+    android:paddingRight="10dip" >
+    <!-- android:background="@drawable/conversation_item_background_unread" -->
+
+    <android.widget.QuickContactBadge
+        android:id="@+id/avatar"
+        android:visibility="gone"
+        android:layout_marginLeft="7dip"
+        android:layout_centerVertical="true"
+        style="?android:attr/quickContactBadgeStyleWindowSmall" />
+
+    <ImageView
+        android:id="@+id/presence"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="5dip"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:paddingBottom="20dip"
+         />
+
+    <TextView android:id="@+id/from"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMediumInverse"
+        android:singleLine="true"
+        android:layout_marginTop="6dip"
+        android:layout_marginRight="5dip"
+        android:layout_marginLeft="7dip"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/avatar"
+        android:layout_toLeftOf="@id/presence"
+        android:layout_alignWithParentIfMissing="true"
+        android:ellipsize="marquee"  />
+
+    <TextView android:id="@+id/date"
+        android:layout_marginTop="2dip"
+        android:layout_marginBottom="10dip"
+        android:layout_marginLeft="5dip"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse"
+        android:singleLine="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true" />
+
+    <ImageView android:id="@+id/error"
+        android:layout_marginLeft="3dip"
+        android:visibility="invisible"
+        android:layout_toLeftOf="@id/date"
+        android:layout_alignBottom="@id/date"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        />
+        <!-- android:src="@drawable/ic_list_alert_sms_failed" -->
+
+    <ImageView android:id="@+id/attachment"
+        android:layout_marginLeft="3dip"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:layout_toLeftOf="@id/error"
+        android:layout_alignBottom="@id/date"
+        />
+        <!-- android:src="@drawable/ic_attachment_universal_small" -->
+
+    <TextView android:id="@+id/subject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmallInverse"
+        android:singleLine="true"
+        android:layout_marginBottom="10dip"
+        android:layout_marginLeft="7dip"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/avatar"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_toLeftOf="@id/date"
+        android:ellipsize="end" />
+
+</org.nuntius.ui.ConversationListItem>

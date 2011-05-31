@@ -7,27 +7,25 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application android:icon="@drawable/icon" android:label="@string/app_name">
-        <activity android:name="PollingTestActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-        </activity>
         <service
             android:label="@string/service_name"
-            android:name="MessageCenterService"/>
+            android:name=".service.MessageCenterService"/>
         <receiver android:name="IncomingTestReceiver">
             <intent-filter>
                 <action android:name="org.nuntius.MESSAGE_RECEIVED"></action>
             </intent-filter>
         </receiver>
-        <provider android:name="MessagesProvider"
-            android:authorities="org.nuntius.MessagesProvider"/>
-        <activity android:name="ThreadsActivity">
+        <provider android:name=".provider.MessagesProvider"
+            android:authorities="org.nuntius.messages"/>
+        <activity android:name=".ui.ConversationListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <provider android:name=".provider.UsersProvider"
+            android:authorities="org.nuntius.users"/>
+        <activity android:name=".ui.MessagingPreferenceActivity"></activity>
     </application>
 </manifest>

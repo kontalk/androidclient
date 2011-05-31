@@ -2,4 +2,12 @@
 <resources>
     <string name="app_name">Nuntius</string>
     <string name="service_name">Message Center</string>
+    <string name="new_message">New message</string>
+    <string name="create_new_message">Compose new message</string>
+    <string name="menu_compose">Compose</string>
+    <string name="menu_delete_all">Delete threads</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_settings">Settings</string>
+    <string name="pref_network_settings">Network settings</string>
+    <string name="pref_network_uri">Network address</string>
 </resources>

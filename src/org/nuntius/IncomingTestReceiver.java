@@ -2,6 +2,8 @@ package org.nuntius;
 
 import org.nuntius.R;
 import org.nuntius.client.AbstractMessage;
+import org.nuntius.service.MessageCenterService;
+import org.nuntius.ui.ConversationListActivity;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -31,7 +33,7 @@ public class IncomingTestReceiver extends BroadcastReceiver {
 
             CharSequence contentTitle = "New message";
             CharSequence contentText = msg.getTextContent();
-            Intent notificationIntent = new Intent(context, ThreadsActivity.class);
+            Intent notificationIntent = new Intent(context, ConversationListActivity.class);
             PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
             no.setLatestEventInfo(context.getApplicationContext(), contentTitle, contentText, contentIntent);
 
