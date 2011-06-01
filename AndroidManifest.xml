@@ -5,6 +5,7 @@
       android:versionName="1.0">
     <uses-sdk android:minSdkVersion="7"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"></uses-permission>
 
     <application android:icon="@drawable/icon" android:label="@string/app_name">
         <service
@@ -17,7 +18,7 @@
         </receiver>
         <provider android:name=".provider.MessagesProvider"
             android:authorities="org.nuntius.messages"/>
-        <activity android:name=".ui.ConversationListActivity">
+        <activity android:name=".ui.ConversationList">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -26,6 +27,10 @@
         </activity>
         <provider android:name=".provider.UsersProvider"
             android:authorities="org.nuntius.users"/>
-        <activity android:name=".ui.MessagingPreferenceActivity"></activity>
+        <activity android:name=".ui.MessagingPreferences"></activity>
+        <activity android:name=".ui.BootstrapPreferences"></activity>
+        <activity android:name=".ui.NumberValidation"
+            android:theme="@android:style/Theme.Light"
+        ></activity>
     </application>
 </manifest>

@@ -6,7 +6,6 @@ import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
 import org.nuntius.client.PollingClient;
 
-import android.content.Context;
 import android.util.Log;
 
 /**
@@ -16,7 +15,6 @@ import android.util.Log;
  */
 public class PollingThread extends Thread {
 
-    private final Context mContext;
     private final EndpointServer mServer;
     private String mAuthToken;
     private boolean mRunning;
@@ -24,8 +22,7 @@ public class PollingThread extends Thread {
     private PollingClient mClient;
     private MessageListener mListener;
 
-    public PollingThread(Context context, EndpointServer server) {
-        this.mContext = context;
+    public PollingThread(EndpointServer server) {
         this.mServer = server;
     }
 

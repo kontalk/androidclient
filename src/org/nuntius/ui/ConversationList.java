@@ -24,9 +24,9 @@ import android.view.Window;
 import android.widget.ListView;
 
 
-public class ConversationListActivity extends ListActivity {
+public class ConversationList extends ListActivity {
 
-    private static final String TAG = ConversationListActivity.class.getSimpleName();
+    private static final String TAG = ConversationList.class.getSimpleName();
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
@@ -95,7 +95,7 @@ public class ConversationListActivity extends ListActivity {
                 // TODO deleteAll();
                 break;
             case R.id.menu_settings: {
-                Intent intent = new Intent(this, MessagingPreferenceActivity.class);
+                Intent intent = new Intent(this, MessagingPreferences.class);
                 startActivityIfNeeded(intent, -1);
                 break;
             }
@@ -107,7 +107,7 @@ public class ConversationListActivity extends ListActivity {
 
     private void startQuery() {
         try {
-            setTitle("Refreshing..."); //getString(R.string.refreshing));
+            setTitle(getString(R.string.refreshing));
             setProgressBarIndeterminateVisibility(true);
 
             Conversation.startQuery(mQueryHandler, THREAD_LIST_QUERY_TOKEN);
@@ -116,43 +116,54 @@ public class ConversationListActivity extends ListActivity {
         }
     }
 
-    // generated from +393271582382
+    /* generated from +393271582382
     private static final String testToken =
         "owGbwMvMwCGYeiJtndUThX+Mp6OSmHXVLH1v/7yaam6cmmiclGpknGJg" +
         "YmJpammeaGGUbGaUmmJpYZhmamGSaJpsaGGYVGNsbOJi4GZm7GZsZm7kaGD" +
         "qZmloZmLhamFm6mxhZuboauzoamJk4ObaEcfCIMjBwMbKBDKegYtTAGbtrd" +
         "UM/13clz3N8TknL2M/mXkXz9NXm1YyubvEqvfHsxjdXHVK2YiRYWtq+vYTn" +
         "YbJ/js6NMQOdj1tDbpXU8Dy4fn1jNvM8fNFHQA=";
+     */
 
     @Override
     protected void onStart() {
         super.onStart();
-
         startQuery();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "starting service");
 
-        // get the URI from the preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 if ("pref_network_uri".equals(key)) {
-                    // TODO what to do here??
+                    // TODO just restart service with new server?
                 }
             }
         });
 
-        Intent intent = new Intent(this, MessageCenterService.class);
-        String uri = prefs.getString("pref_network_uri", "http://10.0.2.2/serverimpl1");
-        intent.putExtra(EndpointServer.class.getName(), uri);
-        intent.putExtra(EndpointServer.HEADER_AUTH_TOKEN, testToken);
+        // check if token is present first -- need to authenticate if not
+        String token = prefs.getString("pref_auth_token", null);
+        if (token == null) {
+            // start number validation activity
+            startActivity(new Intent(this, NumberValidation.class));
+            // we are not needed anymore (for now)
+            finish();
+        }
+        else {
+            Log.i(TAG, "starting service");
+            Intent intent = new Intent(this, MessageCenterService.class);
 
-        startService(intent);
+            // get the URI from the preferences
+            String uri = prefs.getString("pref_network_uri", "http://10.0.2.2/serverimpl1");
+            intent.putExtra(EndpointServer.class.getName(), uri);
+            intent.putExtra(EndpointServer.HEADER_AUTH_TOKEN, token);
+
+            startService(intent);
+        }
     }
 
     /**

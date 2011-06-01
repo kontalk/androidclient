@@ -65,7 +65,7 @@ public class MessageCenterService extends Service
 
             // activate request worker if necessary
             if (mRequestWorker == null) {
-                mRequestWorker = new RequestWorker(this, server);
+                mRequestWorker = new RequestWorker(server);
                 mRequestWorker.setResponseListener(this);
                 mRequestWorker.setAuthToken(token);
                 mRequestWorker.start();
@@ -73,7 +73,7 @@ public class MessageCenterService extends Service
 
             // start polling thread if needed
             if (mPollingThread == null) {
-                mPollingThread = new PollingThread(this, server);
+                mPollingThread = new PollingThread(server);
                 mPollingThread.setMessageListener(this);
                 mPollingThread.setAuthToken(token);
                 mPollingThread.start();

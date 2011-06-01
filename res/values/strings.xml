@@ -10,4 +10,10 @@
     <string name="menu_settings">Settings</string>
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Network address</string>
+    <string name="number_validation_intro">Please enter your mobile phone number, including any international prefix.</string>
+    <string name="hint_phone_number">Enter your phone number</string>
+    <string name="warn_invalid_number">Please enter a valid phone number.</string>
+    <string name="msg_validating_phone">Validating phone number...</string>
+    <string name="msg_authenticated">Registered to the network!</string>
+    <string name="refreshing">Refreshing...</string>
 </resources>

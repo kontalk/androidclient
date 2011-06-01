@@ -6,6 +6,12 @@ import android.content.AsyncQueryHandler;
 import android.content.Context;
 import android.database.Cursor;
 
+
+/**
+ * A class represeting a conversation thread.
+ * @author Daniele Ricci
+ * @version 1.0
+ */
 public class Conversation {
 
     private static final String[] ALL_THREADS_PROJECTION = {

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.nuntius.client.*;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -15,7 +14,6 @@ public class RequestWorker extends Thread {
 
     private static final int MSG_REQUEST_JOB = 1;
 
-    private final Context mContext;
     private Handler mHandler;
     private final EndpointServer mServer;
     private String mAuthToken;
@@ -23,8 +21,7 @@ public class RequestWorker extends Thread {
     private RequestClient mClient;
     private ResponseListener mListener;
 
-    public RequestWorker(Context context, EndpointServer server) {
-        this.mContext = context;
+    public RequestWorker(EndpointServer server) {
         this.mServer = server;
     }
 

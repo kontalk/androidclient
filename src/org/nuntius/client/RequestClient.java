@@ -18,8 +18,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class RequestClient extends AbstractClient {
 
+/**
+ * A generic request endpoint client.
+ * @author Daniele Ricci
+ * @version 1.0
+ */
+public class RequestClient extends AbstractClient {
 
     public RequestClient(EndpointServer server, String token) {
         super(server, token);
