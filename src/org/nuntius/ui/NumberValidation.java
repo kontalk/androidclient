@@ -190,14 +190,24 @@ public class NumberValidation extends Activity implements NumberValidatorListene
     public void onError(NumberValidator v, Throwable e) {
         Log.e(TAG, "validation error.", e);
         // TODO handle error
-        abort();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                abort();
+            }
+        });
     }
 
     @Override
     public void onValidationFailed(NumberValidator v, int reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
         // TODO handle error
-        abort();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                abort();
+            }
+        });
     }
 
     @Override

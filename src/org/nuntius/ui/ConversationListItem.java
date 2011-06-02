@@ -76,6 +76,6 @@ public class ConversationListItem extends RelativeLayout {
     }
 
     public final void unbind() {
-        // TODO unbind
+        // TODO unbind (contact?)
     }
 }

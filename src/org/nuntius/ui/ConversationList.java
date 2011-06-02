@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.widget.ListView;
 
@@ -168,7 +169,7 @@ public class ConversationList extends ListActivity {
 
         // check if contacts list has already been checked
         if (!MessagingPreferences.getContactsChecked(this)) {
-            // start the contacts list checker thread
+            // TODO start the contacts list checker thread
 
         }
     }
@@ -188,6 +189,12 @@ public class ConversationList extends ListActivity {
     protected void onStop() {
         super.onStop();
         mListAdapter.changeCursor(null);
+    }
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        // TODO ehm :)
+        startActivity(new Intent(this, ComposeMessage.class));
     }
 
     /**
