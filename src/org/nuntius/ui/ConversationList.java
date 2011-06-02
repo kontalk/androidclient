@@ -152,17 +152,24 @@ public class ConversationList extends ListActivity {
             startActivity(new Intent(this, NumberValidation.class));
             // we are not needed anymore (for now)
             finish();
+            return;
         }
-        else {
-            Log.i(TAG, "starting service");
-            Intent intent = new Intent(this, MessageCenterService.class);
 
-            // get the URI from the preferences
-            String uri = prefs.getString("pref_network_uri", "http://10.0.2.2/serverimpl1");
-            intent.putExtra(EndpointServer.class.getName(), uri);
-            intent.putExtra(EndpointServer.HEADER_AUTH_TOKEN, token);
+        // we have a token, start the message center
+        Log.i(TAG, "starting service");
+        Intent intent = new Intent(this, MessageCenterService.class);
 
-            startService(intent);
+        // get the URI from the preferences
+        String uri = prefs.getString("pref_network_uri", "http://10.0.2.2/serverimpl1");
+        intent.putExtra(EndpointServer.class.getName(), uri);
+        intent.putExtra(EndpointServer.HEADER_AUTH_TOKEN, token);
+
+        startService(intent);
+
+        // check if contacts list has already been checked
+        if (!MessagingPreferences.getContactsChecked(this)) {
+            // start the contacts list checker thread
+
         }
     }
 

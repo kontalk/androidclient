@@ -108,9 +108,8 @@ public class MessageCenterService extends Service
                 if (!mReceived.contains(msg.getId())) {
                     list.add(new BasicNameValuePair("i[]", msg.getId()));
                     mReceived.add(msg.getId());
-                    // broadcast message immediately
-                    broadcastMessage(msg);
-                    // TODO save to local storage
+
+                    // save to local storage
                     ContentValues values = new ContentValues();
                     values.put(Messages.MESSAGE_ID, msg.getId());
                     values.put(Messages.PEER, msg.getSender());
@@ -120,6 +119,9 @@ public class MessageCenterService extends Service
                     values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
                     values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                     getContentResolver().insert(Messages.CONTENT_URI, values);
+
+                    // broadcast message
+                    broadcastMessage(msg);
                 }
             }
         }

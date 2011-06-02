@@ -9,6 +9,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -17,7 +18,7 @@ import android.net.Uri;
 import android.util.Log;
 
 public class UsersProvider extends ContentProvider {
-    private static final String TAG = MessagesProvider.class.getSimpleName();
+    private static final String TAG = UsersProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.nuntius.users";
 
     private static final int DATABASE_VERSION = 1;
@@ -74,13 +75,13 @@ public class UsersProvider extends ContentProvider {
             case USERS_HASH:
                 qb.setTables(TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
-                qb.appendWhere(Users.HASH + "='" + uri.getPathSegments().get(1) + "'");
+                qb.appendWhere(Users.HASH + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
 
             case USERS_NUMBER:
                 qb.setTables(TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
-                qb.appendWhere(Users.NUMBER + "='" + uri.getPathSegments().get(1) + "'");
+                qb.appendWhere(Users.NUMBER + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
 
             default:

@@ -20,13 +20,11 @@ public class MessagingPreferences extends PreferenceActivity {
     public static final String DEFAULT_SERVER_URI = "http://10.0.2.2/serverimpl1";
 
     public static String getServerURI(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString("pref_network_uri", DEFAULT_SERVER_URI);
+        return getString(context, "pref_network_uri", DEFAULT_SERVER_URI);
     }
 
     public static String getAuthToken(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString("pref_auth_token", null);
+        return getString(context, "pref_auth_token", null);
     }
 
     public static void setAuthToken(Context context, String token) {
@@ -34,5 +32,23 @@ public class MessagingPreferences extends PreferenceActivity {
         prefs.edit()
             .putString("pref_auth_token", token)
             .commit();
+    }
+
+    /** Returns true if the contacts list has already been checked against the server. */
+    public static boolean getContactsChecked(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("pref_contacts_checked", false);
+    }
+
+    public static void setContactsChecked(Context context, boolean checked) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit()
+            .putBoolean("pref_contacts_checked", checked)
+            .commit();
+    }
+
+    private static String getString(Context context, String key, String defaultValue) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(key, defaultValue);
     }
 }

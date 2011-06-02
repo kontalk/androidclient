@@ -12,6 +12,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -135,7 +136,7 @@ public class MessagesProvider extends ContentProvider {
             case MESSAGES_ID:
                 qb.setTables(TABLE_MESSAGES);
                 qb.setProjectionMap(messagesProjectionMap);
-                qb.appendWhere(Messages.MESSAGE_ID + "='" + uri.getPathSegments().get(1) + "'");
+                qb.appendWhere(Messages.MESSAGE_ID + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
 
             case THREADS:
@@ -146,7 +147,7 @@ public class MessagesProvider extends ContentProvider {
             case THREADS_PEER:
                 qb.setTables(TABLE_THREADS);
                 qb.setProjectionMap(threadsProjectionMap);
-                qb.appendWhere(Threads.PEER + "='" + uri.getPathSegments().get(1) + "'");
+                qb.appendWhere(Threads.PEER + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
 
             default:
