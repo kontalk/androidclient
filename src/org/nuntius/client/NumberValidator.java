@@ -115,7 +115,7 @@ public class NumberValidator implements Runnable {
                 if (res.size() > 0) {
                     if (mListener != null) {
                         StatusResponse st = res.get(0);
-                        if (st.code == StatusResponseCodes.STATUS_SUCCESS) {
+                        if (st.code == StatusResponse.STATUS_SUCCESS) {
                             mListener.onValidationRequested(this);
                         }
                         else {
@@ -143,7 +143,7 @@ public class NumberValidator implements Runnable {
                 if (res.size() > 0) {
                     if (mListener != null) {
                         StatusResponse st = res.get(0);
-                        if (st.code == StatusResponseCodes.STATUS_SUCCESS) {
+                        if (st.code == StatusResponse.STATUS_SUCCESS) {
                             Map<String,String> ex = st.extra;
                             if (ex != null) {
                                 String token = ex.get("a");
@@ -171,7 +171,7 @@ public class NumberValidator implements Runnable {
     }
 
     /**
-     * Shuts down this polling thread gracefully.
+     * Shuts down this thread gracefully.
      */
     public synchronized void shutdown() {
         Log.w(TAG, "shutting down");

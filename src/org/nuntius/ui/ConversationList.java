@@ -61,18 +61,6 @@ public class ConversationList extends ListActivity {
         mListAdapter = new ConversationListAdapter(this, null);
         mListAdapter.setOnContentChangedListener(mContentChangedListener);
         setListAdapter(mListAdapter);
-
-        /* TEST some numbers
-        try {
-            ContentValues values = new ContentValues();
-            values.put(Users.HASH, "25242a976293f26d6a0abf686b1a96ded7d142a3");
-            values.put(Users.NUMBER, "+393396241840");
-            getContentResolver().insert(Users.CONTENT_URI, values);
-        }
-        catch (Throwable e) {
-            // ignore
-        }
-        */
     }
 
     @Override
@@ -193,8 +181,13 @@ public class ConversationList extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO ehm :)
-        startActivity(new Intent(this, ComposeMessage.class));
+        Conversation conv = ((ConversationListItem) v).getConversation();
+        if (conv != null) {
+            Intent intent = new Intent(this, ComposeMessage.class);
+            intent.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
+            startActivity(intent);
+        }
+        // TODO new message activity :)
     }
 
     /**

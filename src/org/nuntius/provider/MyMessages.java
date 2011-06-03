@@ -16,6 +16,12 @@ public final class MyMessages {
         public static final int DIRECTION_IN = 0;
         public static final int DIRECTION_OUT = 1;
 
+        // 0 is for incoming messages (no status of course)
+        public static final int STATUS_SENDING = 1;
+        public static final int STATUS_NOTACCEPTED = 2;
+        public static final int STATUS_SENT = 3;
+        public static final int STATUS_RECEIVED = 4;
+
         /**
          * Builds a message {@link Uri}.
          * @param msgId the message id
@@ -37,6 +43,10 @@ public final class MyMessages {
         public static final String DIRECTION = "direction";
         public static final String UNREAD = "unread";
         public static final String TIMESTAMP = "timestamp";
+        public static final String STATUS = "status";
+
+        // not DESC here because the listview is reverse-stacked
+        public static final String DEFAULT_SORT_ORDER = "timestamp";
     }
 
     public static final class Threads implements BaseColumns {

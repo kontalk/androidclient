@@ -1,7 +1,14 @@
 package org.nuntius.client;
 
+import java.text.ParseException;
 import java.util.*;
 
+import org.nuntius.data.MessageID;
+import org.nuntius.provider.MyMessages.Messages;
+
+import android.content.AsyncQueryHandler;
+import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -14,6 +21,18 @@ import android.util.Log;
  * @version 1.0
  */
 public abstract class AbstractMessage<T> {
+    private static final String TAG = AbstractMessage.class.getSimpleName();
+
+    private static final String[] MESSAGE_LIST_PROJECTION = {
+        Messages._ID,
+        Messages.MESSAGE_ID,
+        Messages.PEER,
+        Messages.DIRECTION,
+        Messages.TIMESTAMP,
+        Messages.MIME,
+        Messages.CONTENT,
+        Messages.STATUS
+    };
 
     public static final String MSG_ID = "org.nuntius.message.id";
     public static final String MSG_SENDER = "org.nuntius.message.sender";
@@ -21,12 +40,16 @@ public abstract class AbstractMessage<T> {
     public static final String MSG_CONTENT = "org.nuntius.message.content";
     public static final String MSG_RECIPIENTS = "org.nuntius.message.recipients";
     public static final String MSG_GROUP = "org.nuntius.message.group";
+    public static final String MSG_TIMESTAMP = "org.nuntius.message.timestamp";
 
     protected boolean incoming;
     protected String id;
     protected String sender;
     protected String mime;
     protected T content;
+    protected long timestamp;
+    protected int status;
+    protected MessageID messageId;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -44,11 +67,13 @@ public abstract class AbstractMessage<T> {
     }
 
     public AbstractMessage(String id, String sender, String mime, T content) {
-        this.id = id;
+        if (id != null) setId(id);
         this.sender = sender;
         this.mime = mime;
         this.content = content;
         this.recipients = new ArrayList<String>();
+        // will be updated if necessary
+        this.timestamp = System.currentTimeMillis();
     }
 
     public String getId() {
@@ -57,6 +82,12 @@ public abstract class AbstractMessage<T> {
 
     public void setId(String id) {
         this.id = id;
+        try {
+            this.messageId = MessageID.parse(id);
+        }
+        catch (ParseException e) {
+            Log.e(TAG, "invalid server message id - " + id);
+        }
     }
 
     public String getSender() {
@@ -87,9 +118,20 @@ public abstract class AbstractMessage<T> {
         this.content = content;
     }
 
-    public Date getTimestamp() {
-        // TODO retrieves timestamp from message id
-        return new Date();
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public Date getServerTimestamp() {
+        return (messageId != null) ? messageId.getDate() : null;
+    }
+
+    public int getStatus() {
+        return status;
     }
 
     @Override
@@ -132,17 +174,75 @@ public abstract class AbstractMessage<T> {
         String[] grp = b.getStringArray(MSG_GROUP);
         if (grp != null)
             group = Arrays.asList(grp);
+
+        long stamp = b.getLong(MSG_TIMESTAMP);
+        if (stamp >= 0)
+            timestamp = stamp;
+    }
+
+    protected void populateFromCursor(Cursor c) {
+        setId(c.getString(c.getColumnIndex(Messages.MESSAGE_ID)));
+        mime = c.getString(c.getColumnIndex(Messages.MIME));
+        timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
+        status = c.getInt(c.getColumnIndex(Messages.STATUS));
+
+        recipients = new ArrayList<String>(1);
+
+        String peer = c.getString(c.getColumnIndex(Messages.PEER));
+        int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));
+        if (direction == Messages.DIRECTION_OUT) {
+            sender = "Me";
+            recipients.add(peer);
+        }
+        else {
+            sender = peer;
+            // TODO
+            recipients.add("Me");
+        }
+
+        // TODO groups??
     }
 
     public static AbstractMessage<?> fromBundle(Bundle b) {
         Log.w("AbstractMessage/fromBundle", "mime=" + b.getString(MSG_MIME));
         if (PlainTextMessage.MIME_TYPE.equals(b.getString(MSG_MIME))) {
-            Log.w("AbstractMessage/fromBundle", "content=" + b.getString(MSG_CONTENT));
             PlainTextMessage msg = new PlainTextMessage();
+            msg.populateFromBundle(b);
+            return msg;
+        }
+        else if (ReceiptMessage.MIME_TYPE.equals(b.getString(MSG_MIME))) {
+            ReceiptMessage msg = new ReceiptMessage();
             msg.populateFromBundle(b);
             return msg;
         }
 
         return null;
     }
+
+    public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
+        if (PlainTextMessage.MIME_TYPE.equals(cursor.getString(cursor.getColumnIndex(Messages.MIME)))) {
+            PlainTextMessage msg = new PlainTextMessage();
+            msg.populateFromCursor(cursor);
+            return msg;
+        }
+
+        return null;
+    }
+
+    public static void startQuery(AsyncQueryHandler handler, int token, long threadId) {
+        // cancel previous operations
+        handler.cancelOperation(token);
+        handler.startQuery(token, null, Messages.CONTENT_URI,
+                MESSAGE_LIST_PROJECTION, "thread_id = ?", new String[] { String.valueOf(threadId) },
+                    Messages.DEFAULT_SORT_ORDER);
+    }
+
+    public static void startQuery(AsyncQueryHandler handler, int token, String peer) {
+        // cancel previous operations
+        handler.cancelOperation(token);
+        handler.startQuery(token, null, Messages.CONTENT_URI,
+                MESSAGE_LIST_PROJECTION, "peer = ?", new String[] { peer },
+                    Messages.DEFAULT_SORT_ORDER);
+    }
+
 }

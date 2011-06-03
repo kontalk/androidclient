@@ -78,4 +78,8 @@ public class ConversationListItem extends RelativeLayout {
     public final void unbind() {
         // TODO unbind (contact?)
     }
+
+    public Conversation getConversation() {
+        return mConversation;
+    }
 }

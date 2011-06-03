@@ -62,7 +62,6 @@ public class EndpointServer {
         if (content != null) {
             req = new HttpPost(uri);
             req.addHeader("Content-Type", "text/xml");
-            req.addHeader("Content-Length", String.valueOf(content.length()));
             ((HttpPost)req).setEntity(new StringEntity(content, "UTF-8"));
         }
         else

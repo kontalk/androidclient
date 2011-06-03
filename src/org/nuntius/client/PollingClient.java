@@ -39,7 +39,16 @@ public class PollingClient extends AbstractClient {
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
+
+            /*
+            String xmlContent = EntityUtils.toString(response.getEntity());
+            StringReader reader = new StringReader(xmlContent);
+            InputSource inputSource = new InputSource(reader);
+            */
+
             Document doc = builder.parse(response.getEntity().getContent());
+            //reader.close();
+
             Element body = doc.getDocumentElement();
             NodeList children = body.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
@@ -74,10 +83,17 @@ public class PollingClient extends AbstractClient {
                         // add the message to the list
                         AbstractMessage<?> msg = null;
 
+                        // plain text message
                         if (mime == null || PlainTextMessage.MIME_TYPE.equals(mime)) {
                             msg = new PlainTextMessage(id, from, text, group);
                         }
-                        // else other mime types
+
+                        // message receipt
+                        else if (ReceiptMessage.MIME_TYPE.equals(mime)) {
+                            msg = new ReceiptMessage(id, from, text, group);
+                        }
+
+                        // TODO else other mime types
 
                         if (msg != null) {
                             if (list == null)

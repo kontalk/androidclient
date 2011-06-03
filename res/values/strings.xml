@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Nuntius</string>
     <string name="service_name">Message Center</string>
     <string name="new_message">New message</string>
@@ -16,4 +16,7 @@
     <string name="msg_validating_phone">Validating phone number...</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="refreshing">Refreshing...</string>
+    <string name="name_colon"><b><xliff:g id="name" example="Me">%s</xliff:g></b>": "</string>
+    <string name="sent_on">"Sent: <xliff:g id="date">%s</xliff:g>"</string>
+    <string name="received_on">"Received: <xliff:g id="date">%s</xliff:g>"</string>
 </resources>

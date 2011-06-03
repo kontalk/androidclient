@@ -7,6 +7,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
+import org.nuntius.client.ReceiptMessage;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.provider.MyMessages.Messages;
 
@@ -27,6 +28,8 @@ import android.util.Log;
  */
 public class MessageCenterService extends Service
         implements MessageListener, ResponseListener {
+
+    private static final String TAG = MessageCenterService.class.getSimpleName();
 
     public static final String MESSAGE_RECEIVED = "org.nuntius.MESSAGE_RECEIVED";
 
@@ -106,19 +109,37 @@ public class MessageCenterService extends Service
         synchronized (mReceived) {
             for (AbstractMessage<?> msg : messages) {
                 if (!mReceived.contains(msg.getId())) {
+                    // the message need to be confirmed
                     list.add(new BasicNameValuePair("i[]", msg.getId()));
                     mReceived.add(msg.getId());
 
-                    // save to local storage
-                    ContentValues values = new ContentValues();
-                    values.put(Messages.MESSAGE_ID, msg.getId());
-                    values.put(Messages.PEER, msg.getSender());
-                    values.put(Messages.MIME, msg.getMime());
-                    values.put(Messages.CONTENT, msg.getTextContent());
-                    values.put(Messages.UNREAD, true);
-                    values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
-                    values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                    getContentResolver().insert(Messages.CONTENT_URI, values);
+                    // do not store receipts...
+                    if (!(msg instanceof ReceiptMessage)) {
+
+                        // save to local storage
+                        ContentValues values = new ContentValues();
+                        values.put(Messages.MESSAGE_ID, msg.getId());
+                        values.put(Messages.PEER, msg.getSender());
+                        values.put(Messages.MIME, msg.getMime());
+                        values.put(Messages.CONTENT, msg.getTextContent());
+                        values.put(Messages.UNREAD, true);
+                        values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+                        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+                        getContentResolver().insert(Messages.CONTENT_URI, values);
+                    }
+
+                    // we have a receipt, update the corresponding message
+                    else {
+                        ReceiptMessage msg2 = (ReceiptMessage) msg;
+                        Log.w(TAG, "receipt for message " + msg2.getMessageId());
+
+                        ContentValues values = new ContentValues();
+                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                        values.put(Messages.TIMESTAMP, msg.getServerTimestamp().getTime());
+                        getContentResolver().update(Messages.CONTENT_URI, values,
+                                Messages.MESSAGE_ID + " = ?",
+                                new String[] { msg2.getMessageId() });
+                    }
 
                     // broadcast message
                     broadcastMessage(msg);
@@ -127,7 +148,7 @@ public class MessageCenterService extends Service
         }
 
         if (list.size() > 0) {
-            Log.w(getClass().getSimpleName(), "pushing receive confirmation");
+            Log.w(TAG, "pushing receive confirmation");
             RequestJob job = new RequestJob("received", list);
             mRequestWorker.push(job);
         }
@@ -135,7 +156,7 @@ public class MessageCenterService extends Service
 
     @Override
     public synchronized void response(RequestJob job, List<StatusResponse> statuses) {
-        Log.w(getClass().getSimpleName(), "statuses: " + statuses);
+        Log.w(TAG, "statuses: " + statuses);
 
         // received command
         if ("received".equals(job.getCommand())) {

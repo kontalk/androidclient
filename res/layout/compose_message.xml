@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@android:color/white">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -12,15 +13,15 @@
 
         <ListView android:id="@android:id/list"
             style="?android:attr/listViewWhiteStyle"
+            android:cacheColorHint="@android:color/white"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_weight="1.0"
-            android:drawSelectorOnTop="true"
+            android:drawSelectorOnTop="false"
             android:transcriptMode="alwaysScroll"
             android:scrollbarAlwaysDrawVerticalTrack="true"
             android:scrollbarStyle="insideInset"
             android:stackFromBottom="true"
-            android:visibility="gone"
             android:fadingEdge="none"
             android:layout_marginBottom="1dip"
             />
@@ -33,9 +34,10 @@
             android:paddingTop="5dip"
             android:paddingBottom="5dip"
             android:paddingLeft="5dip"
-            android:paddingRight="5dip">
+            android:paddingRight="5dip"
+            android:background="@drawable/bottombar_landscape_565">
                 <EditText
-                    android:id="@+id/embedded_text_editor"
+                    android:id="@+id/text_editor"
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
                     android:layout_weight="1.0"
@@ -63,7 +65,7 @@
                         android:layout_height="0dip"
                         android:layout_weight="1.0"
                         style="?android:attr/buttonStyle"
-                        android:nextFocusLeft="@+id/embedded_text_editor"
+                        android:nextFocusLeft="@+id/text_editor"
                         android:text="Send"
                     />
 

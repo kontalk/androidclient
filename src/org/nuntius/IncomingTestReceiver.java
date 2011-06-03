@@ -2,6 +2,7 @@ package org.nuntius;
 
 import org.nuntius.R;
 import org.nuntius.client.AbstractMessage;
+import org.nuntius.client.ReceiptMessage;
 import org.nuntius.service.MessageCenterService;
 import org.nuntius.ui.ConversationList;
 
@@ -25,19 +26,24 @@ public class IncomingTestReceiver extends BroadcastReceiver {
         if (MessageCenterService.MESSAGE_RECEIVED.equals(intent.getAction())) {
             Bundle b = intent.getExtras();
             AbstractMessage<?> msg = AbstractMessage.fromBundle(b);
-            Log.w(getClass().getSimpleName(), "class=" + msg.getClass().getName());
-            Log.w(getClass().getSimpleName(), "content=" + msg.getTextContent());
+            if (!(msg instanceof ReceiptMessage)) {
+                Log.w(getClass().getSimpleName(), "class=" + msg.getClass().getName());
+                Log.w(getClass().getSimpleName(), "content=" + msg.getTextContent());
 
-            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            Notification no = new Notification(R.drawable.icon, msg.getTextContent(), System.currentTimeMillis());
+                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                Notification no = new Notification(R.drawable.icon, msg.getTextContent(), System.currentTimeMillis());
 
-            CharSequence contentTitle = "New message";
-            CharSequence contentText = msg.getTextContent();
-            Intent notificationIntent = new Intent(context, ConversationList.class);
-            PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
-            no.setLatestEventInfo(context.getApplicationContext(), contentTitle, contentText, contentIntent);
+                CharSequence contentTitle = "New message";
+                CharSequence contentText = msg.getTextContent();
+                Intent notificationIntent = new Intent(context, ConversationList.class);
+                PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+                no.defaults |= Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS;
+                no.flags |= Notification.FLAG_SHOW_LIGHTS;
 
-            nm.notify(1, no);
+                no.setLatestEventInfo(context.getApplicationContext(), contentTitle, contentText, contentIntent);
+
+                nm.notify(1, no);
+            }
         }
     }
 

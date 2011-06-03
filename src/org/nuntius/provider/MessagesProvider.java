@@ -37,9 +37,11 @@ public class MessagesProvider extends ContentProvider {
     private static final String TABLE_THREADS = "threads";
 
     private static final int THREADS = 1;
-    private static final int THREADS_PEER = 2;
-    private static final int MESSAGES = 3;
-    private static final int MESSAGES_ID = 4;
+    private static final int THREADS_ID = 2;
+    private static final int THREADS_PEER = 3;
+    private static final int MESSAGES = 4;
+    private static final int MESSAGES_ID = 5;
+    private static final int MESSAGES_SERVERID = 6;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -59,7 +61,8 @@ public class MessagesProvider extends ContentProvider {
             "content TEXT," +
             "direction INTEGER, " +
             "unread INTEGER, " +
-            "timestamp INTEGER" +
+            "timestamp INTEGER," +
+            "status INTEGER" +
             ");";
 
         // this table will contain the latest message from each conversation
@@ -136,12 +139,24 @@ public class MessagesProvider extends ContentProvider {
             case MESSAGES_ID:
                 qb.setTables(TABLE_MESSAGES);
                 qb.setProjectionMap(messagesProjectionMap);
+                qb.appendWhere(Messages._ID + "=" + uri.getPathSegments().get(1));
+                break;
+
+            case MESSAGES_SERVERID:
+                qb.setTables(TABLE_MESSAGES);
+                qb.setProjectionMap(messagesProjectionMap);
                 qb.appendWhere(Messages.MESSAGE_ID + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
 
             case THREADS:
                 qb.setTables(TABLE_THREADS);
                 qb.setProjectionMap(threadsProjectionMap);
+                break;
+
+            case THREADS_ID:
+                qb.setTables(TABLE_THREADS);
+                qb.setProjectionMap(threadsProjectionMap);
+                qb.appendWhere(Threads._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
             case THREADS_PEER:
@@ -177,7 +192,7 @@ public class MessagesProvider extends ContentProvider {
         long rowId = db.insert(TABLE_MESSAGES, null, values);
 
         if (rowId > 0) {
-            Uri msgUri = Messages.getUri(values.getAsString(Messages.MESSAGE_ID));
+            Uri msgUri = ContentUris.withAppendedId(uri, rowId);
             getContext().getContentResolver().notifyChange(msgUri, null);
             Log.w(TAG, "messages table inserted, id = " + rowId);
 
@@ -206,6 +221,7 @@ public class MessagesProvider extends ContentProvider {
 
         // this will be recalculated by the trigger
         values.remove(Messages.UNREAD);
+        values.remove(Messages.STATUS);
 
         // try to insert
         try {
@@ -232,10 +248,39 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
-            String[] selectionArgs) {
-        // TODO update
-        return 0;
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        if (values == null) { throw new IllegalArgumentException("No data"); }
+
+        String where;
+        String[] args;
+
+        switch (sUriMatcher.match(uri)) {
+            case MESSAGES:
+                where = selection;
+                args = selectionArgs;
+                break;
+
+            case MESSAGES_ID:
+                long _id = ContentUris.parseId(uri);
+                where = "_id = ?";
+                args = new String[] { String.valueOf(_id) };
+                break;
+
+            case MESSAGES_SERVERID:
+                String sid = uri.getPathSegments().get(1);
+                where = "msg_id = ?";
+                args = new String[] { String.valueOf(sid) };
+
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int rows = db.update(TABLE_MESSAGES, values, where, args);
+
+        getContext().getContentResolver().notifyChange(uri, null);
+        Log.w(TAG, "messages table updated, affected: " + rows);
+        return rows;
     }
 
     @Override
@@ -264,9 +309,11 @@ public class MessagesProvider extends ContentProvider {
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_THREADS, THREADS);
+        sUriMatcher.addURI(AUTHORITY, TABLE_THREADS + "/#", THREADS_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_THREADS + "/*", THREADS_PEER);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES, MESSAGES);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/#", MESSAGES_ID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/*", MESSAGES_SERVERID);
 
         messagesProjectionMap = new HashMap<String, String>();
         messagesProjectionMap.put(Messages._ID, Messages._ID);
@@ -278,6 +325,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
         messagesProjectionMap.put(Messages.DIRECTION, Messages.DIRECTION);
         messagesProjectionMap.put(Messages.TIMESTAMP, Messages.TIMESTAMP);
+        messagesProjectionMap.put(Messages.STATUS, Messages.STATUS);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
