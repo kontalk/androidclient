@@ -76,14 +76,17 @@ public class MessageListItem extends RelativeLayout {
         String timestamp;
         switch (mMessage.getStatus()) {
             case Messages.STATUS_SENDING:
-                timestamp = "Sending...";
+                timestamp = getContext().getString(R.string.sending);
                 break;
             case Messages.STATUS_RECEIVED:
                 timestamp = String.format(getContext().getString(R.string.received_on),
                         MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp()));
                 break;
             case Messages.STATUS_NOTACCEPTED:
-                timestamp = "Error";
+                timestamp = getContext().getString(R.string.send_refused);
+                break;
+            case Messages.STATUS_ERROR:
+                timestamp = getContext().getString(R.string.send_error);
                 break;
             case Messages.STATUS_SENT:
             default:

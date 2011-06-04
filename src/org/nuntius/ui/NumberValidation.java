@@ -1,16 +1,21 @@
 package org.nuntius.ui;
 
 import org.nuntius.R;
+import org.nuntius.authenticator.Authenticator;
 import org.nuntius.client.EndpointServer;
 import org.nuntius.client.NumberValidator;
 import org.nuntius.client.NumberValidator.NumberValidatorListener;
 
-import android.app.Activity;
+import android.accounts.Account;
+import android.accounts.AccountAuthenticatorActivity;
+import android.accounts.AccountManager;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -26,18 +31,48 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
-public class NumberValidation extends Activity implements NumberValidatorListener {
+public class NumberValidation extends AccountAuthenticatorActivity implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
 
+    public static final String ACTION_LOGIN = "org.nuntius.sync.LOGIN";
+
+    public static final String PARAM_AUTHTOKEN_TYPE = "authtokenType";
+    public static final String PARAM_CONFIRMCREDENTIALS = "confirmCredentials";
+    public static final String PARAM_PHONENUMBER = "phoneNumber";
+
+    private AccountManager mAccountManager;
     private EditText mPhone;
     private Button mButton;
     private ProgressDialog mProgress;
     private NumberValidator mValidator;
 
+    private String mAuthtoken;
+    private String mAuthtokenType;
+    private String mPhoneNumber;
+
+    /**
+     * If set we are just checking that the user knows their credentials; this
+     * doesn't cause the user's password to be changed on the device.
+     */
+    private Boolean mConfirmCredentials = false;
+
+    /** Was the original caller asking for an entirely new account? */
+    protected boolean mRequestNewAccount = false;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
+
+        mAccountManager = AccountManager.get(this);
+
+        final Intent intent = getIntent();
+        mPhoneNumber = intent.getStringExtra(PARAM_PHONENUMBER);
+        mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
+        mRequestNewAccount = (mPhoneNumber == null);
+        mConfirmCredentials =
+            intent.getBooleanExtra(PARAM_CONFIRMCREDENTIALS, false);
 
         mPhone = (EditText) findViewById(R.id.phone_number);
         mPhone.setOnEditorActionListener(new OnEditorActionListener() {
@@ -111,6 +146,8 @@ public class NumberValidation extends Activity implements NumberValidatorListene
             return;
         }
 
+        mPhoneNumber = phone;
+
         // start async request
         Log.i(TAG, "phone number checked, sending validation request");
         if (mProgress == null) {
@@ -168,22 +205,65 @@ public class NumberValidation extends Activity implements NumberValidatorListene
         abort();
     }
 
+    protected void finishLogin(String token) {
+        Log.i(TAG, "finishLogin()");
+        final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
+        mAuthtoken = token;
+
+        if (mRequestNewAccount) {
+            // the password is actually the auth token
+            mAccountManager.addAccountExplicitly(account, mAuthtoken, null);
+            // Set contacts sync for this account.
+            ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
+        } else {
+            // TODO what here??
+        }
+
+        // send back result
+        final Intent intent = new Intent();
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, mPhoneNumber);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);
+        if (mAuthtokenType != null
+            && mAuthtokenType.equals(Authenticator.AUTHTOKEN_TYPE)) {
+            intent.putExtra(AccountManager.KEY_AUTHTOKEN, mAuthtoken);
+        }
+        setAccountAuthenticatorResult(intent.getExtras());
+        setResult(RESULT_OK, intent);
+
+        finish();
+    }
+
+    protected void finishConfirmCredentials(boolean result) {
+        Log.i(TAG, "finishConfirmCredentials()");
+
+        // the password is actually the auth token
+        final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
+        mAccountManager.setPassword(account, mAuthtoken);
+
+        final Intent intent = new Intent();
+        intent.putExtra(AccountManager.KEY_BOOLEAN_RESULT, result);
+        setAccountAuthenticatorResult(intent.getExtras());
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
     @Override
-    public void onAuthTokenReceived(NumberValidator v, String token) {
+    public void onAuthTokenReceived(NumberValidator v, final String token) {
         Log.i(TAG, "got authorization token! (" + token + ")");
         abort(true);
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
+                if (!mConfirmCredentials) {
+                    Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
+                    finishLogin(token);
+                }
+                else {
+                    finishConfirmCredentials(true);
+                }
             }
         });
-
-        MessagingPreferences.setAuthToken(this, token);
-        // call the ConversationList :)
-        startActivity(new Intent(this, ConversationList.class));
-        finish();
     }
 
     @Override

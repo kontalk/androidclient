@@ -1,23 +1,32 @@
 package org.nuntius.ui;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.nuntius.R;
 import org.nuntius.client.AbstractMessage;
-import org.nuntius.client.EndpointServer;
 import org.nuntius.client.MessageSender;
+import org.nuntius.client.StatusResponse;
 import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.service.MessageCenterService;
+import org.nuntius.service.RequestJob;
+import org.nuntius.service.ResponseListener;
+import org.nuntius.service.MessageCenterService.MessageCenterInterface;
 
 import android.app.ListActivity;
 import android.content.AsyncQueryHandler;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -40,8 +49,10 @@ public class ComposeMessage extends ListActivity {
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
 
-    // used on the launch intent to pass the thread ID
+    /** Used on the launch intent to pass the thread ID. */
     public static final String MESSAGE_THREAD_ID = "org.nuntius.message.threadId";
+    /** Used on the launch intent to pass the peer of the thread. */
+    public static final String MESSAGE_THREAD_PEER = "org.nuntius.message.peer";
 
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
@@ -60,37 +71,79 @@ public class ComposeMessage extends ListActivity {
         }
     };
 
-    private final MessageSender.MessageSenderListener mMessageSenderListener =
-        new MessageSender.MessageSenderListener() {
-            /** Updates the message id and the status of the message. */
-            @Override
-            public void onMessageSent(MessageSender s, String msgId) {
-                Uri uri = s.getUri();
-                ContentValues values = new ContentValues(1);
-                values.put(Messages.MESSAGE_ID, msgId);
-                values.put(Messages.STATUS, Messages.STATUS_SENT);
-                int n = getContentResolver().update(uri, values, null, null);
-                Log.i(TAG, "message sent and updated (" + n + ")");
-            }
+    /** Used by the service binder to receive responses from the request worker. */
+    private final ResponseListener mMessageSenderListener =
+        new ResponseListener() {
+        @Override
+        public void response(RequestJob job, List<StatusResponse> res) {
+            MessageSender job2 = (MessageSender) job;
+            if (res != null && res.size() > 0) {
+                Uri uri = job2.getUri();
+                StatusResponse st = res.get(0);
 
-            @Override
-            public void onMessageError(MessageSender s, int reason) {
-                Uri uri = s.getUri();
-                ContentValues values = new ContentValues(1);
-                values.put(Messages.STATUS, Messages.STATUS_NOTACCEPTED);
-                getContentResolver().update(uri, values, null, null);
-                Log.w(TAG, "message not accepted by server and updated (" + reason + ")");
-            }
+                // message accepted!
+                if (st.code == StatusResponse.STATUS_SUCCESS) {
+                    Map<String, String> extra = st.extra;
+                    if (extra != null) {
+                        String msgId = extra.get("i");
+                        if (!TextUtils.isEmpty(msgId)) {
+                            ContentValues values = new ContentValues(1);
+                            values.put(Messages.MESSAGE_ID, msgId);
+                            values.put(Messages.STATUS, Messages.STATUS_SENT);
+                            int n = getContentResolver().update(uri, values, null, null);
+                            Log.i(TAG, "message sent and updated (" + n + ")");
+                        }
+                    }
+                }
 
-            @Override
-            public void onError(MessageSender s, Throwable e) {
-                Uri uri = s.getUri();
-                ContentValues values = new ContentValues(1);
-                values.put(Messages.STATUS, Messages.STATUS_NOTACCEPTED);
-                getContentResolver().update(uri, values, null, null);
-                Log.e(TAG, "error sending message", e);
+                // message refused!
+                else {
+                    ContentValues values = new ContentValues(1);
+                    values.put(Messages.STATUS, Messages.STATUS_NOTACCEPTED);
+                    getContentResolver().update(uri, values, null, null);
+                    Log.w(TAG, "message not accepted by server and updated (" + st.code + ")");
+                }
             }
-        };
+            else {
+                // empty response!? :O
+                error(job, new IllegalArgumentException("empty response"));
+            }
+        }
+
+        @Override
+        public void error(RequestJob job, Throwable e) {
+            MessageSender job2 = (MessageSender) job;
+            Uri uri = job2.getUri();
+            ContentValues values = new ContentValues(1);
+            values.put(Messages.STATUS, Messages.STATUS_ERROR);
+            getContentResolver().update(uri, values, null, null);
+            Log.e(TAG, "error sending message", e);
+        }
+    };
+
+    /** Used for binding to the message center to send messages. */
+    private class ComposerServiceConnection implements ServiceConnection {
+        public final MessageSender job;
+        private MessageCenterService service;
+
+        public ComposerServiceConnection(String userId, String text, Uri uri) {
+            job = new MessageSender(userId, text, uri);
+            job.setListener(mMessageSenderListener);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            service = null;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder ibinder) {
+            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
+            service = binder.getService();
+            service.sendMessage(job);
+            unbindService(this);
+        }
+    }
 
     /** Called when the activity is first created. */
     @Override
@@ -134,12 +187,13 @@ public class ComposeMessage extends ListActivity {
                         imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
 
                         // send the message!
-                        Context ctx = ComposeMessage.this;
-                        EndpointServer server = new EndpointServer(MessagingPreferences.getServerURI(ctx));
-                        String token = MessagingPreferences.getAuthToken(ctx);
-                        MessageSender sender = new MessageSender(ComposeMessage.this, server, token, userId, text, newMsg);
-                        sender.setListener(mMessageSenderListener);
-                        sender.start();
+                        ComposerServiceConnection conn = new ComposerServiceConnection(userId, text, newMsg);
+                        if (!bindService(
+                                new Intent(getApplicationContext(), MessageCenterService.class),
+                                conn, Context.BIND_AUTO_CREATE)) {
+                            // cannot bind :(
+                            mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to service"));
+                        }
                     }
                     else {
                         Toast.makeText(ComposeMessage.this,
@@ -168,6 +222,9 @@ public class ComposeMessage extends ListActivity {
 
         Intent intent = getIntent();
         if (intent != null) {
+            userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
+            setTitle(userId);
+
             threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
             if (threadId > 0)
                 startQuery();
@@ -205,12 +262,6 @@ public class ComposeMessage extends ListActivity {
         protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
             switch (token) {
             case MESSAGE_LIST_QUERY_TOKEN:
-                if (cursor.moveToFirst()) {
-                    // FIXME lol...
-                    userId = cursor.getString(cursor.getColumnIndex(Messages.PEER));
-                    setTitle(userId);
-                    cursor.moveToPosition(-1);
-                }
                 mListAdapter.changeCursor(cursor);
                 setProgressBarIndeterminateVisibility(false);
                 break;

@@ -5,16 +5,26 @@ import java.util.List;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.nuntius.authenticator.Authenticator;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
+import org.nuntius.client.MessageSender;
 import org.nuntius.client.ReceiptMessage;
 import org.nuntius.client.StatusResponse;
+import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.ui.MessagingPreferences;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.OnAccountsUpdateListener;
 import android.app.Service;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -35,6 +45,7 @@ public class MessageCenterService extends Service
 
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
+    private Account mAccount;
 
     /**
      * This list will contain the received messages - avoiding multiple
@@ -42,12 +53,40 @@ public class MessageCenterService extends Service
      */
     private List<String> mReceived = new ArrayList<String>();
 
+    private AccountManager mAccountManager;
+    private final OnAccountsUpdateListener mAccountsListener = new OnAccountsUpdateListener() {
+        @Override
+        public void onAccountsUpdated(Account[] accounts) {
+            Log.w(TAG, "accounts have been changed, checking");
+
+            // restart workers
+            Account my = null;
+            for (int i = 0; i < accounts.length; i++) {
+                if (accounts[i].type.equals(Authenticator.ACCOUNT_TYPE)) {
+                    my = accounts[i];
+                    break;
+                }
+            }
+
+            // account removed!!! Shutdown everything.
+            if (my == null) {
+                Log.e(TAG, "my account has been removed, shutting down");
+                // delete all messages
+                MessagesProvider.deleteDatabase(MessageCenterService.this);
+                stopSelf();
+            }
+        }
+    };
+
+    private Handler mHandler;
+    private final IBinder mBinder = new MessageCenterInterface();
+
     /**
      * Not used.
      */
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
 
     /**
@@ -62,24 +101,33 @@ public class MessageCenterService extends Service
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             Bundle extras = intent.getExtras();
-            String token = (String) extras.get(EndpointServer.HEADER_AUTH_TOKEN);
             String serverUrl = (String) extras.get(EndpointServer.class.getName());
             EndpointServer server = new EndpointServer(serverUrl);
 
-            // activate request worker if necessary
-            if (mRequestWorker == null) {
-                mRequestWorker = new RequestWorker(server);
-                mRequestWorker.setResponseListener(this);
-                mRequestWorker.setAuthToken(token);
-                mRequestWorker.start();
+            mAccount = Authenticator.getDefaultAccount(this);
+            if (mAccount == null) {
+                stopSelf();
             }
+            else {
+                // check changing accounts
+                if (mAccountManager == null) {
+                    mAccountManager = AccountManager.get(this);
+                    mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, mHandler, true);
+                }
 
-            // start polling thread if needed
-            if (mPollingThread == null) {
-                mPollingThread = new PollingThread(server);
-                mPollingThread.setMessageListener(this);
-                mPollingThread.setAuthToken(token);
-                mPollingThread.start();
+                // activate request worker if necessary
+                if (mRequestWorker == null) {
+                    mRequestWorker = new RequestWorker(this, server);
+                    mRequestWorker.setResponseListener(this);
+                    mRequestWorker.start();
+                }
+
+                // start polling thread if needed
+                if (mPollingThread == null) {
+                    mPollingThread = new PollingThread(this, server);
+                    mPollingThread.setMessageListener(this);
+                    mPollingThread.start();
+                }
             }
         }
 
@@ -88,6 +136,11 @@ public class MessageCenterService extends Service
 
     @Override
     public void onDestroy() {
+        if (mAccountManager != null) {
+            mAccountManager.removeOnAccountsUpdatedListener(mAccountsListener);
+            mAccountManager = null;
+        }
+
         // stop polling thread
         if (mPollingThread != null) {
             mPollingThread.shutdown();
@@ -154,6 +207,11 @@ public class MessageCenterService extends Service
         }
     }
 
+    /** Sends a message using the request worker. */
+    public void sendMessage(MessageSender job) {
+        mRequestWorker.push(job);
+    }
+
     @Override
     public synchronized void response(RequestJob job, List<StatusResponse> statuses) {
         Log.w(TAG, "statuses: " + statuses);
@@ -184,9 +242,33 @@ public class MessageCenterService extends Service
         }
     }
 
+    @Override
+    public void error(RequestJob job, Throwable e) {
+        // TODO ehm :)
+        Log.e(TAG, "request error", e);
+    }
+
+
     private void broadcastMessage(AbstractMessage<?> message) {
         Intent msg = new Intent(MESSAGE_RECEIVED);
         msg.putExtras(message.toBundle());
         sendBroadcast(msg);
+    }
+
+    /** Starts the message center. */
+    public static void startMessageCenter(Context context) {
+        Log.i(TAG, "starting message center");
+        final Intent intent = new Intent(context, MessageCenterService.class);
+
+        // get the URI from the preferences
+        String uri = MessagingPreferences.getServerURI(context);
+        intent.putExtra(EndpointServer.class.getName(), uri);
+        context.startService(intent);
+    }
+
+    public final class MessageCenterInterface extends Binder {
+        public MessageCenterService getService() {
+            return MessageCenterService.this;
+        }
     }
 }

@@ -10,6 +10,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -93,6 +94,10 @@ public class EndpointServer {
         // execute!
         try {
             HttpClient client = new DefaultHttpClient();
+            // handle redirects :)
+            client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+            // Android bug caused by Lighttpd
+            client.getParams().setBooleanParameter("http.protocol.expect-continue", false);
             return client.execute(request);
         }
         catch (ClientProtocolException e) {

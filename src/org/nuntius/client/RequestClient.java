@@ -31,7 +31,7 @@ public class RequestClient extends AbstractClient {
     }
 
     /**
-     * Polls the server for new messages.
+     * Sends a request to the server.
      * @throws IOException
      */
     public List<StatusResponse> request(String cmd, List<NameValuePair> params,
@@ -45,6 +45,17 @@ public class RequestClient extends AbstractClient {
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
+
+            /*
+            String xmlContent = EntityUtils.toString(response.getEntity());
+            Log.e("AAAAHHH!!!", xmlContent);
+            StringReader reader = new StringReader(xmlContent);
+            InputSource inputSource = new InputSource(reader);
+
+            Document doc = builder.parse(inputSource);
+            reader.close();
+            */
+
             Document doc = builder.parse(response.getEntity().getContent());
             Element body = doc.getDocumentElement();
             NodeList children = body.getChildNodes();

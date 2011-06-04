@@ -19,4 +19,9 @@
     <string name="name_colon"><b><xliff:g id="name" example="Me">%s</xliff:g></b>": "</string>
     <string name="sent_on">"Sent: <xliff:g id="date">%s</xliff:g>"</string>
     <string name="received_on">"Received: <xliff:g id="date">%s</xliff:g>"</string>
+    <string name="confirm_delete_all">Delete all threads</string>
+    <string name="confirm_will_delete_all">All threads will be deleted.</string>
+    <string name="sending">Sending...</string>
+    <string name="send_error">Error</string>
+    <string name="send_refused">Not accepted</string>
 </resources>

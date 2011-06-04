@@ -1,20 +1,21 @@
 package org.nuntius.ui;
 
 import org.nuntius.R;
-import org.nuntius.client.EndpointServer;
+import org.nuntius.authenticator.Authenticator;
 import org.nuntius.data.Conversation;
+import org.nuntius.provider.MessagesProvider;
 import org.nuntius.service.MessageCenterService;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +31,8 @@ public class ConversationList extends ListActivity {
     private static final String TAG = ConversationList.class.getSimpleName();
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
+
+    private static final int REQUEST_AUTHENTICATE = 7720;
 
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
@@ -81,7 +84,7 @@ public class ConversationList extends ListActivity {
                 onSearchRequested();
                 break;
             case R.id.menu_delete_all:
-                // TODO deleteAll();
+                deleteAll();
                 break;
             case R.id.menu_settings: {
                 Intent intent = new Intent(this, MessagingPreferences.class);
@@ -92,6 +95,20 @@ public class ConversationList extends ListActivity {
                 return true;
         }
         return false;
+    }
+
+    private void deleteAll() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.confirm_delete_all);
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setMessage(R.string.confirm_will_delete_all);
+        builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                MessagesProvider.deleteDatabase(ConversationList.this);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
     }
 
     private void startQuery() {
@@ -124,41 +141,30 @@ public class ConversationList extends ListActivity {
     protected void onResume() {
         super.onResume();
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefs.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                if ("pref_network_uri".equals(key)) {
-                    // TODO just restart service with new server?
-                }
-            }
-        });
-
-        // check if token is present first -- need to authenticate if not
-        String token = prefs.getString("pref_auth_token", null);
-        if (token == null) {
-            // start number validation activity
-            startActivity(new Intent(this, NumberValidation.class));
-            // we are not needed anymore (for now)
-            finish();
+        if (Authenticator.getDefaultAccount(this) == null) {
+            startActivityForResult(new Intent(this, NumberValidation.class), REQUEST_AUTHENTICATE);
+            // finish for now...
             return;
         }
 
-        // we have a token, start the message center
-        Log.i(TAG, "starting service");
-        Intent intent = new Intent(this, MessageCenterService.class);
-
-        // get the URI from the preferences
-        String uri = prefs.getString("pref_network_uri", "http://10.0.2.2/serverimpl1");
-        intent.putExtra(EndpointServer.class.getName(), uri);
-        intent.putExtra(EndpointServer.HEADER_AUTH_TOKEN, token);
-
-        startService(intent);
+        // start the message center
+        MessageCenterService.startMessageCenter(getApplicationContext());
 
         // check if contacts list has already been checked
         if (!MessagingPreferences.getContactsChecked(this)) {
             // TODO start the contacts list checker thread
+        }
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_AUTHENTICATE) {
+            // ok, start message center
+            if (resultCode == RESULT_OK)
+                MessageCenterService.startMessageCenter(this);
+            // failed - exit
+            else
+                finish();
         }
     }
 
@@ -185,6 +191,7 @@ public class ConversationList extends ListActivity {
         if (conv != null) {
             Intent intent = new Intent(this, ComposeMessage.class);
             intent.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
+            intent.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
             startActivity(intent);
         }
         // TODO new message activity :)

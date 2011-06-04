@@ -18,9 +18,10 @@ public final class MyMessages {
 
         // 0 is for incoming messages (no status of course)
         public static final int STATUS_SENDING = 1;
-        public static final int STATUS_NOTACCEPTED = 2;
-        public static final int STATUS_SENT = 3;
-        public static final int STATUS_RECEIVED = 4;
+        public static final int STATUS_ERROR = 2;
+        public static final int STATUS_NOTACCEPTED = 3;
+        public static final int STATUS_SENT = 4;
+        public static final int STATUS_RECEIVED = 5;
 
         /**
          * Builds a message {@link Uri}.

@@ -7,6 +7,7 @@ import org.nuntius.provider.MyMessages.Threads;
 
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -197,6 +198,7 @@ public class MessagesProvider extends ContentProvider {
             Log.w(TAG, "messages table inserted, id = " + rowId);
 
             updateThreads(db, initialValues);
+            db.close();
             return msgUri;
         }
 
@@ -270,6 +272,9 @@ public class MessagesProvider extends ContentProvider {
                 String sid = uri.getPathSegments().get(1);
                 where = "msg_id = ?";
                 args = new String[] { String.valueOf(sid) };
+                break;
+
+            // TODO cases for threads table
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
@@ -277,6 +282,7 @@ public class MessagesProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rows = db.update(TABLE_MESSAGES, values, where, args);
+        db.close();
 
         getContext().getContentResolver().notifyChange(uri, null);
         Log.w(TAG, "messages table updated, affected: " + rows);
@@ -285,8 +291,49 @@ public class MessagesProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // TODO update
-        return 0;
+        String table;
+        String where;
+        String[] args;
+
+        switch (sUriMatcher.match(uri)) {
+            case MESSAGES:
+                table = TABLE_MESSAGES;
+                where = selection;
+                args = selectionArgs;
+                break;
+
+            case MESSAGES_ID:
+                table = TABLE_MESSAGES;
+                long _id = ContentUris.parseId(uri);
+                where = "_id = ?";
+                args = new String[] { String.valueOf(_id) };
+                break;
+
+            case MESSAGES_SERVERID:
+                table = TABLE_MESSAGES;
+                String sid = uri.getPathSegments().get(1);
+                where = "msg_id = ?";
+                args = new String[] { String.valueOf(sid) };
+                break;
+
+            // TODO cases for threads table
+            case THREADS:
+                table = TABLE_THREADS;
+                where = null;
+                args = null;
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int rows = db.delete(table, where, args);
+        db.close();
+
+        getContext().getContentResolver().notifyChange(uri, null);
+        Log.w(TAG, "messages table deleted, affected: " + rows);
+        return rows;
     }
 
     @Override
@@ -304,6 +351,13 @@ public class MessagesProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
+    }
+
+    public static boolean deleteDatabase(Context ctx) {
+        ContentResolver c = ctx.getContentResolver();
+        c.delete(Messages.CONTENT_URI, null, null);
+        c.delete(Threads.CONTENT_URI, null, null);
+        return true;
     }
 
     static {

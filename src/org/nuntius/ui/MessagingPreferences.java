@@ -23,17 +23,6 @@ public class MessagingPreferences extends PreferenceActivity {
         return getString(context, "pref_network_uri", DEFAULT_SERVER_URI);
     }
 
-    public static String getAuthToken(Context context) {
-        return getString(context, "pref_auth_token", null);
-    }
-
-    public static void setAuthToken(Context context, String token) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit()
-            .putString("pref_auth_token", token)
-            .commit();
-    }
-
     /** Returns true if the contacts list has already been checked against the server. */
     public static boolean getContactsChecked(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
