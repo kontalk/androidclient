@@ -2,6 +2,7 @@ package org.nuntius.ui;
 
 import org.nuntius.R;
 import org.nuntius.authenticator.Authenticator;
+import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.service.MessageCenterService;
@@ -187,11 +188,17 @@ public class ConversationList extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        Conversation conv = ((ConversationListItem) v).getConversation();
+        ConversationListItem cv = (ConversationListItem) v;
+        Conversation conv = cv.getConversation();
         if (conv != null) {
             Intent intent = new Intent(this, ComposeMessage.class);
             intent.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
             intent.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
+            Contact contact = cv.getContact();
+            if (contact != null) {
+                intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
+                intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
+            }
             startActivity(intent);
         }
         // TODO new message activity :)

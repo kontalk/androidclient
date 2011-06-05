@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="lib" path="libs/libphonenumber-3.5.jar" sourcepath="/home/daniele/repository/android/eclispace/libphonenumber-3.5/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

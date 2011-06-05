@@ -4,6 +4,9 @@ import java.util.ArrayList;
 
 import org.nuntius.R;
 import org.nuntius.provider.MyUsers.Users;
+import org.nuntius.ui.MessageUtils;
+
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -22,6 +25,8 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.telephony.PhoneNumberUtils;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -65,12 +70,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Phone.TYPE + " = ?",
                 new String[] { contactId, String.valueOf(Phone.TYPE_MOBILE) }, null);
 
+            TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            String countryCode = "+" + PhoneNumberUtil.getInstance()
+                .getCountryCodeForRegion(tm.getSimCountryIso());
+
+            Log.w(TAG, "using default country code: " + tm.getSimCountryIso() + "(" + countryCode + ")");
+
             while (phones.moveToNext()) {
                 String number = phones.getString(phones.getColumnIndex(Phone.NUMBER));
                 int type = phones.getInt(phones.getColumnIndex(Phone.TYPE));
                 switch (type) {
                     case Phone.TYPE_MOBILE:
+                        number = PhoneNumberUtils.stripSeparators(number);
                         Log.w(TAG, "found mobile number " + number);
+
+                        // add country code if not found
+                        if (number.charAt(0) != '+')
+                            number = countryCode + number;
+
                         Cursor exists = mContentResolver.query(RawContacts.CONTENT_URI,
                             new String[] {
                                 RawContacts._ID,
@@ -160,6 +177,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             builder.withValue(RawContacts.ACCOUNT_TYPE, account.type);
             builder.withValue(RawContacts.SYNC1, username);
             builder.withValue(RawContacts.SYNC2, phone);
+
+            try {
+                builder.withValue(RawContacts.SYNC3, MessageUtils.sha1(phone));
+            }
+            catch (Exception e) {
+                Log.e(TAG, "sha1 digest failed", e);
+            }
+
             operationList.add(builder.build());
         }
 

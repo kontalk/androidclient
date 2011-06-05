@@ -1,8 +1,5 @@
 package org.nuntius.ui;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -57,6 +54,10 @@ public class ComposeMessage extends ListActivity {
     public static final String MESSAGE_THREAD_ID = "org.nuntius.message.threadId";
     /** Used on the launch intent to pass the peer of the thread. */
     public static final String MESSAGE_THREAD_PEER = "org.nuntius.message.peer";
+    /** Used on the launch intent to pass the name of the peer. */
+    public static final String MESSAGE_THREAD_USERNAME = "org.nuntius.message.user.name";
+    /** Used on the launch intent to pass the phone of the peer. */
+    public static final String MESSAGE_THREAD_USERPHONE = "org.nuntius.message.user.phone";
 
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
@@ -67,6 +68,8 @@ public class ComposeMessage extends ListActivity {
 
     /** The user we are talking to. */
     private String userId;
+    private String userName;
+    private String userPhone;
 
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener =
         new MessageListAdapter.OnContentChangedListener() {
@@ -252,12 +255,12 @@ public class ComposeMessage extends ListActivity {
                         ContactsContract.Data.DATA3
                         }, null, null, null);
                 if (c.moveToFirst()) {
-                    for (int i = 0; i < c.getColumnCount(); i++) {
-                        Log.i(TAG, "contact-" + i + ": " + c.getString(i));
-                    }
+                    userName = c.getString(0);
+                    userPhone = c.getString(1);
 
+                    // FIXME should it be retrieved from RawContacts.SYNC3 ??
                     try {
-                        userId = sha1(c.getString(1));
+                        userId = MessageUtils.sha1(userPhone);
                     }
                     catch (Exception e) {
                         Log.e(TAG, "sha1 digest failed", e);
@@ -272,6 +275,10 @@ public class ComposeMessage extends ListActivity {
                 c.close();
             }
             else {
+                userName = intent.getStringExtra(MESSAGE_THREAD_USERNAME);
+                if (userName == null)
+                    userName = userId;
+                userPhone = intent.getStringExtra(MESSAGE_THREAD_USERPHONE);
                 userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
                 threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
             }
@@ -279,36 +286,12 @@ public class ComposeMessage extends ListActivity {
             Log.i(TAG, "starting query with threadId " + threadId);
             if (threadId > 0)
                 startQuery();
-            setTitle(userId);
+
+            String title = userName;
+            if (userPhone != null)
+                title += " <" + userPhone + ">";
+            setTitle(title);
         }
-    }
-
-    private static String convertToHex(byte[] data) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < data.length; i++) {
-            int halfbyte = (data[i] >>> 4) & 0x0F;
-            int two_halfs = 0;
-            do {
-                if ((0 <= halfbyte) && (halfbyte <= 9))
-                    buf.append((char) ('0' + halfbyte));
-                else
-                    buf.append((char) ('a' + (halfbyte - 10)));
-                halfbyte = data[i] & 0x0F;
-            } while(two_halfs++ < 1);
-        }
-        return buf.toString();
-    }
-
-    private static String sha1(String text)
-            throws NoSuchAlgorithmException, UnsupportedEncodingException {
-
-        MessageDigest md;
-        md = MessageDigest.getInstance("SHA-1");
-        byte[] sha1hash = new byte[40];
-        md.update(text.getBytes("iso-8859-1"), 0, text.length());
-        sha1hash = md.digest();
-
-        return convertToHex(sha1hash);
     }
 
     @Override

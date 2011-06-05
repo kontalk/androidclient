@@ -1,6 +1,7 @@
 package org.nuntius.ui;
 
 import org.nuntius.R;
+import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
 
 import android.content.Context;
@@ -23,6 +24,7 @@ public class ConversationListItem extends RelativeLayout {
     private View mErrorIndicator;
     private ImageView mPresenceView;
     private QuickContactBadge mAvatarView;
+    private Contact mContact;
 
     static private Drawable sDefaultContactImage;
 
@@ -62,17 +64,28 @@ public class ConversationListItem extends RelativeLayout {
 
     public final void bind(Context context, final Conversation conv) {
         mConversation = conv;
+        String recipient = null;
 
-        StringBuilder from = new StringBuilder(conv.getRecipient());
+        mContact = Contact.findbyUserId(getContext(), conv.getRecipient());
+
+        if (mContact != null) {
+            recipient = mContact.getName();
+            mAvatarView.assignContactUri(mContact.getUri());
+            mAvatarView.setImageDrawable(mContact.getAvatar(getContext(), sDefaultContactImage));
+        }
+        else {
+            recipient = conv.getRecipient();
+            mAvatarView.setImageDrawable(sDefaultContactImage);
+        }
+        mAvatarView.setVisibility(View.VISIBLE);
+
+        StringBuilder from = new StringBuilder(recipient);
         if (conv.getMessageCount() > 1)
             from.append(" (" + conv.getMessageCount() + ") ");
 
         mFromView.setText(from);
         mDateView.setText(MessageUtils.formatTimeStampString(context, conv.getDate()));
         mSubjectView.setText(conv.getSubject());
-
-        mAvatarView.setImageDrawable(sDefaultContactImage);
-        mAvatarView.setVisibility(View.VISIBLE);
     }
 
     public final void unbind() {
@@ -81,5 +94,9 @@ public class ConversationListItem extends RelativeLayout {
 
     public Conversation getConversation() {
         return mConversation;
+    }
+
+    public Contact getContact() {
+        return mContact;
     }
 }
