@@ -1,12 +1,13 @@
 package org.nuntius.provider;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.provider.MyMessages.Threads;
 
-
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -50,8 +51,7 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> threadsProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
-
-        // this table will contain all the messages
+        /** This table will contain all the messages .*/
         private static final String SCHEMA_MESSAGES =
             "CREATE TABLE " + TABLE_MESSAGES + " (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -66,7 +66,7 @@ public class MessagesProvider extends ContentProvider {
             "status INTEGER" +
             ");";
 
-        // this table will contain the latest message from each conversation
+        /** This table will contain the latest message from each conversation. */
         private static final String SCHEMA_THREADS =
             "CREATE TABLE " + TABLE_THREADS + " (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -80,27 +80,29 @@ public class MessagesProvider extends ContentProvider {
             "timestamp INTEGER" +
             ");";
 
-        // updates the thread messages count
+        /** Updates the thread messages count. */
         private static final String UPDATE_MESSAGES_COUNT =
             "UPDATE " + TABLE_THREADS + " SET count = (" +
             "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id" +
             ") WHERE _id = new.thread_id";
 
-        // updates the thread unread count
+        /** Updates the thread unread count. */
         private static final String UPDATE_UNREAD_COUNT =
             "UPDATE " + TABLE_THREADS + " SET unread = (" +
             "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id " +
             "AND unread <> 0) WHERE _id = new.thread_id";
 
-        // this trigger will update the threads table to the current amount of messages
+        /** This trigger will update the threads table to the current amount of messages. */
         private static final String TRIGGER_THREADS_UPDATE_COUNT =
             "CREATE TRIGGER update_thread_count_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
             " BEGIN " + UPDATE_MESSAGES_COUNT + "; END;";
 
-        // this trigger will update the threads table to the current amount of unread messages
+        /** This trigger will update the threads table to the current amount of unread messages. */
         private static final String TRIGGER_THREADS_UPDATE_UNREAD =
             "CREATE TRIGGER update_thread_unread_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
             " BEGIN " + UPDATE_UNREAD_COUNT + "; END;";
+
+        // TODO UPDATE triggers
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -332,7 +334,7 @@ public class MessagesProvider extends ContentProvider {
         db.close();
 
         getContext().getContentResolver().notifyChange(uri, null);
-        Log.w(TAG, "messages table deleted, affected: " + rows);
+        Log.w(TAG, "table " + table + " deleted, affected: " + rows);
         return rows;
     }
 
@@ -355,9 +357,21 @@ public class MessagesProvider extends ContentProvider {
 
     public static boolean deleteDatabase(Context ctx) {
         ContentResolver c = ctx.getContentResolver();
-        c.delete(Messages.CONTENT_URI, null, null);
-        c.delete(Threads.CONTENT_URI, null, null);
-        return true;
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>(2);
+        ContentProviderOperation.Builder b;
+        b = ContentProviderOperation.newDelete(Messages.CONTENT_URI);
+        ops.add(b.build());
+        b = ContentProviderOperation.newDelete(Threads.CONTENT_URI);
+        ops.add(b.build());
+
+        try {
+            c.applyBatch(AUTHORITY, ops);
+            return true;
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error during database delete!", e);
+            return false;
+        }
     }
 
     static {

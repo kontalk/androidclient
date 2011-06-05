@@ -1,5 +1,8 @@
 package org.nuntius.ui;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -27,6 +30,7 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -59,7 +63,7 @@ public class ComposeMessage extends ListActivity {
     private EditText mTextEntry;
 
     /** The thread id. */
-    private long threadId;
+    private long threadId = -1;
 
     /** The user we are talking to. */
     private String userId;
@@ -182,6 +186,19 @@ public class ComposeMessage extends ListActivity {
                         // empty text
                         mTextEntry.setText("");
 
+                        // update thread id from the inserted message
+                        if (threadId <= 0) {
+                            Cursor c = getContentResolver().query(newMsg, new String[] { Messages.THREAD_ID }, null, null, null);
+                            if (c.moveToFirst()) {
+                                threadId = c.getLong(0);
+                                Log.i(TAG, "starting query with threadId " + threadId);
+                                startQuery();
+                            }
+                            else
+                                Log.i(TAG, "no data - cannot start query for this composer");
+                            c.close();
+                        }
+
                         // hide softkeyboard
                         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
@@ -205,6 +222,8 @@ public class ComposeMessage extends ListActivity {
         });
     }
 
+    // TODO handle onNewIntent()
+
     private void startQuery() {
         try {
             setProgressBarIndeterminateVisibility(true);
@@ -222,13 +241,74 @@ public class ComposeMessage extends ListActivity {
 
         Intent intent = getIntent();
         if (intent != null) {
-            userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
-            setTitle(userId);
+            final String action = intent.getAction();
+            if (Intent.ACTION_VIEW.equals(action)) {
+                Uri uri = intent.getData();
+                Log.w(TAG, "intent uri: " + uri);
+                ContentResolver cres = getContentResolver();
 
-            threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
+                Cursor c = cres.query(uri, new String[] {
+                        ContactsContract.Data.DATA1,
+                        ContactsContract.Data.DATA3
+                        }, null, null, null);
+                if (c.moveToFirst()) {
+                    for (int i = 0; i < c.getColumnCount(); i++) {
+                        Log.i(TAG, "contact-" + i + ": " + c.getString(i));
+                    }
+
+                    try {
+                        userId = sha1(c.getString(1));
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, "sha1 digest failed", e);
+                    }
+
+                    Cursor cp = cres.query(Messages.CONTENT_URI,
+                            new String[] { Messages.THREAD_ID }, Messages.PEER + " = ?", new String[] { userId }, null);
+                    if (cp.moveToFirst())
+                        threadId = cp.getLong(0);
+                    cp.close();
+                }
+                c.close();
+            }
+            else {
+                userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
+                threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
+            }
+
+            Log.i(TAG, "starting query with threadId " + threadId);
             if (threadId > 0)
                 startQuery();
+            setTitle(userId);
         }
+    }
+
+    private static String convertToHex(byte[] data) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < data.length; i++) {
+            int halfbyte = (data[i] >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                if ((0 <= halfbyte) && (halfbyte <= 9))
+                    buf.append((char) ('0' + halfbyte));
+                else
+                    buf.append((char) ('a' + (halfbyte - 10)));
+                halfbyte = data[i] & 0x0F;
+            } while(two_halfs++ < 1);
+        }
+        return buf.toString();
+    }
+
+    private static String sha1(String text)
+            throws NoSuchAlgorithmException, UnsupportedEncodingException {
+
+        MessageDigest md;
+        md = MessageDigest.getInstance("SHA-1");
+        byte[] sha1hash = new byte[40];
+        md.update(text.getBytes("iso-8859-1"), 0, text.length());
+        sha1hash = md.digest();
+
+        return convertToHex(sha1hash);
     }
 
     @Override

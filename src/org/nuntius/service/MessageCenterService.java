@@ -102,6 +102,7 @@ public class MessageCenterService extends Service
         if (intent != null) {
             Bundle extras = intent.getExtras();
             String serverUrl = (String) extras.get(EndpointServer.class.getName());
+            Log.i(TAG, "using server uri: " + serverUrl);
             EndpointServer server = new EndpointServer(serverUrl);
 
             mAccount = Authenticator.getDefaultAccount(this);

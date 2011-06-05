@@ -1,0 +1,8 @@
+<ContactsSource xmlns:android="http://schemas.android.com/apk/res/android">
+  <ContactsDataKind
+    android:icon="@drawable/icon"
+    android:mimeType="vnd.android.cursor.item/org.nuntius.user"
+    android:summaryColumn="data2"
+    android:detailColumn="data3"
+    android:detailSocialSummary="false"/>
+</ContactsSource>
