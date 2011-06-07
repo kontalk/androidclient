@@ -27,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 public class ConversationList extends ListActivity {
@@ -183,7 +184,12 @@ public class ConversationList extends ListActivity {
                 Uri contact = Contacts.lookupContact(getContentResolver(), data.getData());
                 if (contact != null) {
                     Log.i(TAG, "composing message for contact: " + contact);
-                    startActivity(ComposeMessage.fromContactPicker(this, contact));
+                    Intent i = ComposeMessage.fromContactPicker(this, contact);
+                    if (i != null)
+                        startActivity(i);
+                    else
+                        Toast.makeText(this, "Contact seems not to be registered on Nuntius.", Toast.LENGTH_LONG)
+                            .show();
                 }
             }
         }

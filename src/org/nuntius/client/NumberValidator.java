@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
@@ -26,7 +27,9 @@ import android.util.Log;
  */
 public class NumberValidator implements Runnable {
     private static final String TAG = NumberValidator.class.getSimpleName();
-    private static final String SMS_FROM = "195642";
+
+    private static final String SMS_FROM = "Nuntius";
+    //private static final String SMS_FROM = "123456";
 
     /** Validation step (sending phone number and waiting for SMS) */
     public static final int STEP_VALIDATION = 1;
@@ -78,8 +81,10 @@ public class NumberValidator implements Runnable {
                         for(int n=0; n < pdus.length; n++) {
                             byte[] byteData = (byte[])pdus[n];
                             SmsMessage sms = SmsMessage.createFromPdu(byteData);
+
                             // possible message!
-                            if (SMS_FROM.equals(sms.getOriginatingAddress())) {
+                            if (SMS_FROM.equals(sms.getOriginatingAddress()) ||
+                                    PhoneNumberUtils.compare(SMS_FROM, sms.getOriginatingAddress())) {
                                 String txt = sms.getMessageBody();
                                 if (txt != null && txt.length() > 0) {
                                     // TODO take the entire message text for now

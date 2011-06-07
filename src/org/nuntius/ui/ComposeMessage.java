@@ -304,6 +304,12 @@ public class ComposeMessage extends ListActivity {
         String userId = Contact.getUserId(context, contactUri);
         if (userId != null) {
             Conversation conv = Conversation.loadFromUserId(context, userId);
+            // not found - create new
+            if (conv == null) {
+                conv = Conversation.createNew(context);
+                conv.setRecipient(userId);
+            }
+
             return fromConversation(context, conv);
         }
 
