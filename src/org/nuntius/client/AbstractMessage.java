@@ -186,18 +186,18 @@ public abstract class AbstractMessage<T> {
         timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
         status = c.getInt(c.getColumnIndex(Messages.STATUS));
 
-        recipients = new ArrayList<String>(1);
+        recipients = new ArrayList<String>();
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
         int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));
         if (direction == Messages.DIRECTION_OUT) {
-            sender = "Me";
+            // we are the origin
+            sender = null;
             recipients.add(peer);
         }
         else {
             sender = peer;
-            // TODO
-            recipients.add("Me");
+            // we are the origin - no recipient
         }
 
         // TODO groups??

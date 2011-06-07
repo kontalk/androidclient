@@ -8,6 +8,8 @@ import org.nuntius.R;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.MessageSender;
 import org.nuntius.client.StatusResponse;
+import org.nuntius.data.Contact;
+import org.nuntius.data.Conversation;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.service.MessageCenterService;
 import org.nuntius.service.RequestJob;
@@ -245,6 +247,8 @@ public class ComposeMessage extends ListActivity {
         Intent intent = getIntent();
         if (intent != null) {
             final String action = intent.getAction();
+
+            // view intent
             if (Intent.ACTION_VIEW.equals(action)) {
                 Uri uri = intent.getData();
                 Log.w(TAG, "intent uri: " + uri);
@@ -274,6 +278,8 @@ public class ComposeMessage extends ListActivity {
                 }
                 c.close();
             }
+
+            // private launch intent
             else {
                 userName = intent.getStringExtra(MESSAGE_THREAD_USERNAME);
                 if (userName == null)
@@ -292,6 +298,34 @@ public class ComposeMessage extends ListActivity {
                 title += " <" + userPhone + ">";
             setTitle(title);
         }
+    }
+
+    public static Intent fromContactPicker(Context context, Uri contactUri) {
+        String userId = Contact.getUserId(context, contactUri);
+        if (userId != null) {
+            Conversation conv = Conversation.loadFromUserId(context, userId);
+            return fromConversation(context, conv);
+        }
+
+        return null;
+    }
+
+    /**
+     * Creates an {@link Intent} for launching the composer for a given {@link Conversation}.
+     * @param context
+     * @param conv
+     * @return
+     */
+    public static Intent fromConversation(Context context, Conversation conv) {
+        Intent i = new Intent(context, ComposeMessage.class);
+        i.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
+        i.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
+        Contact contact = conv.getContact();
+        if (contact != null) {
+            i.putExtra(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
+            i.putExtra(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
+        }
+        return i;
     }
 
     @Override

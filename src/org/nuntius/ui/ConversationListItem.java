@@ -24,7 +24,6 @@ public class ConversationListItem extends RelativeLayout {
     private View mErrorIndicator;
     private ImageView mPresenceView;
     private QuickContactBadge mAvatarView;
-    private Contact mContact;
 
     static private Drawable sDefaultContactImage;
 
@@ -66,12 +65,12 @@ public class ConversationListItem extends RelativeLayout {
         mConversation = conv;
         String recipient = null;
 
-        mContact = Contact.findbyUserId(getContext(), conv.getRecipient());
+        Contact contact = mConversation.getContact();
 
-        if (mContact != null) {
-            recipient = mContact.getName();
-            mAvatarView.assignContactUri(mContact.getUri());
-            mAvatarView.setImageDrawable(mContact.getAvatar(getContext(), sDefaultContactImage));
+        if (contact != null) {
+            recipient = contact.getName();
+            mAvatarView.assignContactUri(contact.getUri());
+            mAvatarView.setImageDrawable(contact.getAvatar(getContext(), sDefaultContactImage));
         }
         else {
             recipient = conv.getRecipient();
@@ -96,7 +95,4 @@ public class ConversationListItem extends RelativeLayout {
         return mConversation;
     }
 
-    public Contact getContact() {
-        return mContact;
-    }
 }

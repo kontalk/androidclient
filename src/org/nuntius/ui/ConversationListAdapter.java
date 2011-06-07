@@ -32,7 +32,7 @@ public class ConversationListAdapter extends CursorAdapter {
         }
 
         ConversationListItem headerView = (ConversationListItem) view;
-        Conversation conv = Conversation.from(context, cursor);
+        Conversation conv = Conversation.createFromCursor(context, cursor);
 
         headerView.bind(context, conv);
     }

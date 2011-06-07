@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.telephony.PhoneNumberUtils;
@@ -31,6 +32,14 @@ import android.util.Log;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
+
+    public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
+    public static final String DATA_COLUMN_ACCOUNT_NAME = Data.DATA2;
+    public static final String DATA_COLUMN_PHONE = Data.DATA3;
+
+    public static final String RAW_COLUMN_DISPLAY_NAME = RawContacts.SYNC1;
+    public static final String RAW_COLUMN_PHONE = RawContacts.SYNC2;
+    public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
     private final AccountManager mAccountManager;
     private final Context mContext;
@@ -175,11 +184,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI);
             builder.withValue(RawContacts.ACCOUNT_NAME, account.name);
             builder.withValue(RawContacts.ACCOUNT_TYPE, account.type);
-            builder.withValue(RawContacts.SYNC1, username);
-            builder.withValue(RawContacts.SYNC2, phone);
+            builder.withValue(RAW_COLUMN_DISPLAY_NAME, username);
+            builder.withValue(RAW_COLUMN_PHONE, phone);
 
             try {
-                builder.withValue(RawContacts.SYNC3, MessageUtils.sha1(phone));
+                builder.withValue(RAW_COLUMN_USERID, MessageUtils.sha1(phone));
             }
             catch (Exception e) {
                 Log.e(TAG, "sha1 digest failed", e);
@@ -207,9 +216,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             builder.withValue(ContactsContract.Data.RAW_CONTACT_ID, rowContactId);
 
         builder.withValue(ContactsContract.Data.MIMETYPE, Users.CONTENT_ITEM_TYPE);
-        builder.withValue(ContactsContract.Data.DATA1, username);
-        builder.withValue(ContactsContract.Data.DATA2, mContext.getString(R.string.app_name));
-        builder.withValue(ContactsContract.Data.DATA3, phone);
+        builder.withValue(DATA_COLUMN_DISPLAY_NAME, username);
+        builder.withValue(DATA_COLUMN_ACCOUNT_NAME, mContext.getString(R.string.app_name));
+        builder.withValue(DATA_COLUMN_PHONE, phone);
         operationList.add(builder.build());
         try {
             mContentResolver.applyBatch(ContactsContract.AUTHORITY, operationList);
@@ -217,6 +226,5 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(TAG, "Something went wrong during creation!", e);
         }
     }
-
 
 }

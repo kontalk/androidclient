@@ -129,4 +129,27 @@ public class Contact {
         return data;
     }
 
+    public static String getUserId(Context context, Uri contactUri) {
+        Account account = Authenticator.getDefaultAccount(context);
+        Cursor c = context.getContentResolver().query(RawContacts.CONTENT_URI,
+                new String[] {
+                    RawContacts.SYNC3
+                },
+                RawContacts.ACCOUNT_NAME + " = ? AND " +
+                RawContacts.ACCOUNT_TYPE + " = ? AND " +
+                RawContacts.CONTACT_ID   + " = ?",
+                new String[] {
+                    account.name,
+                    account.type,
+                    String.valueOf(ContentUris.parseId(contactUri))
+                }, null);
+
+        if (c.moveToFirst()) {
+            return c.getString(0);
+        }
+
+        return null;
+    }
+
+
 }

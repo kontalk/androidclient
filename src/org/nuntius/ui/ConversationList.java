@@ -16,7 +16,9 @@ import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract.Contacts;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,6 +36,7 @@ public class ConversationList extends ListActivity {
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
     private static final int REQUEST_AUTHENTICATE = 7720;
+    private static final int REQUEST_CONTACT_PICKER = 7721;
 
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
@@ -78,7 +81,7 @@ public class ConversationList extends ListActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_compose:
-                // TODO createNewMessage();
+                chooseContact();
                 break;
             case R.id.menu_search:
                 // TODO search
@@ -96,6 +99,11 @@ public class ConversationList extends ListActivity {
                 return true;
         }
         return false;
+    }
+
+    private void chooseContact() {
+        Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+        startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
     private void deleteAll() {
@@ -159,6 +167,7 @@ public class ConversationList extends ListActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // authentication
         if (requestCode == REQUEST_AUTHENTICATE) {
             // ok, start message center
             if (resultCode == RESULT_OK)
@@ -166,6 +175,17 @@ public class ConversationList extends ListActivity {
             // failed - exit
             else
                 finish();
+        }
+
+        // contact chooser
+        else if (requestCode == REQUEST_CONTACT_PICKER) {
+            if (resultCode == RESULT_OK) {
+                Uri contact = Contacts.lookupContact(getContentResolver(), data.getData());
+                if (contact != null) {
+                    Log.i(TAG, "composing message for contact: " + contact);
+                    startActivity(ComposeMessage.fromContactPicker(this, contact));
+                }
+            }
         }
     }
 
@@ -194,14 +214,18 @@ public class ConversationList extends ListActivity {
             Intent intent = new Intent(this, ComposeMessage.class);
             intent.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
             intent.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
-            Contact contact = cv.getContact();
+            Contact contact = conv.getContact();
             if (contact != null) {
                 intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
                 intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
             }
             startActivity(intent);
         }
-        // TODO new message activity :)
+
+        // new composer
+        else {
+            chooseContact();
+        }
     }
 
     /**

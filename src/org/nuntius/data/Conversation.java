@@ -28,6 +28,7 @@ public class Conversation {
     private final Context mContext;
 
     private long mThreadId;
+    private Contact mContact;
 
     private String mRecipient;
     private long mDate;
@@ -55,6 +56,8 @@ public class Conversation {
             mMessageCount = c.getInt(c.getColumnIndex(Threads.COUNT));
 
             // TODO attachments & errors
+
+            loadContact();
         }
     }
 
@@ -62,8 +65,27 @@ public class Conversation {
         return new Conversation(context);
     }
 
-    public static Conversation from(Context context, Cursor cursor) {
+    public static Conversation createFromCursor(Context context, Cursor cursor) {
         return new Conversation(context, cursor);
+    }
+
+    public static Conversation loadFromUserId(Context context, String userId) {
+        Conversation cv = null;
+        Cursor cp = context.getContentResolver().query(Threads.CONTENT_URI,
+                null, Threads.PEER + " = ?", new String[] { userId }, null);
+        if (cp.moveToFirst())
+            cv = createFromCursor(context, cp);
+
+        cp.close();
+        return cv;
+    }
+
+    private void loadContact() {
+        mContact = Contact.findbyUserId(mContext, mRecipient);
+    }
+
+    public Contact getContact() {
+        return mContact;
     }
 
     public long getDate() {
@@ -88,6 +110,8 @@ public class Conversation {
 
     public void setRecipient(String mRecipient) {
         this.mRecipient = mRecipient;
+        // reload contact
+        loadContact();
     }
 
     public int getMessageCount() {

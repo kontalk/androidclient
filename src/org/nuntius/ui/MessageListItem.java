@@ -14,6 +14,7 @@ import android.text.style.LeadingMarginSpan;
 import android.text.style.LineHeightSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -60,14 +61,24 @@ public class MessageListItem extends RelativeLayout {
 
         formattedMessage = formatMessage();
         mTextView.setText(formattedMessage);
+
+        View balloon = findViewById(R.id.mms_layout_view_parent);
+
+        if (mMessage.getSender() != null)
+            balloon.setBackgroundResource(R.drawable.balloon_incoming);
+        else
+            balloon.setBackgroundResource(R.drawable.balloon_outgoing);
     }
 
     private CharSequence formatMessage() {
-        CharSequence template = getContext().getResources().getText(R.string.name_colon);
+        CharSequence template = ""; //getContext().getResources().getText(R.string.name_colon);
         SpannableStringBuilder buf =
-            new SpannableStringBuilder(TextUtils.replace(template,
+            new SpannableStringBuilder(template);
+
+                /*TextUtils.replace(template,
                 new String[] { "%s" },
                 new CharSequence[] { mMessage.getSender() }));
+                */
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
             buf.append(mMessage.getTextContent());
