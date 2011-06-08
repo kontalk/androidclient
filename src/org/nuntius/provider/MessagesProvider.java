@@ -81,26 +81,34 @@ public class MessagesProvider extends ContentProvider {
             ");";
 
         /** Updates the thread messages count. */
-        private static final String UPDATE_MESSAGES_COUNT =
+        private static final String UPDATE_MESSAGES_COUNT_NEW =
             "UPDATE " + TABLE_THREADS + " SET count = (" +
             "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id" +
             ") WHERE _id = new.thread_id";
+        private static final String UPDATE_MESSAGES_COUNT_OLD =
+            "UPDATE " + TABLE_THREADS + " SET count = (" +
+            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id" +
+            ") WHERE _id = old.thread_id";
 
         /** Updates the thread unread count. */
-        private static final String UPDATE_UNREAD_COUNT =
+        private static final String UPDATE_UNREAD_COUNT_NEW =
             "UPDATE " + TABLE_THREADS + " SET unread = (" +
             "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id " +
             "AND unread <> 0) WHERE _id = new.thread_id";
+        private static final String UPDATE_UNREAD_COUNT_OLD =
+            "UPDATE " + TABLE_THREADS + " SET unread = (" +
+            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id " +
+            "AND unread <> 0) WHERE _id = old.thread_id";
 
-        /** This trigger will update the threads table to the current amount of messages. */
-        private static final String TRIGGER_THREADS_UPDATE_COUNT =
-            "CREATE TRIGGER update_thread_count_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
-            " BEGIN " + UPDATE_MESSAGES_COUNT + "; END;";
+        /** This trigger will update the threads table counters on INSERT. */
+        private static final String TRIGGER_THREADS_INSERT_COUNT =
+            "CREATE TRIGGER update_thread_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
+            " BEGIN " + UPDATE_MESSAGES_COUNT_NEW + ";" + UPDATE_UNREAD_COUNT_NEW + "; END;";
 
-        /** This trigger will update the threads table to the current amount of unread messages. */
-        private static final String TRIGGER_THREADS_UPDATE_UNREAD =
-            "CREATE TRIGGER update_thread_unread_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
-            " BEGIN " + UPDATE_UNREAD_COUNT + "; END;";
+        /** This trigger will update the threads table counters on DELETE. */
+        private static final String TRIGGER_THREADS_DELETE_COUNT =
+            "CREATE TRIGGER update_thread_on_delete AFTER DELETE ON " + TABLE_MESSAGES +
+            " BEGIN " + UPDATE_MESSAGES_COUNT_OLD + "; " + UPDATE_UNREAD_COUNT_OLD + "; END;";
 
         // TODO UPDATE triggers
 
@@ -112,8 +120,8 @@ public class MessagesProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
-            db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
-            db.execSQL(TRIGGER_THREADS_UPDATE_UNREAD);
+            db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
+            db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
         }
 
         @Override
@@ -321,8 +329,8 @@ public class MessagesProvider extends ContentProvider {
 
             case THREADS:
                 table = TABLE_THREADS;
-                where = null;
-                args = null;
+                where = selection;
+                args = selectionArgs;
                 break;
 
             case THREADS_ID:
@@ -340,11 +348,23 @@ public class MessagesProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rows = db.delete(table, where, args);
-        db.close();
 
         getContext().getContentResolver().notifyChange(uri, null);
         Log.w(TAG, "table " + table + " deleted, affected: " + rows);
+
+        // check for empty threads
+        if (table.equals(TABLE_MESSAGES))
+            deleteEmptyThreads(db);
+
+        db.close();
         return rows;
+    }
+
+    private void deleteEmptyThreads(SQLiteDatabase db) {
+        int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0", null);
+        Log.i(TAG, "checking for empty threads: " + rows);
+        if (rows > 0)
+            getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);
     }
 
     @Override

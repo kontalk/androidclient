@@ -291,7 +291,6 @@ public class ComposeMessage extends ListActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 MessagesProvider.deleteThread(ComposeMessage.this, threadId);
-                finish();
             }
         });
         builder.setNegativeButton(android.R.string.cancel, null);
@@ -479,6 +478,9 @@ public class ComposeMessage extends ListActivity {
             case MESSAGE_LIST_QUERY_TOKEN:
                 mListAdapter.changeCursor(cursor);
                 setProgressBarIndeterminateVisibility(false);
+                // no messages to show - exit
+                if (mListAdapter.getCount() == 0)
+                    finish();
                 break;
 
             default:
