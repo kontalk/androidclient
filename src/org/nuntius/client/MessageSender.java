@@ -1,13 +1,18 @@
 package org.nuntius.client;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 import org.nuntius.service.RequestJob;
+import org.xmlpull.v1.XmlSerializer;
 
 import android.net.Uri;
-import android.text.TextUtils;
+import android.util.Log;
+import android.util.Xml;
 
 
 /**
- * A basic worker thread for sending messages.
+ * A {@link RequestJob} for sending plain text messages.
  * @author Daniele Ricci
  * @version 1.0
  */
@@ -24,11 +29,37 @@ public class MessageSender extends RequestJob {
         mText = text;
         mUri = uri;
 
-        // TODO build xml in a proper manner
-        mContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-        "<body><m><t>"+mPeer+"</t><c t=\"text/plain\">"+
-            TextUtils.htmlEncode(mText)
-        + "</c></m></body>";
+        try {
+            // build xml in a proper manner
+            XmlSerializer xml = Xml.newSerializer();
+            StringWriter xmlString = new StringWriter();
+
+            xml.setOutput(xmlString);
+            xml.startDocument("UTF-8", Boolean.TRUE);
+            xml
+                .startTag(null, "body")
+                .startTag(null, "m")
+                .startTag(null, "t")
+                .text(mPeer)
+                .endTag(null, "t")
+                .startTag(null, "c")
+                .attribute(null, "t", "text/plain")
+                .cdsect(mText);
+            xml
+                .endTag(null, "c")
+                .endTag(null, "m")
+                .endTag(null, "body")
+                .endDocument();
+
+            mContent = xmlString.toString();
+            xmlString.close();
+        }
+        catch (IOException e) {
+            // this should be impossible, since the only IOException that
+            // could be thrown would be because of a OutOfMemoryError,
+            // so no way...
+            Log.e("XMLWriter", "error in XML message", e);
+        }
     }
 
     public Uri getUri() {

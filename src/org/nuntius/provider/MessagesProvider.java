@@ -296,6 +296,7 @@ public class MessagesProvider extends ContentProvider {
         String table;
         String where;
         String[] args;
+        long _id;
 
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
@@ -306,7 +307,7 @@ public class MessagesProvider extends ContentProvider {
 
             case MESSAGES_ID:
                 table = TABLE_MESSAGES;
-                long _id = ContentUris.parseId(uri);
+                _id = ContentUris.parseId(uri);
                 where = "_id = ?";
                 args = new String[] { String.valueOf(_id) };
                 break;
@@ -318,12 +319,20 @@ public class MessagesProvider extends ContentProvider {
                 args = new String[] { String.valueOf(sid) };
                 break;
 
-            // TODO cases for threads table
             case THREADS:
                 table = TABLE_THREADS;
                 where = null;
                 args = null;
                 break;
+
+            case THREADS_ID:
+                table = TABLE_THREADS;
+                _id = ContentUris.parseId(uri);
+                where = "_id = ?";
+                args = new String[] { String.valueOf(_id) };
+                break;
+
+            // TODO cases for threads table
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
@@ -370,6 +379,26 @@ public class MessagesProvider extends ContentProvider {
         }
         catch (Exception e) {
             Log.e(TAG, "error during database delete!", e);
+            return false;
+        }
+    }
+
+    public static boolean deleteThread(Context ctx, long id) {
+        ContentResolver c = ctx.getContentResolver();
+        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>(2);
+        ContentProviderOperation.Builder b;
+        b = ContentProviderOperation.newDelete(Messages.CONTENT_URI);
+        b.withSelection(Messages.THREAD_ID + " = ?", new String[] { String.valueOf(id) });
+        ops.add(b.build());
+        b = ContentProviderOperation.newDelete(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
+        ops.add(b.build());
+
+        try {
+            c.applyBatch(AUTHORITY, ops);
+            return true;
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error during thread delete!", e);
             return false;
         }
     }

@@ -10,18 +10,21 @@ import org.nuntius.client.MessageSender;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
+import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.service.MessageCenterService;
 import org.nuntius.service.RequestJob;
 import org.nuntius.service.ResponseListener;
 import org.nuntius.service.MessageCenterService.MessageCenterInterface;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.AsyncQueryHandler;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -30,16 +33,21 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.ContactsContract;
+import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.View.OnClickListener;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 /**
@@ -72,6 +80,7 @@ public class ComposeMessage extends ListActivity {
     private String userId;
     private String userName;
     private String userPhone;
+    private Contact userContact;
 
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener =
         new MessageListAdapter.OnContentChangedListener() {
@@ -167,9 +176,11 @@ public class ComposeMessage extends ListActivity {
         mListAdapter.setOnContentChangedListener(mContentChangedListener);
         setListAdapter(mListAdapter);
 
+        registerForContextMenu(getListView());
+
         mTextEntry = (EditText) findViewById(R.id.text_editor);
         Button sendButton = (Button) findViewById(R.id.send_button);
-        sendButton.setOnClickListener(new OnClickListener() {
+        sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String text = mTextEntry.getText().toString();
@@ -225,6 +236,110 @@ public class ComposeMessage extends ListActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.compose_message_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        boolean contactEnabled = (userContact != null);
+        boolean threadEnabled = (threadId > 0);
+        MenuItem i;
+
+        i = menu.findItem(R.id.call_contact);
+        i.setEnabled(contactEnabled);
+        i = menu.findItem(R.id.view_contact);
+        i.setEnabled(contactEnabled);
+        i = menu.findItem(R.id.delete_thread);
+        i.setEnabled(threadEnabled);
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.call_contact:
+                startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + userPhone)));
+                return true;
+
+            case R.id.view_contact:
+                startActivity(new Intent(Intent.ACTION_VIEW, userContact.getUri()));
+                return true;
+
+            case R.id.delete_thread:
+                if (threadId > 0)
+                    deleteThread();
+
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void deleteThread() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.confirm_delete_thread);
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setMessage(R.string.confirm_will_delete_thread);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                MessagesProvider.deleteThread(ComposeMessage.this, threadId);
+                finish();
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
+    }
+
+    private static final int MENU_FORWARD = 1;
+    private static final int MENU_COPY_TEXT = 2;
+    private static final int MENU_DELETE = 3;
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        Log.i(TAG, "onCreateContextMenu");
+        menu.setHeaderTitle("Message options");
+        menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
+        menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
+        menu.add(Menu.NONE, MENU_DELETE, MENU_DELETE, "Delete message");
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        MessageListItem v = (MessageListItem) info.targetView;
+        AbstractMessage<?> msg = v.getMessage();
+
+        switch (item.getItemId()) {
+            case MENU_FORWARD:
+                // TODO
+                return true;
+
+            case MENU_COPY_TEXT:
+                Log.i(TAG, "copying message text: " + msg.getId());
+                ClipboardManager cpm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                cpm.setText(msg.getTextContent());
+
+                Toast.makeText(this, R.string.message_text_copied, Toast.LENGTH_SHORT)
+                    .show();
+                return true;
+
+            case MENU_DELETE:
+                Log.i(TAG, "deleting message: " + msg.getId());
+
+                getContentResolver()
+                    .delete(Messages.getUri(msg.getId()), null, null);
+                return true;
+        }
+
+        return super.onContextItemSelected(item);
     }
 
     // TODO handle onNewIntent()
@@ -298,6 +413,8 @@ public class ComposeMessage extends ListActivity {
                 title += " <" + userPhone + ">";
             setTitle(title);
         }
+
+        userContact = Contact.findbyUserId(this, userId);
     }
 
     public static Intent fromContactPicker(Context context, Uri contactUri) {
@@ -346,11 +463,6 @@ public class ComposeMessage extends ListActivity {
     protected void onStop() {
         super.onStop();
         mListAdapter.changeCursor(null);
-    }
-
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO ehm :)
     }
 
     /**

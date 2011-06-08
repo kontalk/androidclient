@@ -6,7 +6,6 @@ import org.nuntius.provider.MyMessages.Messages;
 
 import android.content.Context;
 import android.graphics.Paint.FontMetricsInt;
-import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -14,7 +13,9 @@ import android.text.style.LeadingMarginSpan;
 import android.text.style.LineHeightSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -24,6 +25,7 @@ public class MessageListItem extends RelativeLayout {
     private AbstractMessage<?> mMessage;
     private CharSequence formattedMessage;
     private TextView mTextView;
+    private ImageView mStatusIcon;
 
     private LeadingMarginSpan mLeadingMarginSpan;
 
@@ -54,6 +56,7 @@ public class MessageListItem extends RelativeLayout {
         super.onFinishInflate();
 
         mTextView = (TextView) findViewById(R.id.text_view);
+        mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
     }
 
     public final void bind(Context context, final AbstractMessage<?> msg) {
@@ -62,23 +65,53 @@ public class MessageListItem extends RelativeLayout {
         formattedMessage = formatMessage();
         mTextView.setText(formattedMessage);
 
-        View balloon = findViewById(R.id.mms_layout_view_parent);
+        View balloonView = findViewById(R.id.balloon_view);
+        int resId = -1;
 
-        if (mMessage.getSender() != null)
-            balloon.setBackgroundResource(R.drawable.balloon_incoming);
-        else
-            balloon.setBackgroundResource(R.drawable.balloon_outgoing);
+        if (mMessage.getSender() != null) {
+            setGravity(Gravity.LEFT);
+            setBackgroundResource(R.drawable.light_blue_background);
+            balloonView.setBackgroundResource(R.drawable.balloon_incoming);
+        }
+        else {
+            setGravity(Gravity.RIGHT);
+            setBackgroundResource(R.drawable.white_background);
+            balloonView.setBackgroundResource(R.drawable.balloon_outgoing);
+
+            // status icon
+            if (mMessage.getSender() == null)
+            switch (mMessage.getStatus()) {
+                case Messages.STATUS_SENDING:
+                    resId = R.drawable.ic_msg_pending;
+                    break;
+                case Messages.STATUS_RECEIVED:
+                    resId = R.drawable.ic_msg_delivered;
+                    break;
+                case Messages.STATUS_NOTACCEPTED:
+                    resId = R.drawable.ic_msg_error;
+                    break;
+                case Messages.STATUS_ERROR:
+                    resId = R.drawable.ic_msg_error;
+                    break;
+                case Messages.STATUS_SENT:
+                    resId = R.drawable.ic_msg_sent;
+                    break;
+            }
+        }
+
+        if (resId >= 0) {
+            mStatusIcon.setImageResource(resId);
+            mStatusIcon.setVisibility(VISIBLE);
+        }
+        else {
+            mStatusIcon.setImageDrawable(null);
+            mStatusIcon.setVisibility(GONE);
+        }
+
     }
 
     private CharSequence formatMessage() {
-        CharSequence template = ""; //getContext().getResources().getText(R.string.name_colon);
-        SpannableStringBuilder buf =
-            new SpannableStringBuilder(template);
-
-                /*TextUtils.replace(template,
-                new String[] { "%s" },
-                new CharSequence[] { mMessage.getSender() }));
-                */
+        SpannableStringBuilder buf = new SpannableStringBuilder();
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
             buf.append(mMessage.getTextContent());
@@ -89,10 +122,6 @@ public class MessageListItem extends RelativeLayout {
             case Messages.STATUS_SENDING:
                 timestamp = getContext().getString(R.string.sending);
                 break;
-            case Messages.STATUS_RECEIVED:
-                timestamp = String.format(getContext().getString(R.string.received_on),
-                        MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp()));
-                break;
             case Messages.STATUS_NOTACCEPTED:
                 timestamp = getContext().getString(R.string.send_refused);
                 break;
@@ -100,12 +129,13 @@ public class MessageListItem extends RelativeLayout {
                 timestamp = getContext().getString(R.string.send_error);
                 break;
             case Messages.STATUS_SENT:
+            case Messages.STATUS_RECEIVED:
             default:
-                timestamp = String.format(getContext().getString(R.string.sent_on),
-                        MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp()));
+                timestamp = MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp());
                 break;
         }
 
+        /*
         buf.append("\n");
         int startOffset = buf.length();
 
@@ -119,10 +149,15 @@ public class MessageListItem extends RelativeLayout {
         buf.setSpan(mColorSpan, startOffset, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         buf.setSpan(mLeadingMarginSpan, 0, buf.length(), 0);
+        */
         return buf;
     }
 
     public final void unbind() {
         // TODO unbind (contact?)
+    }
+
+    public AbstractMessage<?> getMessage() {
+        return mMessage;
     }
 }

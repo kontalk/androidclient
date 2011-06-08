@@ -83,23 +83,25 @@ public class ConversationList extends ListActivity {
         switch(item.getItemId()) {
             case R.id.menu_compose:
                 chooseContact();
-                break;
+                return true;
+
             case R.id.menu_search:
                 // TODO search
                 onSearchRequested();
-                break;
+                return true;
+
             case R.id.menu_delete_all:
                 deleteAll();
-                break;
+                return true;
+
             case R.id.menu_settings: {
                 Intent intent = new Intent(this, MessagingPreferences.class);
                 startActivityIfNeeded(intent, -1);
-                break;
-            }
-            default:
                 return true;
+            }
         }
-        return false;
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void chooseContact() {
