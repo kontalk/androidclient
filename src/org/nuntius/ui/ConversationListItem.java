@@ -5,7 +5,11 @@ import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -15,6 +19,8 @@ import android.widget.TextView;
 
 public class ConversationListItem extends RelativeLayout {
     private static final String TAG = "ConversationListItem";
+
+    private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
 
     private Conversation mConversation;
     private TextView mSubjectView;
@@ -78,9 +84,12 @@ public class ConversationListItem extends RelativeLayout {
         }
         mAvatarView.setVisibility(View.VISIBLE);
 
-        StringBuilder from = new StringBuilder(recipient);
+        SpannableStringBuilder from = new SpannableStringBuilder(recipient);
         if (conv.getMessageCount() > 1)
             from.append(" (" + conv.getMessageCount() + ") ");
+
+        if (conv.getUnreadCount() > 0)
+            from.setSpan(STYLE_BOLD, 0, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
         mFromView.setText(from);
         mDateView.setText(MessageUtils.formatTimeStampString(context, conv.getDate()));

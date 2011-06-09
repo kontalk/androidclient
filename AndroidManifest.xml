@@ -25,12 +25,6 @@
             android:label="@string/service_name"
             android:name=".service.MessageCenterService"/>
 
-        <receiver android:name="IncomingTestReceiver">
-            <intent-filter>
-                <action android:name="org.nuntius.MESSAGE_RECEIVED"/>
-            </intent-filter>
-        </receiver>
-
         <provider android:name=".provider.MessagesProvider"
             android:authorities="org.nuntius.messages"
             android:syncable="false"/>

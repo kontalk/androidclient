@@ -13,6 +13,8 @@ import java.util.Date;
  */
 public class MessageID {
     public static final int LENGTH = 64;
+    private static final SimpleDateFormat dateFormat =
+        new SimpleDateFormat("yyyyMMddHHmmssZ");
 
     private String mServerFingerprint;
     private String mTimestamp;
@@ -25,8 +27,7 @@ public class MessageID {
         mServerFingerprint = serverFingerprint;
         mTimestamp = timestamp;
         mPad = pad;
-        SimpleDateFormat sd = new SimpleDateFormat("yyyyMMddHHmmssZ");
-        mParsedTimestamp = sd.parse(mTimestamp);
+        mParsedTimestamp = dateFormat.parse(mTimestamp);
     }
 
     public String getServerFingerprint() {

@@ -197,6 +197,8 @@ public class MessageCenterService extends Service
 
                     // broadcast message
                     broadcastMessage(msg);
+                    // update notifications
+                    MessagingNotification.updateMessagesNotification(this, true);
                 }
             }
         }

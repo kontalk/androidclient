@@ -1,8 +1,11 @@
 package org.nuntius.data;
 
+import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Threads;
+import org.nuntius.service.MessagingNotification;
 
 import android.content.AsyncQueryHandler;
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 
@@ -80,6 +83,18 @@ public class Conversation {
         return cv;
     }
 
+    public static Conversation loadFromId(Context context, long id) {
+        Conversation cv = null;
+        Cursor cp = context.getContentResolver().query(
+                ContentUris.withAppendedId(Threads.CONTENT_URI, id),
+                null, null, null, null);
+        if (cp.moveToFirst())
+            cv = createFromCursor(context, cp);
+
+        cp.close();
+        return cv;
+    }
+
     private void loadContact() {
         mContact = Contact.findbyUserId(mContext, mRecipient);
     }
@@ -131,5 +146,27 @@ public class Conversation {
         handler.cancelOperation(token);
         handler.startQuery(token, null, Threads.CONTENT_URI,
                 ALL_THREADS_PROJECTION, null, null, Threads.DEFAULT_SORT_ORDER);
+    }
+
+    public static void startQuery(AsyncQueryHandler handler, int token, long threadId) {
+        // cancel previous operations
+        handler.cancelOperation(token);
+        handler.startQuery(token, null, Threads.CONTENT_URI,
+                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, Threads.DEFAULT_SORT_ORDER);
+    }
+
+    public void markAsRead() {
+        if (mThreadId > 0) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (MessagesProvider.getThreadUnreadCount(mContext, mThreadId) > 0) {
+                        MessagesProvider.markThreadAsRead(mContext, mThreadId);
+                    }
+
+                    MessagingNotification.updateMessagesNotification(mContext, false);
+                }
+            }).start();
+        }
     }
 }

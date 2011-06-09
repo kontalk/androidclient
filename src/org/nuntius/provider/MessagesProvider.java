@@ -105,14 +105,17 @@ public class MessagesProvider extends ContentProvider {
             "CREATE TRIGGER update_thread_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
             " BEGIN " + UPDATE_MESSAGES_COUNT_NEW + ";" + UPDATE_UNREAD_COUNT_NEW + "; END;";
 
+        /** This trigger will update the threads table counters on UPDATE. */
+        private static final String TRIGGER_THREADS_UPDATE_COUNT =
+            "CREATE TRIGGER update_thread_on_update AFTER UPDATE ON " + TABLE_MESSAGES +
+            " BEGIN " + UPDATE_MESSAGES_COUNT_NEW + ";" + UPDATE_UNREAD_COUNT_NEW + "; END;";
+
         /** This trigger will update the threads table counters on DELETE. */
         private static final String TRIGGER_THREADS_DELETE_COUNT =
             "CREATE TRIGGER update_thread_on_delete AFTER DELETE ON " + TABLE_MESSAGES +
             " BEGIN " + UPDATE_MESSAGES_COUNT_OLD + "; " + UPDATE_UNREAD_COUNT_OLD + "; END;";
 
-        // TODO UPDATE triggers
-
-        DatabaseHelper(Context context) {
+        protected DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
 
@@ -121,6 +124,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
+            db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
         }
 
@@ -294,7 +298,9 @@ public class MessagesProvider extends ContentProvider {
         int rows = db.update(TABLE_MESSAGES, values, where, args);
         db.close();
 
-        getContext().getContentResolver().notifyChange(uri, null);
+        // notify change only if rows are actually affected
+        if (rows > 0)
+            getContext().getContentResolver().notifyChange(uri, null);
         Log.w(TAG, "messages table updated, affected: " + rows);
         return rows;
     }
@@ -349,7 +355,9 @@ public class MessagesProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rows = db.delete(table, where, args);
 
-        getContext().getContentResolver().notifyChange(uri, null);
+        // notify change only if rows are actually affected
+        if (rows > 0)
+            getContext().getContentResolver().notifyChange(uri, null);
         Log.w(TAG, "table " + table + " deleted, affected: " + rows);
 
         // check for empty threads
@@ -421,6 +429,38 @@ public class MessagesProvider extends ContentProvider {
             Log.e(TAG, "error during thread delete!", e);
             return false;
         }
+    }
+
+    /**
+     * Marks all messages of the given thread as read.
+     * @param context used to request a {@link ContentResolver}
+     * @param id the thread id
+     * @return the number of rows affected in the messages table
+     */
+    public static int markThreadAsRead(Context context, long id) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.UNREAD, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+                Messages.THREAD_ID + " = ? AND " +
+                Messages.UNREAD + " <> 0 AND " +
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+                new String[] { String.valueOf(id) });
+    }
+
+    public static int getThreadUnreadCount(Context context, long id) {
+        int count = 0;
+        ContentResolver res = context.getContentResolver();
+        Cursor c = res.query(
+                ContentUris.withAppendedId(Threads.CONTENT_URI, id),
+                new String[] { Threads.UNREAD },
+                Threads.UNREAD + " > 0",
+                null, null);
+        if (c.moveToFirst())
+            count = c.getInt(0);
+
+        c.close();
+        return count;
     }
 
     static {

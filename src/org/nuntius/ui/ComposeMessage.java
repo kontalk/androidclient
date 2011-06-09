@@ -59,6 +59,7 @@ public class ComposeMessage extends ListActivity {
     private static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
+    private static final int CONVERSATION_QUERY_TOKEN = 8721;
 
     /** Used on the launch intent to pass the thread ID. */
     public static final String MESSAGE_THREAD_ID = "org.nuntius.message.threadId";
@@ -69,23 +70,26 @@ public class ComposeMessage extends ListActivity {
     /** Used on the launch intent to pass the phone of the peer. */
     public static final String MESSAGE_THREAD_USERPHONE = "org.nuntius.message.user.phone";
 
+    /** View conversation intent action. Just provide the threadId with this. */
+    public static final String ACTION_VIEW_CONVERSATION = "org.nuntius.thread.VIEW";
+
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
     private EditText mTextEntry;
 
     /** The thread id. */
     private long threadId = -1;
+    private Conversation mConversation;
 
     /** The user we are talking to. */
     private String userId;
     private String userName;
     private String userPhone;
-    private Contact userContact;
 
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener =
         new MessageListAdapter.OnContentChangedListener() {
         public void onContentChanged(MessageListAdapter adapter) {
-            startQuery();
+            startQuery(true);
         }
     };
 
@@ -208,7 +212,8 @@ public class ComposeMessage extends ListActivity {
                             if (c.moveToFirst()) {
                                 threadId = c.getLong(0);
                                 Log.i(TAG, "starting query with threadId " + threadId);
-                                startQuery();
+                                mConversation = null;
+                                startQuery(true);
                             }
                             else
                                 Log.i(TAG, "no data - cannot start query for this composer");
@@ -247,7 +252,7 @@ public class ComposeMessage extends ListActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        boolean contactEnabled = (userContact != null);
+        boolean contactEnabled = ((mConversation != null) ? mConversation.getContact() != null : null);
         boolean threadEnabled = (threadId > 0);
         MenuItem i;
 
@@ -269,7 +274,12 @@ public class ComposeMessage extends ListActivity {
                 return true;
 
             case R.id.view_contact:
-                startActivity(new Intent(Intent.ACTION_VIEW, userContact.getUri()));
+                Contact contact = null;
+                if (mConversation != null) {
+                    contact = mConversation.getContact();
+                    if (contact != null)
+                        startActivity(new Intent(Intent.ACTION_VIEW, contact.getUri()));
+                }
                 return true;
 
             case R.id.delete_thread:
@@ -343,12 +353,15 @@ public class ComposeMessage extends ListActivity {
 
     // TODO handle onNewIntent()
 
-    private void startQuery() {
+    private void startQuery(boolean reloadConversation) {
         try {
             setProgressBarIndeterminateVisibility(true);
 
             Log.i(TAG, "starting query for thread " + threadId);
             AbstractMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN, threadId);
+
+            if (reloadConversation)
+                Conversation.startQuery(mQueryHandler, CONVERSATION_QUERY_TOKEN, threadId);
         } catch (SQLiteException e) {
             Log.e(TAG, "query error", e);
         }
@@ -385,12 +398,29 @@ public class ComposeMessage extends ListActivity {
                     }
 
                     Cursor cp = cres.query(Messages.CONTENT_URI,
-                            new String[] { Messages.THREAD_ID }, Messages.PEER + " = ?", new String[] { userId }, null);
+                            new String[] { Messages.THREAD_ID },
+                            Messages.PEER + " = ?", new String[] { userId }, null);
                     if (cp.moveToFirst())
                         threadId = cp.getLong(0);
                     cp.close();
                 }
                 c.close();
+            }
+
+            // view conversation - just threadId provided
+            else if (ACTION_VIEW_CONVERSATION.equals((action))) {
+                threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
+                mConversation = Conversation.loadFromId(this, threadId);
+
+                userId = mConversation.getRecipient();
+                Contact contact = mConversation.getContact();
+                if (contact != null) {
+                    userName = contact.getName();
+                    userPhone = contact.getNumber();
+                }
+                else {
+                    userName = userId;
+                }
             }
 
             // private launch intent
@@ -404,16 +434,19 @@ public class ComposeMessage extends ListActivity {
             }
 
             Log.i(TAG, "starting query with threadId " + threadId);
-            if (threadId > 0)
-                startQuery();
+            if (threadId > 0) {
+                startQuery(true);
+            }
+            else {
+                mConversation = Conversation.createNew(this);
+                mConversation.setRecipient(userId);
+            }
 
             String title = userName;
             if (userPhone != null)
                 title += " <" + userPhone + ">";
             setTitle(title);
         }
-
-        userContact = Contact.findbyUserId(this, userId);
     }
 
     public static Intent fromContactPicker(Context context, Uri contactUri) {
@@ -475,16 +508,30 @@ public class ComposeMessage extends ListActivity {
         @Override
         protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
             switch (token) {
-            case MESSAGE_LIST_QUERY_TOKEN:
-                mListAdapter.changeCursor(cursor);
-                setProgressBarIndeterminateVisibility(false);
-                // no messages to show - exit
-                if (mListAdapter.getCount() == 0)
-                    finish();
-                break;
+                case MESSAGE_LIST_QUERY_TOKEN:
+                    mListAdapter.changeCursor(cursor);
+                    setProgressBarIndeterminateVisibility(false);
 
-            default:
-                Log.e(TAG, "onQueryComplete called with unknown token " + token);
+                    // no messages to show - exit
+                    if (mListAdapter.getCount() == 0)
+                        finish();
+
+                    break;
+
+                case CONVERSATION_QUERY_TOKEN:
+                    Log.i(TAG, "conversation query completed, marking as read");
+                    if (cursor.moveToFirst()) {
+                        mConversation = Conversation.createFromCursor(ComposeMessage.this, cursor);
+                        // mark all messages as read
+                        mConversation.markAsRead();
+                    }
+
+                    cursor.close();
+
+                    break;
+
+                default:
+                    Log.e(TAG, "onQueryComplete called with unknown token " + token);
             }
         }
     }

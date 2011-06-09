@@ -30,4 +30,6 @@
     <string name="delete_thread">Delete thread</string>
     <string name="confirm_delete_thread">Delete thread</string>
     <string name="confirm_will_delete_thread">The entire thread will be deleted.</string>
+    <string name="new_messages">New messages</string>
+    <string name="unread_messages">%d unread messages</string>
 </resources>

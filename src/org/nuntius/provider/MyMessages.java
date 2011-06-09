@@ -79,5 +79,6 @@ public final class MyMessages {
         public static final String TIMESTAMP = "timestamp";
 
         public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
+        public static final String INVERTED_SORT_ORDER = "timestamp";
     }
 }
