@@ -235,7 +235,7 @@ public class MessageCenterService extends Service
                 else {
                     for (StatusResponse st : statuses) {
                         if (st.extra != null) {
-                            String idToRemove = st.extra.get("i");
+                            String idToRemove = (String) st.extra.get("i");
                             if (idToRemove != null)
                                 mReceived.remove(idToRemove);
                         }
@@ -246,9 +246,10 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public void error(RequestJob job, Throwable e) {
+    public boolean error(RequestJob job, Throwable e) {
         // TODO ehm :)
         Log.e(TAG, "request error", e);
+        return false;
     }
 
 
@@ -260,6 +261,7 @@ public class MessageCenterService extends Service
 
     /** Starts the message center. */
     public static void startMessageCenter(Context context) {
+        // TODO should we check for network state??
         Log.i(TAG, "starting message center");
         final Intent intent = new Intent(context, MessageCenterService.class);
 
@@ -269,9 +271,16 @@ public class MessageCenterService extends Service
         context.startService(intent);
     }
 
+    /** Stops the message center. */
+    public static void stopMessageCenter(Context context) {
+        Log.i(TAG, "stopping message center");
+        context.stopService(new Intent(context, MessageCenterService.class));
+    }
+
     public final class MessageCenterInterface extends Binder {
         public MessageCenterService getService() {
             return MessageCenterService.this;
         }
     }
+
 }

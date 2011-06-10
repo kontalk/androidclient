@@ -50,6 +50,9 @@ import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
+// TODO start the message center somewhere??? :O
+
+
 /**
  * Conversation writing activity.
  * @author Daniele Ricci
@@ -105,9 +108,9 @@ public class ComposeMessage extends ListActivity {
 
                 // message accepted!
                 if (st.code == StatusResponse.STATUS_SUCCESS) {
-                    Map<String, String> extra = st.extra;
+                    Map<String, Object> extra = st.extra;
                     if (extra != null) {
-                        String msgId = extra.get("i");
+                        String msgId = (String) extra.get("i");
                         if (!TextUtils.isEmpty(msgId)) {
                             ContentValues values = new ContentValues(1);
                             values.put(Messages.MESSAGE_ID, msgId);
@@ -133,13 +136,14 @@ public class ComposeMessage extends ListActivity {
         }
 
         @Override
-        public void error(RequestJob job, Throwable e) {
+        public boolean error(RequestJob job, Throwable e) {
             MessageSender job2 = (MessageSender) job;
             Uri uri = job2.getUri();
             ContentValues values = new ContentValues(1);
             values.put(Messages.STATUS, Messages.STATUS_ERROR);
             getContentResolver().update(uri, values, null, null);
             Log.e(TAG, "error sending message", e);
+            return false;
         }
     };
 

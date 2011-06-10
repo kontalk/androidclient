@@ -149,9 +149,9 @@ public class NumberValidator implements Runnable {
                     if (mListener != null) {
                         StatusResponse st = res.get(0);
                         if (st.code == StatusResponse.STATUS_SUCCESS) {
-                            Map<String,String> ex = st.extra;
+                            Map<String,Object> ex = st.extra;
                             if (ex != null) {
-                                String token = ex.get("a");
+                                String token = (String) ex.get("a");
                                 if (token != null && token.length() > 0);
                                     mListener.onAuthTokenReceived(this, token);
                             }

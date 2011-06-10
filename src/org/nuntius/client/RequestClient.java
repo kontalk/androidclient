@@ -34,8 +34,9 @@ public class RequestClient extends AbstractClient {
      * Sends a request to the server.
      * @throws IOException
      */
-    public List<StatusResponse> request(String cmd, List<NameValuePair> params,
-            String content) throws IOException {
+    @SuppressWarnings("unchecked")
+    public List<StatusResponse> request(final String cmd, final List<NameValuePair> params,
+            final String content) throws IOException {
 
         List<StatusResponse> list = null;
         try {
@@ -63,7 +64,7 @@ public class RequestClient extends AbstractClient {
                 Node node = (Node) children.item(i);
                 if ("s".equals(node.getNodeName())) {
                     String errcode = null;
-                    Map<String,String> extra = null;
+                    Map<String, Object> extra = null;
                     // status!
                     NodeList msgChildren = node.getChildNodes();
                     for (int j = 0; j < msgChildren.getLength(); j++) {
@@ -75,9 +76,30 @@ public class RequestClient extends AbstractClient {
                         }
                         // other data
                         else {
-                            if (extra == null)
-                                extra = new HashMap<String, String>();
-                            extra.put(n2.getNodeName(), n2.getFirstChild().getNodeValue());
+                            String key = n2.getNodeName();
+                            String value = n2.getFirstChild().getNodeValue();
+                            if (extra == null) {
+                                extra = new HashMap<String, Object>(1);
+                                extra.put(key, value);
+                            }
+                            else {
+                                Object old = extra.get(key);
+                                // no old value - single value
+                                if (old == null) {
+                                    extra.put(key, value);
+                                }
+                                // old single value - transform to array
+                                else if (!(old instanceof List<?>)) {
+                                    List<String> newObj = new ArrayList<String>(1);
+                                    newObj.add(value);
+                                    extra.put(key, newObj);
+                                }
+                                // old multiple values - add to list
+                                else {
+                                    List<String> newObj = (List<String>) old;
+                                    newObj.add(value);
+                                }
+                            }
                         }
                     }
 

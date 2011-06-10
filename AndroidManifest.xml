@@ -73,5 +73,11 @@
             <meta-data android:name="android.provider.CONTACTS_STRUCTURE" android:resource="@xml/contacts" />
             
         </service>
+        <receiver android:name=".service.NetworkStateReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

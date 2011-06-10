@@ -16,6 +16,8 @@ public class RequestWorker extends Thread {
     private static final String TAG = RequestWorker.class.getSimpleName();
     private static final int MSG_REQUEST_JOB = 1;
 
+    private static final long DEFAULT_RETRY_DELAY = 5000;
+
     private Handler mHandler;
     private final Context mContext;
     private final EndpointServer mServer;
@@ -59,9 +61,15 @@ public class RequestWorker extends Thread {
                         if (listener != null)
                             listener.response(job, list);
                     } catch (IOException e) {
+                        boolean requeue = true;
                         Log.e("RequestWorker", "request error", e);
                         if (listener != null)
-                            listener.error(job, e);
+                            requeue = listener.error(job, e);
+
+                        if (requeue) {
+                            Log.i(TAG, "requeuing job " + job);
+                            push(job, DEFAULT_RETRY_DELAY);
+                        }
                     }
                 }
 
@@ -74,6 +82,10 @@ public class RequestWorker extends Thread {
     }
 
     public void push(RequestJob job) {
+        push(job, 0);
+    }
+
+    public void push(RequestJob job, long delay) {
         // max wait time 10 seconds
         int retries = 20;
 
@@ -88,7 +100,10 @@ public class RequestWorker extends Thread {
                 return;
             }
         }
-        mHandler.sendMessage(mHandler.obtainMessage(MSG_REQUEST_JOB, job));
+
+        mHandler.sendMessageDelayed(
+                mHandler.obtainMessage(MSG_REQUEST_JOB, job),
+                delay);
     }
 
     /**

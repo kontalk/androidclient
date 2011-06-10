@@ -29,7 +29,7 @@ public class StatusResponse {
     public static final int STATUS_TTL_EXPIRED = 5;
 
     public int code;
-    public Map<String, String> extra;
+    public Map<String, Object> extra;
 
     public StatusResponse(int code) {
         this.code = code;

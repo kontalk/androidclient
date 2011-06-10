@@ -1,15 +1,23 @@
 package org.nuntius.sync;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.nuntius.R;
+import org.nuntius.authenticator.Authenticator;
+import org.nuntius.client.EndpointServer;
+import org.nuntius.client.RequestClient;
+import org.nuntius.client.StatusResponse;
 import org.nuntius.provider.MyUsers.Users;
 import org.nuntius.ui.MessageUtils;
-
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import org.nuntius.ui.MessagingPreferences;
+import org.xmlpull.v1.XmlSerializer;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
@@ -29,6 +37,9 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.util.Xml;
+
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
@@ -41,14 +52,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public static final String RAW_COLUMN_PHONE = RawContacts.SYNC2;
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
-    private final AccountManager mAccountManager;
     private final Context mContext;
     private final ContentResolver mContentResolver;
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         mContext = context;
-        mAccountManager = AccountManager.get(context);
         mContentResolver = context.getContentResolver();
     }
 
@@ -65,29 +74,38 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void performSync(Context context, Account account, Bundle extras,
             String authority, ContentProviderClient provider, SyncResult syncResult)
             throws OperationCanceledException {
 
-        Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        // setup the request client
+        final String serverUri = MessagingPreferences.getServerURI(context);
+        final String token = Authenticator.getDefaultAccountToken(mContext);
+        final RequestClient client = new RequestClient(new EndpointServer(serverUri), token);
+        final Map<String,String[]> lookupNumbers = new HashMap<String,String[]>();
+
+        final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+
+        // FIXME optimize queries
         while (cursor.moveToNext()) {
             String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             Log.w(TAG, "contact " + contactId + ", name: " + displayName);
-            Cursor phones = mContentResolver.query(Phone.CONTENT_URI, null,
+            final Cursor phones = mContentResolver.query(Phone.CONTENT_URI, null,
                 Phone.CONTACT_ID +" = ? AND " +
                 Phone.TYPE + " = ?",
                 new String[] { contactId, String.valueOf(Phone.TYPE_MOBILE) }, null);
 
-            TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            String countryCode = "+" + PhoneNumberUtil.getInstance()
+            final TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            final String countryCode = "+" + PhoneNumberUtil.getInstance()
                 .getCountryCodeForRegion(tm.getSimCountryIso());
 
             Log.w(TAG, "using default country code: " + tm.getSimCountryIso() + "(" + countryCode + ")");
 
             while (phones.moveToNext()) {
                 String number = phones.getString(phones.getColumnIndex(Phone.NUMBER));
-                int type = phones.getInt(phones.getColumnIndex(Phone.TYPE));
+                final int type = phones.getInt(phones.getColumnIndex(Phone.TYPE));
                 switch (type) {
                     case Phone.TYPE_MOBILE:
                         number = PhoneNumberUtils.stripSeparators(number);
@@ -116,8 +134,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 number
                             }, null);
                         if (!exists.moveToFirst()) {
-                            Log.w(TAG, "contact not found, adding");
-                            addContact(account, displayName, number, -1);
+                            Log.w(TAG, "local contact not present, looking up");
+                            try {
+                                lookupNumbers.put(MessageUtils.sha1(number), new String[] { displayName, number });
+                            } catch (Exception e) {
+                                Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping");
+                            }
                         }
                         else {
                             Log.w(TAG, "contact already exists ("+
@@ -156,6 +178,61 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             phones.close();
         }
         cursor.close();
+
+        try {
+            // build the xml data for the lookup request
+            final String xmlData = buildXMLData(lookupNumbers.values());
+            final List<StatusResponse> res = client.request("lookup", null, xmlData);
+
+            // get the first status - it will contain our <u> tags
+            final StatusResponse status = res.get(0);
+            if (status.code == StatusResponse.STATUS_SUCCESS && status.extra != null) {
+                Object _numbers = status.extra.get("u");
+                if (_numbers instanceof List<?>) {
+                    final List<String> numbers = (List<String>) _numbers;
+                    for (String hash : numbers) {
+                        final String[] data = lookupNumbers.get(hash);
+                        addContact(account, data[0], data[1], -1);
+                    }
+                }
+                else {
+                    final String[] data = lookupNumbers.get((String) _numbers);
+                    addContact(account, data[0], data[1], -1);
+                }
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error in user lookup", e);
+        }
+    }
+
+    /** Builds the XML data for a lookup request. */
+    private String buildXMLData(Collection<String[]> lookupNumbers) throws Exception {
+        String xmlContent = null;
+        // build xml in a proper manner
+        XmlSerializer xml = Xml.newSerializer();
+        StringWriter xmlString = new StringWriter();
+
+        xml.setOutput(xmlString);
+        xml.startDocument("UTF-8", Boolean.TRUE);
+        xml
+            .startTag(null, "body");
+
+        for (String[] data : lookupNumbers) {
+            xml
+                .startTag(null, "u")
+                .text(MessageUtils.sha1(data[1]))
+                .endTag(null, "u");
+        }
+
+        xml
+            .endTag(null, "body")
+            .endDocument();
+
+        xmlContent = xmlString.toString();
+        xmlString.close();
+
+        return xmlContent;
     }
 
     private int deleteContact(long rawContactId) {
