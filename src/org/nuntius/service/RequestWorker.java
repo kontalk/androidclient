@@ -27,12 +27,13 @@ public class RequestWorker extends Thread {
 
     private RequestClient mClient;
     private ResponseListener mListener;
-    private final Queue<RequestJob> mPending;
 
-    public RequestWorker(Context context, EndpointServer server, Queue<RequestJob> pending) {
+    /** Pending jobs queue - will be used on thread start to initialize the messages. */
+    static public LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
+
+    public RequestWorker(Context context, EndpointServer server) {
         mContext = context;
         mServer = server;
-        mPending = pending;
     }
 
     public void setResponseListener(ResponseListener listener) {
@@ -46,7 +47,13 @@ public class RequestWorker extends Thread {
 
         mClient = new RequestClient(mServer, mAuthToken);
 
-        mHandler = new PauseHandler(mPending);
+        // create handler and empty pending jobs queue
+        // this must be done synchronized on the queue
+        synchronized (pendingJobs) {
+            mHandler = new PauseHandler(new LinkedList<RequestJob>(pendingJobs));
+            pendingJobs = new LinkedList<RequestJob>();
+        }
+
         Looper.loop();
     }
 
@@ -57,6 +64,12 @@ public class RequestWorker extends Thread {
         public PauseHandler(Queue<RequestJob> pending) {
             mQueue = new LinkedList<RequestJob>(pending);
             resume();
+        }
+
+        public synchronized void stop() {
+            mRunning = false;
+            mClient.abort();
+            getLooper().quit();
         }
 
         public synchronized void pause() {
@@ -81,6 +94,8 @@ public class RequestWorker extends Thread {
                 if (!mRunning) {
                     Log.w(TAG, "request worker is not running - queueing message");
                     mQueue.add((RequestJob) msg.obj);
+                    // we are ready to nullify the client instance
+                    mClient = null;
                     return;
                 }
 
@@ -155,14 +170,12 @@ public class RequestWorker extends Thread {
 
     /** Shuts down this request worker gracefully. */
     public void shutdown() {
+
         Log.w(getClass().getSimpleName(), "shutting down");
-        if (mClient != null)
-            mClient.abort();
         if (mHandler != null)
-            mHandler.getLooper().quit();
+            mHandler.stop();
 
         Log.w(getClass().getSimpleName(), "exiting");
-        mClient = null;
         mHandler = null;
     }
 }

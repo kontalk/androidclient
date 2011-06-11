@@ -1,7 +1,6 @@
 package org.nuntius.service;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
@@ -49,7 +48,6 @@ public class MessageCenterService extends Service
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
     private Account mAccount;
-    static final private LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
 
     /**
      * This list will contain the received messages - avoiding multiple
@@ -128,7 +126,7 @@ public class MessageCenterService extends Service
 
                     // activate request worker if necessary
                     if (mRequestWorker == null) {
-                        mRequestWorker = new RequestWorker(this, server, pendingJobs);
+                        mRequestWorker = new RequestWorker(this, server);
                         mRequestWorker.setResponseListener(this);
                         mRequestWorker.start();
                     }
@@ -149,6 +147,32 @@ public class MessageCenterService extends Service
         return START_STICKY;
     }
 
+    /**
+     * Shuts down the polling thread.
+     * @return true if the thread has been stopped, false if it wasn't running.
+     */
+    private boolean shutdownPollingThread() {
+        if (mPollingThread != null) {
+            mPollingThread.shutdown();
+            mPollingThread = null;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Shuts down the request worker.
+     * @return true if the thread has been stopped, false if it wasn't running.
+     */
+    private boolean shutdownRequestWorker() {
+        if (mRequestWorker != null) {
+            mRequestWorker.shutdown();
+            mRequestWorker = null;
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void onDestroy() {
         if (mAccountManager != null) {
@@ -157,16 +181,10 @@ public class MessageCenterService extends Service
         }
 
         // stop polling thread
-        if (mPollingThread != null) {
-            mPollingThread.shutdown();
-            mPollingThread = null;
-        }
+        shutdownPollingThread();
 
         // stop request worker
-        if (mRequestWorker != null) {
-            mRequestWorker.shutdown();
-            mRequestWorker = null;
-        }
+        shutdownRequestWorker();
     }
 
     @Override
@@ -224,17 +242,17 @@ public class MessageCenterService extends Service
         }
     }
 
-    private synchronized void pushRequest(RequestJob job) {
+    private synchronized void pushRequest(final RequestJob job) {
         if (mRequestWorker != null)
             mRequestWorker.push(job);
         else {
             Log.w(TAG, "request worker is down, queueing job");
-            pendingJobs.add(job);
+            RequestWorker.pendingJobs.add(job);
         }
     }
 
     /** Sends a message using the request worker. */
-    public synchronized void sendMessage(MessageSender job) {
+    public void sendMessage(final MessageSender job) {
         pushRequest(job);
     }
 
@@ -331,10 +349,7 @@ public class MessageCenterService extends Service
             mRequestWorker.pause();
 
         // polling thread should be restarted, so we destroy it
-        if (mPollingThread != null) {
-            mPollingThread.shutdown();
-            mPollingThread = null;
-        }
+        shutdownPollingThread();
     }
 
 }
