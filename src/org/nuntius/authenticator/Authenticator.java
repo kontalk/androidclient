@@ -69,6 +69,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    // TODO i18n
                     Toast.makeText(mContext, "Only one Nuntius account is supported.",
                             Toast.LENGTH_LONG).show();
                 }
@@ -167,9 +168,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public Bundle updateCredentials(AccountAuthenticatorResponse response,
             Account account, String authTokenType, Bundle options)
             throws NetworkErrorException {
-        Log.w(TAG, "updateCredentials() not implemented");
-        // TODO
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 }

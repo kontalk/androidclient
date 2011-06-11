@@ -18,7 +18,9 @@ public class NetworkStateReceiver extends BroadcastReceiver {
     private static final String TAG = NetworkStateReceiver.class.getSimpleName();
 
     private static final int ACTION_START = 1;
+    /** FIXME are we even using it? */
     private static final int ACTION_STOP = 2;
+    private static final int ACTION_PAUSE = 3;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -34,8 +36,12 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 
             // if background data gets deactivated, just stop the service now
             if (!cm.getBackgroundDataSetting()) {
-                Log.w(TAG, "background data setting disabled!");
-                serviceAction = ACTION_STOP;
+                Log.w(TAG, "background data disabled!");
+                serviceAction = ACTION_PAUSE;
+            }
+            else {
+                Log.w(TAG, "background data enabled!");
+                serviceAction = ACTION_START;
             }
         }
 
@@ -48,19 +54,21 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             if (info != null) {
                 Log.w(TAG, "network state changed!");
                 serviceAction = (info.getState() == State.CONNECTED) ?
-                    ACTION_START : ACTION_STOP;
+                    ACTION_START : ACTION_PAUSE;
             }
         }
 
-        if (serviceAction == ACTION_START) {
+        if (serviceAction == ACTION_START)
             // start the message center
             MessageCenterService.startMessageCenter(context);
-        }
 
-        else if (serviceAction == ACTION_STOP) {
+        else if (serviceAction == ACTION_STOP)
             // stop the message center
             MessageCenterService.stopMessageCenter(context);
-        }
+
+        else if (serviceAction == ACTION_PAUSE)
+            // pause the message center
+            MessageCenterService.pauseMessageCenter(context);
 
     }
 

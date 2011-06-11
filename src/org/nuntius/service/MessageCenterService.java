@@ -1,6 +1,7 @@
 package org.nuntius.service;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
@@ -22,9 +23,10 @@ import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -42,10 +44,12 @@ public class MessageCenterService extends Service
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
     public static final String MESSAGE_RECEIVED = "org.nuntius.MESSAGE_RECEIVED";
+    private static final String ACTION_PAUSE = "org.nuntius.PAUSE_MESSAGE_CENTER";
 
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
     private Account mAccount;
+    static final private LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
 
     /**
      * This list will contain the received messages - avoiding multiple
@@ -78,7 +82,6 @@ public class MessageCenterService extends Service
         }
     };
 
-    private Handler mHandler;
     private final IBinder mBinder = new MessageCenterInterface();
 
     /**
@@ -100,34 +103,45 @@ public class MessageCenterService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
-            Bundle extras = intent.getExtras();
-            String serverUrl = (String) extras.get(EndpointServer.class.getName());
-            Log.i(TAG, "using server uri: " + serverUrl);
-            EndpointServer server = new EndpointServer(serverUrl);
-
-            mAccount = Authenticator.getDefaultAccount(this);
-            if (mAccount == null) {
-                stopSelf();
+            // pause
+            if (ACTION_PAUSE.equals(intent.getAction())) {
+                pause();
             }
+
+            // normal start
             else {
-                // check changing accounts
-                if (mAccountManager == null) {
-                    mAccountManager = AccountManager.get(this);
-                    mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, mHandler, true);
-                }
+                Bundle extras = intent.getExtras();
+                String serverUrl = (String) extras.get(EndpointServer.class.getName());
+                Log.i(TAG, "using server uri: " + serverUrl);
+                EndpointServer server = new EndpointServer(serverUrl);
 
-                // activate request worker if necessary
-                if (mRequestWorker == null) {
-                    mRequestWorker = new RequestWorker(this, server);
-                    mRequestWorker.setResponseListener(this);
-                    mRequestWorker.start();
+                mAccount = Authenticator.getDefaultAccount(this);
+                if (mAccount == null) {
+                    stopSelf();
                 }
+                else {
+                    // check changing accounts
+                    if (mAccountManager == null) {
+                        mAccountManager = AccountManager.get(this);
+                        mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
+                    }
 
-                // start polling thread if needed
-                if (mPollingThread == null) {
-                    mPollingThread = new PollingThread(this, server);
-                    mPollingThread.setMessageListener(this);
-                    mPollingThread.start();
+                    // activate request worker if necessary
+                    if (mRequestWorker == null) {
+                        mRequestWorker = new RequestWorker(this, server, pendingJobs);
+                        mRequestWorker.setResponseListener(this);
+                        mRequestWorker.start();
+                    }
+                    else {
+                        mRequestWorker.resume2();
+                    }
+
+                    // start polling thread if needed
+                    if (mPollingThread == null) {
+                        mPollingThread = new PollingThread(this, server);
+                        mPollingThread.setMessageListener(this);
+                        mPollingThread.start();
+                    }
                 }
             }
         }
@@ -206,13 +220,22 @@ public class MessageCenterService extends Service
         if (list.size() > 0) {
             Log.w(TAG, "pushing receive confirmation");
             RequestJob job = new RequestJob("received", list);
+            pushRequest(job);
+        }
+    }
+
+    private synchronized void pushRequest(RequestJob job) {
+        if (mRequestWorker != null)
             mRequestWorker.push(job);
+        else {
+            Log.w(TAG, "request worker is down, queueing job");
+            pendingJobs.add(job);
         }
     }
 
     /** Sends a message using the request worker. */
-    public void sendMessage(MessageSender job) {
-        mRequestWorker.push(job);
+    public synchronized void sendMessage(MessageSender job) {
+        pushRequest(job);
     }
 
     @Override
@@ -261,14 +284,25 @@ public class MessageCenterService extends Service
 
     /** Starts the message center. */
     public static void startMessageCenter(Context context) {
-        // TODO should we check for network state??
-        Log.i(TAG, "starting message center");
-        final Intent intent = new Intent(context, MessageCenterService.class);
+        // check for network state
+        final ConnectivityManager cm = (ConnectivityManager) context
+            .getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm.getBackgroundDataSetting()) {
+            NetworkInfo info = cm.getActiveNetworkInfo();
+            if (info.getState() == NetworkInfo.State.CONNECTED) {
+                Log.i(TAG, "starting message center");
+                final Intent intent = new Intent(context, MessageCenterService.class);
 
-        // get the URI from the preferences
-        String uri = MessagingPreferences.getServerURI(context);
-        intent.putExtra(EndpointServer.class.getName(), uri);
-        context.startService(intent);
+                // get the URI from the preferences
+                String uri = MessagingPreferences.getServerURI(context);
+                intent.putExtra(EndpointServer.class.getName(), uri);
+                context.startService(intent);
+            }
+            else
+                Log.w(TAG, "network not available - abort service start");
+        }
+        else
+            Log.w(TAG, "background data disabled - abort service start");
     }
 
     /** Stops the message center. */
@@ -277,9 +311,29 @@ public class MessageCenterService extends Service
         context.stopService(new Intent(context, MessageCenterService.class));
     }
 
+    /** Shutdown the polling thread and pause the request worker. */
+    public static void pauseMessageCenter(Context context) {
+        Log.i(TAG, "pausing message center");
+        final Intent intent = new Intent(context, MessageCenterService.class);
+        intent.setAction(ACTION_PAUSE);
+        context.startService(intent);
+    }
+
     public final class MessageCenterInterface extends Binder {
         public MessageCenterService getService() {
             return MessageCenterService.this;
+        }
+    }
+
+    /** Pauses the message center. */
+    public void pause() {
+        if (mRequestWorker != null)
+            mRequestWorker.pause();
+
+        // polling thread should be restarted, so we destroy it
+        if (mPollingThread != null) {
+            mPollingThread.shutdown();
+            mPollingThread = null;
         }
     }
 

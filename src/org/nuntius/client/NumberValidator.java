@@ -87,7 +87,7 @@ public class NumberValidator implements Runnable {
                                     PhoneNumberUtils.compare(SMS_FROM, sms.getOriginatingAddress())) {
                                 String txt = sms.getMessageBody();
                                 if (txt != null && txt.length() > 0) {
-                                    // TODO take the entire message text for now
+                                    // FIXME take the entire message text for now
                                     mValidationCode = txt;
                                     mStep = STEP_AUTH_TOKEN;
                                     break;
