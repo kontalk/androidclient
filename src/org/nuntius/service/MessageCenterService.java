@@ -307,7 +307,7 @@ public class MessageCenterService extends Service
             .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm.getBackgroundDataSetting()) {
             NetworkInfo info = cm.getActiveNetworkInfo();
-            if (info.getState() == NetworkInfo.State.CONNECTED) {
+            if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
                 Log.i(TAG, "starting message center");
                 final Intent intent = new Intent(context, MessageCenterService.class);
 
