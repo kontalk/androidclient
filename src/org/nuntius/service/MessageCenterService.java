@@ -1,5 +1,6 @@
 package org.nuntius.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +10,10 @@ import org.nuntius.authenticator.Authenticator;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
 import org.nuntius.client.MessageSender;
+import org.nuntius.client.PlainTextMessage;
 import org.nuntius.client.ReceiptMessage;
 import org.nuntius.client.StatusResponse;
+import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.ui.MessagingPreferences;
@@ -201,13 +204,23 @@ public class MessageCenterService extends Service
 
                     // do not store receipts...
                     if (!(msg instanceof ReceiptMessage)) {
+                        // store to file if not a plain message
+                        String content = msg.getTextContent();
+                        if (!(msg instanceof PlainTextMessage)) {
+                            try {
+                                MediaStorage.writeMedia("image.png", content);
+                            } catch (IOException e) {
+                                Log.e(TAG, "unable to write to media storage", e);
+                            }
+                            content = "media:image.png";
+                        }
 
                         // save to local storage
                         ContentValues values = new ContentValues();
                         values.put(Messages.MESSAGE_ID, msg.getId());
                         values.put(Messages.PEER, msg.getSender());
                         values.put(Messages.MIME, msg.getMime());
-                        values.put(Messages.CONTENT, msg.getTextContent());
+                        values.put(Messages.CONTENT, content);
                         values.put(Messages.UNREAD, true);
                         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
                         values.put(Messages.TIMESTAMP, System.currentTimeMillis());

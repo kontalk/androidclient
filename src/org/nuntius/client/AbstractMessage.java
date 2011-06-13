@@ -192,7 +192,6 @@ public abstract class AbstractMessage<T> {
         mime = c.getString(c.getColumnIndex(Messages.MIME));
         timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
         status = c.getInt(c.getColumnIndex(Messages.STATUS));
-
         recipients = new ArrayList<String>();
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
@@ -222,13 +221,25 @@ public abstract class AbstractMessage<T> {
             msg.populateFromBundle(b);
             return msg;
         }
+        else if (ImageMessage.supportsMimeType(b.getString(MSG_MIME))) {
+            ImageMessage msg = new ImageMessage();
+            msg.populateFromBundle(b);
+            return msg;
+        }
 
         return null;
     }
 
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
-        if (PlainTextMessage.supportsMimeType(cursor.getString(cursor.getColumnIndex(Messages.MIME)))) {
+        String mime = cursor.getString(cursor.getColumnIndex(Messages.MIME));
+        if (PlainTextMessage.supportsMimeType(mime)) {
             PlainTextMessage msg = new PlainTextMessage();
+            msg.populateFromCursor(cursor);
+            return msg;
+        }
+
+        else if (ImageMessage.supportsMimeType(mime)) {
+            ImageMessage msg = new ImageMessage();
             msg.populateFromCursor(cursor);
             return msg;
         }

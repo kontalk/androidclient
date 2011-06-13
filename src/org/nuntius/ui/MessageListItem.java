@@ -7,6 +7,8 @@ import org.nuntius.provider.MyMessages.Messages;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Paint.FontMetricsInt;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -113,18 +115,30 @@ public class MessageListItem extends RelativeLayout {
 
     }
 
+    private final class ImageSpan2 extends ImageSpan {
+
+        private Bitmap mBitmap;
+        public ImageSpan2(Context context, Bitmap b) {
+            super(context, b);
+            mBitmap = b;
+        }
+
+        @Override
+        public Drawable getDrawable() {
+            return new BitmapDrawable(MessageListItem.this.getResources(), mBitmap);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private CharSequence formatMessage() {
         SpannableStringBuilder buf = new SpannableStringBuilder();
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
+            buf.append(mMessage.getTextContent());
             if (mMessage.getMediaType() == AbstractMessage.MEDIA_TYPE_IMAGE) {
                 AbstractMessage<Bitmap> image = (AbstractMessage<Bitmap>) mMessage;
-                ImageSpan imgSpan = new ImageSpan(getContext(), image.getContent());
-                buf.setSpan(imgSpan, 0, -1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-            else {
-                buf.append(mMessage.getTextContent());
+                ImageSpan2 imgSpan = new ImageSpan2(getContext(), image.getContent());
+                buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
 
