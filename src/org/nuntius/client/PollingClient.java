@@ -84,13 +84,18 @@ public class PollingClient extends AbstractClient {
                         AbstractMessage<?> msg = null;
 
                         // plain text message
-                        if (mime == null || PlainTextMessage.MIME_TYPE.equals(mime)) {
+                        if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
                             msg = new PlainTextMessage(id, from, text, group);
                         }
 
                         // message receipt
-                        else if (ReceiptMessage.MIME_TYPE.equals(mime)) {
+                        else if (ReceiptMessage.supportsMimeType(mime)) {
                             msg = new ReceiptMessage(id, from, text, group);
+                        }
+
+                        // image message
+                        else if (ImageMessage.supportsMimeType(mime)) {
+                            msg = new ImageMessage(id, from, text, group);
                         }
 
                         // TODO else other mime types

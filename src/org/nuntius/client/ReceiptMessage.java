@@ -22,16 +22,16 @@ import android.util.Log;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ReceiptMessage extends AbstractMessage<Document> {
+public final class ReceiptMessage extends AbstractMessage<Document> {
     private static final String TAG = ReceiptMessage.class.getSimpleName();
 
     /** A special mime type for a special type of message. */
-    public static final String MIME_TYPE = "r";
+    private static final String MIME_TYPE = "r";
 
     private String xmlContent;
 
-    protected int mStatus;
-    protected String mMessageId;
+    private int mStatus;
+    private String mMessageId;
 
     protected ReceiptMessage() {
         super(null, null, null, null);
@@ -107,6 +107,15 @@ public class ReceiptMessage extends AbstractMessage<Document> {
     @Override
     public String getTextContent() {
         return content.toString();
+    }
+
+    public static boolean supportsMimeType(String mime) {
+        return MIME_TYPE.equalsIgnoreCase(mime);
+    }
+
+    @Override
+    public int getMediaType() {
+        return 0;
     }
 
 }

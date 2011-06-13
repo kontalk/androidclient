@@ -42,6 +42,10 @@ public abstract class AbstractMessage<T> {
     public static final String MSG_GROUP = "org.nuntius.message.group";
     public static final String MSG_TIMESTAMP = "org.nuntius.message.timestamp";
 
+    public static final int MEDIA_TYPE_IMAGE = 1;
+    public static final int MEDIA_TYPE_AUDIO = 2;
+    public static final int MEDIA_TYPE_VIDEO = 3;
+
     protected boolean incoming;
     protected String id;
     protected String sender;
@@ -146,6 +150,9 @@ public abstract class AbstractMessage<T> {
      */
     public abstract String getTextContent();
 
+    /** Returns the media type for this message (if any, 0 otherwise). */
+    public abstract int getMediaType();
+
     /**
      * Constructs a bundle from this message.
      * @return the newly created bundle
@@ -205,12 +212,12 @@ public abstract class AbstractMessage<T> {
 
     public static AbstractMessage<?> fromBundle(Bundle b) {
         Log.w("AbstractMessage/fromBundle", "mime=" + b.getString(MSG_MIME));
-        if (PlainTextMessage.MIME_TYPE.equals(b.getString(MSG_MIME))) {
+        if (PlainTextMessage.supportsMimeType(b.getString(MSG_MIME))) {
             PlainTextMessage msg = new PlainTextMessage();
             msg.populateFromBundle(b);
             return msg;
         }
-        else if (ReceiptMessage.MIME_TYPE.equals(b.getString(MSG_MIME))) {
+        else if (ReceiptMessage.supportsMimeType(b.getString(MSG_MIME))) {
             ReceiptMessage msg = new ReceiptMessage();
             msg.populateFromBundle(b);
             return msg;
@@ -220,7 +227,7 @@ public abstract class AbstractMessage<T> {
     }
 
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
-        if (PlainTextMessage.MIME_TYPE.equals(cursor.getString(cursor.getColumnIndex(Messages.MIME)))) {
+        if (PlainTextMessage.supportsMimeType(cursor.getString(cursor.getColumnIndex(Messages.MIME)))) {
             PlainTextMessage msg = new PlainTextMessage();
             msg.populateFromCursor(cursor);
             return msg;

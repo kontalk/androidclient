@@ -5,10 +5,13 @@ import org.nuntius.client.AbstractMessage;
 import org.nuntius.provider.MyMessages.Messages;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Paint.FontMetricsInt;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
 import android.text.style.LeadingMarginSpan;
 import android.text.style.LineHeightSpan;
 import android.text.style.TextAppearanceSpan;
@@ -110,13 +113,22 @@ public class MessageListItem extends RelativeLayout {
 
     }
 
+    @SuppressWarnings("unchecked")
     private CharSequence formatMessage() {
         SpannableStringBuilder buf = new SpannableStringBuilder();
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
-            buf.append(mMessage.getTextContent());
+            if (mMessage.getMediaType() == AbstractMessage.MEDIA_TYPE_IMAGE) {
+                AbstractMessage<Bitmap> image = (AbstractMessage<Bitmap>) mMessage;
+                ImageSpan imgSpan = new ImageSpan(getContext(), image.getContent());
+                buf.setSpan(imgSpan, 0, -1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else {
+                buf.append(mMessage.getTextContent());
+            }
         }
 
+        /*
         String timestamp;
         switch (mMessage.getStatus()) {
             case Messages.STATUS_SENDING:
@@ -134,6 +146,7 @@ public class MessageListItem extends RelativeLayout {
                 timestamp = MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp());
                 break;
         }
+        */
 
         /*
         buf.append("\n");

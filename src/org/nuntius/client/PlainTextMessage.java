@@ -15,7 +15,7 @@ import android.os.Bundle;
  * @version 1.0
  */
 public class PlainTextMessage extends AbstractMessage<String> {
-    public static final String MIME_TYPE = "text/plain";
+    private static final String MIME_TYPE = "text/plain";
 
     protected PlainTextMessage() {
         super(null, null, null, null);
@@ -51,6 +51,15 @@ public class PlainTextMessage extends AbstractMessage<String> {
     @Override
     public String getTextContent() {
         return content;
+    }
+
+    public static boolean supportsMimeType(String mime) {
+        return MIME_TYPE.equalsIgnoreCase(mime);
+    }
+
+    @Override
+    public int getMediaType() {
+        return 0;
     }
 
 }
