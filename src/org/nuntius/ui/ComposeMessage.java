@@ -167,6 +167,8 @@ public class ComposeMessage extends ListActivity {
                 sendTextMessage();
             }
         });
+
+        processIntent(savedInstanceState);
     }
 
     /** Sends out an image message. */
@@ -428,12 +430,6 @@ public class ComposeMessage extends ListActivity {
         return super.onContextItemSelected(item);
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        setIntent(intent);
-        processIntent();
-    }
-
     private void startQuery(boolean reloadConversation) {
         try {
             setProgressBarIndeterminateVisibility(true);
@@ -463,21 +459,28 @@ public class ComposeMessage extends ListActivity {
 
             else if (ImageMessage.supportsMimeType(mime)) {
                 // send image immediately
-                new Thread() {
-                    @Override
-                    public void run() {
-                        sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
-                        sendIntent = null;
-                    }
-                }.start();
+                sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
             }
             else {
                 Log.e(TAG, "mime " + mime + " not supported");
             }
+
+            sendIntent = null;
         }
     }
 
-    private void processIntent() {
+    private void processIntent(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            Log.w(TAG, "restoring from saved instance");
+            userName = savedInstanceState.getString(MESSAGE_THREAD_USERNAME);
+            if (userName == null)
+                userName = userId;
+            userPhone = savedInstanceState.getString(MESSAGE_THREAD_USERPHONE);
+            userId = savedInstanceState.getString(MESSAGE_THREAD_PEER);
+            threadId = savedInstanceState.getLong(MESSAGE_THREAD_ID, -1);
+            return;
+        }
+
         Intent intent = getIntent();
         if (intent != null) {
             final String action = intent.getAction();
@@ -551,30 +554,32 @@ public class ComposeMessage extends ListActivity {
                 userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
                 threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
             }
-
-            Log.i(TAG, "starting query with threadId " + threadId);
-            if (threadId > 0) {
-                startQuery(true);
-            }
-            else {
-                mConversation = Conversation.createNew(this);
-                mConversation.setRecipient(userId);
-            }
-
-            String title = userName;
-            if (userPhone != null)
-                title += " <" + userPhone + ">";
-            setTitle(title);
-
-            // did we have a SEND action message to be sent?
-            processSendIntent();
         }
+    }
+
+    private void processStart() {
+        Log.i(TAG, "starting query with threadId " + threadId);
+        if (threadId > 0) {
+            startQuery(true);
+        }
+        else {
+            mConversation = Conversation.createNew(this);
+            mConversation.setRecipient(userId);
+        }
+
+        String title = userName;
+        if (userPhone != null)
+            title += " <" + userPhone + ">";
+        setTitle(title);
+
+        // did we have a SEND action message to be sent?
+        processSendIntent();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        processIntent();
+        processStart();
     }
 
     @Override
@@ -584,17 +589,21 @@ public class ComposeMessage extends ListActivity {
                 Uri contact = Contacts.lookupContact(getContentResolver(), data.getData());
                 if (contact != null) {
                     Log.i(TAG, "composing message for contact: " + contact);
-                    Intent i = ComposeMessage.fromContactPicker(this, contact);
-                    if (i != null)
-                        onNewIntent(i);
+                    Intent i = fromContactPicker(this, contact);
+                    if (i != null) {
+                        setIntent(i);
+                        processIntent(null);
+                    }
                     else
                         Toast.makeText(this, "Contact seems not to be registered on Nuntius.", Toast.LENGTH_LONG)
                             .show();
                 }
             }
             // nothing to do - exit
-            else
+            else {
+                Log.w(TAG, "unknown request code " + requestCode);
                 finish();
+            }
         }
     }
 
@@ -637,13 +646,38 @@ public class ComposeMessage extends ListActivity {
         super.onResume();
     }
 
-    /**
-     * Prevents the list adapter from using the cursor (which is being destroyed).
-     */
+    /** Prevents the list adapter from using the cursor (which is being destroyed). */
     @Override
     protected void onStop() {
         super.onStop();
         mListAdapter.changeCursor(null);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        processIntent(null);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        processIntent(state);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle out) {
+        out.putLong(ComposeMessage.MESSAGE_THREAD_ID, threadId);
+        out.putString(ComposeMessage.MESSAGE_THREAD_PEER, userId);
+        if (mConversation != null) {
+            Contact contact = mConversation.getContact();
+            if (contact != null) {
+                out.putString(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
+                out.putString(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
+            }
+        }
+
+        super.onSaveInstanceState(out);
     }
 
     /**
@@ -662,8 +696,10 @@ public class ComposeMessage extends ListActivity {
                     setProgressBarIndeterminateVisibility(false);
 
                     // no messages to show - exit
-                    if (mListAdapter.getCount() == 0)
+                    if (mListAdapter.getCount() == 0) {
+                        Log.w(TAG, "no data to view - exit");
                         finish();
+                    }
 
                     break;
 

@@ -13,6 +13,8 @@ public class Nuntius extends Application {
     public void onCreate() {
         super.onCreate();
 
+        MessageCenterService.startMessageCenter(this);
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override

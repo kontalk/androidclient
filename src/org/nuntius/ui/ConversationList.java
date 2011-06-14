@@ -29,6 +29,8 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.Toast;
 
+// TODO updateNotifications somewhere???
+
 
 public class ConversationList extends ListActivity {
 
