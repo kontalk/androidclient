@@ -42,10 +42,6 @@ public abstract class AbstractMessage<T> {
     public static final String MSG_GROUP = "org.nuntius.message.group";
     public static final String MSG_TIMESTAMP = "org.nuntius.message.timestamp";
 
-    public static final int MEDIA_TYPE_IMAGE = 1;
-    public static final int MEDIA_TYPE_AUDIO = 2;
-    public static final int MEDIA_TYPE_VIDEO = 3;
-
     protected boolean incoming;
     protected String id;
     protected String sender;
@@ -149,9 +145,6 @@ public abstract class AbstractMessage<T> {
      * @return the text that represent this message
      */
     public abstract String getTextContent();
-
-    /** Returns the media type for this message (if any, 0 otherwise). */
-    public abstract int getMediaType();
 
     /**
      * Constructs a bundle from this message.

@@ -2,21 +2,17 @@ package org.nuntius.ui;
 
 import org.nuntius.R;
 import org.nuntius.client.AbstractMessage;
+import org.nuntius.client.ImageMessage;
 import org.nuntius.provider.MyMessages.Messages;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Paint.FontMetricsInt;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
-import android.text.style.LeadingMarginSpan;
-import android.text.style.LineHeightSpan;
-import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -27,11 +23,15 @@ import android.widget.TextView;
 public class MessageListItem extends RelativeLayout {
     private static final String TAG = MessageListItem.class.getSimpleName();
 
+    private static final int THUMBNAIL_WIDTH = 128;
+    private static final int THUMBNAIL_HEIGHT = 128;
+
     private AbstractMessage<?> mMessage;
     private CharSequence formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
 
+    /*
     private LeadingMarginSpan mLeadingMarginSpan;
 
     private LineHeightSpan mSpan = new LineHeightSpan() {
@@ -45,6 +45,7 @@ public class MessageListItem extends RelativeLayout {
         new TextAppearanceSpan(getContext(), android.R.style.TextAppearance_Small);
 
     private ForegroundColorSpan mColorSpan = null;  // set in ctor
+    */
 
     public MessageListItem(Context context) {
         super(context);
@@ -52,8 +53,8 @@ public class MessageListItem extends RelativeLayout {
 
     public MessageListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
-        int color = context.getResources().getColor(R.color.timestamp_color);
-        mColorSpan = new ForegroundColorSpan(color);
+        //int color = context.getResources().getColor(R.color.timestamp_color);
+        //mColorSpan = new ForegroundColorSpan(color);
     }
 
     @Override
@@ -115,30 +116,41 @@ public class MessageListItem extends RelativeLayout {
 
     }
 
-    private final class ImageSpan2 extends ImageSpan {
+    private final class MaxSizeImageSpan extends ImageSpan {
+        private final Drawable mDrawable;
 
-        private Bitmap mBitmap;
-        public ImageSpan2(Context context, Bitmap b) {
-            super(context, b);
-            mBitmap = b;
+        public MaxSizeImageSpan(Context context, Bitmap bitmap) {
+            super(context, bitmap);
+            Bitmap mBitmap;
+            int w = bitmap.getHeight();
+            int h = bitmap.getWidth();
+            if (w > THUMBNAIL_WIDTH || h > THUMBNAIL_HEIGHT)
+                mBitmap = Bitmap.createScaledBitmap(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, true);
+            else
+                mBitmap = bitmap;
+
+            mDrawable = new BitmapDrawable(context.getResources(), mBitmap);
+            mDrawable.setBounds(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
         }
 
         @Override
         public Drawable getDrawable() {
-            return new BitmapDrawable(MessageListItem.this.getResources(), mBitmap);
+            return mDrawable;
         }
     }
 
-    @SuppressWarnings("unchecked")
     private CharSequence formatMessage() {
         SpannableStringBuilder buf = new SpannableStringBuilder();
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
-            buf.append(mMessage.getTextContent());
-            if (mMessage.getMediaType() == AbstractMessage.MEDIA_TYPE_IMAGE) {
-                AbstractMessage<Bitmap> image = (AbstractMessage<Bitmap>) mMessage;
-                ImageSpan2 imgSpan = new ImageSpan2(getContext(), image.getContent());
+            if (mMessage instanceof ImageMessage) {
+                buf.append("[IMAGE]");
+                ImageMessage image = (ImageMessage) mMessage;
+                ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
                 buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            else {
+                buf.append(mMessage.getTextContent());
             }
         }
 

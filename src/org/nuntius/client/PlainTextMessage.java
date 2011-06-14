@@ -57,9 +57,4 @@ public class PlainTextMessage extends AbstractMessage<String> {
         return MIME_TYPE.equalsIgnoreCase(mime);
     }
 
-    @Override
-    public int getMediaType() {
-        return 0;
-    }
-
 }

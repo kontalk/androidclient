@@ -94,13 +94,11 @@ public class RequestWorker extends Thread {
                 if (!mRunning) {
                     Log.w(TAG, "request worker is not running - queueing message");
                     mQueue.add((RequestJob) msg.obj);
-                    // we are ready to nullify the client instance
-                    mClient = null;
                     return;
                 }
 
                 RequestJob job = (RequestJob) msg.obj;
-                Log.w("RequestWorker", job.toString());
+                Log.w(TAG, job.toString());
 
                 // try to use the custom listener
                 ResponseListener listener = job.getListener();
@@ -115,7 +113,7 @@ public class RequestWorker extends Thread {
                         listener.response(job, list);
                 } catch (IOException e) {
                     boolean requeue = true;
-                    Log.e("RequestWorker", "request error", e);
+                    Log.e(TAG, "request error", e);
                     if (listener != null)
                         requeue = listener.error(job, e);
 
@@ -171,11 +169,11 @@ public class RequestWorker extends Thread {
     /** Shuts down this request worker gracefully. */
     public void shutdown() {
 
-        Log.w(getClass().getSimpleName(), "shutting down");
+        Log.w(TAG, "shutting down");
         if (mHandler != null)
             mHandler.stop();
 
-        Log.w(getClass().getSimpleName(), "exiting");
+        Log.w(TAG, "exiting");
         mHandler = null;
     }
 }

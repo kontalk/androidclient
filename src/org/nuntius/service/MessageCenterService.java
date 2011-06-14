@@ -9,8 +9,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.nuntius.authenticator.Authenticator;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
+import org.nuntius.client.ImageMessage;
 import org.nuntius.client.MessageSender;
-import org.nuntius.client.PlainTextMessage;
 import org.nuntius.client.ReceiptMessage;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.data.MediaStorage;
@@ -22,11 +22,14 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
 import android.app.Service;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -83,6 +86,8 @@ public class MessageCenterService extends Service
         }
     };
 
+    private MessageResponseListener mMessageResponseListener; // created in onCreate
+
     private final IBinder mBinder = new MessageCenterInterface();
 
     /**
@@ -103,6 +108,8 @@ public class MessageCenterService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.w(TAG, "Message Center starting - " + intent);
+
         if (intent != null) {
             // pause
             if (ACTION_PAUSE.equals(intent.getAction())) {
@@ -132,6 +139,9 @@ public class MessageCenterService extends Service
                         mRequestWorker = new RequestWorker(this, server);
                         mRequestWorker.setResponseListener(this);
                         mRequestWorker.start();
+
+                        // lookup for messages with error status and try to re-send them
+                        requeuePendingMessages();
                     }
                     else {
                         mRequestWorker.resume2();
@@ -156,8 +166,10 @@ public class MessageCenterService extends Service
      */
     private boolean shutdownPollingThread() {
         if (mPollingThread != null) {
-            mPollingThread.shutdown();
+            PollingThread tmp = mPollingThread;
+            // discard the reference to the thread immediately
             mPollingThread = null;
+            tmp.shutdown();
             return true;
         }
         return false;
@@ -169,11 +181,44 @@ public class MessageCenterService extends Service
      */
     private boolean shutdownRequestWorker() {
         if (mRequestWorker != null) {
-            mRequestWorker.shutdown();
+            RequestWorker tmp = mRequestWorker;
+            // discard the reference to the thread immediately
             mRequestWorker = null;
+            tmp.shutdown();
             return true;
         }
         return false;
+    }
+
+    /**
+     * Searches for messages with error or pending status and pushes them
+     * through the request queue to re-send them.
+     */
+    private void requeuePendingMessages() {
+        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
+                new String[] { Messages._ID, Messages.PEER, Messages.CONTENT },
+                Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
+                Messages.STATUS + " <> " + Messages.STATUS_RECEIVED,
+                null, null);
+
+        while (c.moveToNext()) {
+            long id = c.getLong(0);
+            String userId = c.getString(1);
+            String text = c.getString(2);
+            Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
+
+            MessageSender m = new MessageSender(userId, text, uri);
+            m.setListener(mMessageResponseListener);
+            Log.i(TAG, "resending failed message " + id);
+            sendMessage(m);
+        }
+
+        c.close();
+    }
+
+    @Override
+    public void onCreate() {
+        mMessageResponseListener = new MessageResponseListener(this);
     }
 
     @Override
@@ -204,15 +249,19 @@ public class MessageCenterService extends Service
 
                     // do not store receipts...
                     if (!(msg instanceof ReceiptMessage)) {
-                        // store to file if not a plain message
+                        // store to file if it's an image message
                         String content = msg.getTextContent();
-                        if (!(msg instanceof PlainTextMessage)) {
+                        if (msg instanceof ImageMessage) {
+                            String imgId = msg.getId();
+                            imgId = imgId.substring(imgId.length() - 5);
+                            ImageMessage imgMsg = (ImageMessage) msg;
+                            String filename = imgMsg.getMediaFilename();
                             try {
-                                MediaStorage.writeMedia("image.png", content);
+                                MediaStorage.writeMedia(filename, imgMsg.getBinaryContent());
                             } catch (IOException e) {
                                 Log.e(TAG, "unable to write to media storage", e);
                             }
-                            content = "media:image.png";
+                            content = MediaStorage.URI_SCHEME + filename;
                         }
 
                         // save to local storage
@@ -303,9 +352,8 @@ public class MessageCenterService extends Service
     public boolean error(RequestJob job, Throwable e) {
         // TODO ehm :)
         Log.e(TAG, "request error", e);
-        return false;
+        return true;
     }
-
 
     private void broadcastMessage(AbstractMessage<?> message) {
         Intent msg = new Intent(MESSAGE_RECEIVED);
@@ -314,7 +362,7 @@ public class MessageCenterService extends Service
     }
 
     /** Starts the message center. */
-    public static void startMessageCenter(Context context) {
+    public static void startMessageCenter(final Context context) {
         // check for network state
         final ConnectivityManager cm = (ConnectivityManager) context
             .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -337,13 +385,13 @@ public class MessageCenterService extends Service
     }
 
     /** Stops the message center. */
-    public static void stopMessageCenter(Context context) {
+    public static void stopMessageCenter(final Context context) {
         Log.i(TAG, "stopping message center");
         context.stopService(new Intent(context, MessageCenterService.class));
     }
 
     /** Shutdown the polling thread and pause the request worker. */
-    public static void pauseMessageCenter(Context context) {
+    public static void pauseMessageCenter(final Context context) {
         Log.i(TAG, "pausing message center");
         final Intent intent = new Intent(context, MessageCenterService.class);
         intent.setAction(ACTION_PAUSE);

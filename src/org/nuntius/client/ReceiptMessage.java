@@ -113,9 +113,4 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
         return MIME_TYPE.equalsIgnoreCase(mime);
     }
 
-    @Override
-    public int getMediaType() {
-        return 0;
-    }
-
 }

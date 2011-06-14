@@ -1,20 +1,24 @@
 package org.nuntius.ui;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.nuntius.R;
 import org.nuntius.client.AbstractMessage;
+import org.nuntius.client.ImageMessage;
 import org.nuntius.client.MessageSender;
+import org.nuntius.client.PlainTextMessage;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
+import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.service.MessageCenterService;
+import org.nuntius.service.MessageResponseListener;
 import org.nuntius.service.RequestJob;
-import org.nuntius.service.ResponseListener;
 import org.nuntius.service.MessageCenterService.MessageCenterInterface;
 
 import android.app.AlertDialog;
@@ -33,8 +37,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.Contacts;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -50,9 +56,6 @@ import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
-// TODO start the message center somewhere??? :O
-
-
 /**
  * Conversation writing activity.
  * @author Daniele Ricci
@@ -63,6 +66,8 @@ public class ComposeMessage extends ListActivity {
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
+
+    private static final int REQUEST_CONTACT_PICKER = 9721;
 
     /** Used on the launch intent to pass the thread ID. */
     public static final String MESSAGE_THREAD_ID = "org.nuntius.message.threadId";
@@ -84,6 +89,9 @@ public class ComposeMessage extends ListActivity {
     private long threadId = -1;
     private Conversation mConversation;
 
+    /** The SEND intent. */
+    private Intent sendIntent;
+
     /** The user we are talking to. */
     private String userId;
     private String userName;
@@ -97,55 +105,7 @@ public class ComposeMessage extends ListActivity {
     };
 
     /** Used by the service binder to receive responses from the request worker. */
-    private final ResponseListener mMessageSenderListener =
-        new ResponseListener() {
-        @Override
-        public void response(RequestJob job, List<StatusResponse> res) {
-            MessageSender job2 = (MessageSender) job;
-            if (res != null && res.size() > 0) {
-                Uri uri = job2.getUri();
-                StatusResponse st = res.get(0);
-
-                // message accepted!
-                if (st.code == StatusResponse.STATUS_SUCCESS) {
-                    Map<String, Object> extra = st.extra;
-                    if (extra != null) {
-                        String msgId = (String) extra.get("i");
-                        if (!TextUtils.isEmpty(msgId)) {
-                            ContentValues values = new ContentValues(1);
-                            values.put(Messages.MESSAGE_ID, msgId);
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            int n = getContentResolver().update(uri, values, null, null);
-                            Log.i(TAG, "message sent and updated (" + n + ")");
-                        }
-                    }
-                }
-
-                // message refused!
-                else {
-                    ContentValues values = new ContentValues(1);
-                    values.put(Messages.STATUS, Messages.STATUS_NOTACCEPTED);
-                    getContentResolver().update(uri, values, null, null);
-                    Log.w(TAG, "message not accepted by server and updated (" + st.code + ")");
-                }
-            }
-            else {
-                // empty response!? :O
-                error(job, new IllegalArgumentException("empty response"));
-            }
-        }
-
-        @Override
-        public boolean error(RequestJob job, Throwable e) {
-            MessageSender job2 = (MessageSender) job;
-            Uri uri = job2.getUri();
-            ContentValues values = new ContentValues(1);
-            values.put(Messages.STATUS, Messages.STATUS_ERROR);
-            getContentResolver().update(uri, values, null, null);
-            Log.e(TAG, "error sending message", e);
-            return false;
-        }
-    };
+    private MessageResponseListener mMessageSenderListener;
 
     /** Used for binding to the message center to send messages. */
     private class ComposerServiceConnection implements ServiceConnection {
@@ -186,65 +146,163 @@ public class ComposeMessage extends ListActivity {
 
         registerForContextMenu(getListView());
 
+        mMessageSenderListener = new MessageResponseListener(this) {
+
+            @Override
+            public void response(RequestJob job, List<StatusResponse> res) {
+                super.response(job, res);
+            }
+
+            @Override
+            public boolean error(RequestJob job, Throwable e) {
+                return super.error(job, e);
+            }
+        };
+
         mTextEntry = (EditText) findViewById(R.id.text_editor);
         Button sendButton = (Button) findViewById(R.id.send_button);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String text = mTextEntry.getText().toString();
-                if (!TextUtils.isEmpty(text)) {
-                    Log.w(TAG, "sending message...");
-                    // save to local storage
-                    ContentValues values = new ContentValues();
-                    // must supply a message ID...
-                    values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
-                    values.put(Messages.PEER, userId);
-                    values.put(Messages.MIME, "text/plain");
-                    values.put(Messages.CONTENT, text);
-                    values.put(Messages.UNREAD, false);
-                    values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-                    values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                    values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                    Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
-                    if (newMsg != null) {
-                        // empty text
-                        mTextEntry.setText("");
-
-                        // update thread id from the inserted message
-                        if (threadId <= 0) {
-                            Cursor c = getContentResolver().query(newMsg, new String[] { Messages.THREAD_ID }, null, null, null);
-                            if (c.moveToFirst()) {
-                                threadId = c.getLong(0);
-                                Log.i(TAG, "starting query with threadId " + threadId);
-                                mConversation = null;
-                                startQuery(true);
-                            }
-                            else
-                                Log.i(TAG, "no data - cannot start query for this composer");
-                            c.close();
-                        }
-
-                        // hide softkeyboard
-                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
-
-                        // send the message!
-                        ComposerServiceConnection conn = new ComposerServiceConnection(userId, text, newMsg);
-                        if (!bindService(
-                                new Intent(getApplicationContext(), MessageCenterService.class),
-                                conn, Context.BIND_AUTO_CREATE)) {
-                            // cannot bind :(
-                            mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to service"));
-                        }
-                    }
-                    else {
-                        Toast.makeText(ComposeMessage.this,
-                                "Unable to store message to outbox.",
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
+                sendTextMessage();
             }
         });
+    }
+
+    /** Sends out an image message. */
+    private void sendImageMessage(Uri uri, String mime) {
+        Log.i(TAG, "sending image: " + uri);
+        Uri newMsg = null;
+        String contents = null;
+
+        try {
+            // get image data
+            InputStream in = getContentResolver().openInputStream(uri);
+            byte[] buf = new byte[2048];
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            while (in.read(buf) >= 0)
+                out.write(buf);
+            in.close();
+
+            byte[] fileData = out.toByteArray();
+            out.close();
+
+            // encode to base64 for sending
+            contents = Base64.encodeToString(fileData, Base64.NO_WRAP);
+
+            // store the file
+            String msgId = "draft" + (new Random().nextInt());
+            String filename = ImageMessage.buildMediaFilename(msgId, mime);
+            MediaStorage.writeMedia(filename, fileData);
+
+            // save to local storage
+            ContentValues values = new ContentValues();
+            // must supply a message ID...
+            values.put(Messages.MESSAGE_ID, msgId);
+            values.put(Messages.PEER, userId);
+            values.put(Messages.MIME, mime);
+            values.put(Messages.CONTENT, MediaStorage.URI_SCHEME + filename);
+            values.put(Messages.UNREAD, false);
+            values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+            values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+            values.put(Messages.STATUS, Messages.STATUS_SENDING);
+            newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
+        }
+        catch (Exception e) {
+            Log.e(TAG, "unable to store media", e);
+        }
+
+        if (newMsg != null) {
+
+            // update thread id from the inserted message
+            if (threadId <= 0) {
+                Cursor c = getContentResolver().query(newMsg, new String[] { Messages.THREAD_ID }, null, null, null);
+                if (c.moveToFirst()) {
+                    threadId = c.getLong(0);
+                    Log.i(TAG, "starting query with threadId " + threadId);
+                    mConversation = null;
+                    startQuery(true);
+                }
+                else
+                    Log.i(TAG, "no data - cannot start query for this composer");
+                c.close();
+            }
+
+            // send the message!
+            ComposerServiceConnection conn = new ComposerServiceConnection(userId, contents, newMsg);
+            if (!bindService(
+                    new Intent(getApplicationContext(), MessageCenterService.class),
+                    conn, Context.BIND_AUTO_CREATE)) {
+                // cannot bind :(
+                mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to service"));
+            }
+        }
+        else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(ComposeMessage.this,
+                            "Unable to store message to outbox.",
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    /** Sends out the text message in the composing entry. */
+    private void sendTextMessage() {
+        String text = mTextEntry.getText().toString();
+        if (!TextUtils.isEmpty(text)) {
+            Log.w(TAG, "sending message...");
+            // save to local storage
+            ContentValues values = new ContentValues();
+            // must supply a message ID...
+            values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
+            values.put(Messages.PEER, userId);
+            values.put(Messages.MIME, "text/plain");
+            values.put(Messages.CONTENT, text);
+            values.put(Messages.UNREAD, false);
+            values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+            values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+            values.put(Messages.STATUS, Messages.STATUS_SENDING);
+            Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
+            if (newMsg != null) {
+                // empty text
+                mTextEntry.setText("");
+
+                // update thread id from the inserted message
+                if (threadId <= 0) {
+                    Cursor c = getContentResolver().query(newMsg, new String[] { Messages.THREAD_ID }, null, null, null);
+                    if (c.moveToFirst()) {
+                        threadId = c.getLong(0);
+                        Log.i(TAG, "starting query with threadId " + threadId);
+                        mConversation = null;
+                        startQuery(true);
+                    }
+                    else
+                        Log.i(TAG, "no data - cannot start query for this composer");
+                    c.close();
+                }
+
+                // hide softkeyboard
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+                // send the message!
+                ComposerServiceConnection conn = new ComposerServiceConnection(userId, text, newMsg);
+                if (!bindService(
+                        new Intent(getApplicationContext(), MessageCenterService.class),
+                        conn, Context.BIND_AUTO_CREATE)) {
+                    // cannot bind :(
+                    mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to service"));
+                }
+            }
+            else {
+                Toast.makeText(ComposeMessage.this,
+                        "Unable to store message to outbox.",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override
@@ -313,14 +371,21 @@ public class ComposeMessage extends ListActivity {
 
     private static final int MENU_FORWARD = 1;
     private static final int MENU_COPY_TEXT = 2;
-    private static final int MENU_DELETE = 3;
+    private static final int MENU_VIEW_IMAGE = 3;
+    private static final int MENU_DELETE = 4;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        Log.i(TAG, "onCreateContextMenu");
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+        MessageListItem vitem = (MessageListItem) info.targetView;
+        AbstractMessage<?> msg = vitem.getMessage();
+
         menu.setHeaderTitle("Message options");
         menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
-        menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
+        if (msg instanceof ImageMessage)
+            menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, "View image");
+        else
+            menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
         menu.add(Menu.NONE, MENU_DELETE, MENU_DELETE, "Delete message");
     }
 
@@ -344,6 +409,14 @@ public class ComposeMessage extends ListActivity {
                     .show();
                 return true;
 
+            case MENU_VIEW_IMAGE:
+                Log.i(TAG, "opening image");
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setDataAndType(MediaStorage.getMediaUri
+                        (((ImageMessage)msg).getMediaFilename()), msg.getMime());
+                startActivity(i);
+                return true;
+
             case MENU_DELETE:
                 Log.i(TAG, "deleting message: " + msg.getId());
 
@@ -355,7 +428,11 @@ public class ComposeMessage extends ListActivity {
         return super.onContextItemSelected(item);
     }
 
-    // TODO handle onNewIntent()
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        processIntent();
+    }
 
     private void startQuery(boolean reloadConversation) {
         try {
@@ -371,10 +448,36 @@ public class ComposeMessage extends ListActivity {
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    private void chooseContact() {
+        Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+        startActivityForResult(i, REQUEST_CONTACT_PICKER);
+    }
 
+    private void processSendIntent() {
+        if (sendIntent != null) {
+            final String mime = sendIntent.getType();
+            // send text message - just fill the text entry
+            if (PlainTextMessage.supportsMimeType(mime)) {
+                mTextEntry.setText(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+            }
+
+            else if (ImageMessage.supportsMimeType(mime)) {
+                // send image immediately
+                new Thread() {
+                    @Override
+                    public void run() {
+                        sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
+                        sendIntent = null;
+                    }
+                }.start();
+            }
+            else {
+                Log.e(TAG, "mime " + mime + " not supported");
+            }
+        }
+    }
+
+    private void processIntent() {
         Intent intent = getIntent();
         if (intent != null) {
             final String action = intent.getAction();
@@ -409,6 +512,18 @@ public class ComposeMessage extends ListActivity {
                     cp.close();
                 }
                 c.close();
+            }
+
+            // send external content
+            else if (Intent.ACTION_SEND.equals(action)) {
+                sendIntent = intent;
+                String mime = intent.getType();
+
+                Log.i(TAG, "sending data to someone: " + mime);
+                chooseContact();
+
+                // don't do other things - onActivityResult will handle the rest
+                return;
             }
 
             // view conversation - just threadId provided
@@ -450,6 +565,36 @@ public class ComposeMessage extends ListActivity {
             if (userPhone != null)
                 title += " <" + userPhone + ">";
             setTitle(title);
+
+            // did we have a SEND action message to be sent?
+            processSendIntent();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        processIntent();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CONTACT_PICKER) {
+            if (resultCode == RESULT_OK) {
+                Uri contact = Contacts.lookupContact(getContentResolver(), data.getData());
+                if (contact != null) {
+                    Log.i(TAG, "composing message for contact: " + contact);
+                    Intent i = ComposeMessage.fromContactPicker(this, contact);
+                    if (i != null)
+                        onNewIntent(i);
+                    else
+                        Toast.makeText(this, "Contact seems not to be registered on Nuntius.", Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
+            // nothing to do - exit
+            else
+                finish();
         }
     }
 

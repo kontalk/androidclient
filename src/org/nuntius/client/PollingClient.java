@@ -95,7 +95,8 @@ public class PollingClient extends AbstractClient {
 
                         // image message
                         else if (ImageMessage.supportsMimeType(mime)) {
-                            msg = new ImageMessage(id, from, text, group);
+                            // extra argument: mime (first parameter)
+                            msg = new ImageMessage(mime, id, from, text, group);
                         }
 
                         // TODO else other mime types

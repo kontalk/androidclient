@@ -1,9 +1,8 @@
 package org.nuntius.client;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import org.nuntius.data.MediaStorage;
@@ -22,78 +21,103 @@ import android.util.Log;
  * @version 1.0
  */
 public class ImageMessage extends AbstractMessage<Bitmap> {
-    private static final String[] MIME_TYPES = {
-        "image/png",
-        "image/jpeg",
-        "image/gif"
+    private static final String[][] MIME_TYPES = {
+        { "image/png", "png" },
+        { "image/jpeg", "jpg" },
+        { "image/gif", "gif" }
     };
 
     private static final String TAG = ImageMessage.class.getSimpleName();
 
-    private String encodedContent;
+    private byte[] mData;
+    private String mediaFilename;
 
     protected ImageMessage() {
         super(null, null, null, null);
     }
 
-    public ImageMessage(String id, String sender, String content) {
-        this(id, sender, null, null);
+    public ImageMessage(String mime, String id, String sender, String content) {
+        this(mime, id, sender, null, null);
     }
 
-    public ImageMessage(String id, String sender, String content, List<String> group) {
-        super(id, sender, null, null, group);
+    public ImageMessage(String mime, String id, String sender, String content, List<String> group) {
+        super(id, sender, mime, null, group);
 
-        encodedContent = content;
-        // FIXME should be passed from the outside
-        mime = "image/png";
-
+        // prepare file name
+        mediaFilename = buildMediaFilename(id, mime);
         // process content
-        decodeBitmap();
+        decodeBitmap(content);
     }
 
-    public void decodeBitmap() {
-        byte[] data = Base64.decode(encodedContent, Base64.DEFAULT);
-        content = BitmapFactory.decodeByteArray(data, 0, data.length);
+    public void decodeBitmap(String encodedContent) {
+        mData = Base64.decode(encodedContent, Base64.DEFAULT);
+        createBitmap();
+    }
+
+    public void decodeBitmap(byte[] data) {
+        mData = data;
+        createBitmap();
+    }
+
+    public void createBitmap() {
+        content = BitmapFactory.decodeByteArray(mData, 0, mData.length);
     }
 
     public static boolean supportsMimeType(String mime) {
         for (int i = 0; i < MIME_TYPES.length; i++)
-            if (MIME_TYPES[i].equalsIgnoreCase(mime))
+            if (MIME_TYPES[i][0].equalsIgnoreCase(mime))
                 return true;
 
         return false;
     }
 
-    @Override
-    public String getTextContent() {
-        return encodedContent;
+    public String getMediaFilename() {
+        return mediaFilename;
     }
 
     @Override
-    public int getMediaType() {
-        return MEDIA_TYPE_IMAGE;
+    public String getTextContent() {
+        return "[IMAGE]";
+    }
+
+    public byte[] getBinaryContent() {
+        return mData;
     }
 
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
         String mediaFile = c.getString(c.getColumnIndex(Messages.CONTENT));
-        // FIXME should we usi some uri or media storage provider?
         try {
-            if (mediaFile.startsWith("media:")) {
-                mediaFile = mediaFile.substring("media:".length());
-                InputStream fin = MediaStorage.readMedia(mediaFile);
-                BufferedReader buf = new BufferedReader(new InputStreamReader(fin));
-                while (buf.ready()) {
-                    encodedContent = buf.readLine();
-                }
+            InputStream fin = MediaStorage.readMedia(mediaFile);
+            byte[] buf = new byte[2048];
+            ByteArrayOutputStream bio = new ByteArrayOutputStream();
+            while (fin.read(buf) >= 0)
+                bio.write(buf);
+            fin.close();
 
-                decodeBitmap();
-            }
+            decodeBitmap(bio.toByteArray());
+            bio.close();
+
+            // FIXME should be more secure...
+            mediaFilename = mediaFile.substring(MediaStorage.URI_SCHEME.length());
         }
         catch (IOException e) {
             Log.e(TAG, "unable to load image from cursor");
         }
+    }
+
+    public static String buildMediaFilename(String id, String mime) {
+        return "image" + id.substring(id.length() - 5) + "." + getFileExtension(mime);
+    }
+
+    /** Returns the file extension from the mime type. */
+    private static String getFileExtension(String mime) {
+        for (int i = 0; i < MIME_TYPES.length; i++)
+            if (MIME_TYPES[i][0].equalsIgnoreCase(mime))
+                return MIME_TYPES[i][1];
+
+        return null;
     }
 
 }
