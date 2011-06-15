@@ -105,8 +105,10 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
             decodeBitmap(bio.toByteArray());
             bio.close();
 
-            // FIXME should be more secure...
-            mediaFilename = mediaFile.substring(MediaStorage.URI_SCHEME.length());
+            if (mediaFile.startsWith(MediaStorage.URI_SCHEME))
+                mediaFilename = mediaFile.substring(MediaStorage.URI_SCHEME.length());
+            else
+                mediaFilename = mediaFile;
         }
         catch (IOException e) {
             Log.e(TAG, "unable to load image from cursor");

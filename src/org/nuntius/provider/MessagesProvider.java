@@ -236,7 +236,6 @@ public class MessagesProvider extends ContentProvider {
             Log.w(TAG, "messages table inserted, id = " + rowId);
 
             updateThreads(db, initialValues);
-            db.close();
             return msgUri;
         }
 
@@ -318,8 +317,8 @@ public class MessagesProvider extends ContentProvider {
         }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        // FIXME why update() returns >0 even if no rows are modified???
         int rows = db.update(TABLE_MESSAGES, values, where, args);
-        db.close();
 
         Log.w(TAG, "messages table updated, affected: " + rows);
 
@@ -374,7 +373,10 @@ public class MessagesProvider extends ContentProvider {
                 args = new String[] { String.valueOf(_id) };
                 break;
 
-            // TODO cases for threads table
+            case THREADS_PEER:
+                table = TABLE_THREADS;
+                where = "peer = ?";
+                args = new String[] { uri.getLastPathSegment() };
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
@@ -395,7 +397,6 @@ public class MessagesProvider extends ContentProvider {
             }
         }
 
-        db.close();
         return rows;
     }
 
@@ -493,6 +494,36 @@ public class MessagesProvider extends ContentProvider {
 
         c.close();
         return count;
+    }
+
+    public static int changeMessageStatus(Context context, long id, int status) {
+        return changeMessageStatus(context, id, status, -1);
+    }
+
+    public static int changeMessageStatus(Context context, long id, int status, long timestamp) {
+        Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
+        ContentValues values = new ContentValues();
+        values.put(Messages.STATUS, status);
+        if (timestamp >= 0)
+            values.put(Messages.TIMESTAMP, timestamp);
+        return context.getContentResolver().update(
+                ContentUris.withAppendedId(Messages.CONTENT_URI, id),
+                values, null, null);
+    }
+
+    public static int changeMessageStatus(Context context, String id, int status) {
+        return changeMessageStatus(context, id, status, -1);
+    }
+
+    public static int changeMessageStatus(Context context, String id, int status, long timestamp) {
+        Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
+        ContentValues values = new ContentValues();
+        values.put(Messages.STATUS, status);
+        if (timestamp >= 0)
+            values.put(Messages.TIMESTAMP, timestamp);
+        return context.getContentResolver().update(Messages.CONTENT_URI, values,
+                Messages.MESSAGE_ID + " = ?",
+                new String[] { id });
     }
 
     static {

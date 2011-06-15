@@ -60,6 +60,8 @@ public class PollingClient extends AbstractClient {
                     String mime = null;
                     List<String> group = null;
 
+                    // TODO handle empty node values
+
                     // message!
                     NodeList msgChildren = node.getChildNodes();
                     for (int j = 0; j < msgChildren.getLength(); j++) {

@@ -35,11 +35,6 @@ public class Contact {
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
 
-    private Contact(Uri uri) {
-        mUri = uri;
-        // TODO query for name and number
-    }
-
     private Contact(Uri uri, String name, String number) {
         mUri = uri;
         mName = name;

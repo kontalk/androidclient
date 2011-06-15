@@ -16,7 +16,7 @@ import android.util.Log;
 
 /**
  * An abstract message.
- * TODO: should be a {@link Parcelable}
+ * TODO should be a {@link Parcelable}
  * @author Daniele Ricci
  * @version 1.0
  */

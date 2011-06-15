@@ -19,7 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class ConversationListItem extends RelativeLayout {
-    private static final String TAG = "ConversationListItem";
+    //private static final String TAG = ConversationListItem.class.getSimpleName();
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
 

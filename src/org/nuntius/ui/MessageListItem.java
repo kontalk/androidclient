@@ -20,8 +20,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+// TODO timestamp??
+
 public class MessageListItem extends RelativeLayout {
-    private static final String TAG = MessageListItem.class.getSimpleName();
+    //private static final String TAG = MessageListItem.class.getSimpleName();
 
     private AbstractMessage<?> mMessage;
     private CharSequence formattedMessage;

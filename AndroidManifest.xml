@@ -63,8 +63,6 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <provider android:name=".provider.UsersProvider"
-            android:authorities="org.nuntius.users"/>
         <activity android:name=".ui.MessagingPreferences"/>
         <activity android:name=".ui.BootstrapPreferences"/>
         <activity android:name=".ui.NumberValidation"

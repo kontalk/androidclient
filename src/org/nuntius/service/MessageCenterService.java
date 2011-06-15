@@ -143,6 +143,8 @@ public class MessageCenterService extends Service
 
                         // lookup for messages with error status and try to re-send them
                         requeuePendingMessages();
+                        // lookup for incoming messages not confirmed yet
+                        requeuePendingReceipts();
                     }
                     else {
                         mRequestWorker.resume2();
@@ -198,6 +200,7 @@ public class MessageCenterService extends Service
     private void requeuePendingMessages() {
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
                 new String[] { Messages._ID, Messages.PEER, Messages.CONTENT },
+                Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_RECEIVED,
                 null, null);
@@ -215,6 +218,32 @@ public class MessageCenterService extends Service
         }
 
         c.close();
+    }
+
+    /**
+     * Searches for incoming messages not yet confirmed and send a received
+     * notification through the request queue.
+     */
+    private void requeuePendingReceipts() {
+        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
+                new String[] { Messages.MESSAGE_ID },
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
+                Messages.STATUS + " IS NULL",
+                null, null);
+
+        List<NameValuePair> list = new ArrayList<NameValuePair>();
+        while (c.moveToNext()) {
+            String msgId = c.getString(0);
+            Log.i(TAG, "sending received notification for message " + msgId);
+            list.add(new BasicNameValuePair("i[]", msgId));
+        }
+        c.close();
+
+        if (list.size() > 0) {
+            // here we send the received notification
+            RequestJob job = new RequestJob("received", list);
+            pushRequest(job);
+        }
     }
 
     @Override
@@ -282,12 +311,9 @@ public class MessageCenterService extends Service
                         ReceiptMessage msg2 = (ReceiptMessage) msg;
                         Log.w(TAG, "receipt for message " + msg2.getMessageId());
 
-                        ContentValues values = new ContentValues();
-                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                        values.put(Messages.TIMESTAMP, msg.getServerTimestamp().getTime());
-                        getContentResolver().update(Messages.CONTENT_URI, values,
-                                Messages.MESSAGE_ID + " = ?",
-                                new String[] { msg2.getMessageId() });
+                        MessagesProvider.changeMessageStatus(this,
+                                msg2.getMessageId(), Messages.STATUS_RECEIVED,
+                                msg.getServerTimestamp().getTime());
                     }
 
                     // broadcast message
@@ -320,19 +346,22 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public synchronized void response(RequestJob job, List<StatusResponse> statuses) {
-        Log.w(TAG, "statuses: " + statuses);
+    public void response(RequestJob job, List<StatusResponse> statuses) {
+        Log.w(TAG, "job=" + job + ", statuses=" + statuses);
 
         // received command
-        if ("received".equals(job.getCommand())) {
+        if (statuses != null && "received".equals(job.getCommand())) {
             // access to mReceived list is protected
             synchronized (mReceived) {
                 // single status - retrieve message id from request
                 if (statuses.size() == 1) {
                     List<NameValuePair> params = job.getParams();
                     for (NameValuePair par : params) {
-                        if ("i".equals(par.getName()))
+                        if ("i".equals(par.getName()) || "i[]".equals(par.getName())) {
                             mReceived.remove(par.getValue());
+                            MessagesProvider.changeMessageStatus(this,
+                                    par.getValue(), Messages.STATUS_CONFIRMED);
+                        }
                     }
                 }
                 // multiple statuses - each status has its own message id
@@ -340,8 +369,11 @@ public class MessageCenterService extends Service
                     for (StatusResponse st : statuses) {
                         if (st.extra != null) {
                             String idToRemove = (String) st.extra.get("i");
-                            if (idToRemove != null)
+                            if (idToRemove != null) {
                                 mReceived.remove(idToRemove);
+                                MessagesProvider.changeMessageStatus(this,
+                                        idToRemove, Messages.STATUS_CONFIRMED);
+                            }
                         }
                     }
                 }

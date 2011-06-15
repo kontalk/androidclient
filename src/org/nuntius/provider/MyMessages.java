@@ -22,6 +22,7 @@ public final class MyMessages {
         public static final int STATUS_NOTACCEPTED = 3;
         public static final int STATUS_SENT = 4;
         public static final int STATUS_RECEIVED = 5;
+        public static final int STATUS_CONFIRMED = 6;
 
         /**
          * Builds a message {@link Uri}.
