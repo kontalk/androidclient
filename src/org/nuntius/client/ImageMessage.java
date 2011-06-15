@@ -11,6 +11,7 @@ import org.nuntius.provider.MyMessages.Messages;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.util.Base64;
 import android.util.Log;
 
@@ -28,6 +29,8 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     };
 
     private static final String TAG = ImageMessage.class.getSimpleName();
+    private static final int THUMBNAIL_WIDTH = 80;
+    private static final int THUMBNAIL_HEIGHT = 80;
 
     private byte[] mData;
     private String mediaFilename;
@@ -59,8 +62,11 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         createBitmap();
     }
 
-    public void createBitmap() {
-        content = BitmapFactory.decodeByteArray(mData, 0, mData.length);
+    /** Creates a thumbnail from the bitmap data. */
+    private void createBitmap() {
+        Bitmap original = BitmapFactory.decodeByteArray(mData, 0, mData.length);
+        content = ThumbnailUtils
+            .extractThumbnail(original, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
     }
 
     public static boolean supportsMimeType(String mime) {

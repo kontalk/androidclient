@@ -32,4 +32,5 @@
     <string name="confirm_will_delete_thread">The entire thread will be deleted.</string>
     <string name="new_messages">New messages</string>
     <string name="unread_messages">%d unread messages</string>
+    <string name="only_one_account_supported">Only one Nuntius account is supported.</string>
 </resources>

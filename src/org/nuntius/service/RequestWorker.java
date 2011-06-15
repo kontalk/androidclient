@@ -18,7 +18,7 @@ public class RequestWorker extends Thread {
     private static final String TAG = RequestWorker.class.getSimpleName();
     private static final int MSG_REQUEST_JOB = 1;
 
-    private static final long DEFAULT_RETRY_DELAY = 5000;
+    private static final long DEFAULT_RETRY_DELAY = 10000;
 
     private PauseHandler mHandler;
     private final Context mContext;

@@ -2,7 +2,7 @@ package org.nuntius.data;
 
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Threads;
-import org.nuntius.service.MessagingNotification;
+import org.nuntius.ui.MessagingNotification;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
@@ -25,7 +25,8 @@ public class Conversation {
         Threads.UNREAD,
         Threads.MIME,
         Threads.CONTENT,
-        Threads.TIMESTAMP
+        Threads.TIMESTAMP,
+        Threads.STATUS
     };
 
     private final Context mContext;
@@ -38,8 +39,7 @@ public class Conversation {
     private int mMessageCount;
     private String mSubject;
     private int mUnreadCount;
-    private boolean mHasAttachment;
-    private boolean mHasError;
+    private int mStatus;
 
     private Conversation(Context context) {
         mContext = context;
@@ -57,8 +57,7 @@ public class Conversation {
 
             mUnreadCount = c.getInt(c.getColumnIndex(Threads.UNREAD));
             mMessageCount = c.getInt(c.getColumnIndex(Threads.COUNT));
-
-            // TODO attachments & errors
+            mStatus = c.getInt(c.getColumnIndex(Threads.STATUS));
 
             loadContact();
         }
@@ -141,6 +140,10 @@ public class Conversation {
         return mThreadId;
     }
 
+    public int getStatus() {
+        return mStatus;
+    }
+
     public static void startQuery(AsyncQueryHandler handler, int token) {
         // cancel previous operations
         handler.cancelOperation(token);
@@ -164,7 +167,7 @@ public class Conversation {
                         MessagesProvider.markThreadAsRead(mContext, mThreadId);
                     }
 
-                    MessagingNotification.updateMessagesNotification(mContext, false);
+                    MessagingNotification.updateMessagesNotification(mContext.getApplicationContext(), false);
                 }
             }).start();
         }

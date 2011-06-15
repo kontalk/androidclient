@@ -399,7 +399,7 @@ public class ComposeMessage extends ListActivity {
 
         switch (item.getItemId()) {
             case MENU_FORWARD:
-                // TODO
+                // TODO message forwarding
                 return true;
 
             case MENU_COPY_TEXT:
@@ -558,6 +558,9 @@ public class ComposeMessage extends ListActivity {
     }
 
     private void processStart() {
+        // opening for contact picker - do nothing
+        if (threadId < 0 && sendIntent != null) return;
+
         Log.i(TAG, "starting query with threadId " + threadId);
         if (threadId > 0) {
             startQuery(true);
@@ -579,6 +582,10 @@ public class ComposeMessage extends ListActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        // focus text entry
+        mTextEntry.requestFocus();
+
         processStart();
     }
 
@@ -591,8 +598,7 @@ public class ComposeMessage extends ListActivity {
                     Log.i(TAG, "composing message for contact: " + contact);
                     Intent i = fromContactPicker(this, contact);
                     if (i != null) {
-                        setIntent(i);
-                        processIntent(null);
+                        onNewIntent(i);
                     }
                     else
                         Toast.makeText(this, "Contact seems not to be registered on Nuntius.", Toast.LENGTH_LONG)
@@ -689,7 +695,7 @@ public class ComposeMessage extends ListActivity {
         }
 
         @Override
-        protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+        protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
             switch (token) {
                 case MESSAGE_LIST_QUERY_TOKEN:
                     mListAdapter.changeCursor(cursor);

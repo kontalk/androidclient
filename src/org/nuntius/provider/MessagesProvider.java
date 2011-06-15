@@ -77,7 +77,8 @@ public class MessagesProvider extends ContentProvider {
             "unread INTEGER, " +
             "mime TEXT NOT NULL, " +
             "content TEXT, " +
-            "timestamp INTEGER" +
+            "timestamp INTEGER, " +
+            "status INTEGER" +
             ");";
 
         /** Updates the thread messages count. */
@@ -100,20 +101,43 @@ public class MessagesProvider extends ContentProvider {
             "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id " +
             "AND unread <> 0) WHERE _id = old.thread_id";
 
+        /** Updates the thread status reflected by the latest message. */
+        private static final String UPDATE_STATUS_OLD =
+            "UPDATE " + TABLE_THREADS + " SET status = (" +
+            "SELECT status FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id ORDER BY timestamp DESC LIMIT 1)" +
+            " WHERE _id = old.thread_id";
+        private static final String UPDATE_STATUS_NEW =
+            "UPDATE " + TABLE_THREADS + " SET status = (" +
+            "SELECT status FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id ORDER BY timestamp DESC LIMIT 1)" +
+            " WHERE _id = new.thread_id";
+
         /** This trigger will update the threads table counters on INSERT. */
         private static final String TRIGGER_THREADS_INSERT_COUNT =
             "CREATE TRIGGER update_thread_on_insert AFTER INSERT ON " + TABLE_MESSAGES +
-            " BEGIN " + UPDATE_MESSAGES_COUNT_NEW + ";" + UPDATE_UNREAD_COUNT_NEW + "; END;";
+            " BEGIN " +
+            UPDATE_MESSAGES_COUNT_NEW + ";" +
+            UPDATE_UNREAD_COUNT_NEW   + ";" +
+            UPDATE_STATUS_NEW         + ";" +
+            "END;";
 
         /** This trigger will update the threads table counters on UPDATE. */
         private static final String TRIGGER_THREADS_UPDATE_COUNT =
             "CREATE TRIGGER update_thread_on_update AFTER UPDATE ON " + TABLE_MESSAGES +
-            " BEGIN " + UPDATE_MESSAGES_COUNT_NEW + ";" + UPDATE_UNREAD_COUNT_NEW + "; END;";
+            " BEGIN " +
+            UPDATE_MESSAGES_COUNT_NEW + ";" +
+            UPDATE_UNREAD_COUNT_NEW   + ";" +
+            UPDATE_STATUS_NEW         + ";" +
+            "END;";
+
 
         /** This trigger will update the threads table counters on DELETE. */
         private static final String TRIGGER_THREADS_DELETE_COUNT =
             "CREATE TRIGGER update_thread_on_delete AFTER DELETE ON " + TABLE_MESSAGES +
-            " BEGIN " + UPDATE_MESSAGES_COUNT_OLD + "; " + UPDATE_UNREAD_COUNT_OLD + "; END;";
+            " BEGIN " +
+            UPDATE_MESSAGES_COUNT_OLD + ";" +
+            UPDATE_UNREAD_COUNT_OLD   + ";" +
+            UPDATE_STATUS_OLD         + ";" +
+            "END;";
 
         protected DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -235,9 +259,8 @@ public class MessagesProvider extends ContentProvider {
             values.remove(Messages.THREAD_ID);
         }
 
-        // this will be recalculated by the trigger
+        // this will be calculated by the trigger
         values.remove(Messages.UNREAD);
-        values.remove(Messages.STATUS);
 
         // try to insert
         try {
@@ -298,10 +321,15 @@ public class MessagesProvider extends ContentProvider {
         int rows = db.update(TABLE_MESSAGES, values, where, args);
         db.close();
 
-        // notify change only if rows are actually affected
-        if (rows > 0)
-            getContext().getContentResolver().notifyChange(uri, null);
         Log.w(TAG, "messages table updated, affected: " + rows);
+
+        // notify change only if rows are actually affected
+        if (rows > 0) {
+            ContentResolver cr = getContext().getContentResolver();
+            cr.notifyChange(uri, null);
+            cr.notifyChange(Threads.CONTENT_URI, null);
+        }
+
         return rows;
     }
 
@@ -361,18 +389,22 @@ public class MessagesProvider extends ContentProvider {
         Log.w(TAG, "table " + table + " deleted, affected: " + rows);
 
         // check for empty threads
-        if (table.equals(TABLE_MESSAGES))
-            deleteEmptyThreads(db);
+        if (table.equals(TABLE_MESSAGES)) {
+            if (deleteEmptyThreads(db) <= 0) {
+                getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);
+            }
+        }
 
         db.close();
         return rows;
     }
 
-    private void deleteEmptyThreads(SQLiteDatabase db) {
+    private int deleteEmptyThreads(SQLiteDatabase db) {
         int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0", null);
         Log.i(TAG, "checking for empty threads: " + rows);
         if (rows > 0)
             getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);
+        return rows;
     }
 
     @Override
@@ -494,5 +526,6 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.MIME, Threads.MIME);
         threadsProjectionMap.put(Threads.CONTENT, Threads.CONTENT);
         threadsProjectionMap.put(Threads.TIMESTAMP, Threads.TIMESTAMP);
+        threadsProjectionMap.put(Threads.STATUS, Threads.STATUS);
     }
 }

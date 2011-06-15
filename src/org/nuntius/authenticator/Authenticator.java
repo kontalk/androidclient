@@ -69,8 +69,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    // TODO i18n
-                    Toast.makeText(mContext, "Only one Nuntius account is supported.",
+                    Toast.makeText(mContext, R.string.only_one_account_supported,
                             Toast.LENGTH_LONG).show();
                 }
             });

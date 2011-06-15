@@ -1,10 +1,8 @@
-package org.nuntius.service;
+package org.nuntius.ui;
 
 import org.nuntius.R;
 import org.nuntius.data.Contact;
 import org.nuntius.provider.MyMessages.Threads;
-import org.nuntius.ui.ComposeMessage;
-import org.nuntius.ui.ConversationList;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,6 +11,10 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 
 
 /**
@@ -71,8 +73,10 @@ public abstract class MessagingNotification {
         c.close();
 
         Notification no = new Notification(R.drawable.icon, accumulator.getTicker(), accumulator.getTimestamp());
-        no.defaults |= Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS;
-        no.flags |= Notification.FLAG_SHOW_LIGHTS;
+        if (isNew) {
+            no.defaults |= Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS;
+            no.flags |= Notification.FLAG_SHOW_LIGHTS;
+        }
 
         no.setLatestEventInfo(context.getApplicationContext(),
                 accumulator.getTitle(), accumulator.getText(), accumulator.getPendingIntent());
@@ -91,6 +95,7 @@ public abstract class MessagingNotification {
         private int convCount;
         private int unreadCount;
         private Context mContext;
+        private Contact mContact;
 
         public MessageAccumulator(Context context) {
             mContext = context;
@@ -116,9 +121,21 @@ public abstract class MessagingNotification {
             unreadCount += unread;
         }
 
+        private void cacheContact() {
+            mContact = Contact.findbyUserId(mContext, conversation.peer);
+        }
+
         /** Returns the text that should be used as a ticker in the notification. */
-        public String getTicker() {
-            return conversation.content;
+        public CharSequence getTicker() {
+            cacheContact();
+            String peer = (mContact != null) ? mContact.getName() : conversation.peer;
+
+            SpannableStringBuilder buf = new SpannableStringBuilder();
+            buf.append(peer).append(':').append(' ');
+            buf.setSpan(new StyleSpan(Typeface.BOLD), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            buf.append(conversation.content);
+
+            return buf;
         }
 
         /** Returns the text that should be used as the notification title. */
@@ -128,8 +145,8 @@ public abstract class MessagingNotification {
             }
             else {
                 // FIXME use a contact cache
-                Contact contact = Contact.findbyUserId(mContext, conversation.peer);
-                return (contact != null) ? contact.getName() : conversation.peer;
+                cacheContact();
+                return (mContact != null) ? mContact.getName() : conversation.peer;
             }
         }
 

@@ -29,9 +29,12 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.Toast;
 
-// TODO updateNotifications somewhere???
 
-
+/**
+ * The conversations list activity.
+ * @author Daniele Ricci
+ * @version 1.0
+ */
 public class ConversationList extends ListActivity {
 
     private static final String TAG = ConversationList.class.getSimpleName();
@@ -119,6 +122,7 @@ public class ConversationList extends ListActivity {
         builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 MessagesProvider.deleteDatabase(ConversationList.this);
+                MessagingNotification.updateMessagesNotification(getApplicationContext(), false);
             }
         });
         builder.setNegativeButton(android.R.string.cancel, null);

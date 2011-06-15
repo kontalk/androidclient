@@ -23,9 +23,6 @@ import android.widget.TextView;
 public class MessageListItem extends RelativeLayout {
     private static final String TAG = MessageListItem.class.getSimpleName();
 
-    private static final int THUMBNAIL_WIDTH = 128;
-    private static final int THUMBNAIL_HEIGHT = 128;
-
     private AbstractMessage<?> mMessage;
     private CharSequence formattedMessage;
     private TextView mTextView;
@@ -121,16 +118,8 @@ public class MessageListItem extends RelativeLayout {
 
         public MaxSizeImageSpan(Context context, Bitmap bitmap) {
             super(context, bitmap);
-            Bitmap mBitmap;
-            int w = bitmap.getHeight();
-            int h = bitmap.getWidth();
-            if (w > THUMBNAIL_WIDTH || h > THUMBNAIL_HEIGHT)
-                mBitmap = Bitmap.createScaledBitmap(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, true);
-            else
-                mBitmap = bitmap;
-
-            mDrawable = new BitmapDrawable(context.getResources(), mBitmap);
-            mDrawable.setBounds(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+            mDrawable = new BitmapDrawable(context.getResources(), bitmap);
+            mDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
         }
 
         @Override

@@ -16,6 +16,7 @@ import org.nuntius.client.StatusResponse;
 import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.ui.MessagingNotification;
 import org.nuntius.ui.MessagingPreferences;
 
 import android.accounts.Account;
@@ -292,7 +293,7 @@ public class MessageCenterService extends Service
                     // broadcast message
                     broadcastMessage(msg);
                     // update notifications
-                    MessagingNotification.updateMessagesNotification(this, true);
+                    MessagingNotification.updateMessagesNotification(getApplicationContext(), true);
                 }
             }
         }

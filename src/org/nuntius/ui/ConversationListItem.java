@@ -3,6 +3,7 @@ package org.nuntius.ui;
 import org.nuntius.R;
 import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
+import org.nuntius.provider.MyMessages.Messages;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -27,7 +28,7 @@ public class ConversationListItem extends RelativeLayout {
     private TextView mFromView;
     private TextView mDateView;
     private View mAttachmentView;
-    private View mErrorIndicator;
+    private ImageView mErrorIndicator;
     private ImageView mPresenceView;
     private QuickContactBadge mAvatarView;
 
@@ -54,7 +55,7 @@ public class ConversationListItem extends RelativeLayout {
 
         mDateView = (TextView) findViewById(R.id.date);
         mAttachmentView = findViewById(R.id.attachment);
-        mErrorIndicator = findViewById(R.id.error);
+        mErrorIndicator = (ImageView) findViewById(R.id.error);
         mPresenceView = (ImageView) findViewById(R.id.presence);
         mAvatarView = (QuickContactBadge) findViewById(R.id.avatar);
     }
@@ -94,6 +95,32 @@ public class ConversationListItem extends RelativeLayout {
         mFromView.setText(from);
         mDateView.setText(MessageUtils.formatTimeStampString(context, conv.getDate()));
         mSubjectView.setText(conv.getSubject());
+
+        // error indicator
+        int resId = -1;
+        switch (conv.getStatus()) {
+            case Messages.STATUS_SENDING:
+                resId = R.drawable.ic_msg_pending;
+                break;
+            case Messages.STATUS_SENT:
+                resId = R.drawable.ic_msg_sent;
+                break;
+            case Messages.STATUS_RECEIVED:
+                resId = R.drawable.ic_msg_delivered;
+                break;
+            case Messages.STATUS_ERROR:
+            case Messages.STATUS_NOTACCEPTED:
+                resId = R.drawable.ic_msg_error;
+                break;
+        }
+
+        if (resId < 0) {
+            mErrorIndicator.setVisibility(INVISIBLE);
+        }
+        else {
+            mErrorIndicator.setVisibility(VISIBLE);
+            mErrorIndicator.setImageResource(resId);
+        }
     }
 
     public final void unbind() {

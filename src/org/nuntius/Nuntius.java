@@ -1,6 +1,7 @@
 package org.nuntius;
 
 import org.nuntius.service.MessageCenterService;
+import org.nuntius.ui.MessagingNotification;
 
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ public class Nuntius extends Application {
         super.onCreate();
 
         MessageCenterService.startMessageCenter(this);
+        MessagingNotification.updateMessagesNotification(this, false);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
