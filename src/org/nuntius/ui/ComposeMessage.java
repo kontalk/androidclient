@@ -112,8 +112,8 @@ public class ComposeMessage extends ListActivity {
         public final MessageSender job;
         private MessageCenterService service;
 
-        public ComposerServiceConnection(String userId, String text, Uri uri) {
-            job = new MessageSender(userId, text, uri);
+        public ComposerServiceConnection(String userId, String text, String mime, Uri uri) {
+            job = new MessageSender(userId, text, mime, uri);
             job.setListener(mMessageSenderListener);
         }
 
@@ -231,7 +231,7 @@ public class ComposeMessage extends ListActivity {
             }
 
             // send the message!
-            ComposerServiceConnection conn = new ComposerServiceConnection(userId, contents, newMsg);
+            ComposerServiceConnection conn = new ComposerServiceConnection(userId, contents, mime, newMsg);
             if (!bindService(
                     new Intent(getApplicationContext(), MessageCenterService.class),
                     conn, Context.BIND_AUTO_CREATE)) {
@@ -261,7 +261,7 @@ public class ComposeMessage extends ListActivity {
             // must supply a message ID...
             values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
             values.put(Messages.PEER, userId);
-            values.put(Messages.MIME, "text/plain");
+            values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
             values.put(Messages.CONTENT, text);
             values.put(Messages.UNREAD, false);
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
@@ -291,7 +291,7 @@ public class ComposeMessage extends ListActivity {
                 imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
 
                 // send the message!
-                ComposerServiceConnection conn = new ComposerServiceConnection(userId, text, newMsg);
+                ComposerServiceConnection conn = new ComposerServiceConnection(userId, text, PlainTextMessage.MIME_TYPE, newMsg);
                 if (!bindService(
                         new Intent(getApplicationContext(), MessageCenterService.class),
                         conn, Context.BIND_AUTO_CREATE)) {
@@ -384,10 +384,16 @@ public class ComposeMessage extends ListActivity {
 
         menu.setHeaderTitle("Message options");
         menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
-        if (msg instanceof ImageMessage)
+
+        if (msg instanceof ImageMessage) {
+            if (((ImageMessage)msg).getMediaFilename() != null) {
             menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, "View image");
-        else
+            }
+        }
+        else {
             menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
+        }
+
         menu.add(Menu.NONE, MENU_DELETE, MENU_DELETE, "Delete message");
     }
 

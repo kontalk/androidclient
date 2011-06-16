@@ -22,7 +22,7 @@ public class MessageSender extends RequestJob {
     private final String mText;
     private final Uri mUri;
 
-    public MessageSender(String userId, String text, Uri uri) {
+    public MessageSender(String userId, String text, String mime, Uri uri) {
         super("message", null, null);
 
         mPeer = userId;
@@ -43,7 +43,7 @@ public class MessageSender extends RequestJob {
                 .text(mPeer)
                 .endTag(null, "t")
                 .startTag(null, "c")
-                .attribute(null, "t", "text/plain")
+                .attribute(null, "t", mime)
                 .cdsect(mText);
             xml
                 .endTag(null, "c")

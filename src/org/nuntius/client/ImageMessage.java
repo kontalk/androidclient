@@ -1,6 +1,7 @@
 package org.nuntius.client;
 
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     private static final int THUMBNAIL_WIDTH = 80;
     private static final int THUMBNAIL_HEIGHT = 80;
 
-    private byte[] mData;
+    private byte[] decodedContent;
     private String mediaFilename;
 
     protected ImageMessage() {
@@ -49,24 +50,64 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         // prepare file name
         mediaFilename = buildMediaFilename(id, mime);
         // process content
-        decodeBitmap(content);
+        decodedContent = Base64.decode(content, Base64.DEFAULT);
+        createThumbnail(decodedContent);
     }
 
-    public void decodeBitmap(String encodedContent) {
-        mData = Base64.decode(encodedContent, Base64.DEFAULT);
-        createBitmap();
+    private BitmapFactory.Options processOptions(BitmapFactory.Options options) {
+        int w = options.outWidth;
+        int h = options.outHeight;
+        // error :(
+        if (w < 0 || h < 0) return null;
+
+        if (w > THUMBNAIL_WIDTH)
+            options.inSampleSize = (w / THUMBNAIL_WIDTH);
+        else if (h > THUMBNAIL_HEIGHT)
+            options.inSampleSize = (h / THUMBNAIL_HEIGHT);
+
+        options.inJustDecodeBounds = false;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        return options;
     }
 
-    public void decodeBitmap(byte[] data) {
-        mData = data;
-        createBitmap();
+    /** Generates {@link BitmapFactory.Options} for the given image data. */
+    private BitmapFactory.Options preloadBitmap(byte[] data) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(data, 0, data.length, options);
+
+        return processOptions(options);
+    }
+
+    /** Generates {@link BitmapFactory.Options} for the given {@link InputStream}. */
+    private BitmapFactory.Options preloadBitmap(InputStream in) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(in, null, options);
+
+        return processOptions(options);
     }
 
     /** Creates a thumbnail from the bitmap data. */
-    private void createBitmap() {
-        Bitmap original = BitmapFactory.decodeByteArray(mData, 0, mData.length);
+    private void createThumbnail(byte[] data) {
+        BitmapFactory.Options options = preloadBitmap(data);
+        createThumbnail(BitmapFactory.decodeByteArray(data, 0, data.length, options));
+    }
+
+    private void createThumbnail(File file) throws IOException {
+        InputStream in = new FileInputStream(file);
+        BitmapFactory.Options options = preloadBitmap(in);
+        in.close();
+
+        // open again
+        in = new FileInputStream(file);
+        createThumbnail(BitmapFactory.decodeStream(in, null, options));
+        in.close();
+    }
+
+    private void createThumbnail(Bitmap bitmap) {
         content = ThumbnailUtils
-            .extractThumbnail(original, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
+            .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
     }
 
     public static boolean supportsMimeType(String mime) {
@@ -77,6 +118,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         return false;
     }
 
+    /** If the image has not been loaded, this returns null. */
     public String getMediaFilename() {
         return mediaFilename;
     }
@@ -86,8 +128,8 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         return "[IMAGE]";
     }
 
-    public byte[] getBinaryContent() {
-        return mData;
+    public byte[] getDecodedContent() {
+        return decodedContent;
     }
 
     @Override
@@ -95,15 +137,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         super.populateFromCursor(c);
         String mediaFile = c.getString(c.getColumnIndex(Messages.CONTENT));
         try {
-            InputStream fin = MediaStorage.readMedia(mediaFile);
-            byte[] buf = new byte[2048];
-            ByteArrayOutputStream bio = new ByteArrayOutputStream();
-            while (fin.read(buf) >= 0)
-                bio.write(buf);
-            fin.close();
-
-            decodeBitmap(bio.toByteArray());
-            bio.close();
+            createThumbnail(MediaStorage.getMediaFile(mediaFile));
 
             if (mediaFile.startsWith(MediaStorage.URI_SCHEME))
                 mediaFilename = mediaFile.substring(MediaStorage.URI_SCHEME.length());

@@ -199,7 +199,12 @@ public class MessageCenterService extends Service
      */
     private void requeuePendingMessages() {
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-                new String[] { Messages._ID, Messages.PEER, Messages.CONTENT },
+                new String[] {
+                    Messages._ID,
+                    Messages.PEER,
+                    Messages.CONTENT,
+                    Messages.MIME
+                },
                 Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_RECEIVED,
@@ -209,9 +214,10 @@ public class MessageCenterService extends Service
             long id = c.getLong(0);
             String userId = c.getString(1);
             String text = c.getString(2);
+            String mime = c.getString(3);
             Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
 
-            MessageSender m = new MessageSender(userId, text, uri);
+            MessageSender m = new MessageSender(userId, text, mime, uri);
             m.setListener(mMessageResponseListener);
             Log.i(TAG, "resending failed message " + id);
             sendMessage(m);
@@ -280,18 +286,22 @@ public class MessageCenterService extends Service
                     // do not store receipts...
                     if (!(msg instanceof ReceiptMessage)) {
                         // store to file if it's an image message
-                        String content = msg.getTextContent();
+                        String content;
                         if (msg instanceof ImageMessage) {
                             String imgId = msg.getId();
                             imgId = imgId.substring(imgId.length() - 5);
                             ImageMessage imgMsg = (ImageMessage) msg;
                             String filename = imgMsg.getMediaFilename();
                             try {
-                                MediaStorage.writeMedia(filename, imgMsg.getBinaryContent());
-                            } catch (IOException e) {
+                                MediaStorage.writeMedia(filename, imgMsg.getDecodedContent());
+                            }
+                            catch (IOException e) {
                                 Log.e(TAG, "unable to write to media storage", e);
                             }
                             content = MediaStorage.URI_SCHEME + filename;
+                        }
+                        else {
+                            content = msg.getTextContent();
                         }
 
                         // save to local storage

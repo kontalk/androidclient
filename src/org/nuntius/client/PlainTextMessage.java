@@ -15,7 +15,7 @@ import android.os.Bundle;
  * @version 1.0
  */
 public class PlainTextMessage extends AbstractMessage<String> {
-    private static final String MIME_TYPE = "text/plain";
+    public static final String MIME_TYPE = "text/plain";
 
     protected PlainTextMessage() {
         super(null, null, null, null);
