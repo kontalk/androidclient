@@ -137,8 +137,11 @@ public class MessageListItem extends RelativeLayout {
             if (mMessage instanceof ImageMessage) {
                 buf.append("[IMAGE]");
                 ImageMessage image = (ImageMessage) mMessage;
-                ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
-                buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                Bitmap bitmap = image.getContent();
+                if (bitmap != null) {
+                    ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
+                    buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
             }
             else {
                 buf.append(mMessage.getTextContent());
