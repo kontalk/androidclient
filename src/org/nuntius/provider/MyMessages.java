@@ -16,13 +16,15 @@ public final class MyMessages {
         public static final int DIRECTION_IN = 0;
         public static final int DIRECTION_OUT = 1;
 
-        // 0 is for incoming messages (no status of course)
+        public static final int STATUS_INCOMING = 0;
         public static final int STATUS_SENDING = 1;
         public static final int STATUS_ERROR = 2;
         public static final int STATUS_NOTACCEPTED = 3;
         public static final int STATUS_SENT = 4;
         public static final int STATUS_RECEIVED = 5;
         public static final int STATUS_CONFIRMED = 6;
+        // FIXME is this safe?
+        public static final int STATUS_DOWNLOADED = 7;
 
         /**
          * Builds a message {@link Uri}.
@@ -46,6 +48,7 @@ public final class MyMessages {
         public static final String UNREAD = "unread";
         public static final String TIMESTAMP = "timestamp";
         public static final String STATUS = "status";
+        public static final String FETCH_URL = "fetch_url";
 
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = "timestamp";

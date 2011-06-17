@@ -16,7 +16,7 @@ import android.util.Log;
 
 /**
  * An abstract message.
- * TODO should be a {@link Parcelable}
+ * TODO should it be a {@link Parcelable}?
  * @author Daniele Ricci
  * @version 1.0
  */
@@ -60,6 +60,8 @@ public abstract class AbstractMessage<T> {
      * Recipients (incoming) - will be null for outgoing
      */
     protected List<String> group;
+
+    protected String fetchUrl;
 
     public AbstractMessage(String id, String sender, String mime, T content, List<String> group) {
         this(id, sender, mime, content);
@@ -145,6 +147,15 @@ public abstract class AbstractMessage<T> {
      * @return the text that represent this message
      */
     public abstract String getTextContent();
+
+    /** Sets a URL for fetching big contents. */
+    public void setFetchUrl(String url) {
+        fetchUrl = url;
+    }
+
+    public String getFetchUrl() {
+        return fetchUrl;
+    }
 
     /**
      * Constructs a bundle from this message.

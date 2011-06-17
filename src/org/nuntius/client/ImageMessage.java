@@ -23,13 +23,14 @@ import android.util.Log;
  * @version 1.0
  */
 public class ImageMessage extends AbstractMessage<Bitmap> {
+    private static final String TAG = ImageMessage.class.getSimpleName();
+
     private static final String[][] MIME_TYPES = {
         { "image/png", "png" },
         { "image/jpeg", "jpg" },
         { "image/gif", "gif" }
     };
 
-    private static final String TAG = ImageMessage.class.getSimpleName();
     private static final int THUMBNAIL_WIDTH = 80;
     private static final int THUMBNAIL_HEIGHT = 80;
 

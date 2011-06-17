@@ -58,6 +58,7 @@ public class PollingClient extends AbstractClient {
                     String from = null;
                     String text = null;
                     String mime = null;
+                    String fetchUrl = null;
                     List<String> group = null;
 
                     // TODO handle empty node values
@@ -73,6 +74,7 @@ public class PollingClient extends AbstractClient {
                         else if ("c".equals(n2.getNodeName())) {
                             text = n2.getFirstChild().getNodeValue();
                             mime = n2.getAttribute("t");
+                            fetchUrl = n2.getAttribute("u");
                         }
                         else if ("g".equals(n2.getNodeName())) {
                             if (group == null)
@@ -104,6 +106,8 @@ public class PollingClient extends AbstractClient {
                         // TODO else other mime types
 
                         if (msg != null) {
+                            msg.setFetchUrl(fetchUrl);
+
                             if (list == null)
                                 list = new ArrayList<AbstractMessage<?>>();
                             list.add(msg);

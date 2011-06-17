@@ -5,7 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 
 import android.content.ContentResolver;
 import android.content.res.AssetFileDescriptor;
@@ -45,8 +46,16 @@ public class UploadClient extends AbstractClient {
     }
 
     private String upload(InputStream in, long length) throws IOException {
-        HttpRequestBase req = mServer.prepareUpload(mAuthToken, in, length);
-        // TODO
+        currentRequest = mServer.prepareUpload(mAuthToken, in, length);
+        HttpResponse response = mServer.execute(currentRequest);
+
+        // HTTP/1.1 201 Created :)
+        if (response.getStatusLine().getStatusCode() == 201) {
+            Header[] fn = response.getHeaders(EndpointServer.HEADER_FILENAME);
+            if (fn != null && fn.length > 0)
+                return fn[0].getValue();
+        }
+
         return null;
     }
 

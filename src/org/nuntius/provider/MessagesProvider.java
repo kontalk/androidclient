@@ -63,7 +63,8 @@ public class MessagesProvider extends ContentProvider {
             "direction INTEGER, " +
             "unread INTEGER, " +
             "timestamp INTEGER," +
-            "status INTEGER" +
+            "status INTEGER," +
+            "fetch_url TEXT" +
             ");";
 
         /** This table will contain the latest message from each conversation. */
@@ -260,6 +261,8 @@ public class MessagesProvider extends ContentProvider {
 
         // this will be calculated by the trigger
         values.remove(Messages.UNREAD);
+        // no fetch URL in threads :)
+        values.remove(Messages.FETCH_URL);
 
         // try to insert
         try {
@@ -546,6 +549,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.DIRECTION, Messages.DIRECTION);
         messagesProjectionMap.put(Messages.TIMESTAMP, Messages.TIMESTAMP);
         messagesProjectionMap.put(Messages.STATUS, Messages.STATUS);
+        messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
