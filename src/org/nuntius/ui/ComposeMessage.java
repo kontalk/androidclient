@@ -182,6 +182,7 @@ public class ComposeMessage extends ListActivity {
             InputStream in = getContentResolver().openInputStream(uri);
             byte[] buf = new byte[2048];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
+            // FIXME BYTE READ!!!
             while (in.read(buf) >= 0)
                 out.write(buf);
             in.close();

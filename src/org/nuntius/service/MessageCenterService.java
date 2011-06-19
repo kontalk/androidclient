@@ -310,6 +310,7 @@ public class MessageCenterService extends Service
                         values.put(Messages.PEER, msg.getSender());
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);
+                        values.put(Messages.FETCH_URL, msg.getFetchUrl());
                         values.put(Messages.UNREAD, true);
                         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
                         values.put(Messages.TIMESTAMP, System.currentTimeMillis());

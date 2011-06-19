@@ -13,7 +13,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
-import android.util.Base64;
 import android.util.Log;
 
 
@@ -41,18 +40,23 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         super(null, null, null, null);
     }
 
-    public ImageMessage(String mime, String id, String sender, String content) {
+    public ImageMessage(String mime, String id, String sender, byte[] content) {
         this(mime, id, sender, null, null);
     }
 
-    public ImageMessage(String mime, String id, String sender, String content, List<String> group) {
+    public ImageMessage(String mime, String id, String sender, byte[] content, List<String> group) {
         super(id, sender, mime, null, group);
 
         // prepare file name
         mediaFilename = buildMediaFilename(id, mime);
         // process content
-        decodedContent = Base64.decode(content, Base64.DEFAULT);
-        createThumbnail(decodedContent);
+        try {
+            decodedContent = content;
+            createThumbnail(decodedContent);
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error decoding image data", e);
+        }
     }
 
     private BitmapFactory.Options processOptions(BitmapFactory.Options options) {

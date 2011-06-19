@@ -15,18 +15,20 @@ import android.os.Bundle;
  * @version 1.0
  */
 public class PlainTextMessage extends AbstractMessage<String> {
+    //private static final String TAG = PlainTextMessage.class.getSimpleName();
+
     public static final String MIME_TYPE = "text/plain";
 
     protected PlainTextMessage() {
         super(null, null, null, null);
     }
 
-    public PlainTextMessage(String id, String sender, String content) {
-        super(id, sender, MIME_TYPE, content);
+    public PlainTextMessage(String id, String sender, byte[] content) {
+        this(id, sender, content, null);
     }
 
-    public PlainTextMessage(String id, String sender, String content, List<String> group) {
-        super(id, sender, MIME_TYPE, content, group);
+    public PlainTextMessage(String id, String sender, byte[] content, List<String> group) {
+        super(id, sender, MIME_TYPE, new String(content), group);
     }
 
     @Override

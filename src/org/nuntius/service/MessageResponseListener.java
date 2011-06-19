@@ -24,8 +24,8 @@ import android.util.Log;
 public class MessageResponseListener implements ResponseListener {
     private static final String TAG = MessageResponseListener.class.getSimpleName();
 
-    protected Context mContext;
-    protected ContentResolver mContentResolver;
+    protected final Context mContext;
+    protected final ContentResolver mContentResolver;
 
     public MessageResponseListener(Context context) {
         mContext = context;

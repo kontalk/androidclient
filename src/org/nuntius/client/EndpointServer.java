@@ -29,24 +29,24 @@ public class EndpointServer {
 
     private static final String POLLING_PATH = "/polling.php";
     private static final String REQUEST_PATH = "/request.php?cmd=";
-    private static final String UPLOAD_PATH = "/upload.php";
+    private static final String MESSAGE_PATH = "/postmessage.php";
     private static final String DOWNLOAD_PATH = "/download.php?f=";
 
     /** The authentication token header. */
     public static final String HEADER_AUTH_TOKEN = "X-Auth-Token";
 
-    /** The uploaded file name header. */
-    public static final String HEADER_FILENAME = "X-Filename";
+    /** The recipients list header. */
+    public static final String HEADER_RECIPIENTS = "X-Recipients";
 
     private final String requestURL;
     private final String pollingURL;
-    private final String uploadURL;
+    private final String messageURL;
     private final String downloadURL;
 
     public EndpointServer(String baseURL) {
         this.requestURL = baseURL + REQUEST_PATH;
         this.pollingURL = baseURL + POLLING_PATH;
-        this.uploadURL = baseURL + UPLOAD_PATH;
+        this.messageURL = baseURL + MESSAGE_PATH;
         this.downloadURL = baseURL + DOWNLOAD_PATH;
     }
 
@@ -73,7 +73,7 @@ public class EndpointServer {
         // request type
         if (content != null) {
             req = new HttpPost(uri);
-            req.addHeader("Content-Type", "text/xml");
+            req.setHeader("Content-Type", "text/xml");
             ((HttpPost)req).setEntity(new StringEntity(content, "UTF-8"));
         }
         else
@@ -81,7 +81,7 @@ public class EndpointServer {
 
         // token
         if (token != null)
-            req.addHeader(HEADER_AUTH_TOKEN, token);
+            req.setHeader(HEADER_AUTH_TOKEN, token);
 
         return req;
     }
@@ -96,25 +96,36 @@ public class EndpointServer {
         HttpGet req = new HttpGet(pollingURL);
 
         if (token != null)
-            req.addHeader(HEADER_AUTH_TOKEN, token);
+            req.setHeader(HEADER_AUTH_TOKEN, token);
 
         return req;
     }
 
     /**
-     * An upload method for the upload service.
+     * A message posting method for the postmessage service.
      * @param token the autentication token
+     * @param group the recipients
+     * @param mime message mime type
      * @param data data to be sent
      * @param length length of data
      * @return the request object
      * @throws IOException
      */
-    public HttpRequestBase prepareUpload(String token, InputStream data, long length) throws IOException {
-        HttpPut req = new HttpPut(uploadURL);
+    public HttpRequestBase prepareMessage(String token, String[] group, String mime, InputStream data, long length) throws IOException {
+        HttpPut req = new HttpPut(messageURL);
         req.setEntity(new InputStreamEntity(data, length));
 
         if (token != null)
-            req.addHeader(HEADER_AUTH_TOKEN, token);
+            req.setHeader(HEADER_AUTH_TOKEN, token);
+
+        // standard headers
+        req.setHeader("Content-Type", mime);
+        // mmm... req.setHeader("Content-Length", String.valueOf(length));
+
+        for (int i = 0; i < group.length; i++) {
+            // TODO check multiple values support
+            req.addHeader(HEADER_RECIPIENTS, group[i]);
+        }
 
         return req;
     }

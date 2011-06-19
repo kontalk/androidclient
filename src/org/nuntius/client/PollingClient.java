@@ -13,6 +13,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.util.Base64;
+import android.util.Log;
+
 
 /**
  * A client for the polling service.
@@ -20,6 +23,7 @@ import org.w3c.dom.NodeList;
  * @version 1.0
  */
 public class PollingClient extends AbstractClient {
+    private static final String TAG = PollingClient.class.getSimpleName();
 
     public PollingClient(EndpointServer server, String token) {
         super(server, token);
@@ -87,25 +91,30 @@ public class PollingClient extends AbstractClient {
                         // add the message to the list
                         AbstractMessage<?> msg = null;
 
+                        // Base64-decode the text
+                        byte[] content = Base64.decode(text, Base64.DEFAULT);
+
                         // plain text message
                         if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
-                            msg = new PlainTextMessage(id, from, text, group);
+                            msg = new PlainTextMessage(id, from, content, group);
                         }
 
                         // message receipt
                         else if (ReceiptMessage.supportsMimeType(mime)) {
-                            msg = new ReceiptMessage(id, from, text, group);
+                            msg = new ReceiptMessage(id, from, content, group);
                         }
 
                         // image message
                         else if (ImageMessage.supportsMimeType(mime)) {
                             // extra argument: mime (first parameter)
-                            msg = new ImageMessage(mime, id, from, text, group);
+                            msg = new ImageMessage(mime, id, from, content, group);
                         }
 
                         // TODO else other mime types
 
                         if (msg != null) {
+                            // set the fetch url (if any)
+                            Log.d(TAG, "using fetch url: " + fetchUrl);
                             msg.setFetchUrl(fetchUrl);
 
                             if (list == null)

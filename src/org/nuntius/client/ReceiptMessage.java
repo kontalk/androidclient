@@ -37,14 +37,14 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
         super(null, null, null, null);
     }
 
-    public ReceiptMessage(String id, String sender, String content) {
-        this(id, sender, MIME_TYPE, null);
+    public ReceiptMessage(String id, String sender, byte[] content) {
+        this(id, sender, content, null);
     }
 
-    public ReceiptMessage(String id, String sender, String content, List<String> group) {
+    public ReceiptMessage(String id, String sender, byte[] content, List<String> group) {
         super(id, sender, MIME_TYPE, null, group);
 
-        xmlContent = content;
+        xmlContent = new String(content);
         parseXML();
     }
 

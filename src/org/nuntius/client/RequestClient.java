@@ -1,6 +1,8 @@
 package org.nuntius.client;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +18,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.net.Uri;
+
 
 /**
  * A generic request endpoint client.
@@ -28,18 +34,68 @@ public class RequestClient extends AbstractClient {
         super(server, token);
     }
 
+    public List<StatusResponse> message(final String[] group, final String mime, final byte[] content)
+            throws IOException {
+
+        try {
+            // http request!
+            currentRequest = mServer.prepareMessage(mAuthToken, group, mime,
+                new ByteArrayInputStream(content), content.length);
+            return execute();
+        }
+        catch (Exception e) {
+            throw innerException("post message error", e);
+        }
+        finally {
+            currentRequest = null;
+        }
+    }
+
+    public List<StatusResponse> message(final String[] group, final String mime, final Uri uri, final Context context)
+            throws IOException {
+
+        try {
+            AssetFileDescriptor stat = context.getContentResolver().openAssetFileDescriptor(uri, "r");
+            long length = stat.getLength();
+            InputStream in = context.getContentResolver().openInputStream(uri);
+
+            // http request!
+            currentRequest = mServer.prepareMessage(mAuthToken, group, mime, in, length);
+            return execute();
+        }
+        catch (Exception e) {
+            throw innerException("post message error", e);
+        }
+        finally {
+            currentRequest = null;
+        }
+    }
+
     /**
      * Sends a request to the server.
      * @throws IOException
      */
-    @SuppressWarnings("unchecked")
     public List<StatusResponse> request(final String cmd, final List<NameValuePair> params,
             final String content) throws IOException {
 
-        List<StatusResponse> list = null;
         try {
             // http request!
             currentRequest = mServer.prepareRequest(cmd, params, mAuthToken, content);
+            return execute();
+        }
+        catch (Exception e) {
+            throw innerException("request error", e);
+        }
+        finally {
+            currentRequest = null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<StatusResponse> execute() throws Exception {
+        List<StatusResponse> list = null;
+        try {
+            // http request!
             HttpResponse response = mServer.execute(currentRequest);
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -118,9 +174,6 @@ public class RequestClient extends AbstractClient {
                     }
                 }
             }
-        }
-        catch (Exception e) {
-            throw innerException("request error", e);
         }
         finally {
             currentRequest = null;

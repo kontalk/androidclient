@@ -107,7 +107,14 @@ public class RequestWorker extends Thread {
 
                 List<StatusResponse> list;
                 try {
-                    list = mClient.request(job.getCommand(), job.getParams(), job.getContent());
+                    // FIXME this is temporary
+                    if (job instanceof MessageSender) {
+                        MessageSender mess = (MessageSender) job;
+                        list = mClient.message(new String[] { mess.getUserId() }, mess.getMime(), mess.getContent().getBytes());
+                    }
+                    else {
+                        list = mClient.request(job.getCommand(), job.getParams(), job.getContent());
+                    }
 
                     if (listener != null)
                         listener.response(job, list);

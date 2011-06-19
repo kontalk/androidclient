@@ -27,6 +27,7 @@ public class MediaStorage {
         File f = new File(MEDIA_ROOT, filename);
         FileOutputStream fout = new FileOutputStream(f);
         byte[] buf = new byte[1024];
+        // FIXME BYTE READ!!!!! :S
         while (source.read(buf) >= 0)
             fout.write(buf);
         fout.close();
