@@ -8,7 +8,7 @@ public class RequestJob {
 
     protected String mCommand;
     protected List<NameValuePair> mParams;
-    protected String mContent;
+    protected byte[] mContent;
     protected RequestListener mListener;
 
     // TODO content should be byte[]
@@ -16,7 +16,7 @@ public class RequestJob {
         this(cmd, params, null);
     }
 
-    public RequestJob(String cmd, List<NameValuePair> params, String content) {
+    public RequestJob(String cmd, List<NameValuePair> params, byte[] content) {
         mCommand = cmd;
         mParams = params;
         mContent = content;
@@ -34,7 +34,7 @@ public class RequestJob {
         return mParams;
     }
 
-    public String getContent() {
+    public byte[] getContent() {
         return mContent;
     }
 

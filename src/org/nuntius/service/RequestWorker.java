@@ -1,6 +1,7 @@
 package org.nuntius.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -26,7 +27,7 @@ public class RequestWorker extends Thread {
     private String mAuthToken;
 
     private RequestClient mClient;
-    private RequestListener mListener;
+    private RequestListenerList mListeners = new RequestListenerList();
 
     /** Pending jobs queue - will be used on thread start to initialize the messages. */
     static public LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
@@ -36,8 +37,13 @@ public class RequestWorker extends Thread {
         mServer = server;
     }
 
-    public void setResponseListener(RequestListener listener) {
-        this.mListener = listener;
+    public void addListener(RequestListener listener) {
+        if (!this.mListeners.contains(listener))
+            this.mListeners.add(listener);
+    }
+
+    public void removeListener(RequestListener listener) {
+        this.mListeners.remove(listener);
     }
 
     public void run() {
@@ -55,6 +61,39 @@ public class RequestWorker extends Thread {
         }
 
         Looper.loop();
+    }
+
+    /** A fake listener to call all the listeners inside the collection. */
+    private final class RequestListenerList extends ArrayList<RequestListener>
+            implements RequestListener {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void downloadProgress(long bytes) {
+            for (RequestListener l : this)
+                l.downloadProgress(bytes);
+        }
+
+        @Override
+        public boolean error(RequestJob job, Throwable exc) {
+            for (RequestListener l : this)
+                if (l.error(job, exc)) return true;
+
+            // else do not requeue :)
+            return false;
+        }
+
+        @Override
+        public void response(RequestJob job, List<StatusResponse> statuses) {
+            for (RequestListener l : this)
+                l.response(job, statuses);
+        }
+
+        @Override
+        public void uploadProgress(long bytes) {
+            for (RequestListener l : this)
+                l.uploadProgress(bytes);
+        }
     }
 
     private final class PauseHandler extends Handler {
@@ -102,32 +141,35 @@ public class RequestWorker extends Thread {
 
                 // try to use the custom listener
                 RequestListener listener = job.getListener();
-                if (listener == null)
-                    listener = mListener;
+                if (listener != null)
+                    addListener(listener);
 
                 List<StatusResponse> list;
                 try {
                     // FIXME this is temporary
                     if (job instanceof MessageSender) {
                         MessageSender mess = (MessageSender) job;
-                        list = mClient.message(new String[] { mess.getUserId() }, mess.getMime(), mess.getContent().getBytes(), listener);
+                        list = mClient.message(new String[] { mess.getUserId() }, mess.getMime(), mess.getContent(), mListeners);
                     }
                     else {
                         list = mClient.request(job.getCommand(), job.getParams(), job.getContent());
                     }
 
-                    if (listener != null)
-                        listener.response(job, list);
+                    mListeners.response(job, list);
                 } catch (IOException e) {
                     boolean requeue = true;
                     Log.e(TAG, "request error", e);
-                    if (listener != null)
-                        requeue = listener.error(job, e);
+                    requeue = mListeners.error(job, e);
 
                     if (requeue) {
                         Log.i(TAG, "requeuing job " + job);
                         push(job, DEFAULT_RETRY_DELAY);
                     }
+                }
+                finally {
+                    // remove our old custom listener
+                    if (listener != null)
+                        removeListener(listener);
                 }
             }
 
@@ -144,7 +186,7 @@ public class RequestWorker extends Thread {
         // max wait time 10 seconds
         int retries = 20;
 
-        while(!isAlive() || retries <= 0) {
+        while(!isAlive() || mHandler == null || retries <= 0) {
             try {
                 // 500ms should do the job...
                 Thread.sleep(500);

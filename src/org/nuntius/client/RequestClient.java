@@ -80,7 +80,7 @@ public class RequestClient extends AbstractClient {
      * @throws IOException
      */
     public List<StatusResponse> request(final String cmd, final List<NameValuePair> params,
-            final String content) throws IOException {
+            final byte[] content) throws IOException {
 
         try {
             // http request!

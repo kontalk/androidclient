@@ -16,13 +16,13 @@ public class MessageSender extends RequestJob {
     protected final Uri mUri;
     protected final String mMime;
 
-    public MessageSender(String userId, String text, String mime, Uri uri) {
+    public MessageSender(String userId, byte[] content, String mime, Uri uri) {
         super("message", null, null);
 
         mPeer = userId;
         mUri = uri;
         mMime = mime;
-        mContent = text;
+        mContent = content;
     }
 
     public Uri getUri() {

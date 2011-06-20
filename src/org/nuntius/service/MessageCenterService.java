@@ -26,6 +26,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
@@ -145,7 +146,7 @@ public class MessageCenterService extends Service
                     // activate request worker if necessary
                     if (mRequestWorker == null) {
                         mRequestWorker = new RequestWorker(this, server);
-                        mRequestWorker.setResponseListener(this);
+                        mRequestWorker.addListener(this);
                         mRequestWorker.start();
 
                         // lookup for messages with error status and try to re-send them
@@ -224,7 +225,7 @@ public class MessageCenterService extends Service
             String mime = c.getString(3);
             Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
 
-            MessageSender m = new MessageSender(userId, text, mime, uri);
+            MessageSender m = new MessageSender(userId, text.getBytes(), mime, uri);
             m.setListener(mMessageRequestListener);
             Log.i(TAG, "resending failed message " + id);
             sendMessage(m);
@@ -362,7 +363,7 @@ public class MessageCenterService extends Service
     public void sendMessage(final MessageSender job) {
         // not a simple text message - use progress notification
         if (!PlainTextMessage.MIME_TYPE.equals(job.getMime())) {
-            startForeground(job.mContent.length());
+            startForeground(job.mContent.length);
         }
 
         pushRequest(job);
@@ -370,25 +371,33 @@ public class MessageCenterService extends Service
 
     public void startForeground(long totalBytes) {
         Log.w(TAG, "starting foreground progress notification");
-        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
         mTotalBytes = totalBytes;
 
-        mCurrentNotification = new Notification(R.drawable.icon, "Sending message...", System.currentTimeMillis());
-        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentIntent = pi;
-        mCurrentNotification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
-        mCurrentNotification.contentView.setTextViewText(R.id.status_text, "Sending... message");
-        mCurrentNotification.contentView.setProgressBar(R.id.status_progress, 100, 0, false);
+        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
+        mCurrentNotification = new Notification(R.drawable.icon, "Sending message...", System.currentTimeMillis());
+        mCurrentNotification.contentIntent = pi;
+        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+        foregroundNotification(0);
         startForeground(NOTIFICATION_ID, mCurrentNotification);
     }
 
-    public static void publishProgress(long bytes) {
+    private void foregroundNotification(int progress) {
+        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
+        mCurrentNotification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
+        mCurrentNotification.contentView.setTextViewText(R.id.status_text, "Sending message...");
+        mCurrentNotification.contentView.setProgressBar(R.id.status_progress, 100, progress, false);
+    }
+
+    public void publishProgress(long bytes) {
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
-            mCurrentNotification.contentView.setProgressBar(R.id.status_progress, 100, progress, false);
+            foregroundNotification(progress);
+            // send the updates to the notification manager
+            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            nm.notify(NOTIFICATION_ID, mCurrentNotification);
         }
     }
 

@@ -182,7 +182,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             // build the xml data for the lookup request
             final String xmlData = buildXMLData(lookupNumbers.values());
-            final List<StatusResponse> res = client.request("lookup", null, xmlData);
+            final List<StatusResponse> res = client.request("lookup", null, xmlData.getBytes());
 
             // get the first status - it will contain our <u> tags
             final StatusResponse status = res.get(0);

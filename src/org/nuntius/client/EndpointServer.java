@@ -15,7 +15,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.nuntius.service.RequestListener;
 
@@ -61,7 +61,7 @@ public class EndpointServer {
      */
     public HttpRequestBase prepareRequest(String cmd,
             List<NameValuePair> params, String token,
-            String content) throws IOException {
+            byte[] content) throws IOException {
 
         HttpRequestBase req;
 
@@ -74,7 +74,7 @@ public class EndpointServer {
         if (content != null) {
             req = new HttpPost(uri);
             req.setHeader("Content-Type", "text/xml");
-            ((HttpPost)req).setEntity(new StringEntity(content, "UTF-8"));
+            ((HttpPost)req).setEntity(new ByteArrayEntity(content));
         }
         else
             req = new HttpGet(uri);

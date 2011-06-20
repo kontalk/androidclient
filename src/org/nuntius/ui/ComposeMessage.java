@@ -40,7 +40,6 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -112,9 +111,9 @@ public class ComposeMessage extends ListActivity {
         public final MessageSender job;
         private MessageCenterService service;
 
-        public ComposerServiceConnection(String userId, String text, String mime, Uri uri) {
+        public ComposerServiceConnection(String userId, byte[] text, String mime, Uri uri) {
             job = new MessageSender(userId, text, mime, uri);
-            //job.setListener(mMessageSenderListener);
+            job.setListener(mMessageSenderListener);
         }
 
         @Override
@@ -156,13 +155,6 @@ public class ComposeMessage extends ListActivity {
             public boolean error(RequestJob job, Throwable e) {
                 return super.error(job, e);
             }
-
-            @Override
-            public void uploadProgress(long bytes) {
-                super.uploadProgress(bytes);
-                // TODO update progress notification
-                Log.w(TAG, "bytes sent: " + bytes);
-            }
         };
 
         mTextEntry = (EditText) findViewById(R.id.text_editor);
@@ -181,7 +173,7 @@ public class ComposeMessage extends ListActivity {
     private void sendImageMessage(Uri uri, String mime) {
         Log.i(TAG, "sending image: " + uri);
         Uri newMsg = null;
-        String contents = null;
+        byte[] fileData = null;
 
         try {
             // get image data
@@ -193,11 +185,8 @@ public class ComposeMessage extends ListActivity {
                 out.write(buf);
             in.close();
 
-            byte[] fileData = out.toByteArray();
+            fileData = out.toByteArray();
             out.close();
-
-            // encode to base64 for sending
-            contents = Base64.encodeToString(fileData, Base64.NO_WRAP);
 
             // store the file
             String msgId = "draft" + (new Random().nextInt());
@@ -238,7 +227,7 @@ public class ComposeMessage extends ListActivity {
             }
 
             // send the message!
-            ComposerServiceConnection conn = new ComposerServiceConnection(userId, contents, mime, newMsg);
+            ComposerServiceConnection conn = new ComposerServiceConnection(userId, fileData, mime, newMsg);
             if (!bindService(
                     new Intent(getApplicationContext(), MessageCenterService.class),
                     conn, Context.BIND_AUTO_CREATE)) {
@@ -298,7 +287,7 @@ public class ComposeMessage extends ListActivity {
                 imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
 
                 // send the message!
-                ComposerServiceConnection conn = new ComposerServiceConnection(userId, text, PlainTextMessage.MIME_TYPE, newMsg);
+                ComposerServiceConnection conn = new ComposerServiceConnection(userId, text.getBytes(), PlainTextMessage.MIME_TYPE, newMsg);
                 if (!bindService(
                         new Intent(getApplicationContext(), MessageCenterService.class),
                         conn, Context.BIND_AUTO_CREATE)) {

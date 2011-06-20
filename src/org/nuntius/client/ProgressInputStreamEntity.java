@@ -40,11 +40,13 @@ public class ProgressInputStreamEntity extends InputStreamEntity {
             publishProgress(buffer.length);
         }
 
+        @Override
         public void write(byte[] b, int off, int len) throws IOException {
             out.write(b, off, len);
             publishProgress(len);
         }
 
+        @Override
         public void write(int b) throws IOException {
             out.write(b);
             publishProgress(1);
