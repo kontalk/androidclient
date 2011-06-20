@@ -4,7 +4,21 @@ import java.util.List;
 
 import org.nuntius.client.StatusResponse;
 
-public interface ResponseListener {
+public interface RequestListener {
+
+    /**
+     * Called now and then while sending out data.
+     * Useful for checking the upload progress.
+     * @param bytes how many bytes have been uploaded so far
+     */
+    public void uploadProgress(long bytes);
+
+    /**
+     * Called now and then while receiving data in.
+     * Useful for checking the download progress.
+     * @param bytes how many bytes have been uploaded so far
+     */
+    public void downloadProgress(long bytes);
 
     /** Manages the statuses receved from one request job. */
     public void response(RequestJob job, List<StatusResponse> statuses);
@@ -16,4 +30,5 @@ public interface ResponseListener {
      * @return true if the job should be re-queued, false to discard it.
      */
     public boolean error(RequestJob job, Throwable exc);
+
 }

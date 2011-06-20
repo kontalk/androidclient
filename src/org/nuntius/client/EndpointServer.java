@@ -15,9 +15,9 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.nuntius.service.RequestListener;
 
 
 /**
@@ -103,6 +103,7 @@ public class EndpointServer {
 
     /**
      * A message posting method for the postmessage service.
+     * @param listener the uploading listener
      * @param token the autentication token
      * @param group the recipients
      * @param mime message mime type
@@ -111,16 +112,21 @@ public class EndpointServer {
      * @return the request object
      * @throws IOException
      */
-    public HttpRequestBase prepareMessage(String token, String[] group, String mime, InputStream data, long length) throws IOException {
+    public HttpRequestBase prepareMessage(
+            RequestListener listener,
+            String token, String[] group, String mime,
+            InputStream data, long length) throws IOException {
+
         HttpPut req = new HttpPut(messageURL);
-        req.setEntity(new InputStreamEntity(data, length));
+        req.setEntity(new ProgressInputStreamEntity(data, length, listener));
 
         if (token != null)
             req.setHeader(HEADER_AUTH_TOKEN, token);
 
         // standard headers
         req.setHeader("Content-Type", mime);
-        // mmm... req.setHeader("Content-Length", String.valueOf(length));
+        // mmm... "header Content-Length already added..."
+        //req.setHeader("Content-Length", String.valueOf(length));
 
         for (int i = 0; i < group.length; i++) {
             // TODO check multiple values support
@@ -150,6 +156,12 @@ public class EndpointServer {
         return req;
     }
 
+    /**
+     * Executes the given request.
+     * @param request the request
+     * @return the response
+     * @throws IOException
+     */
     public HttpResponse execute(HttpRequestBase request) throws IOException {
         // execute!
         try {

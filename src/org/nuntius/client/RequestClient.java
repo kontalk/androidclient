@@ -13,6 +13,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.nuntius.service.MessageRequestListener;
+import org.nuntius.service.RequestListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,12 +36,13 @@ public class RequestClient extends AbstractClient {
         super(server, token);
     }
 
-    public List<StatusResponse> message(final String[] group, final String mime, final byte[] content)
+    public List<StatusResponse> message(final String[] group, final String mime,
+                final byte[] content, final RequestListener listener)
             throws IOException {
 
         try {
             // http request!
-            currentRequest = mServer.prepareMessage(mAuthToken, group, mime,
+            currentRequest = mServer.prepareMessage(listener, mAuthToken, group, mime,
                 new ByteArrayInputStream(content), content.length);
             return execute();
         }
@@ -51,8 +54,9 @@ public class RequestClient extends AbstractClient {
         }
     }
 
-    public List<StatusResponse> message(final String[] group, final String mime, final Uri uri, final Context context)
-            throws IOException {
+    public List<StatusResponse> message(final String[] group, final String mime, final Uri uri,
+            final Context context, final MessageRequestListener listener)
+                throws IOException {
 
         try {
             AssetFileDescriptor stat = context.getContentResolver().openAssetFileDescriptor(uri, "r");
@@ -60,7 +64,7 @@ public class RequestClient extends AbstractClient {
             InputStream in = context.getContentResolver().openInputStream(uri);
 
             // http request!
-            currentRequest = mServer.prepareMessage(mAuthToken, group, mime, in, length);
+            currentRequest = mServer.prepareMessage(listener, mAuthToken, group, mime, in, length);
             return execute();
         }
         catch (Exception e) {

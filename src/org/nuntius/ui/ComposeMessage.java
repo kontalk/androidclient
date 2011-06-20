@@ -17,7 +17,7 @@ import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.service.MessageCenterService;
-import org.nuntius.service.MessageResponseListener;
+import org.nuntius.service.MessageRequestListener;
 import org.nuntius.service.RequestJob;
 import org.nuntius.service.MessageCenterService.MessageCenterInterface;
 
@@ -105,7 +105,7 @@ public class ComposeMessage extends ListActivity {
     };
 
     /** Used by the service binder to receive responses from the request worker. */
-    private MessageResponseListener mMessageSenderListener;
+    private MessageRequestListener mMessageSenderListener;
 
     /** Used for binding to the message center to send messages. */
     private class ComposerServiceConnection implements ServiceConnection {
@@ -114,7 +114,7 @@ public class ComposeMessage extends ListActivity {
 
         public ComposerServiceConnection(String userId, String text, String mime, Uri uri) {
             job = new MessageSender(userId, text, mime, uri);
-            job.setListener(mMessageSenderListener);
+            //job.setListener(mMessageSenderListener);
         }
 
         @Override
@@ -146,8 +146,7 @@ public class ComposeMessage extends ListActivity {
 
         registerForContextMenu(getListView());
 
-        mMessageSenderListener = new MessageResponseListener(this) {
-
+        mMessageSenderListener = new MessageRequestListener(this) {
             @Override
             public void response(RequestJob job, List<StatusResponse> res) {
                 super.response(job, res);
@@ -156,6 +155,13 @@ public class ComposeMessage extends ListActivity {
             @Override
             public boolean error(RequestJob job, Throwable e) {
                 return super.error(job, e);
+            }
+
+            @Override
+            public void uploadProgress(long bytes) {
+                super.uploadProgress(bytes);
+                // TODO update progress notification
+                Log.w(TAG, "bytes sent: " + bytes);
             }
         };
 
@@ -237,7 +243,7 @@ public class ComposeMessage extends ListActivity {
                     new Intent(getApplicationContext(), MessageCenterService.class),
                     conn, Context.BIND_AUTO_CREATE)) {
                 // cannot bind :(
-                mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to service"));
+                mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to message center"));
             }
         }
         else {

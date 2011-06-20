@@ -9,8 +9,9 @@ public class RequestJob {
     protected String mCommand;
     protected List<NameValuePair> mParams;
     protected String mContent;
-    protected ResponseListener mListener;
+    protected RequestListener mListener;
 
+    // TODO content should be byte[]
     public RequestJob(String cmd, List<NameValuePair> params) {
         this(cmd, params, null);
     }
@@ -37,11 +38,11 @@ public class RequestJob {
         return mContent;
     }
 
-    public void setListener(ResponseListener listener) {
+    public void setListener(RequestListener listener) {
         mListener = listener;
     }
 
-    public ResponseListener getListener() {
+    public RequestListener getListener() {
         return mListener;
     }
 }

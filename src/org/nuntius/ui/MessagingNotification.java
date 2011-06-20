@@ -173,7 +173,7 @@ public abstract class MessagingNotification {
                 ni.setAction(ComposeMessage.ACTION_VIEW_CONVERSATION);
                 ni.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conversation.id);
             }
-            return PendingIntent.getActivity(mContext, 0, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+            return PendingIntent.getActivity(mContext, MESSAGES_NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
         }
     }
 }

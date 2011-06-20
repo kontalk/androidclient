@@ -6,22 +6,27 @@ import java.util.List;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.nuntius.R;
 import org.nuntius.authenticator.Authenticator;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
 import org.nuntius.client.ImageMessage;
 import org.nuntius.client.MessageSender;
+import org.nuntius.client.PlainTextMessage;
 import org.nuntius.client.ReceiptMessage;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.ui.ConversationList;
 import org.nuntius.ui.MessagingNotification;
 import org.nuntius.ui.MessagingPreferences;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -35,6 +40,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 
 /**
@@ -45,12 +51,16 @@ import android.util.Log;
  * @version 1.0
  */
 public class MessageCenterService extends Service
-        implements MessageListener, ResponseListener {
+        implements MessageListener, RequestListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
+    private static final int NOTIFICATION_ID = 102;
 
     public static final String MESSAGE_RECEIVED = "org.nuntius.MESSAGE_RECEIVED";
     private static final String ACTION_PAUSE = "org.nuntius.PAUSE_MESSAGE_CENTER";
+
+    private static Notification mCurrentNotification;
+    private static long mTotalBytes;
 
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
@@ -87,13 +97,10 @@ public class MessageCenterService extends Service
         }
     };
 
-    private MessageResponseListener mMessageResponseListener; // created in onCreate
+    private MessageRequestListener mMessageRequestListener; // created in onCreate
 
     private final IBinder mBinder = new MessageCenterInterface();
 
-    /**
-     * Not used.
-     */
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -218,7 +225,7 @@ public class MessageCenterService extends Service
             Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
 
             MessageSender m = new MessageSender(userId, text, mime, uri);
-            m.setListener(mMessageResponseListener);
+            m.setListener(mMessageRequestListener);
             Log.i(TAG, "resending failed message " + id);
             sendMessage(m);
         }
@@ -254,7 +261,7 @@ public class MessageCenterService extends Service
 
     @Override
     public void onCreate() {
-        mMessageResponseListener = new MessageResponseListener(this);
+        mMessageRequestListener = new MessageRequestListener(this);
     }
 
     @Override
@@ -353,12 +360,48 @@ public class MessageCenterService extends Service
 
     /** Sends a message using the request worker. */
     public void sendMessage(final MessageSender job) {
+        // not a simple text message - use progress notification
+        if (!PlainTextMessage.MIME_TYPE.equals(job.getMime())) {
+            startForeground(job.mContent.length());
+        }
+
         pushRequest(job);
+    }
+
+    public void startForeground(long totalBytes) {
+        Log.w(TAG, "starting foreground progress notification");
+        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+        mTotalBytes = totalBytes;
+
+        mCurrentNotification = new Notification(R.drawable.icon, "Sending message...", System.currentTimeMillis());
+        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
+        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
+        mCurrentNotification.contentIntent = pi;
+        mCurrentNotification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
+        mCurrentNotification.contentView.setTextViewText(R.id.status_text, "Sending... message");
+        mCurrentNotification.contentView.setProgressBar(R.id.status_progress, 100, 0, false);
+
+        startForeground(NOTIFICATION_ID, mCurrentNotification);
+    }
+
+    public static void publishProgress(long bytes) {
+        if (mCurrentNotification != null) {
+            int progress = (int)((100 * bytes) / mTotalBytes);
+            mCurrentNotification.contentView.setProgressBar(R.id.status_progress, 100, progress, false);
+        }
+    }
+
+    public void stopForeground() {
+        stopForeground(true);
+        mCurrentNotification = null;
     }
 
     @Override
     public void response(RequestJob job, List<StatusResponse> statuses) {
         Log.w(TAG, "job=" + job + ", statuses=" + statuses);
+        // stop foreground if any
+        stopForeground();
 
         // received command
         if (statuses != null && "received".equals(job.getCommand())) {
@@ -396,7 +439,21 @@ public class MessageCenterService extends Service
     public boolean error(RequestJob job, Throwable e) {
         // TODO ehm :)
         Log.e(TAG, "request error", e);
+        // stop foreground if any
+        stopForeground();
         return true;
+    }
+
+    @Override
+    public void uploadProgress(long bytes) {
+        Log.i(TAG, "bytes sent: " + bytes);
+        publishProgress(bytes);
+    }
+
+    @Override
+    public void downloadProgress(long bytes) {
+        // TODO ehm :)
+        Log.i(TAG, "bytes received: " + bytes);
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {

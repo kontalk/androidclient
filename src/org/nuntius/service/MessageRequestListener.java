@@ -16,18 +16,18 @@ import android.util.Log;
 
 
 /**
- * A {@link ResponseListener} to be used for message requests.
+ * A {@link RequestListener} to be used for message requests.
  * Could be subclassed by UI to get notifications about message deliveries.
  * @author Daniele Ricci
  * @version 1.0
  */
-public class MessageResponseListener implements ResponseListener {
-    private static final String TAG = MessageResponseListener.class.getSimpleName();
+public class MessageRequestListener implements RequestListener {
+    private static final String TAG = MessageRequestListener.class.getSimpleName();
 
     protected final Context mContext;
     protected final ContentResolver mContentResolver;
 
-    public MessageResponseListener(Context context) {
+    public MessageRequestListener(Context context) {
         mContext = context;
         mContentResolver = context.getContentResolver();
     }
@@ -77,6 +77,16 @@ public class MessageResponseListener implements ResponseListener {
         mContentResolver.update(uri, values, null, null);
         Log.e(TAG, "error sending message", e);
         return true;
+    }
+
+    @Override
+    public void uploadProgress(long bytes) {
+        // TODO
+    }
+
+    @Override
+    public void downloadProgress(long bytes) {
+        // TODO
     }
 
 }

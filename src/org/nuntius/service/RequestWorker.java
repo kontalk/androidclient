@@ -26,7 +26,7 @@ public class RequestWorker extends Thread {
     private String mAuthToken;
 
     private RequestClient mClient;
-    private ResponseListener mListener;
+    private RequestListener mListener;
 
     /** Pending jobs queue - will be used on thread start to initialize the messages. */
     static public LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
@@ -36,7 +36,7 @@ public class RequestWorker extends Thread {
         mServer = server;
     }
 
-    public void setResponseListener(ResponseListener listener) {
+    public void setResponseListener(RequestListener listener) {
         this.mListener = listener;
     }
 
@@ -101,7 +101,7 @@ public class RequestWorker extends Thread {
                 Log.w(TAG, job.toString());
 
                 // try to use the custom listener
-                ResponseListener listener = job.getListener();
+                RequestListener listener = job.getListener();
                 if (listener == null)
                     listener = mListener;
 
@@ -110,7 +110,7 @@ public class RequestWorker extends Thread {
                     // FIXME this is temporary
                     if (job instanceof MessageSender) {
                         MessageSender mess = (MessageSender) job;
-                        list = mClient.message(new String[] { mess.getUserId() }, mess.getMime(), mess.getContent().getBytes());
+                        list = mClient.message(new String[] { mess.getUserId() }, mess.getMime(), mess.getContent().getBytes(), listener);
                     }
                     else {
                         list = mClient.request(job.getCommand(), job.getParams(), job.getContent());

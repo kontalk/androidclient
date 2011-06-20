@@ -12,9 +12,9 @@ import android.net.Uri;
  */
 public class MessageSender extends RequestJob {
 
-    private final String mPeer;
-    private final Uri mUri;
-    private final String mMime;
+    protected final String mPeer;
+    protected final Uri mUri;
+    protected final String mMime;
 
     public MessageSender(String userId, String text, String mime, Uri uri) {
         super("message", null, null);
