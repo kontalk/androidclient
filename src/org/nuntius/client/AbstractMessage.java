@@ -9,6 +9,7 @@ import org.nuntius.provider.MyMessages.Messages;
 import android.content.AsyncQueryHandler;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -61,7 +62,11 @@ public abstract class AbstractMessage<T> {
      */
     protected List<String> group;
 
+    /** Remote fetch URL (if any). */
     protected String fetchUrl;
+
+    /** Local file {@link Uri}. */
+    protected Uri localUri;
 
     public AbstractMessage(String id, String sender, String mime, T content, List<String> group) {
         this(id, sender, mime, content);
@@ -155,6 +160,14 @@ public abstract class AbstractMessage<T> {
 
     public String getFetchUrl() {
         return fetchUrl;
+    }
+
+    public void setLocalUri(Uri uri) {
+        localUri = uri;
+    }
+
+    public Uri getLocalUri() {
+        return localUri;
     }
 
     /**

@@ -1,8 +1,5 @@
 package org.nuntius.ui;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.List;
 import java.util.Random;
 
 import org.nuntius.R;
@@ -10,16 +7,13 @@ import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.ImageMessage;
 import org.nuntius.client.MessageSender;
 import org.nuntius.client.PlainTextMessage;
-import org.nuntius.client.StatusResponse;
 import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
-import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.service.MessageCenterService;
-import org.nuntius.service.MessageRequestListener;
-import org.nuntius.service.RequestJob;
 import org.nuntius.service.MessageCenterService.MessageCenterInterface;
+import org.nuntius.util.MessageUtils;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -104,16 +98,21 @@ public class ComposeMessage extends ListActivity {
     };
 
     /** Used by the service binder to receive responses from the request worker. */
-    private MessageRequestListener mMessageSenderListener;
+    //private MessageRequestListener mMessageSenderListener;
 
     /** Used for binding to the message center to send messages. */
     private class ComposerServiceConnection implements ServiceConnection {
         public final MessageSender job;
         private MessageCenterService service;
 
-        public ComposerServiceConnection(String userId, byte[] text, String mime, Uri uri) {
-            job = new MessageSender(userId, text, mime, uri);
-            job.setListener(mMessageSenderListener);
+        public ComposerServiceConnection(String userId, byte[] text, String mime, Uri msgUri) {
+            job = new MessageSender(userId, text, mime, msgUri);
+            //job.setListener(mMessageSenderListener);
+        }
+
+        public ComposerServiceConnection(String userId, Uri fileUri, String mime, Uri msgUri) {
+            job = new MessageSender(userId, fileUri, mime, msgUri);
+            //job.setListener(mMessageSenderListener);
         }
 
         @Override
@@ -145,6 +144,7 @@ public class ComposeMessage extends ListActivity {
 
         registerForContextMenu(getListView());
 
+        /*
         mMessageSenderListener = new MessageRequestListener(this) {
             @Override
             public void response(RequestJob job, List<StatusResponse> res) {
@@ -156,6 +156,7 @@ public class ComposeMessage extends ListActivity {
                 return super.error(job, e);
             }
         };
+        */
 
         mTextEntry = (EditText) findViewById(R.id.text_editor);
         Button sendButton = (Button) findViewById(R.id.send_button);
@@ -173,25 +174,9 @@ public class ComposeMessage extends ListActivity {
     private void sendImageMessage(Uri uri, String mime) {
         Log.i(TAG, "sending image: " + uri);
         Uri newMsg = null;
-        byte[] fileData = null;
 
         try {
-            // get image data
-            InputStream in = getContentResolver().openInputStream(uri);
-            byte[] buf = new byte[2048];
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            // FIXME BYTE READ!!!
-            while (in.read(buf) >= 0)
-                out.write(buf);
-            in.close();
-
-            fileData = out.toByteArray();
-            out.close();
-
-            // store the file
             String msgId = "draft" + (new Random().nextInt());
-            String filename = ImageMessage.buildMediaFilename(msgId, mime);
-            MediaStorage.writeMedia(filename, fileData);
 
             // save to local storage
             ContentValues values = new ContentValues();
@@ -199,7 +184,7 @@ public class ComposeMessage extends ListActivity {
             values.put(Messages.MESSAGE_ID, msgId);
             values.put(Messages.PEER, userId);
             values.put(Messages.MIME, mime);
-            values.put(Messages.CONTENT, MediaStorage.URI_SCHEME + filename);
+            values.put(Messages.CONTENT, uri.toString());
             values.put(Messages.UNREAD, false);
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
@@ -227,12 +212,12 @@ public class ComposeMessage extends ListActivity {
             }
 
             // send the message!
-            ComposerServiceConnection conn = new ComposerServiceConnection(userId, fileData, mime, newMsg);
+            ComposerServiceConnection conn = new ComposerServiceConnection(userId, uri, mime, newMsg);
             if (!bindService(
                     new Intent(getApplicationContext(), MessageCenterService.class),
                     conn, Context.BIND_AUTO_CREATE)) {
                 // cannot bind :(
-                mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to message center"));
+                //mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to message center"));
             }
         }
         else {
@@ -292,7 +277,7 @@ public class ComposeMessage extends ListActivity {
                         new Intent(getApplicationContext(), MessageCenterService.class),
                         conn, Context.BIND_AUTO_CREATE)) {
                     // cannot bind :(
-                    mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to service"));
+                    //mMessageSenderListener.error(conn.job, new IllegalArgumentException("unable to bind to service"));
                 }
             }
             else {
@@ -382,9 +367,8 @@ public class ComposeMessage extends ListActivity {
         menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
 
         if (msg instanceof ImageMessage) {
-            if (((ImageMessage)msg).getMediaFilename() != null) {
-            menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, "View image");
-            }
+            if (msg.getLocalUri() != null)
+                menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, "View image");
         }
         else {
             menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
@@ -416,8 +400,7 @@ public class ComposeMessage extends ListActivity {
             case MENU_VIEW_IMAGE:
                 Log.i(TAG, "opening image");
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setDataAndType(MediaStorage.getMediaUri
-                        (((ImageMessage)msg).getMediaFilename()), msg.getMime());
+                i.setDataAndType(msg.getLocalUri(), msg.getMime());
                 startActivity(i);
                 return true;
 

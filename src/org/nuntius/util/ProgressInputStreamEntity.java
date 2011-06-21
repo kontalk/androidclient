@@ -1,4 +1,4 @@
-package org.nuntius.client;
+package org.nuntius.util;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;

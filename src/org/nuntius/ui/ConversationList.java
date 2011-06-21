@@ -165,9 +165,6 @@ public class ConversationList extends ListActivity {
             return;
         }
 
-        // start the message center
-        MessageCenterService.startMessageCenter(getApplicationContext());
-
         // check if contacts list has already been checked
         if (!MessagingPreferences.getContactsChecked(this)) {
             // TODO start the contacts list checker thread

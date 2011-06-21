@@ -6,18 +6,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.util.ThumbnailUtils;
 
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.util.Log;
 
 
 /**
- * A generic image message (base64-encoded).
+ * A generic image message.
  * @author Daniele Ricci
  * @version 1.0
  */
@@ -34,7 +34,6 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     private static final int THUMBNAIL_HEIGHT = 80;
 
     private byte[] decodedContent;
-    private String mediaFilename;
 
     protected ImageMessage() {
         super(null, null, null, null);
@@ -47,8 +46,6 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     public ImageMessage(String mime, String id, String sender, byte[] content, List<String> group) {
         super(id, sender, mime, null, group);
 
-        // prepare file name
-        mediaFilename = buildMediaFilename(id, mime);
         // process content
         try {
             decodedContent = content;
@@ -99,6 +96,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         createThumbnail(BitmapFactory.decodeByteArray(data, 0, data.length, options));
     }
 
+    /** Creates a thumbnail from a {@link File}. */
     private void createThumbnail(File file) throws IOException {
         InputStream in = new FileInputStream(file);
         BitmapFactory.Options options = preloadBitmap(in);
@@ -123,11 +121,6 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         return false;
     }
 
-    /** If the image has not been loaded, this returns null. */
-    public String getMediaFilename() {
-        return mediaFilename;
-    }
-
     @Override
     public String getTextContent() {
         return "[IMAGE]";
@@ -140,14 +133,15 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
-        String mediaFile = c.getString(c.getColumnIndex(Messages.CONTENT));
+        String mediaUri = c.getString(c.getColumnIndex(Messages.CONTENT));
         try {
-            createThumbnail(MediaStorage.getMediaFile(mediaFile));
+            Uri u = Uri.parse(mediaUri);
 
-            if (mediaFile.startsWith(MediaStorage.URI_SCHEME))
-                mediaFilename = mediaFile.substring(MediaStorage.URI_SCHEME.length());
-            else
-                mediaFilename = mediaFile;
+            // TODO preview thumbnail loading from all media
+            if ("file".equals(u.getScheme()))
+                createThumbnail(new File(u.getPath()));
+
+            localUri = u;
         }
         catch (IOException e) {
             Log.e(TAG, "unable to load image from cursor");

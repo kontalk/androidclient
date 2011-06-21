@@ -13,8 +13,8 @@ import org.nuntius.client.EndpointServer;
 import org.nuntius.client.RequestClient;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.provider.MyUsers.Users;
-import org.nuntius.ui.MessageUtils;
 import org.nuntius.ui.MessagingPreferences;
+import org.nuntius.util.MessageUtils;
 import org.xmlpull.v1.XmlSerializer;
 
 import android.accounts.Account;

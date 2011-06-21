@@ -1,5 +1,6 @@
 package org.nuntius.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +16,12 @@ import org.nuntius.client.MessageSender;
 import org.nuntius.client.PlainTextMessage;
 import org.nuntius.client.ReceiptMessage;
 import org.nuntius.client.StatusResponse;
-import org.nuntius.data.MediaStorage;
 import org.nuntius.provider.MessagesProvider;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.ui.ConversationList;
 import org.nuntius.ui.MessagingNotification;
 import org.nuntius.ui.MessagingPreferences;
+import org.nuntius.util.MediaStorage;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -60,8 +61,8 @@ public class MessageCenterService extends Service
     public static final String MESSAGE_RECEIVED = "org.nuntius.MESSAGE_RECEIVED";
     private static final String ACTION_PAUSE = "org.nuntius.PAUSE_MESSAGE_CENTER";
 
-    private static Notification mCurrentNotification;
-    private static long mTotalBytes;
+    private Notification mCurrentNotification;
+    private long mTotalBytes;
 
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
@@ -191,6 +192,11 @@ public class MessageCenterService extends Service
      * @return true if the thread has been stopped, false if it wasn't running.
      */
     private boolean shutdownRequestWorker() {
+        // Be sure to clear the pending jobs queue.
+        // Since we are stopping the message center, any pending request would
+        // be lost anyway.
+        RequestWorker.pendingJobs.clear();
+
         if (mRequestWorker != null) {
             RequestWorker tmp = mRequestWorker;
             // discard the reference to the thread immediately
@@ -296,17 +302,19 @@ public class MessageCenterService extends Service
                         // store to file if it's an image message
                         String content;
                         if (msg instanceof ImageMessage) {
-                            String imgId = msg.getId();
-                            imgId = imgId.substring(imgId.length() - 5);
                             ImageMessage imgMsg = (ImageMessage) msg;
-                            String filename = imgMsg.getMediaFilename();
+                            String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
+                            File file = null;
                             try {
-                                MediaStorage.writeMedia(filename, imgMsg.getDecodedContent());
+                                file = MediaStorage.writeMedia(filename, imgMsg.getDecodedContent());
                             }
                             catch (IOException e) {
                                 Log.e(TAG, "unable to write to media storage", e);
                             }
-                            content = MediaStorage.URI_SCHEME + filename;
+                            // update uri
+                            Uri uri = Uri.fromFile(file);
+                            msg.setLocalUri(uri);
+                            content = uri.toString();
                         }
                         else {
                             content = msg.getTextContent();
@@ -361,9 +369,19 @@ public class MessageCenterService extends Service
 
     /** Sends a message using the request worker. */
     public void sendMessage(final MessageSender job) {
+        // global listener
+        job.setListener(mMessageRequestListener);
+
         // not a simple text message - use progress notification
         if (!PlainTextMessage.MIME_TYPE.equals(job.getMime())) {
-            startForeground(job.mContent.length);
+            try {
+                startForeground(job.getContentLength(this));
+            }
+            catch (IOException e) {
+                Log.e(TAG, "error reading message to send", e);
+                // FIXME just don't send for now
+                return;
+            }
         }
 
         pushRequest(job);
@@ -404,6 +422,7 @@ public class MessageCenterService extends Service
     public void stopForeground() {
         stopForeground(true);
         mCurrentNotification = null;
+        mTotalBytes = 0;
     }
 
     @Override
@@ -450,6 +469,7 @@ public class MessageCenterService extends Service
         Log.e(TAG, "request error", e);
         // stop foreground if any
         stopForeground();
+
         return true;
     }
 
@@ -516,8 +536,13 @@ public class MessageCenterService extends Service
 
     /** Pauses the message center. */
     public void pause() {
-        if (mRequestWorker != null)
+        if (mRequestWorker != null) {
+            // Clear the pending jobs queue.
+            // This way messages with error status will not be sent twice.
+            RequestWorker.pendingJobs.clear();
+            // pause the request worker
             mRequestWorker.pause();
+        }
 
         // polling thread should be restarted, so we destroy it
         shutdownPollingThread();

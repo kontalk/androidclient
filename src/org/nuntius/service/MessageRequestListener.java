@@ -36,7 +36,7 @@ public class MessageRequestListener implements RequestListener {
     public void response(RequestJob job, List<StatusResponse> res) {
         MessageSender job2 = (MessageSender) job;
         if (res != null && res.size() > 0) {
-            Uri uri = job2.getUri();
+            Uri uri = job2.getMessageUri();
             StatusResponse st = res.get(0);
 
             // message accepted!
@@ -71,12 +71,12 @@ public class MessageRequestListener implements RequestListener {
     @Override
     public boolean error(RequestJob job, Throwable e) {
         MessageSender job2 = (MessageSender) job;
-        Uri uri = job2.getUri();
+        Uri uri = job2.getMessageUri();
         ContentValues values = new ContentValues(1);
         values.put(Messages.STATUS, Messages.STATUS_ERROR);
         mContentResolver.update(uri, values, null, null);
         Log.e(TAG, "error sending message", e);
-        return true;
+        return false;
     }
 
     @Override

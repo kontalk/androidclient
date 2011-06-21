@@ -13,7 +13,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.nuntius.service.MessageRequestListener;
 import org.nuntius.service.RequestListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -55,7 +54,7 @@ public class RequestClient extends AbstractClient {
     }
 
     public List<StatusResponse> message(final String[] group, final String mime, final Uri uri,
-            final Context context, final MessageRequestListener listener)
+            final Context context, final RequestListener listener)
                 throws IOException {
 
         try {

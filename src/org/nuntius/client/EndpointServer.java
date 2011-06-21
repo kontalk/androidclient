@@ -18,6 +18,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.nuntius.service.RequestListener;
+import org.nuntius.util.ProgressInputStreamEntity;
 
 
 /**

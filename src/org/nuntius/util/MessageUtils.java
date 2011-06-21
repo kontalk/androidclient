@@ -1,4 +1,4 @@
-package org.nuntius.ui;
+package org.nuntius.util;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;

@@ -4,6 +4,7 @@ import org.nuntius.R;
 import org.nuntius.data.Contact;
 import org.nuntius.data.Conversation;
 import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.util.MessageUtils;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -27,9 +28,9 @@ public class ConversationListItem extends RelativeLayout {
     private TextView mSubjectView;
     private TextView mFromView;
     private TextView mDateView;
-    private View mAttachmentView;
+    //private View mAttachmentView;
     private ImageView mErrorIndicator;
-    private ImageView mPresenceView;
+    //private ImageView mPresenceView;
     private QuickContactBadge mAvatarView;
 
     static private Drawable sDefaultContactImage;
@@ -54,9 +55,9 @@ public class ConversationListItem extends RelativeLayout {
         mSubjectView = (TextView) findViewById(R.id.subject);
 
         mDateView = (TextView) findViewById(R.id.date);
-        mAttachmentView = findViewById(R.id.attachment);
+        //mAttachmentView = findViewById(R.id.attachment);
         mErrorIndicator = (ImageView) findViewById(R.id.error);
-        mPresenceView = (ImageView) findViewById(R.id.presence);
+        //mPresenceView = (ImageView) findViewById(R.id.presence);
         mAvatarView = (QuickContactBadge) findViewById(R.id.avatar);
     }
 

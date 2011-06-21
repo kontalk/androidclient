@@ -76,11 +76,12 @@ public class RequestWorker extends Thread {
 
         @Override
         public boolean error(RequestJob job, Throwable exc) {
+            boolean requeue = false;
             for (RequestListener l : this)
-                if (l.error(job, exc)) return true;
+                if (l.error(job, exc))
+                    requeue = true;
 
-            // else do not requeue :)
-            return false;
+            return requeue;
         }
 
         @Override
@@ -146,10 +147,15 @@ public class RequestWorker extends Thread {
 
                 List<StatusResponse> list;
                 try {
-                    // FIXME this is temporary
+                    // FIXME this should be abstracted some way
                     if (job instanceof MessageSender) {
                         MessageSender mess = (MessageSender) job;
-                        list = mClient.message(new String[] { mess.getUserId() }, mess.getMime(), mess.getContent(), mListeners);
+                        if (mess.getContent() != null)
+                            list = mClient.message(new String[] { mess.getUserId() },
+                                    mess.getMime(), mess.getContent(), mListeners);
+                        else
+                            list = mClient.message(new String[] { mess.getUserId() },
+                                    mess.getMime(), mess.getSourceUri(), mContext, mListeners);
                     }
                     else {
                         list = mClient.request(job.getCommand(), job.getParams(), job.getContent());
