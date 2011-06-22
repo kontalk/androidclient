@@ -374,7 +374,8 @@ public class ComposeMessage extends ListActivity {
     private static final int MENU_FORWARD = 1;
     private static final int MENU_COPY_TEXT = 2;
     private static final int MENU_VIEW_IMAGE = 3;
-    private static final int MENU_DELETE = 4;
+    private static final int MENU_DETAILS = 4;
+    private static final int MENU_DELETE = 5;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
@@ -382,18 +383,19 @@ public class ComposeMessage extends ListActivity {
         MessageListItem vitem = (MessageListItem) info.targetView;
         AbstractMessage<?> msg = vitem.getMessage();
 
-        menu.setHeaderTitle("Message options");
+        menu.setHeaderTitle(R.string.ctx_message_options);
         menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
 
         if (msg instanceof ImageMessage) {
             if (msg.getLocalUri() != null)
-                menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, "View image");
+                menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, R.string.view_image);
         }
         else {
             menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
         }
 
-        menu.add(Menu.NONE, MENU_DELETE, MENU_DELETE, "Delete message");
+        menu.add(Menu.NONE, MENU_DETAILS, MENU_DETAILS, R.string.message_details);
+        menu.add(Menu.NONE, MENU_DELETE, MENU_DELETE, R.string.delete_message);
     }
 
     @Override
@@ -421,6 +423,10 @@ public class ComposeMessage extends ListActivity {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(msg.getLocalUri(), msg.getMime());
                 startActivity(i);
+                return true;
+
+            case MENU_DETAILS:
+                Log.i(TAG, "opening message details");
                 return true;
 
             case MENU_DELETE:

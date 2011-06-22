@@ -32,6 +32,7 @@ public class MessageListItem extends RelativeLayout {
     private ImageView mStatusIcon;
     private TextView mDateViewIncoming;
     private TextView mDateViewOutgoing;
+    private View mBalloonView;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -65,8 +66,28 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
+        mBalloonView = findViewById(R.id.balloon_view);
         mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
         mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
+
+        if (isInEditMode()) {
+            mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuu!!");
+            /* INCOMING
+            setGravity(Gravity.LEFT);
+            setBackgroundResource(R.drawable.light_blue_background);
+            mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
+            mDateViewIncoming.setVisibility(VISIBLE);
+            mDateViewOutgoing.setVisibility(GONE);
+            mDateViewIncoming.setText("10:46");
+            */
+            /* OUTGOING */
+            setGravity(Gravity.RIGHT);
+            setBackgroundResource(R.drawable.white_background);
+            mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
+            mDateViewIncoming.setVisibility(GONE);
+            mDateViewOutgoing.setVisibility(VISIBLE);
+            mDateViewOutgoing.setText("10:46");
+        }
     }
 
     public final void bind(Context context, final AbstractMessage<?> msg) {
@@ -75,13 +96,12 @@ public class MessageListItem extends RelativeLayout {
         formattedMessage = formatMessage();
         mTextView.setText(formattedMessage);
 
-        View balloonView = findViewById(R.id.balloon_view);
         int resId = -1;
 
         if (mMessage.getSender() != null) {
             setGravity(Gravity.LEFT);
             setBackgroundResource(R.drawable.light_blue_background);
-            balloonView.setBackgroundResource(R.drawable.balloon_incoming);
+            mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
 
             mDateViewIncoming.setVisibility(VISIBLE);
             mDateViewOutgoing.setVisibility(GONE);
@@ -89,7 +109,7 @@ public class MessageListItem extends RelativeLayout {
         else {
             setGravity(Gravity.RIGHT);
             setBackgroundResource(R.drawable.white_background);
-            balloonView.setBackgroundResource(R.drawable.balloon_outgoing);
+            mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
 
             mDateViewIncoming.setVisibility(GONE);
             mDateViewOutgoing.setVisibility(VISIBLE);

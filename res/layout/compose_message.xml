@@ -46,7 +46,7 @@
                     android:autoText="true"
                     android:capitalize="sentences"
                     android:nextFocusRight="@+id/send_button"
-                    android:hint="Enter your text here"
+                    android:hint="@string/hint_enter_text"
                     android:maxLines="3"
                     android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine"
                     android:imeOptions="actionSend|flagNoEnterAction"
@@ -68,7 +68,7 @@
                         android:layout_weight="1.0"
                         style="?android:attr/buttonStyle"
                         android:nextFocusLeft="@+id/text_editor"
-                        android:text="  Send  "
+                        android:text="@string/send"
                         android:textStyle="bold"
                     />
 
