@@ -31,8 +31,8 @@ import android.net.Uri;
  */
 public class RequestClient extends AbstractClient {
 
-    public RequestClient(EndpointServer server, String token) {
-        super(server, token);
+    public RequestClient(Context context, EndpointServer server, String token) {
+        super(context, server, token);
     }
 
     public List<StatusResponse> message(final String[] group, final String mime,

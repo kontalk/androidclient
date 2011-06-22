@@ -9,6 +9,8 @@ import java.util.List;
 import org.nuntius.provider.MyMessages.Messages;
 import org.nuntius.util.ThumbnailUtils;
 
+import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -35,16 +37,16 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
 
     private byte[] decodedContent;
 
-    protected ImageMessage() {
-        super(null, null, null, null);
+    protected ImageMessage(Context context) {
+        super(context, null, null, null, null);
     }
 
-    public ImageMessage(String mime, String id, String sender, byte[] content) {
-        this(mime, id, sender, null, null);
+    public ImageMessage(Context context, String mime, String id, String sender, byte[] content) {
+        this(context, mime, id, sender, null, null);
     }
 
-    public ImageMessage(String mime, String id, String sender, byte[] content, List<String> group) {
-        super(id, sender, mime, null, group);
+    public ImageMessage(Context context, String mime, String id, String sender, byte[] content, List<String> group) {
+        super(context, id, sender, mime, null, group);
 
         // process content
         try {
@@ -108,6 +110,19 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         in.close();
     }
 
+    /** Creates a thumbnail from a {@link Uri}. */
+    private void createThumbnail(Context context, Uri uri) throws IOException {
+        ContentResolver cr = context.getContentResolver();
+        InputStream in = cr.openInputStream(uri);
+        BitmapFactory.Options options = preloadBitmap(in);
+        in.close();
+
+        // open again
+        in = cr.openInputStream(uri);
+        createThumbnail(BitmapFactory.decodeStream(in, null, options));
+        in.close();
+    }
+
     private void createThumbnail(Bitmap bitmap) {
         content = ThumbnailUtils
             .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
@@ -137,9 +152,14 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         try {
             Uri u = Uri.parse(mediaUri);
 
-            // TODO preview thumbnail loading from all media
-            if ("file".equals(u.getScheme()))
+            // load from file
+            if ("file".equals(u.getScheme())) {
                 createThumbnail(new File(u.getPath()));
+            }
+            // load from media uri
+            else {
+                createThumbnail(mContext, u);
+            }
 
             localUri = u;
         }

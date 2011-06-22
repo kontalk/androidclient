@@ -12,6 +12,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -33,16 +34,16 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
     private int mStatus;
     private String mMessageId;
 
-    protected ReceiptMessage() {
-        super(null, null, null, null);
+    protected ReceiptMessage(Context context) {
+        super(context, null, null, null, null);
     }
 
-    public ReceiptMessage(String id, String sender, byte[] content) {
-        this(id, sender, content, null);
+    public ReceiptMessage(Context context, String id, String sender, byte[] content) {
+        this(context, id, sender, content, null);
     }
 
-    public ReceiptMessage(String id, String sender, byte[] content, List<String> group) {
-        super(id, sender, MIME_TYPE, null, group);
+    public ReceiptMessage(Context context, String id, String sender, byte[] content, List<String> group) {
+        super(context, id, sender, MIME_TYPE, null, group);
 
         xmlContent = new String(content);
         parseXML();

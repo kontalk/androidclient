@@ -68,7 +68,8 @@
                         android:layout_weight="1.0"
                         style="?android:attr/buttonStyle"
                         android:nextFocusLeft="@+id/text_editor"
-                        android:text="Send"
+                        android:text="  Send  "
+                        android:textStyle="bold"
                     />
 
                     <TextView

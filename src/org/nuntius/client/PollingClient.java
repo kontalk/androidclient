@@ -14,6 +14,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
 import android.util.Log;
 
 
@@ -25,8 +26,8 @@ import android.util.Log;
 public class PollingClient extends AbstractClient {
     private static final String TAG = PollingClient.class.getSimpleName();
 
-    public PollingClient(EndpointServer server, String token) {
-        super(server, token);
+    public PollingClient(Context context, EndpointServer server, String token) {
+        super(context, server, token);
     }
 
     /**
@@ -65,7 +66,7 @@ public class PollingClient extends AbstractClient {
                     String fetchUrl = null;
                     List<String> group = null;
 
-                    // TODO handle empty node values
+                    // FIXME handle empty node values
 
                     // message!
                     NodeList msgChildren = node.getChildNodes();
@@ -96,18 +97,18 @@ public class PollingClient extends AbstractClient {
 
                         // plain text message
                         if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
-                            msg = new PlainTextMessage(id, from, content, group);
+                            msg = new PlainTextMessage(mContext, id, from, content, group);
                         }
 
                         // message receipt
                         else if (ReceiptMessage.supportsMimeType(mime)) {
-                            msg = new ReceiptMessage(id, from, content, group);
+                            msg = new ReceiptMessage(mContext, id, from, content, group);
                         }
 
                         // image message
                         else if (ImageMessage.supportsMimeType(mime)) {
                             // extra argument: mime (first parameter)
-                            msg = new ImageMessage(mime, id, from, content, group);
+                            msg = new ImageMessage(mContext, mime, id, from, content, group);
                         }
 
                         // TODO else other mime types

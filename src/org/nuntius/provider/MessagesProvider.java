@@ -103,10 +103,12 @@ public class MessagesProvider extends ContentProvider {
             "AND unread <> 0) WHERE _id = old.thread_id";
 
         /** Updates the thread status reflected by the latest message. */
+        /*
         private static final String UPDATE_STATUS_OLD =
             "UPDATE " + TABLE_THREADS + " SET status = (" +
             "SELECT status FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id ORDER BY timestamp DESC LIMIT 1)" +
             " WHERE _id = old.thread_id";
+        */
         private static final String UPDATE_STATUS_NEW =
             "UPDATE " + TABLE_THREADS + " SET status = (" +
             "SELECT status FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id ORDER BY timestamp DESC LIMIT 1)" +
@@ -137,7 +139,7 @@ public class MessagesProvider extends ContentProvider {
             " BEGIN " +
             UPDATE_MESSAGES_COUNT_OLD + ";" +
             UPDATE_UNREAD_COUNT_OLD   + ";" +
-            UPDATE_STATUS_OLD         + ";" +
+            // do not call this here -- UPDATE_STATUS_OLD         + ";" +
             "END;";
 
         protected DatabaseHelper(Context context) {
@@ -218,6 +220,7 @@ public class MessagesProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues initialValues) {
+        // only messages table can be inserted
         if (sUriMatcher.match(uri) != MESSAGES) { throw new IllegalArgumentException("Unknown URI " + uri); }
         if (initialValues == null) { throw new IllegalArgumentException("No data"); }
 
@@ -253,7 +256,7 @@ public class MessagesProvider extends ContentProvider {
         ContentValues values = new ContentValues(initialValues);
         String peer = values.getAsString(Threads.PEER);
 
-        long threadId = 0;
+        long threadId = -1;
         if (values.containsKey(Messages.THREAD_ID)) {
             threadId = values.getAsLong(Messages.THREAD_ID);
             values.remove(Messages.THREAD_ID);
@@ -264,22 +267,22 @@ public class MessagesProvider extends ContentProvider {
         // no fetch URL in threads :)
         values.remove(Messages.FETCH_URL);
 
-        // try to insert
-        try {
-            threadId = db.insertOrThrow(TABLE_THREADS, null, values);
-            Log.w(TAG, "threads table inserted");
-        }
-        catch (SQLException e) {
+        // insert new thread
+        long resThreadId = db.insert(TABLE_THREADS, null, values);
+        if (resThreadId < 0) {
             db.update(TABLE_THREADS, values, "peer = ?", new String[] { peer });
-            Log.w(TAG, "threads table updated");
-
-            // retrieve the thread id
-            if (threadId <= 0) {
+            // the client did not pass the thread id, query for it manually
+            if (threadId < 0) {
                 Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID }, "peer = ?", new String[] { peer }, null, null, null);
                 if (c.moveToFirst())
                     threadId = c.getLong(0);
                 c.close();
             }
+            Log.w(TAG, "thread " + threadId + " updated");
+        }
+        else {
+            threadId = resThreadId;
+            Log.w(TAG, "new thread inserted with id " + threadId);
         }
 
         // notify changes
@@ -313,7 +316,7 @@ public class MessagesProvider extends ContentProvider {
                 args = new String[] { String.valueOf(sid) };
                 break;
 
-            // TODO cases for threads table
+            // threads table cannot be updated
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
@@ -386,6 +389,18 @@ public class MessagesProvider extends ContentProvider {
         }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        long threadId = -1;
+        if (table.equals(TABLE_MESSAGES)) {
+            // retrieve the thread id for later use by updateThreadInfo()
+            Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.THREAD_ID },
+                    where, args, null, null, null, "1");
+            if (c != null && c.moveToFirst()) {
+                threadId = c.getLong(0);
+                c.close();
+            }
+        }
+
+        // DELETE!
         int rows = db.delete(table, where, args);
 
         // notify change only if rows are actually affected
@@ -393,19 +408,51 @@ public class MessagesProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
         Log.w(TAG, "table " + table + " deleted, affected: " + rows);
 
-        // check for empty threads
         if (table.equals(TABLE_MESSAGES)) {
-            if (deleteEmptyThreads(db) <= 0) {
-                getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);
-            }
+            // check for empty threads
+            deleteEmptyThreads(db);
+            // update thread with latest info and status
+            if (threadId > 0)
+                updateThreadInfo(db, threadId);
+            else
+                Log.e(TAG, "unable to update thread metadata (threadId not found)");
+            // change notifications get triggered by previous method calls
         }
 
         return rows;
     }
 
+    /** Updates metadata of a given thread. */
+    private int updateThreadInfo(SQLiteDatabase db, long threadId) {
+        Cursor c = db.query(TABLE_MESSAGES, new String[] {
+                Messages.MESSAGE_ID,
+                Messages.DIRECTION,
+                Messages.MIME,
+                Messages.STATUS,
+                Messages.CONTENT,
+                Messages.TIMESTAMP
+            }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
+            null, null, Messages.INVERTED_SORT_ORDER, "1");
+
+        if (c != null && c.moveToFirst()) {
+            ContentValues v = new ContentValues();
+            v.put(Threads.MESSAGE_ID, c.getString(0));
+            v.put(Threads.DIRECTION, c.getInt(1));
+            v.put(Threads.MIME, c.getString(2));
+            v.put(Threads.STATUS, c.getInt(3));
+            v.put(Threads.CONTENT, c.getString(4));
+            v.put(Threads.TIMESTAMP, c.getLong(5));
+            c.close();
+
+            return db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
+        }
+
+        return -1;
+    }
+
     private int deleteEmptyThreads(SQLiteDatabase db) {
         int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0", null);
-        Log.i(TAG, "checking for empty threads: " + rows);
+        Log.i(TAG, "deleting empty threads: " + rows);
         if (rows > 0)
             getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);
         return rows;

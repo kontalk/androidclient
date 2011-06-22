@@ -30,5 +30,4 @@ public class Nuntius extends Application {
             }
         });
     }
-
 }

@@ -51,7 +51,7 @@ public class RequestWorker extends Thread {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         Log.i(TAG, "using token: " + mAuthToken);
 
-        mClient = new RequestClient(mServer, mAuthToken);
+        mClient = new RequestClient(mContext, mServer, mAuthToken);
 
         // create handler and empty pending jobs queue
         // this must be done synchronized on the queue

@@ -43,6 +43,7 @@ public abstract class AbstractMessage<T> {
     public static final String MSG_GROUP = "org.nuntius.message.group";
     public static final String MSG_TIMESTAMP = "org.nuntius.message.timestamp";
 
+    protected Context mContext;
     protected boolean incoming;
     protected String id;
     protected String sender;
@@ -68,12 +69,14 @@ public abstract class AbstractMessage<T> {
     /** Local file {@link Uri}. */
     protected Uri localUri;
 
-    public AbstractMessage(String id, String sender, String mime, T content, List<String> group) {
-        this(id, sender, mime, content);
+    public AbstractMessage(Context context, String id, String sender, String mime, T content, List<String> group) {
+        this(context, id, sender, mime, content);
         this.group = group;
     }
 
-    public AbstractMessage(String id, String sender, String mime, T content) {
+    public AbstractMessage(Context context, String id, String sender, String mime, T content) {
+        this.mContext = context;
+
         if (id != null) setId(id);
         this.sender = sender;
         this.mime = mime;
@@ -226,20 +229,20 @@ public abstract class AbstractMessage<T> {
         // TODO groups??
     }
 
-    public static AbstractMessage<?> fromBundle(Bundle b) {
+    public static AbstractMessage<?> fromBundle(Context context, Bundle b) {
         Log.w("AbstractMessage/fromBundle", "mime=" + b.getString(MSG_MIME));
         if (PlainTextMessage.supportsMimeType(b.getString(MSG_MIME))) {
-            PlainTextMessage msg = new PlainTextMessage();
+            PlainTextMessage msg = new PlainTextMessage(context);
             msg.populateFromBundle(b);
             return msg;
         }
         else if (ReceiptMessage.supportsMimeType(b.getString(MSG_MIME))) {
-            ReceiptMessage msg = new ReceiptMessage();
+            ReceiptMessage msg = new ReceiptMessage(context);
             msg.populateFromBundle(b);
             return msg;
         }
         else if (ImageMessage.supportsMimeType(b.getString(MSG_MIME))) {
-            ImageMessage msg = new ImageMessage();
+            ImageMessage msg = new ImageMessage(context);
             msg.populateFromBundle(b);
             return msg;
         }
@@ -250,13 +253,13 @@ public abstract class AbstractMessage<T> {
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
         String mime = cursor.getString(cursor.getColumnIndex(Messages.MIME));
         if (PlainTextMessage.supportsMimeType(mime)) {
-            PlainTextMessage msg = new PlainTextMessage();
+            PlainTextMessage msg = new PlainTextMessage(context);
             msg.populateFromCursor(cursor);
             return msg;
         }
 
         else if (ImageMessage.supportsMimeType(mime)) {
-            ImageMessage msg = new ImageMessage();
+            ImageMessage msg = new ImageMessage(context);
             msg.populateFromCursor(cursor);
             return msg;
         }

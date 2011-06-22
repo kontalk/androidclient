@@ -4,6 +4,7 @@ import org.nuntius.R;
 import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.ImageMessage;
 import org.nuntius.provider.MyMessages.Messages;
+import org.nuntius.util.MessageUtils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -29,6 +30,8 @@ public class MessageListItem extends RelativeLayout {
     private CharSequence formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
+    private TextView mDateViewIncoming;
+    private TextView mDateViewOutgoing;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -62,6 +65,8 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
+        mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
+        mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
     }
 
     public final void bind(Context context, final AbstractMessage<?> msg) {
@@ -77,11 +82,17 @@ public class MessageListItem extends RelativeLayout {
             setGravity(Gravity.LEFT);
             setBackgroundResource(R.drawable.light_blue_background);
             balloonView.setBackgroundResource(R.drawable.balloon_incoming);
+
+            mDateViewIncoming.setVisibility(VISIBLE);
+            mDateViewOutgoing.setVisibility(GONE);
         }
         else {
             setGravity(Gravity.RIGHT);
             setBackgroundResource(R.drawable.white_background);
             balloonView.setBackgroundResource(R.drawable.balloon_outgoing);
+
+            mDateViewIncoming.setVisibility(GONE);
+            mDateViewOutgoing.setVisibility(VISIBLE);
 
             // status icon
             if (mMessage.getSender() == null)
@@ -148,25 +159,10 @@ public class MessageListItem extends RelativeLayout {
             }
         }
 
-        /*
-        String timestamp;
-        switch (mMessage.getStatus()) {
-            case Messages.STATUS_SENDING:
-                timestamp = getContext().getString(R.string.sending);
-                break;
-            case Messages.STATUS_NOTACCEPTED:
-                timestamp = getContext().getString(R.string.send_refused);
-                break;
-            case Messages.STATUS_ERROR:
-                timestamp = getContext().getString(R.string.send_error);
-                break;
-            case Messages.STATUS_SENT:
-            case Messages.STATUS_RECEIVED:
-            default:
-                timestamp = MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp());
-                break;
-        }
-        */
+        TextView dateView = (mMessage.getSender() != null) ?
+                mDateViewIncoming : mDateViewOutgoing;
+
+        dateView.setText(MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp()));
 
         /*
         buf.append("\n");

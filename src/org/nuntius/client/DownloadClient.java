@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 
+import android.content.Context;
+
 
 /**
  * A client for the download service.
@@ -16,8 +18,8 @@ import org.apache.http.HttpResponse;
  */
 public class DownloadClient extends AbstractClient {
 
-    public DownloadClient(EndpointServer server, String token) {
-        super(server, token);
+    public DownloadClient(Context context, EndpointServer server, String token) {
+        super(context, server, token);
     }
 
     /** Downloads to a {@link File}. */

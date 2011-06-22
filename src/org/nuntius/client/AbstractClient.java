@@ -2,14 +2,18 @@ package org.nuntius.client;
 
 import org.apache.http.client.methods.HttpRequestBase;
 
+import android.content.Context;
+
 
 public abstract class AbstractClient {
 
-    protected EndpointServer mServer;
-    protected String mAuthToken;
+    protected final Context mContext;
+    protected final EndpointServer mServer;
+    protected final String mAuthToken;
     protected HttpRequestBase currentRequest;
 
-    public AbstractClient(EndpointServer server, String token) {
+    public AbstractClient(Context context, EndpointServer server, String token) {
+        mContext = context;
         mServer = server;
         mAuthToken = token;
     }

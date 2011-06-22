@@ -52,6 +52,7 @@ public final class MyMessages {
 
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = "timestamp";
+        public static final String INVERTED_SORT_ORDER = "timestamp DESC";
     }
 
     public static final class Threads implements BaseColumns {

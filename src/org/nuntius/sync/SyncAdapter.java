@@ -82,7 +82,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // setup the request client
         final String serverUri = MessagingPreferences.getServerURI(context);
         final String token = Authenticator.getDefaultAccountToken(mContext);
-        final RequestClient client = new RequestClient(new EndpointServer(serverUri), token);
+        final RequestClient client = new RequestClient(mContext, new EndpointServer(serverUri), token);
         final Map<String,String[]> lookupNumbers = new HashMap<String,String[]>();
 
         final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);

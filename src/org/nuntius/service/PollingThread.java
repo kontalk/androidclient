@@ -40,7 +40,7 @@ public class PollingThread extends Thread {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         Log.i(TAG, "using token: " + mAuthToken);
 
-        mClient = new PollingClient(mServer, mAuthToken);
+        mClient = new PollingClient(mContext, mServer, mAuthToken);
 
         while(mRunning) {
             try {

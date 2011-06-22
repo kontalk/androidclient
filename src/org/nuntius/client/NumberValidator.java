@@ -51,7 +51,7 @@ public class NumberValidator implements Runnable {
         mContext = context;
         mServer = server;
         mPhone = phone;
-        mClient = new RequestClient(mServer, null);
+        mClient = new RequestClient(context, mServer, null);
     }
 
     public synchronized void start() {

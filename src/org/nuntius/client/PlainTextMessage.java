@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.nuntius.provider.MyMessages.Messages;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 
@@ -19,16 +20,16 @@ public class PlainTextMessage extends AbstractMessage<String> {
 
     public static final String MIME_TYPE = "text/plain";
 
-    protected PlainTextMessage() {
-        super(null, null, null, null);
+    protected PlainTextMessage(Context context) {
+        super(context, null, null, null, null);
     }
 
-    public PlainTextMessage(String id, String sender, byte[] content) {
-        this(id, sender, content, null);
+    public PlainTextMessage(Context context, String id, String sender, byte[] content) {
+        this(context, id, sender, content, null);
     }
 
-    public PlainTextMessage(String id, String sender, byte[] content, List<String> group) {
-        super(id, sender, MIME_TYPE, new String(content), group);
+    public PlainTextMessage(Context context, String id, String sender, byte[] content, List<String> group) {
+        super(context, id, sender, MIME_TYPE, new String(content), group);
     }
 
     @Override

@@ -33,7 +33,9 @@ import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.text.ClipboardManager;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -77,6 +79,7 @@ public class ComposeMessage extends ListActivity {
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
     private EditText mTextEntry;
+    private Button mSendButton;
 
     /** The thread id. */
     private long threadId = -1;
@@ -159,8 +162,24 @@ public class ComposeMessage extends ListActivity {
         */
 
         mTextEntry = (EditText) findViewById(R.id.text_editor);
-        Button sendButton = (Button) findViewById(R.id.send_button);
-        sendButton.setOnClickListener(new View.OnClickListener() {
+        mTextEntry.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                mSendButton.setEnabled(s.length() > 0);
+            }
+        });
+
+        mSendButton = (Button) findViewById(R.id.send_button);
+        mSendButton.setEnabled(mTextEntry.length() > 0);
+        mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendTextMessage();
