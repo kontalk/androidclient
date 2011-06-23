@@ -34,9 +34,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:paddingTop="5dip"
-            android:paddingBottom="5dip"
+            android:paddingBottom="3dip"
             android:paddingLeft="5dip"
-            android:paddingRight="5dip"
+            android:paddingRight="3dip"
             android:background="@drawable/bottombar_landscape_565">
                 <EditText
                     android:id="@+id/text_editor"
@@ -70,6 +70,7 @@
                         android:nextFocusLeft="@+id/text_editor"
                         android:text="@string/send"
                         android:textStyle="bold"
+                        android:minWidth="80dip"
                     />
 
                     <TextView

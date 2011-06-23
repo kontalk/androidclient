@@ -74,6 +74,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    private static final class RawPhoneNumberEntry {
+        public long id;
+        public String displayName;
+        public String number;
+
+        public RawPhoneNumberEntry(long id, String displayName, String number) {
+            this.id = id;
+            this.displayName = displayName;
+            this.number = number;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private void performSync(Context context, Account account, Bundle extras,
             String authority, ContentProviderClient provider, SyncResult syncResult)
@@ -83,8 +95,26 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final String serverUri = MessagingPreferences.getServerURI(context);
         final String token = Authenticator.getDefaultAccountToken(mContext);
         final RequestClient client = new RequestClient(mContext, new EndpointServer(serverUri), token);
-        final Map<String,String[]> lookupNumbers = new HashMap<String,String[]>();
+        final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
 
+        /*
+         * TODO
+         * Loop through every Nuntius raw contact and see if a match is found in
+         * other raw contacts. Then, 2 things could happen:
+         * 1 - a match is found. Update our raw contact with any data related to
+         * the raw contact encountered, then continue the loop
+         * 2 - a match is not found. Delete our raw contact, then continue the
+         * loop
+         *
+         * TODO
+         * Loop through every Contact contact and see lookup for every contact
+         * from server.
+         */
+
+        /*
+         * We need to loop over the whole contacts list because we need to check
+         * for existing Nuntius raw contacts to be deleted or updated.
+         */
         final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 
         // FIXME optimize queries
@@ -97,6 +127,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Phone.TYPE + " = ?",
                 new String[] { contactId, String.valueOf(Phone.TYPE_MOBILE) }, null);
 
+            /*
+             * POSSIBLE CASES
+             *
+             * 1 - we found a Nuntius raw contact matching to this phone number
+             * It doesn't need to be checked on server - ignore it.
+             *
+             * 2 - we found other Nuntius raw contacts connected to this contact.
+             * Any of them don't match with our currently looped phone number,
+             * so we remove all of them (actually add to a remove list).
+             */
+
             final TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
             final String countryCode = "+" + PhoneNumberUtil.getInstance()
                 .getCountryCodeForRegion(tm.getSimCountryIso());
@@ -107,12 +148,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 String number = phones.getString(phones.getColumnIndex(Phone.NUMBER));
                 final int type = phones.getInt(phones.getColumnIndex(Phone.TYPE));
                 switch (type) {
+                    // FIXME this should account multiple phone types
                     case Phone.TYPE_MOBILE:
+                        // a phone number with less than 4 digits???
+                        if (number.length() < 4)
+                            continue;
+
+                        // normalize number: strip separators
                         number = PhoneNumberUtils.stripSeparators(number);
                         Log.w(TAG, "found mobile number " + number);
 
-                        // add country code if not found
-                        if (number.charAt(0) != '+')
+                        // normalize number: add country code if not found
+                        if (number.startsWith("00"))
+                            number = '+' + number.substring(2);
+                        else if (number.charAt(0) != '+')
                             number = countryCode + number;
 
                         Cursor exists = mContentResolver.query(RawContacts.CONTENT_URI,
@@ -150,7 +199,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     exists.getString(4) +
                                     ")");
                             /*
-                            TODO figure out how to readd or verify which part of the contact exists
+                            TODO figure out how to read or verify which part of the contact exists
                             Cursor cc2 = mContentResolver.query(ContactsContract.Data.CONTENT_URI, null, null, null, null);
                             while (cc2.moveToNext()) {
                                 for (int i = 0; i < cc2.getColumnCount(); i++) {

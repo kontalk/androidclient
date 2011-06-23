@@ -33,7 +33,7 @@
     <string name="new_messages">New messages</string>
     <string name="unread_messages">%d unread messages</string>
     <string name="only_one_account_supported">Only one Nuntius account is supported.</string>
-    <string name="send">  Send  </string>
+    <string name="send">Send</string>
     <string name="hint_enter_text">Enter your text here</string>
     <string name="view_image">View image</string>
     <string name="ctx_message_options">Message options</string>
