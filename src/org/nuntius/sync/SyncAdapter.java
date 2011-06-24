@@ -23,13 +23,11 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
@@ -75,14 +73,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private static final class RawPhoneNumberEntry {
-        public long id;
-        public String displayName;
-        public String number;
+        public final String displayName;
+        public final String number;
+        public final String hash;
 
-        public RawPhoneNumberEntry(long id, String displayName, String number) {
-            this.id = id;
+        public RawPhoneNumberEntry(String displayName, String number, String hash) {
             this.displayName = displayName;
             this.number = number;
+            this.hash = hash;
         }
     }
 
@@ -98,18 +96,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
 
         /*
-         * TODO
-         * Loop through every Nuntius raw contact and see if a match is found in
-         * other raw contacts. Then, 2 things could happen:
-         * 1 - a match is found. Update our raw contact with any data related to
-         * the raw contact encountered, then continue the loop
-         * 2 - a match is not found. Delete our raw contact, then continue the
-         * loop
-         *
-         * TODO
-         * Loop through every Contact contact and see lookup for every contact
-         * from server.
+         * -- primitive (and long) sync procedure --
+         * 1 - delete all Nuntius raw contacts
+         * 2 - restart from scratch
+         * :D
          */
+
+        // 1 - delete all Nuntius raw contacts
+        deleteAll(account);
+
+        // 2 - restart from scratch
 
         /*
          * We need to loop over the whole contacts list because we need to check
@@ -149,7 +145,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 final int type = phones.getInt(phones.getColumnIndex(Phone.TYPE));
                 switch (type) {
                     // FIXME this should account multiple phone types
-                    case Phone.TYPE_MOBILE:
+                    // FIXME case Phone.TYPE_MOBILE:
+                    default:
                         // a phone number with less than 4 digits???
                         if (number.length() < 4)
                             continue;
@@ -182,15 +179,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 displayName,
                                 number
                             }, null);
+                        /*
                         if (!exists.moveToFirst()) {
                             Log.w(TAG, "local contact not present, looking up");
+                        */
+
                             try {
-                                lookupNumbers.put(MessageUtils.sha1(number), new String[] { displayName, number });
+                                String hash = MessageUtils.sha1(number);
+                                lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash));
                             } catch (Exception e) {
                                 Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping");
                             }
+                        /*
                         }
                         else {
+                        */
+                        if (exists.moveToFirst()) {
                             Log.w(TAG, "contact already exists ("+
                                     exists.getString(0) + ", " +
                                     exists.getString(1) + ", " +
@@ -198,6 +202,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     exists.getString(3) + ", " +
                                     exists.getString(4) +
                                     ")");
+                        }
                             /*
                             TODO figure out how to read or verify which part of the contact exists
                             Cursor cc2 = mContentResolver.query(ContactsContract.Data.CONTENT_URI, null, null, null, null);
@@ -218,8 +223,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             //        new String[] { rawId } );
                             Log.i(TAG, "raw count = " + r1 + ", contact count = " + r2);
                             addContact(account, displayName, number, exists.getLong(0));
-                            */
                         }
+                        */
                         exists.close();
                         break;
                     }
@@ -231,6 +236,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             // build the xml data for the lookup request
             final String xmlData = buildXMLData(lookupNumbers.values());
+            Log.i(TAG, "xmlData: " + xmlData);
             final List<StatusResponse> res = client.request("lookup", null, xmlData.getBytes());
 
             // get the first status - it will contain our <u> tags
@@ -240,13 +246,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 if (_numbers instanceof List<?>) {
                     final List<String> numbers = (List<String>) _numbers;
                     for (String hash : numbers) {
-                        final String[] data = lookupNumbers.get(hash);
-                        addContact(account, data[0], data[1], -1);
+                        final RawPhoneNumberEntry data = lookupNumbers.get(hash);
+                        addContact(account, data.displayName, data.number, -1);
                     }
                 }
                 else {
-                    final String[] data = lookupNumbers.get((String) _numbers);
-                    addContact(account, data[0], data[1], -1);
+                    final RawPhoneNumberEntry data = lookupNumbers.get((String) _numbers);
+                    addContact(account, data.displayName, data.number, -1);
                 }
             }
         }
@@ -256,7 +262,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     /** Builds the XML data for a lookup request. */
-    private String buildXMLData(Collection<String[]> lookupNumbers) throws Exception {
+    private String buildXMLData(Collection<RawPhoneNumberEntry> lookupNumbers) throws Exception {
         String xmlContent = null;
         // build xml in a proper manner
         XmlSerializer xml = Xml.newSerializer();
@@ -267,10 +273,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         xml
             .startTag(null, "body");
 
-        for (String[] data : lookupNumbers) {
+        for (RawPhoneNumberEntry data : lookupNumbers) {
             xml
                 .startTag(null, "u")
-                .text(MessageUtils.sha1(data[1]))
+                .text(data.hash)
                 .endTag(null, "u");
         }
 
@@ -284,8 +290,34 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return xmlContent;
     }
 
-    private int deleteContact(long rawContactId) {
-        Uri uri = ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawContactId).buildUpon().appendQueryParameter(ContactsContract.CALLER_IS_SYNCADAPTER, "true").build();
+    private int deleteAll(Account account) {
+        Uri uri = RawContacts.CONTENT_URI.buildUpon()
+            .appendQueryParameter(ContactsContract.CALLER_IS_SYNCADAPTER, "true")
+            .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
+            .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
+            .build();
+        ContentProviderClient client = mContext.getContentResolver().acquireContentProviderClient(ContactsContract.AUTHORITY_URI);
+        try {
+            return client.delete(uri, null, null);
+        }
+        catch (Exception e) {
+            Log.e(TAG, "delete error", e);
+        }
+        finally {
+            client.release();
+        }
+
+        return -1;
+    }
+
+    /*
+    private int deleteContact(Account account, long rawContactId) {
+        Uri uri = ContentUris.withAppendedId(RawContacts.CONTENT_URI, rawContactId)
+            .buildUpon()
+            .appendQueryParameter(ContactsContract.CALLER_IS_SYNCADAPTER, "true")
+            .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
+            .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
+            .build();
         ContentProviderClient client = mContext.getContentResolver().acquireContentProviderClient(ContactsContract.AUTHORITY_URI);
         try {
             return client.delete(uri, null, null);
@@ -299,6 +331,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         return -1;
     }
+    */
 
     private void addContact(Account account, String username, String phone, long rowContactId) {
         Log.i(TAG, "Adding contact username = \"" + username + "\", phone: " + phone);
