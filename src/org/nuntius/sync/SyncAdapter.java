@@ -94,6 +94,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final String token = Authenticator.getDefaultAccountToken(mContext);
         final RequestClient client = new RequestClient(mContext, new EndpointServer(serverUri), token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
+        final TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        final String countryCode = "+" + PhoneNumberUtil.getInstance()
+            .getCountryCodeForRegion(tm.getSimCountryIso());
+
+        Log.w(TAG, "using default country code: " + tm.getSimCountryIso() + "(" + countryCode + ")");
 
         /*
          * -- primitive (and long) sync procedure --
@@ -119,9 +124,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             Log.w(TAG, "contact " + contactId + ", name: " + displayName);
             final Cursor phones = mContentResolver.query(Phone.CONTENT_URI, null,
-                Phone.CONTACT_ID +" = ? AND " +
-                Phone.TYPE + " = ?",
-                new String[] { contactId, String.valueOf(Phone.TYPE_MOBILE) }, null);
+                Phone.CONTACT_ID + " = ?", new String[] { contactId }, null);
 
             /*
              * POSSIBLE CASES
@@ -134,100 +137,88 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
              * so we remove all of them (actually add to a remove list).
              */
 
-            final TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            final String countryCode = "+" + PhoneNumberUtil.getInstance()
-                .getCountryCodeForRegion(tm.getSimCountryIso());
-
-            Log.w(TAG, "using default country code: " + tm.getSimCountryIso() + "(" + countryCode + ")");
-
             while (phones.moveToNext()) {
                 String number = phones.getString(phones.getColumnIndex(Phone.NUMBER));
-                final int type = phones.getInt(phones.getColumnIndex(Phone.TYPE));
-                switch (type) {
-                    // FIXME this should account multiple phone types
-                    // FIXME case Phone.TYPE_MOBILE:
-                    default:
-                        // a phone number with less than 4 digits???
-                        if (number.length() < 4)
-                            continue;
 
-                        // normalize number: strip separators
-                        number = PhoneNumberUtils.stripSeparators(number);
-                        Log.w(TAG, "found mobile number " + number);
+                // a phone number with less than 4 digits???
+                if (number.length() < 4)
+                    continue;
 
-                        // normalize number: add country code if not found
-                        if (number.startsWith("00"))
-                            number = '+' + number.substring(2);
-                        else if (number.charAt(0) != '+')
-                            number = countryCode + number;
+                // normalize number: strip separators
+                number = PhoneNumberUtils.stripSeparators(number);
+                Log.w(TAG, "found mobile number " + number);
 
-                        Cursor exists = mContentResolver.query(RawContacts.CONTENT_URI,
-                            new String[] {
-                                RawContacts._ID,
-                                RawContacts.ACCOUNT_NAME,
-                                RawContacts.ACCOUNT_TYPE,
-                                RawContacts.SYNC1,
-                                RawContacts.SYNC2
-                            },
-                            RawContacts.ACCOUNT_NAME + " = ? AND " +
-                            RawContacts.ACCOUNT_TYPE + " = ? AND " +
-                            RawContacts.SYNC1        + " = ? AND " +
-                            RawContacts.SYNC2        + " = ?",
-                            new String[] {
-                                account.name,
-                                account.type,
-                                displayName,
-                                number
-                            }, null);
-                        /*
-                        if (!exists.moveToFirst()) {
-                            Log.w(TAG, "local contact not present, looking up");
-                        */
+                // normalize number: add country code if not found
+                if (number.startsWith("00"))
+                    number = '+' + number.substring(2);
+                else if (number.charAt(0) != '+')
+                    number = countryCode + number;
 
-                            try {
-                                String hash = MessageUtils.sha1(number);
-                                lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash));
-                            } catch (Exception e) {
-                                Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping");
-                            }
-                        /*
-                        }
-                        else {
-                        */
-                        if (exists.moveToFirst()) {
-                            Log.w(TAG, "contact already exists ("+
-                                    exists.getString(0) + ", " +
-                                    exists.getString(1) + ", " +
-                                    exists.getString(2) + ", " +
-                                    exists.getString(3) + ", " +
-                                    exists.getString(4) +
-                                    ")");
-                        }
-                            /*
-                            TODO figure out how to read or verify which part of the contact exists
-                            Cursor cc2 = mContentResolver.query(ContactsContract.Data.CONTENT_URI, null, null, null, null);
-                            while (cc2.moveToNext()) {
-                                for (int i = 0; i < cc2.getColumnCount(); i++) {
-                                    Log.i(TAG, "contact-" + i + ": " + cc2.getString(i));
-                                }
-                            }
-                            cc2.close();
-                            //String rawId = String.valueOf(exists.getLong(0));
-                            int r1, r2 = -50;
-                            r1 = deleteContact(exists.getLong(0));
-                            //r1 = mContentResolver.delete(RawContacts.CONTENT_URI, null, null);
-                            //r1 = mContentResolver.delete(RawContacts.CONTENT_URI, RawContacts._ID + " = ?",
-                            //        new String[] { rawId } );
-                            //r2 = mContentResolver.delete(ContactsContract.Data.CONTENT_URI, null, null);
-                            //r2 = mContentResolver.delete(ContactsContract.Data.CONTENT_URI, ContactsContract.Data.RAW_CONTACT_ID + " = ?",
-                            //        new String[] { rawId } );
-                            Log.i(TAG, "raw count = " + r1 + ", contact count = " + r2);
-                            addContact(account, displayName, number, exists.getLong(0));
-                        }
-                        */
-                        exists.close();
-                        break;
+                Cursor exists = mContentResolver.query(RawContacts.CONTENT_URI,
+                    new String[] {
+                        RawContacts._ID,
+                        RawContacts.ACCOUNT_NAME,
+                        RawContacts.ACCOUNT_TYPE,
+                        RawContacts.SYNC1,
+                        RawContacts.SYNC2
+                    },
+                    RawContacts.ACCOUNT_NAME + " = ? AND " +
+                    RawContacts.ACCOUNT_TYPE + " = ? AND " +
+                    RawContacts.SYNC1        + " = ? AND " +
+                    RawContacts.SYNC2        + " = ?",
+                    new String[] {
+                        account.name,
+                        account.type,
+                        displayName,
+                        number
+                    }, null);
+                /*
+                if (!exists.moveToFirst()) {
+                    Log.w(TAG, "local contact not present, looking up");
+                */
+
+                    try {
+                        String hash = MessageUtils.sha1(number);
+                        lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash));
+                    } catch (Exception e) {
+                        Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping");
                     }
+                /*
+                }
+                else {
+                */
+                if (exists.moveToFirst()) {
+                    Log.w(TAG, "contact already exists ("+
+                            exists.getString(0) + ", " +
+                            exists.getString(1) + ", " +
+                            exists.getString(2) + ", " +
+                            exists.getString(3) + ", " +
+                            exists.getString(4) +
+                            ")");
+                }
+                    /*
+                    TODO figure out how to read or verify which part of the contact exists
+                    Cursor cc2 = mContentResolver.query(ContactsContract.Data.CONTENT_URI, null, null, null, null);
+                    while (cc2.moveToNext()) {
+                        for (int i = 0; i < cc2.getColumnCount(); i++) {
+                            Log.i(TAG, "contact-" + i + ": " + cc2.getString(i));
+                        }
+                    }
+                    cc2.close();
+                    //String rawId = String.valueOf(exists.getLong(0));
+                    int r1, r2 = -50;
+                    r1 = deleteContact(exists.getLong(0));
+                    //r1 = mContentResolver.delete(RawContacts.CONTENT_URI, null, null);
+                    //r1 = mContentResolver.delete(RawContacts.CONTENT_URI, RawContacts._ID + " = ?",
+                    //        new String[] { rawId } );
+                    //r2 = mContentResolver.delete(ContactsContract.Data.CONTENT_URI, null, null);
+                    //r2 = mContentResolver.delete(ContactsContract.Data.CONTENT_URI, ContactsContract.Data.RAW_CONTACT_ID + " = ?",
+                    //        new String[] { rawId } );
+                    Log.i(TAG, "raw count = " + r1 + ", contact count = " + r2);
+                    addContact(account, displayName, number, exists.getLong(0));
+                }
+                */
+                exists.close();
             }
             phones.close();
         }
