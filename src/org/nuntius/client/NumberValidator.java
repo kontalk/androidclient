@@ -40,6 +40,7 @@ public class NumberValidator implements Runnable {
     private final EndpointServer mServer;
     private final String mPhone;
     private final RequestClient mClient;
+    private final boolean mManual;
     private NumberValidatorListener mListener;
     private int mStep;
     private String mValidationCode;
@@ -47,11 +48,12 @@ public class NumberValidator implements Runnable {
 
     private Thread mThread;
 
-    public NumberValidator(Context context, EndpointServer server, String phone) {
+    public NumberValidator(Context context, EndpointServer server, String phone, boolean manual) {
         mContext = context;
         mServer = server;
         mPhone = phone;
         mClient = new RequestClient(context, mServer, null);
+        mManual = manual;
     }
 
     public synchronized void start() {
@@ -66,51 +68,55 @@ public class NumberValidator implements Runnable {
             // begin!
             if (mStep == 0) {
                 // unregister previous receiver
-                if (mSmsReceiver != null)
+                if (mSmsReceiver != null) {
                     mContext.unregisterReceiver(mSmsReceiver);
+                    mSmsReceiver = null;
+                }
 
-                // setup the sms receiver
-                IntentFilter filter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
-                mSmsReceiver = new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Log.w(TAG, "SMS received! " + intent.toString());
+                if (!mManual) {
+                    // setup the sms receiver
+                    IntentFilter filter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+                    mSmsReceiver = new BroadcastReceiver() {
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            Log.w(TAG, "SMS received! " + intent.toString());
 
-                        Bundle bdl = intent.getExtras();
-                        Object pdus[] = (Object [])bdl.get("pdus");
-                        for(int n=0; n < pdus.length; n++) {
-                            byte[] byteData = (byte[])pdus[n];
-                            SmsMessage sms = SmsMessage.createFromPdu(byteData);
+                            Bundle bdl = intent.getExtras();
+                            Object pdus[] = (Object [])bdl.get("pdus");
+                            for(int n=0; n < pdus.length; n++) {
+                                byte[] byteData = (byte[])pdus[n];
+                                SmsMessage sms = SmsMessage.createFromPdu(byteData);
 
-                            // possible message!
-                            if (SMS_FROM.equals(sms.getOriginatingAddress()) ||
-                                    PhoneNumberUtils.compare(SMS_FROM, sms.getOriginatingAddress())) {
-                                String txt = sms.getMessageBody();
-                                if (txt != null && txt.length() > 0) {
-                                    // FIXME take the entire message text for now
-                                    mValidationCode = txt;
-                                    mStep = STEP_AUTH_TOKEN;
-                                    break;
+                                // possible message!
+                                if (SMS_FROM.equals(sms.getOriginatingAddress()) ||
+                                        PhoneNumberUtils.compare(SMS_FROM, sms.getOriginatingAddress())) {
+                                    String txt = sms.getMessageBody();
+                                    if (txt != null && txt.length() > 0) {
+                                        // FIXME take the entire message text for now
+                                        mValidationCode = txt;
+                                        mStep = STEP_AUTH_TOKEN;
+                                        break;
+                                    }
                                 }
                             }
+
+                            Log.i(TAG, "validation code found = \"" + mValidationCode + "\"");
+
+                            if (mValidationCode != null) {
+                                // unregister this receiver
+                                context.unregisterReceiver(this);
+
+                                // next start call will trigger the next condition
+                                mThread = null;
+
+                                // the listener will call start() again
+                                if (mListener != null)
+                                    mListener.onValidationCodeReceived(NumberValidator.this, mValidationCode);
+                            }
                         }
-
-                        Log.i(TAG, "validation code found = \"" + mValidationCode + "\"");
-
-                        if (mValidationCode != null) {
-                            // unregister this receiver
-                            context.unregisterReceiver(this);
-
-                            // next start call will trigger the next condition
-                            mThread = null;
-
-                            // the listener will call start() again
-                            if (mListener != null)
-                                mListener.onValidationCodeReceived(NumberValidator.this, mValidationCode);
-                        }
-                    }
-                };
-                mContext.registerReceiver(mSmsReceiver, filter);
+                    };
+                    mContext.registerReceiver(mSmsReceiver, filter);
+                }
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;

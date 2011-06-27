@@ -31,5 +31,17 @@
           android:layout_height="fill_parent"
           android:onClick="validatePhone"
         />
+        <Button
+            android:text="Manual validation"
+            android:id="@+id/button_manual"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:onClick="validateManual"/>
+        <TextView
+          android:text="If you are unable to receive SMS on this device, insert a phone number you own and input the validation code manually using the button above."
+          android:layout_width="fill_parent"
+          android:layout_height="fill_parent"
+          android:padding="20dip"
+          />
     </LinearLayout>
-</ScrollView>  
+</ScrollView>

@@ -9,6 +9,8 @@ import org.nuntius.client.NumberValidator.NumberValidatorListener;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
@@ -19,6 +21,7 @@ import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -42,13 +45,15 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
 
     private AccountManager mAccountManager;
     private EditText mPhone;
-    private Button mButton;
+    private Button mValidateButton;
+    private Button mManualButton;
     private ProgressDialog mProgress;
     private NumberValidator mValidator;
 
     private String mAuthtoken;
     private String mAuthtokenType;
     private String mPhoneNumber;
+    private boolean mManualValidation;
 
     /**
      * If set we are just checking that the user knows their credentials; this
@@ -87,7 +92,8 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
             }
         });
 
-        mButton = (Button) findViewById(R.id.button_validate);
+        mValidateButton = (Button) findViewById(R.id.button_validate);
+        mManualButton = (Button) findViewById(R.id.button_manual);
     }
 
     @Override
@@ -111,13 +117,9 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
         return false;
     }
 
-    /**
-     * Begins validation of the phone number.
-     * Also used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void validatePhone(View v) {
-        mButton.setEnabled(false);
+    private void startValidation(View v) {
+        mValidateButton.setEnabled(false);
+        mManualButton.setEnabled(false);
 
         // check number input
         String phone = PhoneNumberUtils.stripSeparators(
@@ -167,17 +169,44 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
 
         EndpointServer server = new EndpointServer
             (MessagingPreferences.getServerURI(this));
-        mValidator = new NumberValidator(this, server, phone);
+        mValidator = new NumberValidator(this, server, phone, mManualValidation);
         mValidator.setListener(this);
         mValidator.start();
     }
 
     /**
-     * No search here.
+     * Opens the manual validation window for manual input of the validation code.
+     * Also used by the view definition as the {@link OnClickListener}.
+     * @param v not used
      */
+    public void validateManual(View v) {
+        // we are starting a manual validation
+        mManualValidation = true;
+        startValidation(v);
+    }
+
+    /**
+     * Begins validation of the phone number.
+     * Also used by the view definition as the {@link OnClickListener}.
+     * @param v not used
+     */
+    public void validatePhone(View v) {
+        // we are starting an automatic validation
+        mManualValidation = false;
+        startValidation(v);
+    }
+
+    /** No search here. */
     @Override
     public boolean onSearchRequested() {
         return false;
+    }
+
+    public void abortProgress() {
+        if (mProgress != null) {
+            mProgress.dismiss();
+            mProgress = null;
+        }
     }
 
     public void abort() {
@@ -185,13 +214,12 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
     }
 
     public void abort(boolean ending) {
-        if (!ending)
-            mButton.setEnabled(true);
-
-        if (mProgress != null) {
-            mProgress.dismiss();
-            mProgress = null;
+        if (!ending) {
+            mValidateButton.setEnabled(true);
+            mManualButton.setEnabled(true);
         }
+
+        abortProgress();
         if (mValidator != null) {
             mValidator.shutdown();
             mValidator = null;
@@ -292,8 +320,28 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
 
     @Override
     public void onValidationRequested(NumberValidator v) {
-        Log.i(TAG, "validation has been requested, waiting for SMS");
-        // TODO what here??
+        if (mManualValidation) {
+            Log.i(TAG, "validation has been requested, requesting validation code to user");
+            // close progress dialog
+            abortProgress();
+
+            // open validation code input dialog
+            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.edittext_dialog, null);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            // FIXME dialog listeners!!!!
+            builder
+                .setTitle("Validation code")
+                .setPositiveButton(android.R.string.ok, null)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setView(view);
+
+            final Dialog dialog = builder.create();
+            dialog.show();
+        }
+        else
+            Log.i(TAG, "validation has been requested, waiting for SMS");
     }
 
     @Override
