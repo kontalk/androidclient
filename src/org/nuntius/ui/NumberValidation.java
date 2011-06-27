@@ -20,21 +20,18 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.TextView.OnEditorActionListener;
 
-public class NumberValidation extends AccountAuthenticatorActivity implements NumberValidatorListener {
+public class NumberValidation extends AccountAuthenticatorActivity
+        implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
 
     public static final String ACTION_LOGIN = "org.nuntius.sync.LOGIN";
@@ -80,6 +77,9 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
             intent.getBooleanExtra(PARAM_CONFIRMCREDENTIALS, false);
 
         mPhone = (EditText) findViewById(R.id.phone_number);
+        /*
+         * because of the double choice (automatic/manual validation), we can't
+         * use this anymore
         mPhone.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -91,6 +91,7 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
                 return false;
             }
         });
+        */
 
         mValidateButton = (Button) findViewById(R.id.button_validate);
         mManualButton = (Button) findViewById(R.id.button_manual);
@@ -152,20 +153,7 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
 
         // start async request
         Log.i(TAG, "phone number checked, sending validation request");
-        if (mProgress == null) {
-            mProgress = new ProgressDialog(this);
-            mProgress.setIndeterminate(true);
-            mProgress.setMessage(getText(R.string.msg_validating_phone));
-            mProgress.setOnCancelListener(new OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    Log.i(TAG, "progress dialog canceled.");
-                    Toast.makeText(NumberValidation.this, "Validation canceled. You might receive a SMS anyway.", Toast.LENGTH_LONG).show();
-                    abort();
-                }
-            });
-        }
-        mProgress.show();
+        startProgress();
 
         EndpointServer server = new EndpointServer
             (MessagingPreferences.getServerURI(this));
@@ -200,6 +188,23 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
     @Override
     public boolean onSearchRequested() {
         return false;
+    }
+
+    public void startProgress() {
+        if (mProgress == null) {
+            mProgress = new ProgressDialog(this);
+            mProgress.setIndeterminate(true);
+            mProgress.setMessage(getText(R.string.msg_validating_phone));
+            mProgress.setOnCancelListener(new OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    Log.i(TAG, "progress dialog canceled.");
+                    Toast.makeText(NumberValidation.this, "Validation canceled. You might receive a SMS anyway.", Toast.LENGTH_LONG).show();
+                    abort();
+                }
+            });
+        }
+        mProgress.show();
     }
 
     public void abortProgress() {
@@ -276,7 +281,7 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
     }
 
     @Override
-    public void onAuthTokenReceived(NumberValidator v, final String token) {
+    public void onAuthTokenReceived(NumberValidator v, final CharSequence token) {
         Log.i(TAG, "got authorization token! (" + token + ")");
         abort(true);
 
@@ -285,7 +290,7 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
             public void run() {
                 if (!mConfirmCredentials) {
                     Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
-                    finishLogin(token);
+                    finishLogin(token.toString());
                 }
                 else {
                     finishConfirmCredentials(true);
@@ -325,27 +330,49 @@ public class NumberValidation extends AccountAuthenticatorActivity implements Nu
             // close progress dialog
             abortProgress();
 
-            // open validation code input dialog
-            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-            View view = inflater.inflate(R.layout.edittext_dialog, null);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // open validation code input dialog
+                    LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+                    final View view = inflater.inflate(R.layout.edittext_dialog, null);
+                    final EditText txt = (EditText) view.findViewById(R.id.textinput);
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            // FIXME dialog listeners!!!!
-            builder
-                .setTitle("Validation code")
-                .setPositiveButton(android.R.string.ok, null)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setView(view);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(NumberValidation.this);
+                    builder
+                        .setTitle("Validation code")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startProgress();
+                                // send the code
+                                if (mValidator != null) {
+                                    // FIXME just trusting the user isn't safe enough
+                                    mValidator.manualInput(txt.getText());
+                                    mValidator.start();
+                                }
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setView(view)
+                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                abort();
+                            }
+                        });
 
-            final Dialog dialog = builder.create();
-            dialog.show();
+                    final Dialog dialog = builder.create();
+                    dialog.show();
+                }
+            });
         }
         else
             Log.i(TAG, "validation has been requested, waiting for SMS");
     }
 
     @Override
-    public void onValidationCodeReceived(NumberValidator v, String code) {
+    public void onValidationCodeReceived(NumberValidator v, CharSequence code) {
         Log.i(TAG, "validation SMS received, restarting validator thread");
         // start again!
         if (mValidator != null)

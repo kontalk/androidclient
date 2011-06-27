@@ -43,7 +43,7 @@ public class NumberValidator implements Runnable {
     private final boolean mManual;
     private NumberValidatorListener mListener;
     private int mStep;
-    private String mValidationCode;
+    private CharSequence mValidationCode;
     private BroadcastReceiver mSmsReceiver;
 
     private Thread mThread;
@@ -149,7 +149,7 @@ public class NumberValidator implements Runnable {
                 Log.i(TAG, "requesting authentication token");
 
                 List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-                params.add(new BasicNameValuePair("v", mValidationCode));
+                params.add(new BasicNameValuePair("v", mValidationCode.toString()));
                 List<StatusResponse> res = mClient.request("authentication", params, null);
                 if (res.size() > 0) {
                     if (mListener != null) {
@@ -204,6 +204,14 @@ public class NumberValidator implements Runnable {
         Log.w(TAG, "exiting");
     }
 
+    /** Forcibly inputs the validation code. */
+    public void manualInput(CharSequence code) {
+        mValidationCode = code;
+        mStep = STEP_AUTH_TOKEN;
+        // next start call will trigger the next condition
+        mThread = null;
+    }
+
     public int getStep() {
         return mStep;
     }
@@ -223,10 +231,10 @@ public class NumberValidator implements Runnable {
         public void onValidationFailed(NumberValidator v, int reason);
 
         /** Called when the validation code SMS has been received. */
-        public void onValidationCodeReceived(NumberValidator v, String code);
+        public void onValidationCodeReceived(NumberValidator v, CharSequence code);
 
         /** Called on receiving of authentication token. */
-        public void onAuthTokenReceived(NumberValidator v, String token);
+        public void onAuthTokenReceived(NumberValidator v, CharSequence token);
 
         /** Called if validation code has not been verified. */
         public void onAuthTokenFailed(NumberValidator v, int reason);
