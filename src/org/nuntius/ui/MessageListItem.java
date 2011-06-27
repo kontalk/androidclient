@@ -165,17 +165,15 @@ public class MessageListItem extends RelativeLayout {
         SpannableStringBuilder buf = new SpannableStringBuilder();
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
+            buf.append(mMessage.getTextContent());
+
             if (mMessage instanceof ImageMessage) {
-                buf.append("[IMAGE]");
                 ImageMessage image = (ImageMessage) mMessage;
                 Bitmap bitmap = image.getContent();
                 if (bitmap != null) {
                     ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
                     buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
-            }
-            else {
-                buf.append(mMessage.getTextContent());
             }
         }
 

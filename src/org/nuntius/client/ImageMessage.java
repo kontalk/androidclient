@@ -138,7 +138,12 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
 
     @Override
     public String getTextContent() {
-        return "[IMAGE]";
+        return "Image: " + mime;
+    }
+
+    /** FIXME this should have be done better... */
+    public static String getSampleTextContent(String mime) {
+        return "Image: " + mime;
     }
 
     public byte[] getDecodedContent() {
@@ -148,7 +153,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
-        String mediaUri = c.getString(c.getColumnIndex(Messages.CONTENT));
+        String mediaUri = c.getString(c.getColumnIndex(Messages.FETCH_URL));
         try {
             Uri u = Uri.parse(mediaUri);
 

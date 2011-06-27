@@ -105,6 +105,7 @@ public class RequestClient extends AbstractClient {
             DocumentBuilder builder = factory.newDocumentBuilder();
 
             /*
+            FOR TESTING PURPOSES
             String xmlContent = EntityUtils.toString(response.getEntity());
             Log.e("AAAAHHH!!!", xmlContent);
             StringReader reader = new StringReader(xmlContent);
@@ -148,6 +149,7 @@ public class RequestClient extends AbstractClient {
                                 // old single value - transform to array
                                 else if (!(old instanceof List<?>)) {
                                     List<String> newObj = new ArrayList<String>(1);
+                                    newObj.add((String) old);
                                     newObj.add(value);
                                     extra.put(key, newObj);
                                 }

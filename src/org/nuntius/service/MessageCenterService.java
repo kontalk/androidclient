@@ -300,7 +300,7 @@ public class MessageCenterService extends Service
                     // do not store receipts...
                     if (!(msg instanceof ReceiptMessage)) {
                         // store to file if it's an image message
-                        String content;
+                        String content = msg.getTextContent();
                         if (msg instanceof ImageMessage) {
                             ImageMessage imgMsg = (ImageMessage) msg;
                             String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
@@ -314,10 +314,6 @@ public class MessageCenterService extends Service
                             // update uri
                             Uri uri = Uri.fromFile(file);
                             msg.setLocalUri(uri);
-                            content = uri.toString();
-                        }
-                        else {
-                            content = msg.getTextContent();
                         }
 
                         // save to local storage

@@ -203,11 +203,12 @@ public class ComposeMessage extends ListActivity {
             values.put(Messages.MESSAGE_ID, msgId);
             values.put(Messages.PEER, userId);
             values.put(Messages.MIME, mime);
-            values.put(Messages.CONTENT, uri.toString());
+            values.put(Messages.CONTENT, ImageMessage.getSampleTextContent(mime));
             values.put(Messages.UNREAD, false);
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
             values.put(Messages.STATUS, Messages.STATUS_SENDING);
+            values.put(Messages.FETCH_URL, uri.toString());
             newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
         }
         catch (Exception e) {

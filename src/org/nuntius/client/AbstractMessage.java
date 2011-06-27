@@ -32,7 +32,8 @@ public abstract class AbstractMessage<T> {
         Messages.TIMESTAMP,
         Messages.MIME,
         Messages.CONTENT,
-        Messages.STATUS
+        Messages.STATUS,
+        Messages.FETCH_URL
     };
 
     public static final String MSG_ID = "org.nuntius.message.id";
