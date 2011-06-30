@@ -2,19 +2,18 @@ package org.nuntius.util;
 
 import java.io.*;
 
+import android.content.Context;
 import android.os.Environment;
 
 
 public class MediaStorage {
-
-    public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Nuntius");
+    private static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Nuntius");
 
     /* instantiation not allowed */
     private MediaStorage() {}
 
-    public static File writeMedia(String filename, byte[] contents) throws IOException {
-        MEDIA_ROOT.mkdirs();
-        File f = new File(MEDIA_ROOT, filename);
+    public static File writeInternalMedia(Context context, String filename, byte[] contents) throws IOException {
+        File f = new File(context.getCacheDir(), filename);
         FileOutputStream fout = new FileOutputStream(f);
         fout.write(contents);
         fout.close();

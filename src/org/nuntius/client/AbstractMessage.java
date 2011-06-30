@@ -10,14 +10,13 @@ import android.content.AsyncQueryHandler;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 
 
 /**
  * An abstract message.
- * TODO should it be a {@link Parcelable}?
+ * FIXME it should be a {@link Parcelable}
  * @author Daniele Ricci
  * @version 1.0
  */
@@ -33,7 +32,9 @@ public abstract class AbstractMessage<T> {
         Messages.MIME,
         Messages.CONTENT,
         Messages.STATUS,
-        Messages.FETCH_URL
+        Messages.FETCH_URL,
+        Messages.FETCHED,
+        Messages.LOCAL_URI
     };
 
     public static final String MSG_ID = "org.nuntius.message.id";
@@ -45,13 +46,13 @@ public abstract class AbstractMessage<T> {
     public static final String MSG_TIMESTAMP = "org.nuntius.message.timestamp";
 
     protected Context mContext;
-    protected boolean incoming;
     protected String id;
     protected String sender;
     protected String mime;
     protected T content;
     protected long timestamp;
     protected int status;
+    protected boolean fetched;
     protected MessageID messageId;
 
     /**
@@ -150,6 +151,11 @@ public abstract class AbstractMessage<T> {
         return getClass().getSimpleName() + ": id=" + id;
     }
 
+    public int getDirection() {
+        return (sender != null) ?
+                Messages.DIRECTION_IN : Messages.DIRECTION_OUT;
+    }
+
     /**
      * Returns a rapid text representation of the message.
      * The returned value is useful for notification tickers.
@@ -166,6 +172,15 @@ public abstract class AbstractMessage<T> {
         return fetchUrl;
     }
 
+    public void setFetched(boolean fetched) {
+        this.fetched = fetched;
+    }
+
+    public boolean isFetched() {
+        return this.fetched;
+    }
+
+    /** Sets a pointer to the local resource. */
     public void setLocalUri(Uri uri) {
         localUri = uri;
     }
@@ -174,46 +189,13 @@ public abstract class AbstractMessage<T> {
         return localUri;
     }
 
-    /**
-     * Constructs a bundle from this message.
-     * @return the newly created bundle
-     */
-    public Bundle toBundle() {
-        Bundle b = new Bundle();
-        b.putString(MSG_ID, id);
-        b.putString(MSG_SENDER, sender);
-        b.putString(MSG_MIME, mime);
-        // content is type-dependant
-        if (recipients != null)
-            b.putStringArray(MSG_RECIPIENTS, recipients.toArray(new String[]{}));
-        if (group != null)
-            b.putStringArray(MSG_GROUP, group.toArray(new String[]{}));
-        return b;
-    }
-
-    protected void populateFromBundle(Bundle b) {
-        id = b.getString(MSG_ID);
-        sender = b.getString(MSG_SENDER);
-        mime = b.getString(MSG_MIME);
-        String[] rcpts = b.getStringArray(MSG_RECIPIENTS);
-        if (rcpts != null)
-            recipients = Arrays.asList(rcpts);
-
-        String[] grp = b.getStringArray(MSG_GROUP);
-        if (grp != null)
-            group = Arrays.asList(grp);
-
-        long stamp = b.getLong(MSG_TIMESTAMP);
-        if (stamp >= 0)
-            timestamp = stamp;
-    }
-
     protected void populateFromCursor(Cursor c) {
         setId(c.getString(c.getColumnIndex(Messages.MESSAGE_ID)));
         mime = c.getString(c.getColumnIndex(Messages.MIME));
         timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
         status = c.getInt(c.getColumnIndex(Messages.STATUS));
         recipients = new ArrayList<String>();
+        fetchUrl = c.getString(c.getColumnIndex(Messages.FETCH_URL));
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
         int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));
@@ -228,27 +210,6 @@ public abstract class AbstractMessage<T> {
         }
 
         // TODO groups??
-    }
-
-    public static AbstractMessage<?> fromBundle(Context context, Bundle b) {
-        Log.w("AbstractMessage/fromBundle", "mime=" + b.getString(MSG_MIME));
-        if (PlainTextMessage.supportsMimeType(b.getString(MSG_MIME))) {
-            PlainTextMessage msg = new PlainTextMessage(context);
-            msg.populateFromBundle(b);
-            return msg;
-        }
-        else if (ReceiptMessage.supportsMimeType(b.getString(MSG_MIME))) {
-            ReceiptMessage msg = new ReceiptMessage(context);
-            msg.populateFromBundle(b);
-            return msg;
-        }
-        else if (ImageMessage.supportsMimeType(b.getString(MSG_MIME))) {
-            ImageMessage msg = new ImageMessage(context);
-            msg.populateFromBundle(b);
-            return msg;
-        }
-
-        return null;
     }
 
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {

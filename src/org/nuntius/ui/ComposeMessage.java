@@ -208,7 +208,8 @@ public class ComposeMessage extends ListActivity {
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
             values.put(Messages.STATUS, Messages.STATUS_SENDING);
-            values.put(Messages.FETCH_URL, uri.toString());
+            values.put(Messages.LOCAL_URI, uri.toString());
+            values.put(Messages.FETCHED, true);
             newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
         }
         catch (Exception e) {
@@ -375,8 +376,9 @@ public class ComposeMessage extends ListActivity {
     private static final int MENU_FORWARD = 1;
     private static final int MENU_COPY_TEXT = 2;
     private static final int MENU_VIEW_IMAGE = 3;
-    private static final int MENU_DETAILS = 4;
-    private static final int MENU_DELETE = 5;
+    private static final int MENU_DOWNLOAD = 4;
+    private static final int MENU_DETAILS = 5;
+    private static final int MENU_DELETE = 6;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
@@ -384,18 +386,20 @@ public class ComposeMessage extends ListActivity {
         MessageListItem vitem = (MessageListItem) info.targetView;
         AbstractMessage<?> msg = vitem.getMessage();
 
-        menu.setHeaderTitle(R.string.ctx_message_options);
+        menu.setHeaderTitle(R.string.title_message_options);
         menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
 
         if (msg instanceof ImageMessage) {
-            if (msg.getLocalUri() != null)
+            if (msg.isFetched())
                 menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, R.string.view_image);
+            else
+                menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, "Download file");
         }
         else {
             menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
         }
 
-        menu.add(Menu.NONE, MENU_DETAILS, MENU_DETAILS, R.string.message_details);
+        menu.add(Menu.NONE, MENU_DETAILS, MENU_DETAILS, R.string.menu_message_details);
         menu.add(Menu.NONE, MENU_DELETE, MENU_DELETE, R.string.delete_message);
     }
 
@@ -426,8 +430,20 @@ public class ComposeMessage extends ListActivity {
                 startActivity(i);
                 return true;
 
+            case MENU_DOWNLOAD:
+                Log.i(TAG, "downloading attachment");
+                // TODO download attachment
+                return true;
+
             case MENU_DETAILS:
                 Log.i(TAG, "opening message details");
+                CharSequence messageDetails = MessageUtils.getMessageDetails(this, msg, userPhone != null ? userPhone : userId);
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.title_message_details)
+                        .setMessage(messageDetails)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setCancelable(true)
+                        .show();
                 return true;
 
             case MENU_DELETE:

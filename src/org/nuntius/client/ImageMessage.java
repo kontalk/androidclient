@@ -153,7 +153,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
-        String mediaUri = c.getString(c.getColumnIndex(Messages.FETCH_URL));
+        String mediaUri = c.getString(c.getColumnIndex(Messages.LOCAL_URI));
         try {
             Uri u = Uri.parse(mediaUri);
 

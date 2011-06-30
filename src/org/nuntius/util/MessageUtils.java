@@ -4,12 +4,20 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.nuntius.R;
+import org.nuntius.client.AbstractMessage;
+import org.nuntius.client.ImageMessage;
+import org.nuntius.provider.MyMessages.Messages;
+
 import android.content.Context;
+import android.content.res.Resources;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
 
-public class MessageUtils {
+public final class MessageUtils {
+    private MessageUtils() {}
+
     public static String formatTimeStampString(Context context, long when) {
         return formatTimeStampString(context, when, false);
     }
@@ -73,5 +81,70 @@ public class MessageUtils {
 
         return convertToHex(sha1hash);
     }
+
+    public static CharSequence getMessageDetails(Context context, AbstractMessage<?> msg, String decodedPeer) {
+        StringBuilder details = new StringBuilder();
+        Resources res = context.getResources();
+
+        // Message Type: Text message.
+        details.append(res.getString(R.string.message_type_label));
+
+        int resId;
+        if (msg instanceof ImageMessage)
+            resId = R.string.image_message;
+        else
+            resId = R.string.text_message;
+
+        details.append(res.getString(resId));
+
+        // Address: ***
+        details.append('\n');
+        if (msg.getDirection() == Messages.DIRECTION_OUT)
+            details.append(res.getString(R.string.to_address_label));
+        else
+            details.append(res.getString(R.string.from_label));
+
+        details.append(decodedPeer);
+
+        // Date: ***
+        details.append('\n');
+        int status = msg.getStatus();
+        switch (status) {
+            case Messages.STATUS_INCOMING:
+            case Messages.STATUS_RECEIVED:
+            case Messages.STATUS_CONFIRMED:
+                resId = R.string.received_label;
+                break;
+            case Messages.STATUS_ERROR:
+                resId = R.string.send_error;
+                break;
+            case Messages.STATUS_NOTACCEPTED:
+                resId = R.string.send_refused;
+                break;
+            case Messages.STATUS_SENT:
+                resId = R.string.sent_label;
+                break;
+            default: // including Messages.STATUS_SENDING
+                resId = -1;
+        }
+
+        details.append(res.getString(resId));
+
+        long date = msg.getTimestamp();
+        details.append(MessageUtils.formatTimeStampString(context, date, true));
+
+        // Error code: ***
+        /*
+        int errorCode = cursor.getInt(MessageListAdapter.COLUMN_SMS_ERROR_CODE);
+        if (errorCode != 0) {
+            details.append('\n')
+                .append(res.getString(R.string.error_code_label))
+                .append(errorCode);
+        }
+        */
+
+        return details.toString();
+    }
+
 
 }

@@ -23,8 +23,6 @@ public final class MyMessages {
         public static final int STATUS_SENT = 4;
         public static final int STATUS_RECEIVED = 5;
         public static final int STATUS_CONFIRMED = 6;
-        // FIXME is this safe?
-        public static final int STATUS_DOWNLOADED = 7;
 
         /**
          * Builds a message {@link Uri}.
@@ -49,6 +47,8 @@ public final class MyMessages {
         public static final String TIMESTAMP = "timestamp";
         public static final String STATUS = "status";
         public static final String FETCH_URL = "fetch_url";
+        public static final String FETCHED = "fetched";
+        public static final String LOCAL_URI = "local_uri";
 
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = "timestamp";

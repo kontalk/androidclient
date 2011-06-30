@@ -36,6 +36,14 @@
     <string name="send">Send</string>
     <string name="hint_enter_text">Enter your text here</string>
     <string name="view_image">View image</string>
-    <string name="ctx_message_options">Message options</string>
-    <string name="message_details">Message details</string>
+    <string name="title_message_options">Message options</string>
+    <string name="menu_message_details">View message details</string>
+    <string name="title_message_details">Message details</string>
+    <string name="message_type_label">Type:\u0020</string>
+    <string name="text_message">Text message</string>
+    <string name="image_message">Image message</string>
+    <string name="from_label">From:\u0020</string>
+    <string name="to_address_label">To:\u0020</string>
+    <string name="sent_label">Sent:\u0020</string>
+    <string name="received_label">Received:\u0020</string>
 </resources>

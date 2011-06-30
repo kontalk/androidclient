@@ -13,7 +13,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 
 
@@ -89,20 +88,6 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
 
     public String getMessageId() {
         return mMessageId;
-    }
-
-    @Override
-    public Bundle toBundle() {
-        Bundle b = super.toBundle();
-        b.putString(MSG_CONTENT, xmlContent);
-        return b;
-    }
-
-    @Override
-    protected void populateFromBundle(Bundle b) {
-        super.populateFromBundle(b);
-        xmlContent = b.getString(MSG_CONTENT);
-        parseXML();
     }
 
     @Override

@@ -6,7 +6,6 @@ import org.nuntius.provider.MyMessages.Messages;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.Bundle;
 
 
 /**
@@ -30,19 +29,6 @@ public class PlainTextMessage extends AbstractMessage<String> {
 
     public PlainTextMessage(Context context, String id, String sender, byte[] content, List<String> group) {
         super(context, id, sender, MIME_TYPE, new String(content), group);
-    }
-
-    @Override
-    public Bundle toBundle() {
-        Bundle b = super.toBundle();
-        b.putString(MSG_CONTENT, content);
-        return b;
-    }
-
-    @Override
-    protected void populateFromBundle(Bundle b) {
-        super.populateFromBundle(b);
-        content = b.getString(MSG_CONTENT);
     }
 
     @Override

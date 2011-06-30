@@ -64,7 +64,9 @@ public class MessagesProvider extends ContentProvider {
             "unread INTEGER, " +
             "timestamp INTEGER," +
             "status INTEGER," +
-            "fetch_url TEXT" +
+            "fetch_url TEXT," +
+            "fetched INTEGER," +
+            "local_uri TEXT" +
             ");";
 
         /** This table will contain the latest message from each conversation. */
@@ -264,8 +266,10 @@ public class MessagesProvider extends ContentProvider {
 
         // this will be calculated by the trigger
         values.remove(Messages.UNREAD);
-        // no fetch URL in threads :)
+        // remove some other column
         values.remove(Messages.FETCH_URL);
+        values.remove(Messages.FETCHED);
+        values.remove(Messages.LOCAL_URI);
 
         // insert new thread
         long resThreadId = db.insert(TABLE_THREADS, null, values);
@@ -434,20 +438,22 @@ public class MessagesProvider extends ContentProvider {
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
             null, null, Messages.INVERTED_SORT_ORDER, "1");
 
-        if (c != null && c.moveToFirst()) {
-            ContentValues v = new ContentValues();
-            v.put(Threads.MESSAGE_ID, c.getString(0));
-            v.put(Threads.DIRECTION, c.getInt(1));
-            v.put(Threads.MIME, c.getString(2));
-            v.put(Threads.STATUS, c.getInt(3));
-            v.put(Threads.CONTENT, c.getString(4));
-            v.put(Threads.TIMESTAMP, c.getLong(5));
+        int rc = -1;
+        if (c != null) {
+            if (c.moveToFirst()) {
+                ContentValues v = new ContentValues();
+                v.put(Threads.MESSAGE_ID, c.getString(0));
+                v.put(Threads.DIRECTION, c.getInt(1));
+                v.put(Threads.MIME, c.getString(2));
+                v.put(Threads.STATUS, c.getInt(3));
+                v.put(Threads.CONTENT, c.getString(4));
+                v.put(Threads.TIMESTAMP, c.getLong(5));
+                rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
+            }
             c.close();
-
-            return db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
         }
 
-        return -1;
+        return rc;
     }
 
     private int deleteEmptyThreads(SQLiteDatabase db) {
@@ -597,6 +603,8 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.TIMESTAMP, Messages.TIMESTAMP);
         messagesProjectionMap.put(Messages.STATUS, Messages.STATUS);
         messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
+        messagesProjectionMap.put(Messages.FETCHED, Messages.FETCHED);
+        messagesProjectionMap.put(Messages.LOCAL_URI, Messages.LOCAL_URI);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);

@@ -306,7 +306,7 @@ public class MessageCenterService extends Service
                             String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
                             File file = null;
                             try {
-                                file = MediaStorage.writeMedia(filename, imgMsg.getDecodedContent());
+                                file = MediaStorage.writeInternalMedia(this, filename, imgMsg.getDecodedContent());
                             }
                             catch (IOException e) {
                                 Log.e(TAG, "unable to write to media storage", e);
@@ -323,6 +323,9 @@ public class MessageCenterService extends Service
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);
                         values.put(Messages.FETCH_URL, msg.getFetchUrl());
+                        Uri localUri = msg.getLocalUri();
+                        if (localUri != null)
+                            values.put(Messages.LOCAL_URI, localUri.toString());
                         values.put(Messages.UNREAD, true);
                         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
                         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
@@ -482,9 +485,12 @@ public class MessageCenterService extends Service
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {
+        // TODO this will work when AbstractMessage will become Parcelable
+        /*
         Intent msg = new Intent(MESSAGE_RECEIVED);
         msg.putExtras(message.toBundle());
         sendBroadcast(msg);
+        */
     }
 
     /** Starts the message center. */
