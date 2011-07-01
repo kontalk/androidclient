@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.nuntius"
+      package="org.kontalk"
       android:versionCode="1"
       android:versionName="1.0">
     <uses-sdk android:minSdkVersion="8"/>
@@ -21,13 +21,13 @@
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <application android:icon="@drawable/icon" android:label="@string/app_name" android:name="Nuntius" android:debuggable="true">
+    <application android:icon="@drawable/icon" android:label="@string/app_name" android:name=".Kontalk" android:debuggable="true">
         <service
             android:label="@string/service_name"
             android:name=".service.MessageCenterService"/>
 
         <provider android:name=".provider.MessagesProvider"
-            android:authorities="org.nuntius.messages"
+            android:authorities="org.kontalk.messages"
             android:syncable="false"/>
 
         <activity android:name=".ui.ConversationList">
@@ -42,7 +42,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.item/org.nuntius.user"
+                <data android:mimeType="vnd.android.cursor.item/org.kontalk.user"
                     android:host="com.android.contacts"/>
             </intent-filter>
             <intent-filter>

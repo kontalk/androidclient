@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- org.nuntius.ui.MessageListItem -->
-<org.nuntius.ui.MessageListItem
+<!-- org.kontalk.ui.MessageListItem -->
+<org.kontalk.ui.MessageListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/msg_list_item"
     android:paddingTop="2dip"
@@ -73,4 +73,4 @@
             android:background="@drawable/date_balloon"/>
 
     </LinearLayout>
-</org.nuntius.ui.MessageListItem>
+</org.kontalk.ui.MessageListItem>

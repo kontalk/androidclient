@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Nuntius</string>
+    <string name="app_name">Kontalk</string>
     <string name="service_name">Message Center</string>
     <string name="new_message">New message</string>
     <string name="create_new_message">Compose new message</string>
@@ -33,7 +33,7 @@
     <string name="confirm_will_delete_thread">The entire thread will be deleted.</string>
     <string name="new_messages">New messages</string>
     <string name="unread_messages">%d unread messages</string>
-    <string name="only_one_account_supported">Only one Nuntius account is supported.</string>
+    <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
     <string name="send">Send</string>
     <string name="hint_enter_text">Enter your text here</string>
     <string name="view_image">View image</string>
