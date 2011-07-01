@@ -27,6 +27,7 @@
     <string name="message_text_copied">Message text copied.</string>
     <string name="call">Call</string>
     <string name="view_contact">View contact</string>
+    <string name="view_conversation">View thread</string>
     <string name="delete_thread">Delete thread</string>
     <string name="confirm_delete_thread">Delete thread</string>
     <string name="confirm_will_delete_thread">The entire thread will be deleted.</string>

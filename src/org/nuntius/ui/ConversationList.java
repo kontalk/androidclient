@@ -20,14 +20,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract.Contacts;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 /**
@@ -74,6 +77,8 @@ public class ConversationList extends ListActivity {
         mListAdapter = new ConversationListAdapter(this, null);
         mListAdapter.setOnContentChangedListener(mContentChangedListener);
         setListAdapter(mListAdapter);
+
+        registerForContextMenu(getListView());
     }
 
     @Override
@@ -107,6 +112,72 @@ public class ConversationList extends ListActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private static final int MENU_OPEN_THREAD = 1;
+    private static final int MENU_VIEW_CONTACT = 2;
+    private static final int MENU_DELETE_THREAD = 3;
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+        ConversationListItem vitem = (ConversationListItem) info.targetView;
+        Conversation conv = vitem.getConversation();
+        if (conv != null) {
+            Contact contact = conv.getContact();
+            String title;
+            if (contact != null)
+                title = contact.getName() != null ? contact.getName() : contact.getNumber();
+            else
+                title = conv.getRecipient();
+
+            menu.setHeaderTitle(title);
+            menu.add(Menu.NONE, MENU_OPEN_THREAD, MENU_OPEN_THREAD, R.string.view_conversation);
+            if (contact != null)
+                menu.add(Menu.NONE, MENU_VIEW_CONTACT, MENU_VIEW_CONTACT, R.string.view_contact);
+            menu.add(Menu.NONE, MENU_DELETE_THREAD, MENU_DELETE_THREAD, R.string.delete_thread);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        ConversationListItem vitem = (ConversationListItem) info.targetView;
+        Conversation conv = vitem.getConversation();
+
+        switch (item.getItemId()) {
+            case MENU_OPEN_THREAD:
+                openConversation(conv);
+                return true;
+
+            case MENU_VIEW_CONTACT:
+                Contact contact = conv.getContact();
+                if (contact != null)
+                    startActivity(new Intent(Intent.ACTION_VIEW, contact.getUri()));
+                return true;
+
+            case MENU_DELETE_THREAD:
+                Log.i(TAG, "deleting thread: " + conv.getThreadId());
+                deleteThread(conv.getThreadId());
+                return true;
+        }
+
+        return super.onContextItemSelected(item);
+    }
+
+    private void deleteThread(final long threadId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.confirm_delete_thread);
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setMessage(R.string.confirm_will_delete_thread);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                MessagesProvider.deleteThread(ConversationList.this, threadId);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
     }
 
     private void chooseContact() {
@@ -222,21 +293,25 @@ public class ConversationList extends ListActivity {
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
         if (conv != null) {
-            Intent intent = new Intent(this, ComposeMessage.class);
-            intent.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
-            intent.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
-            Contact contact = conv.getContact();
-            if (contact != null) {
-                intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
-                intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
-            }
-            startActivity(intent);
+            openConversation(conv);
         }
 
         // new composer
         else {
             chooseContact();
         }
+    }
+
+    private void openConversation(Conversation conv) {
+        Intent intent = new Intent(this, ComposeMessage.class);
+        intent.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
+        intent.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
+        Contact contact = conv.getContact();
+        if (contact != null) {
+            intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
+            intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
+        }
+        startActivity(intent);
     }
 
     /**

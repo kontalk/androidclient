@@ -340,9 +340,8 @@ public class ComposeMessage extends ListActivity {
                 return true;
 
             case R.id.view_contact:
-                Contact contact = null;
                 if (mConversation != null) {
-                    contact = mConversation.getContact();
+                    Contact contact = mConversation.getContact();
                     if (contact != null)
                         startActivity(new Intent(Intent.ACTION_VIEW, contact.getUri()));
                 }
@@ -390,7 +389,8 @@ public class ComposeMessage extends ListActivity {
         menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
 
         if (msg instanceof ImageMessage) {
-            if (msg.isFetched())
+            // we are able to view image if either we fetched the image or we sent that
+            if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
                 menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, R.string.view_image);
             else
                 menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, "Download file");

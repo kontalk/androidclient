@@ -13,7 +13,6 @@ import org.nuntius.client.AbstractMessage;
 import org.nuntius.client.EndpointServer;
 import org.nuntius.client.ImageMessage;
 import org.nuntius.client.MessageSender;
-import org.nuntius.client.PlainTextMessage;
 import org.nuntius.client.ReceiptMessage;
 import org.nuntius.client.StatusResponse;
 import org.nuntius.provider.MessagesProvider;
@@ -59,7 +58,6 @@ public class MessageCenterService extends Service
     private static final int NOTIFICATION_ID = 102;
 
     public static final String MESSAGE_RECEIVED = "org.nuntius.MESSAGE_RECEIVED";
-    private static final String ACTION_PAUSE = "org.nuntius.PAUSE_MESSAGE_CENTER";
 
     private Notification mCurrentNotification;
     private long mTotalBytes;
@@ -121,50 +119,39 @@ public class MessageCenterService extends Service
         Log.w(TAG, "Message Center starting - " + intent);
 
         if (intent != null) {
-            // pause
-            if (ACTION_PAUSE.equals(intent.getAction())) {
-                pause();
+            Bundle extras = intent.getExtras();
+            String serverUrl = (String) extras.get(EndpointServer.class.getName());
+            Log.i(TAG, "using server uri: " + serverUrl);
+            EndpointServer server = new EndpointServer(serverUrl);
+
+            mAccount = Authenticator.getDefaultAccount(this);
+            if (mAccount == null) {
+                stopSelf();
             }
-
-            // normal start
             else {
-                Bundle extras = intent.getExtras();
-                String serverUrl = (String) extras.get(EndpointServer.class.getName());
-                Log.i(TAG, "using server uri: " + serverUrl);
-                EndpointServer server = new EndpointServer(serverUrl);
-
-                mAccount = Authenticator.getDefaultAccount(this);
-                if (mAccount == null) {
-                    stopSelf();
+                // check changing accounts
+                if (mAccountManager == null) {
+                    mAccountManager = AccountManager.get(this);
+                    mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
                 }
-                else {
-                    // check changing accounts
-                    if (mAccountManager == null) {
-                        mAccountManager = AccountManager.get(this);
-                        mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
-                    }
 
-                    // activate request worker if necessary
-                    if (mRequestWorker == null) {
-                        mRequestWorker = new RequestWorker(this, server);
-                        mRequestWorker.addListener(this);
-                        mRequestWorker.start();
+                // activate request worker
+                if (mRequestWorker == null) {
+                    mRequestWorker = new RequestWorker(this, server);
+                    mRequestWorker.addListener(this);
+                    mRequestWorker.start();
 
-                        // lookup for messages with error status and try to re-send them
-                        requeuePendingMessages();
-                        // lookup for incoming messages not confirmed yet
-                        requeuePendingReceipts();
-                    }
-                    else {
-                        mRequestWorker.resume2();
-                    }
+                    // lookup for messages with error status and try to re-send them
+                    requeuePendingMessages();
+                    // lookup for incoming messages not confirmed yet
+                    requeuePendingReceipts();
+                }
 
-                    // start polling thread if needed
-                    if (mPollingThread == null) {
-                        mPollingThread = new PollingThread(this, server);
-                        mPollingThread.setMessageListener(this);
-                        mPollingThread.start();
-                    }
+                // start polling thread
+                if (mPollingThread == null) {
+                    mPollingThread = new PollingThread(this, server);
+                    mPollingThread.setMessageListener(this);
+                    mPollingThread.start();
                 }
             }
         }
@@ -217,7 +204,8 @@ public class MessageCenterService extends Service
                     Messages._ID,
                     Messages.PEER,
                     Messages.CONTENT,
-                    Messages.MIME
+                    Messages.MIME,
+                    Messages.LOCAL_URI
                 },
                 Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
@@ -229,9 +217,21 @@ public class MessageCenterService extends Service
             String userId = c.getString(1);
             String text = c.getString(2);
             String mime = c.getString(3);
+            String _fileUri = c.getString(4);
             Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
 
-            MessageSender m = new MessageSender(userId, text.getBytes(), mime, uri);
+            MessageSender m;
+
+            // check if the message contains some large file to be sent
+            if (_fileUri != null) {
+                Uri fileUri = Uri.parse(_fileUri);
+                m = new MessageSender(userId, fileUri, mime, uri);
+            }
+            // we have a simple boring plain text message :(
+            else {
+                m = new MessageSender(userId, text.getBytes(), mime, uri);
+            }
+
             m.setListener(mMessageRequestListener);
             Log.i(TAG, "resending failed message " + id);
             sendMessage(m);
@@ -358,7 +358,7 @@ public class MessageCenterService extends Service
     }
 
     private synchronized void pushRequest(final RequestJob job) {
-        if (mRequestWorker != null)
+        if (mRequestWorker != null && mRequestWorker.isRunning())
             mRequestWorker.push(job);
         else {
             Log.w(TAG, "request worker is down, queueing job");
@@ -371,13 +371,13 @@ public class MessageCenterService extends Service
         // global listener
         job.setListener(mMessageRequestListener);
 
-        // not a simple text message - use progress notification
-        if (!PlainTextMessage.MIME_TYPE.equals(job.getMime())) {
+        // not a plain text message - use progress notification
+        if (job.getSourceUri() != null) {
             try {
                 startForeground(job.getContentLength(this));
             }
             catch (IOException e) {
-                Log.e(TAG, "error reading message to send", e);
+                Log.e(TAG, "error reading message data to send", e);
                 // FIXME just don't send for now
                 return;
             }
@@ -464,10 +464,11 @@ public class MessageCenterService extends Service
 
     @Override
     public boolean error(RequestJob job, Throwable e) {
-        // TODO ehm :)
+        // TODO some error notifications
         Log.e(TAG, "request error", e);
-        // stop foreground if any
-        stopForeground();
+        // stop foreground if any the job is a message
+        if (job instanceof MessageSender)
+            stopForeground();
 
         return true;
     }
@@ -522,32 +523,10 @@ public class MessageCenterService extends Service
         context.stopService(new Intent(context, MessageCenterService.class));
     }
 
-    /** Shutdown the polling thread and pause the request worker. */
-    public static void pauseMessageCenter(final Context context) {
-        Log.i(TAG, "pausing message center");
-        final Intent intent = new Intent(context, MessageCenterService.class);
-        intent.setAction(ACTION_PAUSE);
-        context.startService(intent);
-    }
-
     public final class MessageCenterInterface extends Binder {
         public MessageCenterService getService() {
             return MessageCenterService.this;
         }
-    }
-
-    /** Pauses the message center. */
-    public void pause() {
-        if (mRequestWorker != null) {
-            // Clear the pending jobs queue.
-            // This way messages with error status will not be sent twice.
-            RequestWorker.pendingJobs.clear();
-            // pause the request worker
-            mRequestWorker.pause();
-        }
-
-        // polling thread should be restarted, so we destroy it
-        shutdownPollingThread();
     }
 
 }

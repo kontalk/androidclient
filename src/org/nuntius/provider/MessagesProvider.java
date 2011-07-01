@@ -241,7 +241,6 @@ public class MessagesProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(msgUri, null);
             Log.w(TAG, "messages table inserted, id = " + rowId);
 
-            updateThreads(db, initialValues);
             return msgUri;
         }
 
@@ -250,6 +249,7 @@ public class MessagesProvider extends ContentProvider {
 
     /**
      * Updates the threads table, returning the thread id to associate with the new message.
+     * A thread is created for the given message if not found.
      * @param db
      * @param values
      * @return the thread id

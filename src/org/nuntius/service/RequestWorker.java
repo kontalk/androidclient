@@ -99,11 +99,16 @@ public class RequestWorker extends Thread {
 
     private final class PauseHandler extends Handler {
         private boolean mRunning;
-        private Queue<RequestJob> mQueue;
 
         public PauseHandler(Queue<RequestJob> pending) {
-            mQueue = new LinkedList<RequestJob>(pending);
-            resume();
+            mRunning = true;
+
+            // requeue the old messages
+            Log.i(TAG, "processing pending jobs queue (" + pending.size() + " jobs)");
+            for (RequestJob job = pending.poll(); job != null; job = pending.poll()) {
+                Log.i(TAG, "requeueing pending job " + job);
+                sendMessage(obtainMessage(MSG_REQUEST_JOB, job));
+            }
         }
 
         public synchronized void stop() {
@@ -112,28 +117,12 @@ public class RequestWorker extends Thread {
             getLooper().quit();
         }
 
-        public synchronized void pause() {
-            mRunning = false;
-        }
-
-        public synchronized void resume() {
-            mRunning = true;
-
-            // requeue the old messages
-            Log.i(TAG, "processing pending jobs queue (" + mQueue.size() + " jobs)");
-            for (RequestJob job = mQueue.poll(); job != null; job = mQueue.poll()) {
-                Log.i(TAG, "requeueing pending job " + job);
-                sendMessage(obtainMessage(MSG_REQUEST_JOB, job));
-            }
-        }
-
         @Override
         public synchronized void handleMessage(Message msg) {
             if (msg.what == MSG_REQUEST_JOB) {
                 // not running - queue message
                 if (!mRunning) {
-                    Log.w(TAG, "request worker is not running - queueing message");
-                    mQueue.add((RequestJob) msg.obj);
+                    Log.w(TAG, "request worker is not running - dropping message");
                     return;
                 }
 
@@ -209,16 +198,9 @@ public class RequestWorker extends Thread {
                 delay);
     }
 
-    /** Pauses the request queue. */
-    public void pause() {
-        if (mHandler != null)
-            mHandler.pause();
-    }
-
-    /** Resumes the request queue. */
-    public void resume2() {
-        if (mHandler != null)
-            mHandler.resume();
+    /** Returns true if the worker is running. */
+    public boolean isRunning() {
+        return (mHandler != null && mHandler.mRunning);
     }
 
     /** Shuts down this request worker gracefully. */

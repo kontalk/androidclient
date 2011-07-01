@@ -21,8 +21,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-// TODO timestamp??
 
+/**
+ * A message list item to be used in {@link ComposeMessage} activity.
+ * @author Daniele Ricci
+ * @version 1.0
+ */
 public class MessageListItem extends RelativeLayout {
     //private static final String TAG = MessageListItem.class.getSimpleName();
 

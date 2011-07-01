@@ -196,6 +196,7 @@ public abstract class AbstractMessage<T> {
         status = c.getInt(c.getColumnIndex(Messages.STATUS));
         recipients = new ArrayList<String>();
         fetchUrl = c.getString(c.getColumnIndex(Messages.FETCH_URL));
+        fetched = (c.getShort(c.getColumnIndex(Messages.FETCHED)) != 0);
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
         int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));
