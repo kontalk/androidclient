@@ -89,6 +89,19 @@ public class ConversationList extends ListActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        boolean visible = (mListAdapter.getCount() > 0);
+        MenuItem item;
+        item = menu.findItem(R.id.menu_search);
+        item.setEnabled(visible);
+        item.setVisible(visible);
+        item = menu.findItem(R.id.menu_delete_all);
+        item.setEnabled(visible);
+        item.setVisible(visible);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_compose:
