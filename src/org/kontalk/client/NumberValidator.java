@@ -28,9 +28,6 @@ import android.util.Log;
 public class NumberValidator implements Runnable {
     private static final String TAG = NumberValidator.class.getSimpleName();
 
-    private static final String SMS_FROM = "Kontalk";
-    //private static final String SMS_FROM = "123456";
-
     /** Validation step (sending phone number and waiting for SMS) */
     public static final int STEP_VALIDATION = 1;
     /** Requesting authentication token */
@@ -45,6 +42,7 @@ public class NumberValidator implements Runnable {
     private int mStep;
     private CharSequence mValidationCode;
     private BroadcastReceiver mSmsReceiver;
+    private String mSmsFrom;
 
     private Thread mThread;
 
@@ -88,8 +86,8 @@ public class NumberValidator implements Runnable {
                                 SmsMessage sms = SmsMessage.createFromPdu(byteData);
 
                                 // possible message!
-                                if (SMS_FROM.equals(sms.getOriginatingAddress()) ||
-                                        PhoneNumberUtils.compare(SMS_FROM, sms.getOriginatingAddress())) {
+                                if (mSmsFrom.equals(sms.getOriginatingAddress()) ||
+                                        PhoneNumberUtils.compare(mSmsFrom, sms.getOriginatingAddress())) {
                                     String txt = sms.getMessageBody();
                                     if (txt != null && txt.length() > 0) {
                                         // FIXME take the entire message text for now
@@ -127,7 +125,15 @@ public class NumberValidator implements Runnable {
                     if (mListener != null) {
                         StatusResponse st = res.get(0);
                         if (st.code == StatusResponse.STATUS_SUCCESS) {
-                            mListener.onValidationRequested(this);
+                            Map<String, Object> extra = st.extra;
+                            if (extra != null) {
+                                mSmsFrom = (String) extra.get("f");
+                                mListener.onValidationRequested(this);
+                            }
+                            else {
+                                // no sms from identification?
+                                throw new IllegalArgumentException("no sms from id");
+                            }
                         }
                         else {
                             // validation failed :(
