@@ -449,6 +449,9 @@ public class MessagesProvider extends ContentProvider {
                 v.put(Threads.CONTENT, c.getString(4));
                 v.put(Threads.TIMESTAMP, c.getLong(5));
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
+                if (rc > 0)
+                    getContext().getContentResolver().notifyChange(
+                            ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), null);
             }
             c.close();
         }

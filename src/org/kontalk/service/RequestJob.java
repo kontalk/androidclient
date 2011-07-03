@@ -10,8 +10,8 @@ public class RequestJob {
     protected List<NameValuePair> mParams;
     protected byte[] mContent;
     protected RequestListener mListener;
+    protected boolean mCancel;
 
-    // TODO content should be byte[]
     public RequestJob(String cmd, List<NameValuePair> params) {
         this(cmd, params, null);
     }
@@ -44,5 +44,18 @@ public class RequestJob {
 
     public RequestListener getListener() {
         return mListener;
+    }
+
+    /**
+     * Sets the cancel flag.
+     * The {@link RequestWorker} will see this flag and abort executing the
+     * request if still possible.
+     */
+    public void cancel() {
+        mCancel = true;
+    }
+
+    public boolean isCanceled() {
+        return mCancel;
     }
 }

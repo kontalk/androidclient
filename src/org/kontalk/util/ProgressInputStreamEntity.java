@@ -6,31 +6,36 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.http.entity.InputStreamEntity;
+import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 
 public class ProgressInputStreamEntity extends InputStreamEntity {
+    protected final RequestJob mJob;
     protected final RequestListener mListener;
 
     public ProgressInputStreamEntity(InputStream instream, long length,
-            final RequestListener listener) {
+            final RequestJob job, final RequestListener listener) {
         super(instream, length);
+        mJob = job;
         mListener = listener;
     }
 
     @Override
     public void writeTo(final OutputStream outstream) throws IOException {
-        super.writeTo(new CountingOutputStream(outstream, mListener));
+        super.writeTo(new CountingOutputStream(outstream, mJob, mListener));
     }
 
     private static final class CountingOutputStream extends FilterOutputStream {
 
+        private final RequestJob job;
         private final RequestListener listener;
         private long transferred;
 
         public CountingOutputStream(final OutputStream out,
-                final RequestListener listener) {
+                final RequestJob job, final RequestListener listener) {
             super(out);
             this.listener = listener;
+            this.job = job;
             this.transferred = 0;
         }
 
@@ -54,7 +59,7 @@ public class ProgressInputStreamEntity extends InputStreamEntity {
 
         private void publishProgress(long add) {
             this.transferred += add;
-            this.listener.uploadProgress(this.transferred);
+            this.listener.uploadProgress(job, this.transferred);
         }
     }
 

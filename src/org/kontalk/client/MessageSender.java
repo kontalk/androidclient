@@ -6,7 +6,11 @@ import org.kontalk.service.RequestJob;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.database.ContentObserver;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
+import android.provider.BaseColumns;
 
 
 /**
@@ -16,10 +20,11 @@ import android.net.Uri;
  */
 public class MessageSender extends RequestJob {
 
-    protected final String mPeer;
-    protected final Uri mUri;
-    protected final String mMime;
-    protected Uri mSourceDataUri;
+    private final String mPeer;
+    private final Uri mUri;
+    private final String mMime;
+    private Uri mSourceDataUri;
+    private ContentObserver mObserver;
 
     /** A {@link MessageSender} for raw byte contents. */
     public MessageSender(String userId, byte[] content, String mime, Uri msgUri) {
@@ -38,6 +43,42 @@ public class MessageSender extends RequestJob {
         mUri = msgUri;
         mMime = mime;
         mSourceDataUri = fileUri;
+    }
+
+    public void observe(Context context, Handler handler) {
+        mObserver = new MessageSenderObserver(context, handler);
+        context.getContentResolver().registerContentObserver(mUri, false,
+                mObserver);
+    }
+
+    public void unobserve(Context context) {
+        if (mObserver != null)
+            context.getContentResolver().unregisterContentObserver(mObserver);
+    }
+
+    private final class MessageSenderObserver extends ContentObserver {
+        private final Context mContext;
+
+        public MessageSenderObserver(Context context, Handler handler) {
+            super(handler);
+            mContext = context;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            // cancel the request if the content doesn't exist
+            Cursor c = mContext.getContentResolver()
+                .query(mUri, new String[] { BaseColumns._ID }, null, null, null);
+            if (c == null || !c.moveToFirst())
+                cancel();
+            if (c != null)
+                c.close();
+        }
+
+        @Override
+        public boolean deliverSelfNotifications() {
+            return false;
+        }
     }
 
     public long getContentLength(Context context) throws IOException {

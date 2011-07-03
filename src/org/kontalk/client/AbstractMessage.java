@@ -46,6 +46,7 @@ public abstract class AbstractMessage<T> {
     public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
 
     protected Context mContext;
+    protected long databaseId;
     protected String id;
     protected String sender;
     protected String mime;
@@ -156,6 +157,14 @@ public abstract class AbstractMessage<T> {
                 Messages.DIRECTION_IN : Messages.DIRECTION_OUT;
     }
 
+    public void setDatabaseId(long databaseId) {
+        this.databaseId = databaseId;
+    }
+
+    public long getDatabaseId() {
+        return databaseId;
+    }
+
     /**
      * Returns a rapid text representation of the message.
      * The returned value is useful for notification tickers.
@@ -190,6 +199,7 @@ public abstract class AbstractMessage<T> {
     }
 
     protected void populateFromCursor(Cursor c) {
+        databaseId = c.getLong(c.getColumnIndex(Messages._ID));
         setId(c.getString(c.getColumnIndex(Messages.MESSAGE_ID)));
         mime = c.getString(c.getColumnIndex(Messages.MIME));
         timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));

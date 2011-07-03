@@ -114,12 +114,12 @@ public class EndpointServer {
      * @throws IOException
      */
     public HttpRequestBase prepareMessage(
-            RequestListener listener,
+            MessageSender job, RequestListener listener,
             String token, String[] group, String mime,
             InputStream data, long length) throws IOException {
 
         HttpPut req = new HttpPut(messageURL);
-        req.setEntity(new ProgressInputStreamEntity(data, length, listener));
+        req.setEntity(new ProgressInputStreamEntity(data, length, job, listener));
 
         if (token != null)
             req.setHeader(HEADER_AUTH_TOKEN, token);

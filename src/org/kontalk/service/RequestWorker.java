@@ -15,6 +15,12 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+
+/**
+ * Manages a queue of outgoing requests, including messages to be sent.
+ * @author Daniele Ricci
+ * @version 1.0
+ */
 public class RequestWorker extends Thread {
     private static final String TAG = RequestWorker.class.getSimpleName();
     private static final int MSG_REQUEST_JOB = 1;
@@ -22,6 +28,11 @@ public class RequestWorker extends Thread {
     private static final long DEFAULT_RETRY_DELAY = 10000;
 
     private PauseHandler mHandler;
+
+    // content observers for canceling message sendings
+    private Handler mObserverHandler;
+    private ObserverHandlerThread mObserverThread;
+
     private final Context mContext;
     private final EndpointServer mServer;
     private String mAuthToken;
@@ -46,10 +57,30 @@ public class RequestWorker extends Thread {
         this.mListeners.remove(listener);
     }
 
+    private final class ObserverHandlerThread extends Thread {
+        @Override
+        public void run() {
+            Log.w(TAG, "observer handler thread started.");
+            Looper.prepare();
+            mObserverHandler = new Handler();
+            Looper.loop();
+        }
+
+        public void quit() {
+            Log.w(TAG, "observer handler thread quitting");
+            mObserverHandler.getLooper().quit();
+        }
+    }
+
     public void run() {
         Looper.prepare();
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         Log.i(TAG, "using token: " + mAuthToken);
+
+        // start the content observer thread
+        Log.w(TAG, "starting observer handler thread");
+        mObserverThread = new ObserverHandlerThread();
+        mObserverThread.start();
 
         mClient = new RequestClient(mContext, mServer, mAuthToken);
 
@@ -69,9 +100,9 @@ public class RequestWorker extends Thread {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void downloadProgress(long bytes) {
+        public void downloadProgress(RequestJob job, long bytes) {
             for (RequestListener l : this)
-                l.downloadProgress(bytes);
+                l.downloadProgress(job, bytes);
         }
 
         @Override
@@ -91,9 +122,9 @@ public class RequestWorker extends Thread {
         }
 
         @Override
-        public void uploadProgress(long bytes) {
+        public void uploadProgress(RequestJob job, long bytes) {
             for (RequestListener l : this)
-                l.uploadProgress(bytes);
+                l.uploadProgress(job, bytes);
         }
     }
 
@@ -129,6 +160,12 @@ public class RequestWorker extends Thread {
                 RequestJob job = (RequestJob) msg.obj;
                 Log.w(TAG, job.toString());
 
+                // check now if job has been canceled
+                if (job.isCanceled()) {
+                    Log.w(TAG, "request has been canceled - dropping");
+                    return;
+                }
+
                 // try to use the custom listener
                 RequestListener listener = job.getListener();
                 if (listener != null)
@@ -139,19 +176,23 @@ public class RequestWorker extends Thread {
                     // FIXME this should be abstracted some way
                     if (job instanceof MessageSender) {
                         MessageSender mess = (MessageSender) job;
+                        // observe the content for cancel requests
+                        mess.observe(mContext, mObserverHandler);
+
                         if (mess.getContent() != null)
                             list = mClient.message(new String[] { mess.getUserId() },
-                                    mess.getMime(), mess.getContent(), mListeners);
+                                    mess.getMime(), mess.getContent(), mess, mListeners);
                         else
                             list = mClient.message(new String[] { mess.getUserId() },
-                                    mess.getMime(), mess.getSourceUri(), mContext, mListeners);
+                                    mess.getMime(), mess.getSourceUri(), mContext, mess, mListeners);
                     }
                     else {
                         list = mClient.request(job.getCommand(), job.getParams(), job.getContent());
                     }
 
                     mListeners.response(job, list);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     boolean requeue = true;
                     Log.e(TAG, "request error", e);
                     requeue = mListeners.error(job, e);
@@ -162,6 +203,12 @@ public class RequestWorker extends Thread {
                     }
                 }
                 finally {
+                    // unobserve if necessary
+                    if (job != null && job instanceof MessageSender) {
+                        MessageSender mess = (MessageSender) job;
+                        mess.unobserve(mContext);
+                    }
+
                     // remove our old custom listener
                     if (listener != null)
                         removeListener(listener);
@@ -181,7 +228,7 @@ public class RequestWorker extends Thread {
         // max wait time 10 seconds
         int retries = 20;
 
-        while(!isAlive() || mHandler == null || retries <= 0) {
+        while(!isAlive() || mHandler == null || mObserverHandler == null || retries <= 0) {
             try {
                 // 500ms should do the job...
                 Thread.sleep(500);
@@ -205,12 +252,17 @@ public class RequestWorker extends Thread {
 
     /** Shuts down this request worker gracefully. */
     public void shutdown() {
-
         Log.w(TAG, "shutting down");
-        if (mHandler != null)
+        if (mHandler != null) {
             mHandler.stop();
+            mHandler = null;
+        }
+
+        if (mObserverThread != null) {
+            mObserverThread.quit();
+            mObserverThread = null;
+        }
 
         Log.w(TAG, "exiting");
-        mHandler = null;
     }
 }

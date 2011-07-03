@@ -20,6 +20,7 @@ import android.app.ListActivity;
 import android.content.AsyncQueryHandler;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -447,10 +448,11 @@ public class ComposeMessage extends ListActivity {
                 return true;
 
             case MENU_DELETE:
-                Log.i(TAG, "deleting message: " + msg.getId());
+                Log.i(TAG, "deleting message: " + msg.getDatabaseId());
 
                 getContentResolver()
-                    .delete(Messages.getUri(msg.getId()), null, null);
+                    .delete(ContentUris.withAppendedId(Messages.CONTENT_URI,
+                            msg.getDatabaseId()), null, null);
                 return true;
         }
 

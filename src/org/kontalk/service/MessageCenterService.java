@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -329,7 +330,8 @@ public class MessageCenterService extends Service
                         values.put(Messages.UNREAD, true);
                         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
                         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                        getContentResolver().insert(Messages.CONTENT_URI, values);
+                        Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
+                        msg.setDatabaseId(ContentUris.parseId(newMsg));
                     }
 
                     // we have a receipt, update the corresponding message
@@ -474,13 +476,18 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public void uploadProgress(long bytes) {
+    public void uploadProgress(RequestJob job, long bytes) {
         Log.i(TAG, "bytes sent: " + bytes);
+        if (job instanceof MessageSender) {
+            boolean cancel = ((MessageSender)job).isCanceled();
+            if (cancel)
+                throw new CancellationException("job has been canceled.");
+        }
         publishProgress(bytes);
     }
 
     @Override
-    public void downloadProgress(long bytes) {
+    public void downloadProgress(RequestJob job, long bytes) {
         // TODO ehm :)
         Log.i(TAG, "bytes received: " + bytes);
     }

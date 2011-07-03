@@ -36,12 +36,12 @@ public class RequestClient extends AbstractClient {
     }
 
     public List<StatusResponse> message(final String[] group, final String mime,
-                final byte[] content, final RequestListener listener)
+                final byte[] content, final MessageSender job, final RequestListener listener)
             throws IOException {
 
         try {
             // http request!
-            currentRequest = mServer.prepareMessage(listener, mAuthToken, group, mime,
+            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, mime,
                 new ByteArrayInputStream(content), content.length);
             return execute();
         }
@@ -54,7 +54,7 @@ public class RequestClient extends AbstractClient {
     }
 
     public List<StatusResponse> message(final String[] group, final String mime, final Uri uri,
-            final Context context, final RequestListener listener)
+            final Context context, final MessageSender job, final RequestListener listener)
                 throws IOException {
 
         try {
@@ -63,7 +63,7 @@ public class RequestClient extends AbstractClient {
             InputStream in = context.getContentResolver().openInputStream(uri);
 
             // http request!
-            currentRequest = mServer.prepareMessage(listener, mAuthToken, group, mime, in, length);
+            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, mime, in, length);
             return execute();
         }
         catch (Exception e) {

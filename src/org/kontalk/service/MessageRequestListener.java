@@ -80,12 +80,12 @@ public class MessageRequestListener implements RequestListener {
     }
 
     @Override
-    public void uploadProgress(long bytes) {
+    public void uploadProgress(RequestJob job, long bytes) {
         // TODO
     }
 
     @Override
-    public void downloadProgress(long bytes) {
+    public void downloadProgress(RequestJob job, long bytes) {
         // TODO
     }
 

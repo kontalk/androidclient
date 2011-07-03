@@ -11,14 +11,14 @@ public interface RequestListener {
      * Useful for checking the upload progress.
      * @param bytes how many bytes have been uploaded so far
      */
-    public void uploadProgress(long bytes);
+    public void uploadProgress(RequestJob job, long bytes);
 
     /**
      * Called now and then while receiving data in.
      * Useful for checking the download progress.
      * @param bytes how many bytes have been uploaded so far
      */
-    public void downloadProgress(long bytes);
+    public void downloadProgress(RequestJob job, long bytes);
 
     /** Manages the statuses receved from one request job. */
     public void response(RequestJob job, List<StatusResponse> statuses);
