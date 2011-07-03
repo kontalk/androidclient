@@ -17,7 +17,7 @@ public class MessagingPreferences extends PreferenceActivity {
     }
 
     /** Default built-in server URI. */
-    public static final String DEFAULT_SERVER_URI = "http://10.0.2.2/serverimpl1";
+    public static final String DEFAULT_SERVER_URI = "http://www.kontalk.org/messenger";
 
     public static String getServerURI(Context context) {
         return getString(context, "pref_network_uri", DEFAULT_SERVER_URI);

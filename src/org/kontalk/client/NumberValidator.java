@@ -103,6 +103,7 @@ public class NumberValidator implements Runnable {
                             if (mValidationCode != null) {
                                 // unregister this receiver
                                 context.unregisterReceiver(this);
+                                mSmsReceiver = null;
 
                                 // next start call will trigger the next condition
                                 mThread = null;
