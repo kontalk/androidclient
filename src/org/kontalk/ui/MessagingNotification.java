@@ -21,8 +21,13 @@ import android.text.style.StyleSpan;
  * Various utility methods for managing system notifications.
  * @author Daniele Ricci
  * @version 1.0
+ * TODO:
+ * - we should keep track of already notified threads, and notify only new
+ * threads or changed ones
+ * - notifications should get fired after a short delay to give time to the
+ * markAsRead to carry out its job (WTF??)
  */
-public abstract class MessagingNotification {
+public class MessagingNotification {
     private static final int MESSAGES_NOTIFICATION_ID = 12;
 
     private static final String[] THREADS_UNREAD_PROJECTION =
@@ -36,6 +41,9 @@ public abstract class MessagingNotification {
 
     private static final String THREADS_UNREAD_SELECTION =
         Threads.UNREAD + " > 0";
+
+    /** This class is not instanciable. */
+    private MessagingNotification() {}
 
     /**
      * Updates system notification for unread messages.
@@ -83,6 +91,12 @@ public abstract class MessagingNotification {
         nm.notify(MESSAGES_NOTIFICATION_ID, no);
     }
 
+    /**
+     * This class accumulates all incoming unread threads and returns
+     * well-formed data to be used in a {@link Notification}.
+     * @author Daniele Ricci
+     * @version 1.0
+     */
     private static final class MessageAccumulator {
         private final class ConversationStub {
             public long id;
@@ -101,6 +115,7 @@ public abstract class MessagingNotification {
             mContext = context;
         }
 
+        /** Adds a conversation thread to the accumulator. */
         public void accumulate(long id, String peer, String content, int unread, long timestamp) {
             // check old accumulated conversation
             if (conversation != null) {
@@ -157,10 +172,12 @@ public abstract class MessagingNotification {
                     : conversation.content;
         }
 
+        /** Returns the timestamp to be used in the notification. */
         public long getTimestamp() {
             return conversation.timestamp;
         }
 
+        /** Builds a {@link PendingIntent} to be used in the notification. */
         public PendingIntent getPendingIntent() {
             Intent ni;
             // more than one unread conversation - open ConversationList
