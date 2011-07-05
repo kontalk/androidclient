@@ -629,9 +629,11 @@ public class ComposeMessage extends ListActivity {
                     if (i != null) {
                         onNewIntent(i);
                     }
-                    else
+                    else {
                         Toast.makeText(this, "Contact seems not to be registered on Kontalk.", Toast.LENGTH_LONG)
                             .show();
+                        finish();
+                    }
                 }
             }
             // nothing to do - exit

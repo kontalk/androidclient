@@ -28,6 +28,8 @@ import android.util.Log;
 public class NumberValidator implements Runnable {
     private static final String TAG = NumberValidator.class.getSimpleName();
 
+    /** Initialization */
+    public static final int STEP_INIT = 0;
     /** Validation step (sending phone number and waiting for SMS) */
     public static final int STEP_VALIDATION = 1;
     /** Requesting authentication token */
@@ -64,7 +66,7 @@ public class NumberValidator implements Runnable {
     public void run() {
         try {
             // begin!
-            if (mStep == 0) {
+            if (mStep == STEP_INIT) {
                 // unregister previous receiver
                 if (mSmsReceiver != null) {
                     mContext.unregisterReceiver(mSmsReceiver);
@@ -77,7 +79,7 @@ public class NumberValidator implements Runnable {
                     mSmsReceiver = new BroadcastReceiver() {
                         @Override
                         public void onReceive(Context context, Intent intent) {
-                            Log.w(TAG, "SMS received! " + intent.toString());
+                            Log.d(TAG, "SMS received! " + intent.toString());
 
                             Bundle bdl = intent.getExtras();
                             Object pdus[] = (Object [])bdl.get("pdus");
@@ -98,7 +100,7 @@ public class NumberValidator implements Runnable {
                                 }
                             }
 
-                            Log.i(TAG, "validation code found = \"" + mValidationCode + "\"");
+                            Log.d(TAG, "validation code found = \"" + mValidationCode + "\"");
 
                             if (mValidationCode != null) {
                                 // unregister this receiver
@@ -129,6 +131,7 @@ public class NumberValidator implements Runnable {
                             Map<String, Object> extra = st.extra;
                             if (extra != null) {
                                 mSmsFrom = (String) extra.get("f");
+                                Log.d(TAG, "using sms sender id: " + mSmsFrom);
                                 mListener.onValidationRequested(this);
                             }
                             else {
@@ -139,6 +142,7 @@ public class NumberValidator implements Runnable {
                         else {
                             // validation failed :(
                             mListener.onValidationFailed(this, st.code);
+                            mStep = STEP_INIT;
                             return;
                         }
                     }
@@ -153,7 +157,7 @@ public class NumberValidator implements Runnable {
 
             // sms received, request authentication token
             else if (mStep == STEP_AUTH_TOKEN) {
-                Log.i(TAG, "requesting authentication token");
+                Log.d(TAG, "requesting authentication token");
 
                 List<NameValuePair> params = new ArrayList<NameValuePair>(1);
                 params.add(new BasicNameValuePair("v", mValidationCode.toString()));
@@ -172,6 +176,7 @@ public class NumberValidator implements Runnable {
                         else {
                             // authentication failed :(
                             mListener.onAuthTokenFailed(this, st.code);
+                            mStep = STEP_INIT;
                             return;
                         }
                     }
@@ -185,6 +190,8 @@ public class NumberValidator implements Runnable {
         catch (Throwable e) {
             if (mListener != null)
                 mListener.onError(this, e);
+
+            mStep = STEP_INIT;
         }
     }
 

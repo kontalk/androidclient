@@ -135,6 +135,7 @@ public class RequestClient extends AbstractClient {
                         // other data
                         else {
                             String key = n2.getNodeName();
+                            // TODO handle empty nodes
                             String value = n2.getFirstChild().getNodeValue();
                             if (extra == null) {
                                 extra = new HashMap<String, Object>(1);
