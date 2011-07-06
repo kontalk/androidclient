@@ -24,8 +24,6 @@ import android.text.style.StyleSpan;
  * TODO:
  * - we should keep track of already notified threads, and notify only new
  * threads or changed ones
- * - notifications should get fired after a short delay to give time to the
- * markAsRead to carry out its job (WTF??)
  */
 public class MessagingNotification {
     private static final int MESSAGES_NOTIFICATION_ID = 12;
@@ -44,6 +42,19 @@ public class MessagingNotification {
 
     /** This class is not instanciable. */
     private MessagingNotification() {}
+
+    /** Delays by 3 seconds any messages notification updates. */
+    public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {}
+                updateMessagesNotification(context, isNew);
+            }
+        }).start();
+    }
 
     /**
      * Updates system notification for unread messages.

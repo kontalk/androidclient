@@ -346,8 +346,8 @@ public class MessageCenterService extends Service
 
                     // broadcast message
                     broadcastMessage(msg);
-                    // update notifications
-                    MessagingNotification.updateMessagesNotification(getApplicationContext(), true);
+                    // update notifications (delayed)
+                    MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
                 }
             }
         }
