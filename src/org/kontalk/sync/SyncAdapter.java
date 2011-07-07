@@ -84,6 +84,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    /**
+     * The actual sync procedure.
+     * This one uses the slowest method in the world: it first checks for every
+     * phone number in all contacts and it sends them to the server.
+     * Once a response is received, it deletes all the raw contacts created by
+     * us and then recreates only the ones the server has found a match for.
+     */
     @SuppressWarnings("unchecked")
     private void performSync(Context context, Account account, Bundle extras,
             String authority, ContentProviderClient provider, SyncResult syncResult)
@@ -100,24 +107,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         Log.w(TAG, "using default country code: " + tm.getSimCountryIso() + "(" + countryCode + ")");
 
-        /*
-         * -- primitive (and long) sync procedure --
-         * 1 - delete all Kontalk raw contacts
-         * 2 - restart from scratch
-         * :D
-         */
-
-        // 1 - delete all Kontalk raw contacts
-        deleteAll(account);
-
-        // 2 - restart from scratch
-
+        // query all contacts
         final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 
         while (cursor.moveToNext()) {
             String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             Log.w(TAG, "contact " + contactId + ", name: " + displayName);
+
+            // query for phone numbers
             final Cursor phones = mContentResolver.query(Phone.CONTENT_URI, null,
                 Phone.CONTACT_ID + " = ?", new String[] { contactId }, null);
 
@@ -154,6 +152,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             final String xmlData = buildXMLData(lookupNumbers.values());
             Log.i(TAG, "xmlData: " + xmlData);
             final List<StatusResponse> res = client.request("lookup", null, xmlData.getBytes());
+
+            // this is the time - delete all Kontalk raw contacts
+            deleteAll(account);
 
             // get the first status - it will contain our <u> tags
             final StatusResponse status = res.get(0);
