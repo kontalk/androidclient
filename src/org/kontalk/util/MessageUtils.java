@@ -116,10 +116,10 @@ public final class MessageUtils {
                 resId = R.string.received_label;
                 break;
             case Messages.STATUS_ERROR:
-                resId = R.string.send_error;
+                resId = R.string.error_label;
                 break;
             case Messages.STATUS_NOTACCEPTED:
-                resId = R.string.send_refused;
+                resId = R.string.refused_label;
                 break;
             case Messages.STATUS_SENT:
                 resId = R.string.sent_label;

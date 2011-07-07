@@ -62,7 +62,10 @@ public class MessagesProvider extends ContentProvider {
             "content TEXT," +
             "direction INTEGER, " +
             "unread INTEGER, " +
+            // this the sent/received timestamp
             "timestamp INTEGER," +
+            // this the timestamp of the latest status change
+            "status_changed INTEGER," +
             "status INTEGER," +
             "fetch_url TEXT," +
             "fetched INTEGER," +
@@ -80,7 +83,10 @@ public class MessagesProvider extends ContentProvider {
             "unread INTEGER, " +
             "mime TEXT NOT NULL, " +
             "content TEXT, " +
-            "timestamp INTEGER, " +
+            // this the sent/received timestamp
+            "timestamp INTEGER," +
+            // this the timestamp of the latest status change
+            "status_changed INTEGER," +
             "status INTEGER" +
             ");";
 
@@ -556,30 +562,34 @@ public class MessagesProvider extends ContentProvider {
     }
 
     public static int changeMessageStatus(Context context, long id, int status) {
-        return changeMessageStatus(context, id, status, -1);
+        return changeMessageStatus(context, id, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, long id, int status, long timestamp) {
+    public static int changeMessageStatus(Context context, long id, int status, long timestamp, long statusChanged) {
         Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = new ContentValues();
         values.put(Messages.STATUS, status);
         if (timestamp >= 0)
             values.put(Messages.TIMESTAMP, timestamp);
+        if (statusChanged >= 0)
+            values.put(Messages.STATUS_CHANGED, statusChanged);
         return context.getContentResolver().update(
                 ContentUris.withAppendedId(Messages.CONTENT_URI, id),
                 values, null, null);
     }
 
     public static int changeMessageStatus(Context context, String id, int status) {
-        return changeMessageStatus(context, id, status, -1);
+        return changeMessageStatus(context, id, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, String id, int status, long timestamp) {
+    public static int changeMessageStatus(Context context, String id, int status, long timestamp, long statusChanged) {
         Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = new ContentValues();
         values.put(Messages.STATUS, status);
         if (timestamp >= 0)
             values.put(Messages.TIMESTAMP, timestamp);
+        if (statusChanged >= 0)
+            values.put(Messages.STATUS_CHANGED, statusChanged);
         return context.getContentResolver().update(Messages.CONTENT_URI, values,
                 Messages.MESSAGE_ID + " = ?",
                 new String[] { id });
@@ -604,6 +614,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
         messagesProjectionMap.put(Messages.DIRECTION, Messages.DIRECTION);
         messagesProjectionMap.put(Messages.TIMESTAMP, Messages.TIMESTAMP);
+        messagesProjectionMap.put(Messages.STATUS_CHANGED, Messages.STATUS_CHANGED);
         messagesProjectionMap.put(Messages.STATUS, Messages.STATUS);
         messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
         messagesProjectionMap.put(Messages.FETCHED, Messages.FETCHED);
@@ -619,6 +630,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.MIME, Threads.MIME);
         threadsProjectionMap.put(Threads.CONTENT, Threads.CONTENT);
         threadsProjectionMap.put(Threads.TIMESTAMP, Threads.TIMESTAMP);
+        threadsProjectionMap.put(Threads.STATUS_CHANGED, Threads.STATUS_CHANGED);
         threadsProjectionMap.put(Threads.STATUS, Threads.STATUS);
     }
 }

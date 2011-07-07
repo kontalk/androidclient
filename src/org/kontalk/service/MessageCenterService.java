@@ -341,7 +341,7 @@ public class MessageCenterService extends Service
 
                         MessagesProvider.changeMessageStatus(this,
                                 msg2.getMessageId(), Messages.STATUS_RECEIVED,
-                                msg.getServerTimestamp().getTime());
+                                -1, msg.getServerTimestamp().getTime());
                     }
 
                     // broadcast message

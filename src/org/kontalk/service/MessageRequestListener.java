@@ -45,9 +45,10 @@ public class MessageRequestListener implements RequestListener {
                 if (extra != null) {
                     String msgId = (String) extra.get("i");
                     if (!TextUtils.isEmpty(msgId)) {
-                        ContentValues values = new ContentValues(1);
+                        ContentValues values = new ContentValues(2);
                         values.put(Messages.MESSAGE_ID, msgId);
                         values.put(Messages.STATUS, Messages.STATUS_SENT);
+                        values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
                         int n = mContentResolver.update(uri, values, null, null);
                         Log.i(TAG, "message sent and updated (" + n + ")");
                     }
@@ -56,8 +57,9 @@ public class MessageRequestListener implements RequestListener {
 
             // message refused!
             else {
-                ContentValues values = new ContentValues(1);
+                ContentValues values = new ContentValues(2);
                 values.put(Messages.STATUS, Messages.STATUS_NOTACCEPTED);
+                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
                 mContentResolver.update(uri, values, null, null);
                 Log.w(TAG, "message not accepted by server and updated (" + st.code + ")");
             }

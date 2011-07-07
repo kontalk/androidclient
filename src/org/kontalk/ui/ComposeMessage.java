@@ -717,6 +717,24 @@ public class ComposeMessage extends ListActivity {
         super.onSaveInstanceState(out);
     }
 
+    /*
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        if (hasFocus) {
+            if (mListAdapter.getCursor() == null) {
+                startQuery(true);
+            }
+        }
+        else {
+                mListAdapter.changeCursor(null);
+                mQueryHandler.cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
+                mQueryHandler.cancelOperation(CONVERSATION_QUERY_TOKEN);
+        }
+
+        super.onWindowFocusChanged(hasFocus);
+    }
+    */
+
     /**
      * The conversation list query handler.
      */
@@ -727,6 +745,12 @@ public class ComposeMessage extends ListActivity {
 
         @Override
         protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
+            if (cursor == null) {
+                Log.e(TAG, "query aborted or error!");
+                mListAdapter.changeCursor(null);
+                return;
+            }
+
             switch (token) {
                 case MESSAGE_LIST_QUERY_TOKEN:
                     mListAdapter.changeCursor(cursor);

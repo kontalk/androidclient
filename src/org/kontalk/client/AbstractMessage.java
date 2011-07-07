@@ -29,6 +29,7 @@ public abstract class AbstractMessage<T> {
         Messages.PEER,
         Messages.DIRECTION,
         Messages.TIMESTAMP,
+        Messages.STATUS_CHANGED,
         Messages.MIME,
         Messages.CONTENT,
         Messages.STATUS,
@@ -52,6 +53,7 @@ public abstract class AbstractMessage<T> {
     protected String mime;
     protected T content;
     protected long timestamp;
+    protected long statusChanged;
     protected int status;
     protected boolean fetched;
     protected MessageID messageId;
@@ -139,6 +141,15 @@ public abstract class AbstractMessage<T> {
         this.timestamp = timestamp;
     }
 
+    public long getStatusChanged() {
+        return statusChanged;
+    }
+
+    public void setStatusChanged(long statusChanged) {
+        this.statusChanged = statusChanged;
+    }
+
+    /** Returns the timestamp extracted from the server message ID. */
     public Date getServerTimestamp() {
         return (messageId != null) ? messageId.getDate() : null;
     }
@@ -203,6 +214,7 @@ public abstract class AbstractMessage<T> {
         setId(c.getString(c.getColumnIndex(Messages.MESSAGE_ID)));
         mime = c.getString(c.getColumnIndex(Messages.MIME));
         timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
+        statusChanged = c.getLong(c.getColumnIndex(Messages.STATUS_CHANGED));
         status = c.getInt(c.getColumnIndex(Messages.STATUS));
         recipients = new ArrayList<String>();
         fetchUrl = c.getString(c.getColumnIndex(Messages.FETCH_URL));

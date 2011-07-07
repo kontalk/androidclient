@@ -22,8 +22,6 @@
     <string name="confirm_delete_all">Delete all threads</string>
     <string name="confirm_will_delete_all">All threads will be deleted.</string>
     <string name="sending">Sending...</string>
-    <string name="send_error">Error</string>
-    <string name="send_refused">Not accepted</string>
     <string name="message_text_copied">Message text copied.</string>
     <string name="call">Call</string>
     <string name="view_contact">View contact</string>
@@ -47,4 +45,6 @@
     <string name="to_address_label">To:\u0020</string>
     <string name="sent_label">Sent:\u0020</string>
     <string name="received_label">Received:\u0020</string>
+    <string name="error_label">Error:\u0020</string>
+    <string name="refused_label">Not accepted</string>
 </resources>
