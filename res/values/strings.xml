@@ -46,5 +46,5 @@
     <string name="sent_label">Sent:\u0020</string>
     <string name="received_label">Received:\u0020</string>
     <string name="error_label">Error:\u0020</string>
-    <string name="refused_label">Not accepted</string>
+    <string name="refused_label">Not accepted:\u0020</string>
 </resources>
