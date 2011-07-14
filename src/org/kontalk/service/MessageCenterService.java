@@ -468,7 +468,7 @@ public class MessageCenterService extends Service
     public boolean error(RequestJob job, Throwable e) {
         // TODO some error notifications
         Log.e(TAG, "request error", e);
-        // stop foreground if any the job is a message
+        // stop any foreground if the job is a message
         if (job instanceof MessageSender)
             stopForeground();
 
