@@ -1,6 +1,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.service.MessageCenterService;
 
 import android.content.Context;
@@ -37,6 +38,10 @@ public class MessagingPreferences extends PreferenceActivity {
 
     public static String getServerURI(Context context) {
         return getString(context, "pref_network_uri", DEFAULT_SERVER_URI);
+    }
+
+    public static EndpointServer getEndpointServer(Context context) {
+        return new EndpointServer(getServerURI(context));
     }
 
     /** Returns true if the contacts list has already been checked against the server. */

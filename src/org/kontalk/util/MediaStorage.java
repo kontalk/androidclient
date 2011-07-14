@@ -7,7 +7,7 @@ import android.os.Environment;
 
 
 public class MediaStorage {
-    private static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
+    public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
 
     /* instantiation not allowed */
     private MediaStorage() {}

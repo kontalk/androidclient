@@ -405,9 +405,9 @@ public class MessageCenterService extends Service
 
     private void foregroundNotification(int progress) {
         mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setImageViewResource(R.id.status_icon, R.drawable.icon);
-        mCurrentNotification.contentView.setTextViewText(R.id.status_text, "Sending message...");
-        mCurrentNotification.contentView.setProgressBar(R.id.status_progress, 100, progress, false);
+        mCurrentNotification.contentView.setTextViewText(R.id.title, "Sending message...");
+        mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
+        mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
     }
 
     public void publishProgress(long bytes) {

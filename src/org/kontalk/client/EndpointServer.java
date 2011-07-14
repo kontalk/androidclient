@@ -138,7 +138,7 @@ public class EndpointServer {
     }
 
     /**
-     * A download method for the upload service.
+     * A download method for the download service.
      * @param token the autentication token
      * @param filename filename to download
      * @return the request object
