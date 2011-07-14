@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.kontalk.ui.ContactsListItem xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="?android:attr/listPreferredItemHeight"
+    android:paddingRight="10dip" >
+
+    <android.widget.QuickContactBadge
+        android:id="@+id/avatar"
+        android:visibility="gone"
+        android:layout_marginLeft="7dip"
+        android:layout_centerVertical="true"
+        style="?android:attr/quickContactBadgeStyleWindowSmall" />
+
+    <TextView android:id="@android:id/text1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:singleLine="true"
+        android:layout_marginTop="6dip"
+        android:layout_marginRight="5dip"
+        android:layout_marginLeft="7dip"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/avatar"
+        android:layout_alignWithParentIfMissing="true"
+        android:ellipsize="marquee"  />
+
+    <TextView android:id="@android:id/text2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:singleLine="true"
+        android:layout_marginBottom="10dip"
+        android:layout_marginLeft="7dip"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/avatar"
+        android:layout_alignWithParentIfMissing="true"
+        android:ellipsize="end" />
+
+</org.kontalk.ui.ContactsListItem>

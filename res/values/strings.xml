@@ -47,4 +47,8 @@
     <string name="received_label">Received:\u0020</string>
     <string name="error_label">Error:\u0020</string>
     <string name="refused_label">Not accepted:\u0020</string>
+    <string name="pref_restart_msgcenter">Restart message center</string>
+    <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
+    <string name="pref_maintainance">Maintainance</string>
+    <string name="contacts_list_title">Choose a contact</string>
 </resources>

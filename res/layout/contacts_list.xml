@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListView android:id="@android:id/list" xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?android:attr/listViewStyle"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:drawSelectorOnTop="false"
+    android:scrollbarStyle="insideOverlay"
+    android:fadingEdgeLength="16dip" />

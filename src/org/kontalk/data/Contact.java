@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.sync.SyncAdapter;
 
 import android.accounts.Account;
 import android.content.ContentResolver;
@@ -61,6 +62,23 @@ public class Contact {
             }
         }
         return mAvatar != null ? mAvatar : defaultValue;
+    }
+
+    /**
+     * Builds a contact from a RawContact cursor
+     * (e.g. a cursor querying only Kontalk RawContacts).
+     * @param cursor
+     * @return
+     */
+    public static Contact fromRawContactCursor(Context context, Cursor cursor) {
+        final long contactId = cursor.getLong(cursor.getColumnIndex(RawContacts.CONTACT_ID));
+        final Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, contactId);
+        final String name = cursor.getString(cursor.getColumnIndex(SyncAdapter.RAW_COLUMN_DISPLAY_NAME));
+        final String number = cursor.getString(cursor.getColumnIndex(SyncAdapter.RAW_COLUMN_PHONE));
+
+        Contact c = new Contact(uri, name, number);
+        c.mAvatarData = loadAvatarData(context, uri);
+        return c;
     }
 
     public static Contact findbyUserId(Context context, String userId) {

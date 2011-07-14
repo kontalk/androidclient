@@ -95,5 +95,6 @@
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
             </intent-filter>
         </receiver>
+        <activity android:name=".ui.ContactsListActivity" android:label="@string/contacts_list_title"></activity>
     </application>
 </manifest>

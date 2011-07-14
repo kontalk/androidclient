@@ -78,7 +78,7 @@ public class ConversationListItem extends RelativeLayout {
         if (contact != null) {
             recipient = contact.getName();
             mAvatarView.assignContactUri(contact.getUri());
-            mAvatarView.setImageDrawable(contact.getAvatar(getContext(), sDefaultContactImage));
+            mAvatarView.setImageDrawable(contact.getAvatar(context, sDefaultContactImage));
         }
         else {
             recipient = conv.getRecipient();

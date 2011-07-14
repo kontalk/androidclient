@@ -474,7 +474,9 @@ public class ComposeMessage extends ListActivity {
     }
 
     private void chooseContact() {
-        Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+        // TODO one day it will be like this
+        // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
+        Intent i = new Intent(this, ContactsListActivity.class);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
