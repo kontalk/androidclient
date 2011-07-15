@@ -3,15 +3,18 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.kontalk.service.DownloadListener;
+import org.kontalk.util.ProgressOutputStreamEntity;
 
 import android.content.Context;
+import android.util.Log;
 
 
 /**
@@ -20,6 +23,7 @@ import android.content.Context;
  * @version 1.0
  */
 public class DownloadClient extends AbstractClient {
+    private static final String TAG = DownloadClient.class.getSimpleName();
 
     /** Regex used to parse content-disposition headers */
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
@@ -29,50 +33,40 @@ public class DownloadClient extends AbstractClient {
         super(context, server, token);
     }
 
-    /** Downloads to a {@link File}. */
-    public void download(String filename, File file) throws IOException {
-        OutputStream out = new FileOutputStream(file);
-        _download(filename, out);
-        out.close();
+    /** Downloads to a directory represented by a {@link File} object,
+     * determining the file name from the Content-Disposition header. */
+    public void downloadAutofilename(String url, File base, DownloadListener listener) throws IOException {
+        _download(url, base, listener);
     }
 
-    /** Downloads to a {@link File}. */
-    public void downloadAutofilename(String filename, File base) throws IOException {
-        _download(filename, base);
-    }
-
-    private void _download(String filename, OutputStream out) throws IOException {
-        currentRequest = mServer.prepareDownload(mAuthToken, filename);
+    private void _download(String url, File base, DownloadListener listener) throws IOException {
+        currentRequest = mServer.prepareURLDownload(mAuthToken, url);
         HttpResponse response = mServer.execute(currentRequest);
 
         // HTTP/1.1 200 OK -- other codes should throw Exceptions
-        if (response.getStatusLine().getStatusCode() != 200) {
-            HttpEntity entity = response.getEntity();
-            if (entity != null)
-                entity.writeTo(out);
-        }
-    }
-
-    private void _download(String filename, File base) throws IOException {
-        currentRequest = mServer.prepareDownload(mAuthToken, filename);
-        HttpResponse response = mServer.execute(currentRequest);
-
-        // HTTP/1.1 200 OK -- other codes should throw Exceptions
-        if (response.getStatusLine().getStatusCode() != 200) {
+        if (response.getStatusLine().getStatusCode() == 200) {
             Header disp = response.getFirstHeader("Content-Disposition");
             if (disp != null) {
                 String name = parseContentDisposition(disp.getValue());
                 // TODO should check for content-disposition parsing here
                 // and choose another filename if necessary
-                HttpEntity entity = response.getEntity();
-                if (name != null && entity != null) {
-                    FileOutputStream out = new FileOutputStream(
-                            new File(base, name));
+
+                HttpEntity _entity = response.getEntity();
+                if (name != null && _entity != null) {
+                    // we need to wrap the entity to monitor the download progress
+                    File destination = new File(base, name);
+                    ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(_entity, url, destination, listener);
+                    FileOutputStream out = new FileOutputStream(destination);
                     entity.writeTo(out);
                     out.close();
+                    return;
                 }
             }
         }
+
+        Log.e(TAG, "invalid response: " + response.getStatusLine().getStatusCode());
+        HttpEntity entity = response.getEntity();
+        Log.e(TAG, EntityUtils.toString(entity));
     }
 
     /*

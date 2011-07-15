@@ -16,7 +16,7 @@ public interface RequestListener {
     /**
      * Called now and then while receiving data in.
      * Useful for checking the download progress.
-     * @param bytes how many bytes have been uploaded so far
+     * @param bytes how many bytes have been downloaded so far
      */
     public void downloadProgress(RequestJob job, long bytes);
 

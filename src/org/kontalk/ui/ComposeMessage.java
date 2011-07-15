@@ -11,6 +11,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.util.MessageUtils;
@@ -411,11 +412,12 @@ public class ComposeMessage extends ListActivity {
         AbstractMessage<?> msg = v.getMessage();
 
         switch (item.getItemId()) {
-            case MENU_FORWARD:
+            case MENU_FORWARD: {
                 // TODO message forwarding
                 return true;
+            }
 
-            case MENU_COPY_TEXT:
+            case MENU_COPY_TEXT: {
                 Log.i(TAG, "copying message text: " + msg.getId());
                 ClipboardManager cpm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 cpm.setText(msg.getTextContent());
@@ -423,20 +425,27 @@ public class ComposeMessage extends ListActivity {
                 Toast.makeText(this, R.string.message_text_copied, Toast.LENGTH_SHORT)
                     .show();
                 return true;
+            }
 
-            case MENU_VIEW_IMAGE:
+            case MENU_VIEW_IMAGE: {
                 Log.i(TAG, "opening image");
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(msg.getLocalUri(), msg.getMime());
                 startActivity(i);
                 return true;
+            }
 
-            case MENU_DOWNLOAD:
+            case MENU_DOWNLOAD: {
                 Log.i(TAG, "downloading attachment");
-                // TODO download attachment
+                Intent i = new Intent(this, DownloadService.class);
+                i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
+                i.putExtra(AbstractMessage.MSG_ID, msg.getId());
+                i.setData(Uri.parse(msg.getFetchUrl()));
+                startService(i);
                 return true;
+            }
 
-            case MENU_DETAILS:
+            case MENU_DETAILS: {
                 Log.i(TAG, "opening message details");
                 CharSequence messageDetails = MessageUtils.getMessageDetails(this, msg, userPhone != null ? userPhone : userId);
                 new AlertDialog.Builder(this)
@@ -446,14 +455,16 @@ public class ComposeMessage extends ListActivity {
                         .setCancelable(true)
                         .show();
                 return true;
+            }
 
-            case MENU_DELETE:
+            case MENU_DELETE: {
                 Log.i(TAG, "deleting message: " + msg.getDatabaseId());
 
                 getContentResolver()
                     .delete(ContentUris.withAppendedId(Messages.CONTENT_URI,
                             msg.getDatabaseId()), null, null);
                 return true;
+            }
         }
 
         return super.onContextItemSelected(item);

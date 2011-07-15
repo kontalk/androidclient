@@ -9,6 +9,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 
+
 public class ProgressInputStreamEntity extends InputStreamEntity {
     protected final RequestJob mJob;
     protected final RequestListener mListener;

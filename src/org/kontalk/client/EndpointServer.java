@@ -158,6 +158,22 @@ public class EndpointServer {
     }
 
     /**
+     * A generic download request.
+     * @param token the authentication token
+     * @param url URL to download
+     * @return the request object
+     * @throws IOException
+     */
+    public HttpRequestBase prepareURLDownload(String token, String url) throws IOException {
+        HttpGet req = new HttpGet(url);
+
+        if (token != null)
+            req.addHeader(HEADER_AUTH_TOKEN, token);
+
+        return req;
+    }
+
+    /**
      * Executes the given request.
      * @param request the request
      * @return the response

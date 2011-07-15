@@ -96,5 +96,6 @@
             </intent-filter>
         </receiver>
         <activity android:name=".ui.ContactsListActivity" android:label="@string/contacts_list_title"></activity>
+        <service android:name=".service.DownloadService"></service>
     </application>
 </manifest>
