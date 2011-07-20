@@ -32,9 +32,6 @@ public class ContactsListActivity extends ListActivity {
             .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
             .build();
         mCursor = getContentResolver().query(uri, null, null, null, SyncAdapter.RAW_COLUMN_DISPLAY_NAME);
-            /*getContentResolver().query(ContactsContract.Data.CONTENT_URI, null,
-                Contacts.Data.MIMETYPE + " = ? AND " + SyncAdapter.DATA_COLUMN_ACCOUNT_NAME + " = ?",
-                new String[] { Users.CONTENT_ITEM_TYPE, account.name }, null);*/
         startManagingCursor(mCursor);
 
         mListAdapter = new ContactsListAdapter(this, mCursor);
@@ -45,7 +42,7 @@ public class ContactsListActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         ContactsListItem cl = (ContactsListItem) v;
-        Intent i = new Intent(Intent.ACTION_PICK, cl.getContact().getUri());
+        Intent i = new Intent(Intent.ACTION_PICK, cl.getContact().getRawContactUri());
         setResult(RESULT_OK, i);
         finish();
     }

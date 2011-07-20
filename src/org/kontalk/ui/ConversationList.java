@@ -18,7 +18,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract.Contacts;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -272,10 +271,10 @@ public class ConversationList extends ListActivity {
         // contact chooser
         else if (requestCode == REQUEST_CONTACT_PICKER) {
             if (resultCode == RESULT_OK) {
-                Uri contact = Contacts.lookupContact(getContentResolver(), data.getData());
-                if (contact != null) {
-                    Log.i(TAG, "composing message for contact: " + contact);
-                    Intent i = ComposeMessage.fromContactPicker(this, contact);
+                Uri rawContact = data.getData();
+                if (rawContact != null) {
+                    Log.i(TAG, "composing message for contact: " + rawContact);
+                    Intent i = ComposeMessage.fromContactPicker(this, rawContact);
                     if (i != null)
                         startActivity(i);
                     else

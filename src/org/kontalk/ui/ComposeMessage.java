@@ -33,7 +33,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.Contacts;
 import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -625,9 +624,6 @@ public class ComposeMessage extends ListActivity {
     protected void onStart() {
         super.onStart();
 
-        // focus text entry
-        mTextEntry.requestFocus();
-
         processStart();
     }
 
@@ -635,10 +631,10 @@ public class ComposeMessage extends ListActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CONTACT_PICKER) {
             if (resultCode == RESULT_OK) {
-                Uri contact = Contacts.lookupContact(getContentResolver(), data.getData());
-                if (contact != null) {
-                    Log.i(TAG, "composing message for contact: " + contact);
-                    Intent i = fromContactPicker(this, contact);
+                Uri rawContact = data.getData();
+                if (rawContact != null) {
+                    Log.i(TAG, "composing message for contact: " + rawContact);
+                    Intent i = fromContactPicker(this, rawContact);
                     if (i != null) {
                         onNewIntent(i);
                     }
@@ -657,8 +653,8 @@ public class ComposeMessage extends ListActivity {
         }
     }
 
-    public static Intent fromContactPicker(Context context, Uri contactUri) {
-        String userId = Contact.getUserId(context, contactUri);
+    public static Intent fromContactPicker(Context context, Uri rawContactUri) {
+        String userId = Contact.getUserId(context, rawContactUri);
         if (userId != null) {
             Conversation conv = Conversation.loadFromUserId(context, userId);
             // not found - create new

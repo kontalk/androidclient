@@ -42,12 +42,18 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
 
+    /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
+    /** {@link Data} column for the account name. */
     public static final String DATA_COLUMN_ACCOUNT_NAME = Data.DATA2;
+    /** {@link Data} column for the phone number. */
     public static final String DATA_COLUMN_PHONE = Data.DATA3;
 
+    /** {@link RawContacts} column for the display name. */
     public static final String RAW_COLUMN_DISPLAY_NAME = RawContacts.SYNC1;
+    /** {@link RawContacts} column for the phone number. */
     public static final String RAW_COLUMN_PHONE = RawContacts.SYNC2;
+    /** {@link RawContacts} column for the user id (hashed phone number). */
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
     private final Context mContext;

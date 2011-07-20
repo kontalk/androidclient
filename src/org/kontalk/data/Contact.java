@@ -29,21 +29,54 @@ import android.util.Log;
 public class Contact {
     private final static String TAG = Contact.class.getSimpleName();
 
-    private final Uri mUri;
+    /** The aggregated Contact id identified by this object. */
+    private final long mContactId;
+    /** The Kontalk RawContact id identified by this object. */
+    private final long mRawContactId;
     private String mNumber;
     private String mName;
+
+    private Uri mContactUri;
+    private Uri mRawContactUri;
 
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
 
-    private Contact(Uri uri, String name, String number) {
-        mUri = uri;
+    private Contact(Uri uri, long rawContactId, String name, String number) {
+        mContactId = ContentUris.parseId(uri);
+        mContactUri = uri;
+        mRawContactId = rawContactId;
         mName = name;
         mNumber = number;
     }
 
+    private Contact(long contactId, long rawContactId, String name, String number) {
+        mContactId = contactId;
+        mRawContactId = rawContactId;
+        mName = name;
+        mNumber = number;
+    }
+
+    /** Returns the {@link Contacts} {@link Uri} identified by this object. */
     public Uri getUri() {
-        return mUri;
+        if (mContactUri == null)
+            mContactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, mContactId);
+        return mContactUri;
+    }
+
+    public long getId() {
+        return mContactId;
+    }
+
+    public long getRawContactId() {
+        return mRawContactId;
+    }
+
+    /** Returns the {@link RawContacts} {@link Uri} identified by this object. */
+    public Uri getRawContactUri() {
+        if (mRawContactUri == null)
+            mRawContactUri = ContentUris.withAppendedId(RawContacts.CONTENT_URI, mRawContactId);
+        return mRawContactUri;
     }
 
     public String getNumber() {
@@ -72,12 +105,12 @@ public class Contact {
      */
     public static Contact fromRawContactCursor(Context context, Cursor cursor) {
         final long contactId = cursor.getLong(cursor.getColumnIndex(RawContacts.CONTACT_ID));
-        final Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, contactId);
+        final long rawContactId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
         final String name = cursor.getString(cursor.getColumnIndex(SyncAdapter.RAW_COLUMN_DISPLAY_NAME));
         final String number = cursor.getString(cursor.getColumnIndex(SyncAdapter.RAW_COLUMN_PHONE));
 
-        Contact c = new Contact(uri, name, number);
-        c.mAvatarData = loadAvatarData(context, uri);
+        Contact c = new Contact(contactId, rawContactId, name, number);
+        c.mAvatarData = loadAvatarData(context, c.getUri());
         return c;
     }
 
@@ -87,6 +120,7 @@ public class Contact {
 
         Cursor c = cres.query(RawContacts.CONTENT_URI,
                 new String[] {
+                    RawContacts._ID,
                     RawContacts.CONTACT_ID,
                     RawContacts.SYNC1,
                     RawContacts.SYNC2
@@ -101,14 +135,15 @@ public class Contact {
                 }, null);
 
         if (c.moveToFirst()) {
-            long id = c.getLong(0);
-            String name = c.getString(1);
-            String number = c.getString(2);
+            long rid = c.getLong(0);
+            long id = c.getLong(1);
+            String name = c.getString(2);
+            String number = c.getString(3);
 
             // create contact
             Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id);
             Log.i(TAG, "found contact " + uri);
-            Contact contact = new Contact(uri, name, number);
+            Contact contact = new Contact(uri, rid, name, number);
             // load avatar (if any)
             contact.mAvatarData = loadAvatarData(context, uri);
 
@@ -142,20 +177,11 @@ public class Contact {
         return data;
     }
 
-    public static String getUserId(Context context, Uri contactUri) {
-        Account account = Authenticator.getDefaultAccount(context);
-        Cursor c = context.getContentResolver().query(RawContacts.CONTENT_URI,
+    public static String getUserId(Context context, Uri rawContactUri) {
+        Cursor c = context.getContentResolver().query(rawContactUri,
                 new String[] {
                     RawContacts.SYNC3
-                },
-                RawContacts.ACCOUNT_NAME + " = ? AND " +
-                RawContacts.ACCOUNT_TYPE + " = ? AND " +
-                RawContacts.CONTACT_ID   + " = ?",
-                new String[] {
-                    account.name,
-                    account.type,
-                    String.valueOf(ContentUris.parseId(contactUri))
-                }, null);
+                }, null, null, null);
 
         if (c.moveToFirst()) {
             return c.getString(0);
