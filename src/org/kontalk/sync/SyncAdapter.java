@@ -119,7 +119,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         while (cursor.moveToNext()) {
             String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            Log.w(TAG, "contact " + contactId + ", name: " + displayName);
+            //Log.w(TAG, "contact " + contactId + ", name: " + displayName);
 
             // query for phone numbers
             final Cursor phones = mContentResolver.query(Phone.CONTENT_URI, null,
@@ -134,7 +134,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 // normalize number: strip separators
                 number = PhoneNumberUtils.stripSeparators(number);
-                Log.w(TAG, "found mobile number " + number);
+                //Log.w(TAG, "found mobile number " + number);
 
                 // normalize number: add country code if not found
                 if (number.startsWith("00"))
@@ -156,7 +156,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             // build the xml data for the lookup request
             final String xmlData = buildXMLData(lookupNumbers.values());
-            Log.i(TAG, "xmlData: " + xmlData);
+            //Log.i(TAG, "xmlData: " + xmlData);
             final List<StatusResponse> res = client.request("lookup", null, xmlData.getBytes());
 
             // this is the time - delete all Kontalk raw contacts
