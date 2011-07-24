@@ -23,6 +23,8 @@ import android.util.Log;
 public abstract class AbstractMessage<T> {
     private static final String TAG = AbstractMessage.class.getSimpleName();
 
+    public static final String ENC_MIME_PREFIX = "enc:";
+
     private static final String[] MESSAGE_LIST_PROJECTION = {
         Messages._ID,
         Messages.MESSAGE_ID,

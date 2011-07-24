@@ -8,6 +8,5 @@
 			<attribute name="javadoc_location" value="http://libphonenumber.googlecode.com/svn/trunk/javadoc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/bouncycastle-1.46.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

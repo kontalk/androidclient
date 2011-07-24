@@ -10,10 +10,27 @@
 		    android:key="pref_network_uri"
 		    android:singleLine="true" android:inputType="textUri"/>
     </PreferenceCategory>
+    <PreferenceCategory android:key="pref_messaging_settings" android:title="@string/pref_messaging_settings">
+        <CheckBoxPreference
+            android:key="pref_encrypt"
+            android:summaryOff="@string/pref_title_off_encrypt"
+            android:summaryOn="@string/pref_title_on_encrypt"
+            android:title="@string/pref_encrypt"
+            android:disableDependentsState="false"
+            android:defaultValue="true"/>
+        <EditTextPreference
+            android:key="pref_passphrase"
+            android:title="@string/pref_passphrase"
+            android:inputType="textPassword"
+            android:dialogTitle="@string/pref_passphrase"
+            android:dialogMessage="Leave empty to use your phone number."
+            android:dependency="pref_encrypt"/>
+    </PreferenceCategory>
     <PreferenceCategory android:key="pref_maintainance" android:title="@string/pref_maintainance">
         <Preference
             android:key="pref_restart_msgcenter"
             android:summary="@string/pref_title_restart_msgcenter"
             android:title="@string/pref_restart_msgcenter"/>
     </PreferenceCategory>
+    
 </PreferenceScreen>

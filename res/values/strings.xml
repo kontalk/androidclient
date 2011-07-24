@@ -51,4 +51,8 @@
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
     <string name="pref_maintainance">Maintainance</string>
     <string name="contacts_list_title">Choose a contact</string>
+    <string name="pref_messaging_settings">Messaging</string>
+    <string name="pref_encrypt">Encrypt messages</string>
+    <string name="pref_title_on_encrypt">All messages will be encrypted from now on</string><string name="pref_title_off_encrypt">All messages will be sent in cleartext</string>
+    <string name="pref_passphrase">Passphrase</string>
 </resources>

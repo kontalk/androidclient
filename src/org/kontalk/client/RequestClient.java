@@ -13,7 +13,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.kontalk.crypto.Coder;
 import org.kontalk.service.RequestListener;
+import org.kontalk.ui.MessagingPreferences;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -40,9 +42,22 @@ public class RequestClient extends AbstractClient {
             throws IOException {
 
         try {
+            byte[] toMessage;
+            String toMime;
+            // check if we have to encrypt the message
+            Coder coder = MessagingPreferences.getCoder(mContext);
+            if (coder != null) {
+                toMessage = coder.encrypt(content);
+                toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
+            }
+            else {
+                toMessage = content;
+                toMime = mime;
+            }
+
             // http request!
-            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, mime,
-                new ByteArrayInputStream(content), content.length);
+            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, toMime,
+                new ByteArrayInputStream(toMessage), toMessage.length);
             return execute();
         }
         catch (Exception e) {
@@ -62,8 +77,24 @@ public class RequestClient extends AbstractClient {
             long length = stat.getLength();
             InputStream in = context.getContentResolver().openInputStream(uri);
 
+            InputStream toMessage;
+            String toMime;
+            long toLength;
+            // check if we have to encrypt the message
+            Coder coder = MessagingPreferences.getCoder(mContext);
+            if (coder != null) {
+                toMessage = coder.wrapInputStream(in);
+                toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
+                toLength = Coder.getEncryptedLength(length);
+            }
+            else {
+                toMessage = in;
+                toMime = mime;
+                toLength = length;
+            }
+
             // http request!
-            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, mime, in, length);
+            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, toMime, toMessage, toLength);
             return execute();
         }
         catch (Exception e) {

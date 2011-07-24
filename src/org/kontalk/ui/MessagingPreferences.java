@@ -2,6 +2,8 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.PassKey;
 import org.kontalk.service.MessageCenterService;
 
 import android.content.Context;
@@ -57,8 +59,32 @@ public class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
+    public static void setMyNumber(Context context, String number) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit()
+            .putString("pref_mynumber", number)
+            .commit();
+    }
+
+    public static boolean getEncryptionEnabled(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("pref_encrypt", true);
+    }
+
     private static String getString(Context context, String key, String defaultValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(key, defaultValue);
+    }
+
+    /** Returns a {@link Coder} instance for encrypting contents. */
+    public static Coder getCoder(Context context) {
+        if (getEncryptionEnabled(context)) {
+            String key = getString(context, "pref_passphrase", null);
+            if (key == null || key.length() == 0)
+                key = getString(context, "pref_mynumber", null);
+            if (key != null)
+                return new Coder(new PassKey(key));
+        }
+        return null;
     }
 }

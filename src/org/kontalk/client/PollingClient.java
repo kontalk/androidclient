@@ -8,6 +8,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.http.HttpResponse;
+import org.kontalk.crypto.Coder;
+import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.Base64;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -94,6 +96,14 @@ public class PollingClient extends AbstractClient {
 
                         // Base64-decode the text
                         byte[] content = Base64.decode(text, Base64.DEFAULT);
+
+                        // check for encrypted message
+                        if (mime != null && mime.startsWith(AbstractMessage.ENC_MIME_PREFIX)) {
+                            // TODO handle decryption errors
+                            Coder coder = MessagingPreferences.getCoder(mContext);
+                            content = coder.decrypt(content);
+                            mime = mime.substring(AbstractMessage.ENC_MIME_PREFIX.length());
+                        }
 
                         // plain text message
                         if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
