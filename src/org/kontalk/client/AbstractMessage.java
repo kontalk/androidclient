@@ -24,6 +24,8 @@ public abstract class AbstractMessage<T> {
     private static final String TAG = AbstractMessage.class.getSimpleName();
 
     public static final String ENC_MIME_PREFIX = "enc:";
+    public static final int USERID_LENGTH = 40;
+    public static final int USERID_LENGTH_RESOURCE = 48;
 
     private static final String[] MESSAGE_LIST_PROJECTION = {
         Messages._ID,
@@ -51,6 +53,8 @@ public abstract class AbstractMessage<T> {
     protected Context mContext;
     protected long databaseId;
     protected String id;
+    // TODO need to implement this in database
+    protected String origId;
     protected String sender;
     protected String mime;
     protected T content;
@@ -105,6 +109,14 @@ public abstract class AbstractMessage<T> {
         catch (ParseException e) {
             Log.e(TAG, "invalid server message id - " + id);
         }
+    }
+
+    public String getOrigId() {
+        return origId;
+    }
+
+    public void setOrigId(String origId) {
+        this.origId = origId;
     }
 
     public String getSender() {

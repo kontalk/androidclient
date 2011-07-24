@@ -62,6 +62,7 @@ public class PollingClient extends AbstractClient {
                 Node node = (Node) children.item(i);
                 if ("m".equals(node.getNodeName())) {
                     String id = null;
+                    String origId = null;
                     String from = null;
                     String text = null;
                     String mime = null;
@@ -88,11 +89,18 @@ public class PollingClient extends AbstractClient {
                                 group = new ArrayList<String>();
                             group.add(n2.getFirstChild().getNodeValue());
                         }
+                        else if ("o".equals(n2.getNodeName())) {
+                            origId = n2.getFirstChild().getNodeValue();
+                        }
                     }
 
                     if (id != null && from != null && text != null && mime != null) {
                         // add the message to the list
                         AbstractMessage<?> msg = null;
+
+                        // use the originating id as the message id to match with message in database
+                        if (origId != null)
+                            id = origId;
 
                         // Base64-decode the text
                         byte[] content = Base64.decode(text, Base64.DEFAULT);

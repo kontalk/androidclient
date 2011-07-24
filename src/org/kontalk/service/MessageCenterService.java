@@ -317,10 +317,15 @@ public class MessageCenterService extends Service
                             msg.setLocalUri(uri);
                         }
 
+                        // TODO for now just remove the resource part
+                        String sender = msg.getSender();
+                        if (sender.length() > AbstractMessage.USERID_LENGTH)
+                            sender = sender.substring(0, AbstractMessage.USERID_LENGTH);
+
                         // save to local storage
                         ContentValues values = new ContentValues();
                         values.put(Messages.MESSAGE_ID, msg.getId());
-                        values.put(Messages.PEER, msg.getSender());
+                        values.put(Messages.PEER, sender);
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);
                         values.put(Messages.FETCH_URL, msg.getFetchUrl());
