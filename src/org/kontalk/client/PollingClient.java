@@ -99,10 +99,12 @@ public class PollingClient extends AbstractClient {
 
                         // check for encrypted message
                         if (mime != null && mime.startsWith(AbstractMessage.ENC_MIME_PREFIX)) {
-                            // TODO handle decryption errors
-                            Coder coder = MessagingPreferences.getCoder(mContext);
-                            content = coder.decrypt(content);
-                            mime = mime.substring(AbstractMessage.ENC_MIME_PREFIX.length());
+                            // TODO handle decryption errors and unknown passphrase
+                            Coder coder = MessagingPreferences.getDecryptCoder(mContext);
+                            if (coder != null) {
+                                content = coder.decrypt(content);
+                                mime = mime.substring(AbstractMessage.ENC_MIME_PREFIX.length());
+                            }
                         }
 
                         // plain text message

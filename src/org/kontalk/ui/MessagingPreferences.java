@@ -77,14 +77,24 @@ public class MessagingPreferences extends PreferenceActivity {
     }
 
     /** Returns a {@link Coder} instance for encrypting contents. */
-    public static Coder getCoder(Context context) {
-        if (getEncryptionEnabled(context)) {
-            String key = getString(context, "pref_passphrase", null);
-            if (key == null || key.length() == 0)
-                key = getString(context, "pref_mynumber", null);
-            if (key != null)
-                return new Coder(new PassKey(key));
-        }
+    public static Coder getEncryptCoder(Context context, String passphrase) {
+        String key = getString(context, "pref_passphrase", null);
+        if (key == null || key.length() == 0)
+            key = passphrase;
+        if (key != null)
+            return new Coder(new PassKey(key));
+        return null;
+    }
+
+    /** Returns a {@link Coder} instance for decrypting contents. */
+    public static Coder getDecryptCoder(Context context) {
+        String key = getString(context, "pref_passphrase", null);
+        if (key == null || key.length() == 0)
+            key = getString(context, "pref_mynumber", null);
+        if (key != null)
+            return new Coder(new PassKey(key));
+
+        // passphrase is undefined :(
         return null;
     }
 }

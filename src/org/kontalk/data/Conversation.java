@@ -95,7 +95,7 @@ public class Conversation {
     }
 
     private void loadContact() {
-        mContact = Contact.findbyUserId(mContext, mRecipient);
+        mContact = Contact.findByUserId(mContext, mRecipient);
     }
 
     public Contact getContact() {

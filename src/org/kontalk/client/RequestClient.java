@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.kontalk.crypto.Coder;
+import org.kontalk.data.Contact;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
 import org.w3c.dom.Document;
@@ -37,6 +38,17 @@ public class RequestClient extends AbstractClient {
         super(context, server, token);
     }
 
+    private Coder getEncryptCoder(String userId) {
+        Coder coder = null;
+        if (MessagingPreferences.getEncryptionEnabled(mContext)) {
+            String number = Contact.numberByUserId(mContext, userId);
+            if (number != null)
+                coder = MessagingPreferences.getEncryptCoder(mContext, number);
+        }
+
+        return coder;
+    }
+
     public List<StatusResponse> message(final String[] group, final String mime,
                 final byte[] content, final MessageSender job, final RequestListener listener)
             throws IOException {
@@ -45,7 +57,7 @@ public class RequestClient extends AbstractClient {
             byte[] toMessage;
             String toMime;
             // check if we have to encrypt the message
-            Coder coder = MessagingPreferences.getCoder(mContext);
+            Coder coder = getEncryptCoder(job.getUserId());
             if (coder != null) {
                 toMessage = coder.encrypt(content);
                 toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
@@ -81,7 +93,7 @@ public class RequestClient extends AbstractClient {
             String toMime;
             long toLength;
             // check if we have to encrypt the message
-            Coder coder = MessagingPreferences.getCoder(mContext);
+            Coder coder = getEncryptCoder(job.getUserId());
             if (coder != null) {
                 toMessage = coder.wrapInputStream(in);
                 toMime = AbstractMessage.ENC_MIME_PREFIX + mime;

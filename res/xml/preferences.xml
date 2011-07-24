@@ -23,7 +23,7 @@
             android:title="@string/pref_passphrase"
             android:inputType="textPassword"
             android:dialogTitle="@string/pref_passphrase"
-            android:dialogMessage="Leave empty to use your phone number."
+            android:dialogMessage="@string/pref_title_passphrase"
             android:dependency="pref_encrypt"/>
     </PreferenceCategory>
     <PreferenceCategory android:key="pref_maintainance" android:title="@string/pref_maintainance">

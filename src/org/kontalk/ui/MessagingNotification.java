@@ -148,7 +148,7 @@ public class MessagingNotification {
         }
 
         private void cacheContact() {
-            mContact = Contact.findbyUserId(mContext, conversation.peer);
+            mContact = Contact.findByUserId(mContext, conversation.peer);
         }
 
         /** Returns the text that should be used as a ticker in the notification. */

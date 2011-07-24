@@ -114,7 +114,34 @@ public class Contact {
         return c;
     }
 
-    public static Contact findbyUserId(Context context, String userId) {
+    public static String numberByUserId(Context context, String userId) {
+        ContentResolver cres = context.getContentResolver();
+        Account acc = Authenticator.getDefaultAccount(context);
+
+        Cursor c = cres.query(RawContacts.CONTENT_URI,
+                new String[] {
+                    SyncAdapter.RAW_COLUMN_PHONE
+                },
+                RawContacts.ACCOUNT_NAME + " = ? AND " +
+                RawContacts.ACCOUNT_TYPE + " = ? AND " +
+                RawContacts.SYNC3        + " = ?",
+                new String[] {
+                    acc.name,
+                    acc.type,
+                    userId
+                }, null);
+
+        if (c.moveToFirst()) {
+            String number = c.getString(0);
+            c.close();
+            return number;
+        }
+
+        c.close();
+        return null;
+    }
+
+    public static Contact findByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Account acc = Authenticator.getDefaultAccount(context);
 
@@ -122,8 +149,8 @@ public class Contact {
                 new String[] {
                     RawContacts._ID,
                     RawContacts.CONTACT_ID,
-                    RawContacts.SYNC1,
-                    RawContacts.SYNC2
+                    SyncAdapter.RAW_COLUMN_DISPLAY_NAME,
+                    SyncAdapter.RAW_COLUMN_PHONE
                 },
                 RawContacts.ACCOUNT_NAME + " = ? AND " +
                 RawContacts.ACCOUNT_TYPE + " = ? AND " +
@@ -139,6 +166,7 @@ public class Contact {
             long id = c.getLong(1);
             String name = c.getString(2);
             String number = c.getString(3);
+            c.close();
 
             // create contact
             Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id);
@@ -150,6 +178,7 @@ public class Contact {
             return contact;
         }
 
+        c.close();
         return null;
     }
 
