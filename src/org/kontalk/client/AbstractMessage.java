@@ -30,6 +30,7 @@ public abstract class AbstractMessage<T> {
     private static final String[] MESSAGE_LIST_PROJECTION = {
         Messages._ID,
         Messages.MESSAGE_ID,
+        Messages.REAL_ID,
         Messages.PEER,
         Messages.DIRECTION,
         Messages.TIMESTAMP,
@@ -53,8 +54,7 @@ public abstract class AbstractMessage<T> {
     protected Context mContext;
     protected long databaseId;
     protected String id;
-    // TODO need to implement this in database
-    protected String origId;
+    protected String realId;
     protected String sender;
     protected String mime;
     protected T content;
@@ -111,12 +111,12 @@ public abstract class AbstractMessage<T> {
         }
     }
 
-    public String getOrigId() {
-        return origId;
+    public String getRealId() {
+        return (realId != null) ? realId : id;
     }
 
-    public void setOrigId(String origId) {
-        this.origId = origId;
+    public void setRealId(String realId) {
+        this.realId = realId;
     }
 
     public String getSender() {
@@ -226,6 +226,7 @@ public abstract class AbstractMessage<T> {
     protected void populateFromCursor(Cursor c) {
         databaseId = c.getLong(c.getColumnIndex(Messages._ID));
         setId(c.getString(c.getColumnIndex(Messages.MESSAGE_ID)));
+        realId = c.getString(c.getColumnIndex(Messages.REAL_ID));
         mime = c.getString(c.getColumnIndex(Messages.MIME));
         timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
         statusChanged = c.getLong(c.getColumnIndex(Messages.STATUS_CHANGED));

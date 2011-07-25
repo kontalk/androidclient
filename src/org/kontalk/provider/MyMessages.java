@@ -39,6 +39,7 @@ public final class MyMessages {
 
         public static final String THREAD_ID = "thread_id";
         public static final String MESSAGE_ID = "msg_id";
+        public static final String REAL_ID = "real_id";
         public static final String PEER = "peer";
         public static final String MIME = "mime";
         public static final String CONTENT = "content";

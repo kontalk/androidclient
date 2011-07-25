@@ -57,6 +57,7 @@ public class MessagesProvider extends ContentProvider {
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "thread_id INTEGER NOT NULL, " +
             "msg_id TEXT NOT NULL UNIQUE, " +
+            "real_id TEXT, " +
             "peer TEXT, " +
             "mime TEXT NOT NULL, " +
             "content TEXT," +
@@ -273,6 +274,7 @@ public class MessagesProvider extends ContentProvider {
         // this will be calculated by the trigger
         values.remove(Messages.UNREAD);
         // remove some other column
+        values.remove(Messages.REAL_ID);
         values.remove(Messages.FETCH_URL);
         values.remove(Messages.FETCHED);
         values.remove(Messages.LOCAL_URI);
@@ -608,6 +610,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages._ID, Messages._ID);
         messagesProjectionMap.put(Messages.THREAD_ID, Messages.THREAD_ID);
         messagesProjectionMap.put(Messages.MESSAGE_ID, Messages.MESSAGE_ID);
+        messagesProjectionMap.put(Messages.REAL_ID, Messages.REAL_ID);
         messagesProjectionMap.put(Messages.PEER, Messages.PEER);
         messagesProjectionMap.put(Messages.MIME, Messages.MIME);
         messagesProjectionMap.put(Messages.CONTENT, Messages.CONTENT);

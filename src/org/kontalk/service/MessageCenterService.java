@@ -295,7 +295,7 @@ public class MessageCenterService extends Service
             for (AbstractMessage<?> msg : messages) {
                 if (!mReceived.contains(msg.getId())) {
                     // the message need to be confirmed
-                    list.add(new BasicNameValuePair("i[]", msg.getId()));
+                    list.add(new BasicNameValuePair("i[]", msg.getRealId()));
                     mReceived.add(msg.getId());
 
                     // do not store receipts...
@@ -325,6 +325,7 @@ public class MessageCenterService extends Service
                         // save to local storage
                         ContentValues values = new ContentValues();
                         values.put(Messages.MESSAGE_ID, msg.getId());
+                        values.put(Messages.REAL_ID, msg.getRealId());
                         values.put(Messages.PEER, sender);
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);

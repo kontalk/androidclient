@@ -97,10 +97,13 @@ public class PollingClient extends AbstractClient {
                     if (id != null && from != null && text != null && mime != null) {
                         // add the message to the list
                         AbstractMessage<?> msg = null;
+                        String realId = null;
 
                         // use the originating id as the message id to match with message in database
-                        if (origId != null)
+                        if (origId != null) {
+                            realId = id;
                             id = origId;
+                        }
 
                         // Base64-decode the text
                         byte[] content = Base64.decode(text, Base64.DEFAULT);
@@ -134,6 +137,9 @@ public class PollingClient extends AbstractClient {
                         // TODO else other mime types
 
                         if (msg != null) {
+                            // set the real message id
+                            msg.setRealId(realId);
+
                             // set the fetch url (if any)
                             Log.d(TAG, "using fetch url: " + fetchUrl);
                             msg.setFetchUrl(fetchUrl);
