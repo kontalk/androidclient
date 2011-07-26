@@ -7,6 +7,7 @@ import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.PollingClient;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.util.Log;
 
@@ -40,7 +41,9 @@ public class PollingThread extends Thread {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         Log.i(TAG, "using token: " + mAuthToken);
 
-        mClient = new PollingClient(mContext, mServer, mAuthToken);
+        Account acc = Authenticator.getDefaultAccount(mContext);
+        Log.d(TAG, "using account name " + acc.name + " as my number");
+        mClient = new PollingClient(mContext, mServer, mAuthToken, acc.name);
 
         while(mRunning) {
             try {

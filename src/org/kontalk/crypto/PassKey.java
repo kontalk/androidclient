@@ -30,7 +30,7 @@ public class PassKey {
     private SecretKeySpec keySpec;
 
     public PassKey(String passPhrase) {
-        this(passPhrase, 1);
+        this(passPhrase, 3);
     }
 
     public PassKey(String passPhrase, int numHashes) {

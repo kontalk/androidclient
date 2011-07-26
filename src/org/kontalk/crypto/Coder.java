@@ -34,7 +34,7 @@ import javax.crypto.spec.IvParameterSpec;
  */
 public class Coder {
 
-  static final String ENCRYPTION_ALGORITHM = "AES/CBC/PKCS7Padding";
+  static final String ENCRYPTION_ALGORITHM = "AES/CBC/PKCS5Padding";
 
   private final PassKey key;
 

@@ -59,13 +59,6 @@ public class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
-    public static void setMyNumber(Context context, String number) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit()
-            .putString("pref_mynumber", number)
-            .commit();
-    }
-
     public static boolean getEncryptionEnabled(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean("pref_encrypt", true);
@@ -87,14 +80,10 @@ public class MessagingPreferences extends PreferenceActivity {
     }
 
     /** Returns a {@link Coder} instance for decrypting contents. */
-    public static Coder getDecryptCoder(Context context) {
+    public static Coder getDecryptCoder(Context context, String myNumber) {
         String key = getString(context, "pref_passphrase", null);
         if (key == null || key.length() == 0)
-            key = getString(context, "pref_mynumber", null);
-        if (key != null)
-            return new Coder(new PassKey(key));
-
-        // passphrase is undefined :(
-        return null;
+            key = myNumber;
+        return new Coder(new PassKey(key));
     }
 }

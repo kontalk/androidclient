@@ -149,9 +149,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
             return;
         }
 
-        // store the phone number immediately
         mPhoneNumber = phone;
-        MessagingPreferences.setMyNumber(this, phone);
 
         // start async request
         Log.i(TAG, "phone number checked, sending validation request");

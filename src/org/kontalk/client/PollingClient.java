@@ -28,8 +28,11 @@ import android.util.Log;
 public class PollingClient extends AbstractClient {
     private static final String TAG = PollingClient.class.getSimpleName();
 
-    public PollingClient(Context context, EndpointServer server, String token) {
+    private final String mMyNumber;
+
+    public PollingClient(Context context, EndpointServer server, String token, String myNumber) {
         super(context, server, token);
+        mMyNumber = myNumber;
     }
 
     /**
@@ -111,7 +114,7 @@ public class PollingClient extends AbstractClient {
                         // check for encrypted message
                         if (mime != null && mime.startsWith(AbstractMessage.ENC_MIME_PREFIX)) {
                             // TODO handle decryption errors and unknown passphrase
-                            Coder coder = MessagingPreferences.getDecryptCoder(mContext);
+                            Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyNumber);
                             if (coder != null) {
                                 content = coder.decrypt(content);
                                 mime = mime.substring(AbstractMessage.ENC_MIME_PREFIX.length());
