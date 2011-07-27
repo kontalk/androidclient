@@ -1,12 +1,15 @@
 package org.kontalk.ui;
 
+import java.security.GeneralSecurityException;
 import java.util.Random;
 
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.ImageMessage;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.PlainTextMessage;
+import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
@@ -16,6 +19,7 @@ import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.util.MessageUtils;
 
+import android.accounts.Account;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.AsyncQueryHandler;
@@ -375,10 +379,11 @@ public class ComposeMessage extends ListActivity {
 
     private static final int MENU_FORWARD = 1;
     private static final int MENU_COPY_TEXT = 2;
-    private static final int MENU_VIEW_IMAGE = 3;
-    private static final int MENU_DOWNLOAD = 4;
-    private static final int MENU_DETAILS = 5;
-    private static final int MENU_DELETE = 6;
+    private static final int MENU_DECRYPT = 3;
+    private static final int MENU_VIEW_IMAGE = 4;
+    private static final int MENU_DOWNLOAD = 5;
+    private static final int MENU_DETAILS = 6;
+    private static final int MENU_DELETE = 7;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
@@ -397,7 +402,10 @@ public class ComposeMessage extends ListActivity {
                 menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, "Download file");
         }
         else {
-            menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
+            if (msg.isEncrypted())
+                menu.add(Menu.NONE, MENU_DECRYPT, MENU_DECRYPT, "Decrypt message");
+            else
+                menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
         }
 
         menu.add(Menu.NONE, MENU_DETAILS, MENU_DETAILS, R.string.menu_message_details);
@@ -423,6 +431,30 @@ public class ComposeMessage extends ListActivity {
 
                 Toast.makeText(this, R.string.message_text_copied, Toast.LENGTH_SHORT)
                     .show();
+                return true;
+            }
+
+            case MENU_DECRYPT: {
+                Log.i(TAG, "decrypting message: " + msg.getId());
+                Account acc = Authenticator.getDefaultAccount(this);
+                Coder coder = MessagingPreferences.getDecryptCoder(this, acc.name);
+                try {
+                    // decrypt the message
+                    msg.decrypt(coder);
+                    // update database
+                    ContentValues values = new ContentValues();
+                    values.put(Messages.CONTENT, msg.getTextContent());
+                    values.put(Messages.MIME, msg.getMime());
+                    getContentResolver()
+                        .update(
+                            Messages.getUri(msg.getId()),
+                            values, null, null);
+                }
+                catch (GeneralSecurityException e) {
+                    Log.e(TAG, "unable to decrypt message", e);
+                    Toast.makeText(this, "Decryption failed!", Toast.LENGTH_LONG)
+                    .show();
+                }
                 return true;
             }
 

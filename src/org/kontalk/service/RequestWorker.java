@@ -117,8 +117,11 @@ public class RequestWorker extends Thread {
 
         @Override
         public void response(RequestJob job, List<StatusResponse> statuses) {
-            for (RequestListener l : this)
+            Log.w(TAG, "executing listeners array for " + job);
+            for (RequestListener l : this) {
+                Log.w(TAG, "executing listener " + l);
                 l.response(job, statuses);
+            }
         }
 
         @Override

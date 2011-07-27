@@ -3,6 +3,7 @@ package org.kontalk.provider;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.kontalk.client.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 
@@ -279,6 +280,11 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.FETCHED);
         values.remove(Messages.LOCAL_URI);
 
+        // check if message is encrypted
+        String mime = (String) values.get(Messages.MIME);
+        if (mime.startsWith(AbstractMessage.ENC_MIME_PREFIX))
+            values.put(Threads.CONTENT, "(encrypted)");
+
         // insert new thread
         long resThreadId = db.insert(TABLE_THREADS, null, values);
         if (resThreadId < 0) {
@@ -309,6 +315,7 @@ public class MessagesProvider extends ContentProvider {
 
         String where;
         String[] args;
+        String messageId = null;
 
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
@@ -318,14 +325,14 @@ public class MessagesProvider extends ContentProvider {
 
             case MESSAGES_ID:
                 long _id = ContentUris.parseId(uri);
-                where = "_id = ?";
+                where = Messages._ID + " = ?";
                 args = new String[] { String.valueOf(_id) };
                 break;
 
             case MESSAGES_SERVERID:
-                String sid = uri.getPathSegments().get(1);
-                where = "msg_id = ?";
-                args = new String[] { String.valueOf(sid) };
+                messageId = uri.getPathSegments().get(1);
+                where = Messages.MESSAGE_ID + " = ?";
+                args = new String[] { String.valueOf(messageId) };
                 break;
 
             // threads table cannot be updated
@@ -344,7 +351,22 @@ public class MessagesProvider extends ContentProvider {
         if (rows > 0) {
             ContentResolver cr = getContext().getContentResolver();
             cr.notifyChange(uri, null);
-            cr.notifyChange(Threads.CONTENT_URI, null);
+
+            if (messageId == null) {
+                Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.MESSAGE_ID },
+                        where, args, null, null, null);
+                if (c.moveToNext())
+                    updateThreadInfo(db, c.getLong(0));
+                c.close();
+            }
+
+            else {
+                Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID },
+                        Threads.MESSAGE_ID + " = ?", new String[] { messageId }, null, null, null, "1");
+                if (c.moveToFirst())
+                    updateThreadInfo(db, c.getLong(0));
+                c.close();
+            }
         }
 
         return rows;
@@ -452,9 +474,18 @@ public class MessagesProvider extends ContentProvider {
                 ContentValues v = new ContentValues();
                 v.put(Threads.MESSAGE_ID, c.getString(0));
                 v.put(Threads.DIRECTION, c.getInt(1));
-                v.put(Threads.MIME, c.getString(2));
+                String mime = c.getString(2);
+                v.put(Threads.MIME, mime);
                 v.put(Threads.STATUS, c.getInt(3));
-                v.put(Threads.CONTENT, c.getString(4));
+
+                // check if message is encrypted
+                String content;
+                if (mime.startsWith(AbstractMessage.ENC_MIME_PREFIX))
+                    content = "(encrypted)";
+                else
+                    content = c.getString(4);
+
+                v.put(Threads.CONTENT, content);
                 v.put(Threads.TIMESTAMP, c.getLong(5));
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
                 if (rc > 0)

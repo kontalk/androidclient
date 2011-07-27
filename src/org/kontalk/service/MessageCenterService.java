@@ -292,6 +292,8 @@ public class MessageCenterService extends Service
 
         // access to mReceived list is protected
         synchronized (mReceived) {
+            boolean notify = false;
+
             for (AbstractMessage<?> msg : messages) {
                 if (!mReceived.contains(msg.getId())) {
                     // the message need to be confirmed
@@ -317,16 +319,11 @@ public class MessageCenterService extends Service
                             msg.setLocalUri(uri);
                         }
 
-                        // TODO for now just remove the resource part
-                        String sender = msg.getSender();
-                        if (sender.length() > AbstractMessage.USERID_LENGTH)
-                            sender = sender.substring(0, AbstractMessage.USERID_LENGTH);
-
                         // save to local storage
                         ContentValues values = new ContentValues();
                         values.put(Messages.MESSAGE_ID, msg.getId());
                         values.put(Messages.REAL_ID, msg.getRealId());
-                        values.put(Messages.PEER, sender);
+                        values.put(Messages.PEER, msg.getSender(true));
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);
                         values.put(Messages.FETCH_URL, msg.getFetchUrl());
@@ -338,12 +335,16 @@ public class MessageCenterService extends Service
                         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                         Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
                         msg.setDatabaseId(ContentUris.parseId(newMsg));
+
+                        // we will have to notify the user
+                        notify = true;
                     }
 
                     // we have a receipt, update the corresponding message
                     else {
                         ReceiptMessage msg2 = (ReceiptMessage) msg;
                         Log.w(TAG, "receipt for message " + msg2.getMessageId());
+                        // TODO handle error receipts
 
                         MessagesProvider.changeMessageStatus(this,
                                 msg2.getMessageId(), Messages.STATUS_RECEIVED,
@@ -352,10 +353,12 @@ public class MessageCenterService extends Service
 
                     // broadcast message
                     broadcastMessage(msg);
-                    // update notifications (delayed)
-                    MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
                 }
             }
+
+            if (notify)
+                // update notifications (delayed)
+                MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
         }
 
         if (list.size() > 0) {

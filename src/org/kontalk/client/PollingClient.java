@@ -112,13 +112,22 @@ public class PollingClient extends AbstractClient {
                         byte[] content = Base64.decode(text, Base64.DEFAULT);
 
                         // check for encrypted message
+                        boolean encrypted = false;
                         if (mime != null && mime.startsWith(AbstractMessage.ENC_MIME_PREFIX)) {
-                            // TODO handle decryption errors and unknown passphrase
                             Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyNumber);
-                            if (coder != null) {
+                            try {
                                 content = coder.decrypt(content);
-                                mime = mime.substring(AbstractMessage.ENC_MIME_PREFIX.length());
                             }
+                            catch (Exception e) {
+                                // pass over the message even if encrypted
+                                // UI will warn the user about that and wait
+                                // for user decisions
+                                Log.e(TAG, "decryption failed", e);
+                                encrypted = true;
+                                content = text.getBytes();
+                            }
+                            // cut off the enc: part anyway
+                            mime = mime.substring(AbstractMessage.ENC_MIME_PREFIX.length());
                         }
 
                         // plain text message
@@ -142,6 +151,10 @@ public class PollingClient extends AbstractClient {
                         if (msg != null) {
                             // set the real message id
                             msg.setRealId(realId);
+
+                            // remember encryption! :)
+                            if (encrypted)
+                                msg.setEncrypted();
 
                             // set the fetch url (if any)
                             Log.d(TAG, "using fetch url: " + fetchUrl);

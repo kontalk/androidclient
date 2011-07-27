@@ -1,11 +1,13 @@
 package org.kontalk.client;
 
 import java.io.StringReader;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.kontalk.crypto.Coder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -93,6 +95,11 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
     @Override
     public String getTextContent() {
         return content.toString();
+    }
+
+    @Override
+    public void decrypt(Coder coder) throws GeneralSecurityException {
+        // TODO
     }
 
     public static boolean supportsMimeType(String mime) {

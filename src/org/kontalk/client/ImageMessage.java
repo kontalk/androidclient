@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
+import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.ThumbnailUtils;
 
@@ -148,6 +150,11 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
 
     public byte[] getDecodedContent() {
         return decodedContent;
+    }
+
+    @Override
+    public void decrypt(Coder coder) throws GeneralSecurityException {
+        // TODO
     }
 
     @Override

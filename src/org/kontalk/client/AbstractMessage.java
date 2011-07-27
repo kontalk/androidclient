@@ -1,8 +1,10 @@
 package org.kontalk.client;
 
+import java.security.GeneralSecurityException;
 import java.text.ParseException;
 import java.util.*;
 
+import org.kontalk.crypto.Coder;
 import org.kontalk.data.MessageID;
 import org.kontalk.provider.MyMessages.Messages;
 
@@ -119,8 +121,13 @@ public abstract class AbstractMessage<T> {
         this.realId = realId;
     }
 
+    public String getSender(boolean generic) {
+        return (generic && sender.length() > USERID_LENGTH) ?
+                sender.substring(0, USERID_LENGTH) : sender;
+    }
+
     public String getSender() {
-        return sender;
+        return getSender(false);
     }
 
     public List<String> getRecipients() {
@@ -223,6 +230,18 @@ public abstract class AbstractMessage<T> {
         return localUri;
     }
 
+    public boolean isEncrypted() {
+        return (mime != null && mime.startsWith(ENC_MIME_PREFIX));
+    }
+
+    public void setEncrypted() {
+        if (mime != null && !mime.startsWith(ENC_MIME_PREFIX))
+            mime = ENC_MIME_PREFIX + mime;
+    }
+
+    /** Decrypts the message. */
+    public abstract void decrypt(Coder coder) throws GeneralSecurityException;
+
     protected void populateFromCursor(Cursor c) {
         databaseId = c.getLong(c.getColumnIndex(Messages._ID));
         setId(c.getString(c.getColumnIndex(Messages.MESSAGE_ID)));
@@ -252,6 +271,11 @@ public abstract class AbstractMessage<T> {
 
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
         String mime = cursor.getString(cursor.getColumnIndex(Messages.MIME));
+
+        // check for encryption
+        if (mime.startsWith(ENC_MIME_PREFIX))
+            mime = mime.substring(ENC_MIME_PREFIX.length());
+
         if (PlainTextMessage.supportsMimeType(mime)) {
             PlainTextMessage msg = new PlainTextMessage(context);
             msg.populateFromCursor(cursor);

@@ -1,8 +1,11 @@
 package org.kontalk.client;
 
+import java.security.GeneralSecurityException;
 import java.util.List;
 
+import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.util.Base64;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -40,6 +43,16 @@ public class PlainTextMessage extends AbstractMessage<String> {
     @Override
     public String getTextContent() {
         return content;
+    }
+
+    @Override
+    public void decrypt(Coder coder) throws GeneralSecurityException {
+        if (isEncrypted()) {
+            byte[] buf = Base64.decode(content, Base64.DEFAULT);
+            buf = coder.decrypt(buf);
+            content = new String(buf);
+            mime = mime.substring(ENC_MIME_PREFIX.length());
+        }
     }
 
     public static boolean supportsMimeType(String mime) {
