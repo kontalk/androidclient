@@ -57,4 +57,6 @@
     <string name="pref_passphrase">Passphrase</string>
     <string name="pref_prompt_passphrase">Leave empty to use the recipient phone number.</string>
     <string name="pref_title_passphrase">Password will also be used for decryption when necessary.</string>
+    <string name="pref_mark_all_confirmed">Mark all messages as confirmed</string>
+    <string name="pref_title_mark_all_confirmed">Marks all incoming messages as confirmed</string>
 </resources>

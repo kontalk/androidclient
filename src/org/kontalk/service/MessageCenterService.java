@@ -247,7 +247,7 @@ public class MessageCenterService extends Service
      */
     private void requeuePendingReceipts() {
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-                new String[] { Messages.MESSAGE_ID },
+                new String[] { Messages.REAL_ID },
                 Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
                 Messages.STATUS + " IS NULL",
                 null, null);
@@ -255,7 +255,7 @@ public class MessageCenterService extends Service
         List<NameValuePair> list = new ArrayList<NameValuePair>();
         while (c.moveToNext()) {
             String msgId = c.getString(0);
-            Log.i(TAG, "sending received notification for message " + msgId);
+            Log.i(TAG, "sending received notification for real message " + msgId);
             list.add(new BasicNameValuePair("i[]", msgId));
         }
         c.close();
@@ -347,7 +347,7 @@ public class MessageCenterService extends Service
                         // TODO handle error receipts
 
                         MessagesProvider.changeMessageStatus(this,
-                                msg2.getMessageId(), Messages.STATUS_RECEIVED,
+                                msg2.getMessageId(), false, Messages.STATUS_RECEIVED,
                                 -1, msg.getServerTimestamp().getTime());
                     }
 
@@ -453,7 +453,7 @@ public class MessageCenterService extends Service
                         if ("i".equals(par.getName()) || "i[]".equals(par.getName())) {
                             mReceived.remove(par.getValue());
                             MessagesProvider.changeMessageStatus(this,
-                                    par.getValue(), Messages.STATUS_CONFIRMED);
+                                    par.getValue(), true, Messages.STATUS_CONFIRMED);
                         }
                     }
                 }
@@ -465,7 +465,7 @@ public class MessageCenterService extends Service
                             if (idToRemove != null) {
                                 mReceived.remove(idToRemove);
                                 MessagesProvider.changeMessageStatus(this,
-                                        idToRemove, Messages.STATUS_CONFIRMED);
+                                        idToRemove, true, Messages.STATUS_CONFIRMED);
                             }
                         }
                     }

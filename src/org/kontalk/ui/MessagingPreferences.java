@@ -4,8 +4,10 @@ import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.MessageCenterService;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.util.Log;
+import android.widget.Toast;
 
 public class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
@@ -33,6 +36,25 @@ public class MessagingPreferences extends PreferenceActivity {
                 return true;
             }
         });
+
+        Preference markAllConfirmed = findPreference("pref_mark_all_confirmed");
+        markAllConfirmed.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Log.w(TAG, "marking all incoming messages as confirmed");
+                ContentValues values = new ContentValues(1);
+                values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
+                getContentResolver().update(Messages.CONTENT_URI, values,
+                        Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
+                        Messages.STATUS + " IS NULL",
+                        null);
+
+                Toast.makeText(MessagingPreferences.this, "Messages table updated!", Toast.LENGTH_SHORT)
+                    .show();
+                return true;
+            }
+        });
+
     }
 
     /** Default built-in server URI. */

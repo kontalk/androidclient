@@ -7,6 +7,7 @@ import org.kontalk.client.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 
+
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
@@ -594,11 +595,11 @@ public class MessagesProvider extends ContentProvider {
         return count;
     }
 
-    public static int changeMessageStatus(Context context, long id, int status) {
-        return changeMessageStatus(context, id, status, -1, -1);
+    public static int changeMessageStatus(Context context, long id, boolean realId, int status) {
+        return changeMessageStatus(context, id, realId, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, long id, int status, long timestamp, long statusChanged) {
+    public static int changeMessageStatus(Context context, long id, boolean realId, int status, long timestamp, long statusChanged) {
         Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = new ContentValues();
         values.put(Messages.STATUS, status);
@@ -606,16 +607,27 @@ public class MessagesProvider extends ContentProvider {
             values.put(Messages.TIMESTAMP, timestamp);
         if (statusChanged >= 0)
             values.put(Messages.STATUS_CHANGED, statusChanged);
-        return context.getContentResolver().update(
-                ContentUris.withAppendedId(Messages.CONTENT_URI, id),
-                values, null, null);
+
+        Uri uri;
+        String where = null;
+        String[] args = null;
+        if (realId) {
+            uri = Messages.CONTENT_URI;
+            where = Messages.REAL_ID + " = ?";
+            args = new String[] { String.valueOf(id) };
+        }
+        else {
+            uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
+        }
+
+        return context.getContentResolver().update(uri, values, where, args);
     }
 
-    public static int changeMessageStatus(Context context, String id, int status) {
-        return changeMessageStatus(context, id, status, -1, -1);
+    public static int changeMessageStatus(Context context, String id, boolean realId, int status) {
+        return changeMessageStatus(context, id, realId, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, String id, int status, long timestamp, long statusChanged) {
+    public static int changeMessageStatus(Context context, String id, boolean realId, int status, long timestamp, long statusChanged) {
         Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = new ContentValues();
         values.put(Messages.STATUS, status);
@@ -623,8 +635,10 @@ public class MessagesProvider extends ContentProvider {
             values.put(Messages.TIMESTAMP, timestamp);
         if (statusChanged >= 0)
             values.put(Messages.STATUS_CHANGED, statusChanged);
+
+        String field = (realId) ? Messages.REAL_ID : Messages.MESSAGE_ID;
         return context.getContentResolver().update(Messages.CONTENT_URI, values,
-                Messages.MESSAGE_ID + " = ?",
+                field + " = ?",
                 new String[] { id });
     }
 
