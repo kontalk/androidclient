@@ -6,6 +6,7 @@ import java.util.HashMap;
 import org.kontalk.client.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
 
 
 import android.content.ContentProvider;
@@ -46,6 +47,7 @@ public class MessagesProvider extends ContentProvider {
     private static final int MESSAGES = 4;
     private static final int MESSAGES_ID = 5;
     private static final int MESSAGES_SERVERID = 6;
+    private static final int CONVERSATIONS_ID = 7;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -218,6 +220,12 @@ public class MessagesProvider extends ContentProvider {
                 qb.appendWhere(Threads.PEER + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
 
+            case CONVERSATIONS_ID:
+                qb.setTables(TABLE_MESSAGES);
+                qb.setProjectionMap(messagesProjectionMap);
+                qb.appendWhere(Messages.THREAD_ID + "=" + uri.getPathSegments().get(1));
+                break;
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
@@ -246,9 +254,20 @@ public class MessagesProvider extends ContentProvider {
         long rowId = db.insert(TABLE_MESSAGES, null, values);
 
         if (rowId > 0) {
+            ContentResolver cr = getContext().getContentResolver();
+
             Uri msgUri = ContentUris.withAppendedId(uri, rowId);
-            getContext().getContentResolver().notifyChange(msgUri, null);
+            cr.notifyChange(msgUri, null);
             Log.w(TAG, "messages table inserted, id = " + rowId);
+
+            // notify thread change
+            cr.notifyChange(
+                    ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+                    null);
+            // notify conversation change
+            cr.notifyChange(
+                    ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
+                    null);
 
             return msgUri;
         }
@@ -304,9 +323,6 @@ public class MessagesProvider extends ContentProvider {
             Log.w(TAG, "new thread inserted with id " + threadId);
         }
 
-        // notify changes
-        Uri threadUri = ContentUris.withAppendedId(Threads.CONTENT_URI, threadId);
-        getContext().getContentResolver().notifyChange(threadUri, null);
         return threadId;
     }
 
@@ -350,24 +366,14 @@ public class MessagesProvider extends ContentProvider {
 
         // notify change only if rows are actually affected
         if (rows > 0) {
-            ContentResolver cr = getContext().getContentResolver();
-            cr.notifyChange(uri, null);
+            getContext().getContentResolver().notifyChange(uri, null);
 
-            if (messageId == null) {
-                Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.MESSAGE_ID },
-                        where, args, null, null, null);
-                if (c.moveToNext())
-                    updateThreadInfo(db, c.getLong(0));
-                c.close();
+            Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.THREAD_ID },
+                    where, args, null, null, null);
+            while (c.moveToNext()) {
+                updateThreadInfo(db, c.getLong(0));
             }
-
-            else {
-                Cursor c = db.query(TABLE_THREADS, new String[] { Threads._ID },
-                        Threads.MESSAGE_ID + " = ?", new String[] { messageId }, null, null, null, "1");
-                if (c.moveToFirst())
-                    updateThreadInfo(db, c.getLong(0));
-                c.close();
-            }
+            c.close();
         }
 
         return rows;
@@ -489,9 +495,13 @@ public class MessagesProvider extends ContentProvider {
                 v.put(Threads.CONTENT, content);
                 v.put(Threads.TIMESTAMP, c.getLong(5));
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
-                if (rc > 0)
-                    getContext().getContentResolver().notifyChange(
+                if (rc > 0) {
+                    ContentResolver cres = getContext().getContentResolver();
+                    cres.notifyChange(
                             ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), null);
+                    cres.notifyChange(
+                            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId), null);
+                }
             }
             c.close();
         }
@@ -511,6 +521,7 @@ public class MessagesProvider extends ContentProvider {
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
+            case CONVERSATIONS_ID:
                 return Messages.CONTENT_TYPE;
             case MESSAGES_ID:
                 return Messages.CONTENT_ITEM_TYPE;
@@ -650,6 +661,7 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES, MESSAGES);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/#", MESSAGES_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/*", MESSAGES_SERVERID);
+        sUriMatcher.addURI(AUTHORITY, "conversations/#", CONVERSATIONS_ID);
 
         messagesProjectionMap = new HashMap<String, String>();
         messagesProjectionMap.put(Messages._ID, Messages._ID);

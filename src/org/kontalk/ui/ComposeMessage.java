@@ -145,7 +145,7 @@ public class ComposeMessage extends ListActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.compose_message);
 
-        mQueryHandler = new MessageListQueryHandler(getContentResolver());
+        mQueryHandler = new MessageListQueryHandler();
         mListAdapter = new MessageListAdapter(this, null);
         mListAdapter.setOnContentChangedListener(mContentChangedListener);
         setListAdapter(mListAdapter);
@@ -780,8 +780,8 @@ public class ComposeMessage extends ListActivity {
      * The conversation list query handler.
      */
     private final class MessageListQueryHandler extends AsyncQueryHandler {
-        public MessageListQueryHandler(ContentResolver contentResolver) {
-            super(contentResolver);
+        public MessageListQueryHandler() {
+            super(getContentResolver());
         }
 
         @Override

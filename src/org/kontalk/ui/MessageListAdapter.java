@@ -26,7 +26,7 @@ public class MessageListAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         if (!(view instanceof MessageListItem)) {
-            Log.e(TAG, "Unexpected bound view: " + view);
+            Log.e(TAG, "unexpected bound view: " + view);
             return;
         }
 
@@ -52,6 +52,7 @@ public class MessageListAdapter extends CursorAdapter {
     @Override
     protected void onContentChanged() {
         Cursor c = getCursor();
+        Log.i(TAG, "content has changed (c=" + c + ")");
         if (c != null && !c.isClosed() && mOnContentChangedListener != null) {
             mOnContentChangedListener.onContentChanged(this);
         }

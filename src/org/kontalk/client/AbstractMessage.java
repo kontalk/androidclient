@@ -7,8 +7,10 @@ import java.util.*;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.MessageID;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
 
 import android.content.AsyncQueryHandler;
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -294,11 +296,12 @@ public abstract class AbstractMessage<T> {
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId) {
         // cancel previous operations
         handler.cancelOperation(token);
-        handler.startQuery(token, null, Messages.CONTENT_URI,
-                MESSAGE_LIST_PROJECTION, "thread_id = ?", new String[] { String.valueOf(threadId) },
-                    Messages.DEFAULT_SORT_ORDER);
+        handler.startQuery(token, null,
+                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
+                MESSAGE_LIST_PROJECTION, null, null, Messages.DEFAULT_SORT_ORDER);
     }
 
+    /** Still unused.
     public static void startQuery(AsyncQueryHandler handler, int token, String peer) {
         // cancel previous operations
         handler.cancelOperation(token);
@@ -306,5 +309,6 @@ public abstract class AbstractMessage<T> {
                 MESSAGE_LIST_PROJECTION, "peer = ?", new String[] { peer },
                     Messages.DEFAULT_SORT_ORDER);
     }
+    */
 
 }

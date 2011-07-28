@@ -57,11 +57,18 @@ public final class MyMessages {
         public static final String INVERTED_SORT_ORDER = "timestamp DESC";
     }
 
+    /** Threads are just for conversations metadata. */
     public static final class Threads implements BaseColumns {
         private Threads() {}
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
                 + MessagesProvider.AUTHORITY + "/threads");
+
+        /** Conversations represent a message group for a given thread. */
+        public static final class Conversations implements BaseColumns {
+            public static final Uri CONTENT_URI = Uri
+                .parse("content://" + MessagesProvider.AUTHORITY + "/conversations");
+        }
 
         /**
          * Builds a thread {@link Uri}.
