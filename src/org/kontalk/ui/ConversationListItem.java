@@ -13,7 +13,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.RelativeLayout;
@@ -59,6 +58,16 @@ public class ConversationListItem extends RelativeLayout {
         mErrorIndicator = (ImageView) findViewById(R.id.error);
         //mPresenceView = (ImageView) findViewById(R.id.presence);
         mAvatarView = (QuickContactBadge) findViewById(R.id.avatar);
+
+        if (isInEditMode()) {
+            mFromView.setText("Test zio (3)");
+            mSubjectView.setText("Bella zio senti per domani facciamo che mi vieni a prendere ok?");
+            mDateView.setText("20:14");
+            mAvatarView.setVisibility(VISIBLE);
+            mAvatarView.setImageDrawable(sDefaultContactImage);
+            mErrorIndicator.setVisibility(VISIBLE);
+            mErrorIndicator.setImageResource(R.drawable.ic_msg_delivered);
+        }
     }
 
     /**
@@ -84,7 +93,7 @@ public class ConversationListItem extends RelativeLayout {
             recipient = conv.getRecipient();
             mAvatarView.setImageDrawable(sDefaultContactImage);
         }
-        mAvatarView.setVisibility(View.VISIBLE);
+        mAvatarView.setVisibility(VISIBLE);
 
         SpannableStringBuilder from = new SpannableStringBuilder(recipient);
         if (conv.getMessageCount() > 1)

@@ -78,7 +78,7 @@
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@id/avatar"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_toLeftOf="@id/date"
+        android:layout_toLeftOf="@id/error"
         android:ellipsize="end" />
 
 </org.kontalk.ui.ConversationListItem>

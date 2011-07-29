@@ -197,9 +197,7 @@ public class MessagingNotification {
             }
             // one unread conversation - open ComposeMessage on that peer
             else {
-                ni = new Intent(mContext, ComposeMessage.class);
-                ni.setAction(ComposeMessage.ACTION_VIEW_CONVERSATION);
-                ni.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conversation.id);
+                ni = ComposeMessage.fromConversation(mContext, conversation.id);
             }
             return PendingIntent.getActivity(mContext, MESSAGES_NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
         }

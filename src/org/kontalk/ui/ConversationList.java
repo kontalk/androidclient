@@ -317,15 +317,8 @@ public class ConversationList extends ListActivity {
     }
 
     private void openConversation(Conversation conv) {
-        Intent intent = new Intent(this, ComposeMessage.class);
-        intent.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
-        intent.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
-        Contact contact = conv.getContact();
-        if (contact != null) {
-            intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
-            intent.putExtra(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
-        }
-        startActivity(intent);
+        Intent i = ComposeMessage.fromConversation(this, conv);
+        startActivity(i);
     }
 
     /**

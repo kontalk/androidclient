@@ -18,6 +18,7 @@ import org.kontalk.client.ReceiptMessage;
 import org.kontalk.client.StatusResponse;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
@@ -403,7 +404,7 @@ public class MessageCenterService extends Service
 
         Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
         ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
-        ni.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, userId);
+        ni.setData(Threads.getUri(userId));
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 

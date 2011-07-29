@@ -14,6 +14,8 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
@@ -68,15 +70,6 @@ public class ComposeMessage extends ListActivity {
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
-
-    /** Used on the launch intent to pass the thread ID. */
-    public static final String MESSAGE_THREAD_ID = "org.kontalk.message.threadId";
-    /** Used on the launch intent to pass the peer of the thread. */
-    public static final String MESSAGE_THREAD_PEER = "org.kontalk.message.peer";
-    /** Used on the launch intent to pass the name of the peer. */
-    public static final String MESSAGE_THREAD_USERNAME = "org.kontalk.message.user.name";
-    /** Used on the launch intent to pass the phone of the peer. */
-    public static final String MESSAGE_THREAD_USERPHONE = "org.kontalk.message.user.phone";
 
     /** View conversation intent action. Just provide the threadId with this. */
     public static final String ACTION_VIEW_CONVERSATION = "org.kontalk.conversation.VIEW";
@@ -542,15 +535,27 @@ public class ComposeMessage extends ListActivity {
         sendIntent = null;
     }
 
+    private void loadConversationMetadata(Uri uri) {
+        threadId = ContentUris.parseId(uri);
+        mConversation = Conversation.loadFromId(this, threadId);
+
+        userId = mConversation.getRecipient();
+        Contact contact = mConversation.getContact();
+        if (contact != null) {
+            userName = contact.getName();
+            userPhone = contact.getNumber();
+        }
+        else {
+            userName = userId;
+        }
+    }
+
     private void processIntent(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             Log.w(TAG, "restoring from saved instance");
-            userName = savedInstanceState.getString(MESSAGE_THREAD_USERNAME);
-            if (userName == null)
-                userName = userId;
-            userPhone = savedInstanceState.getString(MESSAGE_THREAD_USERPHONE);
-            userId = savedInstanceState.getString(MESSAGE_THREAD_PEER);
-            threadId = savedInstanceState.getLong(MESSAGE_THREAD_ID, -1);
+            Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
+            threadId = ContentUris.parseId(uri);
+            // TODO what else here??
             return;
         }
 
@@ -604,10 +609,22 @@ public class ComposeMessage extends ListActivity {
 
             // view conversation - just threadId provided
             else if (ACTION_VIEW_CONVERSATION.equals(action)) {
-                threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
-                mConversation = Conversation.loadFromId(this, threadId);
+                Uri uri = intent.getData();
+                loadConversationMetadata(uri);
+            }
 
-                userId = mConversation.getRecipient();
+            // view conversation - just userId provided
+            else if (ACTION_VIEW_USERID.equals(action)) {
+                Uri uri = intent.getData();
+                userId = uri.getPathSegments().get(1);
+                mConversation = Conversation.loadFromUserId(this, userId);
+
+                if (mConversation == null) {
+                    mConversation = Conversation.createNew(this);
+                    mConversation.setRecipient(userId);
+                }
+
+                threadId = mConversation.getThreadId();
                 Contact contact = mConversation.getContact();
                 if (contact != null) {
                     userName = contact.getName();
@@ -616,36 +633,6 @@ public class ComposeMessage extends ListActivity {
                 else {
                     userName = userId;
                 }
-            }
-
-            // view conversation - just userId provided
-            else if (ACTION_VIEW_USERID.equals(action)) {
-                userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
-                mConversation = Conversation.loadFromUserId(this, userId);
-
-                if (mConversation != null) {
-                    threadId = mConversation.getThreadId();
-
-                    Contact contact = mConversation.getContact();
-                    if (contact != null) {
-                        userName = contact.getName();
-                        userPhone = contact.getNumber();
-                    }
-                    else {
-                        userName = userId;
-                    }
-                }
-            }
-
-            // private launch intent
-            // FIXME passing information should be avoided in favour of self queries.
-            else {
-                userName = intent.getStringExtra(MESSAGE_THREAD_USERNAME);
-                if (userName == null)
-                    userName = userId;
-                userPhone = intent.getStringExtra(MESSAGE_THREAD_USERPHONE);
-                userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
-                threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
             }
         }
     }
@@ -711,8 +698,10 @@ public class ComposeMessage extends ListActivity {
             Conversation conv = Conversation.loadFromUserId(context, userId);
             // not found - create new
             if (conv == null) {
-                conv = Conversation.createNew(context);
-                conv.setRecipient(userId);
+                Intent ni = new Intent(context, ComposeMessage.class);
+                ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
+                ni.setData(Threads.getUri(userId));
+                return ni;
             }
 
             return fromConversation(context, conv);
@@ -728,15 +717,17 @@ public class ComposeMessage extends ListActivity {
      * @return
      */
     public static Intent fromConversation(Context context, Conversation conv) {
-        Intent i = new Intent(context, ComposeMessage.class);
-        i.putExtra(ComposeMessage.MESSAGE_THREAD_ID, conv.getThreadId());
-        i.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, conv.getRecipient());
-        Contact contact = conv.getContact();
-        if (contact != null) {
-            i.putExtra(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
-            i.putExtra(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
-        }
-        return i;
+        return new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
+                ContentUris.withAppendedId(Conversations.CONTENT_URI,
+                        conv.getThreadId()),
+                context, ComposeMessage.class);
+    }
+
+    public static Intent fromConversation(Context context, long threadId) {
+        return new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
+                ContentUris.withAppendedId(Conversations.CONTENT_URI,
+                        threadId),
+                context, ComposeMessage.class);
     }
 
     @Override
@@ -765,16 +756,8 @@ public class ComposeMessage extends ListActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle out) {
-        out.putLong(ComposeMessage.MESSAGE_THREAD_ID, threadId);
-        out.putString(ComposeMessage.MESSAGE_THREAD_PEER, userId);
-        if (mConversation != null) {
-            Contact contact = mConversation.getContact();
-            if (contact != null) {
-                out.putString(ComposeMessage.MESSAGE_THREAD_USERNAME, contact.getName());
-                out.putString(ComposeMessage.MESSAGE_THREAD_USERPHONE, contact.getNumber());
-            }
-        }
-
+        out.putParcelable(Uri.class.getName(),
+                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
         super.onSaveInstanceState(out);
     }
 

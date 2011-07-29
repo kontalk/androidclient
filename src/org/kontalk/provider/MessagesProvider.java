@@ -468,8 +468,15 @@ public class MessagesProvider extends ContentProvider {
             // check for empty threads
             deleteEmptyThreads(db);
             // update thread with latest info and status
-            if (threadId > 0)
-                updateThreadInfo(db, threadId);
+            if (threadId > 0) {
+                if (updateThreadInfo(db, threadId) < 0) {
+                    ContentResolver cr = getContext().getContentResolver();
+                    cr.notifyChange(
+                            ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), null);
+                    cr.notifyChange(
+                            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId), null);
+                }
+            }
             else
                 Log.e(TAG, "unable to update thread metadata (threadId not found)");
             // change notifications get triggered by previous method calls
