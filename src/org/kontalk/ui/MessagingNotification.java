@@ -91,7 +91,7 @@ public class MessagingNotification {
         }
         c.close();
 
-        Notification no = new Notification(R.drawable.icon, accumulator.getTicker(), accumulator.getTimestamp());
+        Notification no = new Notification(R.drawable.icon_stat, accumulator.getTicker(), accumulator.getTimestamp());
         if (isNew) {
             no.defaults |= Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS;
             no.flags |= Notification.FLAG_SHOW_LIGHTS;

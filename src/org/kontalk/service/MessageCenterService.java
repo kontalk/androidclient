@@ -407,7 +407,7 @@ public class MessageCenterService extends Service
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mCurrentNotification = new Notification(R.drawable.icon, "Sending message...", System.currentTimeMillis());
+        mCurrentNotification = new Notification(R.drawable.icon_stat, "Sending message...", System.currentTimeMillis());
         mCurrentNotification.contentIntent = pi;
         mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
 
