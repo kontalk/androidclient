@@ -111,9 +111,12 @@ public class PollingClient extends AbstractClient {
                         // Base64-decode the text
                         byte[] content = Base64.decode(text, Base64.DEFAULT);
 
-                        // check for encrypted message
+                        // flag for left encrypted message
                         boolean encrypted = false;
+                        // flag for originally encrypted message
+                        boolean origEncrypted = false;
                         if (mime != null && mime.startsWith(AbstractMessage.ENC_MIME_PREFIX)) {
+                            origEncrypted = true;
                             Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyNumber);
                             try {
                                 content = coder.decrypt(content);
@@ -155,6 +158,8 @@ public class PollingClient extends AbstractClient {
                             // remember encryption! :)
                             if (encrypted)
                                 msg.setEncrypted();
+                            if (origEncrypted)
+                                msg.setWasEncrypted(true);
 
                             // set the fetch url (if any)
                             Log.d(TAG, "using fetch url: " + fetchUrl);

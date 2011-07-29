@@ -74,7 +74,8 @@ public class MessagesProvider extends ContentProvider {
             "status INTEGER," +
             "fetch_url TEXT," +
             "fetched INTEGER," +
-            "local_uri TEXT" +
+            "local_uri TEXT," +
+            "encrypt_key TEXT" +
             ");";
 
         /** This table will contain the latest message from each conversation. */
@@ -299,6 +300,7 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.FETCH_URL);
         values.remove(Messages.FETCHED);
         values.remove(Messages.LOCAL_URI);
+        values.remove(Messages.ENCRYPT_KEY);
 
         // check if message is encrypted
         String mime = (String) values.get(Messages.MIME);
@@ -725,6 +727,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
         messagesProjectionMap.put(Messages.FETCHED, Messages.FETCHED);
         messagesProjectionMap.put(Messages.LOCAL_URI, Messages.LOCAL_URI);
+        messagesProjectionMap.put(Messages.ENCRYPT_KEY, Messages.ENCRYPT_KEY);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);

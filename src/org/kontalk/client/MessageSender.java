@@ -25,24 +25,27 @@ public class MessageSender extends RequestJob {
     private final String mMime;
     private Uri mSourceDataUri;
     private ContentObserver mObserver;
+    private final String mEncryptKey;
 
     /** A {@link MessageSender} for raw byte contents. */
-    public MessageSender(String userId, byte[] content, String mime, Uri msgUri) {
+    public MessageSender(String userId, byte[] content, String mime, Uri msgUri, String encryptKey) {
         super("message", null, content);
 
         mPeer = userId;
         mUri = msgUri;
         mMime = mime;
+        mEncryptKey = encryptKey;
     }
 
     /** A {@link MessageSender} for a file {@link Uri}. */
-    public MessageSender(String userId, Uri fileUri, String mime, Uri msgUri) {
+    public MessageSender(String userId, Uri fileUri, String mime, Uri msgUri, String encryptKey) {
         super("message", null, null);
 
         mPeer = userId;
         mUri = msgUri;
         mMime = mime;
         mSourceDataUri = fileUri;
+        mEncryptKey = encryptKey;
     }
 
     public void observe(Context context, Handler handler) {
@@ -105,5 +108,9 @@ public class MessageSender extends RequestJob {
 
     public String getMime() {
         return mMime;
+    }
+
+    public String getEncryptKey() {
+        return mEncryptKey;
     }
 }

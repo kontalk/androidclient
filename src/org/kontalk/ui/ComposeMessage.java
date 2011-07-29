@@ -108,13 +108,13 @@ public class ComposeMessage extends ListActivity {
         public final MessageSender job;
         private MessageCenterService service;
 
-        public ComposerServiceConnection(String userId, byte[] text, String mime, Uri msgUri) {
-            job = new MessageSender(userId, text, mime, msgUri);
+        public ComposerServiceConnection(String userId, byte[] text, String mime, Uri msgUri, String encryptKey) {
+            job = new MessageSender(userId, text, mime, msgUri, encryptKey);
             //job.setListener(mMessageSenderListener);
         }
 
-        public ComposerServiceConnection(String userId, Uri fileUri, String mime, Uri msgUri) {
-            job = new MessageSender(userId, fileUri, mime, msgUri);
+        public ComposerServiceConnection(String userId, Uri fileUri, String mime, Uri msgUri, String encryptKey) {
+            job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
             //job.setListener(mMessageSenderListener);
         }
 
@@ -233,7 +233,8 @@ public class ComposeMessage extends ListActivity {
             }
 
             // send the message!
-            ComposerServiceConnection conn = new ComposerServiceConnection(userId, uri, mime, newMsg);
+            // FIXME do not encrypt images for now
+            ComposerServiceConnection conn = new ComposerServiceConnection(userId, uri, mime, newMsg, null);
             if (!bindService(
                     new Intent(getApplicationContext(), MessageCenterService.class),
                     conn, Context.BIND_AUTO_CREATE)) {
@@ -258,6 +259,14 @@ public class ComposeMessage extends ListActivity {
         String text = mTextEntry.getText().toString();
         if (!TextUtils.isEmpty(text)) {
             Log.w(TAG, "sending message...");
+            // get encryption key if needed
+            String key = null;
+            if (MessagingPreferences.getEncryptionEnabled(this)) {
+                key = MessagingPreferences.getDefaultPassphrase(this);
+                // no global passphrase defined -- use recipient phone number
+                if (key == null || key.length() == 0)
+                    key = Contact.numberByUserId(this, userId);
+            }
             // save to local storage
             ContentValues values = new ContentValues();
             // must supply a message ID...
@@ -269,6 +278,7 @@ public class ComposeMessage extends ListActivity {
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
             values.put(Messages.STATUS, Messages.STATUS_SENDING);
+            values.put(Messages.ENCRYPT_KEY, MessagingPreferences.getEncryptionEnabled(this));
             Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
             if (newMsg != null) {
                 // empty text
@@ -293,7 +303,7 @@ public class ComposeMessage extends ListActivity {
                 imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
 
                 // send the message!
-                ComposerServiceConnection conn = new ComposerServiceConnection(userId, text.getBytes(), PlainTextMessage.MIME_TYPE, newMsg);
+                ComposerServiceConnection conn = new ComposerServiceConnection(userId, text.getBytes(), PlainTextMessage.MIME_TYPE, newMsg, key);
                 if (!bindService(
                         new Intent(getApplicationContext(), MessageCenterService.class),
                         conn, Context.BIND_AUTO_CREATE)) {

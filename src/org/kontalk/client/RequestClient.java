@@ -14,7 +14,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.kontalk.crypto.Coder;
-import org.kontalk.data.Contact;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
 import org.w3c.dom.Document;
@@ -38,31 +37,24 @@ public class RequestClient extends AbstractClient {
         super(context, server, token);
     }
 
-    private Coder getEncryptCoder(String userId) {
-        Coder coder = null;
-        if (MessagingPreferences.getEncryptionEnabled(mContext)) {
-            String number = Contact.numberByUserId(mContext, userId);
-            if (number != null)
-                coder = MessagingPreferences.getEncryptCoder(mContext, number);
-        }
-
-        return coder;
-    }
-
     public List<StatusResponse> message(final String[] group, final String mime,
                 final byte[] content, final MessageSender job, final RequestListener listener)
             throws IOException {
 
         try {
-            byte[] toMessage;
-            String toMime;
+            byte[] toMessage = null;
+            String toMime = null;
+            Coder coder = null;
             // check if we have to encrypt the message
-            Coder coder = getEncryptCoder(job.getUserId());
-            if (coder != null) {
-                toMessage = coder.encrypt(content);
-                toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
+            if (job.getEncryptKey() != null) {
+                coder = MessagingPreferences.getEncryptCoder(job.getEncryptKey());
+                if (coder != null) {
+                    toMessage = coder.encrypt(content);
+                    toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
+                }
             }
-            else {
+
+            if (coder == null) {
                 toMessage = content;
                 toMime = mime;
             }
@@ -89,17 +81,21 @@ public class RequestClient extends AbstractClient {
             long length = stat.getLength();
             InputStream in = context.getContentResolver().openInputStream(uri);
 
-            InputStream toMessage;
-            String toMime;
-            long toLength;
+            InputStream toMessage = null;
+            String toMime = null;
+            long toLength = 0;
+            Coder coder = null;
             // check if we have to encrypt the message
-            Coder coder = getEncryptCoder(job.getUserId());
-            if (coder != null) {
-                toMessage = coder.wrapInputStream(in);
-                toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
-                toLength = Coder.getEncryptedLength(length);
+            if (job.getEncryptKey() != null) {
+                coder = MessagingPreferences.getEncryptCoder(job.getEncryptKey());
+                if (coder != null) {
+                    toMessage = coder.wrapInputStream(in);
+                    toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
+                    toLength = Coder.getEncryptedLength(length);
+                }
             }
-            else {
+
+            if (coder == null) {
                 toMessage = in;
                 toMime = mime;
                 toLength = length;

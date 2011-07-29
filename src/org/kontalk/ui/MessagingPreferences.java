@@ -91,14 +91,18 @@ public class MessagingPreferences extends PreferenceActivity {
         return prefs.getString(key, defaultValue);
     }
 
+    public static String getDefaultPassphrase(Context context) {
+        return getString(context, "pref_passphrase", null);
+    }
+
     /** Returns a {@link Coder} instance for encrypting contents. */
-    public static Coder getEncryptCoder(Context context, String passphrase) {
-        String key = getString(context, "pref_passphrase", null);
+    public static Coder getEncryptCoder(String passphrase) {
+        /*String key = getString(context, "pref_passphrase", null);
         if (key == null || key.length() == 0)
             key = passphrase;
         if (key != null)
-            return new Coder(new PassKey(key));
-        return null;
+        */
+        return new Coder(new PassKey(passphrase));
     }
 
     /** Returns a {@link Coder} instance for decrypting contents. */

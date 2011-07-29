@@ -207,7 +207,8 @@ public class MessageCenterService extends Service
                     Messages.PEER,
                     Messages.CONTENT,
                     Messages.MIME,
-                    Messages.LOCAL_URI
+                    Messages.LOCAL_URI,
+                    Messages.ENCRYPT_KEY
                 },
                 Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
@@ -220,6 +221,7 @@ public class MessageCenterService extends Service
             String text = c.getString(2);
             String mime = c.getString(3);
             String _fileUri = c.getString(4);
+            String key = c.getString(5);
             Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
 
             MessageSender m;
@@ -227,11 +229,12 @@ public class MessageCenterService extends Service
             // check if the message contains some large file to be sent
             if (_fileUri != null) {
                 Uri fileUri = Uri.parse(_fileUri);
-                m = new MessageSender(userId, fileUri, mime, uri);
+                // FIXME do not encrypt binary messages for now
+                m = new MessageSender(userId, fileUri, mime, uri, null);
             }
             // we have a simple boring plain text message :(
             else {
-                m = new MessageSender(userId, text.getBytes(), mime, uri);
+                m = new MessageSender(userId, text.getBytes(), mime, uri, key);
             }
 
             m.setListener(mMessageRequestListener);
@@ -327,6 +330,7 @@ public class MessageCenterService extends Service
                         values.put(Messages.PEER, msg.getSender(true));
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);
+                        values.put(Messages.ENCRYPT_KEY, msg.wasEncrypted());
                         values.put(Messages.FETCH_URL, msg.getFetchUrl());
                         Uri localUri = msg.getLocalUri();
                         if (localUri != null)

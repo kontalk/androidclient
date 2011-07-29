@@ -51,6 +51,7 @@ public final class MyMessages {
         public static final String FETCH_URL = "fetch_url";
         public static final String FETCHED = "fetched";
         public static final String LOCAL_URI = "local_uri";
+        public static final String ENCRYPT_KEY = "encrypt_key";
 
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = "timestamp";

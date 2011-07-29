@@ -44,7 +44,8 @@ public abstract class AbstractMessage<T> {
         Messages.STATUS,
         Messages.FETCH_URL,
         Messages.FETCHED,
-        Messages.LOCAL_URI
+        Messages.LOCAL_URI,
+        Messages.ENCRYPT_KEY
     };
 
     public static final String MSG_ID = "org.kontalk.message.id";
@@ -67,6 +68,8 @@ public abstract class AbstractMessage<T> {
     protected int status;
     protected boolean fetched;
     protected MessageID messageId;
+    /** Of course this is used only for outgoing messages. */
+    protected String encryptKey;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -99,6 +102,10 @@ public abstract class AbstractMessage<T> {
         this.recipients = new ArrayList<String>();
         // will be updated if necessary
         this.timestamp = System.currentTimeMillis();
+
+        if (this.mime != null && this.mime.startsWith(ENC_MIME_PREFIX))
+            // with this we avoid of making it null
+            encryptKey = "";
     }
 
     public String getId() {
@@ -236,9 +243,21 @@ public abstract class AbstractMessage<T> {
         return (mime != null && mime.startsWith(ENC_MIME_PREFIX));
     }
 
+    /** Returns true if the message is or was sent encrypted. */
+    public boolean wasEncrypted() {
+        return (encryptKey != null);
+    }
+
     public void setEncrypted() {
-        if (mime != null && !mime.startsWith(ENC_MIME_PREFIX))
+        if (mime != null && !mime.startsWith(ENC_MIME_PREFIX)) {
             mime = ENC_MIME_PREFIX + mime;
+            encryptKey = "";
+        }
+    }
+
+    /** Reserved for the {@link PollingClient}. */
+    protected void setWasEncrypted(boolean encrypted) {
+        this.encryptKey = encrypted ? "" : null;
     }
 
     /** Decrypts the message. */
@@ -255,6 +274,7 @@ public abstract class AbstractMessage<T> {
         recipients = new ArrayList<String>();
         fetchUrl = c.getString(c.getColumnIndex(Messages.FETCH_URL));
         fetched = (c.getShort(c.getColumnIndex(Messages.FETCHED)) != 0);
+        encryptKey = c.getString(c.getColumnIndex(Messages.ENCRYPT_KEY));
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
         int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));
