@@ -18,7 +18,7 @@ import org.kontalk.client.ReceiptMessage;
 import org.kontalk.client.StatusResponse;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.ui.ConversationList;
+import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
@@ -385,7 +385,7 @@ public class MessageCenterService extends Service
         // not a plain text message - use progress notification
         if (job.getSourceUri() != null) {
             try {
-                startForeground(job.getContentLength(this));
+                startForeground(job.getUserId(), job.getContentLength(this));
             }
             catch (IOException e) {
                 Log.e(TAG, "error reading message data to send", e);
@@ -397,11 +397,13 @@ public class MessageCenterService extends Service
         pushRequest(job);
     }
 
-    public void startForeground(long totalBytes) {
+    public void startForeground(String userId, long totalBytes) {
         Log.w(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
 
-        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
+        ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
+        ni.putExtra(ComposeMessage.MESSAGE_THREAD_PEER, userId);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 

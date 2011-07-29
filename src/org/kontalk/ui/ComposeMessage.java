@@ -17,6 +17,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
+import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;
@@ -36,7 +37,6 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.ContactsContract;
 import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -79,7 +79,9 @@ public class ComposeMessage extends ListActivity {
     public static final String MESSAGE_THREAD_USERPHONE = "org.kontalk.message.user.phone";
 
     /** View conversation intent action. Just provide the threadId with this. */
-    public static final String ACTION_VIEW_CONVERSATION = "org.kontalk.thread.VIEW";
+    public static final String ACTION_VIEW_CONVERSATION = "org.kontalk.conversation.VIEW";
+    /** View conversation with userId intent action. Just provide userId with this. */
+    public static final String ACTION_VIEW_USERID = "org.kontalk.conversation.VIEW_USERID";
 
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
@@ -523,23 +525,21 @@ public class ComposeMessage extends ListActivity {
     }
 
     private void processSendIntent() {
-        if (sendIntent != null) {
-            final String mime = sendIntent.getType();
-            // send text message - just fill the text entry
-            if (PlainTextMessage.supportsMimeType(mime)) {
-                mTextEntry.setText(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
-            }
-
-            else if (ImageMessage.supportsMimeType(mime)) {
-                // send image immediately
-                sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
-            }
-            else {
-                Log.e(TAG, "mime " + mime + " not supported");
-            }
-
-            sendIntent = null;
+        final String mime = sendIntent.getType();
+        // send text message - just fill the text entry
+        if (PlainTextMessage.supportsMimeType(mime)) {
+            mTextEntry.setText(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
         }
+
+        else if (ImageMessage.supportsMimeType(mime)) {
+            // send image immediately
+            sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
+        }
+        else {
+            Log.e(TAG, "mime " + mime + " not supported");
+        }
+
+        sendIntent = null;
     }
 
     private void processIntent(Bundle savedInstanceState) {
@@ -565,8 +565,8 @@ public class ComposeMessage extends ListActivity {
                 ContentResolver cres = getContentResolver();
 
                 Cursor c = cres.query(uri, new String[] {
-                        ContactsContract.Data.DATA1,
-                        ContactsContract.Data.DATA3
+                        SyncAdapter.DATA_COLUMN_DISPLAY_NAME,
+                        SyncAdapter.DATA_COLUMN_PHONE
                         }, null, null, null);
                 if (c.moveToFirst()) {
                     userName = c.getString(0);
@@ -603,7 +603,7 @@ public class ComposeMessage extends ListActivity {
             }
 
             // view conversation - just threadId provided
-            else if (ACTION_VIEW_CONVERSATION.equals((action))) {
+            else if (ACTION_VIEW_CONVERSATION.equals(action)) {
                 threadId = intent.getLongExtra(MESSAGE_THREAD_ID, -1);
                 mConversation = Conversation.loadFromId(this, threadId);
 
@@ -618,7 +618,27 @@ public class ComposeMessage extends ListActivity {
                 }
             }
 
+            // view conversation - just userId provided
+            else if (ACTION_VIEW_USERID.equals(action)) {
+                userId = intent.getStringExtra(MESSAGE_THREAD_PEER);
+                mConversation = Conversation.loadFromUserId(this, userId);
+
+                if (mConversation != null) {
+                    threadId = mConversation.getThreadId();
+
+                    Contact contact = mConversation.getContact();
+                    if (contact != null) {
+                        userName = contact.getName();
+                        userPhone = contact.getNumber();
+                    }
+                    else {
+                        userName = userId;
+                    }
+                }
+            }
+
             // private launch intent
+            // FIXME passing information should be avoided in favour of self queries.
             else {
                 userName = intent.getStringExtra(MESSAGE_THREAD_USERNAME);
                 if (userName == null)
@@ -641,15 +661,15 @@ public class ComposeMessage extends ListActivity {
         else {
             mConversation = Conversation.createNew(this);
             mConversation.setRecipient(userId);
+
+            if (sendIntent != null)
+                processSendIntent();
         }
 
         String title = userName;
         if (userPhone != null)
             title += " <" + userPhone + ">";
         setTitle(title);
-
-        // did we have a SEND action message to be sent?
-        processSendIntent();
     }
 
     @Override
@@ -781,7 +801,7 @@ public class ComposeMessage extends ListActivity {
      */
     private final class MessageListQueryHandler extends AsyncQueryHandler {
         public MessageListQueryHandler() {
-            super(getContentResolver());
+            super(getApplicationContext().getContentResolver());
         }
 
         @Override
@@ -820,6 +840,10 @@ public class ComposeMessage extends ListActivity {
                 default:
                     Log.e(TAG, "onQueryComplete called with unknown token " + token);
             }
+
+            // did we have a SEND action message to be sent?
+            if (mListAdapter.getCursor() != null && mConversation != null && sendIntent != null)
+                processSendIntent();
         }
     }
 }

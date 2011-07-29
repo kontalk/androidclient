@@ -424,6 +424,21 @@ public class MessagesProvider extends ContentProvider {
                 table = TABLE_THREADS;
                 where = "peer = ?";
                 args = new String[] { uri.getLastPathSegment() };
+                break;
+
+            // special case: conversations
+            case CONVERSATIONS_ID: {
+                int rows = deleteConversation(uri);
+                if (rows > 0) {
+                    ContentResolver cr = getContext().getContentResolver();
+                    // first of all, notify conversation
+                    cr.notifyChange(uri, null);
+                    // then notify thread itself
+                    long threadId = ContentUris.parseId(uri);
+                    cr.notifyChange(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), null);
+                }
+                return rows;
+            }
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
@@ -461,6 +476,45 @@ public class MessagesProvider extends ContentProvider {
         }
 
         return rows;
+    }
+
+    private int deleteConversation(Uri uri) {
+        long threadId = ContentUris.parseId(uri);
+        if (threadId > 0) {
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            try {
+                db.beginTransaction();
+                db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
+
+                // query all messages first because we need to notify changes
+                Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
+                        Messages.THREAD_ID + " = " + threadId,
+                        null, null, null, null);
+                long[] messageList = new long[c.getCount()];
+                int i = 0;
+                while (c.moveToNext())
+                    messageList[i++] = c.getLong(0);
+                c.close();
+
+                int num = db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
+                db.setTransactionSuccessful();
+
+                // notify change for every message :(
+                ContentResolver cr = getContext().getContentResolver();
+                for (i = 0; i < messageList.length; i++) {
+                    cr.notifyChange(ContentUris
+                            .withAppendedId(Messages.CONTENT_URI, messageList[i]),
+                            null);
+                }
+
+                return num;
+            }
+            finally {
+                db.endTransaction();
+            }
+        }
+
+        return -1;
     }
 
     /** Updates metadata of a given thread. */
@@ -556,22 +610,7 @@ public class MessagesProvider extends ContentProvider {
 
     public static boolean deleteThread(Context ctx, long id) {
         ContentResolver c = ctx.getContentResolver();
-        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>(2);
-        ContentProviderOperation.Builder b;
-        b = ContentProviderOperation.newDelete(Messages.CONTENT_URI);
-        b.withSelection(Messages.THREAD_ID + " = ?", new String[] { String.valueOf(id) });
-        ops.add(b.build());
-        b = ContentProviderOperation.newDelete(ContentUris.withAppendedId(Threads.CONTENT_URI, id));
-        ops.add(b.build());
-
-        try {
-            c.applyBatch(AUTHORITY, ops);
-            return true;
-        }
-        catch (Exception e) {
-            Log.e(TAG, "error during thread delete!", e);
-            return false;
-        }
+        return (c.delete(ContentUris.withAppendedId(Conversations.CONTENT_URI, id), null, null) > 0);
     }
 
     /**
