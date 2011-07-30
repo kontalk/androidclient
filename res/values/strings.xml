@@ -62,4 +62,6 @@
     <string name="pref_title_passphrase">Password will also be used for decryption when necessary.</string>
     <string name="pref_mark_all_confirmed">Mark all messages as confirmed</string>
     <string name="pref_title_mark_all_confirmed">Marks all incoming messages as confirmed</string>
+    <string name="pref_show_last_seen">Show user last seen</string>
+    <string name="pref_title_show_last_seen">Show last time the user has been seen</string>
 </resources>

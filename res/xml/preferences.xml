@@ -22,6 +22,7 @@
             android:title="@string/pref_passphrase"
             android:dialogTitle="@string/pref_passphrase"
             android:inputType="textPassword" android:summary="@string/pref_title_passphrase" android:dialogMessage="@string/pref_prompt_passphrase"/>
+        <CheckBoxPreference android:key="pref_show_last_seen" android:summary="@string/pref_title_show_last_seen" android:title="@string/pref_show_last_seen"></CheckBoxPreference>
     </PreferenceCategory>
     <PreferenceCategory android:key="pref_maintainance" android:title="@string/pref_maintainance">
         <Preference

@@ -6,8 +6,6 @@
     <!-- Widget background -->
     <drawable name="light_blue_background">#ffecfbff</drawable>
     <drawable name="white_background">#ffffffff</drawable>
-    <drawable name="gold_background">#bffdd017</drawable>
-    <drawable name="light_gold_background">#6afdd017</drawable>
 
     <!-- text color -->
     <drawable name="text_color">#ffffffff</drawable>
@@ -21,5 +19,8 @@
     <!-- the background color used for unread conversation -->
     <color name="unread_bgcolor">#ffffffff</color>
     <color name="read_bgcolor">#ffeeeeee</color>
+    
+    <!-- other colors -->
+    <color name="last_seen_banner">#fffff1a8</color>
 </resources>
 

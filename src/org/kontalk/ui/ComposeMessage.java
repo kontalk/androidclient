@@ -54,6 +54,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
@@ -78,6 +79,7 @@ public class ComposeMessage extends ListActivity {
 
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
+    private TextView mLastSeenBanner;
     private EditText mTextEntry;
     private Button mSendButton;
 
@@ -185,6 +187,13 @@ public class ComposeMessage extends ListActivity {
                 sendTextMessage();
             }
         });
+
+        // TEST last seen banner
+        /*
+        mLastSeenBanner = (TextView) findViewById(R.id.last_seen_text);
+        mLastSeenBanner.setText("**TEST** Last seen at 10:59 **TEST**");
+        mLastSeenBanner.setVisibility(View.VISIBLE);
+        */
 
         processIntent(savedInstanceState);
     }
