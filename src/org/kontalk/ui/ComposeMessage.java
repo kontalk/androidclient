@@ -278,7 +278,7 @@ public class ComposeMessage extends ListActivity {
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
             values.put(Messages.STATUS, Messages.STATUS_SENDING);
-            values.put(Messages.ENCRYPT_KEY, MessagingPreferences.getEncryptionEnabled(this));
+            values.put(Messages.ENCRYPT_KEY, key);
             Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
             if (newMsg != null) {
                 // empty text

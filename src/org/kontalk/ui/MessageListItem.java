@@ -104,11 +104,9 @@ public class MessageListItem extends RelativeLayout {
 
         if (mMessage.getSender() != null) {
             setGravity(Gravity.LEFT);
-            setBackgroundResource(mMessage.wasEncrypted() ?
-                    R.drawable.gold_background :
-                    R.drawable.light_blue_background);
+            setBackgroundResource(R.drawable.light_blue_background);
             mBalloonView.setBackgroundResource(
-                    (mMessage.isEncrypted()) ?
+                    (mMessage.wasEncrypted()) ?
                     R.drawable.encrypted_incoming :
                     R.drawable.balloon_incoming);
 
@@ -117,10 +115,11 @@ public class MessageListItem extends RelativeLayout {
         }
         else {
             setGravity(Gravity.RIGHT);
-            setBackgroundResource(mMessage.wasEncrypted() ?
-                    R.drawable.light_gold_background :
-                    R.drawable.white_background);
-            mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
+            setBackgroundResource(R.drawable.white_background);
+            mBalloonView.setBackgroundResource(
+                    mMessage.wasEncrypted() ?
+                    R.drawable.encrypted_outgoing :
+                    R.drawable.balloon_outgoing);
 
             mDateViewIncoming.setVisibility(GONE);
             mDateViewOutgoing.setVisibility(VISIBLE);
