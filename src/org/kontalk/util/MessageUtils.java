@@ -87,7 +87,7 @@ public final class MessageUtils {
         Resources res = context.getResources();
         int direction = msg.getDirection();
 
-        // Message Type: Text message.
+        // Message type
         details.append(res.getString(R.string.message_type_label));
 
         int resId;
@@ -98,7 +98,7 @@ public final class MessageUtils {
 
         details.append(res.getString(resId));
 
-        // Address: ***
+        // To/From
         details.append('\n');
         if (direction == Messages.DIRECTION_OUT)
             details.append(res.getString(R.string.to_address_label));
@@ -106,6 +106,12 @@ public final class MessageUtils {
             details.append(res.getString(R.string.from_label));
 
         details.append(decodedPeer);
+
+        // Encrypted
+        details.append('\n');
+        details.append(res.getString(R.string.encrypted_label));
+        resId = (msg.wasEncrypted()) ? R.string.yes : R.string.no;
+        details.append(res.getString(resId));
 
         // Date
         int status = msg.getStatus();
@@ -157,15 +163,7 @@ public final class MessageUtils {
 
         }
 
-        // Error code: ***
-        /*
-        int errorCode = cursor.getInt(MessageListAdapter.COLUMN_SMS_ERROR_CODE);
-        if (errorCode != 0) {
-            details.append('\n')
-                .append(res.getString(R.string.error_code_label))
-                .append(errorCode);
-        }
-        */
+        // TODO Error code/reason
 
         return details.toString();
     }
