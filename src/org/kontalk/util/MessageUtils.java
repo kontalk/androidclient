@@ -85,6 +85,7 @@ public final class MessageUtils {
     public static CharSequence getMessageDetails(Context context, AbstractMessage<?> msg, String decodedPeer) {
         StringBuilder details = new StringBuilder();
         Resources res = context.getResources();
+        int direction = msg.getDirection();
 
         // Message Type: Text message.
         details.append(res.getString(R.string.message_type_label));
@@ -99,39 +100,62 @@ public final class MessageUtils {
 
         // Address: ***
         details.append('\n');
-        if (msg.getDirection() == Messages.DIRECTION_OUT)
+        if (direction == Messages.DIRECTION_OUT)
             details.append(res.getString(R.string.to_address_label));
         else
             details.append(res.getString(R.string.from_label));
 
         details.append(decodedPeer);
 
-        // Date: ***
-        details.append('\n');
+        // Date
         int status = msg.getStatus();
-        switch (status) {
-            case Messages.STATUS_INCOMING:
-            case Messages.STATUS_RECEIVED:
-            case Messages.STATUS_CONFIRMED:
-                resId = R.string.received_label;
-                break;
-            case Messages.STATUS_ERROR:
-                resId = R.string.error_label;
-                break;
-            case Messages.STATUS_NOTACCEPTED:
-                resId = R.string.refused_label;
-                break;
-            case Messages.STATUS_SENT:
-                resId = R.string.sent_label;
-                break;
-            default: // including Messages.STATUS_SENDING
-                resId = -1;
+
+        // incoming message
+        if (direction == Messages.DIRECTION_IN) {
+            details.append('\n');
+            appendTimestamp(context, details,
+                    res.getString(R.string.received_label), msg.getTimestamp(), true);
+            details.append('\n');
+            appendTimestamp(context, details,
+                    res.getString(R.string.sent_label), msg.getServerTimestamp().getTime(), true);
         }
+        // outgoing messages
+        else {
+            long timestamp = 0;
+            switch (status) {
+                case Messages.STATUS_NOTACCEPTED:
+                    resId = R.string.refused_label;
+                    timestamp = msg.getStatusChanged();
+                    break;
+                case Messages.STATUS_ERROR:
+                    resId = R.string.error_label;
+                    timestamp = msg.getStatusChanged();
+                    break;
+                case Messages.STATUS_SENT:
+                case Messages.STATUS_SENDING:
+                case Messages.STATUS_RECEIVED:
+                    resId = R.string.sent_label;
+                    timestamp = msg.getTimestamp();
+                    break;
+                default:
+                    resId = -1;
+                    break;
+            }
 
-        details.append(res.getString(resId));
+            if (resId > 0) {
+                details.append('\n');
+                appendTimestamp(context, details,
+                        res.getString(resId), timestamp, true);
+            }
 
-        long date = msg.getTimestamp();
-        details.append(MessageUtils.formatTimeStampString(context, date, true));
+            // print out received if any
+            if (status == Messages.STATUS_RECEIVED) {
+                details.append('\n');
+                appendTimestamp(context, details,
+                        res.getString(R.string.received_label), msg.getStatusChanged(), true);
+            }
+
+        }
 
         // Error code: ***
         /*
@@ -146,5 +170,10 @@ public final class MessageUtils {
         return details.toString();
     }
 
+    private static void appendTimestamp(Context context, StringBuilder details,
+            String label, long time, boolean fullFormat) {
+        details.append(label);
+        details.append(MessageUtils.formatTimeStampString(context, time, fullFormat));
+    }
 
 }
