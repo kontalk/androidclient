@@ -561,15 +561,17 @@ public class ComposeMessage extends ListActivity {
     }
 
     private void processIntent(Bundle savedInstanceState) {
+        Intent intent = null;
         if (savedInstanceState != null) {
             Log.w(TAG, "restoring from saved instance");
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
-            threadId = ContentUris.parseId(uri);
-            // TODO what else here??
-            return;
+            //threadId = ContentUris.parseId(uri);
+            intent = new Intent(ACTION_VIEW_CONVERSATION, uri);
+        }
+        else {
+            intent = getIntent();
         }
 
-        Intent intent = getIntent();
         if (intent != null) {
             final String action = intent.getAction();
 

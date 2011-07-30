@@ -330,7 +330,7 @@ public class MessageCenterService extends Service
                         values.put(Messages.PEER, msg.getSender(true));
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);
-                        values.put(Messages.ENCRYPT_KEY, msg.wasEncrypted());
+                        values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
                         values.put(Messages.FETCH_URL, msg.getFetchUrl());
                         Uri localUri = msg.getLocalUri();
                         if (localUri != null)
