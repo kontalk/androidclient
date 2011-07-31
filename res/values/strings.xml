@@ -2,6 +2,9 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Kontalk</string>
     <string name="service_name">Message Center</string>
+    <string name="authenticator_name">Authentication Service</string>
+    <string name="sync_service_name">Sync Contacts</string>
+    <string name="download_service">Download Service</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="new_message">New message</string>

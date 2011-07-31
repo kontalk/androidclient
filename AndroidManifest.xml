@@ -68,7 +68,7 @@
         <activity android:name=".ui.NumberValidation"
             android:theme="@android:style/Theme.Light"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
-            android:exported="true" android:process=":auth">
+            android:exported="true" android:process=":auth" android:label="@string/authenticator_name">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
@@ -81,7 +81,7 @@
             </intent-filter>
         </receiver>
         <service android:name=".sync.ContactsSyncAdapterService"
-            android:exported="true" android:process=":contacts">
+            android:exported="true" android:process=":contacts" android:label="@string/sync_service_name">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
@@ -96,6 +96,6 @@
             </intent-filter>
         </receiver>
         <activity android:name=".ui.ContactsListActivity" android:label="@string/contacts_list_title"></activity>
-        <service android:name=".service.DownloadService"></service>
+        <service android:name=".service.DownloadService" android:label="@string/download_service"></service>
     </application>
 </manifest>
