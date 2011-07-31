@@ -93,7 +93,9 @@ public class MessagingNotification {
 
         Notification no = new Notification(R.drawable.icon_stat, accumulator.getTicker(), accumulator.getTimestamp());
         if (isNew) {
-            no.defaults |= Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS;
+            no.defaults |= Notification.DEFAULT_VIBRATE |
+                           Notification.DEFAULT_LIGHTS |
+                           Notification.DEFAULT_SOUND;
             no.flags |= Notification.FLAG_SHOW_LIGHTS;
         }
 
