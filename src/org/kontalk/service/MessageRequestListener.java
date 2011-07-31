@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.StatusResponse;
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 
 import android.content.ContentResolver;
@@ -45,6 +46,9 @@ public class MessageRequestListener implements RequestListener {
                 if (extra != null) {
                     String msgId = (String) extra.get("i");
                     if (!TextUtils.isEmpty(msgId)) {
+                        // FIXME this should use changeMessageStatus, but it
+                        // won't work because of the newly messageId included
+                        // in values, which is not handled by changeMessageStatus
                         ContentValues values = new ContentValues(2);
                         values.put(Messages.MESSAGE_ID, msgId);
                         values.put(Messages.STATUS, Messages.STATUS_SENT);
@@ -57,10 +61,8 @@ public class MessageRequestListener implements RequestListener {
 
             // message refused!
             else {
-                ContentValues values = new ContentValues(2);
-                values.put(Messages.STATUS, Messages.STATUS_NOTACCEPTED);
-                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                mContentResolver.update(uri, values, null, null);
+                MessagesProvider.changeMessageStatus(mContext, uri,
+                        Messages.STATUS_NOTACCEPTED, -1, System.currentTimeMillis());
                 Log.w(TAG, "message not accepted by server and updated (" + st.code + ")");
             }
         }
@@ -72,12 +74,11 @@ public class MessageRequestListener implements RequestListener {
 
     @Override
     public boolean error(RequestJob job, Throwable e) {
+        Log.e(TAG, "error sending message", e);
         MessageSender job2 = (MessageSender) job;
         Uri uri = job2.getMessageUri();
-        ContentValues values = new ContentValues(1);
-        values.put(Messages.STATUS, Messages.STATUS_ERROR);
-        mContentResolver.update(uri, values, null, null);
-        Log.e(TAG, "error sending message", e);
+        MessagesProvider.changeMessageStatus(mContext, uri,
+                Messages.STATUS_ERROR, -1, System.currentTimeMillis());
         return false;
     }
 
