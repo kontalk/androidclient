@@ -3,6 +3,7 @@ package org.kontalk.client;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,10 +21,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xmlpull.v1.XmlSerializer;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
+import android.util.Xml;
 
 
 /**
@@ -131,6 +134,39 @@ public class RequestClient extends AbstractClient {
         finally {
             currentRequest = null;
         }
+    }
+
+    public List<StatusResponse> lookup(final String[] userIds) throws IOException {
+        String xmlData = buildLookupXMLData(userIds);
+        return request("lookup", null, xmlData.getBytes());
+    }
+
+    private String buildLookupXMLData(String[] lookupNumbers) throws IOException {
+        String xmlContent = null;
+        // build xml in a proper manner
+        XmlSerializer xml = Xml.newSerializer();
+        StringWriter xmlString = new StringWriter();
+
+        xml.setOutput(xmlString);
+        xml.startDocument("UTF-8", Boolean.TRUE);
+        xml
+            .startTag(null, "body");
+
+        for (String data : lookupNumbers) {
+            xml
+                .startTag(null, "u")
+                .text(data)
+                .endTag(null, "u");
+        }
+
+        xml
+            .endTag(null, "body")
+            .endDocument();
+
+        xmlContent = xmlString.toString();
+        xmlString.close();
+
+        return xmlContent;
     }
 
     @SuppressWarnings("unchecked")

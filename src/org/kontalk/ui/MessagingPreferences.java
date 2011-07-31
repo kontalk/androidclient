@@ -112,4 +112,9 @@ public class MessagingPreferences extends PreferenceActivity {
             key = myNumber;
         return new Coder(new PassKey(key));
     }
+
+    public static boolean getLastSeenEnabled(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("pref_show_last_seen", false);
+    }
 }
