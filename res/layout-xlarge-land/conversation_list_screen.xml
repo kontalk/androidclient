@@ -2,7 +2,8 @@
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
-  android:layout_height="match_parent" android:orientation="horizontal">
-    <ListView android:id="@+id/listView1" android:layout_height="wrap_content" android:layout_width="300dip" android:layout_weight="0.06"></ListView>
+  android:layout_height="match_parent" android:orientation="horizontal" android:weightSum="1">
+  
+  <include layout="@layout/conversation_list_screen"/>
     
 </LinearLayout>
