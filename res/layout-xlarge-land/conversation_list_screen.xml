@@ -4,6 +4,6 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent" android:orientation="horizontal" android:weightSum="1">
   
-  <include layout="@layout/conversation_list_screen"/>
+  <include layout="@layout/compose_message"/>
     
 </LinearLayout>
