@@ -54,6 +54,7 @@
                     android:imeOptions="actionSend|flagNoEnterAction"
                     android:background="@android:drawable/edit_text"
                     android:maxLength="2000"
+                    android:textAppearance="?android:attr/textAppearanceMediumInverse"
                 />
 
                 <LinearLayout

@@ -31,7 +31,7 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:background="@drawable/date_balloon"/>
 
-        <LinearLayout android:id="@+id/balloon_view"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -44,13 +44,13 @@
                 android:paddingBottom="4dip"
                 android:adjustViewBounds="false"
                 android:visibility="gone" />
-
+			<!-- TODO Width Da correggere in base alle modifiche Fragment -->
             <TextView android:id="@+id/text_view"
                 android:paddingTop="4dip"
                 android:paddingBottom="4dip"
                 android:paddingLeft="5dip"
                 android:paddingRight="5dip"
-                android:maxWidth="200dip"
+                android:maxWidth="600dip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:linksClickable="false"

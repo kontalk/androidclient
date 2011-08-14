@@ -61,17 +61,23 @@ public class ConversationList extends ListActivity {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        if (android.os.Build.VERSION.SDK_INT < 11)
+        	setTheme(android.R.style.Theme_Light);
+        else
+        	setTheme(android.R.style.Theme_Holo_Light);
         setContentView(R.layout.conversation_list_screen);
 
         mQueryHandler = new ThreadListQueryHandler(getContentResolver());
 
-        ListView listView = getListView();
-        LayoutInflater inflater = LayoutInflater.from(this);
-        ConversationListItem headerView = (ConversationListItem)
-                inflater.inflate(R.layout.conversation_list_item, listView, false);
-        headerView.bind(getString(R.string.new_message),
-                getString(R.string.create_new_message));
-        listView.addHeaderView(headerView, null, true);
+        if (android.os.Build.VERSION.SDK_INT < 11) {
+	        ListView listView = getListView();
+	        LayoutInflater inflater = LayoutInflater.from(this);
+	        ConversationListItem headerView = (ConversationListItem)
+	                inflater.inflate(R.layout.conversation_list_item, listView, false);
+	        headerView.bind(getString(R.string.new_message),
+	                getString(R.string.create_new_message));
+	        listView.addHeaderView(headerView, null, true);
+        }
 
         mListAdapter = new ConversationListAdapter(this, null);
         mListAdapter.setOnContentChangedListener(mContentChangedListener);

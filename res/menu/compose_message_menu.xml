@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:icon="@drawable/ic_menu_call" android:id="@+id/call_contact" android:title="@string/call"/>
-    <item android:icon="@drawable/ic_menu_contact" android:title="@string/view_contact" android:id="@+id/view_contact"/>
-    <item android:icon="@android:drawable/ic_menu_delete" android:title="@string/delete_thread" android:id="@+id/delete_thread"></item>
+    <item android:icon="@drawable/ic_menu_contact" android:title="@string/view_contact" android:id="@+id/view_contact" android:showAsAction="ifRoom|withText"/>
+    <item android:icon="@android:drawable/ic_menu_delete" android:title="@string/delete_thread" android:id="@+id/delete_thread"/>
 </menu>
