@@ -341,7 +341,7 @@ public class ComposeMessage extends ListActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        boolean contactEnabled = ((mConversation != null) ? mConversation.getContact() != null : null);
+        boolean contactEnabled = (mConversation != null) ? mConversation.getContact() != null : false;
         boolean threadEnabled = (threadId > 0);
         MenuItem i;
         
