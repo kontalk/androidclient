@@ -3,6 +3,7 @@ package org.kontalk.ui;
 import org.kontalk.R;
 import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.ImageMessage;
+import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
 
@@ -36,7 +37,10 @@ public class MessageListItem extends RelativeLayout {
     private ImageView mStatusIcon;
     private TextView mDateViewIncoming;
     private TextView mDateViewOutgoing;
+    private TextView mDateView;
+    private TextView mNameView;
     private View mBalloonView;
+    private View mBackground;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -73,59 +77,89 @@ public class MessageListItem extends RelativeLayout {
         mBalloonView = findViewById(R.id.balloon_view);
         mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
         mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
-
+        mDateView = (TextView) findViewById(R.id.date_view);
+        mNameView = (TextView) findViewById(R.id.name_view);
+        mBackground = findViewById(R.id.msg_list_item_background);
+        
         if (isInEditMode()) {
-            mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuu!!");
-            /* INCOMING
-            setGravity(Gravity.LEFT);
-            setBackgroundResource(R.drawable.light_blue_background);
+            mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
+            /* INCOMING */
+            //mTextView.setBackgroundResource(R.drawable.light_blue_background);
+            if (mStatusIcon != null)
+            	mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
+            if (mBalloonView != null)
             mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
-            mDateViewIncoming.setVisibility(VISIBLE);
-            mDateViewOutgoing.setVisibility(GONE);
-            mDateViewIncoming.setText("10:46");
-            */
-            /* OUTGOING */
+            if (mDateViewIncoming != null) {
+	            mDateViewIncoming.setVisibility(VISIBLE);
+	            mDateViewOutgoing.setVisibility(GONE);
+	            mDateViewIncoming.setText("10:46");
+            }
+            if (mNameView != null) {
+            	mNameView.setText("Daniele Ricci");
+            	mDateView.setText("11:56");
+        	}
+	        /* OUTGOING
             setGravity(Gravity.RIGHT);
             setBackgroundResource(R.drawable.white_background);
-            mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
-            mDateViewIncoming.setVisibility(GONE);
-            mDateViewOutgoing.setVisibility(VISIBLE);
-            mDateViewOutgoing.setText("10:46");
+            if (mBalloonView != null)
+            	mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
+            if (mDateViewIncoming != null) {
+	            mDateViewIncoming.setVisibility(GONE);
+	            mDateViewOutgoing.setVisibility(VISIBLE);
+	            mDateViewOutgoing.setText("10:46");
+            }
+            */
         }
     }
 
-    public final void bind(Context context, final AbstractMessage<?> msg) {
+    public final void bind(Context context, final AbstractMessage<?> msg, final Contact contact) {
         mMessage = msg;
 
-        formattedMessage = formatMessage();
+        formattedMessage = formatMessage(contact);
         mTextView.setText(formattedMessage);
 
         int resId = -1;
 
         if (mMessage.getSender() != null) {
-            setGravity(Gravity.LEFT);
-            setBackgroundResource(R.drawable.light_blue_background);
             if (mBalloonView != null)
 	            mBalloonView.setBackgroundResource(
 	                (mMessage.wasEncrypted()) ?
 	                R.drawable.encrypted_incoming :
 	                R.drawable.balloon_incoming);
 
-            mDateViewIncoming.setVisibility(VISIBLE);
-            mDateViewOutgoing.setVisibility(GONE);
+            if (mDateView == null) {
+                setGravity(Gravity.LEFT);
+                setBackgroundResource(R.drawable.light_blue_background);
+	            mDateViewIncoming.setVisibility(VISIBLE);
+	            mDateViewOutgoing.setVisibility(GONE);
+            }
+            else {
+	            int backId = R.drawable.message_list_item_in_fill;
+	            mNameView.setBackgroundResource(backId);
+	            mDateView.setBackgroundResource(backId);
+	            mBackground.setBackgroundResource(R.drawable.message_list_item_in_border);
+            }
         }
         else {
-            setGravity(Gravity.RIGHT);
-            setBackgroundResource(R.drawable.white_background);
             if (mBalloonView != null)
             	mBalloonView.setBackgroundResource(
                     mMessage.wasEncrypted() ?
                     R.drawable.encrypted_outgoing :
                     R.drawable.balloon_outgoing);
 
-            mDateViewIncoming.setVisibility(GONE);
-            mDateViewOutgoing.setVisibility(VISIBLE);
-
+            if (mDateView == null) {
+                setGravity(Gravity.RIGHT);
+                setBackgroundResource(R.drawable.white_background);
+	            mDateViewIncoming.setVisibility(GONE);
+	            mDateViewOutgoing.setVisibility(VISIBLE);
+	        }
+            else {
+	            int backId = R.drawable.message_list_item_out_fill;
+	            mNameView.setBackgroundResource(backId);
+	            mDateView.setBackgroundResource(backId);
+	            mBackground.setBackgroundResource(R.drawable.message_list_item_out_border);
+            }
+	            
             // status icon
             if (mMessage.getSender() == null)
             switch (mMessage.getStatus()) {
@@ -173,7 +207,7 @@ public class MessageListItem extends RelativeLayout {
         }
     }
 
-    private CharSequence formatMessage() {
+    private CharSequence formatMessage(final Contact contact) {
         SpannableStringBuilder buf = new SpannableStringBuilder();
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
@@ -194,11 +228,28 @@ public class MessageListItem extends RelativeLayout {
             }
         }
 
-        TextView dateView = (mMessage.getSender() != null) ?
+        TextView dateView;
+        
+        if (mDateView == null)
+        	dateView = (mMessage.getSender() != null) ?
                 mDateViewIncoming : mDateViewOutgoing;
-
+        else
+        	dateView = mDateView;
+        
         dateView.setText(MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp()));
 
+        if (mNameView != null) {
+        	String text;
+        	if (mMessage.getDirection() == Messages.DIRECTION_IN) {
+        		text = (contact != null) ? contact.getName() : mMessage.getSender(true);
+        	}
+        	else {
+        		text = "Me";
+        	}
+        	
+        	mNameView.setText(text);
+        }
+        
         /*
         buf.append("\n");
         int startOffset = buf.length();
