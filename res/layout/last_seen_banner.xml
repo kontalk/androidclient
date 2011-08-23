@@ -24,7 +24,7 @@
         android:gravity="center"
         android:paddingTop="5dip"
         android:paddingBottom="5dip"
-        android:textAppearance="?android:attr/textAppearanceSmallInverse"
+        android:textAppearance="?android:attr/textAppearanceSmall"
         android:background="@color/last_seen_banner" />
 
 </merge>

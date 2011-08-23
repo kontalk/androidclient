@@ -2,6 +2,8 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.client.AbstractMessage;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyMessages.Messages;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -18,6 +20,8 @@ public class MessageListAdapter extends CursorAdapter {
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
+    private Contact mContact;
+    
     public MessageListAdapter(Context context, Cursor cursor) {
         super(context, cursor, false /* auto-requery */);
         mFactory = LayoutInflater.from(context);
@@ -32,8 +36,10 @@ public class MessageListAdapter extends CursorAdapter {
 
         MessageListItem headerView = (MessageListItem) view;
         AbstractMessage<?> msg = AbstractMessage.fromCursor(context, cursor);
+        if (msg.getDirection() == Messages.DIRECTION_IN && mContact == null)
+        	mContact = Contact.findByUserId(context, msg.getSender());
 
-        headerView.bind(context, msg);
+        headerView.bind(context, msg, mContact);
     }
 
     @Override

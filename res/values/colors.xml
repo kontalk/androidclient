@@ -7,6 +7,11 @@
     <drawable name="light_blue_background">#ffecfbff</drawable>
     <drawable name="white_background">#ffffffff</drawable>
 
+	<drawable name="fill_incoming_background">#ffdb8e41</drawable>
+	<drawable name="border_incoming_background">#ffcb7a28</drawable>
+	<drawable name="fill_outgoing_background">#ff3d80dc</drawable>
+	<drawable name="border_outgoing_background">#ff1859bb</drawable>
+
     <!-- text color -->
     <drawable name="text_color">#ffffffff</drawable>
     <drawable name="text_color_red">#ffff0000</drawable>

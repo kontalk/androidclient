@@ -28,7 +28,7 @@
             android:layout_height="28dip"
             android:layout_gravity="bottom"
             android:visibility="gone"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:background="@drawable/date_balloon"/>
 
         <LinearLayout android:id="@+id/balloon_view"
@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:linksClickable="false"
-                android:textAppearance="?android:attr/textAppearanceSmallInverse"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textSize="16sp" />
         </LinearLayout>
 
@@ -69,7 +69,7 @@
             android:layout_height="28dip"
             android:layout_gravity="bottom"
             android:visibility="gone"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:background="@drawable/date_balloon"/>
 
     </LinearLayout>
