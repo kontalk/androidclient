@@ -220,8 +220,8 @@ public class ConversationListFragment extends ListFragment {
 
     public void startQuery() {
         try {
-            //setTitle(getString(R.string.refreshing));
-            //setProgressBarIndeterminateVisibility(true);
+            //getActivity().setTitle(getString(R.string.refreshing));
+            getActivity().setProgressBarIndeterminateVisibility(true);
 
             Conversation.startQuery(mQueryHandler, THREAD_LIST_QUERY_TOKEN);
         } catch (SQLiteException e) {
@@ -321,8 +321,8 @@ public class ConversationListFragment extends ListFragment {
             switch (token) {
             case THREAD_LIST_QUERY_TOKEN:
                 mListAdapter.changeCursor(cursor);
-                //setTitle(getString(R.string.app_name));
-                //setProgressBarIndeterminateVisibility(false);
+                //getActivity().setTitle(getString(R.string.app_name));
+                getActivity().setProgressBarIndeterminateVisibility(false);
                 break;
 
             default:

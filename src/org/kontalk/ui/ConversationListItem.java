@@ -64,7 +64,7 @@ public class ConversationListItem extends RelativeLayout {
             mSubjectView.setText("Bella zio senti per domani facciamo che mi vieni a prendere ok?");
             mDateView.setText("20:14");
             mAvatarView.setVisibility(VISIBLE);
-            mAvatarView.setImageDrawable(sDefaultContactImage);
+            mAvatarView.setImageResource(R.drawable.ic_contact_picture);
             mErrorIndicator.setVisibility(VISIBLE);
             mErrorIndicator.setImageResource(R.drawable.ic_msg_delivered);
         }
