@@ -108,10 +108,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final RequestClient client = new RequestClient(mContext, new EndpointServer(serverUri), token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
         final TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        final String regionCode = tm.getSimCountryIso().toUpperCase();
         final String countryCode = "+" + PhoneNumberUtil.getInstance()
-            .getCountryCodeForRegion(tm.getSimCountryIso());
+            .getCountryCodeForRegion(regionCode);
 
-        Log.w(TAG, "using default country code: " + tm.getSimCountryIso() + "(" + countryCode + ")");
+        Log.w(TAG, "using default country code: " + regionCode + " (" + countryCode + ")");
 
         // query all contacts
         final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
