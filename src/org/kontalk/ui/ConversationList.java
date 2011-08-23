@@ -61,10 +61,6 @@ public class ConversationList extends ListActivity {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        if (android.os.Build.VERSION.SDK_INT < 11)
-        	setTheme(android.R.style.Theme_Light);
-        else
-        	setTheme(android.R.style.Theme_Holo_Light);
         setContentView(R.layout.conversation_list_screen);
 
         mQueryHandler = new ThreadListQueryHandler(getContentResolver());

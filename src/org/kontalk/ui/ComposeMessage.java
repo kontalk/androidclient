@@ -145,10 +145,6 @@ public class ComposeMessage extends ListActivity {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        if (android.os.Build.VERSION.SDK_INT < 11)
-        	setTheme(android.R.style.Theme_Light);
-        else
-        	setTheme(android.R.style.Theme_Holo_Light);
         setContentView(R.layout.compose_message);
 
         mQueryHandler = new MessageListQueryHandler();
@@ -344,7 +340,7 @@ public class ComposeMessage extends ListActivity {
         boolean contactEnabled = (mConversation != null) ? mConversation.getContact() != null : false;
         boolean threadEnabled = (threadId > 0);
         MenuItem i;
-        
+
         i = menu.findItem(R.id.call_contact);
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
         	i.setVisible(false);

@@ -30,7 +30,7 @@
             android:authorities="org.kontalk.messages"
             android:syncable="false"/>
 
-        <activity android:name=".ui.ConversationList">
+        <activity android:name=".ui.ConversationList" android:theme="@style/LightTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -38,7 +38,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.ComposeMessage">
+        <activity android:name=".ui.ComposeMessage" android:theme="@style/LightTheme">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
