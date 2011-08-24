@@ -72,10 +72,7 @@ public class ConversationListFragment extends ListFragment {
             list.addHeaderView(headerView, null, true);
         }
 
-        mListAdapter = new ConversationListAdapter(getActivity(), null);
-        mListAdapter.setOnContentChangedListener(mContentChangedListener);
         setListAdapter(mListAdapter);
-
         registerForContextMenu(getListView());
     }
 
@@ -85,6 +82,8 @@ public class ConversationListFragment extends ListFragment {
 
         setHasOptionsMenu(true);
         mQueryHandler = new ThreadListQueryHandler(getActivity().getContentResolver());
+        mListAdapter = new ConversationListAdapter(getActivity(), null);
+        mListAdapter.setOnContentChangedListener(mContentChangedListener);
     }
 
     @Override
