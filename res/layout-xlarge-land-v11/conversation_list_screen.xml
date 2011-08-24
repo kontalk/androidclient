@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+    <fragment android:name="org.kontalk.ui.ConversationListFragment"
+      android:id="@+id/fragment_conversation_list"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_weight="4" >
+        <!-- Preview: layout=@layout/conversation_list -->
+    </fragment>
+    <fragment
+        android:name="org.kontalk.ui.ComposeMessageFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/tutview_fragment"
+        android:layout_weight="2">
+        <!-- Preview: layout=@layout/compose_message -->
+    </fragment>
+</LinearLayout>
