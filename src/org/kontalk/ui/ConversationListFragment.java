@@ -14,10 +14,13 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
+import android.os.Build.VERSION;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -71,9 +74,12 @@ public class ConversationListFragment extends ListFragment {
                     getString(R.string.create_new_message));
             list.addHeaderView(headerView, null, true);
         }
+        else {
+        	list.setItemsCanFocus(true);
+        }
 
         setListAdapter(mListAdapter);
-        registerForContextMenu(getListView());
+        registerForContextMenu(list);
     }
 
     @Override
@@ -93,7 +99,7 @@ public class ConversationListFragment extends ListFragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        boolean visible = (mListAdapter.getCount() > 0);
+        boolean visible = (mListAdapter != null && mListAdapter.getCount() > 0);
         MenuItem item;
         item = menu.findItem(R.id.menu_search);
         item.setEnabled(visible);
@@ -162,7 +168,7 @@ public class ConversationListFragment extends ListFragment {
 
         switch (item.getItemId()) {
             case MENU_OPEN_THREAD:
-                openConversation(conv);
+                openConversation(conv, info.position);
                 return true;
 
             case MENU_VIEW_CONTACT:
@@ -293,7 +299,7 @@ public class ConversationListFragment extends ListFragment {
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
         if (conv != null) {
-            openConversation(conv);
+            openConversation(conv, position);
         }
 
         // new composer
@@ -302,9 +308,29 @@ public class ConversationListFragment extends ListFragment {
         }
     }
 
-    private void openConversation(Conversation conv) {
-        Intent i = ComposeMessage.fromConversation(getActivity(), conv);
-        startActivity(i);
+    private void openConversation(Conversation conv, int position) {
+    	int screenLayout = getResources().getConfiguration().screenLayout;
+    	int orientation = getResources().getConfiguration().orientation;
+    	int apiLevel = VERSION.SDK_INT;
+    	if ((screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE &&
+    			orientation == Configuration.ORIENTATION_LANDSCAPE &&
+    			apiLevel >= 11) {
+    		getListView().setItemChecked(position, true);
+    		ComposeMessageFragment f; // = (ComposeMessageFragment) getActivity()
+    				//.getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
+			f = ComposeMessageFragment.fromConversation(getActivity(), conv);
+            // Execute a transaction, replacing any existing fragment
+            // with this one inside the frame.
+            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.fragment_compose_message, f);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.addToBackStack(null);
+            ft.commit();
+    	}
+    	else {
+	        Intent i = ComposeMessage.fromConversation(getActivity(), conv);
+	        startActivity(i);
+    	}
     }
 
     /**
