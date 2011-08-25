@@ -30,7 +30,7 @@
             android:authorities="org.kontalk.messages"
             android:syncable="false"/>
 
-        <activity android:name=".ui.ConversationList" android:theme="@style/LightTheme">
+        <activity android:name=".ui.ConversationList" android:theme="@style/Theme.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -38,7 +38,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.ComposeMessage" android:theme="@style/LightTheme">
+        <activity android:name=".ui.ComposeMessage" android:theme="@style/Theme.Light">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -63,8 +63,8 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.MessagingPreferences" android:theme="@android:style/Theme.Holo.Light"/>
-        <activity android:name=".ui.BootstrapPreferences" android:theme="@android:style/Theme.Holo.Light"/>
+        <activity android:name=".ui.MessagingPreferences" android:theme="@style/Theme.Light"/>
+        <activity android:name=".ui.BootstrapPreferences" android:theme="@style/Theme.Light"/>
         <activity android:name=".ui.NumberValidation"
             android:theme="@android:style/Theme.Light"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
@@ -95,7 +95,7 @@
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
             </intent-filter>
         </receiver>
-        <activity android:name=".ui.ContactsListActivity" android:label="@string/contacts_list_title" android:theme="@android:style/Theme.Holo.Light"></activity>
+        <activity android:name=".ui.ContactsListActivity" android:label="@string/contacts_list_title" android:theme="@style/Theme.Light"></activity>
         <service android:name=".service.DownloadService" android:label="@string/download_service"></service>
     </application>
 </manifest>

@@ -18,7 +18,7 @@
     <!-- header area -->
     <TextView android:id="@+id/last_seen_text"
         style="?android:attr/listViewWhiteStyle"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:gravity="center"
