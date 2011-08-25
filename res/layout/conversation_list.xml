@@ -7,7 +7,6 @@
     android:scrollbarStyle="insideOverlay"
     android:background="@android:color/white"
     android:cacheColorHint="@android:color/white"
-    android:fadingEdgeLength="16dip"
-    android:choiceMode="singleChoice" >
+    android:fadingEdgeLength="16dip">
     <!-- Preview: listitem=@layout/conversation_list_item -->
 </ListView>

@@ -14,11 +14,9 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
-import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
@@ -47,6 +45,8 @@ public class ConversationListFragment extends ListFragment {
 
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
+    private boolean mDualPane;
+    private int mCurrentPosition;
 
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
         new ConversationListAdapter.OnContentChangedListener() {
@@ -63,10 +63,21 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        mQueryHandler = new ThreadListQueryHandler(getActivity().getContentResolver());
+        mListAdapter = new ConversationListAdapter(getActivity(), null);
+        mListAdapter.setOnContentChangedListener(mContentChangedListener);
+
         ListView list = getListView();
 
-        // add Compose message entry only if we are not using the ActionBar
-        if (android.os.Build.VERSION.SDK_INT < 11) {
+        // Check to see if we have a frame in which to embed the details
+        // fragment directly in the containing UI.
+        View detailsFrame = getActivity().findViewById(R.id.fragment_compose_message);
+        mDualPane = detailsFrame != null
+                && detailsFrame.getVisibility() == View.VISIBLE;
+
+        // add Compose message entry only if are in dual pane mode
+        if (!mDualPane) {
             LayoutInflater inflater = getLayoutInflater(savedInstanceState);
             ConversationListItem headerView = (ConversationListItem)
                     inflater.inflate(R.layout.conversation_list_item, list, false);
@@ -75,6 +86,8 @@ public class ConversationListFragment extends ListFragment {
             list.addHeaderView(headerView, null, true);
         }
         else {
+            // TODO restore state
+            list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         	list.setItemsCanFocus(true);
         }
 
@@ -83,13 +96,16 @@ public class ConversationListFragment extends ListFragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // TODO save state
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-        mQueryHandler = new ThreadListQueryHandler(getActivity().getContentResolver());
-        mListAdapter = new ConversationListAdapter(getActivity(), null);
-        mListAdapter.setOnContentChangedListener(mContentChangedListener);
     }
 
     @Override
@@ -225,7 +241,8 @@ public class ConversationListFragment extends ListFragment {
 
     public void startQuery() {
         try {
-            //getActivity().setTitle(getString(R.string.refreshing));
+            if (!mDualPane)
+                getActivity().setTitle(getString(R.string.refreshing));
             getActivity().setProgressBarIndeterminateVisibility(true);
 
             Conversation.startQuery(mQueryHandler, THREAD_LIST_QUERY_TOKEN);
@@ -309,23 +326,26 @@ public class ConversationListFragment extends ListFragment {
     }
 
     private void openConversation(Conversation conv, int position) {
-    	int screenLayout = getResources().getConfiguration().screenLayout;
-    	int orientation = getResources().getConfiguration().orientation;
-    	int apiLevel = VERSION.SDK_INT;
-    	if ((screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE &&
-    			orientation == Configuration.ORIENTATION_LANDSCAPE &&
-    			apiLevel >= 11) {
+        mCurrentPosition = position;
+
+    	if (mDualPane) {
     		getListView().setItemChecked(position, true);
-    		ComposeMessageFragment f; // = (ComposeMessageFragment) getActivity()
-    				//.getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
-			f = ComposeMessageFragment.fromConversation(getActivity(), conv);
-            // Execute a transaction, replacing any existing fragment
-            // with this one inside the frame.
-            FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.fragment_compose_message, f);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.addToBackStack(null);
-            ft.commit();
+
+    		// get the old fragment
+    		ComposeMessageFragment f = (ComposeMessageFragment) getActivity()
+    				.getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
+
+            // check if we are replacing the same fragment
+    		if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
+    			f = ComposeMessageFragment.fromConversation(getActivity(), conv);
+                // Execute a transaction, replacing any existing fragment
+                // with this one inside the frame.
+                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_compose_message, f);
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.addToBackStack(null);
+                ft.commit();
+    		}
     	}
     	else {
 	        Intent i = ComposeMessage.fromConversation(getActivity(), conv);
@@ -343,10 +363,17 @@ public class ConversationListFragment extends ListFragment {
 
         @Override
         protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+            if (cursor == null || getActivity() == null) {
+                Log.e(TAG, "query aborted or error!");
+                mListAdapter.changeCursor(null);
+                return;
+            }
+
             switch (token) {
             case THREAD_LIST_QUERY_TOKEN:
                 mListAdapter.changeCursor(cursor);
-                //getActivity().setTitle(getString(R.string.app_name));
+                if (!mDualPane)
+                    getActivity().setTitle(getString(R.string.app_name));
                 getActivity().setProgressBarIndeterminateVisibility(false);
                 break;
 

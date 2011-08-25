@@ -1,31 +1,21 @@
 package org.kontalk.ui;
 
-import java.util.List;
-
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.RequestClient;
-import org.kontalk.client.StatusResponse;
+import org.kontalk.client.ImageMessage;
+import org.kontalk.client.PlainTextMessage;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.sync.SyncAdapter;
-import org.kontalk.util.MessageUtils;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.View;
-import android.view.animation.AnimationUtils;
-import android.widget.EditText;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,27 +35,30 @@ public class ComposeMessage extends FragmentActivity {
     /** View conversation with userId intent action. Just provide userId with this. */
     public static final String ACTION_VIEW_USERID = "org.kontalk.conversation.VIEW_USERID";
 
-    private TextView mLastSeenBanner;
-    private EditText mTextEntry;
-
-    /** The thread id. */
-    private long threadId = -1;
-    private Conversation mConversation;
-
     /** The SEND intent. */
     private Intent sendIntent;
 
-    /** The user we are talking to. */
-    private String userId;
-    private String userName;
-    private String userPhone;
+    private ComposeMessageFragment mFragment;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setContentView(R.layout.compose_message_screen);
+
+        // load the fragment
+        mFragment = (ComposeMessageFragment) getSupportFragmentManager()
+            .findFragmentById(R.id.fragment_compose_message);
+
+        processIntent(savedInstanceState);
+    }
 
     private void processIntent(Bundle savedInstanceState) {
         Intent intent = null;
         if (savedInstanceState != null) {
             Log.w(TAG, "restoring from saved instance");
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
-            //threadId = ContentUris.parseId(uri);
             intent = new Intent(ACTION_VIEW_CONVERSATION, uri);
         }
         else {
@@ -74,37 +67,20 @@ public class ComposeMessage extends FragmentActivity {
 
         if (intent != null) {
             final String action = intent.getAction();
+            Bundle args = null;
 
             // view intent
-            if (Intent.ACTION_VIEW.equals(action)) {
+            // view conversation - just threadId provided
+            // view conversation - just userId provided
+            if (Intent.ACTION_VIEW.equals(action) ||
+                    ACTION_VIEW_CONVERSATION.equals(action) ||
+                    ACTION_VIEW_USERID.equals(action)) {
+                args = new Bundle();
                 Uri uri = intent.getData();
                 Log.w(TAG, "intent uri: " + uri);
-                ContentResolver cres = getContentResolver();
 
-                Cursor c = cres.query(uri, new String[] {
-                        SyncAdapter.DATA_COLUMN_DISPLAY_NAME,
-                        SyncAdapter.DATA_COLUMN_PHONE
-                        }, null, null, null);
-                if (c.moveToFirst()) {
-                    userName = c.getString(0);
-                    userPhone = c.getString(1);
-
-                    // FIXME should it be retrieved from RawContacts.SYNC3 ??
-                    try {
-                        userId = MessageUtils.sha1(userPhone);
-                    }
-                    catch (Exception e) {
-                        Log.e(TAG, "sha1 digest failed", e);
-                    }
-
-                    Cursor cp = cres.query(Messages.CONTENT_URI,
-                            new String[] { Messages.THREAD_ID },
-                            Messages.PEER + " = ?", new String[] { userId }, null);
-                    if (cp.moveToFirst())
-                        threadId = cp.getLong(0);
-                    cp.close();
-                }
-                c.close();
+                args.putString("action", action);
+                args.putParcelable("data", uri);
             }
 
             // send external content
@@ -119,82 +95,9 @@ public class ComposeMessage extends FragmentActivity {
                 return;
             }
 
-            // view conversation - just threadId provided
-            else if (ACTION_VIEW_CONVERSATION.equals(action)) {
-                Uri uri = intent.getData();
-                loadConversationMetadata(uri);
+            if (args != null) {
+                mFragment.setMyArguments(args);
             }
-
-            // view conversation - just userId provided
-            else if (ACTION_VIEW_USERID.equals(action)) {
-                Uri uri = intent.getData();
-                userId = uri.getPathSegments().get(1);
-                mConversation = Conversation.loadFromUserId(this, userId);
-
-                if (mConversation == null) {
-                    mConversation = Conversation.createNew(this);
-                    mConversation.setRecipient(userId);
-                }
-
-                threadId = mConversation.getThreadId();
-                Contact contact = mConversation.getContact();
-                if (contact != null) {
-                    userName = contact.getName();
-                    userPhone = contact.getNumber();
-                }
-                else {
-                    userName = userId;
-                }
-            }
-        }
-
-        if (userId != null && MessagingPreferences.getLastSeenEnabled(this)) {
-            // FIXME this should be handled better and of course honour activity
-            // pause/resume/saveState/restoreState/display rotation.
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String text = null;
-                    try {
-                        Context context = ComposeMessage.this;
-                        RequestClient client = new RequestClient(context,
-                                MessagingPreferences.getEndpointServer(context),
-                                Authenticator.getDefaultAccountToken(context));
-                        final List<StatusResponse> data = client.lookup(new String[] { userId });
-                        if (data != null && data.size() > 0) {
-                            StatusResponse res = data.get(0);
-                            if (res.code == StatusResponse.STATUS_SUCCESS) {
-                                String timestamp = (String) res.extra.get("t");
-                                long time = Long.parseLong(timestamp);
-                                if (time > 0)
-                                    text = "Last seen: " +
-                                        MessageUtils.formatTimeStampString(context, time * 1000, true);
-                            }
-                        }
-                    }
-                    catch (Exception e) {
-                        Log.e(TAG, "unable to lookup user " + userId, e);
-                        // TODO better text :D
-                        text = "(error)";
-                    }
-
-                    if (text != null) {
-                        final String bannerText = text;
-                        // show last seen banner
-                        // TODO animation??
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mLastSeenBanner.setText(bannerText);
-                                mLastSeenBanner.setVisibility(View.VISIBLE);
-                                mLastSeenBanner.startAnimation(
-                                        AnimationUtils.loadAnimation(
-                                                ComposeMessage.this, R.anim.header_appear));
-                            }
-                        });
-                    }
-                }
-            }).start();
         }
     }
 
@@ -208,6 +111,10 @@ public class ComposeMessage extends FragmentActivity {
                     Intent i = fromContactPicker(this, rawContact);
                     if (i != null) {
                         onNewIntent(i);
+
+                        // process SEND intent if necessary
+                        if (sendIntent != null)
+                            processSendIntent();
                     }
                     else {
                         Toast.makeText(this, "Contact seems not to be registered on Kontalk.", Toast.LENGTH_LONG)
@@ -249,10 +156,7 @@ public class ComposeMessage extends FragmentActivity {
      * @return
      */
     public static Intent fromConversation(Context context, Conversation conv) {
-        return new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
-                ContentUris.withAppendedId(Conversations.CONTENT_URI,
-                        conv.getThreadId()),
-                context, ComposeMessage.class);
+        return fromConversation(context, conv.getThreadId());
     }
 
     public static Intent fromConversation(Context context, long threadId) {
@@ -269,17 +173,16 @@ public class ComposeMessage extends FragmentActivity {
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
-    /*
     private void processSendIntent() {
         final String mime = sendIntent.getType();
         // send text message - just fill the text entry
         if (PlainTextMessage.supportsMimeType(mime)) {
-            mTextEntry.setText(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+            mFragment.setTextEntry(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
         }
 
         else if (ImageMessage.supportsMimeType(mime)) {
             // send image immediately
-            sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
+            mFragment.sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
         }
         else {
             Log.e(TAG, "mime " + mime + " not supported");
@@ -287,54 +190,12 @@ public class ComposeMessage extends FragmentActivity {
 
         sendIntent = null;
     }
-    */
-
-    private void loadConversationMetadata(Uri uri) {
-        threadId = ContentUris.parseId(uri);
-        mConversation = Conversation.loadFromId(this, threadId);
-
-        userId = mConversation.getRecipient();
-        Contact contact = mConversation.getContact();
-        if (contact != null) {
-            userName = contact.getName();
-            userPhone = contact.getNumber();
-        }
-        else {
-            userName = userId;
-        }
-    }
-
-    /*
-    private void processStart() {
-        // opening for contact picker - do nothing
-        if (threadId < 0 && sendIntent != null) return;
-
-        Log.i(TAG, "starting query with threadId " + threadId);
-        if (threadId > 0) {
-            startQuery(true);
-        }
-        else {
-            // HACK this is for crappy honeycomb :)
-            setProgressBarIndeterminateVisibility(false);
-
-            mConversation = Conversation.createNew(this);
-            mConversation.setRecipient(userId);
-
-            if (sendIntent != null)
-                processSendIntent();
-        }
-
-        String title = userName;
-        if (userPhone != null)
-            title += " <" + userPhone + ">";
-        setTitle(title);
-    }
-    */
 
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
         processIntent(null);
+        mFragment.reload();
     }
 
     @Override
@@ -346,8 +207,13 @@ public class ComposeMessage extends FragmentActivity {
     @Override
     protected void onSaveInstanceState(Bundle out) {
         out.putParcelable(Uri.class.getName(),
-                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+                ContentUris.withAppendedId(Conversations.CONTENT_URI,
+                        mFragment.getThreadId()));
         super.onSaveInstanceState(out);
+    }
+
+    public Intent getSendIntent() {
+        return sendIntent;
     }
 
 }

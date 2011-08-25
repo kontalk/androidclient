@@ -1,6 +1,7 @@
 package org.kontalk.ui;
 
 import java.security.GeneralSecurityException;
+import java.util.List;
 import java.util.Random;
 
 import org.kontalk.R;
@@ -9,6 +10,8 @@ import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.ImageMessage;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.PlainTextMessage;
+import org.kontalk.client.RequestClient;
+import org.kontalk.client.StatusResponse;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -23,6 +26,7 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ComponentName;
@@ -46,18 +50,20 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 /**
@@ -70,26 +76,24 @@ public class ComposeMessageFragment extends ListFragment {
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
 
-    /** View conversation intent action. Just provide the threadId with this. */
-    public static final String ACTION_VIEW_CONVERSATION = "org.kontalk.conversation.VIEW";
-    /** View conversation with userId intent action. Just provide userId with this. */
-    public static final String ACTION_VIEW_USERID = "org.kontalk.conversation.VIEW_USERID";
-
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
     private EditText mTextEntry;
     private Button mSendButton;
 
+    private TextView mLastSeenBanner;
+
     /** The thread id. */
     private long threadId = -1;
     private Conversation mConversation;
+    private Bundle mArguments;
 
     /** The user we are talking to. */
     private String userId;
     private String userName;
     private String userPhone;
 
-    
+
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromContactPicker(Context context, Uri rawContactUri) {
         String userId = Contact.getUserId(context, rawContactUri);
@@ -157,16 +161,22 @@ public class ComposeMessageFragment extends ListFragment {
                 sendTextMessage();
             }
         });
-        
-        processIntent(savedInstanceState);
+
+        mLastSeenBanner = (TextView) getView().findViewById(R.id.last_seen_text);
+
+        processArguments(savedInstanceState);
     }
-    
+
+    public void reload() {
+        processArguments(null);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
     		Bundle savedInstanceState) {
     	return inflater.inflate(R.layout.compose_message, container, false);
     }
-    
+
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener =
         new MessageListAdapter.OnContentChangedListener() {
         public void onContentChanged(MessageListAdapter adapter) {
@@ -218,7 +228,7 @@ public class ComposeMessageFragment extends ListFragment {
     }
 
     /** Sends out an image message. */
-    private void sendImageMessage(Uri uri, String mime) {
+    public void sendImageMessage(Uri uri, String mime) {
         Log.i(TAG, "sending image: " + uri);
         Uri newMsg = null;
 
@@ -283,7 +293,7 @@ public class ComposeMessageFragment extends ListFragment {
     }
 
     /** Sends out the text message in the composing entry. */
-    private void sendTextMessage() {
+    public void sendTextMessage() {
         String text = mTextEntry.getText().toString();
         if (!TextUtils.isEmpty(text)) {
             Log.w(TAG, "sending message...");
@@ -554,8 +564,7 @@ public class ComposeMessageFragment extends ListFragment {
     public void onStart() {
         super.onStart();
 
-        if (userId != null)
-        	processStart();
+    	processStart();
     }
 
     private void loadConversationMetadata(Uri uri) {
@@ -573,18 +582,26 @@ public class ComposeMessageFragment extends ListFragment {
         }
     }
 
-    private void processIntent(Bundle savedInstanceState) {
+    private Bundle myArguments() {
+        return (mArguments != null) ? mArguments : getArguments();
+    }
+
+    public void setMyArguments(Bundle args) {
+        mArguments = args;
+    }
+
+    private void processArguments(Bundle savedInstanceState) {
         Bundle args = null;
         if (savedInstanceState != null) {
             Log.w(TAG, "restoring from saved instance");
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
             //threadId = ContentUris.parseId(uri);
             args = new Bundle();
-            args.putString("action", ACTION_VIEW_CONVERSATION);
+            args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
             args.putParcelable("data", uri);
         }
         else {
-        	args = getArguments();
+        	args = myArguments();
         }
 
         if (args != null && args.size() > 0) {
@@ -623,13 +640,13 @@ public class ComposeMessageFragment extends ListFragment {
             }
 
             // view conversation - just threadId provided
-            else if (ACTION_VIEW_CONVERSATION.equals(action)) {
+            else if (ComposeMessage.ACTION_VIEW_CONVERSATION.equals(action)) {
                 Uri uri = args.getParcelable("data");
                 loadConversationMetadata(uri);
             }
 
             // view conversation - just userId provided
-            else if (ACTION_VIEW_USERID.equals(action)) {
+            else if (ComposeMessage.ACTION_VIEW_USERID.equals(action)) {
                 Uri uri = args.getParcelable("data");
                 userId = uri.getPathSegments().get(1);
                 mConversation = Conversation.loadFromUserId(getActivity(), userId);
@@ -650,9 +667,76 @@ public class ComposeMessageFragment extends ListFragment {
                 }
             }
         }
+
+        // set title if we are autonomous
+        if (mArguments != null) {
+            String title = userName;
+            if (userPhone != null)
+                title += " <" + userPhone + ">";
+            getActivity().setTitle(title);
+        }
+
+        if (userId != null && MessagingPreferences.getLastSeenEnabled(getActivity())) {
+            // FIXME this should be handled better and of course honour activity
+            // pause/resume/saveState/restoreState/display rotation.
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String text = null;
+                    try {
+                        Context context = getActivity();
+                        RequestClient client = new RequestClient(context,
+                                MessagingPreferences.getEndpointServer(context),
+                                Authenticator.getDefaultAccountToken(context));
+                        final List<StatusResponse> data = client.lookup(new String[] { userId });
+                        if (data != null && data.size() > 0) {
+                            StatusResponse res = data.get(0);
+                            if (res.code == StatusResponse.STATUS_SUCCESS) {
+                                String timestamp = (String) res.extra.get("t");
+                                long time = Long.parseLong(timestamp);
+                                if (time > 0)
+                                    text = "Last seen: " +
+                                        MessageUtils.formatTimeStampString(context, time * 1000, true);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, "unable to lookup user " + userId, e);
+                        // TODO better text :D
+                        text = "(error)";
+                    }
+
+                    if (text != null) {
+                        final String bannerText = text;
+                        // show last seen banner
+                        // TODO animation??
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mLastSeenBanner.setText(bannerText);
+                                mLastSeenBanner.setVisibility(View.VISIBLE);
+                                mLastSeenBanner.startAnimation(
+                                        AnimationUtils.loadAnimation(
+                                                getActivity(), R.anim.header_appear));
+                            }
+                        });
+                    }
+                }
+            }).start();
+        }
+    }
+
+    public ComposeMessage getParentActivity() {
+        Activity _activity = getActivity();
+        return (_activity instanceof ComposeMessage) ?
+                (ComposeMessage) _activity : null;
     }
 
     private void processStart() {
+        ComposeMessage activity = getParentActivity();
+        // opening for contact picker - do nothing
+        if (threadId < 0 && activity != null && activity.getSendIntent() != null) return;
+
         Log.i(TAG, "starting query with threadId " + threadId);
         if (threadId > 0) {
             startQuery(true);
@@ -688,7 +772,7 @@ public class ComposeMessageFragment extends ListFragment {
 
         @Override
         protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            if (cursor == null) {
+            if (cursor == null || getActivity() == null) {
                 Log.e(TAG, "query aborted or error!");
                 mListAdapter.changeCursor(null);
                 return;
@@ -725,4 +809,15 @@ public class ComposeMessageFragment extends ListFragment {
         }
     }
 
+    public Conversation getConversation() {
+        return mConversation;
+    }
+
+    public long getThreadId() {
+        return threadId;
+    }
+
+    public void setTextEntry(CharSequence text) {
+        mTextEntry.setText(text);
+    }
 }

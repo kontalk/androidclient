@@ -124,9 +124,7 @@ public class ConversationList extends FragmentActivity {
     }
     */
 
-    /**
-     * Called when a new intent is sent to the activity (if already started).
-     */
+    /** Called when a new intent is sent to the activity (if already started). */
     @Override
     protected void onNewIntent(Intent intent) {
         ConversationListFragment fragment = (ConversationListFragment)
