@@ -412,7 +412,9 @@ public class MessageCenterService extends Service
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mCurrentNotification = new Notification(R.drawable.icon_stat, "Sending message...", System.currentTimeMillis());
+        mCurrentNotification = new Notification(R.drawable.icon_stat,
+                getResources().getString(R.string.sending_message),
+                System.currentTimeMillis());
         mCurrentNotification.contentIntent = pi;
         mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
 
@@ -422,7 +424,7 @@ public class MessageCenterService extends Service
 
     private void foregroundNotification(int progress) {
         mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setTextViewText(R.id.title, "Sending message...");
+        mCurrentNotification.contentView.setTextViewText(R.id.title, getResources().getString(R.string.sending_message));
         mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
         mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
     }

@@ -351,7 +351,7 @@ public class ComposeMessageFragment extends ListFragment {
             }
             else {
                 Toast.makeText(getActivity(),
-                        "Unable to store message to outbox.",
+                        R.string.error_store_outbox,
                         Toast.LENGTH_LONG).show();
             }
         }
@@ -444,11 +444,11 @@ public class ComposeMessageFragment extends ListFragment {
             if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
                 menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, R.string.view_image);
             else
-                menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, "Download file");
+                menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, R.string.download_file);
         }
         else {
             if (msg.isEncrypted())
-                menu.add(Menu.NONE, MENU_DECRYPT, MENU_DECRYPT, "Decrypt message");
+                menu.add(Menu.NONE, MENU_DECRYPT, MENU_DECRYPT, R.string.decrypt_message);
             else
                 menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT, R.string.copy_message_text);
         }
@@ -695,7 +695,7 @@ public class ComposeMessageFragment extends ListFragment {
                                 String timestamp = (String) res.extra.get("t");
                                 long time = Long.parseLong(timestamp);
                                 if (time > 0)
-                                    text = "Last seen: " +
+                                    text = getResources().getString(R.string.last_seen_label) +
                                         MessageUtils.formatTimeStampString(context, time * 1000, true);
                             }
                         }

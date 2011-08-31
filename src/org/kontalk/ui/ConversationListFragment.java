@@ -295,7 +295,7 @@ public class ConversationListFragment extends ListFragment {
                     if (i != null)
                         startActivity(i);
                     else
-                        Toast.makeText(getActivity(), "Contact seems not to be registered on Kontalk.", Toast.LENGTH_LONG)
+                        Toast.makeText(getActivity(), R.string.contact_not_registered, Toast.LENGTH_LONG)
                             .show();
                 }
             }

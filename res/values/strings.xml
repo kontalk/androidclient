@@ -27,6 +27,7 @@
     <string name="confirm_delete_all">Delete all threads</string>
     <string name="confirm_will_delete_all">All threads will be deleted.</string>
     <string name="sending">Sending...</string>
+    <string name="sending_message">Sending message...</string>
     <string name="message_text_copied">Message text copied.</string>
     <string name="call">Call</string>
     <string name="view_contact">View contact</string>
@@ -68,4 +69,11 @@
     <string name="pref_title_mark_all_confirmed">Marks all incoming messages as confirmed</string>
     <string name="pref_show_last_seen">Show user last seen</string>
     <string name="pref_title_show_last_seen">Show last time a user has been seen</string>
+    <string name="contact_not_registered">Contact seems not to be registered on Kontalk.</string>
+    <string name="error_store_outbox">Unable to store message to outbox.</string>
+    <string name="decrypt_message">Decrypt message</string>
+    <string name="download_file">Download file</string>
+    <string name="last_seen_label">Last seen:\u0020</string>
+    <string name="text_hint_encrypted">(encrypted)</string>
+    <string name="myself_label">Me</string>
 </resources>

@@ -116,7 +116,7 @@ public class ComposeMessage extends FragmentActivity {
                             processSendIntent();
                     }
                     else {
-                        Toast.makeText(this, "Contact seems not to be registered on Kontalk.", Toast.LENGTH_LONG)
+                        Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
                             .show();
                         finish();
                     }
@@ -184,6 +184,7 @@ public class ComposeMessage extends FragmentActivity {
             mFragment.sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
         }
         else {
+            // TODO notify to user
             Log.e(TAG, "mime " + mime + " not supported");
         }
 

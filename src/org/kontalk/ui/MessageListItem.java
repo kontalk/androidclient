@@ -80,7 +80,7 @@ public class MessageListItem extends RelativeLayout {
         mDateView = (TextView) findViewById(R.id.date_view);
         mNameView = (TextView) findViewById(R.id.name_view);
         mBackground = findViewById(R.id.msg_list_item_background);
-        
+
         if (isInEditMode()) {
             mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
             /* INCOMING */
@@ -159,7 +159,7 @@ public class MessageListItem extends RelativeLayout {
 	            mDateView.setBackgroundResource(backId);
 	            mBackground.setBackgroundResource(R.drawable.message_list_item_out_border);
             }
-	            
+
             // status icon
             if (mMessage.getSender() == null)
             switch (mMessage.getStatus()) {
@@ -212,7 +212,7 @@ public class MessageListItem extends RelativeLayout {
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
             if (mMessage.isEncrypted()) {
-                buf.append("(encrypted)");
+                buf.append(getResources().getString(R.string.text_hint_encrypted));
             }
             else {
                 buf.append(mMessage.getTextContent());
@@ -229,13 +229,13 @@ public class MessageListItem extends RelativeLayout {
         }
 
         TextView dateView;
-        
+
         if (mDateView == null)
         	dateView = (mMessage.getSender() != null) ?
                 mDateViewIncoming : mDateViewOutgoing;
         else
         	dateView = mDateView;
-        
+
         dateView.setText(MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp()));
 
         if (mNameView != null) {
@@ -244,12 +244,12 @@ public class MessageListItem extends RelativeLayout {
         		text = (contact != null) ? contact.getName() : mMessage.getSender(true);
         	}
         	else {
-        		text = "Me";
+        		text = getResources().getString(R.string.myself_label);
         	}
-        	
+
         	mNameView.setText(text);
         }
-        
+
         /*
         buf.append("\n");
         int startOffset = buf.length();

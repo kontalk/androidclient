@@ -58,6 +58,7 @@ public class MessagingPreferences extends PreferenceActivity {
     }
 
     /** Default built-in server URI. */
+    // TODO metaserver infrastructure
     public static final String DEFAULT_SERVER_URI = "http://www.kontalk.org/messenger";
 
     public static String getServerURI(Context context) {
