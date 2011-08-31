@@ -7,6 +7,8 @@ import java.util.Map;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +16,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 
@@ -252,5 +255,25 @@ public class NumberValidator implements Runnable {
 
         /** Called if validation code has not been verified. */
         public void onAuthTokenFailed(NumberValidator v, int reason);
+    }
+
+    public static String getCountryPrefix(Context context) {
+        final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        final String regionCode = tm.getSimCountryIso().toUpperCase();
+        return "+" + PhoneNumberUtil.getInstance()
+            .getCountryCodeForRegion(regionCode);
+    }
+
+    public static String fixNumber(Context context, String number) {
+        // normalize number: strip separators
+        number = PhoneNumberUtils.stripSeparators(number.trim());
+
+        // normalize number: add country code if not found
+        if (number.startsWith("00"))
+            number = '+' + number.substring(2);
+        else if (number.charAt(0) != '+')
+            number = getCountryPrefix(context) + number;
+
+        return number;
     }
 }

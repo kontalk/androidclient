@@ -123,9 +123,11 @@ public class NumberValidation extends AccountAuthenticatorActivity
         mManualButton.setEnabled(false);
 
         // check number input
-        String phone = PhoneNumberUtils.stripSeparators(
-                mPhone.getText().toString().trim());
+        String phone = NumberValidator
+            .fixNumber(this, mPhone.getText().toString());
         Log.i(TAG, "checking phone number: \"" + phone + "\"");
+        // FIXME LOL
+        if (phone != null) return;
 
         // empty number :S
         if (phone.length() == 0) {

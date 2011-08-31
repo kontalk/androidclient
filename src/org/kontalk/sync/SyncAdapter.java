@@ -10,6 +10,7 @@ import java.util.Map;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.NumberValidator;
 import org.kontalk.client.RequestClient;
 import org.kontalk.client.StatusResponse;
 import org.kontalk.provider.MyUsers.Users;
@@ -32,12 +33,9 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.telephony.PhoneNumberUtils;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.util.Xml;
 
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
@@ -107,12 +105,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final String token = Authenticator.getDefaultAccountToken(mContext);
         final RequestClient client = new RequestClient(mContext, new EndpointServer(serverUri), token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
-        final TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final String regionCode = tm.getSimCountryIso().toUpperCase();
-        final String countryCode = "+" + PhoneNumberUtil.getInstance()
-            .getCountryCodeForRegion(regionCode);
 
-        Log.w(TAG, "using default country code: " + regionCode + " (" + countryCode + ")");
+        final String countryCode = NumberValidator.getCountryPrefix(mContext);
+        Log.w(TAG, "using default country code: " + countryCode);
 
         // query all contacts
         final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
@@ -133,15 +128,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 if (number.length() < 4)
                     continue;
 
-                // normalize number: strip separators
-                number = PhoneNumberUtils.stripSeparators(number);
-                //Log.w(TAG, "found mobile number " + number);
-
-                // normalize number: add country code if not found
-                if (number.startsWith("00"))
-                    number = '+' + number.substring(2);
-                else if (number.charAt(0) != '+')
-                    number = countryCode + number;
+                // fix number
+                number = NumberValidator.fixNumber(mContext, number);
 
                 try {
                     String hash = MessageUtils.sha1(number);
