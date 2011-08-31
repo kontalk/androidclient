@@ -11,7 +11,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -118,7 +117,7 @@ public class EndpointServer {
             String token, String[] group, String mime,
             InputStream data, long length) throws IOException {
 
-        HttpPut req = new HttpPut(messageURL);
+        HttpPost req = new HttpPost(messageURL);
         req.setEntity(new ProgressInputStreamEntity(data, length, job, listener));
 
         if (token != null)
