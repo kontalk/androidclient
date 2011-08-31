@@ -94,6 +94,7 @@ public final class MyMessages {
         public static final String TIMESTAMP = "timestamp";
         public static final String STATUS_CHANGED = "status_changed";
         public static final String STATUS = "status";
+        public static final String DRAFT = "draft";
 
         public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
         public static final String INVERTED_SORT_ORDER = "timestamp";

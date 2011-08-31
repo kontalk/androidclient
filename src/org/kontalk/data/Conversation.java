@@ -26,7 +26,8 @@ public class Conversation {
         Threads.MIME,
         Threads.CONTENT,
         Threads.TIMESTAMP,
-        Threads.STATUS
+        Threads.STATUS,
+        Threads.DRAFT
     };
 
     private final Context mContext;
@@ -40,6 +41,7 @@ public class Conversation {
     private String mSubject;
     private int mUnreadCount;
     private int mStatus;
+    private String mDraft;
 
     private Conversation(Context context) {
         mContext = context;
@@ -49,6 +51,8 @@ public class Conversation {
     private Conversation(Context context, Cursor c) {
         mContext = context;
         synchronized (this) {
+            // FIXME we really should use column indexes for better performance
+
             mThreadId = c.getLong(c.getColumnIndex(Threads._ID));
             mDate = c.getLong(c.getColumnIndex(Threads.TIMESTAMP));
 
@@ -58,6 +62,7 @@ public class Conversation {
             mUnreadCount = c.getInt(c.getColumnIndex(Threads.UNREAD));
             mMessageCount = c.getInt(c.getColumnIndex(Threads.COUNT));
             mStatus = c.getInt(c.getColumnIndex(Threads.STATUS));
+            mDraft = c.getString(c.getColumnIndex(Threads.DRAFT));
 
             loadContact();
         }
@@ -142,6 +147,10 @@ public class Conversation {
 
     public int getStatus() {
         return mStatus;
+    }
+
+    public String getDraft() {
+        return mDraft;
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token) {

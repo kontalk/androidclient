@@ -11,6 +11,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.widget.ImageView;
@@ -102,9 +103,22 @@ public class ConversationListItem extends RelativeLayout {
         if (conv.getUnreadCount() > 0)
             from.setSpan(STYLE_BOLD, 0, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
+        // draft indicator
+        int lastpos = from.length();
+        String draft = conv.getDraft();
+        if (draft != null) {
+            from.append(" ");
+            from.append(context.getResources().getString(R.string.has_draft));
+            from.setSpan(new ForegroundColorSpan(
+                    context.getResources().getColor(R.drawable.text_color_red)),
+                    lastpos, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+        }
+
         mFromView.setText(from);
         mDateView.setText(MessageUtils.formatTimeStampString(context, conv.getDate()));
-        mSubjectView.setText(conv.getSubject());
+
+        // last message or draft??
+        mSubjectView.setText(draft != null ? draft : conv.getSubject());
 
         // error indicator
         int resId = -1;

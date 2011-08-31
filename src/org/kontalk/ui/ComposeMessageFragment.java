@@ -755,6 +755,27 @@ public class ComposeMessageFragment extends ListFragment {
         super.onResume();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        // save last message as draft
+        if (threadId > 0) {
+            CharSequence text = mTextEntry.getText();
+            int len = text.length();
+            ContentValues values = new ContentValues(1);
+            values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
+            getActivity().getContentResolver().update(
+                    ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+                    values, null, null);
+
+            if (len > 0) {
+                // TODO i18n
+                Toast.makeText(getActivity(), "Message saved as draft.", Toast.LENGTH_LONG)
+                    .show();
+            }
+        }
+    }
+
     /** Prevents the list adapter from using the cursor (which is being destroyed). */
     @Override
     public void onStop() {
@@ -795,6 +816,11 @@ public class ComposeMessageFragment extends ListFragment {
                     Log.i(TAG, "conversation query completed, marking as read");
                     if (cursor.moveToFirst()) {
                         mConversation = Conversation.createFromCursor(getActivity(), cursor);
+                        // restore draft (if any)
+                        // TODO when to set this exactly?
+                        String draft = mConversation.getDraft();
+                        if (draft != null)
+                            mTextEntry.setText(draft);
                         // mark all messages as read
                         mConversation.markAsRead();
                     }

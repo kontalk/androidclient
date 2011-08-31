@@ -93,7 +93,8 @@ public class MessagesProvider extends ContentProvider {
             "timestamp INTEGER," +
             // this the timestamp of the latest status change
             "status_changed INTEGER," +
-            "status INTEGER" +
+            "status INTEGER," +
+            "draft TEXT" +
             ");";
 
         /** Updates the thread messages count. */
@@ -332,27 +333,40 @@ public class MessagesProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         if (values == null) { throw new IllegalArgumentException("No data"); }
 
+        String table;
         String where;
         String[] args;
         String messageId = null;
 
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
+                table = TABLE_MESSAGES;
                 where = selection;
                 args = selectionArgs;
                 break;
 
-            case MESSAGES_ID:
+            case MESSAGES_ID: {
                 long _id = ContentUris.parseId(uri);
+                table = TABLE_MESSAGES;
                 where = Messages._ID + " = ?";
                 args = new String[] { String.valueOf(_id) };
                 break;
+            }
 
             case MESSAGES_SERVERID:
                 messageId = uri.getPathSegments().get(1);
+                table = TABLE_MESSAGES;
                 where = Messages.MESSAGE_ID + " = ?";
                 args = new String[] { String.valueOf(messageId) };
                 break;
+
+            case THREADS_ID: {
+                long _id = ContentUris.parseId(uri);
+                table = TABLE_THREADS;
+                where = Threads._ID + " = ?";
+                args = new String[] { String.valueOf(_id) };
+                break;
+            }
 
             // threads table cannot be updated
 
@@ -362,7 +376,7 @@ public class MessagesProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         // FIXME why update() returns >0 even if no rows are modified???
-        int rows = db.update(TABLE_MESSAGES, values, where, args);
+        int rows = db.update(table, values, where, args);
 
         Log.w(TAG, "messages table updated, affected: " + rows);
 
@@ -370,12 +384,14 @@ public class MessagesProvider extends ContentProvider {
         if (rows > 0) {
             getContext().getContentResolver().notifyChange(uri, null);
 
-            Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.THREAD_ID },
-                    where, args, null, null, null);
-            while (c.moveToNext()) {
-                updateThreadInfo(db, c.getLong(0));
+            if (table.equals(TABLE_MESSAGES)) {
+                Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.THREAD_ID },
+                        where, args, null, null, null);
+                while (c.moveToNext())
+                    updateThreadInfo(db, c.getLong(0));
+
+                c.close();
             }
-            c.close();
         }
 
         return rows;
@@ -740,5 +756,6 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.TIMESTAMP, Threads.TIMESTAMP);
         threadsProjectionMap.put(Threads.STATUS_CHANGED, Threads.STATUS_CHANGED);
         threadsProjectionMap.put(Threads.STATUS, Threads.STATUS);
+        threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
     }
 }

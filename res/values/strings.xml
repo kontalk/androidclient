@@ -76,4 +76,5 @@
     <string name="last_seen_label">Last seen:\u0020</string>
     <string name="text_hint_encrypted">(encrypted)</string>
     <string name="myself_label">Me</string>
+    <string name="has_draft">Draft</string>
 </resources>
