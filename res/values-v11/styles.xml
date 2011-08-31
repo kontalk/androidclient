@@ -2,4 +2,6 @@
 <resources>
   <!-- default light theme selector -->
   <style name="Theme.Light" parent="android:Theme.Holo.Light"/>
+  <!-- default light-to-dark theme selector -->
+  <style name="Theme.Light2" parent="android:Theme.Holo.Light"/>
 </resources>

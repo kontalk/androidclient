@@ -63,8 +63,8 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.MessagingPreferences" android:theme="@style/Theme.Light"/>
-        <activity android:name=".ui.BootstrapPreferences" android:theme="@style/Theme.Light"/>
+        <activity android:name=".ui.MessagingPreferences" android:theme="@style/Theme.Light2"/>
+        <activity android:name=".ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
         <activity android:name=".ui.NumberValidation"
             android:theme="@android:style/Theme.Light"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
