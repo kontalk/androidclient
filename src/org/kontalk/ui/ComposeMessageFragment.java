@@ -559,13 +559,6 @@ public class ComposeMessageFragment extends ListFragment {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-    	processStart();
-    }
-
     private void loadConversationMetadata(Uri uri) {
         threadId = ContentUris.parseId(uri);
         mConversation = Conversation.loadFromId(getActivity(), threadId);
@@ -773,7 +766,7 @@ public class ComposeMessageFragment extends ListFragment {
         super.onResume();
 
         // cursor was previously destroyed -- reload everything
-        startQuery(true);
+        processStart();
     }
 
     @Override
