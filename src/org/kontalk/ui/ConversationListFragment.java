@@ -46,7 +46,6 @@ public class ConversationListFragment extends ListFragment {
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
     private boolean mDualPane;
-    private int mCurrentPosition;
 
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
         new ConversationListAdapter.OnContentChangedListener() {
@@ -252,12 +251,6 @@ public class ConversationListFragment extends ListFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        startQuery();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
@@ -271,6 +264,17 @@ public class ConversationListFragment extends ListFragment {
         if (!MessagingPreferences.getContactsChecked(getActivity())) {
             // TODO start the contacts list checker thread
         }
+
+        startQuery();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (!isRemoving() && !getActivity().isFinishing())
+            // abort cursor -- makes the activity not to requery everytime
+            mListAdapter.changeCursor(null);
     }
 
     @Override
@@ -302,15 +306,6 @@ public class ConversationListFragment extends ListFragment {
         }
     }
 
-    /**
-     * Prevents the list adapter from using the cursor (which is being destroyed).
-     */
-    @Override
-    public void onStop() {
-        super.onStop();
-        mListAdapter.changeCursor(null);
-    }
-
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         ConversationListItem cv = (ConversationListItem) v;
@@ -326,8 +321,6 @@ public class ConversationListFragment extends ListFragment {
     }
 
     private void openConversation(Conversation conv, int position) {
-        mCurrentPosition = position;
-
     	if (mDualPane) {
     		getListView().setItemChecked(position, true);
 

@@ -772,9 +772,8 @@ public class ComposeMessageFragment extends ListFragment {
     public void onResume() {
         super.onResume();
 
-        // reload conversation
-        mConversation = Conversation.loadFromId(getActivity(), threadId);
-        onConversationCreated();
+        // cursor was previously destroyed -- reload everything
+        startQuery(true);
     }
 
     @Override
@@ -796,13 +795,10 @@ public class ComposeMessageFragment extends ListFragment {
                     .show();
             }
         }
-    }
 
-    /** Prevents the list adapter from using the cursor (which is being destroyed). */
-    @Override
-    public void onStop() {
-        super.onStop();
-        mListAdapter.changeCursor(null);
+        if (!isRemoving() && !getActivity().isFinishing())
+            // abort cursor -- makes the activity not to requery everytime
+            mListAdapter.changeCursor(null);
     }
 
     /**
