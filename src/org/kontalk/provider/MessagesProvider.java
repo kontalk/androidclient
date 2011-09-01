@@ -311,6 +311,9 @@ public class MessagesProvider extends ContentProvider {
         // insert new thread
         long resThreadId = db.insert(TABLE_THREADS, null, values);
         if (resThreadId < 0) {
+            // clear draft (since we are inserting a new message here)
+            values.putNull(Threads.DRAFT);
+
             db.update(TABLE_THREADS, values, "peer = ?", new String[] { peer });
             // the client did not pass the thread id, query for it manually
             if (threadId < 0) {

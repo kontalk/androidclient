@@ -261,7 +261,6 @@ public class ComposeMessageFragment extends ListFragment {
                 Cursor c = getActivity().getContentResolver().query(newMsg, new String[] { Messages.THREAD_ID }, null, null, null);
                 if (c.moveToFirst()) {
                     threadId = c.getLong(0);
-                    Log.i(TAG, "starting query with threadId " + threadId);
                     mConversation = null;
                     startQuery(true);
                 }
@@ -327,7 +326,6 @@ public class ComposeMessageFragment extends ListFragment {
                     Cursor c = getActivity().getContentResolver().query(newMsg, new String[] { Messages.THREAD_ID }, null, null, null);
                     if (c.moveToFirst()) {
                         threadId = c.getLong(0);
-                        Log.i(TAG, "starting query with threadId " + threadId);
                         mConversation = null;
                         startQuery(true);
                     }
@@ -555,6 +553,7 @@ public class ComposeMessageFragment extends ListFragment {
 
             if (reloadConversation)
                 Conversation.startQuery(mQueryHandler, CONVERSATION_QUERY_TOKEN, threadId);
+
         } catch (SQLiteException e) {
             Log.e(TAG, "query error", e);
         }
@@ -626,6 +625,7 @@ public class ComposeMessageFragment extends ListFragment {
                         userId = MessageUtils.sha1(userPhone);
                     }
                     catch (Exception e) {
+                        // TODO handle error
                         Log.e(TAG, "sha1 digest failed", e);
                     }
 
@@ -637,6 +637,8 @@ public class ComposeMessageFragment extends ListFragment {
                     cp.close();
                 }
                 c.close();
+
+                mConversation = Conversation.loadFromId(getActivity(), threadId);
             }
 
             // view conversation - just threadId provided
@@ -675,6 +677,9 @@ public class ComposeMessageFragment extends ListFragment {
                 title += " <" + userPhone + ">";
             getActivity().setTitle(title);
         }
+
+        // update conversation stuff
+        onConversationCreated();
 
         if (userId != null && MessagingPreferences.getLastSeenEnabled(getActivity())) {
             // FIXME this should be handled better and of course honour activity
@@ -739,7 +744,7 @@ public class ComposeMessageFragment extends ListFragment {
 
         Log.i(TAG, "starting query with threadId " + threadId);
         if (threadId > 0) {
-            startQuery(true);
+            startQuery((mConversation == null));
         }
         else {
             // HACK this is for crappy honeycomb :)
@@ -747,12 +752,29 @@ public class ComposeMessageFragment extends ListFragment {
 
             mConversation = Conversation.createNew(getActivity());
             mConversation.setRecipient(userId);
+            onConversationCreated();
         }
+    }
+
+    private void onConversationCreated() {
+        // restore draft (if any and only if user hasn't inserted text)
+        if (mTextEntry.getText().length() == 0) {
+            String draft = mConversation.getDraft();
+            if (draft != null)
+                mTextEntry.setText(draft);
+        }
+
+        // mark all messages as read
+        mConversation.markAsRead();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        // reload conversation
+        mConversation = Conversation.loadFromId(getActivity(), threadId);
+        onConversationCreated();
     }
 
     @Override
@@ -816,13 +838,7 @@ public class ComposeMessageFragment extends ListFragment {
                     Log.i(TAG, "conversation query completed, marking as read");
                     if (cursor.moveToFirst()) {
                         mConversation = Conversation.createFromCursor(getActivity(), cursor);
-                        // restore draft (if any)
-                        // TODO when to set this exactly?
-                        String draft = mConversation.getDraft();
-                        if (draft != null)
-                            mTextEntry.setText(draft);
-                        // mark all messages as read
-                        mConversation.markAsRead();
+                        onConversationCreated();
                     }
 
                     cursor.close();
