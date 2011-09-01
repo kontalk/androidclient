@@ -264,17 +264,18 @@ public class ConversationListFragment extends ListFragment {
         if (!MessagingPreferences.getContactsChecked(getActivity())) {
             // TODO start the contacts list checker thread
         }
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
         startQuery();
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-
-        if (!isRemoving() && !getActivity().isFinishing())
-            // abort cursor -- makes the activity not to requery everytime
-            mListAdapter.changeCursor(null);
+    public void onStop() {
+        super.onStop();
+        mListAdapter.changeCursor(null);
     }
 
     @Override
@@ -346,6 +347,12 @@ public class ConversationListFragment extends ListFragment {
     	}
     }
 
+    public final boolean isFinishing() {
+        return (getActivity() == null ||
+                (getActivity() != null && getActivity().isFinishing())) ||
+                isRemoving();
+    }
+
     /**
      * The conversation list query handler.
      */
@@ -356,7 +363,10 @@ public class ConversationListFragment extends ListFragment {
 
         @Override
         protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            if (cursor == null || getActivity() == null) {
+            if (cursor == null || isFinishing()) {
+                // close cursor - if any
+                if (cursor != null) cursor.close();
+
                 Log.e(TAG, "query aborted or error!");
                 mListAdapter.changeCursor(null);
                 return;

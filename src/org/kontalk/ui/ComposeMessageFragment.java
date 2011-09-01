@@ -796,9 +796,21 @@ public class ComposeMessageFragment extends ListFragment {
             }
         }
 
-        if (!isRemoving() && !getActivity().isFinishing())
+        if (!isFinishing())
             // abort cursor -- makes the activity not to requery everytime
             mListAdapter.changeCursor(null);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mListAdapter.changeCursor(null);
+    }
+
+    public final boolean isFinishing() {
+        return (getActivity() == null ||
+                (getActivity() != null && getActivity().isFinishing())) ||
+                isRemoving();
     }
 
     /**
@@ -811,7 +823,10 @@ public class ComposeMessageFragment extends ListFragment {
 
         @Override
         protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
-            if (cursor == null || getActivity() == null) {
+            if (cursor == null || isFinishing()) {
+                // close cursor - if any
+                if (cursor != null) cursor.close();
+
                 Log.e(TAG, "query aborted or error!");
                 mListAdapter.changeCursor(null);
                 return;
