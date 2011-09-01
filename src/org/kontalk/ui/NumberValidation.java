@@ -126,8 +126,6 @@ public class NumberValidation extends AccountAuthenticatorActivity
         String phone = NumberValidator
             .fixNumber(this, mPhone.getText().toString());
         Log.i(TAG, "checking phone number: \"" + phone + "\"");
-        // FIXME LOL
-        if (phone != null) return;
 
         // empty number :S
         if (phone.length() == 0) {
