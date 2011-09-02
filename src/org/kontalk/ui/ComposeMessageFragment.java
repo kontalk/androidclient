@@ -672,7 +672,8 @@ public class ComposeMessageFragment extends ListFragment {
         }
 
         // update conversation stuff
-        onConversationCreated();
+        if (mConversation != null)
+            onConversationCreated();
 
         if (userId != null && MessagingPreferences.getLastSeenEnabled(getActivity())) {
             // FIXME this should be handled better and of course honour activity
