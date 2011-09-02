@@ -173,7 +173,15 @@ public class ComposeMessage extends FragmentActivity {
     }
 
     private void processSendIntent() {
-        final String mime = sendIntent.getType();
+        String mime = sendIntent.getType();
+
+        if (mime.startsWith("*/") || mime.endsWith("/*")) {
+            Uri uri = (Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+            Log.d(TAG, "looking up mime type for uri " + uri);
+            mime = getContentResolver().getType(uri);
+            Log.d(TAG, "using detected mime type " + mime);
+        }
+
         // send text message - just fill the text entry
         if (PlainTextMessage.supportsMimeType(mime)) {
             mFragment.setTextEntry(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
