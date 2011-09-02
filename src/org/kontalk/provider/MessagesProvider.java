@@ -245,19 +245,37 @@ public class MessagesProvider extends ContentProvider {
         if (sUriMatcher.match(uri) != MESSAGES) { throw new IllegalArgumentException("Unknown URI " + uri); }
         if (initialValues == null) { throw new IllegalArgumentException("No data"); }
 
+        ContentResolver cr = getContext().getContentResolver();
+
+        // if this flag is true, we'll insert the thread only
+        String draft = initialValues.getAsString(Threads.DRAFT);
+
         ContentValues values = new ContentValues(initialValues);
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         // create the thread first
         long threadId = updateThreads(db, values);
+
+        if (draft != null) {
+            // notify thread change
+            cr.notifyChange(
+                    ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+                    null);
+            // notify conversation change
+            cr.notifyChange(
+                    ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
+                    null);
+
+            Log.d(TAG, "draft thread created");
+            return null;
+        }
+
         values.put(Messages.THREAD_ID, threadId);
 
         // insert the new message now!
         long rowId = db.insert(TABLE_MESSAGES, null, values);
 
         if (rowId > 0) {
-            ContentResolver cr = getContext().getContentResolver();
-
             Uri msgUri = ContentUris.withAppendedId(uri, rowId);
             cr.notifyChange(msgUri, null);
             Log.w(TAG, "messages table inserted, id = " + rowId);
@@ -511,8 +529,10 @@ public class MessagesProvider extends ContentProvider {
         if (threadId > 0) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             try {
+                int num = 0;
+
                 db.beginTransaction();
-                db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
+                num += db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
 
                 // query all messages first because we need to notify changes
                 Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
@@ -524,7 +544,7 @@ public class MessagesProvider extends ContentProvider {
                     messageList[i++] = c.getLong(0);
                 c.close();
 
-                int num = db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
+                num += db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
                 db.setTransactionSuccessful();
 
                 // notify change for every message :(
@@ -592,7 +612,8 @@ public class MessagesProvider extends ContentProvider {
     }
 
     private int deleteEmptyThreads(SQLiteDatabase db) {
-        int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0", null);
+        int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0 AND " +
+                Threads.DRAFT + " IS NOT NULL", null);
         Log.i(TAG, "deleting empty threads: " + rows);
         if (rows > 0)
             getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);

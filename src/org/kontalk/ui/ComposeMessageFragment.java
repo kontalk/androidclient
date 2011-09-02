@@ -709,17 +709,18 @@ public class ComposeMessageFragment extends ListFragment {
                     if (text != null) {
                         final String bannerText = text;
                         // show last seen banner
-                        // TODO animation??
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mLastSeenBanner.setText(bannerText);
-                                mLastSeenBanner.setVisibility(View.VISIBLE);
-                                mLastSeenBanner.startAnimation(
-                                        AnimationUtils.loadAnimation(
-                                                getActivity(), R.anim.header_appear));
-                            }
-                        });
+                        Activity context = getActivity();
+                        if (context != null)
+                            context.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mLastSeenBanner.setText(bannerText);
+                                    mLastSeenBanner.setVisibility(View.VISIBLE);
+                                    mLastSeenBanner.startAnimation(
+                                            AnimationUtils.loadAnimation(
+                                                    getActivity(), R.anim.header_appear));
+                                }
+                            });
                     }
                 }
             }).start();
@@ -768,28 +769,48 @@ public class ComposeMessageFragment extends ListFragment {
         super.onResume();
 
         // cursor was previously destroyed -- reload everything
-        mConversation = null;
+        //mConversation = null;
         processStart();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        CharSequence text = mTextEntry.getText();
+        int len = text.length();
+
         // save last message as draft
         if (threadId > 0) {
-            CharSequence text = mTextEntry.getText();
-            int len = text.length();
             ContentValues values = new ContentValues(1);
             values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
             getActivity().getContentResolver().update(
                     ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
                     values, null, null);
+        }
+
+        // new thread, create empty conversation
+        else {
+            // TODO handle aborted draft
 
             if (len > 0) {
-                // TODO i18n
-                Toast.makeText(getActivity(), "Message saved as draft.", Toast.LENGTH_LONG)
-                    .show();
+                // save to local storage
+                ContentValues values = new ContentValues();
+                // must supply a message ID...
+                values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
+                values.put(Messages.PEER, userId);
+                values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
+                values.put(Messages.CONTENT, "");
+                values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+                values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+                values.put(Threads.DRAFT, text.toString());
+                getActivity().getContentResolver().insert(Messages.CONTENT_URI, values);
             }
+        }
+
+        if (len > 0) {
+            // TODO i18n
+            Toast.makeText(getActivity(), "Message saved as draft.", Toast.LENGTH_LONG)
+                .show();
         }
     }
 
@@ -830,7 +851,7 @@ public class ComposeMessageFragment extends ListFragment {
                     getActivity().setProgressBarIndeterminateVisibility(false);
 
                     // no messages to show - exit
-                    if (mListAdapter.getCount() == 0) {
+                    if (mListAdapter.getCount() == 0 && (mConversation == null || mConversation.getDraft() == null)) {
                         Log.w(TAG, "no data to view - exit");
                         getActivity().finish();
                     }
