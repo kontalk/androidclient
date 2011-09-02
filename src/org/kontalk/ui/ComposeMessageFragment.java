@@ -180,7 +180,8 @@ public class ComposeMessageFragment extends ListFragment {
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener =
         new MessageListAdapter.OnContentChangedListener() {
         public void onContentChanged(MessageListAdapter adapter) {
-            startQuery(true);
+            if (isVisible())
+                startQuery(true);
         }
     };
 
@@ -767,6 +768,7 @@ public class ComposeMessageFragment extends ListFragment {
         super.onResume();
 
         // cursor was previously destroyed -- reload everything
+        mConversation = null;
         processStart();
     }
 
@@ -789,10 +791,6 @@ public class ComposeMessageFragment extends ListFragment {
                     .show();
             }
         }
-
-        if (!isFinishing())
-            // abort cursor -- makes the activity not to requery everytime
-            mListAdapter.changeCursor(null);
     }
 
     @Override
