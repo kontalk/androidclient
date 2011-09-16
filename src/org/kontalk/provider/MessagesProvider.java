@@ -613,7 +613,7 @@ public class MessagesProvider extends ContentProvider {
 
     private int deleteEmptyThreads(SQLiteDatabase db) {
         int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0 AND " +
-                Threads.DRAFT + " IS NOT NULL", null);
+                Threads.DRAFT + " IS NULL", null);
         Log.i(TAG, "deleting empty threads: " + rows);
         if (rows > 0)
             getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);

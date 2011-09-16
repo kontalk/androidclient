@@ -414,6 +414,7 @@ public class ComposeMessageFragment extends ListFragment {
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                mTextEntry.setText("");
                 MessagesProvider.deleteThread(getActivity(), threadId);
             }
         });
@@ -632,7 +633,13 @@ public class ComposeMessageFragment extends ListFragment {
                 }
                 c.close();
 
-                mConversation = Conversation.loadFromId(getActivity(), threadId);
+                if (threadId > 0) {
+                    mConversation = Conversation.loadFromId(getActivity(), threadId);
+                }
+                else {
+                    mConversation = Conversation.createNew(getActivity());
+                    mConversation.setRecipient(userId);
+                }
             }
 
             // view conversation - just threadId provided
@@ -851,7 +858,9 @@ public class ComposeMessageFragment extends ListFragment {
                     getActivity().setProgressBarIndeterminateVisibility(false);
 
                     // no messages to show - exit
-                    if (mListAdapter.getCount() == 0 && (mConversation == null || mConversation.getDraft() == null)) {
+                    if (mListAdapter.getCount() == 0 &&
+                            (mConversation == null || mConversation.getDraft() == null ||
+                                    mTextEntry.getText().length() == 0)) {
                         Log.w(TAG, "no data to view - exit");
                         getActivity().finish();
                     }
