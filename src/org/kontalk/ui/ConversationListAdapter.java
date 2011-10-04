@@ -20,7 +20,7 @@ public class ConversationListAdapter extends CursorAdapter {
     private OnContentChangedListener mOnContentChangedListener;
 
     public ConversationListAdapter(Context context, Cursor cursor) {
-        super(context, cursor, false /* auto-requery */);
+        super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
     }
 

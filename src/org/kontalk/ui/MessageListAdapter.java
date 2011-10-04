@@ -21,9 +21,9 @@ public class MessageListAdapter extends CursorAdapter {
     private OnContentChangedListener mOnContentChangedListener;
 
     private Contact mContact;
-    
+
     public MessageListAdapter(Context context, Cursor cursor) {
-        super(context, cursor, false /* auto-requery */);
+        super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
     }
 

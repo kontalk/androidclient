@@ -797,8 +797,6 @@ public class ComposeMessageFragment extends ListFragment {
 
         // new thread, create empty conversation
         else {
-            // TODO handle aborted draft
-
             if (len > 0) {
                 // save to local storage
                 ContentValues values = new ContentValues();
