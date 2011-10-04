@@ -38,11 +38,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.provider.BaseColumns;
 import android.support.v4.app.ListFragment;
 import android.text.ClipboardManager;
 import android.text.Editable;
@@ -93,6 +97,7 @@ public class ComposeMessageFragment extends ListFragment {
     private String userName;
     private String userPhone;
 
+    private PeerObserver mPeerObserver;
 
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromContactPicker(Context context, Uri rawContactUri) {
@@ -767,8 +772,61 @@ public class ComposeMessageFragment extends ListFragment {
                 mTextEntry.setText(draft);
         }
 
-        // mark all messages as read
-        mConversation.markAsRead();
+        if (mConversation.getThreadId() > 0) {
+            // mark all messages as read
+            mConversation.markAsRead();
+        }
+        else {
+            // new conversation -- observe peer Uri
+            registerPeerObserver();
+        }
+    }
+
+    private synchronized void registerPeerObserver() {
+        if (mPeerObserver == null) {
+            Uri uri = Threads.getUri(mConversation.getRecipient());
+            mPeerObserver = new PeerObserver(getActivity(), mQueryHandler);
+            getActivity().getContentResolver()
+                .registerContentObserver(uri, false, mPeerObserver);
+        }
+    }
+
+    private synchronized void unregisterPeerObserver() {
+        if (mPeerObserver != null) {
+            getActivity().getContentResolver()
+                .unregisterContentObserver(mPeerObserver);
+            mPeerObserver = null;
+        }
+    }
+
+    private final class PeerObserver extends ContentObserver {
+        private final Context mContext;
+
+        public PeerObserver(Context context, Handler handler) {
+            super(handler);
+            mContext = context;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            Conversation conv = Conversation.loadFromUserId(mContext, userId);
+
+            if (conv != null) {
+                mConversation = conv;
+                threadId = mConversation.getThreadId();
+
+                // auto-unregister
+                unregisterPeerObserver();
+            }
+
+            // fire cursor update
+            processStart();
+        }
+
+        @Override
+        public boolean deliverSelfNotifications() {
+            return false;
+        }
     }
 
     @Override
@@ -822,6 +880,7 @@ public class ComposeMessageFragment extends ListFragment {
     @Override
     public void onStop() {
         super.onStop();
+        unregisterPeerObserver();
         mListAdapter.changeCursor(null);
     }
 
@@ -846,6 +905,7 @@ public class ComposeMessageFragment extends ListFragment {
                 if (cursor != null) cursor.close();
 
                 Log.e(TAG, "query aborted or error!");
+                unregisterPeerObserver();
                 mListAdapter.changeCursor(null);
                 return;
             }

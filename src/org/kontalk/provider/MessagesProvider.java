@@ -345,6 +345,11 @@ public class MessagesProvider extends ContentProvider {
         else {
             threadId = resThreadId;
             Log.w(TAG, "new thread inserted with id " + threadId);
+
+            // notify newly created thread by userid
+            // this will be used for fixing ticket #18
+            getContext().getContentResolver()
+                .notifyChange(Threads.getUri(peer), null);
         }
 
         return threadId;
