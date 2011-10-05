@@ -14,7 +14,8 @@
     <string name="menu_search">Search</string>
     <string name="menu_settings">Settings</string>
     <string name="pref_network_settings">Network settings</string>
-    <string name="pref_network_uri">Network address</string>
+    <string name="pref_network_uri">Manual server address</string>
+    <string name="pref_title_network_uri">This will override server list automatic management</string>
     <string name="number_validation_intro">Please enter your mobile phone number, including any international prefix.</string>
     <string name="hint_phone_number">Enter your phone number</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
@@ -77,4 +78,5 @@
     <string name="text_hint_encrypted">(encrypted)</string>
     <string name="myself_label">Me</string>
     <string name="has_draft">Draft</string>
+    <string name="pref_update_server_list">Update server list</string>
 </resources>
