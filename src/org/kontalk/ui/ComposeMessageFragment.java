@@ -45,8 +45,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.provider.BaseColumns;
 import android.support.v4.app.ListFragment;
 import android.text.ClipboardManager;
 import android.text.Editable;
