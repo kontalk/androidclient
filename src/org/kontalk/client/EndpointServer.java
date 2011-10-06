@@ -31,6 +31,7 @@ public class EndpointServer {
     private static final String REQUEST_PATH = "/request.php?cmd=";
     private static final String MESSAGE_PATH = "/postmessage.php";
     private static final String DOWNLOAD_PATH = "/download.php?f=";
+    private static final String SERVERLIST_PATH = "/serverlist.php";
 
     /** The authentication token header. */
     public static final String HEADER_AUTH_TOKEN = "X-Auth-Token";
@@ -38,16 +39,25 @@ public class EndpointServer {
     /** The recipients list header. */
     public static final String HEADER_RECIPIENTS = "X-Recipients";
 
+    private final String baseURL;
     private final String requestURL;
     private final String pollingURL;
     private final String messageURL;
     private final String downloadURL;
+    private final String serverlistURL;
 
     public EndpointServer(String baseURL) {
+        this.baseURL = baseURL;
         this.requestURL = baseURL + REQUEST_PATH;
         this.pollingURL = baseURL + POLLING_PATH;
         this.messageURL = baseURL + MESSAGE_PATH;
         this.downloadURL = baseURL + DOWNLOAD_PATH;
+        this.serverlistURL = baseURL + SERVERLIST_PATH;
+    }
+
+    @Override
+    public String toString() {
+        return baseURL;
     }
 
     /**
@@ -170,6 +180,10 @@ public class EndpointServer {
             req.addHeader(HEADER_AUTH_TOKEN, token);
 
         return req;
+    }
+
+    public HttpRequestBase prepareServerListRequest() throws IOException {
+        return new HttpGet(serverlistURL);
     }
 
     /**

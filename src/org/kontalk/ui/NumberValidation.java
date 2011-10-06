@@ -155,8 +155,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         Log.i(TAG, "phone number checked, sending validation request");
         startProgress();
 
-        EndpointServer server = new EndpointServer
-            (MessagingPreferences.getServerURI(this));
+        EndpointServer server = MessagingPreferences.getEndpointServer(this);
         mValidator = new NumberValidator(this, server, phone, mManualValidation);
         mValidator.setListener(this);
         mValidator.start();

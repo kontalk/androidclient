@@ -101,9 +101,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             throws OperationCanceledException {
 
         // setup the request client
-        final String serverUri = MessagingPreferences.getServerURI(context);
+        final EndpointServer server = MessagingPreferences.getEndpointServer(context);
         final String token = Authenticator.getDefaultAccountToken(mContext);
-        final RequestClient client = new RequestClient(mContext, new EndpointServer(serverUri), token);
+        final RequestClient client = new RequestClient(mContext, server, token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
 
         final String countryCode = NumberValidator.getCountryPrefix(mContext);

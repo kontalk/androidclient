@@ -532,8 +532,8 @@ public class MessageCenterService extends Service
                 final Intent intent = new Intent(context, MessageCenterService.class);
 
                 // get the URI from the preferences
-                String uri = MessagingPreferences.getServerURI(context);
-                intent.putExtra(EndpointServer.class.getName(), uri);
+                EndpointServer server = MessagingPreferences.getEndpointServer(context);
+                intent.putExtra(EndpointServer.class.getName(), server.toString());
                 context.startService(intent);
             }
             else

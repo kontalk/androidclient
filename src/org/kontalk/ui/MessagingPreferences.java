@@ -2,21 +2,28 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.ServerListUpdater;
+import org.kontalk.util.MessageUtils;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+
 
 public class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
@@ -55,18 +62,91 @@ public class MessagingPreferences extends PreferenceActivity {
             }
         });
 
+        // server list last update timestamp
+        final Preference updateServerList = findPreference("pref_update_server_list");
+        updateServerList.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Log.w(TAG, "updating server list");
+                final ServerListUpdater updater = new ServerListUpdater(MessagingPreferences.this);
+
+                final ProgressDialog diag = new ProgressDialog(MessagingPreferences.this);
+                diag.setCancelable(true);
+                diag.setMessage("Updating server list...");
+                diag.setIndeterminate(true);
+                diag.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        updater.cancel();
+                    }
+                });
+
+                updater.setListener(new ServerListUpdater.UpdaterListener() {
+                    @Override
+                    public void error(Throwable e) {
+                        diag.cancel();
+                        MessagingPreferences.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MessagingPreferences.this, "Unable to download server list. Please retry later.",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void nodata(Throwable e) {
+                        diag.cancel();
+                        MessagingPreferences.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MessagingPreferences.this, "No available server list found.",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void updated(final ServerList list) {
+                        diag.dismiss();
+                        MessagingPreferences.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateServerListLastUpdate(updateServerList, list);
+                            }
+                        });
+                    }
+                });
+
+                diag.show();
+                updater.start();
+                return true;
+            }
+        });
+
+        ServerList list = ServerListUpdater.getCurrentList(this);
+        if (list != null)
+            updateServerListLastUpdate(updateServerList, list);
     }
 
-    /** Default built-in server URI. */
-    // TODO metaserver infrastructure
-    public static final String DEFAULT_SERVER_URI = "http://www.kontalk.org/messenger";
-
-    public static String getServerURI(Context context) {
-        return getString(context, "pref_network_uri", DEFAULT_SERVER_URI);
+    private static void updateServerListLastUpdate(Preference pref, ServerList list) {
+        Context context = pref.getContext();
+        String timestamp = MessageUtils.formatTimeStampString(context, list.getDate().getTime(), true);
+        pref.setSummary(context.getString(R.string.server_list_last_update, timestamp));
     }
 
+    private static String getServerURI(Context context) {
+        return getString(context, "pref_network_uri", null);
+    }
+
+    /** Returns a random server from the cached list or the user-defined server. */
     public static EndpointServer getEndpointServer(Context context) {
-        return new EndpointServer(getServerURI(context));
+        String customUri = getServerURI(context);
+        if (!TextUtils.isEmpty(customUri))
+            return new EndpointServer(customUri);
+
+        ServerList list = ServerListUpdater.getCurrentList(context);
+        return (list != null) ? list.random() : null;
     }
 
     /** Returns true if the contacts list has already been checked against the server. */
