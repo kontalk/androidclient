@@ -67,6 +67,7 @@ public class MessageCenterService extends Service
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
     private Account mAccount;
+    private boolean mPushNotifications;
 
     /**
      * This list will contain the received messages - avoiding multiple
@@ -126,6 +127,7 @@ public class MessageCenterService extends Service
             Log.i(TAG, "using server uri: " + serverUrl);
             EndpointServer server = new EndpointServer(serverUrl);
 
+            mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
             mAccount = Authenticator.getDefaultAccount(this);
             if (mAccount == null) {
                 stopSelf();
@@ -541,6 +543,30 @@ public class MessageCenterService extends Service
         }
         else
             Log.w(TAG, "background data disabled - abort service start");
+    }
+
+    public void setPushNotifications(boolean enabled) {
+        mPushNotifications = enabled;
+        if (mPushNotifications)
+            c2dmRegister();
+        else
+            c2dmUnregister();
+    }
+
+    private void c2dmRegister() {
+        /* TODO
+         * e-mail of sender will be given by serverinfo if any
+        Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
+        registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0)); // boilerplate
+        registrationIntent.putExtra("sender", emailOfSender);
+        startService(registrationIntent);
+        */
+    }
+
+    private void c2dmUnregister() {
+        Intent unregIntent = new Intent("com.google.android.c2dm.intent.UNREGISTER");
+        unregIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
+        startService(unregIntent);
     }
 
     /** Stops the message center. */

@@ -13,5 +13,10 @@
             android:summary="@string/pref_title_network_uri"
             android:key="pref_network_uri"
             android:singleLine="true" android:inputType="textUri"/>
+        <CheckBoxPreference
+            android:key="pref_push_notifications"
+            android:summary="@string/pref_title_push_notifications"
+            android:title="@string/pref_push_notifications"
+            android:defaultValue="true"/>
     </PreferenceCategory>
 </PreferenceScreen>

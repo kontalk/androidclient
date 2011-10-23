@@ -20,7 +20,12 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
 
+    <!-- These 2 lines assure that only this application can receive replies from CD2M --> 
+    <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    <uses-permission android:name="org.kontalk.permission.C2D_MESSAGE" />
+    
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:name=".Kontalk" android:debuggable="true">
         <service
             android:label="@string/service_name"
@@ -97,5 +102,19 @@
         </receiver>
         <activity android:name=".ui.ContactsListActivity" android:label="@string/contacts_list_title" android:theme="@style/Theme.Light"></activity>
         <service android:name=".service.DownloadService" android:label="@string/download_service"></service>
+        
+        <receiver android:name=".service.C2DMReceiver" android:permission="com.google.android.c2dm.permission.SEND">
+            <!-- Receive the actual message -->
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="org.kontalk" />
+            </intent-filter>
+            <!-- Receive the registration id -->
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="org.kontalk" />
+            </intent-filter>
+        </receiver>
+            
     </application>
 </manifest>

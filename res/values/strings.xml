@@ -80,4 +80,6 @@
     <string name="has_draft">Draft</string>
     <string name="pref_update_server_list">Update server list</string>
     <string name="server_list_last_update">Last update: %s</string>
+    <string name="pref_title_push_notifications">Use push notifications if server supports it, saves battery</string>
+    <string name="pref_push_notifications">Push notifications</string>
 </resources>
