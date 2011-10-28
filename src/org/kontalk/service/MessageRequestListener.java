@@ -1,12 +1,11 @@
 package org.kontalk.service;
 
-import java.util.List;
-import java.util.Map;
-
 import org.kontalk.client.MessageSender;
-import org.kontalk.client.StatusResponse;
+import org.kontalk.client.Protocol;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
+
+import com.google.protobuf.MessageLite;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -34,17 +33,18 @@ public class MessageRequestListener implements RequestListener {
     }
 
     @Override
-    public void response(RequestJob job, List<StatusResponse> res) {
+    public void response(RequestJob job, MessageLite response) {
         MessageSender job2 = (MessageSender) job;
-        if (res != null && res.size() > 0) {
+        Protocol.MessageSent resGroup = (Protocol.MessageSent) response;
+
+        if (response != null && resGroup.getEntryCount() > 0) {
             Uri uri = job2.getMessageUri();
-            StatusResponse st = res.get(0);
+            Protocol.MessageSentEntry res = resGroup.getEntry(0);
 
             // message accepted!
-            if (st.code == StatusResponse.STATUS_SUCCESS) {
-                Map<String, Object> extra = st.extra;
-                if (extra != null) {
-                    String msgId = (String) extra.get("i");
+            if (res.getStatus() == Protocol.Status.STATUS_SUCCESS) {
+                if (res.hasMessageId()) {
+                    String msgId = res.getMessageId();
                     if (!TextUtils.isEmpty(msgId)) {
                         // FIXME this should use changeMessageStatus, but it
                         // won't work because of the newly messageId included
@@ -63,7 +63,7 @@ public class MessageRequestListener implements RequestListener {
             else {
                 MessagesProvider.changeMessageStatus(mContext, uri,
                         Messages.STATUS_NOTACCEPTED, -1, System.currentTimeMillis());
-                Log.w(TAG, "message not accepted by server and updated (" + st.code + ")");
+                Log.w(TAG, "message not accepted by server and updated (" + res.getStatus() + ")");
             }
         }
         else {

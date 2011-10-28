@@ -1,14 +1,5 @@
 package org.kontalk.client;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +8,10 @@ import android.os.Bundle;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
+
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 
 /**
@@ -124,35 +118,27 @@ public class NumberValidator implements Runnable {
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
-                List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-                params.add(new BasicNameValuePair("n", mPhone));
-                List<StatusResponse> res = mClient.request("validation", params, null);
-                if (res.size() > 0) {
-                    if (mListener != null) {
-                        StatusResponse st = res.get(0);
-                        if (st.code == StatusResponse.STATUS_SUCCESS) {
-                            Map<String, Object> extra = st.extra;
-                            if (extra != null) {
-                                mSmsFrom = (String) extra.get("f");
-                                Log.d(TAG, "using sms sender id: " + mSmsFrom);
-                                mListener.onValidationRequested(this);
-                            }
-                            else {
-                                // no sms from identification?
-                                throw new IllegalArgumentException("no sms from id");
-                            }
+                Protocol.PhoneValidation res = mClient.validate(mPhone);
+                if (mListener != null) {
+
+                    if (res.getStatus() == Protocol.Status.STATUS_SUCCESS) {
+
+                        if (res.hasSmsFrom()) {
+                            mSmsFrom = res.getSmsFrom();
+                            Log.d(TAG, "using sms sender id: " + mSmsFrom);
+                            mListener.onValidationRequested(this);
                         }
                         else {
-                            // validation failed :(
-                            mListener.onValidationFailed(this, st.code);
-                            mStep = STEP_INIT;
-                            return;
+                            // no sms from identification?
+                            throw new IllegalArgumentException("no sms from id");
                         }
                     }
-                }
-                else {
-                    // empty response!? :O
-                    throw new IllegalArgumentException("invalid arguments");
+                    else {
+                        // validation failed :(
+                        mListener.onValidationFailed(this, res.getStatus());
+                        mStep = STEP_INIT;
+                        return;
+                    }
                 }
 
                 // validation succeded! Waiting for the sms...
@@ -162,31 +148,21 @@ public class NumberValidator implements Runnable {
             else if (mStep == STEP_AUTH_TOKEN) {
                 Log.d(TAG, "requesting authentication token");
 
-                List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-                params.add(new BasicNameValuePair("v", mValidationCode.toString()));
-                List<StatusResponse> res = mClient.request("authentication", params, null);
-                if (res.size() > 0) {
-                    if (mListener != null) {
-                        StatusResponse st = res.get(0);
-                        if (st.code == StatusResponse.STATUS_SUCCESS) {
-                            Map<String,Object> ex = st.extra;
-                            if (ex != null) {
-                                String token = (String) ex.get("a");
-                                if (token != null && token.length() > 0);
-                                    mListener.onAuthTokenReceived(this, token);
-                            }
-                        }
-                        else {
-                            // authentication failed :(
-                            mListener.onAuthTokenFailed(this, st.code);
-                            mStep = STEP_INIT;
-                            return;
+                Protocol.Authentication res = mClient.authenticate(mValidationCode.toString());
+                if (mListener != null) {
+                    if (res.getStatus() == Protocol.Status.STATUS_SUCCESS) {
+                        if (res.hasToken()) {
+                            String token = res.getToken();
+                            if (TextUtils.isEmpty(token))
+                                mListener.onAuthTokenReceived(this, token);
                         }
                     }
-                }
-                else {
-                    // empty response!? :O
-                    throw new IllegalArgumentException("invalid arguments");
+                    else {
+                        // authentication failed :(
+                        mListener.onAuthTokenFailed(this, res.getStatus());
+                        mStep = STEP_INIT;
+                        return;
+                    }
                 }
             }
         }
@@ -245,7 +221,7 @@ public class NumberValidator implements Runnable {
         public void onValidationRequested(NumberValidator v);
 
         /** Called if phone number validation failed. */
-        public void onValidationFailed(NumberValidator v, int reason);
+        public void onValidationFailed(NumberValidator v, Protocol.Status reason);
 
         /** Called when the validation code SMS has been received. */
         public void onValidationCodeReceived(NumberValidator v, CharSequence code);
@@ -254,7 +230,7 @@ public class NumberValidator implements Runnable {
         public void onAuthTokenReceived(NumberValidator v, CharSequence token);
 
         /** Called if validation code has not been verified. */
-        public void onAuthTokenFailed(NumberValidator v, int reason);
+        public void onAuthTokenFailed(NumberValidator v, Protocol.Status reason);
     }
 
     public static String getCountryPrefix(Context context) {

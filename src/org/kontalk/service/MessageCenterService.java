@@ -6,16 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ImageMessage;
 import org.kontalk.client.MessageSender;
+import org.kontalk.client.Protocol;
 import org.kontalk.client.ReceiptMessage;
-import org.kontalk.client.StatusResponse;
+import org.kontalk.client.ReceivedJob;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -23,6 +22,8 @@ import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
+
+import com.google.protobuf.MessageLite;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -258,17 +259,17 @@ public class MessageCenterService extends Service
                 Messages.STATUS + " IS NULL",
                 null, null);
 
-        List<NameValuePair> list = new ArrayList<NameValuePair>();
+        List<String> list = new ArrayList<String>();
         while (c.moveToNext()) {
             String msgId = c.getString(0);
             Log.i(TAG, "sending received notification for real message " + msgId);
-            list.add(new BasicNameValuePair("i[]", msgId));
+            list.add(msgId);
         }
         c.close();
 
         if (list.size() > 0) {
             // here we send the received notification
-            RequestJob job = new RequestJob("received", list);
+            RequestJob job = new ReceivedJob(list);
             pushRequest(job);
         }
     }
@@ -294,7 +295,7 @@ public class MessageCenterService extends Service
 
     @Override
     public void incoming(List<AbstractMessage<?>> messages) {
-        List<NameValuePair> list = new ArrayList<NameValuePair>();
+        List<String> list = new ArrayList<String>();
 
         // access to mReceived list is protected
         synchronized (mReceived) {
@@ -303,7 +304,7 @@ public class MessageCenterService extends Service
             for (AbstractMessage<?> msg : messages) {
                 if (!mReceived.contains(msg.getId())) {
                     // the message need to be confirmed
-                    list.add(new BasicNameValuePair("i[]", msg.getRealId()));
+                    list.add(msg.getRealId());
                     mReceived.add(msg.getId());
 
                     // do not store receipts...
@@ -370,7 +371,7 @@ public class MessageCenterService extends Service
 
         if (list.size() > 0) {
             Log.w(TAG, "pushing receive confirmation");
-            RequestJob job = new RequestJob("received", list);
+            RequestJob job = new ReceivedJob(list);
             pushRequest(job);
         }
     }
@@ -448,37 +449,23 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public void response(RequestJob job, List<StatusResponse> statuses) {
-        Log.w(TAG, "job=" + job + ", statuses=" + statuses);
+    public void response(RequestJob job, MessageLite response) {
+        Log.w(TAG, "job=" + job + ", response=" + response);
         // stop foreground if any
         stopForeground();
 
         // received command
-        if (statuses != null && "received".equals(job.getCommand())) {
+        if (response != null && response instanceof Protocol.Received) {
             // access to mReceived list is protected
             synchronized (mReceived) {
-                // single status - retrieve message id from request
-                if (statuses.size() == 1) {
-                    List<NameValuePair> params = job.getParams();
-                    for (NameValuePair par : params) {
-                        if ("i".equals(par.getName()) || "i[]".equals(par.getName())) {
-                            mReceived.remove(par.getValue());
-                            MessagesProvider.changeMessageStatus(this,
-                                    par.getValue(), true, Messages.STATUS_CONFIRMED);
-                        }
-                    }
-                }
-                // multiple statuses - each status has its own message id
-                else {
-                    for (StatusResponse st : statuses) {
-                        if (st.extra != null) {
-                            String idToRemove = (String) st.extra.get("i");
-                            if (idToRemove != null) {
-                                mReceived.remove(idToRemove);
-                                MessagesProvider.changeMessageStatus(this,
-                                        idToRemove, true, Messages.STATUS_CONFIRMED);
-                            }
-                        }
+                Protocol.Received response2 = (Protocol.Received) response;
+                List<Protocol.ReceivedEntry> list = response2.getEntryList();
+                for (Protocol.ReceivedEntry entry : list) {
+                    if (entry.getStatus() == Protocol.Status.STATUS_SUCCESS) {
+                        String id = entry.getMessageId();
+                        mReceived.remove(id);
+                        MessagesProvider.changeMessageStatus(this,
+                                id, true, Messages.STATUS_CONFIRMED);
                     }
                 }
             }

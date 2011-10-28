@@ -1,8 +1,7 @@
 package org.kontalk.service;
 
-import java.util.List;
+import com.google.protobuf.MessageLite;
 
-import org.kontalk.client.StatusResponse;
 
 public interface RequestListener {
 
@@ -21,7 +20,7 @@ public interface RequestListener {
     public void downloadProgress(RequestJob job, long bytes);
 
     /** Manages the statuses receved from one request job. */
-    public void response(RequestJob job, List<StatusResponse> statuses);
+    public void response(RequestJob job, MessageLite response);
 
     /**
      * Called if an error occured while sending a request to the server.

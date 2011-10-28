@@ -4,6 +4,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
+import org.kontalk.client.Protocol;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
 
 import android.accounts.Account;
@@ -231,7 +232,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     }
 
     @Override
-    public void onAuthTokenFailed(NumberValidator v, int reason) {
+    public void onAuthTokenFailed(NumberValidator v, Protocol.Status reason) {
         Log.e(TAG, "authorization token request failed (" + reason + ")");
         // TODO handle error
         abort();
@@ -311,7 +312,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     }
 
     @Override
-    public void onValidationFailed(NumberValidator v, int reason) {
+    public void onValidationFailed(NumberValidator v, Protocol.Status reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
         // TODO handle error
         runOnUiThread(new Runnable() {

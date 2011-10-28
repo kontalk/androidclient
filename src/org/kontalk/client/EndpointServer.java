@@ -18,6 +18,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.kontalk.client.Protocol;
 import org.kontalk.service.RequestListener;
 import org.kontalk.util.ProgressInputStreamEntity;
 
@@ -32,6 +33,7 @@ public class EndpointServer {
     public static final String SERVERINFO_PATH = "/serverinfo";
     public static final String VALIDATION_PATH = "/validation";
     public static final String AUTHENTICATION_PATH = "/authentication";
+    public static final String LOOKUP_PATH = "/lookup";
     public static final String RECEIVED_PATH = "/received";
     public static final String MESSAGE_PATH = "/message";
 
@@ -60,6 +62,8 @@ public class EndpointServer {
      * @param token the autentication token (if needed)
      * @param mime if null will use <code>application/x-google-protobuf</code>
      * @param content the POST body content, if null it will use GET
+     * @param forcePost force a POST request even with null content (useful for
+     * post-poning entity creation)
      * @return the request object
      * @throws IOException
      */
@@ -91,6 +95,36 @@ public class EndpointServer {
                     HEADER_VALUE_AUTHORIZATION + token);
 
         return req;
+    }
+
+    public HttpRequestBase prepareValidation(String phone) throws IOException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+        params.add(new BasicNameValuePair("n", phone));
+        return prepare(VALIDATION_PATH, params, null, null, null, false);
+    }
+
+    public HttpRequestBase prepareAuthentication(String validationCode) throws IOException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+        params.add(new BasicNameValuePair("v", validationCode));
+        return prepare(AUTHENTICATION_PATH, params, null, null, null, false);
+    }
+
+    public HttpRequestBase prepareLookup(String token, Collection<String> userId) throws IOException {
+        Protocol.LookupRequest.Builder b = Protocol.LookupRequest.newBuilder();
+        b.addAllUserId(userId);
+        Protocol.LookupRequest req = b.build();
+        return _prepareLookup(token, req);
+    }
+
+    public HttpRequestBase prepareLookup(String token, String userId) throws IOException {
+        Protocol.LookupRequest.Builder b = Protocol.LookupRequest.newBuilder();
+        b.addUserId(userId);
+        Protocol.LookupRequest req = b.build();
+        return _prepareLookup(token, req);
+    }
+
+    private HttpRequestBase _prepareLookup(String token, Protocol.LookupRequest req) throws IOException {
+        return prepare(LOOKUP_PATH, null, token, null, req.toByteArray(), true);
     }
 
     /**

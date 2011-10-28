@@ -12,7 +12,6 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.RequestClient;
-import org.kontalk.client.StatusResponse;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MessageUtils;

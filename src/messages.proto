@@ -15,8 +15,8 @@ enum Status {
 
 message ServerInfo {
     required string version = 1;
-    required uint32 clientProtocol = 2;
-    required uint32 serverProtocol = 3;
+    required uint32 client_protocol = 2;
+    required uint32 server_protocol = 3;
     required string fingerprint = 4;
     // supported features
     repeated string supports = 5;
@@ -25,7 +25,7 @@ message ServerInfo {
 // phone number validation
 message PhoneValidation {
     required Status status = 1;
-    optional string smsFrom = 2;
+    optional string sms_from = 2;
 }
 
 // authentication token creation
@@ -42,7 +42,7 @@ message Received {
 // message received response entry
 message ReceivedEntry {
     required Status status = 1;
-    required string msgId = 2;
+    required string message_id = 2;
 }
 
 // message sent response
@@ -53,6 +53,22 @@ message MessageSent {
 // message sent response entry
 message MessageSentEntry {
     required Status status = 1;
-    required string userId = 2;
-    optional string msgId = 3;
+    required string user_id = 2;
+    optional string message_id = 3;
+}
+
+// user lookup request
+message LookupRequest {
+    repeated string user_id = 1;
+}
+
+// user lookup response
+message LookupResponse {
+    repeated LookupResponseEntry entry = 1;
+}
+
+// user lookup response entry
+message LookupResponseEntry {
+    required string user_id = 1;
+    optional uint64 timestamp = 2;
 }

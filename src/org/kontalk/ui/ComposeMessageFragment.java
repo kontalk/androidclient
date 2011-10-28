@@ -1,7 +1,6 @@
 package org.kontalk.ui;
 
 import java.security.GeneralSecurityException;
-import java.util.List;
 import java.util.Random;
 
 import org.kontalk.R;
@@ -10,8 +9,6 @@ import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.ImageMessage;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.PlainTextMessage;
-import org.kontalk.client.RequestClient;
-import org.kontalk.client.StatusResponse;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -59,7 +56,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -686,6 +682,8 @@ public class ComposeMessageFragment extends ListFragment {
         if (mConversation != null)
             onConversationCreated();
 
+        /*
+         TODO convert to new protobuf API
         if (userId != null && MessagingPreferences.getLastSeenEnabled(getActivity())) {
             // FIXME this should be handled better and of course honour activity
             // pause/resume/saveState/restoreState/display rotation.
@@ -735,6 +733,7 @@ public class ComposeMessageFragment extends ListFragment {
                 }
             }).start();
         }
+        */
     }
 
     public ComposeMessage getParentActivity() {

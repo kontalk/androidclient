@@ -1,42 +1,18 @@
 package org.kontalk.service;
 
-import java.util.List;
+import java.io.IOException;
 
-import org.apache.http.NameValuePair;
+import org.kontalk.client.RequestClient;
 
-public class RequestJob {
+import android.content.Context;
 
-    protected String mCommand;
-    protected List<NameValuePair> mParams;
-    protected byte[] mContent;
+import com.google.protobuf.MessageLite;
+
+
+public abstract class RequestJob {
+
     protected RequestListener mListener;
     protected boolean mCancel;
-
-    public RequestJob(String cmd, List<NameValuePair> params) {
-        this(cmd, params, null);
-    }
-
-    public RequestJob(String cmd, List<NameValuePair> params, byte[] content) {
-        mCommand = cmd;
-        mParams = params;
-        mContent = content;
-    }
-
-    public String toString() {
-        return getClass().getSimpleName() + ": cmd=" + mCommand;
-    }
-
-    public String getCommand() {
-        return mCommand;
-    }
-
-    public List<NameValuePair> getParams() {
-        return mParams;
-    }
-
-    public byte[] getContent() {
-        return mContent;
-    }
 
     public void setListener(RequestListener listener) {
         mListener = listener;
@@ -45,6 +21,10 @@ public class RequestJob {
     public RequestListener getListener() {
         return mListener;
     }
+
+    /** Implement this to do the actual task the child should execute. */
+    public abstract MessageLite call(RequestClient client,
+            RequestListener listener, Context context) throws IOException;
 
     /**
      * Sets the cancel flag.

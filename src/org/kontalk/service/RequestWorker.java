@@ -3,11 +3,12 @@ package org.kontalk.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.*;
+
+import com.google.protobuf.MessageLite;
 
 import android.content.Context;
 import android.os.Handler;
@@ -116,11 +117,11 @@ public class RequestWorker extends Thread {
         }
 
         @Override
-        public void response(RequestJob job, List<StatusResponse> statuses) {
+        public void response(RequestJob job, MessageLite response) {
             Log.w(TAG, "executing listeners array for " + job);
             for (RequestListener l : this) {
                 Log.w(TAG, "executing listener " + l);
-                l.response(job, statuses);
+                l.response(job, response);
             }
         }
 
@@ -174,26 +175,18 @@ public class RequestWorker extends Thread {
                 if (listener != null)
                     addListener(listener);
 
-                List<StatusResponse> list;
+                MessageLite response;
                 try {
-                    // FIXME this should be abstracted some way
+                    // FIXME this should be abstracted/delegated some way
                     if (job instanceof MessageSender) {
                         MessageSender mess = (MessageSender) job;
                         // observe the content for cancel requests
                         mess.observe(mContext, mObserverHandler);
-
-                        if (mess.getContent() != null)
-                            list = mClient.message(new String[] { mess.getUserId() },
-                                    mess.getMime(), mess.getContent(), mess, mListeners);
-                        else
-                            list = mClient.message(new String[] { mess.getUserId() },
-                                    mess.getMime(), mess.getSourceUri(), mContext, mess, mListeners);
-                    }
-                    else {
-                        list = mClient.request(job.getCommand(), job.getParams(), job.getContent());
                     }
 
-                    mListeners.response(job, list);
+                    response = job.call(mClient, mListeners, mContext);
+
+                    mListeners.response(job, response);
                 }
                 catch (IOException e) {
                     boolean requeue = true;
