@@ -2,7 +2,8 @@ package org.kontalk.client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -16,6 +17,7 @@ import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.kontalk.service.RequestListener;
 import org.kontalk.util.ProgressInputStreamEntity;
 
@@ -27,32 +29,23 @@ import org.kontalk.util.ProgressInputStreamEntity;
  */
 public class EndpointServer {
 
-    private static final String POLLING_PATH = "/polling.php";
-    private static final String REQUEST_PATH = "/request.php?cmd=";
-    private static final String MESSAGE_PATH = "/postmessage.php";
-    private static final String DOWNLOAD_PATH = "/download.php?f=";
-    private static final String SERVERLIST_PATH = "/serverlist.php";
+    public static final String SERVERINFO_PATH = "/serverinfo";
+    public static final String VALIDATION_PATH = "/validation";
+    public static final String AUTHENTICATION_PATH = "/authentication";
+    public static final String RECEIVED_PATH = "/received";
+    public static final String MESSAGE_PATH = "/message";
 
     /** The authentication token header. */
-    public static final String HEADER_AUTH_TOKEN = "X-Auth-Token";
+    public static final String HEADER_NAME_AUTHORIZATION = "Authorization";
+    public static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
 
     /** The recipients list header. */
     public static final String HEADER_RECIPIENTS = "X-Recipients";
 
     private final String baseURL;
-    private final String requestURL;
-    private final String pollingURL;
-    private final String messageURL;
-    private final String downloadURL;
-    private final String serverlistURL;
 
     public EndpointServer(String baseURL) {
         this.baseURL = baseURL;
-        this.requestURL = baseURL + REQUEST_PATH;
-        this.pollingURL = baseURL + POLLING_PATH;
-        this.messageURL = baseURL + MESSAGE_PATH;
-        this.downloadURL = baseURL + DOWNLOAD_PATH;
-        this.serverlistURL = baseURL + SERVERLIST_PATH;
     }
 
     @Override
@@ -62,36 +55,40 @@ public class EndpointServer {
 
     /**
      * A generic endpoint request method for the messaging server.
-     * @param cmd the request command
+     * @param path request path
      * @param params additional GET parameters
      * @param token the autentication token (if needed)
+     * @param mime if null will use <code>application/x-google-protobuf</code>
      * @param content the POST body content, if null it will use GET
      * @return the request object
      * @throws IOException
      */
-    public HttpRequestBase prepareRequest(String cmd,
+    public HttpRequestBase prepare(String path,
             List<NameValuePair> params, String token,
-            byte[] content) throws IOException {
+            String mime, byte[] content, boolean forcePost) throws IOException {
 
         HttpRequestBase req;
 
         // compose uri
         String extra = (params != null) ?
                 URLEncodedUtils.format(params, "UTF-8") : "";
-        String uri = requestURL + cmd + "&" + extra;
+        String uri = baseURL + path + "?" + extra;
 
         // request type
-        if (content != null) {
+        if (content != null || forcePost) {
             req = new HttpPost(uri);
-            req.setHeader("Content-Type", "text/xml");
-            ((HttpPost)req).setEntity(new ByteArrayEntity(content));
+            req.setHeader("Content-Type", mime != null ?
+                    mime : "application/x-google-protobuf");
+            if (content != null)
+                ((HttpPost)req).setEntity(new ByteArrayEntity(content));
         }
         else
             req = new HttpGet(uri);
 
         // token
         if (token != null)
-            req.setHeader(HEADER_AUTH_TOKEN, token);
+            req.setHeader(HEADER_NAME_AUTHORIZATION,
+                    HEADER_VALUE_AUTHORIZATION + token);
 
         return req;
     }
@@ -101,7 +98,6 @@ public class EndpointServer {
      * @param token the autentication token
      * @return the request object
      * @throws IOException
-     */
     public HttpRequestBase preparePolling(String token) throws IOException {
         HttpGet req = new HttpGet(pollingURL);
 
@@ -110,9 +106,10 @@ public class EndpointServer {
 
         return req;
     }
+     */
 
     /**
-     * A message posting method for the postmessage service.
+     * A message posting method.
      * @param listener the uploading listener
      * @param token the autentication token
      * @param group the recipients
@@ -127,16 +124,8 @@ public class EndpointServer {
             String token, String[] group, String mime,
             InputStream data, long length) throws IOException {
 
-        HttpPost req = new HttpPost(messageURL);
+        HttpPost req = (HttpPost) prepare(MESSAGE_PATH, null, token, mime, null, true);
         req.setEntity(new ProgressInputStreamEntity(data, length, job, listener));
-
-        if (token != null)
-            req.setHeader(HEADER_AUTH_TOKEN, token);
-
-        // standard headers
-        req.setHeader("Content-Type", mime);
-        // mmm... "header Content-Length already added..."
-        //req.setHeader("Content-Length", String.valueOf(length));
 
         for (int i = 0; i < group.length; i++) {
             // TODO check multiple values support
@@ -147,27 +136,44 @@ public class EndpointServer {
     }
 
     /**
-     * A download method for the download service.
-     * @param token the autentication token
-     * @param filename filename to download
-     * @return the request object
+     * TODO
+     * @param token
+     * @param messageIds
+     * @return
      * @throws IOException
      */
-    public HttpRequestBase prepareDownload(String token, String filename) throws IOException {
-        HttpGet req;
+    public HttpRequestBase prepareReceived(String token, String[] messageIds)
+            throws IOException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        for (String id : messageIds)
+            params.add(new BasicNameValuePair("i", id));
 
-        // compose uri
-        String uri = downloadURL + URLEncoder.encode(filename, "UTF-8");
-        req = new HttpGet(uri);
-
-        if (token != null)
-            req.addHeader(HEADER_AUTH_TOKEN, token);
-
-        return req;
+        return _prepareReceived(token, params);
     }
 
     /**
-     * A generic download request.
+     * TODO
+     * @param token
+     * @param messageIds
+     * @return
+     * @throws IOException
+     */
+    public HttpRequestBase prepareReceived(String token, Collection<String> messageIds)
+            throws IOException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        for (String id : messageIds)
+            params.add(new BasicNameValuePair("i", id));
+
+        return _prepareReceived(token, params);
+    }
+
+    private HttpRequestBase _prepareReceived(String token, List<NameValuePair> params)
+            throws IOException {
+        return prepare(RECEIVED_PATH, params, token, null, null, false);
+    }
+
+    /**
+     * A generic download request, with optional authorization token.
      * @param token the authentication token
      * @param url URL to download
      * @return the request object
@@ -177,13 +183,10 @@ public class EndpointServer {
         HttpGet req = new HttpGet(url);
 
         if (token != null)
-            req.addHeader(HEADER_AUTH_TOKEN, token);
+            req.addHeader(HEADER_NAME_AUTHORIZATION,
+                    HEADER_VALUE_AUTHORIZATION + token);
 
         return req;
-    }
-
-    public HttpRequestBase prepareServerListRequest() throws IOException {
-        return new HttpGet(serverlistURL);
     }
 
     /**

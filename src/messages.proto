@@ -1,0 +1,58 @@
+option java_package = "org.kontalk.client";
+option java_outer_classname = "Protocol";
+option optimize_for = LITE_RUNTIME;
+
+enum Status {
+    STATUS_SUCCESS = 0;
+    STATUS_ERROR = 1;
+    STATUS_BUSY = 2;
+    STATUS_VERIFICATION_FAILED = 3;
+    STATUS_INVALID_PHONE_NUMBER = 4;
+    STATUS_TTL_EXPIRED = 5;
+    STATUS_USER_NOTFOUND = 6;
+    STATUS_MESSAGE_NOTFOUND = 7;
+}
+
+message ServerInfo {
+    required string version = 1;
+    required uint32 clientProtocol = 2;
+    required uint32 serverProtocol = 3;
+    required string fingerprint = 4;
+    // supported features
+    repeated string supports = 5;
+}
+
+// phone number validation
+message PhoneValidation {
+    required Status status = 1;
+    optional string smsFrom = 2;
+}
+
+// authentication token creation
+message Authentication {
+    required Status status = 1;
+    optional string token = 2;
+}
+
+// message received response
+message Received {
+    repeated ReceivedEntry entry = 1;
+}
+
+// message received response entry
+message ReceivedEntry {
+    required Status status = 1;
+    required string msgId = 2;
+}
+
+// message sent response
+message MessageSent {
+    repeated MessageSentEntry entry = 1;
+}
+
+// message sent response entry
+message MessageSentEntry {
+    required Status status = 1;
+    required string userId = 2;
+    optional string msgId = 3;
+}
