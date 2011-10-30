@@ -36,6 +36,7 @@ public class EndpointServer {
     public static final String LOOKUP_PATH = "/lookup";
     public static final String RECEIVED_PATH = "/received";
     public static final String MESSAGE_PATH = "/message";
+    public static final String POLLING_PATH = "/polling";
 
     /** The authentication token header. */
     public static final String HEADER_NAME_AUTHORIZATION = "Authorization";
@@ -74,20 +75,22 @@ public class EndpointServer {
         HttpRequestBase req;
 
         // compose uri
-        String extra = (params != null) ?
-                URLEncodedUtils.format(params, "UTF-8") : "";
-        String uri = baseURL + path + "?" + extra;
+        StringBuilder uri = new StringBuilder(baseURL);
+        uri.append(path);
+        if (params != null)
+            uri.append("?").
+                append(URLEncodedUtils.format(params, "UTF-8"));
 
         // request type
         if (content != null || forcePost) {
-            req = new HttpPost(uri);
+            req = new HttpPost(uri.toString());
             req.setHeader("Content-Type", mime != null ?
                     mime : "application/x-google-protobuf");
             if (content != null)
                 ((HttpPost)req).setEntity(new ByteArrayEntity(content));
         }
         else
-            req = new HttpGet(uri);
+            req = new HttpGet(uri.toString());
 
         // token
         if (token != null)
@@ -132,15 +135,10 @@ public class EndpointServer {
      * @param token the autentication token
      * @return the request object
      * @throws IOException
-    public HttpRequestBase preparePolling(String token) throws IOException {
-        HttpGet req = new HttpGet(pollingURL);
-
-        if (token != null)
-            req.setHeader(HEADER_AUTH_TOKEN, token);
-
-        return req;
-    }
      */
+    public HttpRequestBase preparePolling(String token) throws IOException {
+        return prepare(POLLING_PATH, null, token, null, null, false);
+    }
 
     /**
      * A message posting method.

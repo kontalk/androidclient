@@ -98,8 +98,9 @@ public class ServerListUpdater extends Thread {
              * We have a server list - either builtin or cached. Now pick a random
              * server from the list and contact it for the latest server list.
              */
-            EndpointServer random = current.random();
-            mRequest = random.prepareServerListRequest();
+            // TODO convert to new protocol buffers API
+            EndpointServer random = null; //current.random();
+            mRequest = null; //random.prepareServerListRequest();
             HttpResponse res = random.execute(mRequest);
             // write down to cache
             OutputStream out = new FileOutputStream(getCachedListFile(mContext));

@@ -4,20 +4,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.apache.http.HttpResponse;
 import org.kontalk.crypto.Coder;
 import org.kontalk.ui.MessagingPreferences;
-import org.kontalk.util.Base64;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import android.content.Context;
 import android.util.Log;
+
+import com.google.protobuf.ByteString;
 
 
 /**
@@ -47,129 +41,88 @@ public class PollingClient extends AbstractClient {
             currentRequest = mServer.preparePolling(mAuthToken);
             HttpResponse response = mServer.execute(currentRequest);
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
+            Protocol.NewMessages data = Protocol.NewMessages
+                .parseFrom(response.getEntity().getContent());
 
-            /*
-            String xmlContent = EntityUtils.toString(response.getEntity());
-            StringReader reader = new StringReader(xmlContent);
-            InputSource inputSource = new InputSource(reader);
-            */
+            for (int i = 0; i < data.getMessageCount(); i++) {
+                Protocol.NewMessageEntry e = data.getMessage(i);
 
-            Document doc = builder.parse(response.getEntity().getContent());
-            //reader.close();
+                String id = e.getMessageId();
+                String origId = e.getOriginalId();
+                String mime = e.getMime();
+                String from = e.getSender();
+                ByteString text = e.getContent();
+                String fetchUrl = e.getUrl();
+                List<String> group = e.getGroupList();
 
-            Element body = doc.getDocumentElement();
-            NodeList children = body.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node node = (Node) children.item(i);
-                if ("m".equals(node.getNodeName())) {
-                    String id = null;
-                    String origId = null;
-                    String from = null;
-                    String text = null;
-                    String mime = null;
-                    String fetchUrl = null;
-                    List<String> group = null;
+                // flag for originally encrypted message
+                boolean origEncrypted = e.getEncrypted();
 
-                    // FIXME handle empty node values
+                // add the message to the list
+                AbstractMessage<?> msg = null;
+                String realId = null;
 
-                    // message!
-                    NodeList msgChildren = node.getChildNodes();
-                    for (int j = 0; j < msgChildren.getLength(); j++) {
-                        Element n2 = (Element) msgChildren.item(j);
-                        if ("i".equals(n2.getNodeName()))
-                            id = n2.getFirstChild().getNodeValue();
-                        else if ("s".equals(n2.getNodeName()))
-                            from = n2.getFirstChild().getNodeValue();
-                        else if ("c".equals(n2.getNodeName())) {
-                            text = n2.getFirstChild().getNodeValue();
-                            mime = n2.getAttribute("t");
-                            fetchUrl = n2.getAttribute("u");
-                        }
-                        else if ("g".equals(n2.getNodeName())) {
-                            if (group == null)
-                                group = new ArrayList<String>();
-                            group.add(n2.getFirstChild().getNodeValue());
-                        }
-                        else if ("o".equals(n2.getNodeName())) {
-                            origId = n2.getFirstChild().getNodeValue();
-                        }
+                // use the originating id as the message id to match with message in database
+                if (origId != null) {
+                    realId = id;
+                    id = origId;
+                }
+
+                // content
+                byte[] content = text.toByteArray();
+
+                // flag for left encrypted message
+                boolean encrypted = false;
+
+                if (origEncrypted) {
+                    Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyNumber);
+                    try {
+                        content = coder.decrypt(content);
                     }
-
-                    if (id != null && from != null && text != null && mime != null) {
-                        // add the message to the list
-                        AbstractMessage<?> msg = null;
-                        String realId = null;
-
-                        // use the originating id as the message id to match with message in database
-                        if (origId != null) {
-                            realId = id;
-                            id = origId;
-                        }
-
-                        // Base64-decode the text
-                        byte[] content = Base64.decode(text, Base64.DEFAULT);
-
-                        // flag for left encrypted message
-                        boolean encrypted = false;
-                        // flag for originally encrypted message
-                        boolean origEncrypted = false;
-                        if (mime != null && mime.startsWith(AbstractMessage.ENC_MIME_PREFIX)) {
-                            origEncrypted = true;
-                            Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyNumber);
-                            try {
-                                content = coder.decrypt(content);
-                            }
-                            catch (Exception e) {
-                                // pass over the message even if encrypted
-                                // UI will warn the user about that and wait
-                                // for user decisions
-                                Log.e(TAG, "decryption failed", e);
-                                encrypted = true;
-                                content = text.getBytes();
-                            }
-                            // cut off the enc: part anyway
-                            mime = mime.substring(AbstractMessage.ENC_MIME_PREFIX.length());
-                        }
-
-                        // plain text message
-                        if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
-                            msg = new PlainTextMessage(mContext, id, from, content, group);
-                        }
-
-                        // message receipt
-                        else if (ReceiptMessage.supportsMimeType(mime)) {
-                            msg = new ReceiptMessage(mContext, id, from, content, group);
-                        }
-
-                        // image message
-                        else if (ImageMessage.supportsMimeType(mime)) {
-                            // extra argument: mime (first parameter)
-                            msg = new ImageMessage(mContext, mime, id, from, content, group);
-                        }
-
-                        // TODO else other mime types
-
-                        if (msg != null) {
-                            // set the real message id
-                            msg.setRealId(realId);
-
-                            // remember encryption! :)
-                            if (encrypted)
-                                msg.setEncrypted();
-                            if (origEncrypted)
-                                msg.setWasEncrypted(true);
-
-                            // set the fetch url (if any)
-                            Log.d(TAG, "using fetch url: " + fetchUrl);
-                            msg.setFetchUrl(fetchUrl);
-
-                            if (list == null)
-                                list = new ArrayList<AbstractMessage<?>>();
-                            list.add(msg);
-                        }
+                    catch (Exception exc) {
+                        // pass over the message even if encrypted
+                        // UI will warn the user about that and wait
+                        // for user decisions
+                        Log.e(TAG, "decryption failed", exc);
+                        encrypted = true;
                     }
+                }
+
+                // plain text message
+                if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
+                    msg = new PlainTextMessage(mContext, id, from, content, group);
+                }
+
+                // message receipt
+                else if (ReceiptMessage.supportsMimeType(mime)) {
+                    msg = new ReceiptMessage(mContext, id, from, content, group);
+                }
+
+                // image message
+                else if (ImageMessage.supportsMimeType(mime)) {
+                    // extra argument: mime (first parameter)
+                    msg = new ImageMessage(mContext, mime, id, from, content, group);
+                }
+
+                // TODO else other mime types
+
+                if (msg != null) {
+                    // set the real message id
+                    msg.setRealId(realId);
+
+                    // remember encryption! :)
+                    if (encrypted)
+                        msg.setEncrypted();
+                    if (origEncrypted)
+                        msg.setWasEncrypted(true);
+
+                    // set the fetch url (if any)
+                    Log.d(TAG, "using fetch url: " + fetchUrl);
+                    msg.setFetchUrl(fetchUrl);
+
+                    if (list == null)
+                        list = new ArrayList<AbstractMessage<?>>();
+                    list.add(msg);
                 }
             }
         }

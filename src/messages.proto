@@ -72,3 +72,20 @@ message LookupResponseEntry {
     required string user_id = 1;
     optional uint64 timestamp = 2;
 }
+
+// new messages (polling)
+message NewMessages {
+    repeated NewMessageEntry message = 1;
+}
+
+// new message entry
+message NewMessageEntry {
+    required string message_id = 1;
+    required string sender = 2;
+    repeated string group = 3;
+    optional string original_id = 4;
+    required string mime = 5;
+    required bool encrypted = 6;
+    required bytes content = 7;
+    optional string url = 8;
+}
