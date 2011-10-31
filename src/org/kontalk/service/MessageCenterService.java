@@ -310,13 +310,13 @@ public class MessageCenterService extends Service
                     // do not store receipts...
                     if (!(msg instanceof ReceiptMessage)) {
                         // store to file if it's an image message
-                        String content = msg.getTextContent();
+                        // FIXME this should be abstracted somehow
+                        byte[] content = msg.getBinaryContent();
                         if (msg instanceof ImageMessage) {
-                            ImageMessage imgMsg = (ImageMessage) msg;
                             String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
                             File file = null;
                             try {
-                                file = MediaStorage.writeInternalMedia(this, filename, imgMsg.getDecodedContent());
+                                file = MediaStorage.writeInternalMedia(this, filename, content);
                             }
                             catch (IOException e) {
                                 Log.e(TAG, "unable to write to media storage", e);
@@ -333,6 +333,7 @@ public class MessageCenterService extends Service
                         values.put(Messages.PEER, msg.getSender(true));
                         values.put(Messages.MIME, msg.getMime());
                         values.put(Messages.CONTENT, content);
+                        values.put(Messages.ENCRYPTED, msg.isEncrypted());
                         values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
                         values.put(Messages.FETCH_URL, msg.getFetchUrl());
                         Uri localUri = msg.getLocalUri();
@@ -412,7 +413,6 @@ public class MessageCenterService extends Service
         Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
         ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
         ni.setData(Threads.getUri(userId));
-        // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         mCurrentNotification = new Notification(R.drawable.icon_stat,

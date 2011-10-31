@@ -36,7 +36,7 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
     private String mMessageId;
 
     protected ReceiptMessage(Context context) {
-        super(context, null, null, null, null);
+        super(context, null, null, null, null, false);
     }
 
     public ReceiptMessage(Context context, String id, String sender, byte[] content) {
@@ -44,7 +44,8 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
     }
 
     public ReceiptMessage(Context context, String id, String sender, byte[] content, List<String> group) {
-        super(context, id, sender, MIME_TYPE, null, group);
+        // receipts are not encrypted
+        super(context, id, sender, MIME_TYPE, null, false, group);
 
         xmlContent = new String(content);
         parseXML();
@@ -94,7 +95,12 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
 
     @Override
     public String getTextContent() {
-        return content.toString();
+        return xmlContent;
+    }
+
+    @Override
+    public byte[] getBinaryContent() {
+        return xmlContent.getBytes();
     }
 
     @Override

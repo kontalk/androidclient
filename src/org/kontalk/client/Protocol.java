@@ -4284,7 +4284,11 @@ public final class Protocol {
   public interface NewMessagesOrBuilder
       extends com.google.protobuf.MessageLiteOrBuilder {
     
-    // repeated .NewMessageEntry message = 1;
+    // required .Status status = 1;
+    boolean hasStatus();
+    org.kontalk.client.Protocol.Status getStatus();
+    
+    // repeated .NewMessageEntry message = 2;
     java.util.List<org.kontalk.client.Protocol.NewMessageEntry> 
         getMessageList();
     org.kontalk.client.Protocol.NewMessageEntry getMessage(int index);
@@ -4308,8 +4312,19 @@ public final class Protocol {
       return defaultInstance;
     }
     
-    // repeated .NewMessageEntry message = 1;
-    public static final int MESSAGE_FIELD_NUMBER = 1;
+    private int bitField0_;
+    // required .Status status = 1;
+    public static final int STATUS_FIELD_NUMBER = 1;
+    private org.kontalk.client.Protocol.Status status_;
+    public boolean hasStatus() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public org.kontalk.client.Protocol.Status getStatus() {
+      return status_;
+    }
+    
+    // repeated .NewMessageEntry message = 2;
+    public static final int MESSAGE_FIELD_NUMBER = 2;
     private java.util.List<org.kontalk.client.Protocol.NewMessageEntry> message_;
     public java.util.List<org.kontalk.client.Protocol.NewMessageEntry> getMessageList() {
       return message_;
@@ -4330,6 +4345,7 @@ public final class Protocol {
     }
     
     private void initFields() {
+      status_ = org.kontalk.client.Protocol.Status.STATUS_SUCCESS;
       message_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -4337,6 +4353,10 @@ public final class Protocol {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
+      if (!hasStatus()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       for (int i = 0; i < getMessageCount(); i++) {
         if (!getMessage(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -4350,8 +4370,11 @@ public final class Protocol {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, status_.getNumber());
+      }
       for (int i = 0; i < message_.size(); i++) {
-        output.writeMessage(1, message_.get(i));
+        output.writeMessage(2, message_.get(i));
       }
     }
     
@@ -4361,9 +4384,13 @@ public final class Protocol {
       if (size != -1) return size;
     
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, status_.getNumber());
+      }
       for (int i = 0; i < message_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, message_.get(i));
+          .computeMessageSize(2, message_.get(i));
       }
       memoizedSerializedSize = size;
       return size;
@@ -4467,8 +4494,10 @@ public final class Protocol {
       
       public Builder clear() {
         super.clear();
-        message_ = java.util.Collections.emptyList();
+        status_ = org.kontalk.client.Protocol.Status.STATUS_SUCCESS;
         bitField0_ = (bitField0_ & ~0x00000001);
+        message_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       
@@ -4501,20 +4530,29 @@ public final class Protocol {
       public org.kontalk.client.Protocol.NewMessages buildPartial() {
         org.kontalk.client.Protocol.NewMessages result = new org.kontalk.client.Protocol.NewMessages(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.status_ = status_;
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
           message_ = java.util.Collections.unmodifiableList(message_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.message_ = message_;
+        result.bitField0_ = to_bitField0_;
         return result;
       }
       
       public Builder mergeFrom(org.kontalk.client.Protocol.NewMessages other) {
         if (other == org.kontalk.client.Protocol.NewMessages.getDefaultInstance()) return this;
+        if (other.hasStatus()) {
+          setStatus(other.getStatus());
+        }
         if (!other.message_.isEmpty()) {
           if (message_.isEmpty()) {
             message_ = other.message_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureMessageIsMutable();
             message_.addAll(other.message_);
@@ -4525,6 +4563,10 @@ public final class Protocol {
       }
       
       public final boolean isInitialized() {
+        if (!hasStatus()) {
+          
+          return false;
+        }
         for (int i = 0; i < getMessageCount(); i++) {
           if (!getMessage(i).isInitialized()) {
             
@@ -4551,7 +4593,16 @@ public final class Protocol {
               }
               break;
             }
-            case 10: {
+            case 8: {
+              int rawValue = input.readEnum();
+              org.kontalk.client.Protocol.Status value = org.kontalk.client.Protocol.Status.valueOf(rawValue);
+              if (value != null) {
+                bitField0_ |= 0x00000001;
+                status_ = value;
+              }
+              break;
+            }
+            case 18: {
               org.kontalk.client.Protocol.NewMessageEntry.Builder subBuilder = org.kontalk.client.Protocol.NewMessageEntry.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addMessage(subBuilder.buildPartial());
@@ -4563,13 +4614,37 @@ public final class Protocol {
       
       private int bitField0_;
       
-      // repeated .NewMessageEntry message = 1;
+      // required .Status status = 1;
+      private org.kontalk.client.Protocol.Status status_ = org.kontalk.client.Protocol.Status.STATUS_SUCCESS;
+      public boolean hasStatus() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public org.kontalk.client.Protocol.Status getStatus() {
+        return status_;
+      }
+      public Builder setStatus(org.kontalk.client.Protocol.Status value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        status_ = value;
+        
+        return this;
+      }
+      public Builder clearStatus() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        status_ = org.kontalk.client.Protocol.Status.STATUS_SUCCESS;
+        
+        return this;
+      }
+      
+      // repeated .NewMessageEntry message = 2;
       private java.util.List<org.kontalk.client.Protocol.NewMessageEntry> message_ =
         java.util.Collections.emptyList();
       private void ensureMessageIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           message_ = new java.util.ArrayList<org.kontalk.client.Protocol.NewMessageEntry>(message_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
          }
       }
       
@@ -4641,7 +4716,7 @@ public final class Protocol {
       }
       public Builder clearMessage() {
         message_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         
         return this;
       }

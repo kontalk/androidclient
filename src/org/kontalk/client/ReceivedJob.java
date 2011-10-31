@@ -19,7 +19,8 @@ public class ReceivedJob extends RequestJob {
     }
 
     public ReceivedJob(Collection<String> msgId) {
-        mMessageList = (String[]) msgId.toArray();
+        mMessageList = new String[msgId.size()];
+        msgId.toArray(mMessageList);
     }
 
     @Override

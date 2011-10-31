@@ -1,8 +1,6 @@
 package org.kontalk.sync;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +9,11 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
+import org.kontalk.client.Protocol;
 import org.kontalk.client.RequestClient;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MessageUtils;
-import org.xmlpull.v1.XmlSerializer;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -33,7 +31,6 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
-import android.util.Xml;
 
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -78,6 +75,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final class RawPhoneNumberEntry {
         public final String displayName;
         public final String number;
+        // TODO find a use for this
         public final String hash;
 
         public RawPhoneNumberEntry(String displayName, String number, String hash) {
@@ -94,7 +92,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      * Once a response is received, it deletes all the raw contacts created by
      * us and then recreates only the ones the server has found a match for.
      */
-    @SuppressWarnings("unchecked")
     private void performSync(Context context, Account account, Bundle extras,
             String authority, ContentProviderClient provider, SyncResult syncResult)
             throws OperationCanceledException {
@@ -104,6 +101,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final String token = Authenticator.getDefaultAccountToken(mContext);
         final RequestClient client = new RequestClient(mContext, server, token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
+        final List<String> hashList = new ArrayList<String>();
 
         final String countryCode = NumberValidator.getCountryPrefix(mContext);
         Log.w(TAG, "using default country code: " + countryCode);
@@ -133,6 +131,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 try {
                     String hash = MessageUtils.sha1(number);
                     lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash));
+                    hashList.add(hash);
                 } catch (Exception e) {
                     Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping");
                 }
@@ -142,63 +141,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         cursor.close();
 
         try {
-            // build the xml data for the lookup request
-            final String xmlData = buildXMLData(lookupNumbers.values());
-            //Log.i(TAG, "xmlData: " + xmlData);
-            final List<StatusResponse> res = client.request("lookup", null, xmlData.getBytes());
+            // request lookup to server
+            final Protocol.LookupResponse res = client.lookup(hashList);
 
             // this is the time - delete all Kontalk raw contacts
             deleteAll(account);
 
-            // get the first status - it will contain our <u> tags
-            final StatusResponse status = res.get(0);
-            if (status.code == StatusResponse.STATUS_SUCCESS && status.extra != null) {
-                Object _numbers = status.extra.get("u");
-                if (_numbers instanceof List<?>) {
-                    final List<String> numbers = (List<String>) _numbers;
-                    for (String hash : numbers) {
-                        final RawPhoneNumberEntry data = lookupNumbers.get(hash);
-                        addContact(account, data.displayName, data.number, -1);
-                    }
-                }
-                else {
-                    final RawPhoneNumberEntry data = lookupNumbers.get((String) _numbers);
-                    addContact(account, data.displayName, data.number, -1);
-                }
+            for (int i = 0; i < res.getEntryCount(); i++) {
+                Protocol.LookupResponseEntry entry = res.getEntry(i);
+                final RawPhoneNumberEntry data = lookupNumbers.get(entry.getUserId());
+                addContact(account, data.displayName, data.number, -1);
             }
         }
         catch (Exception e) {
             Log.e(TAG, "error in user lookup", e);
         }
-    }
-
-    /** Builds the XML data for a lookup request. */
-    private String buildXMLData(Collection<RawPhoneNumberEntry> lookupNumbers) throws Exception {
-        String xmlContent = null;
-        // build xml in a proper manner
-        XmlSerializer xml = Xml.newSerializer();
-        StringWriter xmlString = new StringWriter();
-
-        xml.setOutput(xmlString);
-        xml.startDocument("UTF-8", Boolean.TRUE);
-        xml
-            .startTag(null, "body");
-
-        for (RawPhoneNumberEntry data : lookupNumbers) {
-            xml
-                .startTag(null, "u")
-                .text(data.hash)
-                .endTag(null, "u");
-        }
-
-        xml
-            .endTag(null, "body")
-            .endDocument();
-
-        xmlContent = xmlString.toString();
-        xmlString.close();
-
-        return xmlContent;
     }
 
     private int deleteAll(Account account) {

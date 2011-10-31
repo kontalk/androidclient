@@ -194,6 +194,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         if (mProgress == null) {
             mProgress = new ProgressDialog(this);
             mProgress.setIndeterminate(true);
+            mProgress.setCanceledOnTouchOutside(false);
             mProgress.setMessage(getText(R.string.msg_validating_phone));
             mProgress.setOnCancelListener(new OnCancelListener() {
                 @Override

@@ -489,6 +489,7 @@ public class ComposeMessageFragment extends ListFragment {
                     ContentValues values = new ContentValues();
                     values.put(Messages.CONTENT, msg.getTextContent());
                     values.put(Messages.MIME, msg.getMime());
+                    values.put(Messages.ENCRYPTED, false);
                     getActivity().getContentResolver()
                         .update(
                             Messages.getUri(msg.getId()),

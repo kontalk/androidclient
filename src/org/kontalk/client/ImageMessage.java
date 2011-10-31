@@ -40,15 +40,15 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     private byte[] decodedContent;
 
     protected ImageMessage(Context context) {
-        super(context, null, null, null, null);
+        super(context, null, null, null, null, false);
     }
 
-    public ImageMessage(Context context, String mime, String id, String sender, byte[] content) {
-        this(context, mime, id, sender, null, null);
+    public ImageMessage(Context context, String mime, String id, String sender, byte[] content, boolean encrypted) {
+        this(context, mime, id, sender, null, encrypted, null);
     }
 
-    public ImageMessage(Context context, String mime, String id, String sender, byte[] content, List<String> group) {
-        super(context, id, sender, mime, null, group);
+    public ImageMessage(Context context, String mime, String id, String sender, byte[] content, boolean encrypted, List<String> group) {
+        super(context, id, sender, mime, null, encrypted, group);
 
         // process content
         try {
@@ -143,13 +143,14 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         return "Image: " + mime;
     }
 
+    @Override
+    public byte[] getBinaryContent() {
+        return decodedContent;
+    }
+
     /** FIXME this should have be done better... */
     public static String getSampleTextContent(String mime) {
         return "Image: " + mime;
-    }
-
-    public byte[] getDecodedContent() {
-        return decodedContent;
     }
 
     @Override

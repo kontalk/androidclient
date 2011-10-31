@@ -39,11 +39,13 @@ public class EndpointServer {
     public static final String POLLING_PATH = "/polling";
 
     /** The authentication token header. */
-    public static final String HEADER_NAME_AUTHORIZATION = "Authorization";
-    public static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
+    private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
+    private static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
 
     /** The recipients list header. */
-    public static final String HEADER_RECIPIENTS = "X-Recipients";
+    private static final String HEADER_RECIPIENTS = "X-Recipients";
+    /** The message flags header. */
+    private static final String HEADER_MESSAGE_FLAGS = "X-Message-Flags";
 
     private final String baseURL;
 
@@ -154,7 +156,8 @@ public class EndpointServer {
     public HttpRequestBase prepareMessage(
             MessageSender job, RequestListener listener,
             String token, String[] group, String mime,
-            InputStream data, long length) throws IOException {
+            InputStream data, long length, boolean encrypted)
+            throws IOException {
 
         HttpPost req = (HttpPost) prepare(MESSAGE_PATH, null, token, mime, null, true);
         req.setEntity(new ProgressInputStreamEntity(data, length, job, listener));
@@ -163,6 +166,9 @@ public class EndpointServer {
             // TODO check multiple values support
             req.addHeader(HEADER_RECIPIENTS, group[i]);
         }
+
+        if (encrypted)
+            req.addHeader(HEADER_MESSAGE_FLAGS, "encrypted");
 
         return req;
     }

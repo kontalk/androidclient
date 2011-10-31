@@ -3,7 +3,6 @@ package org.kontalk.provider;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.kontalk.client.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
@@ -64,7 +63,7 @@ public class MessagesProvider extends ContentProvider {
             "real_id TEXT, " +
             "peer TEXT, " +
             "mime TEXT NOT NULL, " +
-            "content TEXT," +
+            "content BLOB," +
             "direction INTEGER, " +
             "unread INTEGER, " +
             // this the sent/received timestamp
@@ -75,6 +74,7 @@ public class MessagesProvider extends ContentProvider {
             "fetch_url TEXT," +
             "fetched INTEGER," +
             "local_uri TEXT," +
+            "encrypted INTEGER, " +
             "encrypt_key TEXT" +
             ");";
 
@@ -322,8 +322,9 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.ENCRYPT_KEY);
 
         // check if message is encrypted
-        String mime = (String) values.get(Messages.MIME);
-        if (mime.startsWith(AbstractMessage.ENC_MIME_PREFIX))
+        Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
+        values.remove(Messages.ENCRYPTED);
+        if (encrypted != null && encrypted.booleanValue())
             values.put(Threads.CONTENT, "(encrypted)");
 
         // insert new thread
@@ -578,7 +579,8 @@ public class MessagesProvider extends ContentProvider {
                 Messages.MIME,
                 Messages.STATUS,
                 Messages.CONTENT,
-                Messages.TIMESTAMP
+                Messages.TIMESTAMP,
+                Messages.ENCRYPTED
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
             null, null, Messages.INVERTED_SORT_ORDER, "1");
 
@@ -591,10 +593,11 @@ public class MessagesProvider extends ContentProvider {
                 String mime = c.getString(2);
                 v.put(Threads.MIME, mime);
                 v.put(Threads.STATUS, c.getInt(3));
+                int encrypted = c.getInt(6);
 
                 // check if message is encrypted
                 String content;
-                if (mime.startsWith(AbstractMessage.ENC_MIME_PREFIX))
+                if (encrypted > 0)
                     content = "(encrypted)";
                 else
                     content = c.getString(4);
@@ -771,6 +774,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
         messagesProjectionMap.put(Messages.FETCHED, Messages.FETCHED);
         messagesProjectionMap.put(Messages.LOCAL_URI, Messages.LOCAL_URI);
+        messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
         messagesProjectionMap.put(Messages.ENCRYPT_KEY, Messages.ENCRYPT_KEY);
 
         threadsProjectionMap = new HashMap<String, String>();

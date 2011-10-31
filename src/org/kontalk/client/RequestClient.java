@@ -3,6 +3,7 @@ package org.kontalk.client;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 import org.apache.http.HttpResponse;
 import org.kontalk.crypto.Coder;
@@ -31,25 +32,24 @@ public class RequestClient extends AbstractClient {
 
         try {
             byte[] toMessage = null;
-            String toMime = null;
             Coder coder = null;
+            boolean encrypted = false;
             // check if we have to encrypt the message
             if (job.getEncryptKey() != null) {
                 coder = MessagingPreferences.getEncryptCoder(job.getEncryptKey());
                 if (coder != null) {
                     toMessage = coder.encrypt(content);
-                    toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
+                    encrypted = true;
                 }
             }
 
             if (coder == null) {
                 toMessage = content;
-                toMime = mime;
             }
 
             // http request!
-            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, toMime,
-                new ByteArrayInputStream(toMessage), toMessage.length);
+            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, mime,
+                new ByteArrayInputStream(toMessage), toMessage.length, encrypted);
 
             HttpResponse response = mServer.execute(currentRequest);
             return Protocol.MessageSent.parseFrom(response.getEntity().getContent());
@@ -72,27 +72,26 @@ public class RequestClient extends AbstractClient {
             InputStream in = context.getContentResolver().openInputStream(uri);
 
             InputStream toMessage = null;
-            String toMime = null;
             long toLength = 0;
             Coder coder = null;
+            boolean encrypted = false;
             // check if we have to encrypt the message
             if (job.getEncryptKey() != null) {
                 coder = MessagingPreferences.getEncryptCoder(job.getEncryptKey());
                 if (coder != null) {
                     toMessage = coder.wrapInputStream(in);
-                    toMime = AbstractMessage.ENC_MIME_PREFIX + mime;
                     toLength = Coder.getEncryptedLength(length);
+                    encrypted = true;
                 }
             }
 
             if (coder == null) {
                 toMessage = in;
-                toMime = mime;
                 toLength = length;
             }
 
             // http request!
-            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, toMime, toMessage, toLength);
+            currentRequest = mServer.prepareMessage(job, listener, mAuthToken, group, mime, toMessage, toLength, encrypted);
             HttpResponse response = mServer.execute(currentRequest);
             return Protocol.MessageSent.parseFrom(response.getEntity().getContent());
         }
@@ -111,7 +110,7 @@ public class RequestClient extends AbstractClient {
             return Protocol.Received.parseFrom(response.getEntity().getContent());
         }
         catch (Exception e) {
-            throw innerException("phone validation error", e);
+            throw innerException("message received error", e);
         }
         finally {
             currentRequest = null;
@@ -139,7 +138,21 @@ public class RequestClient extends AbstractClient {
             return Protocol.Authentication.parseFrom(response.getEntity().getContent());
         }
         catch (Exception e) {
-            throw innerException("phone validation error", e);
+            throw innerException("validation code error", e);
+        }
+        finally {
+            currentRequest = null;
+        }
+    }
+
+    public Protocol.LookupResponse lookup(Collection<String> userId) throws IOException {
+        try {
+            currentRequest = mServer.prepareLookup(mAuthToken, userId);
+            HttpResponse response = mServer.execute(currentRequest);
+            return Protocol.LookupResponse.parseFrom(response.getEntity().getContent());
+        }
+        catch (Exception e) {
+            throw innerException("user lookup error", e);
         }
         finally {
             currentRequest = null;

@@ -153,7 +153,7 @@ public class NumberValidator implements Runnable {
                     if (res.getStatus() == Protocol.Status.STATUS_SUCCESS) {
                         if (res.hasToken()) {
                             String token = res.getToken();
-                            if (TextUtils.isEmpty(token))
+                            if (!TextUtils.isEmpty(token))
                                 mListener.onAuthTokenReceived(this, token);
                         }
                     }

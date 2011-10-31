@@ -27,7 +27,6 @@ import android.util.Log;
 public abstract class AbstractMessage<T> {
     private static final String TAG = AbstractMessage.class.getSimpleName();
 
-    public static final String ENC_MIME_PREFIX = "enc:";
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
 
@@ -45,6 +44,7 @@ public abstract class AbstractMessage<T> {
         Messages.FETCH_URL,
         Messages.FETCHED,
         Messages.LOCAL_URI,
+        Messages.ENCRYPTED,
         Messages.ENCRYPT_KEY
     };
 
@@ -68,6 +68,7 @@ public abstract class AbstractMessage<T> {
     protected int status;
     protected boolean fetched;
     protected MessageID messageId;
+    protected boolean encrypted;
     /** Of course this is used only for outgoing messages. */
     protected String encryptKey;
 
@@ -87,12 +88,12 @@ public abstract class AbstractMessage<T> {
     /** Local file {@link Uri}. */
     protected Uri localUri;
 
-    public AbstractMessage(Context context, String id, String sender, String mime, T content, List<String> group) {
-        this(context, id, sender, mime, content);
+    public AbstractMessage(Context context, String id, String sender, String mime, T content, boolean encrypted, List<String> group) {
+        this(context, id, sender, mime, content, encrypted);
         this.group = group;
     }
 
-    public AbstractMessage(Context context, String id, String sender, String mime, T content) {
+    public AbstractMessage(Context context, String id, String sender, String mime, T content, boolean encrypted) {
         this.mContext = context;
 
         if (id != null) setId(id);
@@ -103,9 +104,11 @@ public abstract class AbstractMessage<T> {
         // will be updated if necessary
         this.timestamp = System.currentTimeMillis();
 
-        if (this.mime != null && this.mime.startsWith(ENC_MIME_PREFIX))
+        if (encrypted) {
+            this.encrypted = encrypted;
             // with this we avoid of making it null
             encryptKey = "";
+        }
     }
 
     public String getId() {
@@ -213,6 +216,13 @@ public abstract class AbstractMessage<T> {
      */
     public abstract String getTextContent();
 
+    /**
+     * Binary contents of this message.
+     * Used for storing data representation into the database.
+     * @return the byte contents of this message
+     */
+    public abstract byte[] getBinaryContent();
+
     /** Sets a URL for fetching big contents. */
     public void setFetchUrl(String url) {
         fetchUrl = url;
@@ -240,7 +250,7 @@ public abstract class AbstractMessage<T> {
     }
 
     public boolean isEncrypted() {
-        return (mime != null && mime.startsWith(ENC_MIME_PREFIX));
+        return encrypted;
     }
 
     /** Returns true if the message is or was sent encrypted. */
@@ -249,8 +259,8 @@ public abstract class AbstractMessage<T> {
     }
 
     public void setEncrypted() {
-        if (mime != null && !mime.startsWith(ENC_MIME_PREFIX)) {
-            mime = ENC_MIME_PREFIX + mime;
+        if (mime != null) {
+            encrypted = true;
             encryptKey = "";
         }
     }
@@ -273,7 +283,8 @@ public abstract class AbstractMessage<T> {
         status = c.getInt(c.getColumnIndex(Messages.STATUS));
         recipients = new ArrayList<String>();
         fetchUrl = c.getString(c.getColumnIndex(Messages.FETCH_URL));
-        fetched = (c.getShort(c.getColumnIndex(Messages.FETCHED)) != 0);
+        fetched = (c.getShort(c.getColumnIndex(Messages.FETCHED)) > 0);
+        encrypted = (c.getShort(c.getColumnIndex(Messages.ENCRYPTED)) > 0);
         encryptKey = c.getString(c.getColumnIndex(Messages.ENCRYPT_KEY));
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
@@ -293,10 +304,6 @@ public abstract class AbstractMessage<T> {
 
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
         String mime = cursor.getString(cursor.getColumnIndex(Messages.MIME));
-
-        // check for encryption
-        if (mime.startsWith(ENC_MIME_PREFIX))
-            mime = mime.substring(ENC_MIME_PREFIX.length());
 
         if (PlainTextMessage.supportsMimeType(mime)) {
             PlainTextMessage msg = new PlainTextMessage(context);

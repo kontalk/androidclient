@@ -75,7 +75,8 @@ message LookupResponseEntry {
 
 // new messages (polling)
 message NewMessages {
-    repeated NewMessageEntry message = 1;
+    required Status status = 1;
+    repeated NewMessageEntry message = 2;
 }
 
 // new message entry
