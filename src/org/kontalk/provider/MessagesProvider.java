@@ -326,6 +326,9 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.ENCRYPTED);
         if (encrypted != null && encrypted.booleanValue())
             values.put(Threads.CONTENT, "(encrypted)");
+        else
+            // convert to string on insert
+            values.put(Threads.CONTENT, values.getAsString(Messages.CONTENT));
 
         // insert new thread
         long resThreadId = db.insert(TABLE_THREADS, null, values);
@@ -599,8 +602,11 @@ public class MessagesProvider extends ContentProvider {
                 String content;
                 if (encrypted > 0)
                     content = "(encrypted)";
-                else
-                    content = c.getString(4);
+                else {
+                    // convert to string...
+                    byte[] buf = c.getBlob(4);
+                    content = new String(buf);
+                }
 
                 v.put(Threads.CONTENT, content);
                 v.put(Threads.TIMESTAMP, c.getLong(5));
