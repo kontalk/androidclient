@@ -174,10 +174,10 @@ public class EndpointServer {
     }
 
     /**
-     * TODO
+     * Message received notification.
      * @param token
      * @param messageIds
-     * @return
+     * @return the request
      * @throws IOException
      */
     public HttpRequestBase prepareReceived(String token, String[] messageIds)
@@ -190,10 +190,10 @@ public class EndpointServer {
     }
 
     /**
-     * TODO
+     * Message received notification.
      * @param token
      * @param messageIds
-     * @return
+     * @return the request
      * @throws IOException
      */
     public HttpRequestBase prepareReceived(String token, Collection<String> messageIds)

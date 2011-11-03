@@ -159,6 +159,20 @@ public class RequestClient extends AbstractClient {
         }
     }
 
+    public Protocol.LookupResponse lookup(String userId) throws IOException {
+        try {
+            currentRequest = mServer.prepareLookup(mAuthToken, userId);
+            HttpResponse response = mServer.execute(currentRequest);
+            return Protocol.LookupResponse.parseFrom(response.getEntity().getContent());
+        }
+        catch (Exception e) {
+            throw innerException("user lookup error", e);
+        }
+        finally {
+            currentRequest = null;
+        }
+    }
+
     private IOException innerException(String detail, Throwable cause) {
         IOException ie = new IOException(detail);
         ie.initCause(cause);

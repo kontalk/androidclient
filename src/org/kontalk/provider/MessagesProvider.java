@@ -407,7 +407,6 @@ public class MessagesProvider extends ContentProvider {
         }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        // FIXME why update() returns >0 even if no rows are modified???
         int rows = db.update(table, values, where, args);
 
         Log.w(TAG, "messages table updated, affected: " + rows);

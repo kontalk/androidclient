@@ -112,6 +112,7 @@ public class MessageCenterService extends Service
 
     /**
      * Compatibility with Android 1.6
+     * FIXME this should probably go away since we are using 2.2 features...
      */
     @Override
     public void onStart(Intent intent, int startId) {

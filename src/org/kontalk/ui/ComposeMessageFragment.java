@@ -9,6 +9,8 @@ import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.ImageMessage;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.PlainTextMessage;
+import org.kontalk.client.Protocol;
+import org.kontalk.client.RequestClient;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -56,6 +58,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -310,7 +313,7 @@ public class ComposeMessageFragment extends ListFragment {
             values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
             values.put(Messages.PEER, userId);
             values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-            values.put(Messages.CONTENT, text);
+            values.put(Messages.CONTENT, text.getBytes());
             values.put(Messages.UNREAD, false);
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
@@ -683,8 +686,6 @@ public class ComposeMessageFragment extends ListFragment {
         if (mConversation != null)
             onConversationCreated();
 
-        /*
-         TODO convert to new protobuf API
         if (userId != null && MessagingPreferences.getLastSeenEnabled(getActivity())) {
             // FIXME this should be handled better and of course honour activity
             // pause/resume/saveState/restoreState/display rotation.
@@ -697,12 +698,12 @@ public class ComposeMessageFragment extends ListFragment {
                         RequestClient client = new RequestClient(context,
                                 MessagingPreferences.getEndpointServer(context),
                                 Authenticator.getDefaultAccountToken(context));
-                        final List<StatusResponse> data = client.lookup(new String[] { userId });
-                        if (data != null && data.size() > 0) {
-                            StatusResponse res = data.get(0);
-                            if (res.code == StatusResponse.STATUS_SUCCESS) {
-                                String timestamp = (String) res.extra.get("t");
-                                long time = Long.parseLong(timestamp);
+
+                        final Protocol.LookupResponse data = client.lookup(userId);
+                        if (data != null && data.getEntryCount() > 0) {
+                            final Protocol.LookupResponseEntry res = data.getEntry(0);
+                            if (res.hasTimestamp()) {
+                                long time = res.getTimestamp();
                                 if (time > 0)
                                     text = getResources().getString(R.string.last_seen_label) +
                                         MessageUtils.formatTimeStampString(context, time * 1000, true);
@@ -734,7 +735,6 @@ public class ComposeMessageFragment extends ListFragment {
                 }
             }).start();
         }
-        */
     }
 
     public ComposeMessage getParentActivity() {
@@ -888,9 +888,7 @@ public class ComposeMessageFragment extends ListFragment {
                 isRemoving();
     }
 
-    /**
-     * The conversation list query handler.
-     */
+    /** The conversation list query handler. */
     private final class MessageListQueryHandler extends AsyncQueryHandler {
         public MessageListQueryHandler() {
             super(getActivity().getApplicationContext().getContentResolver());
