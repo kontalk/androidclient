@@ -319,17 +319,19 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.FETCH_URL);
         values.remove(Messages.FETCHED);
         values.remove(Messages.LOCAL_URI);
+        values.remove(Messages.ENCRYPTED);
         values.remove(Messages.ENCRYPT_KEY);
 
-        // check if message is encrypted
+        // use text content in threads instead of binary content
         Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-        values.remove(Messages.ENCRYPTED);
-        if (encrypted != null && encrypted.booleanValue())
+        if (encrypted != null && encrypted.booleanValue()) {
+            // TODO i18n
             values.put(Threads.CONTENT, "(encrypted)");
+        }
         else {
-            // convert to string on insert
-            byte[] buf = values.getAsByteArray(Messages.CONTENT);
-            values.put(Threads.CONTENT, new String(buf));
+            // use the binary content converted to string
+            byte[] content = values.getAsByteArray(Messages.CONTENT);
+            values.put(Threads.CONTENT, new String(content));
         }
 
         // insert new thread

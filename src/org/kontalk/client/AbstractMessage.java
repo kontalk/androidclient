@@ -223,6 +223,14 @@ public abstract class AbstractMessage<T> {
      */
     public abstract byte[] getBinaryContent();
 
+    /** A sample text content from class name and mime type. */
+    public static String getSampleTextContent(Class<? extends AbstractMessage<?>> klass,
+            String mime) {
+        String cname = klass.getSimpleName();
+        return cname.substring(0, cname.length() - "Message".length()) +
+            ": " + mime;
+    }
+
     /** Sets a URL for fetching big contents. */
     public void setFetchUrl(String url) {
         fetchUrl = url;

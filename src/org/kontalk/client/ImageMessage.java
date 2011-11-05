@@ -140,17 +140,16 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
 
     @Override
     public String getTextContent() {
-        return "Image: " + mime;
+        String s = "Image: " + mime;
+        if (encrypted)
+            // TODO i18n
+            s += " (encrypted)";
+        return s;
     }
 
     @Override
     public byte[] getBinaryContent() {
         return decodedContent;
-    }
-
-    /** FIXME this should have be done better... */
-    public static String getSampleTextContent(String mime) {
-        return "Image: " + mime;
     }
 
     @Override

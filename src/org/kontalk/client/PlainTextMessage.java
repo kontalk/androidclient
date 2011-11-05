@@ -43,6 +43,9 @@ public class PlainTextMessage extends AbstractMessage<ByteString> {
 
     @Override
     public String getTextContent() {
+        if (encrypted)
+            // TODO i18n
+            return "(encrypted)";
         return content.toStringUtf8();
     }
 

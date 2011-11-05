@@ -37,6 +37,7 @@ public class EndpointServer {
     public static final String RECEIVED_PATH = "/received";
     public static final String MESSAGE_PATH = "/message";
     public static final String POLLING_PATH = "/polling";
+    public static final String DOWNLOAD_PATH = "/download";
 
     /** The authentication token header. */
     private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
@@ -225,6 +226,12 @@ public class EndpointServer {
                     HEADER_VALUE_AUTHORIZATION + token);
 
         return req;
+    }
+
+    public HttpRequestBase prepareDownload(String token, String filename) throws IOException {
+        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+        params.add(new BasicNameValuePair("f", filename));
+        return prepare(DOWNLOAD_PATH, params, token, null, null, false);
     }
 
     /**

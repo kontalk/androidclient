@@ -237,6 +237,7 @@ public class ComposeMessageFragment extends ListFragment {
 
         try {
             String msgId = "draft" + (new Random().nextInt());
+            String content = AbstractMessage.getSampleTextContent(ImageMessage.class, mime);
 
             // save to local storage
             ContentValues values = new ContentValues();
@@ -244,7 +245,7 @@ public class ComposeMessageFragment extends ListFragment {
             values.put(Messages.MESSAGE_ID, msgId);
             values.put(Messages.PEER, userId);
             values.put(Messages.MIME, mime);
-            values.put(Messages.CONTENT, ImageMessage.getSampleTextContent(mime));
+            values.put(Messages.CONTENT, content.getBytes());
             values.put(Messages.UNREAD, false);
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());

@@ -313,6 +313,7 @@ public class MessageCenterService extends Service
                         // store to file if it's an image message
                         // FIXME this should be abstracted somehow
                         byte[] content = msg.getBinaryContent();
+
                         if (msg instanceof ImageMessage) {
                             String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
                             File file = null;
@@ -325,6 +326,9 @@ public class MessageCenterService extends Service
                             // update uri
                             Uri uri = Uri.fromFile(file);
                             msg.setLocalUri(uri);
+
+                            // use text content for database table
+                            content = msg.getTextContent().getBytes();
                         }
 
                         // save to local storage
