@@ -149,8 +149,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             for (int i = 0; i < res.getEntryCount(); i++) {
                 Protocol.LookupResponseEntry entry = res.getEntry(i);
-                final RawPhoneNumberEntry data = lookupNumbers.get(entry.getUserId());
-                addContact(account, data.displayName, data.number, -1);
+                String userId = entry.getUserId().toString();
+                final RawPhoneNumberEntry data = lookupNumbers.get(userId);
+                if (data != null)
+                    addContact(account, data.displayName, data.number, -1);
             }
         }
         catch (Exception e) {
