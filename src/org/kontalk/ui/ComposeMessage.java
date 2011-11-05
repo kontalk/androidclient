@@ -214,10 +214,10 @@ public class ComposeMessage extends FragmentActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(),
                 ContentUris.withAppendedId(Conversations.CONTENT_URI,
                         mFragment.getThreadId()));
-        super.onSaveInstanceState(out);
     }
 
     public Intent getSendIntent() {

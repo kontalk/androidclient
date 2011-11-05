@@ -587,6 +587,14 @@ public class ComposeMessageFragment extends ListFragment {
         mArguments = args;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out);
+        out.putParcelable(Uri.class.getName(),
+                ContentUris.withAppendedId(Conversations.CONTENT_URI,
+                        threadId));
+    }
+
     private void processArguments(Bundle savedInstanceState) {
         Bundle args = null;
         if (savedInstanceState != null) {
