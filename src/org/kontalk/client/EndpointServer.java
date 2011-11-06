@@ -18,7 +18,6 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.kontalk.client.Protocol;
 import org.kontalk.service.RequestListener;
 import org.kontalk.util.ProgressInputStreamEntity;
 
@@ -30,14 +29,15 @@ import org.kontalk.util.ProgressInputStreamEntity;
  */
 public class EndpointServer {
 
-    public static final String SERVERINFO_PATH = "/serverinfo";
-    public static final String VALIDATION_PATH = "/validation";
-    public static final String AUTHENTICATION_PATH = "/authentication";
-    public static final String LOOKUP_PATH = "/lookup";
-    public static final String RECEIVED_PATH = "/received";
-    public static final String MESSAGE_PATH = "/message";
-    public static final String POLLING_PATH = "/polling";
-    public static final String DOWNLOAD_PATH = "/download";
+    // TODO private static final String SERVERINFO_PATH = "/serverinfo";
+    private static final String VALIDATION_PATH = "/validation";
+    private static final String AUTHENTICATION_PATH = "/authentication";
+    private static final String LOOKUP_PATH = "/lookup";
+    private static final String RECEIVED_PATH = "/received";
+    private static final String MESSAGE_PATH = "/message";
+    private static final String POLLING_PATH = "/polling";
+    private static final String DOWNLOAD_PATH = "/download";
+    private static final String SERVERLIST_PATH = "/serverlist";
 
     /** The authentication token header. */
     private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
@@ -104,15 +104,11 @@ public class EndpointServer {
     }
 
     public HttpRequestBase prepareValidation(String phone) throws IOException {
-        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-        params.add(new BasicNameValuePair("n", phone));
-        return prepare(VALIDATION_PATH, params, null, null, null, false);
+        return prepare(VALIDATION_PATH + "/" + phone, null, null, null, null, false);
     }
 
     public HttpRequestBase prepareAuthentication(String validationCode) throws IOException {
-        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-        params.add(new BasicNameValuePair("v", validationCode));
-        return prepare(AUTHENTICATION_PATH, params, null, null, null, false);
+        return prepare(AUTHENTICATION_PATH + "/" + validationCode, null, null, null, null, false);
     }
 
     public HttpRequestBase prepareLookup(String token, Collection<String> userId) throws IOException {
@@ -228,10 +224,26 @@ public class EndpointServer {
         return req;
     }
 
+    /**
+     * Attachment download request.
+     * @param token the authentication token
+     * @param filename attachment filename
+     * @return the request object
+     * @throws IOException
+     */
     public HttpRequestBase prepareDownload(String token, String filename) throws IOException {
-        List<NameValuePair> params = new ArrayList<NameValuePair>(1);
-        params.add(new BasicNameValuePair("f", filename));
-        return prepare(DOWNLOAD_PATH, params, token, null, null, false);
+        return prepare(DOWNLOAD_PATH + "/" + filename, null, token, null, null, false);
+    }
+
+    /**
+     * Server list download request.
+     * @param token the authentication token
+     * @param filename attachment filename
+     * @return the request object
+     * @throws IOException
+     */
+    public HttpRequestBase prepareServerListRequest() throws IOException {
+        return prepare(SERVERLIST_PATH, null, null, null, null, false);
     }
 
     /**

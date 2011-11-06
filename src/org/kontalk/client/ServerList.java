@@ -35,7 +35,9 @@ public class ServerList extends ArrayList<EndpointServer> {
     public EndpointServer random() {
         if (mSeed == null)
             mSeed = new Random();
-        return get(mSeed.nextInt(size()));
+        return (size() > 0) ?
+            get(mSeed.nextInt(size())) :
+            null;
     }
 
 }
