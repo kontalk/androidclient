@@ -67,7 +67,7 @@ public class ConversationListItem extends RelativeLayout {
             mAvatarView.setVisibility(VISIBLE);
             mAvatarView.setImageResource(R.drawable.ic_contact_picture);
             mErrorIndicator.setVisibility(VISIBLE);
-            mErrorIndicator.setImageResource(R.drawable.ic_msg_delivered);
+            mErrorIndicator.setImageResource(R.drawable.ic_thread_pending);
         }
     }
 
@@ -124,7 +124,7 @@ public class ConversationListItem extends RelativeLayout {
         int resId = -1;
         switch (conv.getStatus()) {
             case Messages.STATUS_SENDING:
-                resId = R.drawable.ic_msg_pending;
+                resId = R.drawable.ic_thread_pending;
                 break;
             case Messages.STATUS_SENT:
                 resId = R.drawable.ic_msg_sent;
@@ -134,7 +134,7 @@ public class ConversationListItem extends RelativeLayout {
                 break;
             case Messages.STATUS_ERROR:
             case Messages.STATUS_NOTACCEPTED:
-                resId = R.drawable.ic_msg_error;
+                resId = R.drawable.ic_thread_error;
                 break;
         }
 
