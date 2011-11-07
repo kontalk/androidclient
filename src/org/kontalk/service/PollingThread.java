@@ -27,6 +27,8 @@ public class PollingThread extends Thread {
     private PollingClient mClient;
     private MessageListener mListener;
 
+    private String mPushRegistrationId;
+
     public PollingThread(Context context, EndpointServer server) {
         mServer = server;
         mContext = context;
@@ -34,6 +36,14 @@ public class PollingThread extends Thread {
 
     public void setMessageListener(MessageListener listener) {
         this.mListener = listener;
+    }
+
+    public String getPushRegistrationId() {
+        return mPushRegistrationId;
+    }
+
+    public void setPushRegistrationId(String regId) {
+        mPushRegistrationId = regId;
     }
 
     public void run() {
@@ -47,19 +57,28 @@ public class PollingThread extends Thread {
 
         while(mRunning) {
             try {
-                List<AbstractMessage<?>> list = mClient.poll();
+                boolean c2dmRegistered = (mPushRegistrationId != null);
+                List<AbstractMessage<?>> list = mClient.poll(mPushRegistrationId);
                 if (list != null) {
-                    Log.i("PollingThread", list.toString());
+                    Log.i(TAG, list.toString());
 
                     if (mListener != null)
                         mListener.incoming(list);
                 }
 
                 // success - wait just 1s
-                if (mRunning)
+                if (mRunning) {
+                    if (list == null || list.size() == 0) {
+                        // push notifications enabled - we can stop our parent :)
+                        // TODO maybe this should be done in a less hackish way...
+                        if (mPushRegistrationId != null && c2dmRegistered)
+                            MessageCenterService.stopMessageCenter(mContext);
+                    }
+
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {}
+                }
             }
             catch (Exception e) {
                 Log.e(TAG, "polling error", e);

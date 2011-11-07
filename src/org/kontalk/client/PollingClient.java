@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.message.BasicHeader;
 import org.kontalk.crypto.Coder;
 import org.kontalk.ui.MessagingPreferences;
 
@@ -33,12 +34,20 @@ public class PollingClient extends AbstractClient {
      * Polls the server for new messages.
      * @throws IOException
      */
-    public List<AbstractMessage<?>> poll() throws IOException {
+    public List<AbstractMessage<?>> poll(String c2dmRegistrationId)
+            throws IOException {
 
         List<AbstractMessage<?>> list = null;
         try {
             // http request!
             currentRequest = mServer.preparePolling(mAuthToken);
+
+            // add c2dm registration id if any
+            if (c2dmRegistrationId != null)
+                currentRequest.setHeader(new BasicHeader(
+                        "X-Google-Registration",
+                        c2dmRegistrationId));
+
             HttpResponse response = mServer.execute(currentRequest);
 
             Protocol.NewMessages data = Protocol.NewMessages

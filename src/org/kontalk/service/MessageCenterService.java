@@ -60,7 +60,10 @@ public class MessageCenterService extends Service
     private static final String TAG = MessageCenterService.class.getSimpleName();
     private static final int NOTIFICATION_ID = 102;
 
+    public static final String C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
+
+    public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
 
     private Notification mCurrentNotification;
     private long mTotalBytes;
@@ -68,7 +71,9 @@ public class MessageCenterService extends Service
     private PollingThread mPollingThread;
     private RequestWorker mRequestWorker;
     private Account mAccount;
+
     private boolean mPushNotifications;
+    private String mPushRegistrationId;
 
     /**
      * This list will contain the received messages - avoiding multiple
@@ -124,40 +129,64 @@ public class MessageCenterService extends Service
         Log.w(TAG, "Message Center starting - " + intent);
 
         if (intent != null) {
-            Bundle extras = intent.getExtras();
-            String serverUrl = (String) extras.get(EndpointServer.class.getName());
-            Log.i(TAG, "using server uri: " + serverUrl);
-            EndpointServer server = new EndpointServer(serverUrl);
+            String action = intent.getAction();
 
-            mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
-            mAccount = Authenticator.getDefaultAccount(this);
-            if (mAccount == null) {
-                stopSelf();
+            // C2DM hash registered!
+            if (C2DM_REGISTERED.equals(action)) {
+                setPushRegistrationId(intent.getStringExtra(C2DM_REGISTRATION_ID));
             }
+
+            // normal start
             else {
-                // check changing accounts
-                if (mAccountManager == null) {
-                    mAccountManager = AccountManager.get(this);
-                    mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
+
+                Bundle extras = intent.getExtras();
+                String serverUrl = (String) extras.get(EndpointServer.class.getName());
+                Log.i(TAG, "using server uri: " + serverUrl);
+                EndpointServer server = new EndpointServer(serverUrl);
+
+                mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
+                mAccount = Authenticator.getDefaultAccount(this);
+                if (mAccount == null) {
+                    stopSelf();
                 }
+                else {
+                    // check changing accounts
+                    if (mAccountManager == null) {
+                        mAccountManager = AccountManager.get(this);
+                        mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
+                    }
 
-                // activate request worker
-                if (mRequestWorker == null) {
-                    mRequestWorker = new RequestWorker(this, server);
-                    mRequestWorker.addListener(this);
-                    mRequestWorker.start();
+                    // activate request worker
+                    if (mRequestWorker == null) {
+                        mRequestWorker = new RequestWorker(this, server);
+                        mRequestWorker.addListener(this);
+                        mRequestWorker.start();
 
-                    // lookup for messages with error status and try to re-send them
-                    requeuePendingMessages();
-                    // lookup for incoming messages not confirmed yet
-                    requeuePendingReceipts();
-                }
+                        // lookup for messages with error status and try to re-send them
+                        requeuePendingMessages();
+                        // lookup for incoming messages not confirmed yet
+                        requeuePendingReceipts();
+                    }
 
-                // start polling thread
-                if (mPollingThread == null) {
-                    mPollingThread = new PollingThread(this, server);
-                    mPollingThread.setMessageListener(this);
-                    mPollingThread.start();
+                    // start polling thread
+                    if (mPollingThread == null) {
+                        mPollingThread = new PollingThread(this, server);
+                        mPollingThread.setMessageListener(this);
+                        mPollingThread.setPushRegistrationId(mPushRegistrationId);
+                        mPollingThread.start();
+                    }
+
+                    // register to push notifications
+                    if (mPushNotifications) {
+                        if (mPushRegistrationId != null)
+                            Log.w(TAG, "already registered to C2DM");
+                        else
+                            c2dmRegister();
+                    }
+                    /*
+                     * FIXME c2dm stays on since in OnDestroy() we commented
+                     * the unregistration call, and here we do nothing about it
+                     */
                 }
             }
         }
@@ -282,6 +311,10 @@ public class MessageCenterService extends Service
 
     @Override
     public void onDestroy() {
+        // unregister push notifications
+        // TEST do not unregister
+        //setPushNotifications(false);
+
         if (mAccountManager != null) {
             mAccountManager.removeOnAccountsUpdatedListener(mAccountsListener);
             mAccountManager = null;
@@ -388,6 +421,8 @@ public class MessageCenterService extends Service
         else {
             Log.w(TAG, "request worker is down, queueing job");
             RequestWorker.pendingJobs.add(job);
+            Log.w(TAG, "trying to start message center");
+            startMessageCenter(getApplicationContext());
         }
     }
 
@@ -546,19 +581,26 @@ public class MessageCenterService extends Service
     }
 
     private void c2dmRegister() {
-        /* TODO
-         * e-mail of sender will be given by serverinfo if any
+        // TODO e-mail of sender will be given by serverinfo if any
+        String emailOfSender = "kontalkpush@gmail.com";
         Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
-        registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0)); // boilerplate
+        registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
         registrationIntent.putExtra("sender", emailOfSender);
         startService(registrationIntent);
-        */
     }
 
     private void c2dmUnregister() {
         Intent unregIntent = new Intent("com.google.android.c2dm.intent.UNREGISTER");
         unregIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
         startService(unregIntent);
+
+        setPushRegistrationId(null);
+    }
+
+    private void setPushRegistrationId(String regId) {
+        mPushRegistrationId = regId;
+        if (mPollingThread != null)
+            mPollingThread.setPushRegistrationId(regId);
     }
 
     /** Stops the message center. */
