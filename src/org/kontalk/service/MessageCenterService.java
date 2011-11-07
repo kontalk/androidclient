@@ -222,7 +222,7 @@ public class MessageCenterService extends Service
         while (c.moveToNext()) {
             long id = c.getLong(0);
             String userId = c.getString(1);
-            String text = c.getString(2);
+            byte[] text = c.getBlob(2);
             String mime = c.getString(3);
             String _fileUri = c.getString(4);
             String key = c.getString(5);
@@ -238,7 +238,7 @@ public class MessageCenterService extends Service
             }
             // we have a simple boring plain text message :(
             else {
-                m = new MessageSender(userId, text.getBytes(), mime, uri, key);
+                m = new MessageSender(userId, text, mime, uri, key);
             }
 
             m.setListener(mMessageRequestListener);
