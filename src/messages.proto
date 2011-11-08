@@ -97,3 +97,8 @@ message ServerList {
     required uint64 timestamp = 1;
     repeated string address = 2;
 }
+
+// user update
+message UserUpdate {
+    required Status status = 1;
+}

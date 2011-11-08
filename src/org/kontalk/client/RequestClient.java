@@ -173,6 +173,20 @@ public class RequestClient extends AbstractClient {
         }
     }
 
+    public Protocol.UserUpdate update(String statusMessage, String googleRegId) throws IOException {
+        try {
+            currentRequest = mServer.prepareUpdate(mAuthToken, statusMessage, googleRegId);
+            HttpResponse response = mServer.execute(currentRequest);
+            return Protocol.UserUpdate.parseFrom(response.getEntity().getContent());
+        }
+        catch (Exception e) {
+            throw innerException("user update error", e);
+        }
+        finally {
+            currentRequest = null;
+        }
+    }
+
     private IOException innerException(String detail, Throwable cause) {
         IOException ie = new IOException(detail);
         ie.initCause(cause);

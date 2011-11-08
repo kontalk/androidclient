@@ -29,7 +29,7 @@ import org.kontalk.util.ProgressInputStreamEntity;
  */
 public class EndpointServer {
 
-    // TODO private static final String SERVERINFO_PATH = "/serverinfo";
+    private static final String SERVERINFO_PATH = "/serverinfo";
     private static final String VALIDATION_PATH = "/validation";
     private static final String AUTHENTICATION_PATH = "/authentication";
     private static final String LOOKUP_PATH = "/lookup";
@@ -38,15 +38,20 @@ public class EndpointServer {
     private static final String POLLING_PATH = "/polling";
     private static final String DOWNLOAD_PATH = "/download";
     private static final String SERVERLIST_PATH = "/serverlist";
+    private static final String UPDATE_PATH = "/update";
 
     /** The authentication token header. */
     private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
     private static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
 
-    /** The recipients list header. */
+    /** Recipients list header. */
     private static final String HEADER_RECIPIENTS = "X-Recipients";
-    /** The message flags header. */
+    /** Message flags header. */
     private static final String HEADER_MESSAGE_FLAGS = "X-Message-Flags";
+    /** User status message header. */
+    private static final String HEADER_STATUS_MESSAGE = "X-Status-Message";
+    /** Google C2DM registration ID. */
+    private static final String HEADER_GOOGLE_REGID = "X-Google-Registration";
 
     private final String baseURL;
 
@@ -244,6 +249,25 @@ public class EndpointServer {
      */
     public HttpRequestBase prepareServerListRequest() throws IOException {
         return prepare(SERVERLIST_PATH, null, null, null, null, false);
+    }
+
+    /**
+     * User update request.
+     * @param token
+     * @param messageIds
+     * @return the request
+     * @throws IOException
+     */
+    public HttpRequestBase prepareUpdate(String token, String statusMessage, String googleRegId)
+            throws IOException {
+
+        HttpRequestBase req = prepare(UPDATE_PATH, null, token, null, null, false);
+        if (statusMessage != null)
+            req.addHeader(HEADER_STATUS_MESSAGE, statusMessage);
+        if (googleRegId != null)
+            req.addHeader(HEADER_GOOGLE_REGID, googleRegId);
+
+        return req;
     }
 
     /**

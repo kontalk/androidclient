@@ -57,8 +57,13 @@ public class PollingThread extends Thread {
 
         while(mRunning) {
             try {
-                boolean c2dmRegistered = (mPushRegistrationId != null);
-                List<AbstractMessage<?>> list = mClient.poll(mPushRegistrationId);
+                List<AbstractMessage<?>> list = mClient.poll();
+
+                if (!mRunning) {
+                    Log.d(TAG, "shutdown request");
+                    break;
+                }
+
                 if (list != null) {
                     Log.i(TAG, list.toString());
 
@@ -70,8 +75,7 @@ public class PollingThread extends Thread {
                 if (mRunning) {
                     if (list == null || list.size() == 0) {
                         // push notifications enabled - we can stop our parent :)
-                        // TODO maybe this should be done in a less hackish way...
-                        if (mPushRegistrationId != null && c2dmRegistered)
+                        if (mPushRegistrationId != null)
                             MessageCenterService.stopMessageCenter(mContext);
                     }
 

@@ -15,6 +15,7 @@ import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.ReceiptMessage;
 import org.kontalk.client.ReceivedJob;
+import org.kontalk.client.RequestClient;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -150,43 +151,49 @@ public class MessageCenterService extends Service
                     stopSelf();
                 }
                 else {
-                    // check changing accounts
-                    if (mAccountManager == null) {
-                        mAccountManager = AccountManager.get(this);
-                        mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
-                    }
 
-                    // activate request worker
-                    if (mRequestWorker == null) {
-                        mRequestWorker = new RequestWorker(this, server);
-                        mRequestWorker.addListener(this);
-                        mRequestWorker.start();
+                    // ensure application-wide lock
+                    // WARNING!!! DANGEROUS HACK
+                    synchronized (getApplicationContext()) {
 
-                        // lookup for messages with error status and try to re-send them
-                        requeuePendingMessages();
-                        // lookup for incoming messages not confirmed yet
-                        requeuePendingReceipts();
-                    }
+                        // check changing accounts
+                        if (mAccountManager == null) {
+                            mAccountManager = AccountManager.get(this);
+                            mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
+                        }
 
-                    // start polling thread
-                    if (mPollingThread == null) {
-                        mPollingThread = new PollingThread(this, server);
-                        mPollingThread.setMessageListener(this);
-                        mPollingThread.setPushRegistrationId(mPushRegistrationId);
-                        mPollingThread.start();
-                    }
+                        // activate request worker
+                        if (mRequestWorker == null) {
+                            mRequestWorker = new RequestWorker(this, server);
+                            mRequestWorker.addListener(this);
+                            mRequestWorker.start();
 
-                    // register to push notifications
-                    if (mPushNotifications) {
-                        if (mPushRegistrationId != null)
-                            Log.w(TAG, "already registered to C2DM");
-                        else
-                            c2dmRegister();
+                            // lookup for messages with error status and try to re-send them
+                            requeuePendingMessages();
+                            // lookup for incoming messages not confirmed yet
+                            requeuePendingReceipts();
+                        }
+
+                        // start polling thread
+                        if (mPollingThread == null) {
+                            mPollingThread = new PollingThread(this, server);
+                            mPollingThread.setMessageListener(this);
+                            mPollingThread.setPushRegistrationId(mPushRegistrationId);
+                            mPollingThread.start();
+                        }
+
+                        // register to push notifications
+                        if (mPushNotifications) {
+                            if (mPushRegistrationId != null)
+                                Log.w(TAG, "already registered to C2DM");
+                            else
+                                c2dmRegister();
+                        }
+                        /*
+                         * FIXME c2dm stays on since in OnDestroy() we commented
+                         * the unregistration call, and here we do nothing about it
+                         */
                     }
-                    /*
-                     * FIXME c2dm stays on since in OnDestroy() we commented
-                     * the unregistration call, and here we do nothing about it
-                     */
                 }
             }
         }
@@ -597,10 +604,19 @@ public class MessageCenterService extends Service
         setPushRegistrationId(null);
     }
 
-    private void setPushRegistrationId(String regId) {
+    private void setPushRegistrationId(final String regId) {
         mPushRegistrationId = regId;
         if (mPollingThread != null)
             mPollingThread.setPushRegistrationId(regId);
+
+        // TEST let's see if this works...
+        pushRequest(new RequestJob() {
+            @Override
+            public MessageLite call(RequestClient client, RequestListener listener,
+                    Context context) throws IOException {
+                return client.update(null, regId);
+            }
+        });
     }
 
     /** Stops the message center. */
