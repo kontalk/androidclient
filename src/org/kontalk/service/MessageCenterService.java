@@ -423,7 +423,7 @@ public class MessageCenterService extends Service
     }
 
     private synchronized void pushRequest(final RequestJob job) {
-        if (mRequestWorker != null && mRequestWorker.isRunning())
+        if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
             mRequestWorker.push(job);
         else {
             if (job instanceof ReceivedJob || job instanceof MessageSender) {
