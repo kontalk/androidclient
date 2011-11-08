@@ -426,8 +426,14 @@ public class MessageCenterService extends Service
         if (mRequestWorker != null && mRequestWorker.isRunning())
             mRequestWorker.push(job);
         else {
-            Log.w(TAG, "request worker is down, queueing job");
-            RequestWorker.pendingJobs.add(job);
+            if (job instanceof ReceivedJob || job instanceof MessageSender) {
+                Log.w(TAG, "not queueing message job");
+            }
+            else {
+                Log.w(TAG, "request worker is down, queueing job");
+                RequestWorker.pendingJobs.add(job);
+            }
+
             Log.w(TAG, "trying to start message center");
             startMessageCenter(getApplicationContext());
         }
