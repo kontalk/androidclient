@@ -2,6 +2,7 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 
 import android.app.Notification;
@@ -38,7 +39,8 @@ public class MessagingNotification {
     };
 
     private static final String THREADS_UNREAD_SELECTION =
-        Threads.UNREAD + " > 0";
+        Threads.UNREAD + " > 0 AND " +
+        Threads.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** This class is not instanciable. */
     private MessagingNotification() {}
