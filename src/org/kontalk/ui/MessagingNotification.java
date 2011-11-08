@@ -39,7 +39,7 @@ public class MessagingNotification {
     };
 
     private static final String THREADS_UNREAD_SELECTION =
-        Threads.UNREAD + " > 0 AND " +
+        Threads.UNREAD + " <> 0 AND " +
         Threads.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** This class is not instanciable. */
