@@ -136,6 +136,9 @@ public class ConversationListItem extends RelativeLayout {
             case Messages.STATUS_NOTACCEPTED:
                 resId = R.drawable.ic_thread_error;
                 break;
+            case Messages.STATUS_NOTDELIVERED:
+                resId = R.drawable.ic_msg_notdelivered;
+                break;
         }
 
         // no matching resource or draft - hide status icon

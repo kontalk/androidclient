@@ -54,6 +54,7 @@
     <string name="received_label">Received:\u0020</string>
     <string name="error_label">Error:\u0020</string>
     <string name="refused_label">Not accepted:\u0020</string>
+    <string name="notdelivered_label">Not delivered:\u0020</string>
     <string name="encrypted_label">Encrypted:\u0020</string>
     <string name="pref_restart_msgcenter">Restart message center</string>
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>

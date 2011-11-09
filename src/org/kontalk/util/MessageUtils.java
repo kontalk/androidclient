@@ -140,6 +140,7 @@ public final class MessageUtils {
                 case Messages.STATUS_SENT:
                 case Messages.STATUS_SENDING:
                 case Messages.STATUS_RECEIVED:
+                case Messages.STATUS_NOTDELIVERED:
                     resId = R.string.sent_label;
                     timestamp = msg.getTimestamp();
                     break;
@@ -159,6 +160,11 @@ public final class MessageUtils {
                 details.append('\n');
                 appendTimestamp(context, details,
                         res.getString(R.string.received_label), msg.getStatusChanged(), true);
+            }
+            else if (status == Messages.STATUS_NOTDELIVERED) {
+                details.append('\n');
+                appendTimestamp(context, details,
+                        res.getString(R.string.notdelivered_label), msg.getStatusChanged(), true);
             }
 
         }

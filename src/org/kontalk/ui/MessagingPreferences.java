@@ -53,7 +53,7 @@ public class MessagingPreferences extends PreferenceActivity {
                 values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
                 getContentResolver().update(Messages.CONTENT_URI, values,
                         Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
-                        Messages.STATUS + " IS NULL",
+                        Messages.STATUS + " = " + Messages.STATUS_INCOMING,
                         null);
 
                 Toast.makeText(MessagingPreferences.this, "Messages table updated!", Toast.LENGTH_SHORT)

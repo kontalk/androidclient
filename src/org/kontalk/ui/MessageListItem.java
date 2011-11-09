@@ -169,14 +169,15 @@ public class MessageListItem extends RelativeLayout {
                 case Messages.STATUS_RECEIVED:
                     resId = R.drawable.ic_msg_delivered;
                     break;
-                case Messages.STATUS_NOTACCEPTED:
-                    resId = R.drawable.ic_msg_error;
-                    break;
                 case Messages.STATUS_ERROR:
+                case Messages.STATUS_NOTACCEPTED:
                     resId = R.drawable.ic_msg_error;
                     break;
                 case Messages.STATUS_SENT:
                     resId = R.drawable.ic_msg_sent;
+                    break;
+                case Messages.STATUS_NOTDELIVERED:
+                    resId = R.drawable.ic_msg_notdelivered;
                     break;
             }
         }

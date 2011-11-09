@@ -252,7 +252,8 @@ public class MessageCenterService extends Service
                 },
                 Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
-                Messages.STATUS + " <> " + Messages.STATUS_RECEIVED,
+                Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
+                Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED,
                 null, null);
 
         while (c.moveToNext()) {
@@ -293,7 +294,7 @@ public class MessageCenterService extends Service
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
                 new String[] { Messages.REAL_ID },
                 Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
-                Messages.STATUS + " IS NULL",
+                Messages.STATUS + " = 0",
                 null, null);
 
         List<String> list = new ArrayList<String>();
@@ -400,8 +401,12 @@ public class MessageCenterService extends Service
                         Log.w(TAG, "receipt for message " + msg2.getMessageId());
                         // TODO handle error receipts
 
+                        int status = msg2.getStatus();
+                        int code = (status == Protocol.Status.STATUS_SUCCESS_VALUE) ?
+                                Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
+
                         MessagesProvider.changeMessageStatus(this,
-                                msg2.getMessageId(), false, Messages.STATUS_RECEIVED,
+                                msg2.getMessageId(), false, code,
                                 -1, msg.getServerTimestamp().getTime());
                     }
 
