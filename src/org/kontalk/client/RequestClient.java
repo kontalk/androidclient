@@ -187,6 +187,20 @@ public class RequestClient extends AbstractClient {
         }
     }
 
+    public Protocol.ServerInfo serverinfo() throws IOException {
+        try {
+            currentRequest = mServer.prepareServerinfo();
+            HttpResponse response = mServer.execute(currentRequest);
+            return Protocol.ServerInfo.parseFrom(response.getEntity().getContent());
+        }
+        catch (Exception e) {
+            throw innerException("server info request error", e);
+        }
+        finally {
+            currentRequest = null;
+        }
+    }
+
     private IOException innerException(String detail, Throwable cause) {
         IOException ie = new IOException(detail);
         ie.initCause(cause);

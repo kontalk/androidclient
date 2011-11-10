@@ -16,6 +16,7 @@ import org.kontalk.client.Protocol;
 import org.kontalk.client.ReceiptMessage;
 import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.RequestClient;
+import org.kontalk.client.ServerinfoJob;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -74,6 +75,7 @@ public class MessageCenterService extends Service
     private Account mAccount;
 
     private boolean mPushNotifications;
+    private String mPushEmail;
     private String mPushRegistrationId;
 
     /**
@@ -168,6 +170,8 @@ public class MessageCenterService extends Service
                             mRequestWorker.addListener(this);
                             mRequestWorker.start();
 
+                            // request serverinfo
+                            requestServerinfo();
                             // lookup for messages with error status and try to re-send them
                             requeuePendingMessages();
                             // lookup for incoming messages not confirmed yet
@@ -234,6 +238,10 @@ public class MessageCenterService extends Service
             return true;
         }
         return false;
+    }
+
+    private void requestServerinfo() {
+        pushRequest(new ServerinfoJob());
     }
 
     /**
@@ -509,21 +517,37 @@ public class MessageCenterService extends Service
     @Override
     public void response(RequestJob job, MessageLite response) {
         Log.w(TAG, "job=" + job + ", response=" + response);
-        // stop foreground if any
-        stopForeground();
 
-        // received command
-        if (response != null && response instanceof Protocol.Received) {
-            // access to mReceived list is protected
-            synchronized (mReceived) {
-                Protocol.Received response2 = (Protocol.Received) response;
-                List<Protocol.ReceivedEntry> list = response2.getEntryList();
-                for (Protocol.ReceivedEntry entry : list) {
-                    if (entry.getStatus() == Protocol.Status.STATUS_SUCCESS) {
-                        String id = entry.getMessageId();
-                        mReceived.remove(id);
-                        MessagesProvider.changeMessageStatus(this,
-                                id, true, Messages.STATUS_CONFIRMED);
+        if (response != null) {
+            // received command
+            if (response instanceof Protocol.Received) {
+                // access to mReceived list is protected
+                synchronized (mReceived) {
+                    Protocol.Received response2 = (Protocol.Received) response;
+                    List<Protocol.ReceivedEntry> list = response2.getEntryList();
+                    for (Protocol.ReceivedEntry entry : list) {
+                        if (entry.getStatus() == Protocol.Status.STATUS_SUCCESS) {
+                            String id = entry.getMessageId();
+                            mReceived.remove(id);
+                            MessagesProvider.changeMessageStatus(this,
+                                    id, true, Messages.STATUS_CONFIRMED);
+                        }
+                    }
+                }
+            }
+
+            else if (job instanceof MessageSender) {
+                // stop foreground if any
+                stopForeground();
+            }
+
+            else if (job instanceof ServerinfoJob) {
+                Protocol.ServerInfo response2 = (Protocol.ServerInfo) response;
+                for (int i = 0; i < response2.getSupportsCount(); i++) {
+                    String data = response2.getSupports(i);
+                    if (data.startsWith("google_c2dm=")) {
+                        mPushEmail = data.substring("google_c2dm=".length());
+                        c2dmRegister();
                     }
                 }
             }
@@ -592,19 +616,23 @@ public class MessageCenterService extends Service
 
     public void setPushNotifications(boolean enabled) {
         mPushNotifications = enabled;
-        if (mPushNotifications)
-            c2dmRegister();
-        else
+        if (mPushNotifications) {
+            if (mPushRegistrationId == null)
+                c2dmRegister();
+        }
+        else {
             c2dmUnregister();
+        }
     }
 
     private void c2dmRegister() {
-        // TODO e-mail of sender will be given by serverinfo if any
-        String emailOfSender = "kontalkpush@gmail.com";
-        Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
-        registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
-        registrationIntent.putExtra("sender", emailOfSender);
-        startService(registrationIntent);
+        if (mPushEmail != null) {
+            // e-mail of sender will be given by serverinfo if any
+            Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
+            registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
+            registrationIntent.putExtra("sender", mPushEmail);
+            startService(registrationIntent);
+        }
     }
 
     private void c2dmUnregister() {

@@ -270,6 +270,10 @@ public class EndpointServer {
         return req;
     }
 
+    public HttpRequestBase prepareServerinfo() throws IOException {
+        return prepare(SERVERINFO_PATH, null, null, null, null, false);
+    }
+
     /**
      * Executes the given request.
      * @param request the request
