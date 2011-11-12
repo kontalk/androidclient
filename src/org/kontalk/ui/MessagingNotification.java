@@ -13,6 +13,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
@@ -43,6 +45,10 @@ public class MessagingNotification {
 
     /** Delays by 3 seconds any messages notification updates. */
     public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
+        // notifications are disabled
+        if (!MessagingPreferences.getNotificationsEnabled(context))
+            return;
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -60,6 +66,10 @@ public class MessagingNotification {
      * @param isNew if true a new message has come (starts notification alerts)
      */
     public static void updateMessagesNotification(Context context, boolean isNew) {
+        // notifications are disabled
+        if (!MessagingPreferences.getNotificationsEnabled(context))
+            return;
+
         ContentResolver res = context.getContentResolver();
         NotificationManager nm = (NotificationManager) context
             .getSystemService(Context.NOTIFICATION_SERVICE);
@@ -91,9 +101,18 @@ public class MessagingNotification {
 
         Notification no = new Notification(R.drawable.icon_stat, accumulator.getTicker(), accumulator.getTimestamp());
         if (isNew) {
-            no.defaults |= Notification.DEFAULT_VIBRATE |
-                           Notification.DEFAULT_LIGHTS |
-                           Notification.DEFAULT_SOUND;
+            no.defaults |= Notification.DEFAULT_LIGHTS;
+
+            String ringtone = MessagingPreferences.getNotificationRingtone(context);
+            if (ringtone != null && ringtone.length() > 0)
+                no.sound = Uri.parse(ringtone);
+
+            String vibrate = MessagingPreferences.getNotificationVibrate(context);
+            if ("always".equals(vibrate) || ("vibrate_only".equals(vibrate) &&
+                    ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
+                        .getRingerMode() == AudioManager.RINGER_MODE_VIBRATE))
+                no.defaults |= Notification.DEFAULT_VIBRATE;
+
             no.flags |= Notification.FLAG_SHOW_LIGHTS;
         }
 

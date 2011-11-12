@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="vibrateValues">
+        <item>always</item>
+        <item>vibrate_only</item>
+        <item>never</item>
+    </string-array>
+    <string-array name="vibrateLabels">
+        <item>@string/vibrate_always</item>
+        <item>@string/vibrate_vibrate_only</item>
+        <item>@string/vibrate_never</item>
+    </string-array>
+</resources>

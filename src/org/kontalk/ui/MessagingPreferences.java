@@ -154,6 +154,16 @@ public class MessagingPreferences extends PreferenceActivity {
         pref.setSummary(context.getString(R.string.server_list_last_update, timestamp));
     }
 
+    private static String getString(Context context, String key, String defaultValue) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(key, defaultValue);
+    }
+
+    private static boolean getBoolean(Context context, String key, boolean defaultValue) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(key, defaultValue);
+    }
+
     private static String getServerURI(Context context) {
         return getString(context, "pref_network_uri", null);
     }
@@ -170,8 +180,7 @@ public class MessagingPreferences extends PreferenceActivity {
 
     /** Returns true if the contacts list has already been checked against the server. */
     public static boolean getContactsChecked(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("pref_contacts_checked", false);
+        return getBoolean(context, "pref_contacts_checked", false);
     }
 
     public static void setContactsChecked(Context context, boolean checked) {
@@ -182,13 +191,7 @@ public class MessagingPreferences extends PreferenceActivity {
     }
 
     public static boolean getEncryptionEnabled(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("pref_encrypt", true);
-    }
-
-    private static String getString(Context context, String key, String defaultValue) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(key, defaultValue);
+        return getBoolean(context, "pref_encrypt", true);
     }
 
     public static String getDefaultPassphrase(Context context) {
@@ -214,12 +217,22 @@ public class MessagingPreferences extends PreferenceActivity {
     }
 
     public static boolean getLastSeenEnabled(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("pref_show_last_seen", false);
+        return getBoolean(context, "pref_show_last_seen", true);
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("pref_push_notifications", true);
+        return getBoolean(context, "pref_push_notifications", true);
+    }
+
+    public static boolean getNotificationsEnabled(Context context) {
+        return getBoolean(context, "pref_enable_notifications", true);
+    }
+
+    public static String getNotificationVibrate(Context context) {
+        return getString(context, "pref_vibrate", "never");
+    }
+
+    public static String getNotificationRingtone(Context context) {
+        return getString(context, "pref_ringtone", null);
     }
 }

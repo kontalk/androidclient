@@ -87,4 +87,13 @@
     <string name="hint_search_thread">Search in conversation</string>
     <string name="hint_search_quickbox">Text in your messages</string>
     <string name="title_search">Search: \"%s\"</string>
+    <string name="pref_notification_settings">Notification settings</string>
+    <string name="pref_enable_notifications">Notifications</string>
+    <string name="pref_title_enable_notifications">Display message notifications in status bar</string>
+    <string name="pref_ringtone">Select ringtone</string>
+    <string name="pref_vibrate">Vibrate</string>
+    <string name="pref_title_vibrate">Also vibrate when notified</string>
+    <string name="vibrate_always">Always</string>
+    <string name="vibrate_vibrate_only">Only in vibrate mode</string>
+    <string name="vibrate_never">Never</string>
 </resources>
