@@ -44,7 +44,7 @@
         </activity>
 
         <activity android:name=".ui.SearchActivity"
-            android:label="@string/menu_search"
+            android:label="@string/app_name"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@style/Theme.Light">
             <intent-filter>
