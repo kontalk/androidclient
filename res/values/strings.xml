@@ -83,4 +83,8 @@
     <string name="server_list_last_update">Last update: %s</string>
     <string name="pref_title_push_notifications">Use push notifications if server supports it, saves battery</string>
     <string name="pref_push_notifications">Push notifications</string>
+    <string name="hint_search_full">Search messages</string>
+    <string name="hint_search_thread">Search in conversation</string>
+    <string name="hint_search_quickbox">Kontalk messages</string>
+    <string name="title_search">Search: \"%s\"</string>
 </resources>

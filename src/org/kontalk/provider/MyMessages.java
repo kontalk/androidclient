@@ -35,6 +35,13 @@ public final class MyMessages {
                     + MessagesProvider.AUTHORITY + "/messages/" + Uri.encode(msgId));
         }
 
+        public static final class Fulltext implements BaseColumns {
+            public static final Uri CONTENT_URI = Uri.parse("content://"
+                    + MessagesProvider.AUTHORITY + "/fulltext");
+
+            public static final String _ID = "rowid";
+        }
+
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.message";
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.message";
 

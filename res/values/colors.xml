@@ -18,14 +18,12 @@
     <drawable name="text_color_black">#ff000000</drawable>
     <drawable name="text_color_offwhite">#55ffffff</drawable>
 
-    <!-- Chat "sent time" text background -->
-    <color name="timestamp_color">#bf000000</color>
-
     <!-- the background color used for unread conversation -->
     <color name="unread_bgcolor">#ffffffff</color>
     <color name="read_bgcolor">#ffeeeeee</color>
     
     <!-- other colors -->
     <color name="last_seen_banner">#fffff1a8</color>
+    <color name="highlight_color">#fffffC57</color>
 </resources>
 

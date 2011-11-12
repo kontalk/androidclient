@@ -1,5 +1,7 @@
 package org.kontalk.ui;
 
+import java.util.regex.Pattern;
+
 import org.kontalk.R;
 import org.kontalk.client.AbstractMessage;
 import org.kontalk.data.Contact;
@@ -18,13 +20,15 @@ public class MessageListAdapter extends CursorAdapter {
     private static final String TAG = MessageListAdapter.class.getSimpleName();
 
     private final LayoutInflater mFactory;
+    private final Pattern mHighlight;
     private OnContentChangedListener mOnContentChangedListener;
 
     private Contact mContact;
 
-    public MessageListAdapter(Context context, Cursor cursor) {
+    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight) {
         super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
+        mHighlight = highlight;
     }
 
     @Override
@@ -39,7 +43,7 @@ public class MessageListAdapter extends CursorAdapter {
         if (msg.getDirection() == Messages.DIRECTION_IN && mContact == null)
         	mContact = Contact.findByUserId(context, msg.getSender());
 
-        headerView.bind(context, msg, mContact);
+        headerView.bind(context, msg, mContact, mHighlight);
     }
 
     @Override

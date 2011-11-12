@@ -3,8 +3,10 @@ package org.kontalk.provider;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.kontalk.client.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 
 
@@ -26,9 +28,8 @@ import android.util.Log;
 
 
 /**
- * The message storage provider.
+ * The messages storage provider.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class MessagesProvider extends ContentProvider {
 
@@ -38,6 +39,7 @@ public class MessagesProvider extends ContentProvider {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "messages.db";
     private static final String TABLE_MESSAGES = "messages";
+    private static final String TABLE_FULLTEXT = "fulltext";
     private static final String TABLE_THREADS = "threads";
 
     private static final int THREADS = 1;
@@ -47,11 +49,13 @@ public class MessagesProvider extends ContentProvider {
     private static final int MESSAGES_ID = 5;
     private static final int MESSAGES_SERVERID = 6;
     private static final int CONVERSATIONS_ID = 7;
+    private static final int FULLTEXT_ID = 8;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
     private static HashMap<String, String> messagesProjectionMap;
     private static HashMap<String, String> threadsProjectionMap;
+    private static HashMap<String, String> fulltextProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
         /** This table will contain all the messages .*/
@@ -95,6 +99,13 @@ public class MessagesProvider extends ContentProvider {
             "status_changed INTEGER," +
             "status INTEGER," +
             "draft TEXT" +
+            ");";
+
+        /** This table will contain every text message to speed-up full text searches. */
+        private static final String SCHEMA_FULLTEXT =
+            "CREATE VIRTUAL TABLE " + TABLE_FULLTEXT + " USING fts3 (" +
+            "thread_id INTEGER NOT NULL, " +
+            "content TEXT" +
             ");";
 
         /** Updates the thread messages count. */
@@ -165,6 +176,7 @@ public class MessagesProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
+            db.execSQL(SCHEMA_FULLTEXT);
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
             db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
@@ -228,6 +240,13 @@ public class MessagesProvider extends ContentProvider {
                 qb.appendWhere(Messages.THREAD_ID + "=" + uri.getPathSegments().get(1));
                 break;
 
+            case FULLTEXT_ID:
+                qb.setTables(TABLE_FULLTEXT);
+                qb.setProjectionMap(fulltextProjectionMap);
+                qb.appendWhere(Messages.CONTENT + " MATCH ?");
+                selectionArgs = new String[] { uri.getQueryParameter("pattern") };
+                break;
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
@@ -276,6 +295,15 @@ public class MessagesProvider extends ContentProvider {
         long rowId = db.insert(TABLE_MESSAGES, null, values);
 
         if (rowId > 0) {
+            // update fulltext table
+            Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
+            String mime = values.getAsString(Messages.MIME);
+            if ((encrypted == null || !encrypted.booleanValue()) && PlainTextMessage.MIME_TYPE.equals(mime)) {
+                byte[] content = values.getAsByteArray(Messages.CONTENT);
+                updateFulltext(db, rowId, threadId, content);
+            }
+
+
             Uri msgUri = ContentUris.withAppendedId(uri, rowId);
             cr.notifyChange(msgUri, null);
             Log.w(TAG, "messages table inserted, id = " + rowId);
@@ -418,16 +446,55 @@ public class MessagesProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
 
             if (table.equals(TABLE_MESSAGES)) {
-                Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.THREAD_ID },
+                // update fulltext only if content actually changed
+                boolean doUpdateFulltext;
+                String[] projection;
+
+                byte[] oldContent = values.getAsByteArray(Messages.CONTENT);
+                if (oldContent != null) {
+                    doUpdateFulltext = true;
+                    projection = new String[] { Messages.THREAD_ID, Messages._ID,
+                            Messages.DIRECTION, Messages.MIME,
+                            Messages.ENCRYPTED, Messages.CONTENT };
+                }
+                else {
+                    doUpdateFulltext = false;
+                    projection = new String[] { Messages.THREAD_ID };
+                }
+
+                Cursor c = db.query(TABLE_MESSAGES, projection,
                         where, args, null, null, null);
-                while (c.moveToNext())
-                    updateThreadInfo(db, c.getLong(0));
+                while (c.moveToNext()) {
+                    long threadId = c.getLong(0);
+                    updateThreadInfo(db, threadId);
+
+                    // update fulltext if necessary
+                    if (doUpdateFulltext) {
+                        int direction = c.getInt(2);
+                        String mime = c.getString(3);
+                        int encrypted = c.getInt(4);
+                        if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
+                                PlainTextMessage.MIME_TYPE.equals(mime))
+                            updateFulltext(db, c.getLong(1), threadId, c.getBlob(5));
+                    }
+                }
 
                 c.close();
             }
         }
 
         return rows;
+    }
+
+    private void updateFulltext(SQLiteDatabase db, long id, long threadId, byte[] content) {
+        // use the binary content converted to string
+        String text = new String(content);
+
+        ContentValues fulltext = new ContentValues();
+        fulltext.put(Fulltext._ID, id);
+        fulltext.put(Messages.THREAD_ID, threadId);
+        fulltext.put(Messages.CONTENT, text);
+        db.replace(TABLE_FULLTEXT, null, fulltext);
     }
 
     @Override
@@ -498,11 +565,29 @@ public class MessagesProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         long threadId = -1;
         if (table.equals(TABLE_MESSAGES)) {
-            // retrieve the thread id for later use by updateThreadInfo()
-            Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages.THREAD_ID },
-                    where, args, null, null, null, "1");
-            if (c != null && c.moveToFirst()) {
-                threadId = c.getLong(0);
+            // retrieve the thread id for later use by updateThreadInfo(), and
+            // also update fulltext table
+            Cursor c = db.query(TABLE_MESSAGES, new String[] {
+                    Messages.THREAD_ID,
+                    Messages._ID,
+                    Messages.DIRECTION,
+                    Messages.MIME,
+                    Messages.ENCRYPTED
+                },
+                where, args, null, null, null);
+            if (c != null) {
+                while (c.moveToNext()) {
+                    threadId = c.getLong(0);
+
+                    // update fulltext
+                    int direction = c.getInt(2);
+                    String mime = c.getString(3);
+                    int encrypted = c.getInt(4);
+                    if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
+                            PlainTextMessage.MIME_TYPE.equals(mime))
+                        db.delete(TABLE_FULLTEXT, Fulltext._ID + " = " + c.getLong(1), null);
+                }
+
                 c.close();
             }
         }
@@ -557,6 +642,10 @@ public class MessagesProvider extends ContentProvider {
                 c.close();
 
                 num += db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
+                // update fulltext
+                db.delete(TABLE_FULLTEXT, Messages.THREAD_ID + " = " + threadId, null);
+
+                // commit!
                 db.setTransactionSuccessful();
 
                 // notify change for every message :(
@@ -766,6 +855,7 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/#", MESSAGES_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/*", MESSAGES_SERVERID);
         sUriMatcher.addURI(AUTHORITY, "conversations/#", CONVERSATIONS_ID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
 
         messagesProjectionMap = new HashMap<String, String>();
         messagesProjectionMap.put(Messages._ID, Messages._ID);
@@ -799,5 +889,10 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.STATUS_CHANGED, Threads.STATUS_CHANGED);
         threadsProjectionMap.put(Threads.STATUS, Threads.STATUS);
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
+
+        fulltextProjectionMap = new HashMap<String, String>();
+        fulltextProjectionMap.put(Messages._ID, Messages._ID);
+        fulltextProjectionMap.put(Messages.THREAD_ID, Messages.THREAD_ID);
+        fulltextProjectionMap.put(Messages.CONTENT, Messages.CONTENT);
     }
 }

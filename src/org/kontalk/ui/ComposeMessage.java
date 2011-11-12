@@ -34,6 +34,11 @@ public class ComposeMessage extends FragmentActivity {
     /** View conversation with userId intent action. Just provide userId with this. */
     public static final String ACTION_VIEW_USERID = "org.kontalk.conversation.VIEW_USERID";
 
+    /** Used with VIEW actions, scrolls to a specific message. */
+    public static final String EXTRA_MESSAGE = "org.kontalk.conversation.MESSAGE";
+    /** Used with VIEW actions, highlight a {@link Pattern} in messages. */
+    public static final String EXTRA_HIGHLIGHT = "org.kontalk.conversation.HIGHLIGHT";
+
     /** The SEND intent. */
     private Intent sendIntent;
 
@@ -80,6 +85,8 @@ public class ComposeMessage extends FragmentActivity {
 
                 args.putString("action", action);
                 args.putParcelable("data", uri);
+                args.putLong(EXTRA_MESSAGE, intent.getLongExtra(EXTRA_MESSAGE, -1));
+                args.putString(EXTRA_HIGHLIGHT, intent.getStringExtra(EXTRA_HIGHLIGHT));
             }
 
             // send external content
@@ -90,7 +97,7 @@ public class ComposeMessage extends FragmentActivity {
                 Log.i(TAG, "sending data to someone: " + mime);
                 chooseContact();
 
-                // don't do other things - onActivityResult will handle the rest
+                // onActivityResult will handle the rest
                 return;
             }
 

@@ -35,7 +35,7 @@ public class ContactsListActivity extends ListActivity {
         startManagingCursor(mCursor);
 
         mListAdapter = new ContactsListAdapter(this, mCursor);
-        //mListAdapter.setOnContentChangedListener(mContentChangedListener);
+        // TODO mListAdapter.setOnContentChangedListener(mContentChangedListener);
         setListAdapter(mListAdapter);
     }
 

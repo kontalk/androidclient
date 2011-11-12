@@ -2,6 +2,7 @@ package org.kontalk.ui;
 
 import java.security.GeneralSecurityException;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -135,7 +136,7 @@ public class ComposeMessageFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
     	super.onActivityCreated(savedInstanceState);
-        setListAdapter(mListAdapter);
+        // setListAdapter() is post-poned
 
         registerForContextMenu(getListView());
 
@@ -226,8 +227,8 @@ public class ComposeMessageFragment extends ListFragment {
 
         setHasOptionsMenu(true);
         mQueryHandler = new MessageListQueryHandler();
-        mListAdapter = new MessageListAdapter(getActivity(), null);
-        mListAdapter.setOnContentChangedListener(mContentChangedListener);
+
+        // list adapter creation is post-poned
     }
 
     /** Sends out an image message. */
@@ -770,6 +771,22 @@ public class ComposeMessageFragment extends ListFragment {
         // opening for contact picker - do nothing
         if (threadId < 0 && activity != null && activity.getSendIntent() != null) return;
 
+        if (mListAdapter == null) {
+            Pattern highlight = null;
+            Bundle args = myArguments();
+            if (args != null) {
+                String highlightString = args.getString(ComposeMessage.EXTRA_HIGHLIGHT);
+                highlight = (highlightString == null) ?
+                    null :
+                    Pattern.compile("\\b" +
+                            Pattern.quote(highlightString), Pattern.CASE_INSENSITIVE);
+            }
+
+            mListAdapter = new MessageListAdapter(getActivity(), null, highlight);
+            mListAdapter.setOnContentChangedListener(mContentChangedListener);
+            setListAdapter(mListAdapter);
+        }
+
         Log.i(TAG, "starting query with threadId " + threadId);
         if (threadId > 0) {
             startQuery((mConversation == null));
@@ -930,15 +947,39 @@ public class ComposeMessageFragment extends ListFragment {
 
             switch (token) {
                 case MESSAGE_LIST_QUERY_TOKEN:
-                    mListAdapter.changeCursor(cursor);
-                    getActivity().setProgressBarIndeterminateVisibility(false);
 
                     // no messages to show - exit
-                    if (mListAdapter.getCount() == 0 &&
+                    if (cursor.getCount() == 0 &&
                             (mConversation == null || mConversation.getDraft() == null ||
                                     mTextEntry.getText().length() == 0)) {
                         Log.w(TAG, "no data to view - exit");
                         getActivity().finish();
+                    }
+                    else {
+                        // see if we have to scroll to a specific message
+                        int newSelectionPos = -1;
+
+                        Bundle args = myArguments();
+                        if (args != null) {
+                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE, -1);
+                            if (msgId > 0) {
+
+                                cursor.moveToPosition(-1);
+                                while (cursor.moveToNext()) {
+                                    long curId = cursor.getLong(cursor.getColumnIndex(Messages._ID));
+                                    if (curId == msgId) {
+                                        newSelectionPos = cursor.getPosition();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        mListAdapter.changeCursor(cursor);
+                        if (newSelectionPos > 0)
+                            getListView().setSelection(newSelectionPos);
+
+                        getActivity().setProgressBarIndeterminateVisibility(false);
                     }
 
                     break;

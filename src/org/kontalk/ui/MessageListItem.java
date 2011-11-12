@@ -1,5 +1,8 @@
 package org.kontalk.ui;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.kontalk.R;
 import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.ImageMessage;
@@ -14,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -54,9 +58,9 @@ public class MessageListItem extends RelativeLayout {
 
     private TextAppearanceSpan mTextSmallSpan =
         new TextAppearanceSpan(getContext(), android.R.style.TextAppearance_Small);
-
-    private ForegroundColorSpan mColorSpan = null;  // set in ctor
     */
+
+    private BackgroundColorSpan mHighlightColorSpan;  // set in ctor
 
     public MessageListItem(Context context) {
         super(context);
@@ -64,8 +68,8 @@ public class MessageListItem extends RelativeLayout {
 
     public MessageListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
-        //int color = context.getResources().getColor(R.color.timestamp_color);
-        //mColorSpan = new ForegroundColorSpan(color);
+        int color = context.getResources().getColor(R.color.highlight_color);
+        mHighlightColorSpan = new BackgroundColorSpan(color);
     }
 
     @Override
@@ -112,10 +116,11 @@ public class MessageListItem extends RelativeLayout {
         }
     }
 
-    public final void bind(Context context, final AbstractMessage<?> msg, final Contact contact) {
+    public final void bind(Context context, final AbstractMessage<?> msg,
+            final Contact contact, final Pattern highlight) {
         mMessage = msg;
 
-        formattedMessage = formatMessage(contact);
+        formattedMessage = formatMessage(contact, highlight);
         mTextView.setText(formattedMessage);
 
         int resId = -1;
@@ -208,7 +213,7 @@ public class MessageListItem extends RelativeLayout {
         }
     }
 
-    private CharSequence formatMessage(final Contact contact) {
+    private CharSequence formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf = new SpannableStringBuilder();
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
@@ -251,21 +256,12 @@ public class MessageListItem extends RelativeLayout {
         	mNameView.setText(text);
         }
 
-        /*
-        buf.append("\n");
-        int startOffset = buf.length();
+        if (highlight != null) {
+            Matcher m = highlight.matcher(buf.toString());
+            while (m.find())
+                buf.setSpan(mHighlightColorSpan, m.start(), m.end(), 0);
+        }
 
-        startOffset = buf.length();
-        buf.append(TextUtils.isEmpty(timestamp) ? " " : timestamp);
-
-        buf.setSpan(mTextSmallSpan, startOffset, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        buf.setSpan(mSpan, startOffset+1, buf.length(), 0);
-
-        // Make the timestamp text not as dark
-        buf.setSpan(mColorSpan, startOffset, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        buf.setSpan(mLeadingMarginSpan, 0, buf.length(), 0);
-        */
         return buf;
     }
 

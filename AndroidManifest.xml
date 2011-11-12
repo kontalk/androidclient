@@ -43,6 +43,21 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.SearchActivity"
+            android:label="@string/menu_search"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@style/Theme.Light">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+
+        <meta-data android:name="android.app.default_searchable"
+            android:value=".ui.SearchActivity" />
+
         <activity android:name=".ui.ComposeMessage" android:theme="@style/Theme.Light">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>

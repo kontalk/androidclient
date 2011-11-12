@@ -132,7 +132,6 @@ public class ConversationListFragment extends ListFragment {
                 return true;
 
             case R.id.menu_search:
-                // TODO search
                 getActivity().onSearchRequested();
                 return true;
 
