@@ -148,21 +148,32 @@ public class ComposeMessage extends FragmentActivity {
         return null;
     }
 
-    /**
-     * Creates an {@link Intent} for launching the composer for a given {@link Conversation}.
-     * @param context
-     * @param conv
-     * @return
-     */
+    /** Creates an {@link Intent} for launching the composer for a given {@link Conversation}. */
     public static Intent fromConversation(Context context, Conversation conv) {
         return fromConversation(context, conv.getThreadId());
     }
 
+    /** Creates an {@link Intent} for launching the composer for a given thread Id. */
     public static Intent fromConversation(Context context, long threadId) {
         return new Intent(ComposeMessage.ACTION_VIEW_CONVERSATION,
                 ContentUris.withAppendedId(Conversations.CONTENT_URI,
                         threadId),
                 context, ComposeMessage.class);
+    }
+
+    /** Creates an {@link Intent} for sending a text message. */
+    public static Intent sendTextMessage(String text) {
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType(PlainTextMessage.MIME_TYPE);
+        i.putExtra(Intent.EXTRA_TEXT, text);
+        return i;
+    }
+
+    public static Intent sendMediaMessage(Uri uri, String mime) {
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType(mime);
+        i.putExtra(Intent.EXTRA_STREAM, uri);
+        return i;
     }
 
     private void chooseContact() {

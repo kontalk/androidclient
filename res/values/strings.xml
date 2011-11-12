@@ -22,7 +22,7 @@
     <string name="msg_validating_phone">Validating phone number...</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="refreshing">Refreshing...</string>
-    <string name="forward">Forward</string>
+    <string name="share">Share</string>
     <string name="copy_message_text">Copy message text</string>
     <string name="delete_message">Delete message</string>
     <string name="confirm_delete_all">Delete all threads</string>

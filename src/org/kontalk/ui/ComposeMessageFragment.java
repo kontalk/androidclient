@@ -425,7 +425,7 @@ public class ComposeMessageFragment extends ListFragment {
         builder.create().show();
     }
 
-    private static final int MENU_FORWARD = 1;
+    private static final int MENU_SHARE = 1;
     private static final int MENU_COPY_TEXT = 2;
     private static final int MENU_DECRYPT = 3;
     private static final int MENU_VIEW_IMAGE = 4;
@@ -440,7 +440,13 @@ public class ComposeMessageFragment extends ListFragment {
         AbstractMessage<?> msg = vitem.getMessage();
 
         menu.setHeaderTitle(R.string.title_message_options);
-        menu.add(Menu.NONE, MENU_FORWARD, MENU_FORWARD, R.string.forward);
+
+        // message forwarding can be used only for unencrypted messages
+        if (!msg.isEncrypted()) {
+            // sharing media messages has no purpose if media file hasn't been retrieved yet
+            if (msg instanceof PlainTextMessage ? true : msg.getLocalUri() != null)
+                menu.add(Menu.NONE, MENU_SHARE, MENU_SHARE, R.string.share);
+        }
 
         if (msg instanceof ImageMessage) {
             // we are able to view image if either we fetched the image or we sent that
@@ -467,13 +473,20 @@ public class ComposeMessageFragment extends ListFragment {
         AbstractMessage<?> msg = v.getMessage();
 
         switch (item.getItemId()) {
-            case MENU_FORWARD: {
-                // TODO message forwarding
+            case MENU_SHARE: {
+                Log.d(TAG, "sharing message: " + msg.getId());
+                Intent i;
+                if (msg instanceof PlainTextMessage)
+                    i = ComposeMessage.sendTextMessage(msg.getTextContent());
+                else
+                    i = ComposeMessage.sendMediaMessage(msg.getLocalUri(), msg.getMime());
+                startActivity(i);
+
                 return true;
             }
 
             case MENU_COPY_TEXT: {
-                Log.i(TAG, "copying message text: " + msg.getId());
+                Log.d(TAG, "copying message text: " + msg.getId());
                 ClipboardManager cpm = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
                 cpm.setText(msg.getTextContent());
 
@@ -483,7 +496,7 @@ public class ComposeMessageFragment extends ListFragment {
             }
 
             case MENU_DECRYPT: {
-                Log.i(TAG, "decrypting message: " + msg.getId());
+                Log.d(TAG, "decrypting message: " + msg.getId());
                 Account acc = Authenticator.getDefaultAccount(getActivity());
                 Coder coder = MessagingPreferences.getDecryptCoder(getActivity(), acc.name);
                 try {
@@ -508,7 +521,7 @@ public class ComposeMessageFragment extends ListFragment {
             }
 
             case MENU_VIEW_IMAGE: {
-                Log.i(TAG, "opening image");
+                Log.d(TAG, "opening image");
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(msg.getLocalUri(), msg.getMime());
                 startActivity(i);
@@ -516,7 +529,7 @@ public class ComposeMessageFragment extends ListFragment {
             }
 
             case MENU_DOWNLOAD: {
-                Log.i(TAG, "downloading attachment");
+                Log.d(TAG, "downloading attachment");
                 Intent i = new Intent(getActivity(), DownloadService.class);
                 i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
                 i.putExtra(AbstractMessage.MSG_ID, msg.getId());
@@ -526,7 +539,7 @@ public class ComposeMessageFragment extends ListFragment {
             }
 
             case MENU_DETAILS: {
-                Log.i(TAG, "opening message details");
+                Log.d(TAG, "opening message details");
                 CharSequence messageDetails = MessageUtils.getMessageDetails(getActivity(), msg, userPhone != null ? userPhone : userId);
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.title_message_details)
@@ -538,7 +551,7 @@ public class ComposeMessageFragment extends ListFragment {
             }
 
             case MENU_DELETE: {
-                Log.i(TAG, "deleting message: " + msg.getDatabaseId());
+                Log.d(TAG, "deleting message: " + msg.getDatabaseId());
 
                 getActivity().getContentResolver()
                     .delete(ContentUris.withAppendedId(Messages.CONTENT_URI,
