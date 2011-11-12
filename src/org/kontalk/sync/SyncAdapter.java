@@ -20,6 +20,7 @@ import org.kontalk.util.MessageUtils;
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
+import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
@@ -156,57 +157,69 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (mCanceled) throw new OperationCanceledException();
 
+        Protocol.LookupResponse res = null;
         try {
             // request lookup to server
-            final Protocol.LookupResponse res = client.lookup(hashList);
+            res = client.lookup(hashList);
+        }
+        catch (IOException e) {
+            Log.e(TAG, "error in user lookup", e);
+            syncResult.stats.numIoExceptions++;
+        }
+
+        // last chance to quit
+        if (mCanceled) throw new OperationCanceledException();
+
+        if (res != null) {
+            ArrayList<ContentProviderOperation> operations =
+                new ArrayList<ContentProviderOperation>();
 
             // this is the time - delete all Kontalk raw contacts
-            syncResult.stats.numDeletes += deleteAll(account);
-
-            // if you stopped the sync at this point
-            // you won't have contacts any more
-            if (mCanceled) throw new OperationCanceledException();
+            try {
+                deleteAll(account, operations);
+                provider.applyBatch(operations);
+            }
+            catch (Exception e) {
+                Log.e(TAG, "contact delete error", e);
+                syncResult.databaseError = true;
+                return;
+            }
 
             for (int i = 0; i < res.getEntryCount(); i++) {
                 Protocol.LookupResponseEntry entry = res.getEntry(i);
                 String userId = entry.getUserId().toString();
                 final RawPhoneNumberEntry data = lookupNumbers.get(userId);
                 if (data != null) {
-                    addContact(account, data.displayName, data.number, -1);
-                    syncResult.stats.numInserts++;
+                    operations = new ArrayList<ContentProviderOperation>();
+                    addContact(account, data.displayName, data.number, -1, operations);
+
+                    try {
+                        provider.applyBatch(operations);
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, "contact write error", e);
+                        syncResult.stats.numSkippedEntries = res.getEntryCount();
+                        syncResult.databaseError = true;
+                        return;
+                    }
+
+                    syncResult.stats.numEntries++;
                 }
                 else {
                     syncResult.stats.numSkippedEntries++;
                 }
-
-                if (mCanceled) throw new OperationCanceledException();
             }
         }
-        catch (IOException e) {
-            Log.e(TAG, "error in user lookup", e);
-            syncResult.stats.numIoExceptions++;
-        }
+
     }
 
-    private int deleteAll(Account account) {
+    private void deleteAll(Account account, List<ContentProviderOperation> operations) {
         Uri uri = RawContacts.CONTENT_URI.buildUpon()
             .appendQueryParameter(ContactsContract.CALLER_IS_SYNCADAPTER, "true")
             .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
             .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
             .build();
-        ContentProviderClient client = mContext.getContentResolver()
-            .acquireContentProviderClient(ContactsContract.AUTHORITY_URI);
-        try {
-            return client.delete(uri, null, null);
-        }
-        catch (Exception e) {
-            Log.e(TAG, "delete error", e);
-        }
-        finally {
-            client.release();
-        }
-
-        return 0;
+        operations.add(ContentProviderOperation.newDelete(uri).build());
     }
 
     /*
@@ -232,9 +245,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
     */
 
-    private void addContact(Account account, String username, String phone, long rowContactId) {
+    private void addContact(Account account, String username, String phone,
+            long rowContactId, List<ContentProviderOperation> operations) {
         Log.d(TAG, "adding contact username = \"" + username + "\", phone: " + phone);
-        ArrayList<ContentProviderOperation> operationList = new ArrayList<ContentProviderOperation>();
         ContentProviderOperation.Builder builder;
 
         if (rowContactId < 0) {
@@ -247,7 +260,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 builder.withValue(RAW_COLUMN_PHONE, phone);
                 builder.withValue(RAW_COLUMN_USERID, MessageUtils.sha1(phone));
 
-                operationList.add(builder.build());
+                operations.add(builder.build());
             }
             catch (Exception e) {
                 Log.e(TAG, "sha1 digest failed", e);
@@ -263,7 +276,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         builder.withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
         builder.withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, username);
-        operationList.add(builder.build());
+        operations.add(builder.build());
 
         // create a Data record of custom type 'org.kontalk.user' to display a link to the conversation
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
@@ -276,13 +289,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         builder.withValue(DATA_COLUMN_DISPLAY_NAME, username);
         builder.withValue(DATA_COLUMN_ACCOUNT_NAME, mContext.getString(R.string.app_name));
         builder.withValue(DATA_COLUMN_PHONE, phone);
-        operationList.add(builder.build());
-
-        try {
-            mContentResolver.applyBatch(ContactsContract.AUTHORITY, operationList);
-        } catch (Exception e) {
-            Log.e(TAG, "something went wrong during contact creation!", e);
-        }
+        operations.add(builder.build());
     }
 
 }

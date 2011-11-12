@@ -76,6 +76,11 @@ public class RequestWorker extends Thread {
     public void run() {
         Looper.prepare();
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
+        if (mAuthToken == null) {
+            Log.w(TAG, "invalid token - exiting");
+            return;
+        }
+
         Log.i(TAG, "using token: " + mAuthToken);
 
         // start the content observer thread
@@ -83,6 +88,7 @@ public class RequestWorker extends Thread {
         mObserverThread = new ObserverHandlerThread();
         mObserverThread.start();
 
+        Log.d(TAG, "using server " + mServer.toString());
         mClient = new RequestClient(mContext, mServer, mAuthToken);
 
         // create handler and empty pending jobs queue

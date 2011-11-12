@@ -49,10 +49,17 @@ public class PollingThread extends Thread {
     public void run() {
         mRunning = true;
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
+        if (mAuthToken == null) {
+            Log.w(TAG, "invalid token - exiting");
+            mRunning = false;
+            return;
+        }
+
         Log.i(TAG, "using token: " + mAuthToken);
 
         Account acc = Authenticator.getDefaultAccount(mContext);
         Log.d(TAG, "using account name " + acc.name + " as my number");
+        Log.d(TAG, "using server " + mServer.toString());
         mClient = new PollingClient(mContext, mServer, mAuthToken, acc.name);
 
         while(mRunning) {
