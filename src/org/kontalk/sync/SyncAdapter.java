@@ -1,5 +1,7 @@
 package org.kontalk.sync;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +54,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private final Context mContext;
     private final ContentResolver mContentResolver;
+    private boolean mCanceled;
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -62,14 +65,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
-        Log.w(TAG, "sync started (authority=" + authority + ")");
+        Log.i(TAG, "sync started (authority=" + authority + ")");
 
         try {
             performSync(mContext, account, extras, authority, provider, syncResult);
         }
         catch (OperationCanceledException e) {
-            Log.e(TAG, "sync canceled!", e);
+            Log.w(TAG, "sync canceled!", e);
         }
+    }
+
+    @Override
+    public void onSyncCanceled() {
+        super.onSyncCanceled();
+        mCanceled = true;
     }
 
     private static final class RawPhoneNumberEntry {
@@ -87,10 +96,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     /**
      * The actual sync procedure.
-     * This one uses the slowest method in the world: it first checks for every
-     * phone number in all contacts and it sends them to the server.
-     * Once a response is received, it deletes all the raw contacts created by
-     * us and then recreates only the ones the server has found a match for.
+     * This one uses the slowest method ever: it first checks for every phone
+     * number in all contacts and it sends them to the server. Once a response
+     * is received, it deletes all the raw contacts created by us and then
+     * recreates only the ones the server has found a match for.
      */
     private void performSync(Context context, Account account, Bundle extras,
             String authority, ContentProviderClient provider, SyncResult syncResult)
@@ -104,12 +113,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final List<String> hashList = new ArrayList<String>();
 
         final String countryCode = NumberValidator.getCountryPrefix(mContext);
-        Log.w(TAG, "using default country code: " + countryCode);
+        Log.i(TAG, "using country code: " + countryCode);
 
         // query all contacts
         final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 
         while (cursor.moveToNext()) {
+            if (mCanceled) throw new OperationCanceledException();
+
             String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             //Log.w(TAG, "contact " + contactId + ", name: " + displayName);
@@ -119,6 +130,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Phone.CONTACT_ID + " = ?", new String[] { contactId }, null);
 
             while (phones.moveToNext()) {
+                if (mCanceled) throw new OperationCanceledException();
+
                 String number = phones.getString(phones.getColumnIndex(Phone.NUMBER));
 
                 // a phone number with less than 4 digits???
@@ -132,31 +145,46 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     String hash = MessageUtils.sha1(number);
                     lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash));
                     hashList.add(hash);
-                } catch (Exception e) {
-                    Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping");
+                } catch (NoSuchAlgorithmException e) {
+                    Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
+                    syncResult.stats.numIoExceptions++;
                 }
             }
             phones.close();
         }
         cursor.close();
 
+        if (mCanceled) throw new OperationCanceledException();
+
         try {
             // request lookup to server
             final Protocol.LookupResponse res = client.lookup(hashList);
 
             // this is the time - delete all Kontalk raw contacts
-            deleteAll(account);
+            syncResult.stats.numDeletes += deleteAll(account);
+
+            // if you stopped the sync at this point
+            // you won't have contacts any more
+            if (mCanceled) throw new OperationCanceledException();
 
             for (int i = 0; i < res.getEntryCount(); i++) {
                 Protocol.LookupResponseEntry entry = res.getEntry(i);
                 String userId = entry.getUserId().toString();
                 final RawPhoneNumberEntry data = lookupNumbers.get(userId);
-                if (data != null)
+                if (data != null) {
                     addContact(account, data.displayName, data.number, -1);
+                    syncResult.stats.numInserts++;
+                }
+                else {
+                    syncResult.stats.numSkippedEntries++;
+                }
+
+                if (mCanceled) throw new OperationCanceledException();
             }
         }
-        catch (Exception e) {
+        catch (IOException e) {
             Log.e(TAG, "error in user lookup", e);
+            syncResult.stats.numIoExceptions++;
         }
     }
 
@@ -166,7 +194,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
             .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
             .build();
-        ContentProviderClient client = mContext.getContentResolver().acquireContentProviderClient(ContactsContract.AUTHORITY_URI);
+        ContentProviderClient client = mContext.getContentResolver()
+            .acquireContentProviderClient(ContactsContract.AUTHORITY_URI);
         try {
             return client.delete(uri, null, null);
         }
@@ -177,7 +206,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             client.release();
         }
 
-        return -1;
+        return 0;
     }
 
     /*
@@ -204,29 +233,28 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     */
 
     private void addContact(Account account, String username, String phone, long rowContactId) {
-        Log.i(TAG, "Adding contact username = \"" + username + "\", phone: " + phone);
+        Log.d(TAG, "adding contact username = \"" + username + "\", phone: " + phone);
         ArrayList<ContentProviderOperation> operationList = new ArrayList<ContentProviderOperation>();
         ContentProviderOperation.Builder builder;
 
         if (rowContactId < 0) {
-            //Create our RawContact
-            builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI);
-            builder.withValue(RawContacts.ACCOUNT_NAME, account.name);
-            builder.withValue(RawContacts.ACCOUNT_TYPE, account.type);
-            builder.withValue(RAW_COLUMN_DISPLAY_NAME, username);
-            builder.withValue(RAW_COLUMN_PHONE, phone);
-
             try {
+                // create our RawContact
+                builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI);
+                builder.withValue(RawContacts.ACCOUNT_NAME, account.name);
+                builder.withValue(RawContacts.ACCOUNT_TYPE, account.type);
+                builder.withValue(RAW_COLUMN_DISPLAY_NAME, username);
+                builder.withValue(RAW_COLUMN_PHONE, phone);
                 builder.withValue(RAW_COLUMN_USERID, MessageUtils.sha1(phone));
+
+                operationList.add(builder.build());
             }
             catch (Exception e) {
                 Log.e(TAG, "sha1 digest failed", e);
             }
-
-            operationList.add(builder.build());
         }
 
-        //Create a Data record of common type 'StructuredName' for our RawContact
+        // create a Data record of common type 'StructuredName' for our RawContact
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
         if (rowContactId < 0)
             builder.withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, 0);
@@ -237,7 +265,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         builder.withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, username);
         operationList.add(builder.build());
 
-        //Create a Data record of custom type 'org.kontalk.user' to display a link to our profile
+        // create a Data record of custom type 'org.kontalk.user' to display a link to the conversation
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
         if (rowContactId < 0)
             builder.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
@@ -249,10 +277,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         builder.withValue(DATA_COLUMN_ACCOUNT_NAME, mContext.getString(R.string.app_name));
         builder.withValue(DATA_COLUMN_PHONE, phone);
         operationList.add(builder.build());
+
         try {
             mContentResolver.applyBatch(ContactsContract.AUTHORITY, operationList);
         } catch (Exception e) {
-            Log.e(TAG, "Something went wrong during creation!", e);
+            Log.e(TAG, "something went wrong during contact creation!", e);
         }
     }
 

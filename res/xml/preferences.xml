@@ -41,7 +41,8 @@
         android:title="@string/pref_notification_settings">
         <CheckBoxPreference android:key="pref_enable_notifications"
             android:summary="@string/pref_title_enable_notifications"
-            android:title="@string/pref_enable_notifications"/>
+            android:title="@string/pref_enable_notifications"
+            android:defaultValue="true"/>
         <RingtonePreference android:key="pref_ringtone"
             android:dependency="pref_enable_notifications"
             android:title="@string/pref_ringtone"

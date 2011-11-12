@@ -1,6 +1,5 @@
 package org.kontalk.util;
 
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -71,7 +70,7 @@ public final class MessageUtils {
     }
 
     public static String sha1(String text)
-            throws NoSuchAlgorithmException, UnsupportedEncodingException {
+            throws NoSuchAlgorithmException {
 
         MessageDigest md;
         md = MessageDigest.getInstance("SHA-1");
