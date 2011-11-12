@@ -426,6 +426,23 @@ public class ComposeMessageFragment extends ListFragment {
         builder.create().show();
     }
 
+    private void deleteMessage(final long id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.confirm_delete_message);
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setMessage(R.string.confirm_will_delete_message);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                getActivity().getContentResolver()
+                .delete(ContentUris.withAppendedId(Messages.CONTENT_URI,
+                        id), null, null);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
+    }
+
     private static final int MENU_SHARE = 1;
     private static final int MENU_COPY_TEXT = 2;
     private static final int MENU_DECRYPT = 3;
@@ -553,10 +570,7 @@ public class ComposeMessageFragment extends ListFragment {
 
             case MENU_DELETE: {
                 Log.d(TAG, "deleting message: " + msg.getDatabaseId());
-
-                getActivity().getContentResolver()
-                    .delete(ContentUris.withAppendedId(Messages.CONTENT_URI,
-                            msg.getDatabaseId()), null, null);
+                deleteMessage(msg.getDatabaseId());
                 return true;
             }
         }

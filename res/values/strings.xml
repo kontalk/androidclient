@@ -96,4 +96,6 @@
     <string name="vibrate_always">Always</string>
     <string name="vibrate_vibrate_only">Only in vibrate mode</string>
     <string name="vibrate_never">Never</string>
+    <string name="confirm_delete_message">Delete message</string>
+    <string name="confirm_will_delete_message">The message will be deleted.</string>
 </resources>
