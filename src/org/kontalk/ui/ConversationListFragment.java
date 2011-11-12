@@ -210,6 +210,7 @@ public class ConversationListFragment extends ListFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 MessagesProvider.deleteThread(getActivity(), threadId);
+                MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
             }
         });
         builder.setNegativeButton(android.R.string.cancel, null);

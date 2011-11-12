@@ -21,10 +21,6 @@ import android.text.style.StyleSpan;
 /**
  * Various utility methods for managing system notifications.
  * @author Daniele Ricci
- * @version 1.0
- * TODO:
- * - we should keep track of already notified threads, and notify only new
- * threads or changed ones
  */
 public class MessagingNotification {
     private static final int MESSAGES_NOTIFICATION_ID = 12;
@@ -110,7 +106,6 @@ public class MessagingNotification {
      * This class accumulates all incoming unread threads and returns
      * well-formed data to be used in a {@link Notification}.
      * @author Daniele Ricci
-     * @version 1.0
      */
     private static final class MessageAccumulator {
         private final class ConversationStub {
