@@ -118,9 +118,7 @@ public class RequestWorker extends Thread {
 
         @Override
         public void response(RequestJob job, MessageLite response) {
-            Log.w(TAG, "executing listeners array for " + job);
             for (RequestListener l : this) {
-                Log.w(TAG, "executing listener " + l);
                 l.response(job, response);
             }
         }
@@ -162,7 +160,7 @@ public class RequestWorker extends Thread {
                 }
 
                 RequestJob job = (RequestJob) msg.obj;
-                Log.w(TAG, job.toString());
+                Log.d(TAG, "JOB: " + job.toString());
 
                 // check now if job has been canceled
                 if (job.isCanceled()) {
@@ -194,7 +192,7 @@ public class RequestWorker extends Thread {
                     requeue = mListeners.error(job, e);
 
                     if (requeue) {
-                        Log.i(TAG, "requeuing job " + job);
+                        Log.d(TAG, "requeuing job " + job);
                         push(job, DEFAULT_RETRY_DELAY);
                     }
                 }

@@ -918,7 +918,8 @@ public class ComposeMessageFragment extends ListFragment {
     public void onStop() {
         super.onStop();
         unregisterPeerObserver();
-        mListAdapter.changeCursor(null);
+        if (mListAdapter != null)
+            mListAdapter.changeCursor(null);
     }
 
     public final boolean isFinishing() {

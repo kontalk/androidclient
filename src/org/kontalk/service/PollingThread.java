@@ -75,8 +75,10 @@ public class PollingThread extends Thread {
                 if (mRunning) {
                     if (list == null || list.size() == 0) {
                         // push notifications enabled - we can stop our parent :)
-                        if (mPushRegistrationId != null)
+                        if (mPushRegistrationId != null) {
+                            Log.d(TAG, "shutting down message center due to inactivity");
                             MessageCenterService.stopMessageCenter(mContext);
+                        }
                     }
 
                     try {

@@ -698,7 +698,7 @@ public class MessageCenterService extends Service
 
     /** Stops the message center. */
     public static void stopMessageCenter(final Context context) {
-        Log.i(TAG, "stopping message center");
+        Log.i(TAG, "shutting down message center");
         context.stopService(new Intent(context, MessageCenterService.class));
     }
 
