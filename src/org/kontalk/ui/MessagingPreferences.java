@@ -16,10 +16,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.Preference.*;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -33,6 +34,22 @@ public class MessagingPreferences extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
 
+        // push notifications checkbox
+        Preference pushNotifications = findPreference("pref_push_notifications");
+        pushNotifications.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                CheckBoxPreference pref = (CheckBoxPreference) preference;
+                if (pref.isChecked())
+                    MessageCenterService.enablePushNotifications(getApplicationContext());
+                else
+                    MessageCenterService.disablePushNotifications(getApplicationContext());
+
+                return true;
+            }
+        });
+
+        // message center restart
         Preference restartMsgCenter = findPreference("pref_restart_msgcenter");
         restartMsgCenter.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
@@ -44,6 +61,7 @@ public class MessagingPreferences extends PreferenceActivity {
             }
         });
 
+        // mark all incoming messages as confirmed
         Preference markAllConfirmed = findPreference("pref_mark_all_confirmed");
         markAllConfirmed.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
@@ -124,6 +142,7 @@ public class MessagingPreferences extends PreferenceActivity {
             }
         });
 
+        // update 'last update' string
         ServerList list = ServerListUpdater.getCurrentList(this);
         if (list != null)
             updateServerListLastUpdate(updateServerList, list);

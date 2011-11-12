@@ -62,6 +62,8 @@ public class MessageCenterService extends Service
     private static final String TAG = MessageCenterService.class.getSimpleName();
     private static final int NOTIFICATION_ID = 102;
 
+    public static final String C2DM_START = "org.kontalk.CD2M_START";
+    public static final String C2DM_STOP = "org.kontalk.CD2M_STOP";
     public static final String C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
 
@@ -139,6 +141,16 @@ public class MessageCenterService extends Service
                 setPushRegistrationId(intent.getStringExtra(C2DM_REGISTRATION_ID));
             }
 
+            // start C2DM registration
+            else if (C2DM_START.equals(action)) {
+                setPushNotifications(true);
+            }
+
+            // unregister from C2DM
+            else if (C2DM_STOP.equals(action)) {
+                setPushNotifications(false);
+            }
+
             // normal start
             else {
 
@@ -188,10 +200,13 @@ public class MessageCenterService extends Service
 
                         // register to push notifications
                         if (mPushNotifications) {
-                            if (mPushRegistrationId != null)
+                            if (mPushRegistrationId != null) {
                                 Log.w(TAG, "already registered to C2DM");
-                            else
+                            }
+                            else {
+                                Log.d(TAG, "registering to C2DM");
                                 c2dmRegister();
+                            }
                         }
                         /*
                          * FIXME c2dm stays on since in OnDestroy() we commented
@@ -547,7 +562,8 @@ public class MessageCenterService extends Service
                     String data = response2.getSupports(i);
                     if (data.startsWith("google_c2dm=")) {
                         mPushEmail = data.substring("google_c2dm=".length());
-                        c2dmRegister();
+                        if (mPushNotifications)
+                            c2dmRegister();
                     }
                 }
             }
@@ -614,6 +630,28 @@ public class MessageCenterService extends Service
             Log.w(TAG, "background data disabled - abort service start");
     }
 
+    /** Starts the push notifications registration process. */
+    public static void enablePushNotifications(Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.C2DM_START);
+        context.startService(i);
+    }
+
+    /** Starts the push notifications unregistration process. */
+    public static void disablePushNotifications(Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.C2DM_STOP);
+        context.startService(i);
+    }
+
+    /** Caches the given registration Id for use with push notifications. */
+    public static void registerPushNotifications(Context context, String registrationId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.C2DM_REGISTERED);
+        i.putExtra(MessageCenterService.C2DM_REGISTRATION_ID, registrationId);
+        context.startService(i);
+    }
+
     public void setPushNotifications(boolean enabled) {
         mPushNotifications = enabled;
         if (mPushNotifications) {
@@ -648,7 +686,7 @@ public class MessageCenterService extends Service
         if (mPollingThread != null)
             mPollingThread.setPushRegistrationId(regId);
 
-        // TEST let's see if this works...
+        // notify the server about the change
         pushRequest(new RequestJob() {
             @Override
             public MessageLite call(RequestClient client, RequestListener listener,

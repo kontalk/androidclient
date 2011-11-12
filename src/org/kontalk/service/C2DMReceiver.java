@@ -24,15 +24,15 @@ public class C2DMReceiver extends BroadcastReceiver {
             if (registration != null) {
                 Log.i(TAG, "registered to C2DM - " + registration);
             }
+            else if (intent.getStringExtra("unregistered") != null) {
+                Log.i(TAG, "unregistered to C2DM");
+            }
             else {
                 String err = intent.getStringExtra("error");
                 Log.e(TAG, "error registering to C2DM service: " + err);
             }
 
-            Intent i = new Intent(context, MessageCenterService.class);
-            i.setAction(MessageCenterService.C2DM_REGISTERED);
-            i.putExtra(MessageCenterService.C2DM_REGISTRATION_ID, registration);
-            context.startService(i);
+            MessageCenterService.registerPushNotifications(context, registration);
         }
         else if ("com.google.android.c2dm.intent.RECEIVE".equals(action)) {
             // process push message
