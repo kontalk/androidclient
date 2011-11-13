@@ -200,17 +200,12 @@ public class MessagingPreferences extends PreferenceActivity {
 
     /** Returns a {@link Coder} instance for encrypting contents. */
     public static Coder getEncryptCoder(String passphrase) {
-        /*String key = getString(context, "pref_passphrase", null);
-        if (key == null || key.length() == 0)
-            key = passphrase;
-        if (key != null)
-        */
         return new Coder(new PassKey(passphrase));
     }
 
     /** Returns a {@link Coder} instance for decrypting contents. */
     public static Coder getDecryptCoder(Context context, String myNumber) {
-        String key = getString(context, "pref_passphrase", null);
+        String key = getDefaultPassphrase(context);
         if (key == null || key.length() == 0)
             key = myNumber;
         return new Coder(new PassKey(key));

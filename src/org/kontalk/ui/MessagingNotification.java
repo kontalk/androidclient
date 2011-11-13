@@ -108,9 +108,9 @@ public class MessagingNotification {
                 no.sound = Uri.parse(ringtone);
 
             String vibrate = MessagingPreferences.getNotificationVibrate(context);
-            if ("always".equals(vibrate) || ("vibrate_only".equals(vibrate) &&
+            if ("always".equals(vibrate) || ("silent_only".equals(vibrate) &&
                     ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
-                        .getRingerMode() == AudioManager.RINGER_MODE_VIBRATE))
+                        .getRingerMode() != AudioManager.RINGER_MODE_NORMAL))
                 no.defaults |= Notification.DEFAULT_VIBRATE;
 
             no.flags |= Notification.FLAG_SHOW_LIGHTS;

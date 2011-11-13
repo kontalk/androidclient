@@ -2,12 +2,12 @@
 <resources>
     <string-array name="vibrateValues">
         <item>always</item>
-        <item>vibrate_only</item>
+        <item>silent_only</item>
         <item>never</item>
     </string-array>
     <string-array name="vibrateLabels">
         <item>@string/vibrate_always</item>
-        <item>@string/vibrate_vibrate_only</item>
+        <item>@string/vibrate_silent_only</item>
         <item>@string/vibrate_never</item>
     </string-array>
 </resources>
