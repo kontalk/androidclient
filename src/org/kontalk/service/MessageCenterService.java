@@ -422,13 +422,13 @@ public class MessageCenterService extends Service
                     else {
                         ReceiptMessage msg2 = (ReceiptMessage) msg;
                         Log.w(TAG, "receipt for message " + msg2.getMessageId());
-                        // TODO handle error receipts
 
                         int status = msg2.getStatus();
                         int code = (status == Protocol.Status.STATUS_SUCCESS_VALUE) ?
                                 Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
 
-                        MessagesProvider.changeMessageStatus(this,
+                        MessagesProvider.changeMessageStatusWhere(this,
+                                true, Messages.STATUS_RECEIVED,
                                 msg2.getMessageId(), false, code,
                                 -1, msg.getServerTimestamp().getTime());
                     }

@@ -846,6 +846,20 @@ public class MessagesProvider extends ContentProvider {
                 new String[] { id });
     }
 
+    /** Update a message status if old status == whereStatus. */
+    public static int changeMessageStatusWhere(Context context,
+            boolean notEquals, int whereStatus, String id, boolean realId,
+            int status, long timestamp, long statusChanged) {
+        Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
+        ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
+
+        String field = (realId) ? Messages.REAL_ID : Messages.MESSAGE_ID;
+        String op = (notEquals) ? "<>" : "=";
+        return context.getContentResolver().update(Messages.CONTENT_URI, values,
+                field + " = ? AND " + Messages.STATUS + op + whereStatus,
+                new String[] { id });
+    }
+
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_THREADS, THREADS);
