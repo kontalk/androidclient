@@ -90,7 +90,7 @@ public class MessageCenterService extends Service
     private final OnAccountsUpdateListener mAccountsListener = new OnAccountsUpdateListener() {
         @Override
         public void onAccountsUpdated(Account[] accounts) {
-            Log.w(TAG, "accounts have been changed, checking");
+            Log.i(TAG, "accounts have been changed, checking");
 
             // restart workers
             Account my = null;
@@ -103,7 +103,7 @@ public class MessageCenterService extends Service
 
             // account removed!!! Shutdown everything.
             if (my == null) {
-                Log.e(TAG, "my account has been removed, shutting down");
+                Log.w(TAG, "my account has been removed, shutting down");
                 // delete all messages
                 MessagesProvider.deleteDatabase(MessageCenterService.this);
                 stopSelf();
@@ -131,7 +131,7 @@ public class MessageCenterService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.w(TAG, "Message Center starting - " + intent);
+        Log.i(TAG, "Message Center starting - " + intent);
 
         if (intent != null) {
             String action = intent.getAction();
@@ -156,7 +156,7 @@ public class MessageCenterService extends Service
 
                 Bundle extras = intent.getExtras();
                 String serverUrl = (String) extras.get(EndpointServer.class.getName());
-                Log.i(TAG, "using server uri: " + serverUrl);
+                Log.d(TAG, "using server uri: " + serverUrl);
                 EndpointServer server = new EndpointServer(serverUrl);
 
                 mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
@@ -201,7 +201,7 @@ public class MessageCenterService extends Service
                         // register to push notifications
                         if (mPushNotifications) {
                             if (mPushRegistrationId != null) {
-                                Log.w(TAG, "already registered to C2DM");
+                                Log.d(TAG, "already registered to C2DM");
                             }
                             else {
                                 Log.d(TAG, "registering to C2DM");
@@ -209,7 +209,7 @@ public class MessageCenterService extends Service
                             }
                         }
                         /*
-                         * FIXME c2dm stays on since in OnDestroy() we commented
+                         * FIXME c2dm stays on since in onDestroy() we commented
                          * the unregistration call, and here we do nothing about it
                          */
                     }
@@ -302,7 +302,7 @@ public class MessageCenterService extends Service
             }
 
             m.setListener(mMessageRequestListener);
-            Log.i(TAG, "resending failed message " + id);
+            Log.d(TAG, "resending failed message " + id);
             sendMessage(m);
         }
 
@@ -323,7 +323,7 @@ public class MessageCenterService extends Service
         List<String> list = new ArrayList<String>();
         while (c.moveToNext()) {
             String msgId = c.getString(0);
-            Log.i(TAG, "sending received notification for real message " + msgId);
+            Log.d(TAG, "sending received notification for message " + msgId);
             list.add(msgId);
         }
         c.close();
@@ -367,6 +367,8 @@ public class MessageCenterService extends Service
             boolean notify = false;
 
             for (AbstractMessage<?> msg : messages) {
+                // TODO check for null (unsupported) messages to be notified
+
                 if (!mReceived.contains(msg.getId())) {
                     // the message need to be confirmed
                     list.add(msg.getRealId());
@@ -421,7 +423,7 @@ public class MessageCenterService extends Service
                     // we have a receipt, update the corresponding message
                     else {
                         ReceiptMessage msg2 = (ReceiptMessage) msg;
-                        Log.w(TAG, "receipt for message " + msg2.getMessageId());
+                        Log.d(TAG, "receipt for message " + msg2.getMessageId());
 
                         int status = msg2.getStatus();
                         int code = (status == Protocol.Status.STATUS_SUCCESS_VALUE) ?
@@ -444,7 +446,7 @@ public class MessageCenterService extends Service
         }
 
         if (list.size() > 0) {
-            Log.w(TAG, "pushing receive confirmation");
+            Log.d(TAG, "pushing receive confirmation");
             RequestJob job = new ReceivedJob(list);
             pushRequest(job);
         }
@@ -455,14 +457,14 @@ public class MessageCenterService extends Service
             mRequestWorker.push(job);
         else {
             if (job instanceof ReceivedJob || job instanceof MessageSender) {
-                Log.w(TAG, "not queueing message job");
+                Log.i(TAG, "not queueing message job");
             }
             else {
-                Log.w(TAG, "request worker is down, queueing job");
+                Log.i(TAG, "request worker is down, queueing job");
                 RequestWorker.pendingJobs.add(job);
             }
 
-            Log.w(TAG, "trying to start message center");
+            Log.d(TAG, "trying to start message center");
             startMessageCenter(getApplicationContext());
         }
     }
@@ -488,7 +490,7 @@ public class MessageCenterService extends Service
     }
 
     public void startForeground(String userId, long totalBytes) {
-        Log.w(TAG, "starting foreground progress notification");
+        Log.v(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
 
         Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
@@ -531,7 +533,7 @@ public class MessageCenterService extends Service
 
     @Override
     public void response(RequestJob job, MessageLite response) {
-        Log.w(TAG, "job=" + job + ", response=" + response);
+        Log.d(TAG, "job=" + job + ", response=" + response);
 
         if (response != null) {
             // received command
@@ -583,7 +585,7 @@ public class MessageCenterService extends Service
 
     @Override
     public void uploadProgress(RequestJob job, long bytes) {
-        Log.i(TAG, "bytes sent: " + bytes);
+        Log.v(TAG, "bytes sent: " + bytes);
         if (job instanceof MessageSender) {
             boolean cancel = ((MessageSender)job).isCanceled();
             if (cancel)
@@ -595,7 +597,7 @@ public class MessageCenterService extends Service
     @Override
     public void downloadProgress(RequestJob job, long bytes) {
         // TODO ehm :)
-        Log.i(TAG, "bytes received: " + bytes);
+        Log.v(TAG, "bytes received: " + bytes);
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {
@@ -615,7 +617,7 @@ public class MessageCenterService extends Service
         if (cm.getBackgroundDataSetting()) {
             NetworkInfo info = cm.getActiveNetworkInfo();
             if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
-                Log.i(TAG, "starting message center");
+                Log.d(TAG, "starting message center");
                 final Intent intent = new Intent(context, MessageCenterService.class);
 
                 // get the URI from the preferences
@@ -624,10 +626,10 @@ public class MessageCenterService extends Service
                 context.startService(intent);
             }
             else
-                Log.w(TAG, "network not available - abort service start");
+                Log.d(TAG, "network not available - abort service start");
         }
         else
-            Log.w(TAG, "background data disabled - abort service start");
+            Log.d(TAG, "background data disabled - abort service start");
     }
 
     /** Starts the push notifications registration process. */
@@ -698,7 +700,7 @@ public class MessageCenterService extends Service
 
     /** Stops the message center. */
     public static void stopMessageCenter(final Context context) {
-        Log.i(TAG, "shutting down message center");
+        Log.d(TAG, "shutting down message center");
         context.stopService(new Intent(context, MessageCenterService.class));
     }
 

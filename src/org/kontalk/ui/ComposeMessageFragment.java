@@ -922,8 +922,7 @@ public class ComposeMessageFragment extends ListFragment {
         }
 
         if (len > 0) {
-            // TODO i18n
-            Toast.makeText(getActivity(), "Message saved as draft.", Toast.LENGTH_LONG)
+            Toast.makeText(getActivity(), R.string.msg_draft_saved, Toast.LENGTH_LONG)
                 .show();
         }
     }

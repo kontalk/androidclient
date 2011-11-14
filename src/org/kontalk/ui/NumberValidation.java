@@ -126,7 +126,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         // check number input
         String phone = NumberValidator
             .fixNumber(this, mPhone.getText().toString());
-        Log.i(TAG, "checking phone number: \"" + phone + "\"");
+        // exposing sensitive data - Log.d(TAG, "checking phone number: \"" + phone + "\"");
 
         // empty number :S
         if (phone.length() == 0) {
@@ -138,7 +138,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         // check phone number format
         if (phone != null) {
             if (!PhoneNumberUtils.isWellFormedSmsAddress(phone)) {
-                Log.w(TAG, "not a well formed SMS address");
+                Log.i(TAG, "not a well formed SMS address");
                 phone = null;
             }
         }
@@ -153,7 +153,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         mPhoneNumber = phone;
 
         // start async request
-        Log.i(TAG, "phone number checked, sending validation request");
+        Log.d(TAG, "phone number checked, sending validation request");
         startProgress();
 
         EndpointServer server = MessagingPreferences.getEndpointServer(this);
@@ -199,8 +199,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
             mProgress.setOnCancelListener(new OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialog) {
-                    Log.i(TAG, "progress dialog canceled.");
-                    Toast.makeText(NumberValidation.this, "Validation canceled. You might receive a SMS anyway.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(NumberValidation.this, R.string.msg_validation_canceled, Toast.LENGTH_LONG).show();
                     abort();
                 }
             });
@@ -235,12 +234,17 @@ public class NumberValidation extends AccountAuthenticatorActivity
     @Override
     public void onAuthTokenFailed(NumberValidator v, Protocol.Status reason) {
         Log.e(TAG, "authorization token request failed (" + reason + ")");
-        // TODO handle error
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(NumberValidation.this, R.string.err_authentication_failed, Toast.LENGTH_LONG).show();
+            }
+        });
         abort();
     }
 
     protected void finishLogin(String token) {
-        Log.i(TAG, "finishLogin()");
+        Log.v(TAG, "finishing login");
         final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
         mAuthtoken = token;
 
@@ -268,7 +272,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     }
 
     protected void finishConfirmCredentials(boolean result) {
-        Log.i(TAG, "finishConfirmCredentials()");
+        Log.v(TAG, "finishing confirm credentials");
 
         // the password is actually the auth token
         final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
@@ -283,7 +287,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
     @Override
     public void onAuthTokenReceived(NumberValidator v, final CharSequence token) {
-        Log.i(TAG, "got authorization token! (" + token + ")");
+        Log.d(TAG, "got authorization token!");
         abort(true);
 
         runOnUiThread(new Runnable() {
@@ -303,10 +307,10 @@ public class NumberValidation extends AccountAuthenticatorActivity
     @Override
     public void onError(NumberValidator v, Throwable e) {
         Log.e(TAG, "validation error.", e);
-        // TODO handle error
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Toast.makeText(NumberValidation.this, R.string.err_validation_error, Toast.LENGTH_LONG).show();
                 abort();
             }
         });
@@ -315,10 +319,10 @@ public class NumberValidation extends AccountAuthenticatorActivity
     @Override
     public void onValidationFailed(NumberValidator v, Protocol.Status reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
-        // TODO handle error
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Toast.makeText(NumberValidation.this, R.string.err_validation_failed, Toast.LENGTH_LONG).show();
                 abort();
             }
         });
@@ -327,7 +331,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     @Override
     public void onValidationRequested(NumberValidator v) {
         if (mManualValidation) {
-            Log.i(TAG, "validation has been requested, requesting validation code to user");
+            Log.d(TAG, "validation has been requested, requesting validation code to user");
             // close progress dialog
             abortProgress();
 
@@ -369,12 +373,12 @@ public class NumberValidation extends AccountAuthenticatorActivity
             });
         }
         else
-            Log.i(TAG, "validation has been requested, waiting for SMS");
+            Log.d(TAG, "validation has been requested, waiting for SMS");
     }
 
     @Override
     public void onValidationCodeReceived(NumberValidator v, CharSequence code) {
-        Log.i(TAG, "validation SMS received, restarting validator thread");
+        Log.d(TAG, "validation SMS received, restarting validator thread");
         // start again!
         if (mValidator != null)
             mValidator.start();

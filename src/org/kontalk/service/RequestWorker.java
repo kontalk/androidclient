@@ -81,10 +81,9 @@ public class RequestWorker extends Thread {
             return;
         }
 
-        Log.i(TAG, "using token: " + mAuthToken);
+        // exposing sensitive data - Log.d(TAG, "using token: " + mAuthToken);
 
         // start the content observer thread
-        Log.w(TAG, "starting observer handler thread");
         mObserverThread = new ObserverHandlerThread();
         mObserverThread.start();
 
@@ -143,9 +142,9 @@ public class RequestWorker extends Thread {
             mRunning = true;
 
             // requeue the old messages
-            Log.i(TAG, "processing pending jobs queue (" + pending.size() + " jobs)");
+            Log.d(TAG, "processing pending jobs queue (" + pending.size() + " jobs)");
             for (RequestJob job = pending.poll(); job != null; job = pending.poll()) {
-                Log.i(TAG, "requeueing pending job " + job);
+                //Log.d(TAG, "requeueing pending job " + job);
                 sendMessage(obtainMessage(MSG_REQUEST_JOB, job));
             }
         }
@@ -161,7 +160,7 @@ public class RequestWorker extends Thread {
             if (msg.what == MSG_REQUEST_JOB) {
                 // not running - queue message
                 if (!mRunning) {
-                    Log.w(TAG, "request worker is not running - dropping message");
+                    Log.i(TAG, "request worker is not running - dropping message");
                     return;
                 }
 
@@ -170,7 +169,7 @@ public class RequestWorker extends Thread {
 
                 // check now if job has been canceled
                 if (job.isCanceled()) {
-                    Log.w(TAG, "request has been canceled - dropping");
+                    Log.i(TAG, "request has been canceled - dropping");
                     return;
                 }
 
@@ -252,7 +251,7 @@ public class RequestWorker extends Thread {
 
     /** Shuts down this request worker gracefully. */
     public void shutdown() {
-        Log.w(TAG, "shutting down");
+        Log.d(TAG, "shutting down");
         if (mHandler != null) {
             mHandler.stop();
             mHandler = null;
@@ -263,6 +262,6 @@ public class RequestWorker extends Thread {
             mObserverThread = null;
         }
 
-        Log.w(TAG, "exiting");
+        Log.d(TAG, "exiting");
     }
 }

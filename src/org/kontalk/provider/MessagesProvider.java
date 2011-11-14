@@ -3,6 +3,7 @@ package org.kontalk.provider;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.kontalk.R;
 import org.kontalk.client.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -353,8 +354,7 @@ public class MessagesProvider extends ContentProvider {
         // use text content in threads instead of binary content
         Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
         if (encrypted != null && encrypted.booleanValue()) {
-            // TODO i18n
-            values.put(Threads.CONTENT, "(encrypted)");
+            values.put(Threads.CONTENT, getContext().getResources().getString(R.string.text_encrypted));
         }
         else {
             // use the binary content converted to string
@@ -693,7 +693,7 @@ public class MessagesProvider extends ContentProvider {
                 // check if message is encrypted
                 String content;
                 if (encrypted > 0)
-                    content = "(encrypted)";
+                    content = getContext().getResources().getString(R.string.text_encrypted);
                 else {
                     // convert to string...
                     byte[] buf = c.getBlob(4);

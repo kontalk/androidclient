@@ -3,6 +3,7 @@ package org.kontalk.client;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
+import org.kontalk.R;
 import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.Messages;
 
@@ -44,8 +45,7 @@ public class PlainTextMessage extends AbstractMessage<ByteString> {
     @Override
     public String getTextContent() {
         if (encrypted)
-            // TODO i18n
-            return "(encrypted)";
+            return mContext.getResources().getString(R.string.text_encrypted);
         return content.toStringUtf8();
     }
 

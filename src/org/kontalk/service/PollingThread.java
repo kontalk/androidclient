@@ -55,10 +55,10 @@ public class PollingThread extends Thread {
             return;
         }
 
-        Log.i(TAG, "using token: " + mAuthToken);
+        // exposing sensitive data - Log.d(TAG, "using token: " + mAuthToken);
 
         Account acc = Authenticator.getDefaultAccount(mContext);
-        Log.d(TAG, "using account name " + acc.name + " as my number");
+        // exposing sensitive data - Log.d(TAG, "using account name " + acc.name + " as my number");
         Log.d(TAG, "using server " + mServer.toString());
         mClient = new PollingClient(mContext, mServer, mAuthToken, acc.name);
 
@@ -108,14 +108,14 @@ public class PollingThread extends Thread {
      * Shuts down this polling thread gracefully.
      */
     public synchronized void shutdown() {
-        Log.w(TAG, "shutting down");
+        Log.d(TAG, "shutting down");
         mRunning = false;
         if (mClient != null)
             mClient.abort();
         interrupt();
         // do not join - just discard the thread
 
-        Log.w(TAG, "exiting");
+        Log.d(TAG, "exiting");
         mClient = null;
     }
 }

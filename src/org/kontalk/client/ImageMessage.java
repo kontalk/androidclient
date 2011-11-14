@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
+import org.kontalk.R;
 import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.ThumbnailUtils;
@@ -142,8 +143,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     public String getTextContent() {
         String s = "Image: " + mime;
         if (encrypted)
-            // TODO i18n
-            s += " (encrypted)";
+            s += " " + mContext.getResources().getString(R.string.text_encrypted);
         return s;
     }
 

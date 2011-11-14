@@ -125,8 +125,13 @@ public class PollingClient extends AbstractClient {
 
                         if (list == null)
                             list = new ArrayList<AbstractMessage<?>>();
-                        list.add(msg);
                     }
+
+                    /*
+                     * Add a null value anyway to notify to the polling thread
+                     * that the mime type is not supported.
+                     */
+                    list.add(msg);
                 }
             }
         }

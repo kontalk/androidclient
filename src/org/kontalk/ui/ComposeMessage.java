@@ -210,8 +210,10 @@ public class ComposeMessage extends FragmentActivity {
             mFragment.sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
         }
         else {
-            // TODO notify to user
-            Log.e(TAG, "mime " + mime + " not supported");
+            // notify to user
+            Log.w(TAG, "mime " + mime + " not supported");
+            Toast.makeText(this, R.string.send_mime_not_supported, Toast.LENGTH_LONG)
+                .show();
         }
 
         sendIntent = null;
