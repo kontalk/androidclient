@@ -411,6 +411,11 @@ public class MessagesProvider extends ContentProvider {
                 long _id = ContentUris.parseId(uri);
                 table = TABLE_MESSAGES;
                 where = Messages._ID + " = ?";
+                /*
+                 TODO args copy
+                if (selection != null)
+                    where += " AND (" + selection + ")";
+                 */
                 args = new String[] { String.valueOf(_id) };
                 break;
             }
@@ -419,6 +424,11 @@ public class MessagesProvider extends ContentProvider {
                 messageId = uri.getPathSegments().get(1);
                 table = TABLE_MESSAGES;
                 where = Messages.MESSAGE_ID + " = ?";
+                /*
+                 TODO args copy
+                if (selection != null)
+                    where += " AND (" + selection + ")";
+                 */
                 args = new String[] { String.valueOf(messageId) };
                 break;
 
@@ -426,17 +436,40 @@ public class MessagesProvider extends ContentProvider {
                 long _id = ContentUris.parseId(uri);
                 table = TABLE_THREADS;
                 where = Threads._ID + " = ?";
+                /*
+                 TODO args copy
+                if (selection != null)
+                    where += " AND (" + selection + ")";
+                 */
                 args = new String[] { String.valueOf(_id) };
                 break;
             }
-
-            // threads table cannot be updated
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        // retrieve old data for notifying.
+        // This was done because of the update call could make the old where
+        // condition not working any more.
+        String[] msgIdList = null;
+        if (table.equals(TABLE_MESSAGES)) {
+            // preserve a list of the matching messages for notification and
+            // fulltext update later
+            Cursor old = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
+                    where, args, null, null, null);
+            msgIdList = new String[old.getCount()];
+            int i = 0;
+            while (old.moveToNext()) {
+                msgIdList[i] = old.getString(0);
+                i++;
+            }
+
+            old.close();
+        }
+
         int rows = db.update(table, values, where, args);
 
         Log.w(TAG, "messages table updated, affected: " + rows);
@@ -462,24 +495,33 @@ public class MessagesProvider extends ContentProvider {
                     projection = new String[] { Messages.THREAD_ID };
                 }
 
-                Cursor c = db.query(TABLE_MESSAGES, projection,
-                        where, args, null, null, null);
-                while (c.moveToNext()) {
-                    long threadId = c.getLong(0);
-                    updateThreadInfo(db, threadId);
+                // build new IN where condition
+                if (msgIdList.length > 0) {
+                    StringBuilder whereBuilder = new StringBuilder(Messages._ID + " IN (?");
+                    for (int i = 1; i < msgIdList.length; i++)
+                        whereBuilder.append(",?");
+                    whereBuilder.append(")");
 
-                    // update fulltext if necessary
-                    if (doUpdateFulltext) {
-                        int direction = c.getInt(2);
-                        String mime = c.getString(3);
-                        int encrypted = c.getInt(4);
-                        if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
-                                PlainTextMessage.MIME_TYPE.equals(mime))
-                            updateFulltext(db, c.getLong(1), threadId, c.getBlob(5));
+                    Cursor c = db.query(TABLE_MESSAGES, projection,
+                            whereBuilder.toString(), msgIdList, null, null, null);
+
+                    while (c.moveToNext()) {
+                        long threadId = c.getLong(0);
+                        updateThreadInfo(db, threadId);
+
+                        // update fulltext if necessary
+                        if (doUpdateFulltext) {
+                            int direction = c.getInt(2);
+                            String mime = c.getString(3);
+                            int encrypted = c.getInt(4);
+                            if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
+                                    PlainTextMessage.MIME_TYPE.equals(mime))
+                                updateFulltext(db, c.getLong(1), threadId, c.getBlob(5));
+                        }
                     }
-                }
 
-                c.close();
+                    c.close();
+                }
             }
         }
 
@@ -577,6 +619,7 @@ public class MessagesProvider extends ContentProvider {
                 where, args, null, null, null);
             if (c != null) {
                 while (c.moveToNext()) {
+                    // FIXME this way we'll get only one threadId...
                     threadId = c.getLong(0);
 
                     // update fulltext
