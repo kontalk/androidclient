@@ -86,7 +86,7 @@
         <activity android:name=".ui.MessagingPreferences" android:theme="@style/Theme.Light2"/>
         <activity android:name=".ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
         <activity android:name=".ui.NumberValidation"
-            android:theme="@android:style/Theme.Light"/>
+            android:theme="@style/Theme.Light"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
             android:exported="true" android:process=":auth" android:label="@string/authenticator_name">
             <intent-filter>
