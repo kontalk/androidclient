@@ -61,7 +61,6 @@ import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -81,7 +80,7 @@ public class ComposeMessageFragment extends ListFragment {
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
     private EditText mTextEntry;
-    private Button mSendButton;
+    private View mSendButton;
 
     private TextView mLastSeenBanner;
 
@@ -156,7 +155,7 @@ public class ComposeMessageFragment extends ListFragment {
             }
         });
 
-        mSendButton = (Button) getView().findViewById(R.id.send_button);
+        mSendButton = getView().findViewById(R.id.send_button);
         mSendButton.setEnabled(mTextEntry.length() > 0);
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
