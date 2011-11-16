@@ -59,6 +59,7 @@ public class PlainTextMessage extends AbstractMessage<ByteString> {
         if (isEncrypted()) {
             byte[] buf = coder.decrypt(content.toByteArray());
             content = ByteString.copyFrom(buf);
+            encrypted = false;
         }
     }
 

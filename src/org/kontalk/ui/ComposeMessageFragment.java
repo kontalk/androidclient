@@ -442,6 +442,26 @@ public class ComposeMessageFragment extends ListFragment {
         builder.create().show();
     }
 
+    private void decryptMessage(AbstractMessage<?> msg) {
+        Account acc = Authenticator.getDefaultAccount(getActivity());
+        Coder coder = MessagingPreferences.getDecryptCoder(getActivity(), acc.name);
+        try {
+            // decrypt the message
+            msg.decrypt(coder);
+            // update database
+            ContentValues values = new ContentValues();
+            values.put(Messages.CONTENT, msg.getBinaryContent());
+            values.put(Messages.ENCRYPTED, false);
+            getActivity().getContentResolver().update(
+                Messages.getUri(msg.getId()), values, null, null);
+        }
+        catch (GeneralSecurityException e) {
+            Log.e(TAG, "unable to decrypt message", e);
+            Toast.makeText(getActivity(), "Decryption failed!", Toast.LENGTH_LONG)
+                .show();
+        }
+    }
+
     private static final int MENU_SHARE = 1;
     private static final int MENU_COPY_TEXT = 2;
     private static final int MENU_DECRYPT = 3;
@@ -514,26 +534,7 @@ public class ComposeMessageFragment extends ListFragment {
 
             case MENU_DECRYPT: {
                 Log.d(TAG, "decrypting message: " + msg.getId());
-                Account acc = Authenticator.getDefaultAccount(getActivity());
-                Coder coder = MessagingPreferences.getDecryptCoder(getActivity(), acc.name);
-                try {
-                    // decrypt the message
-                    msg.decrypt(coder);
-                    // update database
-                    ContentValues values = new ContentValues();
-                    values.put(Messages.CONTENT, msg.getTextContent());
-                    values.put(Messages.MIME, msg.getMime());
-                    values.put(Messages.ENCRYPTED, false);
-                    getActivity().getContentResolver()
-                        .update(
-                            Messages.getUri(msg.getId()),
-                            values, null, null);
-                }
-                catch (GeneralSecurityException e) {
-                    Log.e(TAG, "unable to decrypt message", e);
-                    Toast.makeText(getActivity(), "Decryption failed!", Toast.LENGTH_LONG)
-                    .show();
-                }
+                decryptMessage(msg);
                 return true;
             }
 

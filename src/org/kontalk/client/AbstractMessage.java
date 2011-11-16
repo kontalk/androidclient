@@ -267,10 +267,8 @@ public abstract class AbstractMessage<T> {
     }
 
     public void setEncrypted() {
-        if (mime != null) {
-            encrypted = true;
-            encryptKey = "";
-        }
+        encrypted = true;
+        encryptKey = "";
     }
 
     /** Reserved for the {@link PollingClient}. */

@@ -98,7 +98,7 @@ public class MessagesProvider extends ContentProvider {
             "timestamp INTEGER NOT NULL," +
             // this the timestamp of the latest status change
             "status_changed INTEGER," +
-            "status INTEGER NOT NULL," +
+            "status INTEGER," +
             "draft TEXT" +
             ");";
 
