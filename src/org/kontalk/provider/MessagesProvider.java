@@ -66,20 +66,20 @@ public class MessagesProvider extends ContentProvider {
             "thread_id INTEGER NOT NULL, " +
             "msg_id TEXT NOT NULL UNIQUE, " +
             "real_id TEXT, " +
-            "peer TEXT, " +
+            "peer TEXT NOT NULL, " +
             "mime TEXT NOT NULL, " +
             "content BLOB," +
-            "direction INTEGER, " +
-            "unread INTEGER, " +
+            "direction INTEGER NOT NULL, " +
+            "unread INTEGER NOT NULL DEFAULT 0, " +
             // this the sent/received timestamp
-            "timestamp INTEGER," +
+            "timestamp INTEGER NOT NULL," +
             // this the timestamp of the latest status change
             "status_changed INTEGER," +
             "status INTEGER," +
             "fetch_url TEXT," +
-            "fetched INTEGER," +
+            "fetched INTEGER NOT NULL DEFAULT 0," +
             "local_uri TEXT," +
-            "encrypted INTEGER, " +
+            "encrypted INTEGER NOT NULL DEFAULT 0, " +
             "encrypt_key TEXT" +
             ");";
 
@@ -89,16 +89,16 @@ public class MessagesProvider extends ContentProvider {
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "msg_id TEXT NOT NULL UNIQUE, " +
             "peer TEXT NOT NULL UNIQUE, " +
-            "direction INTEGER, " +
-            "count INTEGER, " +
-            "unread INTEGER, " +
+            "direction INTEGER NOT NULL, " +
+            "count INTEGER NOT NULL, " +
+            "unread INTEGER NOT NULL, " +
             "mime TEXT NOT NULL, " +
             "content TEXT, " +
             // this the sent/received timestamp
-            "timestamp INTEGER," +
+            "timestamp INTEGER NOT NULL," +
             // this the timestamp of the latest status change
             "status_changed INTEGER," +
-            "status INTEGER," +
+            "status INTEGER NOT NULL," +
             "draft TEXT" +
             ");";
 
