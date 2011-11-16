@@ -90,8 +90,8 @@ public class MessagesProvider extends ContentProvider {
             "msg_id TEXT NOT NULL UNIQUE, " +
             "peer TEXT NOT NULL UNIQUE, " +
             "direction INTEGER NOT NULL, " +
-            "count INTEGER NOT NULL, " +
-            "unread INTEGER NOT NULL, " +
+            "count INTEGER NOT NULL DEFAULT 0, " +
+            "unread INTEGER NOT NULL DEFAULT 0, " +
             "mime TEXT NOT NULL, " +
             "content TEXT, " +
             // this the sent/received timestamp
