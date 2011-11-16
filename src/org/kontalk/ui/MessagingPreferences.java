@@ -15,8 +15,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -35,7 +37,7 @@ public class MessagingPreferences extends PreferenceActivity {
         addPreferencesFromResource(R.xml.preferences);
 
         // push notifications checkbox
-        Preference pushNotifications = findPreference("pref_push_notifications");
+        final Preference pushNotifications = findPreference("pref_push_notifications");
         pushNotifications.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -50,7 +52,7 @@ public class MessagingPreferences extends PreferenceActivity {
         });
 
         // message center restart
-        Preference restartMsgCenter = findPreference("pref_restart_msgcenter");
+        final Preference restartMsgCenter = findPreference("pref_restart_msgcenter");
         restartMsgCenter.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -62,7 +64,7 @@ public class MessagingPreferences extends PreferenceActivity {
         });
 
         // mark all incoming messages as confirmed
-        Preference markAllConfirmed = findPreference("pref_mark_all_confirmed");
+        final Preference markAllConfirmed = findPreference("pref_mark_all_confirmed");
         markAllConfirmed.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -77,6 +79,20 @@ public class MessagingPreferences extends PreferenceActivity {
                 Toast.makeText(MessagingPreferences.this, "Messages table updated!", Toast.LENGTH_SHORT)
                     .show();
                 return true;
+            }
+        });
+
+        // manual server address
+        // here we can't use OnPreferenceChangeListener because we need the
+        // preference to be persisted.
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if ("pref_network_uri".equals(key)) {
+                    MessageCenterService.stopMessageCenter(getApplicationContext());
+                    MessageCenterService.startMessageCenter(getApplicationContext());
+                }
             }
         });
 
@@ -131,6 +147,9 @@ public class MessagingPreferences extends PreferenceActivity {
                             @Override
                             public void run() {
                                 updateServerListLastUpdate(updateServerList, list);
+                                // restart message center
+                                MessageCenterService.stopMessageCenter(getApplicationContext());
+                                MessageCenterService.startMessageCenter(getApplicationContext());
                             }
                         });
                     }
