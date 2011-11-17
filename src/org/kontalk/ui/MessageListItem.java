@@ -91,17 +91,23 @@ public class MessageListItem extends RelativeLayout {
             //mTextView.setBackgroundResource(R.drawable.light_blue_background);
             if (mStatusIcon != null)
             	mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
-            if (mBalloonView != null)
-            mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
-            if (mDateViewIncoming != null) {
-	            mDateViewIncoming.setVisibility(VISIBLE);
-	            mDateViewOutgoing.setVisibility(GONE);
-	            mDateViewIncoming.setText("10:46");
+            if (mDateView == null) {
+                if (mBalloonView != null)
+                    mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
+                if (mDateViewIncoming != null) {
+    	            mDateViewIncoming.setVisibility(VISIBLE);
+    	            mDateViewOutgoing.setVisibility(GONE);
+    	            mDateViewIncoming.setText("10:46");
+                }
             }
-            if (mNameView != null) {
+            else {
+                int backId = R.drawable.message_list_item_in_fill;
+                mNameView.setBackgroundResource(backId);
+                mDateView.setBackgroundResource(backId);
+                mBackground.setBackgroundResource(R.drawable.message_list_item_in_border);
             	mNameView.setText("Daniele Ricci");
             	mDateView.setText("11:56");
-        	}
+            }
 	        /* OUTGOING
             setGravity(Gravity.RIGHT);
             setBackgroundResource(R.drawable.white_background);
