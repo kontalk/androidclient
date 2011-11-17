@@ -105,4 +105,6 @@
     <string name="text_encrypted">(encrypted)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
+    <string name="button_validate">Validate</string>
+    <string name="button_manual_validation">Manual Validation</string>
 </resources>

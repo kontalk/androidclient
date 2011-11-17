@@ -25,14 +25,14 @@
           android:layout_height="wrap_content"
         />
         <Button
-          android:text="Validate"
+          android:text="@string/button_validate"
           android:id="@+id/button_validate"
           android:layout_width="fill_parent"
           android:layout_height="fill_parent"
           android:onClick="validatePhone"
         />
         <Button
-            android:text="Manual validation"
+            android:text="@string/button_manual_validation"
             android:id="@+id/button_manual"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
