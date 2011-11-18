@@ -1,5 +1,7 @@
 package org.kontalk.ui;
 
+import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
+
 import java.security.GeneralSecurityException;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -38,6 +40,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
@@ -83,6 +86,9 @@ public class ComposeMessageFragment extends ListFragment {
     private View mSendButton;
 
     private TextView mLastSeenBanner;
+
+    private boolean mIsKeyboardOpen;
+    private boolean mIsLandscape;
 
     /** The thread id. */
     private long threadId = -1;
@@ -166,7 +172,24 @@ public class ComposeMessageFragment extends ListFragment {
 
         mLastSeenBanner = (TextView) getView().findViewById(R.id.last_seen_text);
 
+        Configuration config = getResources().getConfiguration();
+        mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
+        mIsLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
+        onKeyboardStateChanged(mIsKeyboardOpen);
+
         processArguments(savedInstanceState);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        mIsKeyboardOpen = newConfig.keyboardHidden == KEYBOARDHIDDEN_NO;
+        boolean isLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
+        if (mIsLandscape != isLandscape) {
+            mIsLandscape = isLandscape;
+        }
+        onKeyboardStateChanged(mIsKeyboardOpen);
     }
 
     public void reload() {
@@ -219,7 +242,6 @@ public class ComposeMessageFragment extends ListFragment {
         }
     }
 
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -614,6 +636,16 @@ public class ComposeMessageFragment extends ListFragment {
 
     public void setMyArguments(Bundle args) {
         mArguments = args;
+    }
+
+    private void onKeyboardStateChanged(boolean isKeyboardOpen) {
+        if (isKeyboardOpen) {
+            mTextEntry.setFocusableInTouchMode(true);
+            mTextEntry.setHint(R.string.hint_type_to_compose);
+        } else {
+            mTextEntry.setFocusableInTouchMode(false);
+            mTextEntry.setHint(R.string.hint_open_kbd_to_compose);
+        }
     }
 
     @Override

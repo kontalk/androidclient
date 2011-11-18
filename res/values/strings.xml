@@ -41,6 +41,8 @@
     <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
     <string name="send">Send</string>
     <string name="hint_enter_text">Enter your text here</string>
+    <string name="hint_type_to_compose">Type to compose</string>
+    <string name="hint_open_kbd_to_compose">Open keyboard to compose message</string>
     <string name="view_image">View image</string>
     <string name="title_message_options">Message options</string>
     <string name="menu_message_details">View message details</string>
