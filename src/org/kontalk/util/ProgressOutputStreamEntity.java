@@ -70,7 +70,8 @@ public class ProgressOutputStreamEntity implements HttpEntity {
     public void writeTo(OutputStream outstream) throws IOException {
         mListener.start(mUrl, mFile, mParent.getContentLength());
         mParent.writeTo(new CountingOutputStream(outstream, mUrl, mFile, mListener));
-        mListener.completed(mUrl, mFile);
+        Header mime = mParent.getContentType();
+        mListener.completed(mUrl, mime != null ? mime.getValue() : null, mFile);
     }
 
     private static final class CountingOutputStream extends FilterOutputStream {

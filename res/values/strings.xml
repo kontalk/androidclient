@@ -105,5 +105,11 @@
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Validate</string>
-    <string name="button_manual_validation">Manual Validation</string>
+    <string name="button_manual_validation">Manual validation</string>
+    <string name="notify_ticker_download_completed">Download completed</string>
+    <string name="notify_title_download_completed">Download completed</string>
+    <string name="notify_text_download_completed">Attachment download completed</string>
+    <string name="notify_ticker_download_error">Download failed</string>
+    <string name="notify_title_download_error">Download error</string>
+    <string name="notify_text_download_error">Attachment download failed</string>
 </resources>

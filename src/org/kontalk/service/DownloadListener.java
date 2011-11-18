@@ -26,7 +26,7 @@ public interface DownloadListener {
      * @param url
      * @param destination
      */
-    public void completed(String url, File destination);
+    public void completed(String url, String mime, File destination);
 
     /**
      * Called if an error occured while download.

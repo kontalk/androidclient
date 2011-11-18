@@ -2,6 +2,7 @@ package org.kontalk.service;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
 
 import java.io.File;
 
@@ -108,24 +109,30 @@ public class DownloadService extends IntentService implements DownloadListener {
     }
 
     @Override
-    public void completed(String url, File destination) {
+    public void completed(String url, String mime, File destination) {
         Log.d(TAG, "download complete");
         stopForeground();
 
         Uri uri = Uri.fromFile(destination);
 
+        // detect mime type if not available
+        if (mime == null)
+            mime = getContentResolver().getType(uri);
+
         // create intent for download complete notification
-        Intent i = new Intent(Intent.ACTION_VIEW, uri);
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setDataAndType(uri, mime);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOAD_OK, i, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // create notification
-        // TODO i18n
         Notification no = new Notification(R.drawable.icon_stat,
-                "Download completed", System.currentTimeMillis());
-        // TODO i18n
+                getString(R.string.notify_ticker_download_completed),
+                System.currentTimeMillis());
         no.setLatestEventInfo(getApplicationContext(),
-                "Download completed", "Attachment download completed", pi);
+                getString(R.string.notify_title_download_completed),
+                getString(R.string.notify_text_download_completed), pi);
+        no.flags |= Notification.FLAG_AUTO_CANCEL;
 
         // notify!!
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -140,8 +147,26 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void error(String url, File destination, Throwable exc) {
-        // TODO
         Log.e(TAG, "download error", exc);
+
+        // create intent for download error notification
+        Intent i = new Intent(this, ConversationList.class);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                NOTIFICATION_ID_DOWNLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // create notification
+        Notification no = new Notification(R.drawable.icon_stat,
+                getString(R.string.notify_ticker_download_error),
+                System.currentTimeMillis());
+        no.setLatestEventInfo(getApplicationContext(),
+                getString(R.string.notify_title_download_error),
+                getString(R.string.notify_text_download_error), pi);
+        no.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        // notify!!
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.notify(NOTIFICATION_ID_DOWNLOAD_OK, no);
+
     }
 
     @Override

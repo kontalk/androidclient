@@ -106,4 +106,10 @@
     <string name="send_mime_not_supported">Tipo di file non è supportato.</string>
     <string name="button_validate">Verifica</string>
     <string name="button_manual_validation">Verifica manuale</string>
+    <string name="notify_ticker_download_completed">Download completato</string>
+    <string name="notify_title_download_completed">Download completato</string>
+    <string name="notify_text_download_completed">Download allegato completato</string>
+    <string name="notify_ticker_download_error">Download fallito</string>
+    <string name="notify_title_download_error">Errore download</string>
+    <string name="notify_text_download_error">Download allegato fallito</string>
 </resources>
