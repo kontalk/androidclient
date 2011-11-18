@@ -67,8 +67,6 @@
     <string name="pref_passphrase">Passphrase</string>
     <string name="pref_prompt_passphrase">Leave empty to use the recipient phone number.</string>
     <string name="pref_title_passphrase">Password will also be used for decryption when necessary</string>
-    <string name="pref_mark_all_confirmed">Mark all messages as confirmed</string>
-    <string name="pref_title_mark_all_confirmed">Marks all incoming messages as confirmed</string>
     <string name="pref_show_last_seen">Show user last seen</string>
     <string name="pref_title_show_last_seen">Show last time a user has been seen</string>
     <string name="contact_not_registered">Contact seems not to be registered on Kontalk.</string>
@@ -76,7 +74,6 @@
     <string name="decrypt_message">Decrypt message</string>
     <string name="download_file">Download file</string>
     <string name="last_seen_label">Last seen:\u0020</string>
-    <string name="text_hint_encrypted">(encrypted)</string>
     <string name="myself_label">Me</string>
     <string name="has_draft">Draft</string>
     <string name="pref_update_server_list">Update server list</string>

@@ -224,7 +224,7 @@ public class MessageListItem extends RelativeLayout {
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
             if (mMessage.isEncrypted()) {
-                buf.append(getResources().getString(R.string.text_hint_encrypted));
+                buf.append(getResources().getString(R.string.text_encrypted));
             }
             else {
                 buf.append(mMessage.getTextContent());
