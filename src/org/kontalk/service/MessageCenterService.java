@@ -1,12 +1,13 @@
 package org.kontalk.service;
 
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -23,11 +24,10 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
-
-import com.google.protobuf.MessageLite;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -49,6 +49,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import com.google.protobuf.MessageLite;
 
 
 /**
@@ -576,18 +578,38 @@ public class MessageCenterService extends Service
 
     @Override
     public boolean error(RequestJob job, Throwable e) {
-        // TODO some error notifications
         Log.e(TAG, "request error", e);
         // stop any foreground if the job is a message
-        if (job instanceof MessageSender)
+        if (job instanceof MessageSender) {
             stopForeground();
+
+            // create intent for upload error notification
+            // TODO this Intent should bring the user to the actual conversation
+            Intent i = new Intent(this, ConversationList.class);
+            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                    NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            // create notification
+            Notification no = new Notification(R.drawable.icon_stat,
+                    getString(R.string.notify_ticker_upload_error),
+                    System.currentTimeMillis());
+            no.setLatestEventInfo(getApplicationContext(),
+                    getString(R.string.notify_title_upload_error),
+                    getString(R.string.notify_text_upload_error), pi);
+            no.flags |= Notification.FLAG_AUTO_CANCEL;
+
+            // notify!!
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, no);
+
+        }
 
         return true;
     }
 
     @Override
     public void uploadProgress(RequestJob job, long bytes) {
-        Log.v(TAG, "bytes sent: " + bytes);
+        //Log.v(TAG, "bytes sent: " + bytes);
         if (job instanceof MessageSender) {
             boolean cancel = ((MessageSender)job).isCanceled();
             if (cancel)
@@ -596,10 +618,10 @@ public class MessageCenterService extends Service
         publishProgress(bytes);
     }
 
+    /** TODO this should not be used */
     @Override
     public void downloadProgress(RequestJob job, long bytes) {
-        // TODO ehm :)
-        Log.v(TAG, "bytes received: " + bytes);
+        //Log.v(TAG, "bytes received: " + bytes);
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {

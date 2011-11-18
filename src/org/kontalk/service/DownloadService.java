@@ -165,8 +165,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         // notify!!
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(NOTIFICATION_ID_DOWNLOAD_OK, no);
-
+        nm.notify(NOTIFICATION_ID_DOWNLOAD_ERROR, no);
     }
 
     @Override

@@ -112,4 +112,7 @@
     <string name="notify_ticker_download_error">Download failed</string>
     <string name="notify_title_download_error">Download error</string>
     <string name="notify_text_download_error">Attachment download failed</string>
+    <string name="notify_ticker_upload_error">Upload failed</string>
+    <string name="notify_title_upload_error">Upload error</string>
+    <string name="notify_text_upload_error">Attachment upload failed</string>
 </resources>

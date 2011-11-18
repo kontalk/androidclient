@@ -112,4 +112,7 @@
     <string name="notify_ticker_download_error">Download fallito</string>
     <string name="notify_title_download_error">Errore download</string>
     <string name="notify_text_download_error">Download allegato fallito</string>
+    <string name="notify_ticker_upload_error">Invio fallito</string>
+    <string name="notify_title_upload_error">Errore invio</string>
+    <string name="notify_text_upload_error">Invio allegato fallito</string>
 </resources>
