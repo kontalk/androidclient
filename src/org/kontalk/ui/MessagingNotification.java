@@ -25,7 +25,12 @@ import android.text.style.StyleSpan;
  * @author Daniele Ricci
  */
 public class MessagingNotification {
-    private static final int MESSAGES_NOTIFICATION_ID = 12;
+    public static final int NOTIFICATION_ID_MESSAGES        = 101;
+    public static final int NOTIFICATION_ID_UPLOADING       = 102;
+    public static final int NOTIFICATION_ID_UPLOAD_ERROR    = 103;
+    public static final int NOTIFICATION_ID_DOWNLOADING     = 104;
+    public static final int NOTIFICATION_ID_DOWNLOAD_OK     = 105;
+    public static final int NOTIFICATION_ID_DOWNLOAD_ERROR  = 106;
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {
@@ -82,7 +87,7 @@ public class MessagingNotification {
         // no unread messages - delete notification
         if (c.getCount() == 0) {
             c.close();
-            nm.cancel(MESSAGES_NOTIFICATION_ID);
+            nm.cancel(NOTIFICATION_ID_MESSAGES);
             return;
         }
 
@@ -118,7 +123,7 @@ public class MessagingNotification {
 
         no.setLatestEventInfo(context.getApplicationContext(),
                 accumulator.getTitle(), accumulator.getText(), accumulator.getPendingIntent());
-        nm.notify(MESSAGES_NOTIFICATION_ID, no);
+        nm.notify(NOTIFICATION_ID_MESSAGES, no);
     }
 
     /**
@@ -217,7 +222,8 @@ public class MessagingNotification {
             else {
                 ni = ComposeMessage.fromConversation(mContext, conversation.id);
             }
-            return PendingIntent.getActivity(mContext, MESSAGES_NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+            return PendingIntent.getActivity(mContext, NOTIFICATION_ID_MESSAGES,
+                    ni, Intent.FLAG_ACTIVITY_NEW_TASK);
         }
     }
 }

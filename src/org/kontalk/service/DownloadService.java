@@ -1,5 +1,8 @@
 package org.kontalk.service;
 
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
+
 import java.io.File;
 
 import org.kontalk.R;
@@ -17,6 +20,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
@@ -27,8 +31,6 @@ public class DownloadService extends IntentService implements DownloadListener {
     private static final String TAG = DownloadService.class.getSimpleName();
 
     public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
-
-    private static final int NOTIFICATION_ID = 103;
 
     private Notification mCurrentNotification;
     private long mTotalBytes;
@@ -71,19 +73,20 @@ public class DownloadService extends IntentService implements DownloadListener {
     }
 
     public void startForeground(long totalBytes) {
-        Log.w(TAG, "starting foreground progress notification");
+        Log.d(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
 
         Intent ni = new Intent(getApplicationContext(), ConversationList.class);
         // FIXME this intent should actually open the ComposeMessage activity
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                NOTIFICATION_ID_DOWNLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         mCurrentNotification = new Notification(R.drawable.icon, "Downloading attachment...", System.currentTimeMillis());
         mCurrentNotification.contentIntent = pi;
         mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
 
         foregroundNotification(0);
-        startForeground(NOTIFICATION_ID, mCurrentNotification);
+        startForeground(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
     }
 
     private void foregroundNotification(int progress) {
@@ -106,13 +109,31 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void completed(String url, File destination) {
-        Log.i(TAG, "download complete");
+        Log.d(TAG, "download complete");
         stopForeground();
-        // TODO download complete notification
+
+        Uri uri = Uri.fromFile(destination);
+
+        // create intent for download complete notification
+        Intent i = new Intent(Intent.ACTION_VIEW, uri);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                NOTIFICATION_ID_DOWNLOAD_OK, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // create notification
+        // TODO i18n
+        Notification no = new Notification(R.drawable.icon_stat,
+                "Download completed", System.currentTimeMillis());
+        // TODO i18n
+        no.setLatestEventInfo(getApplicationContext(),
+                "Download completed", "Attachment download completed", pi);
+
+        // notify!!
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.notify(NOTIFICATION_ID_DOWNLOAD_OK, no);
 
         // update messages.localUri
         ContentValues values = new ContentValues();
-        values.put(Messages.LOCAL_URI, Uri.fromFile(destination).toString());
+        values.put(Messages.LOCAL_URI, uri.toString());
         values.put(Messages.FETCHED, true);
         getContentResolver().update(Messages.getUri(messageId), values, null, null);
     }
@@ -125,13 +146,13 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void progress(String url, File destination, long bytes) {
-        Log.i(TAG, bytes + " bytes received");
+        //Log.v(TAG, bytes + " bytes received");
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            nm.notify(NOTIFICATION_ID, mCurrentNotification);
+            nm.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
         }
 
     }

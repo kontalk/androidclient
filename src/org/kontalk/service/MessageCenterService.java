@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
+
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.AbstractMessage;
@@ -60,7 +62,6 @@ public class MessageCenterService extends Service
         implements MessageListener, RequestListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
-    private static final int NOTIFICATION_ID = 102;
 
     public static final String C2DM_START = "org.kontalk.CD2M_START";
     public static final String C2DM_STOP = "org.kontalk.CD2M_STOP";
@@ -496,7 +497,8 @@ public class MessageCenterService extends Service
         Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
         ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
         ni.setData(Threads.getUri(userId));
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                NOTIFICATION_ID_UPLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         mCurrentNotification = new Notification(R.drawable.icon_stat,
                 getResources().getString(R.string.sending_message),
@@ -505,7 +507,7 @@ public class MessageCenterService extends Service
         mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
 
         foregroundNotification(0);
-        startForeground(NOTIFICATION_ID, mCurrentNotification);
+        startForeground(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
     }
 
     private void foregroundNotification(int progress) {
@@ -521,7 +523,7 @@ public class MessageCenterService extends Service
             foregroundNotification(progress);
             // send the updates to the notification manager
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            nm.notify(NOTIFICATION_ID, mCurrentNotification);
+            nm.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
         }
     }
 
