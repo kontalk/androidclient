@@ -31,6 +31,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_DOWNLOADING     = 104;
     public static final int NOTIFICATION_ID_DOWNLOAD_OK     = 105;
     public static final int NOTIFICATION_ID_DOWNLOAD_ERROR  = 106;
+    public static final int NOTIFICATION_ID_POLLING_ERROR   = 107;
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {

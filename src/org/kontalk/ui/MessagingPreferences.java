@@ -175,18 +175,6 @@ public class MessagingPreferences extends PreferenceActivity {
         return (list != null) ? list.random() : null;
     }
 
-    /** Returns true if the contacts list has already been checked against the server. */
-    public static boolean getContactsChecked(Context context) {
-        return getBoolean(context, "pref_contacts_checked", false);
-    }
-
-    public static void setContactsChecked(Context context, boolean checked) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit()
-            .putBoolean("pref_contacts_checked", checked)
-            .commit();
-    }
-
     public static boolean getEncryptionEnabled(Context context) {
         return getBoolean(context, "pref_encrypt", true);
     }

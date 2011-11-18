@@ -46,9 +46,10 @@ public class MessageRequestListener implements RequestListener {
                 if (res.hasMessageId()) {
                     String msgId = res.getMessageId();
                     if (!TextUtils.isEmpty(msgId)) {
-                        // FIXME this should use changeMessageStatus, but it
-                        // won't work because of the newly messageId included
-                        // in values, which is not handled by changeMessageStatus
+                        /* FIXME this should use changeMessageStatus, but it
+                         * won't work because of the newly messageId included
+                         * in values, which is not handled by changeMessageStatus
+                         */
                         ContentValues values = new ContentValues(2);
                         values.put(Messages.MESSAGE_ID, msgId);
                         values.put(Messages.STATUS, Messages.STATUS_SENT);

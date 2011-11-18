@@ -259,11 +259,6 @@ public class ConversationListFragment extends ListFragment {
             // finish for now...
             return;
         }
-
-        // check if contacts list has already been checked
-        if (!MessagingPreferences.getContactsChecked(getActivity())) {
-            // TODO start the contacts list checker thread
-        }
     }
 
     @Override

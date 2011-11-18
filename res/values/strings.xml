@@ -115,4 +115,7 @@
     <string name="notify_ticker_upload_error">Upload failed</string>
     <string name="notify_title_upload_error">Upload error</string>
     <string name="notify_text_upload_error">Attachment upload failed</string>
+    <string name="notify_ticker_polling_error">Network error</string>
+    <string name="notify_title_polling_error">Network error</string>
+    <string name="notify_text_polling_error">Unable to check for incoming messages. Check your network settings.</string>
 </resources>

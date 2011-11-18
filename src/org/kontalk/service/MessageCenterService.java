@@ -484,7 +484,10 @@ public class MessageCenterService extends Service
             }
             catch (IOException e) {
                 Log.e(TAG, "error reading message data to send", e);
-                // FIXME just don't send for now
+                MessagesProvider.changeMessageStatus(this,
+                        job.getMessageUri(), Messages.STATUS_ERROR,
+                        -1, System.currentTimeMillis());
+                // just don't send for now
                 return;
             }
         }

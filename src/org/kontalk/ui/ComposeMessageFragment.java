@@ -2,7 +2,9 @@ package org.kontalk.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -691,9 +693,10 @@ public class ComposeMessageFragment extends ListFragment {
                     try {
                         userId = MessageUtils.sha1(userPhone);
                     }
-                    catch (Exception e) {
-                        // TODO handle error
+                    catch (NoSuchAlgorithmException e) {
+                        // fatal error - shouldn't happen
                         Log.e(TAG, "sha1 digest failed", e);
+                        throw new RuntimeException(e);
                     }
 
                     Cursor cp = cres.query(Messages.CONTENT_URI,
@@ -779,10 +782,10 @@ public class ComposeMessageFragment extends ListFragment {
                             }
                         }
                     }
-                    catch (Exception e) {
+                    catch (IOException e) {
                         Log.e(TAG, "unable to lookup user " + userId, e);
-                        // TODO better text :D
-                        text = "(error)";
+                        // TODO really silent error??
+                        //text = "(error)";
                     }
 
                     if (text != null) {
