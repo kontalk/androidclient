@@ -42,6 +42,10 @@
     <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
     <uses-permission android:name="org.kontalk.permission.C2D_MESSAGE" />
     
+    <!-- do not make telephony and touchscreen mandatory -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+    
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:name=".Kontalk" android:debuggable="true">
         <service
             android:label="@string/service_name"
@@ -51,7 +55,9 @@
             android:authorities="org.kontalk.messages"
             android:syncable="false"/>
 
-        <activity android:name=".ui.ConversationList" android:theme="@style/Theme.Light">
+        <activity android:name=".ui.ConversationList"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@style/Theme.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -74,7 +80,10 @@
         <meta-data android:name="android.app.default_searchable"
             android:value=".ui.SearchActivity" />
 
-        <activity android:name=".ui.ComposeMessage" android:theme="@style/Theme.Light">
+        <activity android:name=".ui.ComposeMessage"
+            android:theme="@style/Theme.Light"
+            android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
