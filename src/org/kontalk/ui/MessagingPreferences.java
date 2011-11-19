@@ -28,6 +28,9 @@ import android.widget.Toast;
 public class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
 
+    // TODO check why this thing doesn't work sometimes
+    private OnSharedPreferenceChangeListener networkUriListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,8 +66,7 @@ public class MessagingPreferences extends PreferenceActivity {
         // manual server address
         // here we can't use OnPreferenceChangeListener because we need the
         // preference to be persisted.
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        sp.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+        networkUriListener = new OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                 if ("pref_network_uri".equals(key)) {
@@ -72,7 +74,7 @@ public class MessagingPreferences extends PreferenceActivity {
                     MessageCenterService.startMessageCenter(getApplicationContext());
                 }
             }
-        });
+        };
 
         // server list last update timestamp
         final Preference updateServerList = findPreference("pref_update_server_list");
@@ -143,6 +145,20 @@ public class MessagingPreferences extends PreferenceActivity {
         ServerList list = ServerListUpdater.getCurrentList(this);
         if (list != null)
             updateServerListLastUpdate(updateServerList, list);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.registerOnSharedPreferenceChangeListener(networkUriListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.unregisterOnSharedPreferenceChangeListener(networkUriListener);
     }
 
     private static void updateServerListLastUpdate(Preference pref, ServerList list) {
