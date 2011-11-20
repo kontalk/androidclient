@@ -784,43 +784,48 @@ public class ComposeMessageFragment extends ListFragment {
                 public void run() {
                     String text = null;
                     try {
-                        Context context = getActivity();
-                        RequestClient client = new RequestClient(context,
-                                MessagingPreferences.getEndpointServer(context),
-                                Authenticator.getDefaultAccountToken(context));
+                        try {
+                            Context context = getActivity();
+                            RequestClient client = new RequestClient(context,
+                                    MessagingPreferences.getEndpointServer(context),
+                                    Authenticator.getDefaultAccountToken(context));
 
-                        final Protocol.LookupResponse data = client.lookup(userId);
-                        if (data != null && data.getEntryCount() > 0) {
-                            final Protocol.LookupResponseEntry res = data.getEntry(0);
-                            if (res.hasTimestamp()) {
-                                long time = res.getTimestamp();
-                                if (time > 0)
-                                    text = getResources().getString(R.string.last_seen_label) +
-                                        MessageUtils.formatTimeStampString(context, time * 1000, true);
+                            final Protocol.LookupResponse data = client.lookup(userId);
+                            if (data != null && data.getEntryCount() > 0) {
+                                final Protocol.LookupResponseEntry res = data.getEntry(0);
+                                if (res.hasTimestamp()) {
+                                    long time = res.getTimestamp();
+                                    if (time > 0)
+                                        text = getResources().getString(R.string.last_seen_label) +
+                                            MessageUtils.formatTimeStampString(context, time * 1000, true);
+                                }
                             }
                         }
-                    }
-                    catch (IOException e) {
-                        Log.e(TAG, "unable to lookup user " + userId, e);
-                        // TODO really silent error??
-                        //text = "(error)";
-                    }
+                        catch (IOException e) {
+                            Log.e(TAG, "unable to lookup user " + userId, e);
+                            // TODO really silent error??
+                            //text = "(error)";
+                        }
 
-                    if (text != null) {
-                        final String bannerText = text;
-                        // show last seen banner
-                        Activity context = getActivity();
-                        if (context != null)
-                            context.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mLastSeenBanner.setText(bannerText);
-                                    mLastSeenBanner.setVisibility(View.VISIBLE);
-                                    mLastSeenBanner.startAnimation(
-                                            AnimationUtils.loadAnimation(
-                                                    getActivity(), R.anim.header_appear));
-                                }
-                            });
+                        if (text != null) {
+                            final String bannerText = text;
+                            // show last seen banner
+                            Activity context = getActivity();
+                            if (context != null)
+                                context.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mLastSeenBanner.setText(bannerText);
+                                        mLastSeenBanner.setVisibility(View.VISIBLE);
+                                        mLastSeenBanner.startAnimation(
+                                                AnimationUtils.loadAnimation(
+                                                        getActivity(), R.anim.header_appear));
+                                    }
+                                });
+                        }
+                    }
+                    catch (Exception e) {
+                        // ignore exceptions for now
                     }
                 }
             }).start();
