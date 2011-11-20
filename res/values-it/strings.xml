@@ -132,4 +132,6 @@
     <string name="notify_ticker_upload_error">Invio fallito</string>
     <string name="notify_title_upload_error">Errore invio</string>
     <string name="notify_text_upload_error">Invio allegato fallito</string>
+    <string name="title_invalid_number">Numero non valido</string>
+    <string name="msg_invalid_number">Inserisci un prefisso internazionale valido oppure inserisci una SIM card e disattiva la modalità aereo per rilevarlo automaticamente.</string>
 </resources>

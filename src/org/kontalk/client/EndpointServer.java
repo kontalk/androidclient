@@ -20,6 +20,8 @@ package org.kontalk.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -126,12 +128,21 @@ public class EndpointServer {
         return req;
     }
 
+    private String encode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            return value;
+        }
+    }
+
     public HttpRequestBase prepareValidation(String phone) throws IOException {
-        return prepare(VALIDATION_PATH + "/" + phone, null, null, null, null, false);
+        return prepare(VALIDATION_PATH + "/" + encode(phone), null, null, null, null, false);
     }
 
     public HttpRequestBase prepareAuthentication(String validationCode) throws IOException {
-        return prepare(AUTHENTICATION_PATH + "/" + validationCode, null, null, null, null, false);
+        return prepare(AUTHENTICATION_PATH + "/" + encode(validationCode), null, null, null, null, false);
     }
 
     public HttpRequestBase prepareLookup(String token, Collection<String> userId) throws IOException {
@@ -255,7 +266,7 @@ public class EndpointServer {
      * @throws IOException
      */
     public HttpRequestBase prepareDownload(String token, String filename) throws IOException {
-        return prepare(DOWNLOAD_PATH + "/" + filename, null, token, null, null, false);
+        return prepare(DOWNLOAD_PATH + "/" + encode(filename), null, token, null, null, false);
     }
 
     /**

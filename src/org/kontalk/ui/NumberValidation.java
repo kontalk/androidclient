@@ -96,22 +96,6 @@ public class NumberValidation extends AccountAuthenticatorActivity
             intent.getBooleanExtra(PARAM_CONFIRMCREDENTIALS, false);
 
         mPhone = (EditText) findViewById(R.id.phone_number);
-        /*
-         * because of the double choice (automatic/manual validation), we can't
-         * use this anymore
-        mPhone.setOnEditorActionListener(new OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                // input has done!
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    Log.i(TAG, "IME closed, starting validation");
-                    validatePhone(null);
-                }
-                return false;
-            }
-        });
-        */
-
         mValidateButton = (Button) findViewById(R.id.button_validate);
         mManualButton = (Button) findViewById(R.id.button_manual);
     }
@@ -137,20 +121,35 @@ public class NumberValidation extends AccountAuthenticatorActivity
         return false;
     }
 
-    private void startValidation(View v) {
-        mValidateButton.setEnabled(false);
-        mManualButton.setEnabled(false);
+    private void enableControls(boolean enabled) {
+        mValidateButton.setEnabled(enabled);
+        mManualButton.setEnabled(enabled);
+        mPhone.setEnabled(enabled);
+    }
+
+    private void startValidation() {
+        enableControls(false);
 
         // check number input
-        String phone = NumberValidator
-            .fixNumber(this, mPhone.getText().toString());
+        String phone = null;
+        try {
+            phone = NumberValidator
+                .fixNumber(this, mPhone.getText().toString());
+        }
+        catch (IllegalArgumentException e ) {
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.title_invalid_number)
+                .setMessage(R.string.msg_invalid_number)
+                .setNeutralButton(android.R.string.ok, null)
+                .create().show();
+            enableControls(true);
+            return;
+        }
         // exposing sensitive data - Log.d(TAG, "checking phone number: \"" + phone + "\"");
 
         // empty number :S
         if (phone.length() == 0) {
             phone = null;
-            // event not coming from IME done action
-            if (v == null) return;
         }
 
         // check phone number format
@@ -165,6 +164,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         if (phone == null) {
             Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
                 .show();
+            enableControls(true);
             return;
         }
 
@@ -188,7 +188,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     public void validateManual(View v) {
         // we are starting a manual validation
         mManualValidation = true;
-        startValidation(v);
+        startValidation();
     }
 
     /**
@@ -199,7 +199,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     public void validatePhone(View v) {
         // we are starting an automatic validation
         mManualValidation = false;
-        startValidation(v);
+        startValidation();
     }
 
     /** No search here. */
@@ -238,8 +238,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
     public void abort(boolean ending) {
         if (!ending) {
-            mValidateButton.setEnabled(true);
-            mManualButton.setEnabled(true);
+            enableControls(true);
         }
 
         abortProgress();
@@ -255,10 +254,12 @@ public class NumberValidation extends AccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(NumberValidation.this, R.string.err_authentication_failed, Toast.LENGTH_LONG).show();
+                Toast.makeText(NumberValidation.this,
+                        R.string.err_authentication_failed,
+                        Toast.LENGTH_LONG).show();
+                abort();
             }
         });
-        abort();
     }
 
     protected void finishLogin(String token) {
@@ -306,11 +307,12 @@ public class NumberValidation extends AccountAuthenticatorActivity
     @Override
     public void onAuthTokenReceived(NumberValidator v, final CharSequence token) {
         Log.d(TAG, "got authorization token!");
-        abort(true);
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                abort(true);
+
                 if (!mConfirmCredentials) {
                     Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
                     finishLogin(token.toString());
@@ -376,7 +378,12 @@ public class NumberValidation extends AccountAuthenticatorActivity
                                 }
                             }
                         })
-                        .setNegativeButton(android.R.string.cancel, null)
+                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        })
                         .setView(view)
                         .setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override

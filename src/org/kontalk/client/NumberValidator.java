@@ -18,6 +18,8 @@
 
 package org.kontalk.client;
 
+import org.kontalk.ui.MessagingPreferences;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -254,19 +256,26 @@ public class NumberValidator implements Runnable {
     public static String getCountryPrefix(Context context) {
         final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         final String regionCode = tm.getSimCountryIso().toUpperCase();
-        return "+" + PhoneNumberUtil.getInstance()
-            .getCountryCodeForRegion(regionCode);
+        int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
+        if (cc <= 0)
+            cc = MessagingPreferences.getLastCountryCode(context);
+        return (cc > 0) ? "+" + cc : null;
     }
 
-    public static String fixNumber(Context context, String number) {
+    public static String fixNumber(Context context, String number)
+            throws IllegalArgumentException {
         // normalize number: strip separators
         number = PhoneNumberUtils.stripSeparators(number.trim());
 
         // normalize number: add country code if not found
         if (number.startsWith("00"))
             number = '+' + number.substring(2);
-        else if (number.charAt(0) != '+')
-            number = getCountryPrefix(context) + number;
+        else if (number.charAt(0) != '+') {
+            String prefix = getCountryPrefix(context);
+            if (prefix == null)
+                throw new IllegalArgumentException("no country code available");
+            number = prefix + number;
+        }
 
         return number;
     }

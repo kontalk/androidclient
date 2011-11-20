@@ -190,6 +190,11 @@ public class MessagingPreferences extends PreferenceActivity {
         return prefs.getString(key, defaultValue);
     }
 
+    private static int getInt(Context context, String key, int defaultValue) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt(key, defaultValue);
+    }
+
     private static boolean getBoolean(Context context, String key, boolean defaultValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(key, defaultValue);
@@ -248,5 +253,16 @@ public class MessagingPreferences extends PreferenceActivity {
 
     public static String getNotificationRingtone(Context context) {
         return getString(context, "pref_ringtone", null);
+    }
+
+    public static boolean setLastCountryCode(Context context, int countryCode) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putInt("pref_countrycode", countryCode)
+            .commit();
+    }
+
+    public static int getLastCountryCode(Context context) {
+        return getInt(context, "pref_countrycode", 0);
     }
 }

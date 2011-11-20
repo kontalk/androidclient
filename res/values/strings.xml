@@ -135,4 +135,6 @@
     <string name="notify_ticker_polling_error">Network error</string>
     <string name="notify_title_polling_error">Network error</string>
     <string name="notify_text_polling_error">Unable to check for incoming messages. Check your network settings.</string>
+    <string name="title_invalid_number">Invalid number</string>
+    <string name="msg_invalid_number">Please insert a valid international prefix or insert a SIM card and go to online mode to automatically retrieve it.</string>
 </resources>

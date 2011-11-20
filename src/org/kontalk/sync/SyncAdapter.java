@@ -38,7 +38,6 @@ import org.kontalk.util.MessageUtils;
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
-import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
@@ -131,7 +130,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
         final List<String> hashList = new ArrayList<String>();
 
-        final String countryCode = NumberValidator.getCountryPrefix(mContext);
+        String countryCode = NumberValidator.getCountryPrefix(mContext);
+        if (countryCode == null) {
+            Log.w(TAG, "no SIM available and no saved country code - aborting sync");
+            syncResult.stats.numIoExceptions++;
+            return;
+        }
         Log.i(TAG, "using country code: " + countryCode);
 
         // query all contacts
