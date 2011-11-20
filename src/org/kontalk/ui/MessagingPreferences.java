@@ -200,6 +200,15 @@ public class MessagingPreferences extends PreferenceActivity {
         return prefs.getBoolean(key, defaultValue);
     }
 
+    /** Retrieve a boolean and if false set it to true. */
+    private static boolean getBooleanOnce(Context context, String key) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = prefs.getBoolean(key, false);
+        if (!value)
+            prefs.edit().putBoolean(key, true).commit();
+        return value;
+    }
+
     private static String getServerURI(Context context) {
         return getString(context, "pref_network_uri", null);
     }
@@ -264,5 +273,9 @@ public class MessagingPreferences extends PreferenceActivity {
 
     public static int getLastCountryCode(Context context) {
         return getInt(context, "pref_countrycode", 0);
+    }
+
+    public static boolean getContactsListVisited(Context context) {
+        return getBooleanOnce(context, "pref_contacts_visited");
     }
 }

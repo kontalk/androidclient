@@ -137,4 +137,8 @@
     <string name="notify_text_polling_error">Unable to check for incoming messages. Check your network settings.</string>
     <string name="title_invalid_number">Invalid number</string>
     <string name="msg_invalid_number">Please insert a valid international prefix or insert a SIM card and go to online mode to automatically retrieve it.</string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="menu_invite">Invite users</string>
+    <string name="msg_do_refresh">Use Menu > Refresh to update contact list.</string>
+    <string name="msg_sync_started">Refreshing contacts list.</string>
 </resources>

@@ -24,16 +24,22 @@ import org.kontalk.sync.SyncAdapter;
 
 import android.accounts.Account;
 import android.app.ListActivity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.RawContacts;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
-public class ContactsListActivity extends ListActivity {
+public class ContactsListActivity extends ListActivity
+        implements ContactsListAdapter.OnContentChangedListener {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
@@ -44,17 +50,35 @@ public class ContactsListActivity extends ListActivity {
 
         setContentView(R.layout.contacts_list);
 
-        Account account = Authenticator.getDefaultAccount(this);
-        Uri uri = RawContacts.CONTENT_URI.buildUpon()
-            .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
-            .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
-            .build();
-        mCursor = getContentResolver().query(uri, null, null, null, SyncAdapter.RAW_COLUMN_DISPLAY_NAME);
-        startManagingCursor(mCursor);
-
+        startQuery();
         mListAdapter = new ContactsListAdapter(this, mCursor);
-        // TODO mListAdapter.setOnContentChangedListener(mContentChangedListener);
+        mListAdapter.setOnContentChangedListener(this);
         setListAdapter(mListAdapter);
+
+        if (mCursor.getCount() > 0 && !MessagingPreferences.getContactsListVisited(this)) {
+            Toast.makeText(this, R.string.msg_do_refresh,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.contacts_list_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_refresh:
+                startSync();
+                return true;
+
+            case R.id.menu_invite:
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -63,6 +87,34 @@ public class ContactsListActivity extends ListActivity {
         Intent i = new Intent(Intent.ACTION_PICK, cl.getContact().getRawContactUri());
         setResult(RESULT_OK, i);
         finish();
+    }
+
+    private void startSync() {
+        Account acc = Authenticator.getDefaultAccount(this);
+        Bundle extra = new Bundle();
+        // override auto-sync and background data settings
+        extra.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        // put our sync ahead of other sync operations :)
+        extra.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(acc, ContactsContract.AUTHORITY, extra);
+
+        Toast.makeText(this, R.string.msg_sync_started,
+                Toast.LENGTH_LONG).show();
+    }
+
+    private void startQuery() {
+        Account account = Authenticator.getDefaultAccount(this);
+        Uri uri = RawContacts.CONTENT_URI.buildUpon()
+            .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
+            .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
+            .build();
+        mCursor = getContentResolver().query(uri, null, null, null, SyncAdapter.RAW_COLUMN_DISPLAY_NAME);
+        startManagingCursor(mCursor);
+    }
+
+    @Override
+    public void onContentChanged(ContactsListAdapter adapter) {
+        startQuery();
     }
 
 }
