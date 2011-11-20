@@ -259,6 +259,8 @@ public class NumberValidator implements Runnable {
         int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
         if (cc <= 0)
             cc = MessagingPreferences.getLastCountryCode(context);
+        else
+            MessagingPreferences.setLastCountryCode(context, cc);
         return (cc > 0) ? "+" + cc : null;
     }
 
