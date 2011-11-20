@@ -71,7 +71,7 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
 
     private void parseXML() {
         try {
-            Log.i(TAG, "parsing XML:\n" + xmlContent);
+            //Log.v(TAG, "parsing XML:\n" + xmlContent);
             // parse XML content
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder;

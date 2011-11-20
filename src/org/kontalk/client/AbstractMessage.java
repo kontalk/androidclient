@@ -139,7 +139,8 @@ public abstract class AbstractMessage<T> {
             this.messageId = MessageID.parse(id);
         }
         catch (ParseException e) {
-            Log.e(TAG, "invalid server message id - " + id);
+            if (id == null || !id.startsWith("draft"))
+                Log.e(TAG, "invalid server message id - " + id);
         }
     }
 
