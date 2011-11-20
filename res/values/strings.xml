@@ -142,4 +142,5 @@
     <string name="msg_do_refresh">Use Menu > Refresh to update contact list.</string>
     <string name="msg_sync_started">Refreshing contacts list.</string>
     <string name="text_invite_message">Hey! Check out Kontalk on the Android Market, a free messaging app! https://market.android.com/details?id=org.kontalk</string>
+    <string name="text_contacts_empty">New users will be automatically added to this list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; to send an invitation message to someone.</string>
 </resources>

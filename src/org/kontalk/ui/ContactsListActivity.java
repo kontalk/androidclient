@@ -32,10 +32,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.RawContacts;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -48,18 +50,18 @@ public class ContactsListActivity extends ListActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.contacts_list);
+        TextView text = (TextView) findViewById(android.R.id.empty);
+        text.setText(Html.fromHtml(getString(R.string.text_contacts_empty)));
 
         startQuery();
         mListAdapter = new ContactsListAdapter(this, mCursor);
         mListAdapter.setOnContentChangedListener(this);
         setListAdapter(mListAdapter);
 
-        if (mCursor.getCount() > 0 && !MessagingPreferences.getContactsListVisited(this)) {
+        if (!MessagingPreferences.getContactsListVisited(this))
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
-        }
     }
 
     @Override
