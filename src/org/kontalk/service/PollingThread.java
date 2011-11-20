@@ -120,10 +120,12 @@ public class PollingThread extends Thread {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {}
-                }
 
-                if (numErrors > 0)
-                    numErrors--;
+                    if (numErrors > 0)
+                        numErrors--;
+                    else
+                        cancelError();
+                }
             }
             catch (Exception e) {
                 Log.e(TAG, "polling error", e);
@@ -177,5 +179,11 @@ public class PollingThread extends Thread {
         NotificationManager nm = (NotificationManager) mContext
             .getSystemService(Context.NOTIFICATION_SERVICE);
         nm.notify(NOTIFICATION_ID_POLLING_ERROR, no);
+    }
+
+    private void cancelError() {
+        NotificationManager nm = (NotificationManager) mContext
+            .getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancel(NOTIFICATION_ID_POLLING_ERROR);
     }
 }
