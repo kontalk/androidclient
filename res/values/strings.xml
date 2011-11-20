@@ -141,4 +141,5 @@
     <string name="menu_invite">Invite users</string>
     <string name="msg_do_refresh">Use Menu > Refresh to update contact list.</string>
     <string name="msg_sync_started">Refreshing contacts list.</string>
+    <string name="text_invite_message">Hey! Check out Kontalk on the Android Market, a free messaging app! https://market.android.com/details?id=org.kontalk</string>
 </resources>

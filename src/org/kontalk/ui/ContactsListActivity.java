@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.PlainTextMessage;
 import org.kontalk.sync.SyncAdapter;
 
 import android.accounts.Account;
@@ -75,6 +76,10 @@ public class ContactsListActivity extends ListActivity
                 return true;
 
             case R.id.menu_invite:
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType(PlainTextMessage.MIME_TYPE);
+                i.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
+                startActivity(i);
                 return true;
         }
 
