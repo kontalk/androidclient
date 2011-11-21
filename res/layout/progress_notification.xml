@@ -48,9 +48,10 @@
             <TextView android:id="@+id/progress_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@android:style/TextAppearance.Small.Inverse"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 android:singleLine="true"
                 android:layout_gravity="center_horizontal"
+                android:text="50%"
                 />
         </LinearLayout>
 
@@ -73,14 +74,15 @@
                 <TextView android:id="@+id/title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@android:style/TextAppearance.Inverse"
+                    android:textAppearance="?android:attr/textAppearance"
                     android:singleLine="true"
                     android:paddingLeft="2dp"
+                    android:text="Downloading attachment..."
                     />
                 <TextView android:id="@+id/description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@android:style/TextAppearance.Small.Inverse"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
                     android:singleLine="true"
                     android:paddingLeft="5dp"
                     />
@@ -115,23 +117,3 @@
         />
 
 </LinearLayout>
-<!--
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent" android:layout_height="fill_parent"
-    android:padding="5dp">
-  <ImageView android:id="@+id/status_icon"
-    android:layout_width="wrap_content" android:layout_height="fill_parent"
-    android:layout_alignParentLeft="true" />
-  <RelativeLayout android:layout_width="fill_parent"
-    android:layout_height="fill_parent" android:layout_toRightOf="@id/status_icon">
-    <TextView android:id="@+id/status_text" android:layout_width="fill_parent"
-      android:layout_height="wrap_content" android:layout_alignParentTop="true" />
-    <ProgressBar android:id="@+id/status_progress"
-      android:layout_width="fill_parent" android:layout_height="wrap_content"
-      android:layout_below="@id/status_text"
-      android:progressDrawable="@android:drawable/progress_horizontal"
-      android:indeterminate="false" android:indeterminateOnly="false" />
-  </RelativeLayout>
-</RelativeLayout>
--->
