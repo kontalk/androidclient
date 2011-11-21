@@ -92,6 +92,7 @@
     <string name="error_store_outbox">Unable to store message to outbox.</string>
     <string name="decrypt_message">Decrypt message</string>
     <string name="download_file">Download file</string>
+    <string name="download_again">Download again</string>
     <string name="last_seen_label">Last seen:\u0020</string>
     <string name="myself_label">Me</string>
     <string name="has_draft">Draft</string>

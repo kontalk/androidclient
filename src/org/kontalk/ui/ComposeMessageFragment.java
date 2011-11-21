@@ -529,10 +529,15 @@ public class ComposeMessageFragment extends ListFragment {
 
         if (msg instanceof ImageMessage) {
             // we are able to view image if either we fetched the image or we sent that
-            if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
+            int string;
+            if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT) {
                 menu.add(Menu.NONE, MENU_VIEW_IMAGE, MENU_VIEW_IMAGE, R.string.view_image);
+                string = R.string.download_again;
+            }
             else
-                menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, R.string.download_file);
+                string = R.string.download_file;
+
+            menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, string);
         }
         else {
             if (msg.isEncrypted())
