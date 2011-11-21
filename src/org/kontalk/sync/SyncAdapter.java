@@ -166,8 +166,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 try {
                     String hash = MessageUtils.sha1(number);
-                    lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash));
-                    hashList.add(hash);
+                    // avoid to send duplicates to server
+                    if (lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash)) == null)
+                        hashList.add(hash);
                 } catch (NoSuchAlgorithmException e) {
                     Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
                     syncResult.stats.numIoExceptions++;
