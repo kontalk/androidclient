@@ -167,9 +167,11 @@ public class RequestWorker extends Thread {
             }
         }
 
-        public synchronized void stop() {
+        public void stop() {
             mRunning = false;
+            Log.d(TAG, "aborting client");
             mClient.abort();
+            Log.d(TAG, "quitting looper");
             getLooper().quit();
         }
 
@@ -274,6 +276,9 @@ public class RequestWorker extends Thread {
             mHandler.stop();
             mHandler = null;
         }
+        Log.d(TAG, "interrupting");
+        interrupt();
+        // do not join - just discard the thread
 
         if (mObserverThread != null) {
             mObserverThread.quit();
@@ -281,5 +286,6 @@ public class RequestWorker extends Thread {
         }
 
         Log.d(TAG, "exiting");
+        mClient = null;
     }
 }

@@ -23,6 +23,7 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -245,7 +246,7 @@ public class MessageCenterService extends Service
      * Shuts down the polling thread.
      * @return true if the thread has been stopped, false if it wasn't running.
      */
-    private boolean shutdownPollingThread() {
+    private synchronized boolean shutdownPollingThread() {
         if (mPollingThread != null) {
             PollingThread tmp = mPollingThread;
             // discard the reference to the thread immediately
@@ -260,7 +261,7 @@ public class MessageCenterService extends Service
      * Shuts down the request worker.
      * @return true if the thread has been stopped, false if it wasn't running.
      */
-    private boolean shutdownRequestWorker() {
+    private synchronized boolean shutdownRequestWorker() {
         // Be sure to clear the pending jobs queue.
         // Since we are stopping the message center, any pending request would
         // be lost anyway.
@@ -542,10 +543,12 @@ public class MessageCenterService extends Service
 
     public void publishProgress(long bytes) {
         if (mCurrentNotification != null) {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.cancel(NOTIFICATION_ID_UPLOAD_ERROR);
+
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
-            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             nm.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
         }
     }
@@ -604,25 +607,31 @@ public class MessageCenterService extends Service
         if (job instanceof MessageSender) {
             stopForeground();
 
-            // create intent for upload error notification
-            // TODO this Intent should bring the user to the actual conversation
-            Intent i = new Intent(this, ConversationList.class);
-            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                    NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+            // interruption
+            if (e instanceof InterruptedIOException)
+                return false;
 
-            // create notification
-            Notification no = new Notification(R.drawable.icon_stat,
-                    getString(R.string.notify_ticker_upload_error),
-                    System.currentTimeMillis());
-            no.setLatestEventInfo(getApplicationContext(),
-                    getString(R.string.notify_title_upload_error),
-                    getString(R.string.notify_text_upload_error), pi);
-            no.flags |= Notification.FLAG_AUTO_CANCEL;
+            MessageSender job2 = (MessageSender) job;
+            if (job2.getSourceUri() != null) {
+                // create intent for upload error notification
+                // TODO this Intent should bring the user to the actual conversation
+                Intent i = new Intent(this, ConversationList.class);
+                PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                        NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            // notify!!
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, no);
+                // create notification
+                Notification no = new Notification(R.drawable.icon_stat,
+                        getString(R.string.notify_ticker_upload_error),
+                        System.currentTimeMillis());
+                no.setLatestEventInfo(getApplicationContext(),
+                        getString(R.string.notify_title_upload_error),
+                        getString(R.string.notify_text_upload_error), pi);
+                no.flags |= Notification.FLAG_AUTO_CANCEL;
 
+                // notify!!
+                NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, no);
+            }
         }
 
         return true;
