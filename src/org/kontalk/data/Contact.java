@@ -20,6 +20,8 @@ package org.kontalk.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.sync.SyncAdapter;
@@ -28,6 +30,7 @@ import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -59,6 +62,78 @@ public class Contact {
 
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
+
+    /**
+     * Contact cache.
+     * @author Daniele Ricci
+     */
+    private final static class ContactCache extends HashMap<String, Contact> {
+        private static final long serialVersionUID = 2788447346920511692L;
+
+        private final class ContactsObserver extends ContentObserver {
+            private Context mContext;
+            private String mUserId;
+
+            public ContactsObserver(Context context, String userId) {
+                super(null);
+                mContext = context;
+                mUserId = userId;
+            }
+
+            @Override
+            public void onChange(boolean selfChange) {
+                synchronized (ContactCache.this) {
+                    remove(mContext, mUserId);
+                    get(mContext, mUserId);
+                }
+            }
+        }
+
+        private Map<String, ContactsObserver> mObservers;
+
+        public ContactCache() {
+            mObservers = new HashMap<String, ContactsObserver>();
+        }
+
+        public Contact get(Context context, String userId) {
+            Contact c = get(userId);
+            if (c == null) {
+                c = _findByUserId(context, userId);
+                if (c != null) {
+                    // retrieve a previous observer if present
+                    ContactsObserver observer = mObservers.get(userId);
+                    if (observer == null) {
+                        // create a new observer
+                        observer = new ContactsObserver(
+                                context.getApplicationContext(),userId);
+                        mObservers.put(userId, observer);
+                    }
+                    // register for changes
+                    context.getContentResolver()
+                        .registerContentObserver(c.getUri(), false, observer);
+
+                    // put the contact in the cache
+                    put(userId, c);
+                }
+            }
+
+            return c;
+        }
+
+        public Contact remove(Context context, String userId) {
+            Contact c = remove(userId);
+            if (c != null) {
+                ContactsObserver observer = mObservers.remove(userId);
+                if (observer != null)
+                    context.getContentResolver()
+                        .unregisterContentObserver(observer);
+            }
+
+            return c;
+        }
+    }
+
+    private final static ContactCache cache = new ContactCache();
 
     private Contact(Uri uri, long rawContactId, String name, String number) {
         mContactId = ContentUris.parseId(uri);
@@ -160,6 +235,10 @@ public class Contact {
     }
 
     public static Contact findByUserId(Context context, String userId) {
+        return cache.get(context, userId);
+    }
+
+    private static Contact _findByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Account acc = Authenticator.getDefaultAccount(context);
 

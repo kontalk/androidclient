@@ -46,6 +46,11 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 
+/**
+ * The attachment download service.
+ * TODO implement multiple downloads
+ * @author Daniele Ricci
+ */
 public class DownloadService extends IntentService implements DownloadListener {
     private static final String TAG = DownloadService.class.getSimpleName();
 
