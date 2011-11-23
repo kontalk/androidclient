@@ -58,6 +58,8 @@
     <string name="only_one_account_supported">Sólo una cuenta Kontalk es suportada.</string>
     <string name="send">Envio</string>
     <string name="hint_enter_text">Ingrese el texto aquí</string>
+    <string name="hint_type_to_compose">Discar para componer</string>
+    <string name="hint_open_kbd_to_compose">Abrir teclado para componer mensaje</string>
     <string name="view_image">Ver imagen</string>
     <string name="title_message_options">Opciones de mensajes</string>
     <string name="menu_message_details">Ver detalles del mensaje</string>
@@ -84,8 +86,6 @@
     <string name="pref_passphrase">Contraseña</string>
     <string name="pref_prompt_passphrase">Dejar en blanco para usar el número de teléfono del destinatario.</string>
     <string name="pref_title_passphrase">Contraseña también se puede utilizar para descifrar si es necesario</string>
-    <string name="pref_mark_all_confirmed">Marcar todos los mensajes como confirmados</string>
-    <string name="pref_title_mark_all_confirmed">Marca todos los mensajes entrantes como confirmados</string>
     <string name="pref_show_last_seen">Mostrar ultimo usuario visto</string>
     <string name="pref_title_show_last_seen">Mostrar última vez que un usuario fue visto</string>
     <string name="contact_not_registered">Contacto no parece estar registrado en Kontalk.</string>
@@ -122,4 +122,26 @@
     <string name="text_encrypted">(encriptado)</string>
     <string name="msg_draft_saved">Mensaje guardado como borrador.</string>
     <string name="send_mime_not_supported">Tipo de archivo no suportado.</string>
+    <string name="button_validate">Validar</string>
+    <string name="button_manual_validation">Manual validation</string>
+    <string name="notify_ticker_download_completed">Descarga completada</string>
+    <string name="notify_title_download_completed">Descarga completada</string>
+    <string name="notify_text_download_completed">Descarga archivo adjunto completado</string>
+    <string name="notify_ticker_download_error">Descarga fallida</string>
+    <string name="notify_title_download_error">Error de descarga</string>
+    <string name="notify_text_download_error">Descarga archivo adjunto fallida</string>
+    <string name="notify_ticker_upload_error">Error de subida</string>
+    <string name="notify_title_upload_error">Error de subida</string>
+    <string name="notify_text_upload_error">Error al subir archivo adjunto</string>
+    <string name="notify_ticker_polling_error">Error en la red</string>
+    <string name="notify_title_polling_error">Error en la red</string>
+    <string name="notify_text_polling_error">No se pueden comprobar los mensajes entrantes. Compruebe la configuración de red.</string>
+    <string name="title_invalid_number">Número no válido</string>
+    <string name="msg_invalid_number">Por favor, introduzca un prefijo internacional válido o inserte una tarjeta SIM e ir al modo en línea para recuperarlo de forma automática.</string>
+    <string name="menu_refresh">Refrescar</string>
+    <string name="menu_invite">Invitar usuarios</string>
+    <string name="msg_do_refresh">Use Menú> Actualizar para actualizar la lista de contactos.</string>
+    <string name="msg_sync_started">Refrescar lista de contactos.</string>
+    <string name="text_invite_message">Hey! Echa un vistazo a Kontalk en el Android Market, una aplicación gratuita de mensajería! https://market.android.com/details?id=org.kontalk</string>
+    <string name="text_contacts_empty">Los nuevos usuarios serán agregados automáticamente a esta lista. <br/> Use <b> Menú </ b>> <b> Invitar usuarios </ b> para enviar un mensaje de invitación a alguien.</string>
 </resources>
