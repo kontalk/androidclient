@@ -24,15 +24,18 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.*;
-
-import com.google.protobuf.MessageLite;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.MessageSender;
+import org.kontalk.client.RequestClient;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 import android.os.Message;
+import android.os.Process;
 import android.util.Log;
+
+import com.google.protobuf.MessageLite;
 
 
 /**
@@ -40,17 +43,13 @@ import android.util.Log;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class RequestWorker extends Thread {
+public class RequestWorker extends HandlerThread {
     private static final String TAG = RequestWorker.class.getSimpleName();
     private static final int MSG_REQUEST_JOB = 1;
 
     private static final long DEFAULT_RETRY_DELAY = 10000;
 
     private PauseHandler mHandler;
-
-    // content observers for canceling message sendings
-    private Handler mObserverHandler;
-    private ObserverHandlerThread mObserverThread;
 
     private final Context mContext;
     private final EndpointServer mServer;
@@ -63,6 +62,7 @@ public class RequestWorker extends Thread {
     static public LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
 
     public RequestWorker(Context context, EndpointServer server) {
+        super(RequestWorker.class.getSimpleName(), Process.THREAD_PRIORITY_BACKGROUND);
         mContext = context;
         mServer = server;
     }
@@ -76,23 +76,8 @@ public class RequestWorker extends Thread {
         this.mListeners.remove(listener);
     }
 
-    private final class ObserverHandlerThread extends Thread {
-        @Override
-        public void run() {
-            Log.w(TAG, "observer handler thread started.");
-            Looper.prepare();
-            mObserverHandler = new Handler();
-            Looper.loop();
-        }
-
-        public void quit() {
-            Log.w(TAG, "observer handler thread quitting");
-            mObserverHandler.getLooper().quit();
-        }
-    }
-
-    public void run() {
-        Looper.prepare();
+    @Override
+    protected void onLooperPrepared() {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         if (mAuthToken == null) {
             Log.w(TAG, "invalid token - exiting");
@@ -100,10 +85,6 @@ public class RequestWorker extends Thread {
         }
 
         // exposing sensitive data - Log.d(TAG, "using token: " + mAuthToken);
-
-        // start the content observer thread
-        mObserverThread = new ObserverHandlerThread();
-        mObserverThread.start();
 
         Log.d(TAG, "using server " + mServer.toString());
         mClient = new RequestClient(mContext, mServer, mAuthToken);
@@ -114,8 +95,6 @@ public class RequestWorker extends Thread {
             mHandler = new PauseHandler(new LinkedList<RequestJob>(pendingJobs));
             pendingJobs = new LinkedList<RequestJob>();
         }
-
-        Looper.loop();
     }
 
     /** A fake listener to call all the listeners inside the collection. */
@@ -154,10 +133,9 @@ public class RequestWorker extends Thread {
     }
 
     private final class PauseHandler extends Handler {
-        private boolean mRunning;
 
         public PauseHandler(Queue<RequestJob> pending) {
-            mRunning = true;
+            // no need to super(), will use looper from the current thread
 
             // requeue the old messages
             Log.d(TAG, "processing pending jobs queue (" + pending.size() + " jobs)");
@@ -167,19 +145,11 @@ public class RequestWorker extends Thread {
             }
         }
 
-        public void stop() {
-            mRunning = false;
-            Log.d(TAG, "aborting client");
-            mClient.abort();
-            Log.d(TAG, "quitting looper");
-            getLooper().quit();
-        }
-
         @Override
-        public synchronized void handleMessage(Message msg) {
+        public void handleMessage(Message msg) {
             if (msg.what == MSG_REQUEST_JOB) {
                 // not running - queue message
-                if (!mRunning) {
+                if (isInterrupted()) {
                     Log.i(TAG, "request worker is not running - dropping message");
                     return;
                 }
@@ -204,7 +174,7 @@ public class RequestWorker extends Thread {
                     if (job instanceof MessageSender) {
                         MessageSender mess = (MessageSender) job;
                         // observe the content for cancel requests
-                        mess.observe(mContext, mObserverHandler);
+                        mess.observe(mContext, this);
                     }
 
                     response = job.call(mClient, mListeners, mContext);
@@ -212,6 +182,11 @@ public class RequestWorker extends Thread {
                     mListeners.response(job, response);
                 }
                 catch (IOException e) {
+                    if (isInterrupted()) {
+                        Log.v(TAG, "worker has been interrupted");
+                        return;
+                    }
+
                     boolean requeue = true;
                     Log.e(TAG, "request error", e);
                     requeue = mListeners.error(job, e);
@@ -247,7 +222,7 @@ public class RequestWorker extends Thread {
         // max wait time 10 seconds
         int retries = 20;
 
-        while(!isAlive() || mHandler == null || mObserverHandler == null || retries <= 0) {
+        while(!isAlive() || mHandler == null || retries <= 0) {
             try {
                 // 500ms should do the job...
                 Thread.sleep(500);
@@ -266,24 +241,19 @@ public class RequestWorker extends Thread {
 
     /** Returns true if the worker is running. */
     public boolean isRunning() {
-        return (mHandler != null && mHandler.mRunning);
+        return (mHandler != null && !isInterrupted());
     }
 
     /** Shuts down this request worker gracefully. */
-    public void shutdown() {
+    public synchronized void shutdown() {
         Log.d(TAG, "shutting down");
-        if (mHandler != null) {
-            mHandler.stop();
-            mHandler = null;
-        }
-        Log.d(TAG, "interrupting");
         interrupt();
-        // do not join - just discard the thread
 
-        if (mObserverThread != null) {
-            mObserverThread.quit();
-            mObserverThread = null;
-        }
+        Log.d(TAG, "aborting client");
+        if (mClient != null) mClient.abort();
+        Log.d(TAG, "quitting looper");
+        quit();
+        // do not join - just discard the thread
 
         Log.d(TAG, "exiting");
         mClient = null;

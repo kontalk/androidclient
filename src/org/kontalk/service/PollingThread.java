@@ -20,6 +20,7 @@ package org.kontalk.service;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_POLLING_ERROR;
 
+import java.io.InterruptedIOException;
 import java.util.List;
 
 import org.kontalk.R;
@@ -35,6 +36,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Process;
 import android.util.Log;
 
 /**
@@ -46,11 +48,11 @@ public class PollingThread extends Thread {
     private final static String TAG = PollingThread.class.getSimpleName();
 
     private final static int MAX_ERRORS = 10;
+    private final static int MAX_IDLES = 2;
 
     private final Context mContext;
     private final EndpointServer mServer;
     private String mAuthToken;
-    private boolean mRunning;
 
     private PollingClient mClient;
     private MessageListener mListener;
@@ -58,6 +60,8 @@ public class PollingThread extends Thread {
     private String mPushRegistrationId;
 
     public PollingThread(Context context, EndpointServer server) {
+        super(PollingThread.class.getSimpleName());
+        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
         mServer = server;
         mContext = context;
     }
@@ -75,11 +79,9 @@ public class PollingThread extends Thread {
     }
 
     public void run() {
-        mRunning = true;
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         if (mAuthToken == null) {
             Log.w(TAG, "invalid token - exiting");
-            mRunning = false;
             return;
         }
 
@@ -91,11 +93,18 @@ public class PollingThread extends Thread {
         mClient = new PollingClient(mContext, mServer, mAuthToken, acc.name);
 
         int numErrors = 0;
-        while(mRunning) {
+        int numIdle = 0;
+        while(!isInterrupted()) {
             try {
-                List<AbstractMessage<?>> list = mClient.poll();
+                List<AbstractMessage<?>> list = null;
+                try {
+                    list = mClient.poll();
+                }
+                catch (InterruptedIOException interrupted) {
+                    // interrupted
+                }
 
-                if (!mRunning) {
+                if (isInterrupted()) {
                     Log.d(TAG, "shutdown request");
                     break;
                 }
@@ -108,10 +117,12 @@ public class PollingThread extends Thread {
                 }
 
                 // success - wait just 1s
-                if (mRunning) {
+                if (!isInterrupted()) {
                     if (list == null || list.size() == 0) {
+                        numIdle++;
+
                         // push notifications enabled - we can stop our parent :)
-                        if (mPushRegistrationId != null) {
+                        if (numIdle >= MAX_IDLES && mPushRegistrationId != null) {
                             Log.d(TAG, "shutting down message center due to inactivity");
                             MessageCenterService.stopMessageCenter(mContext);
                         }
@@ -130,7 +141,7 @@ public class PollingThread extends Thread {
             catch (Exception e) {
                 Log.e(TAG, "polling error", e);
                 numErrors++;
-                if (mRunning) {
+                if (!isInterrupted()) {
                     if (numErrors > MAX_ERRORS) {
                         notifyError();
                         numErrors = 0;
@@ -150,10 +161,10 @@ public class PollingThread extends Thread {
      */
     public synchronized void shutdown() {
         Log.d(TAG, "shutting down");
-        mRunning = false;
+        interrupt();
+
         if (mClient != null)
             mClient.abort();
-        interrupt();
         // do not join - just discard the thread
 
         Log.d(TAG, "exiting");

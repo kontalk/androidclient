@@ -23,7 +23,6 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -83,6 +82,9 @@ public class MessageCenterService extends Service
         implements MessageListener, RequestListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
+
+    /** The global message center lock. */
+    //public static final Object lock = new Object();
 
     public static final String C2DM_START = "org.kontalk.CD2M_START";
     public static final String C2DM_STOP = "org.kontalk.CD2M_STOP";
@@ -220,16 +222,6 @@ public class MessageCenterService extends Service
                             mPollingThread.start();
                         }
 
-                        // register to push notifications
-                        if (mPushNotifications) {
-                            if (mPushRegistrationId != null) {
-                                Log.d(TAG, "already registered to C2DM");
-                            }
-                            else {
-                                Log.d(TAG, "registering to C2DM");
-                                c2dmRegister();
-                            }
-                        }
                         /*
                          * FIXME c2dm stays on since in onDestroy() we commented
                          * the unregistration call, and here we do nothing about it
@@ -607,10 +599,6 @@ public class MessageCenterService extends Service
         if (job instanceof MessageSender) {
             stopForeground();
 
-            // interruption
-            if (e instanceof InterruptedIOException)
-                return false;
-
             MessageSender job2 = (MessageSender) job;
             if (job2.getSourceUri() != null) {
                 // create intent for upload error notification
@@ -665,25 +653,29 @@ public class MessageCenterService extends Service
 
     /** Starts the message center. */
     public static void startMessageCenter(final Context context) {
-        // check for network state
-        final ConnectivityManager cm = (ConnectivityManager) context
-            .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm.getBackgroundDataSetting()) {
-            NetworkInfo info = cm.getActiveNetworkInfo();
-            if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
-                Log.d(TAG, "starting message center");
-                final Intent intent = new Intent(context, MessageCenterService.class);
+        Log.v(TAG, "[start] locking MESSAGE CENTER");
+        //synchronized (MessageCenterService.lock) {
+            // check for network state
+            final ConnectivityManager cm = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm.getBackgroundDataSetting()) {
+                NetworkInfo info = cm.getActiveNetworkInfo();
+                if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
+                    Log.d(TAG, "starting message center");
+                    final Intent intent = new Intent(context, MessageCenterService.class);
 
-                // get the URI from the preferences
-                EndpointServer server = MessagingPreferences.getEndpointServer(context);
-                intent.putExtra(EndpointServer.class.getName(), server.toString());
-                context.startService(intent);
+                    // get the URI from the preferences
+                    EndpointServer server = MessagingPreferences.getEndpointServer(context);
+                    intent.putExtra(EndpointServer.class.getName(), server.toString());
+                    context.startService(intent);
+                }
+                else
+                    Log.d(TAG, "network not available - abort service start");
             }
             else
-                Log.d(TAG, "network not available - abort service start");
-        }
-        else
-            Log.d(TAG, "background data disabled - abort service start");
+                Log.d(TAG, "background data disabled - abort service start");
+        //}
+        Log.v(TAG, "[start] unlocking MESSAGE CENTER");
     }
 
     /** Starts the push notifications registration process. */
@@ -755,7 +747,11 @@ public class MessageCenterService extends Service
     /** Stops the message center. */
     public static void stopMessageCenter(final Context context) {
         Log.d(TAG, "shutting down message center");
-        context.stopService(new Intent(context, MessageCenterService.class));
+        Log.v(TAG, "[stop] locking MESSAGE CENTER");
+        //synchronized (MessageCenterService.lock) {
+            context.stopService(new Intent(context, MessageCenterService.class));
+        //}
+        Log.v(TAG, "[stop] unlocking MESSAGE CENTER");
     }
 
     public final class MessageCenterInterface extends Binder {
