@@ -41,7 +41,6 @@ import com.google.protobuf.MessageLite;
 /**
  * Manages a queue of outgoing requests, including messages to be sent.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class RequestWorker extends HandlerThread {
     private static final String TAG = RequestWorker.class.getSimpleName();
@@ -54,6 +53,7 @@ public class RequestWorker extends HandlerThread {
     private final Context mContext;
     private final EndpointServer mServer;
     private String mAuthToken;
+    private boolean mInterrupted;
 
     private RequestClient mClient;
     private RequestListenerList mListeners = new RequestListenerList();
@@ -95,6 +95,17 @@ public class RequestWorker extends HandlerThread {
             mHandler = new PauseHandler(new LinkedList<RequestJob>(pendingJobs));
             pendingJobs = new LinkedList<RequestJob>();
         }
+    }
+
+    @Override
+    public void interrupt() {
+        super.interrupt();
+        mInterrupted = true;
+    }
+
+    @Override
+    public boolean isInterrupted() {
+        return mInterrupted;
     }
 
     /** A fake listener to call all the listeners inside the collection. */

@@ -39,10 +39,10 @@ import android.content.Intent;
 import android.os.Process;
 import android.util.Log;
 
+
 /**
  * The polling thread.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class PollingThread extends Thread {
     private final static String TAG = PollingThread.class.getSimpleName();
@@ -57,6 +57,7 @@ public class PollingThread extends Thread {
     private PollingClient mClient;
     private MessageListener mListener;
 
+    private boolean mInterrupted;
     private String mPushRegistrationId;
 
     public PollingThread(Context context, EndpointServer server) {
@@ -78,6 +79,18 @@ public class PollingThread extends Thread {
         mPushRegistrationId = regId;
     }
 
+    @Override
+    public void interrupt() {
+        super.interrupt();
+        mInterrupted = true;
+    }
+
+    @Override
+    public boolean isInterrupted() {
+        return mInterrupted;
+    }
+
+    @Override
     public void run() {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         if (mAuthToken == null) {

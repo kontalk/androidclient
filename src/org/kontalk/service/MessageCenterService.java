@@ -83,7 +83,7 @@ public class MessageCenterService extends Service
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
-    /** The global message center lock. */
+    /** TODO The global message center lock. */
     //public static final Object lock = new Object();
 
     public static final String C2DM_START = "org.kontalk.CD2M_START";
@@ -653,29 +653,25 @@ public class MessageCenterService extends Service
 
     /** Starts the message center. */
     public static void startMessageCenter(final Context context) {
-        Log.v(TAG, "[start] locking MESSAGE CENTER");
-        //synchronized (MessageCenterService.lock) {
-            // check for network state
-            final ConnectivityManager cm = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm.getBackgroundDataSetting()) {
-                NetworkInfo info = cm.getActiveNetworkInfo();
-                if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
-                    Log.d(TAG, "starting message center");
-                    final Intent intent = new Intent(context, MessageCenterService.class);
+        // check for network state
+        final ConnectivityManager cm = (ConnectivityManager) context
+            .getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm.getBackgroundDataSetting()) {
+            NetworkInfo info = cm.getActiveNetworkInfo();
+            if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
+                Log.d(TAG, "starting message center");
+                final Intent intent = new Intent(context, MessageCenterService.class);
 
-                    // get the URI from the preferences
-                    EndpointServer server = MessagingPreferences.getEndpointServer(context);
-                    intent.putExtra(EndpointServer.class.getName(), server.toString());
-                    context.startService(intent);
-                }
-                else
-                    Log.d(TAG, "network not available - abort service start");
+                // get the URI from the preferences
+                EndpointServer server = MessagingPreferences.getEndpointServer(context);
+                intent.putExtra(EndpointServer.class.getName(), server.toString());
+                context.startService(intent);
             }
             else
-                Log.d(TAG, "background data disabled - abort service start");
-        //}
-        Log.v(TAG, "[start] unlocking MESSAGE CENTER");
+                Log.d(TAG, "network not available - abort service start");
+        }
+        else
+            Log.d(TAG, "background data disabled - abort service start");
     }
 
     /** Starts the push notifications registration process. */
@@ -747,11 +743,7 @@ public class MessageCenterService extends Service
     /** Stops the message center. */
     public static void stopMessageCenter(final Context context) {
         Log.d(TAG, "shutting down message center");
-        Log.v(TAG, "[stop] locking MESSAGE CENTER");
-        //synchronized (MessageCenterService.lock) {
-            context.stopService(new Intent(context, MessageCenterService.class));
-        //}
-        Log.v(TAG, "[stop] unlocking MESSAGE CENTER");
+        context.stopService(new Intent(context, MessageCenterService.class));
     }
 
     public final class MessageCenterInterface extends Binder {
