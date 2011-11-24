@@ -18,24 +18,37 @@
 
 package org.kontalk.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
 
 
-public class MediaStorage {
+public abstract class MediaStorage {
     public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
 
-    /* instantiation not allowed */
-    private MediaStorage() {}
-
+    /** Writes a media to the internal cache. */
     public static File writeInternalMedia(Context context, String filename, byte[] contents) throws IOException {
-        File f = new File(context.getCacheDir(), filename);
-        FileOutputStream fout = new FileOutputStream(f);
+        FileOutputStream fout = context.openFileOutput(filename, Context.MODE_PRIVATE);
         fout.write(contents);
         fout.close();
-        return f;
+        return new File(context.getCacheDir(), filename);
+    }
+
+    /** Writes a thumbnail of image a media to the internal cache. */
+    public static File cacheThumbnail(Context context, File media) throws IOException {
+        // TODO
+        return null;
+    }
+
+    /** Writes a thumbnail of image a media to the internal cache. */
+    public static File cacheThumbnail(Context context, Uri media, File destination) throws IOException {
+        // TODO
+        return null;
     }
 
     public static File writeMedia(String filename, InputStream source) throws IOException {

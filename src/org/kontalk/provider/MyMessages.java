@@ -77,6 +77,7 @@ public final class MyMessages {
         public static final String FETCH_URL = "fetch_url";
         public static final String FETCHED = "fetched";
         public static final String LOCAL_URI = "local_uri";
+        public static final String PREVIEW_PATH = "preview_path";
         public static final String ENCRYPTED = "encrypted";
         public static final String ENCRYPT_KEY = "encrypt_key";
 

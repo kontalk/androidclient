@@ -28,6 +28,7 @@ import java.util.List;
 import org.kontalk.R;
 import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.ThumbnailUtils;
 
 import android.content.ContentResolver;
@@ -149,6 +150,19 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
             .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
     }
 
+    private BitmapFactory.Options bitmapOptions() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        return options;
+    }
+
+    private void loadPreview(File file) throws IOException {
+        InputStream in = new FileInputStream(file);
+        BitmapFactory.Options options = bitmapOptions();
+        content = BitmapFactory.decodeStream(in, null, options);
+        in.close();
+    }
+
     public static boolean supportsMimeType(String mime) {
         for (int i = 0; i < MIME_TYPES.length; i++)
             if (MIME_TYPES[i][0].equalsIgnoreCase(mime))
@@ -178,23 +192,41 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
-        String mediaUri = c.getString(c.getColumnIndex(Messages.LOCAL_URI));
+
+        /*
+         * local_uri is used for referencing the original media.
+         * preview_uri is used to load the media thumbnail.
+         * If preview_uri is null or cannot be found, a thumbnail is
+         * generated on the fly from local_uri - if possible.
+         */
+
+        String _localUri = c.getString(c.getColumnIndex(Messages.LOCAL_URI));
+        String _previewPath = c.getString(c.getColumnIndex(Messages.PREVIEW_PATH));
         try {
-            Uri u = Uri.parse(mediaUri);
+            // load local uri
+            if (_localUri != null && _localUri.length() > 0)
+                localUri = Uri.parse(_localUri);
 
-            // load from file
-            if ("file".equals(u.getScheme())) {
-                createThumbnail(new File(u.getPath()));
+            // preview path
+            if (_previewPath != null && _previewPath.length() > 0) {
+                // load from file - we know it's a file uri
+                previewFile = new File(_previewPath);
+                loadPreview(previewFile);
             }
-            // load from media uri
-            else {
-                createThumbnail(mContext, u);
-            }
-
-            localUri = u;
         }
         catch (IOException e) {
-            Log.e(TAG, "unable to load image from cursor");
+            Log.w(TAG, "unable to load thumbnail, generating one");
+
+            try {
+                // unable to load preview - generate thumbnail
+                if (previewFile != null) {
+                    File preview = MediaStorage.cacheThumbnail(mContext, localUri, previewFile);
+                    loadPreview(preview);
+                }
+            }
+            catch (IOException e1) {
+                Log.e(TAG, "unable to generate thumbnail", e1);
+            }
         }
     }
 

@@ -18,9 +18,12 @@
 
 package org.kontalk.client;
 
+import java.io.File;
 import java.security.GeneralSecurityException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.MessageID;
@@ -62,6 +65,7 @@ public abstract class AbstractMessage<T> {
         Messages.FETCH_URL,
         Messages.FETCHED,
         Messages.LOCAL_URI,
+        Messages.PREVIEW_PATH,
         Messages.ENCRYPTED,
         Messages.ENCRYPT_KEY
     };
@@ -105,6 +109,9 @@ public abstract class AbstractMessage<T> {
 
     /** Local file {@link Uri}. */
     protected Uri localUri;
+
+    /** Preview file path. */
+    protected File previewFile;
 
     public AbstractMessage(Context context, String id, String sender, String mime, T content, boolean encrypted, List<String> group) {
         this(context, id, sender, mime, content, encrypted);
@@ -274,6 +281,15 @@ public abstract class AbstractMessage<T> {
 
     public Uri getLocalUri() {
         return localUri;
+    }
+
+    /** Sets a pointer to the preview resource. */
+    public void setPreviewFile(File file) {
+        previewFile = file;
+    }
+
+    public File getPreviewFile() {
+        return previewFile;
     }
 
     public boolean isEncrypted() {

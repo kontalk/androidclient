@@ -415,8 +415,7 @@ public class MessageCenterService extends Service
                                 Log.e(TAG, "unable to write to media storage", e);
                             }
                             // update uri
-                            Uri uri = Uri.fromFile(file);
-                            msg.setLocalUri(uri);
+                            msg.setPreviewFile(file);
 
                             // use text content for database table
                             content = msg.getTextContent().getBytes();
@@ -432,9 +431,9 @@ public class MessageCenterService extends Service
                         values.put(Messages.ENCRYPTED, msg.isEncrypted());
                         values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
                         values.put(Messages.FETCH_URL, msg.getFetchUrl());
-                        Uri localUri = msg.getLocalUri();
-                        if (localUri != null)
-                            values.put(Messages.LOCAL_URI, localUri.toString());
+                        File previewFile = msg.getPreviewFile();
+                        if (previewFile != null)
+                            values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
                         values.put(Messages.UNREAD, true);
                         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
                         values.put(Messages.TIMESTAMP, System.currentTimeMillis());

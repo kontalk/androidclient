@@ -55,7 +55,7 @@ public class MessagesProvider extends ContentProvider {
     private static final String TAG = MessagesProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.messages";
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "messages.db";
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";
@@ -96,6 +96,7 @@ public class MessagesProvider extends ContentProvider {
             "status INTEGER," +
             "fetch_url TEXT," +
             "fetched INTEGER NOT NULL DEFAULT 0," +
+            "preview_path TEXT," +
             "local_uri TEXT," +
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             "encrypt_key TEXT" +
@@ -187,6 +188,10 @@ public class MessagesProvider extends ContentProvider {
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
             "END;";
 
+
+        private static final String SCHEMA_V1_TO_V2 =
+            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN preview_path TEXT";
+
         protected DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
@@ -203,7 +208,10 @@ public class MessagesProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // no upgrade for now (this is version 1 :)
+            if (newVersion == 2) {
+                // add column preview_uri to table messages
+                db.execSQL(SCHEMA_V1_TO_V2);
+            }
         }
     }
 
@@ -366,6 +374,7 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.FETCH_URL);
         values.remove(Messages.FETCHED);
         values.remove(Messages.LOCAL_URI);
+        values.remove(Messages.PREVIEW_PATH);
         values.remove(Messages.ENCRYPTED);
         values.remove(Messages.ENCRYPT_KEY);
 
@@ -948,6 +957,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
         messagesProjectionMap.put(Messages.FETCHED, Messages.FETCHED);
         messagesProjectionMap.put(Messages.LOCAL_URI, Messages.LOCAL_URI);
+        messagesProjectionMap.put(Messages.PREVIEW_PATH, Messages.PREVIEW_PATH);
         messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
         messagesProjectionMap.put(Messages.ENCRYPT_KEY, Messages.ENCRYPT_KEY);
 
