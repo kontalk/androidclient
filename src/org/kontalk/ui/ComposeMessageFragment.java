@@ -882,8 +882,10 @@ public class ComposeMessageFragment extends ListFragment {
         // restore draft (if any and only if user hasn't inserted text)
         if (mTextEntry.getText().length() == 0) {
             String draft = mConversation.getDraft();
-            if (draft != null)
+            if (draft != null) {
                 mTextEntry.setText(draft);
+                mTextEntry.setSelection(mTextEntry.getText().length());
+            }
         }
 
         if (mConversation.getThreadId() > 0) {
