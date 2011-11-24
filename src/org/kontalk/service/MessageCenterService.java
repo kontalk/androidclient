@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Semaphore;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -83,8 +84,8 @@ public class MessageCenterService extends Service
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
-    /** TODO The global message center lock. */
-    //public static final Object lock = new Object();
+    /** The global message center lock. */
+    private static final Semaphore mLock = new Semaphore(1, true);
 
     public static final String C2DM_START = "org.kontalk.CD2M_START";
     public static final String C2DM_STOP = "org.kontalk.CD2M_STOP";
@@ -226,6 +227,9 @@ public class MessageCenterService extends Service
                          * FIXME c2dm stays on since in onDestroy() we commented
                          * the unregistration call, and here we do nothing about it
                          */
+
+                        // release lock
+                        unlock();
                     }
                 }
             }
@@ -356,20 +360,27 @@ public class MessageCenterService extends Service
 
     @Override
     public void onDestroy() {
-        // unregister push notifications
-        // TEST do not unregister
-        //setPushNotifications(false);
+        // ensure application-wide lock
+        // WARNING!!! DANGEROUS HACK
+        synchronized (getApplicationContext()) {
+            // unregister push notifications
+            // TEST do not unregister
+            //setPushNotifications(false);
 
-        if (mAccountManager != null) {
-            mAccountManager.removeOnAccountsUpdatedListener(mAccountsListener);
-            mAccountManager = null;
+            if (mAccountManager != null) {
+                mAccountManager.removeOnAccountsUpdatedListener(mAccountsListener);
+                mAccountManager = null;
+            }
+
+            // stop polling thread
+            shutdownPollingThread();
+
+            // stop request worker
+            shutdownRequestWorker();
+
+            // release lock
+            unlock();
         }
-
-        // stop polling thread
-        shutdownPollingThread();
-
-        // stop request worker
-        shutdownRequestWorker();
     }
 
     @Override
@@ -651,6 +662,19 @@ public class MessageCenterService extends Service
         */
     }
 
+    private static void lock() {
+        try {
+            mLock.acquire();
+        }
+        catch (InterruptedException e) {
+            // ignored
+        }
+    }
+
+    private static void unlock() {
+        mLock.release();
+    }
+
     /** Starts the message center. */
     public static void startMessageCenter(final Context context) {
         // check for network state
@@ -660,6 +684,9 @@ public class MessageCenterService extends Service
             NetworkInfo info = cm.getActiveNetworkInfo();
             if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
                 Log.d(TAG, "starting message center");
+                // onStartCommand will unlock later
+                lock();
+
                 final Intent intent = new Intent(context, MessageCenterService.class);
 
                 // get the URI from the preferences
@@ -672,6 +699,14 @@ public class MessageCenterService extends Service
         }
         else
             Log.d(TAG, "background data disabled - abort service start");
+    }
+
+    /** Stops the message center. */
+    public static void stopMessageCenter(final Context context) {
+        // onDestroy will unlock later
+        lock();
+        Log.d(TAG, "shutting down message center");
+        context.stopService(new Intent(context, MessageCenterService.class));
     }
 
     /** Starts the push notifications registration process. */
@@ -738,12 +773,6 @@ public class MessageCenterService extends Service
                 return client.update(null, regId);
             }
         });
-    }
-
-    /** Stops the message center. */
-    public static void stopMessageCenter(final Context context) {
-        Log.d(TAG, "shutting down message center");
-        context.stopService(new Intent(context, MessageCenterService.class));
     }
 
     public final class MessageCenterInterface extends Binder {
