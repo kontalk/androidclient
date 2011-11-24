@@ -120,6 +120,7 @@
     <string name="msg_validation_canceled">Validación cancelada. Usted podría recibir un SMS de todos modos.</string>
     <string name="err_validation_error">Se produjo un error durante la validación. Por favor, inténtelo de nuevo más tarde.</string>
     <string name="text_encrypted">(encriptado)</string>
+    <string name="peer_unknown">(desconocido)</string>
     <string name="msg_draft_saved">Mensaje guardado como borrador.</string>
     <string name="send_mime_not_supported">Tipo de archivo no suportado.</string>
     <string name="button_validate">Validar</string>

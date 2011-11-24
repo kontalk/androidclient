@@ -109,7 +109,8 @@ public class ConversationListItem extends RelativeLayout {
             mAvatarView.setImageDrawable(contact.getAvatar(context, sDefaultContactImage));
         }
         else {
-            recipient = conv.getRecipient();
+            // FIXME debug mode -- recipient = conv.getRecipient();
+            recipient = context.getString(R.string.peer_unknown);
             mAvatarView.setImageDrawable(sDefaultContactImage);
         }
         mAvatarView.setVisibility(VISIBLE);

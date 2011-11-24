@@ -120,6 +120,7 @@
     <string name="msg_validation_canceled">Validation canceled. You might receive a SMS anyway.</string>
     <string name="err_validation_error">An error occured during validation. Please try again later.</string>
     <string name="text_encrypted">(encrypted)</string>
+    <string name="peer_unknown">(unknown)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Validate</string>
@@ -140,7 +141,7 @@
     <string name="msg_invalid_number">Please insert a valid international prefix or insert a SIM card and go to online mode to automatically retrieve it.</string>
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
-    <string name="msg_do_refresh">Use Menu > Refresh to update contact list.</string>
+    <string name="msg_do_refresh">Use Menu &gt; Refresh to update contact list.</string>
     <string name="msg_sync_started">Refreshing contacts list.</string>
     <string name="text_invite_message">Hey! Check out Kontalk on the Android Market, a free messaging app! https://market.android.com/details?id=org.kontalk</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; to send an invitation message to someone.</string>
