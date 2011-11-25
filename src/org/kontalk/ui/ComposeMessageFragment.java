@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
@@ -45,6 +46,7 @@ import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.sync.SyncAdapter;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;
@@ -281,6 +283,10 @@ public class ComposeMessageFragment extends ListFragment {
             String msgId = "draft" + (new Random().nextInt());
             String content = AbstractMessage.getSampleTextContent(ImageMessage.class, mime);
 
+            // generate thumbnail
+            String filename = ImageMessage.buildMediaFilename(msgId, mime);
+            File previewFile = MediaStorage.cacheThumbnail(getActivity(), uri, filename);
+
             // save to local storage
             ContentValues values = new ContentValues();
             // must supply a message ID...
@@ -293,6 +299,7 @@ public class ComposeMessageFragment extends ListFragment {
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
             values.put(Messages.STATUS, Messages.STATUS_SENDING);
             values.put(Messages.LOCAL_URI, uri.toString());
+            values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
             values.put(Messages.FETCHED, true);
             newMsg = getActivity().getContentResolver().insert(Messages.CONTENT_URI, values);
         }

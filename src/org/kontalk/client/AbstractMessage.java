@@ -238,7 +238,7 @@ public abstract class AbstractMessage<T> {
     /**
      * Returns a rapid text representation of the message.
      * The returned value is useful for notification tickers.
-     * @return the text that represent this message
+     * @return text representation of this message
      */
     public abstract String getTextContent();
 

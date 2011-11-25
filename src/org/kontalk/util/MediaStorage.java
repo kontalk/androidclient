@@ -23,13 +23,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 
 
+/**
+ * Media storage utilities.
+ * @author Daniele Ricci
+ */
 public abstract class MediaStorage {
     public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
+
+    private static final int THUMBNAIL_WIDTH = 80;
+    private static final int THUMBNAIL_HEIGHT = 80;
 
     /** Writes a media to the internal cache. */
     public static File writeInternalMedia(Context context, String filename, byte[] contents) throws IOException {
@@ -39,16 +49,63 @@ public abstract class MediaStorage {
         return new File(context.getCacheDir(), filename);
     }
 
-    /** Writes a thumbnail of image a media to the internal cache. */
-    public static File cacheThumbnail(Context context, File media) throws IOException {
-        // TODO
-        return null;
+    private static BitmapFactory.Options processOptions(BitmapFactory.Options options) {
+        int w = options.outWidth;
+        int h = options.outHeight;
+        // error :(
+        if (w < 0 || h < 0) return null;
+
+        if (w > THUMBNAIL_WIDTH)
+            options.inSampleSize = (w / THUMBNAIL_WIDTH);
+        else if (h > THUMBNAIL_HEIGHT)
+            options.inSampleSize = (h / THUMBNAIL_HEIGHT);
+
+        options.inJustDecodeBounds = false;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        return options;
     }
 
-    /** Writes a thumbnail of image a media to the internal cache. */
-    public static File cacheThumbnail(Context context, Uri media, File destination) throws IOException {
-        // TODO
-        return null;
+    /** Generates {@link BitmapFactory.Options} for the given {@link InputStream}. */
+    private static BitmapFactory.Options preloadBitmap(InputStream in) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(in, null, options);
+
+        return processOptions(options);
+    }
+
+    /** Writes a thumbnail of a media to the internal cache. */
+    public static File cacheThumbnail(Context context, Uri media, String filename) throws IOException {
+        FileOutputStream fout = context.openFileOutput(filename, Context.MODE_PRIVATE);
+        cacheThumbnail(context, media, fout);
+        fout.close();
+        return new File(context.getCacheDir(), filename);
+    }
+
+    /** Writes a thumbnail of a media to a {@link File}. */
+    public static void cacheThumbnail(Context context, Uri media, File destination) throws IOException {
+        FileOutputStream fout = new FileOutputStream(destination);
+        cacheThumbnail(context, media, fout);
+        fout.close();
+    }
+
+    private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout) throws IOException {
+        ContentResolver cr = context.getContentResolver();
+        InputStream in = cr.openInputStream(media);
+        BitmapFactory.Options options = preloadBitmap(in);
+        in.close();
+
+        // open again
+        in = cr.openInputStream(media);
+        Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
+        in.close();
+        Bitmap thumbnail = ThumbnailUtils
+            .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
+        bitmap.recycle();
+
+        // write down to file
+        thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
+        thumbnail.recycle();
     }
 
     public static File writeMedia(String filename, InputStream source) throws IOException {
