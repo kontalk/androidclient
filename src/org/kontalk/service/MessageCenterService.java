@@ -87,9 +87,10 @@ public class MessageCenterService extends Service
     /** The global message center lock. */
     private static final Semaphore mLock = new Semaphore(1, true);
 
-    public static final String C2DM_START = "org.kontalk.CD2M_START";
-    public static final String C2DM_STOP = "org.kontalk.CD2M_STOP";
-    public static final String C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
+    public static final String ACTION_RESTART = "org.kontalk.RESTART";
+    public static final String ACTION_C2DM_START = "org.kontalk.CD2M_START";
+    public static final String ACTION_C2DM_STOP = "org.kontalk.CD2M_STOP";
+    public static final String ACTION_C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
 
     public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
@@ -162,17 +163,17 @@ public class MessageCenterService extends Service
             String action = intent.getAction();
 
             // C2DM hash registered!
-            if (C2DM_REGISTERED.equals(action)) {
+            if (ACTION_C2DM_REGISTERED.equals(action)) {
                 setPushRegistrationId(intent.getStringExtra(C2DM_REGISTRATION_ID));
             }
 
             // start C2DM registration
-            else if (C2DM_START.equals(action)) {
+            else if (ACTION_C2DM_START.equals(action)) {
                 setPushNotifications(true);
             }
 
             // unregister from C2DM
-            else if (C2DM_STOP.equals(action)) {
+            else if (ACTION_C2DM_STOP.equals(action)) {
                 setPushNotifications(false);
             }
 
@@ -191,6 +192,11 @@ public class MessageCenterService extends Service
                     stopSelf();
                 }
                 else {
+                    // stop first
+                    if (ACTION_RESTART.equals(action)) {
+                        Log.d(TAG, "restart requested");
+                        stop();
+                    }
 
                     // check changing accounts
                     if (mAccountManager == null) {
@@ -354,8 +360,7 @@ public class MessageCenterService extends Service
         mMessageRequestListener = new MessageRequestListener(this);
     }
 
-    @Override
-    public void onDestroy() {
+    private void stop() {
         // unregister push notifications
         // TEST do not unregister
         //setPushNotifications(false);
@@ -370,6 +375,11 @@ public class MessageCenterService extends Service
 
         // stop request worker
         shutdownRequestWorker();
+    }
+
+    @Override
+    public void onDestroy() {
+        stop();
 
         // release lock
         unlock();
@@ -685,7 +695,9 @@ public class MessageCenterService extends Service
                 // get the URI from the preferences
                 EndpointServer server = MessagingPreferences.getEndpointServer(context);
                 intent.putExtra(EndpointServer.class.getName(), server.toString());
-                context.startService(intent);
+                // shouldn't happen, but better be sure...
+                if (context.startService(intent) == null)
+                    unlock();
             }
             else
                 Log.d(TAG, "network not available - abort service start");
@@ -699,27 +711,40 @@ public class MessageCenterService extends Service
         // onDestroy will unlock later
         lock();
         Log.d(TAG, "shutting down message center");
-        context.stopService(new Intent(context, MessageCenterService.class));
+        if (!context.stopService(new Intent(context, MessageCenterService.class)))
+            unlock();
+    }
+
+    /** Triggers a managed message center restart. */
+    public static void restartMessageCenter(final Context context) {
+        // onStartCommand will unlock later
+        lock();
+        Log.d(TAG, "restarting message center");
+        Intent i = new Intent(context, MessageCenterService.class);
+        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        i.putExtra(EndpointServer.class.getName(), server.toString());
+        i.setAction(MessageCenterService.ACTION_RESTART);
+        context.startService(i);
     }
 
     /** Starts the push notifications registration process. */
     public static void enablePushNotifications(Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.C2DM_START);
+        i.setAction(MessageCenterService.ACTION_C2DM_START);
         context.startService(i);
     }
 
     /** Starts the push notifications unregistration process. */
     public static void disablePushNotifications(Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.C2DM_STOP);
+        i.setAction(MessageCenterService.ACTION_C2DM_STOP);
         context.startService(i);
     }
 
     /** Caches the given registration Id for use with push notifications. */
     public static void registerPushNotifications(Context context, String registrationId) {
         Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(MessageCenterService.C2DM_REGISTERED);
+        i.setAction(MessageCenterService.ACTION_C2DM_REGISTERED);
         i.putExtra(MessageCenterService.C2DM_REGISTRATION_ID, registrationId);
         context.startService(i);
     }

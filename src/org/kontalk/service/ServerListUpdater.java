@@ -128,8 +128,7 @@ public class ServerListUpdater extends Thread {
                 mListener.updated(mCurrentList);
 
             // restart message center
-            MessageCenterService.stopMessageCenter(mContext.getApplicationContext());
-            MessageCenterService.startMessageCenter(mContext.getApplicationContext());
+            MessageCenterService.restartMessageCenter(mContext.getApplicationContext());
         }
         catch (IOException e) {
             if (mListener != null)

@@ -43,8 +43,7 @@ public class Kontalk extends Application {
                 if ("pref_network_uri".equals(key)) {
                     // just restart the message center for now
                     Log.w(TAG, "network address changed");
-                    MessageCenterService.stopMessageCenter(Kontalk.this);
-                    MessageCenterService.startMessageCenter(Kontalk.this);
+                    MessageCenterService.restartMessageCenter(Kontalk.this);
                 }
             }
         });

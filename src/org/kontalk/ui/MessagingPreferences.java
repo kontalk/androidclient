@@ -75,8 +75,7 @@ public class MessagingPreferences extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Log.w(TAG, "manual message center restart requested");
-                MessageCenterService.stopMessageCenter(getApplicationContext());
-                MessageCenterService.startMessageCenter(getApplicationContext());
+                MessageCenterService.restartMessageCenter(getApplicationContext());
                 return true;
             }
         });
@@ -88,8 +87,7 @@ public class MessagingPreferences extends PreferenceActivity {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                 if ("pref_network_uri".equals(key)) {
-                    MessageCenterService.stopMessageCenter(getApplicationContext());
-                    MessageCenterService.startMessageCenter(getApplicationContext());
+                    MessageCenterService.restartMessageCenter(getApplicationContext());
                 }
             }
         };
@@ -146,8 +144,7 @@ public class MessagingPreferences extends PreferenceActivity {
                             public void run() {
                                 updateServerListLastUpdate(updateServerList, list);
                                 // restart message center
-                                MessageCenterService.stopMessageCenter(getApplicationContext());
-                                MessageCenterService.startMessageCenter(getApplicationContext());
+                                MessageCenterService.restartMessageCenter(getApplicationContext());
                             }
                         });
                     }
