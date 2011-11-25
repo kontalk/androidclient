@@ -254,7 +254,7 @@ public class RequestWorker extends HandlerThread {
                     mHandler.obtainMessage(MSG_REQUEST_JOB, job),
                     delay);
 
-            // abort any idle process
+            // abort any idle request
             if (mIdle) {
                 MessageCenterService.startMessageCenter(mContext);
                 mIdle = false;

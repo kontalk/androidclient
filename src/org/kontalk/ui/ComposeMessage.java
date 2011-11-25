@@ -18,13 +18,17 @@
 
 package org.kontalk.ui;
 
+import java.util.regex.Pattern;
+
 import org.kontalk.R;
 import org.kontalk.client.ImageMessage;
+import org.kontalk.client.NumberValidator;
 import org.kontalk.client.PlainTextMessage;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.util.MessageUtils;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -117,6 +121,26 @@ public class ComposeMessage extends FragmentActivity {
 
                 // onActivityResult will handle the rest
                 return;
+            }
+
+            // send to someone
+            else if (Intent.ACTION_SENDTO.equals(action)) {
+                try {
+                    Uri uri = intent.getData();
+                    // a phone number should come here...
+                    String number = NumberValidator.fixNumber(this,
+                            uri.getSchemeSpecificPart());
+                    // compute hash and open conversation
+                    String userId = MessageUtils.sha1(number);
+
+                    args = new Bundle();
+                    args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
+                    args.putParcelable("data", Threads.getUri(userId));
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "invalid intent", e);
+                    finish();
+                }
             }
 
             if (args != null) {

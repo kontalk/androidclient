@@ -107,6 +107,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.SENDTO" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+            </intent-filter>
         </activity>
         <activity android:name=".ui.MessagingPreferences" android:theme="@style/Theme.Light2"/>
         <activity android:name=".ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
