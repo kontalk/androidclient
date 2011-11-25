@@ -187,50 +187,46 @@ public class MessageCenterService extends Service
                 mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
                 mAccount = Authenticator.getDefaultAccount(this);
                 if (mAccount == null) {
+                    // onDestroy will unlock()
                     stopSelf();
                 }
                 else {
 
-                    // ensure application-wide lock
-                    // WARNING!!! DANGEROUS HACK
-                    synchronized (getApplicationContext()) {
-
-                        // check changing accounts
-                        if (mAccountManager == null) {
-                            mAccountManager = AccountManager.get(this);
-                            mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
-                        }
-
-                        // activate request worker
-                        if (mRequestWorker == null) {
-                            mRequestWorker = new RequestWorker(this, server);
-                            mRequestWorker.addListener(this);
-                            mRequestWorker.start();
-
-                            // request serverinfo
-                            requestServerinfo();
-                            // lookup for messages with error status and try to re-send them
-                            requeuePendingMessages();
-                            // lookup for incoming messages not confirmed yet
-                            requeuePendingReceipts();
-                        }
-
-                        // start polling thread
-                        if (mPollingThread == null) {
-                            mPollingThread = new PollingThread(this, server);
-                            mPollingThread.setMessageListener(this);
-                            mPollingThread.setPushRegistrationId(mPushRegistrationId);
-                            mPollingThread.start();
-                        }
-
-                        /*
-                         * FIXME c2dm stays on since in onDestroy() we commented
-                         * the unregistration call, and here we do nothing about it
-                         */
-
-                        // release lock
-                        unlock();
+                    // check changing accounts
+                    if (mAccountManager == null) {
+                        mAccountManager = AccountManager.get(this);
+                        mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
                     }
+
+                    // activate request worker
+                    if (mRequestWorker == null) {
+                        mRequestWorker = new RequestWorker(this, server);
+                        mRequestWorker.addListener(this);
+                        mRequestWorker.start();
+
+                        // request serverinfo
+                        requestServerinfo();
+                        // lookup for messages with error status and try to re-send them
+                        requeuePendingMessages();
+                        // lookup for incoming messages not confirmed yet
+                        requeuePendingReceipts();
+                    }
+
+                    // start polling thread
+                    if (mPollingThread == null) {
+                        mPollingThread = new PollingThread(this, server);
+                        mPollingThread.setMessageListener(this);
+                        mPollingThread.setPushRegistrationId(mPushRegistrationId);
+                        mPollingThread.start();
+                    }
+
+                    /*
+                     * FIXME c2dm stays on since in onDestroy() we commented
+                     * the unregistration call, and here we do nothing about it
+                     */
+
+                    // release lock
+                    unlock();
                 }
             }
         }
@@ -360,27 +356,23 @@ public class MessageCenterService extends Service
 
     @Override
     public void onDestroy() {
-        // ensure application-wide lock
-        // WARNING!!! DANGEROUS HACK
-        synchronized (getApplicationContext()) {
-            // unregister push notifications
-            // TEST do not unregister
-            //setPushNotifications(false);
+        // unregister push notifications
+        // TEST do not unregister
+        //setPushNotifications(false);
 
-            if (mAccountManager != null) {
-                mAccountManager.removeOnAccountsUpdatedListener(mAccountsListener);
-                mAccountManager = null;
-            }
-
-            // stop polling thread
-            shutdownPollingThread();
-
-            // stop request worker
-            shutdownRequestWorker();
-
-            // release lock
-            unlock();
+        if (mAccountManager != null) {
+            mAccountManager.removeOnAccountsUpdatedListener(mAccountsListener);
+            mAccountManager = null;
         }
+
+        // stop polling thread
+        shutdownPollingThread();
+
+        // stop request worker
+        shutdownRequestWorker();
+
+        // release lock
+        unlock();
     }
 
     @Override
@@ -661,6 +653,7 @@ public class MessageCenterService extends Service
         */
     }
 
+    /** Acquires the message center lock. */
     private static void lock() {
         try {
             mLock.acquire();
@@ -670,6 +663,7 @@ public class MessageCenterService extends Service
         }
     }
 
+    /** Releases the message center lock. */
     private static void unlock() {
         mLock.release();
     }

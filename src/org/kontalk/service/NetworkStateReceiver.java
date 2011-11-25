@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
 import android.util.Log;
 
 
@@ -69,8 +68,17 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             final NetworkInfo info = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
             if (info != null) {
                 Log.w(TAG, "network state changed!");
-                serviceAction = (info.getState() == State.CONNECTED) ?
-                    ACTION_START : ACTION_STOP;
+                switch (info.getState()) {
+                    case CONNECTED:
+                        serviceAction = ACTION_START;
+                        break;
+                    case DISCONNECTED:
+                    case DISCONNECTING:
+                    case UNKNOWN:
+                        serviceAction = ACTION_STOP;
+                        break;
+                    // do nothing in other cases
+                }
             }
         }
 
