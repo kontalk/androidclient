@@ -88,6 +88,7 @@ public class MessageCenterService extends Service
     private static final Semaphore mLock = new Semaphore(1, true);
 
     public static final String ACTION_RESTART = "org.kontalk.RESTART";
+    public static final String ACTION_IDLE = "org.kontalk.IDLE";
     public static final String ACTION_C2DM_START = "org.kontalk.CD2M_START";
     public static final String ACTION_C2DM_STOP = "org.kontalk.CD2M_STOP";
     public static final String ACTION_C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
@@ -177,6 +178,16 @@ public class MessageCenterService extends Service
                 setPushNotifications(false);
             }
 
+            // idle - schedule shutdown
+            else if (ACTION_IDLE.equals(action)) {
+                // send idle signals to worker threads
+
+                if (mPollingThread != null)
+                    mPollingThread.idle();
+                if (mRequestWorker != null)
+                    mRequestWorker.idle();
+            }
+
             // normal start
             else {
 
@@ -205,7 +216,7 @@ public class MessageCenterService extends Service
                     }
 
                     // activate request worker
-                    if (mRequestWorker == null) {
+                    if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
                         mRequestWorker = new RequestWorker(this, server);
                         mRequestWorker.addListener(this);
                         mRequestWorker.start();
@@ -219,7 +230,9 @@ public class MessageCenterService extends Service
                     }
 
                     // start polling thread
-                    if (mPollingThread == null) {
+                    if (mPollingThread == null ||
+                            mPollingThread.isInterrupted() ||
+                            mPollingThread.isIdle()) {
                         mPollingThread = new PollingThread(this, server);
                         mPollingThread.setMessageListener(this);
                         mPollingThread.setPushRegistrationId(mPushRegistrationId);
@@ -724,6 +737,14 @@ public class MessageCenterService extends Service
         EndpointServer server = MessagingPreferences.getEndpointServer(context);
         i.putExtra(EndpointServer.class.getName(), server.toString());
         i.setAction(MessageCenterService.ACTION_RESTART);
+        context.startService(i);
+    }
+
+    /** Tells the message center we are idle, taking necessary actions. */
+    public static void idleMessageCenter(final Context context) {
+        Log.d(TAG, "idling message center");
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_IDLE);
         context.startService(i);
     }
 

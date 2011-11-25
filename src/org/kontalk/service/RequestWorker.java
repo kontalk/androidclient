@@ -31,7 +31,9 @@ import org.kontalk.client.RequestClient;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
+import android.os.MessageQueue;
 import android.os.Process;
 import android.util.Log;
 
@@ -53,6 +55,8 @@ public class RequestWorker extends HandlerThread {
     private final Context mContext;
     private final EndpointServer mServer;
     private String mAuthToken;
+
+    private Boolean mIdle = false;
     private boolean mInterrupted;
 
     private RequestClient mClient;
@@ -160,7 +164,7 @@ public class RequestWorker extends HandlerThread {
         public void handleMessage(Message msg) {
             if (msg.what == MSG_REQUEST_JOB) {
                 // not running - queue message
-                if (isInterrupted()) {
+                if (mInterrupted) {
                     Log.i(TAG, "request worker is not running - dropping message");
                     return;
                 }
@@ -193,7 +197,7 @@ public class RequestWorker extends HandlerThread {
                     mListeners.response(job, response);
                 }
                 catch (IOException e) {
-                    if (isInterrupted()) {
+                    if (mInterrupted) {
                         Log.v(TAG, "worker has been interrupted");
                         return;
                     }
@@ -230,29 +234,37 @@ public class RequestWorker extends HandlerThread {
     }
 
     public void push(RequestJob job, long delay) {
-        // max wait time 10 seconds
-        int retries = 20;
+        synchronized (mIdle) {
+            // max wait time 10 seconds
+            int retries = 20;
 
-        while(!isAlive() || mHandler == null || retries <= 0) {
-            try {
-                // 500ms should do the job...
-                Thread.sleep(500);
-                Thread.yield();
-                retries--;
-            } catch (InterruptedException e) {
-                // interrupted - do not send message
-                return;
+            while(!isAlive() || mHandler == null || retries <= 0) {
+                try {
+                    // 500ms should do the job...
+                    Thread.sleep(500);
+                    Thread.yield();
+                    retries--;
+                } catch (InterruptedException e) {
+                    // interrupted - do not send message
+                    return;
+                }
+            }
+
+            mHandler.sendMessageDelayed(
+                    mHandler.obtainMessage(MSG_REQUEST_JOB, job),
+                    delay);
+
+            // abort any idle process
+            if (mIdle) {
+                MessageCenterService.startMessageCenter(mContext);
+                mIdle = false;
             }
         }
-
-        mHandler.sendMessageDelayed(
-                mHandler.obtainMessage(MSG_REQUEST_JOB, job),
-                delay);
     }
 
     /** Returns true if the worker is running. */
     public boolean isRunning() {
-        return (mHandler != null && !isInterrupted());
+        return (mHandler != null && !mInterrupted);
     }
 
     /** Shuts down this request worker gracefully. */
@@ -268,5 +280,26 @@ public class RequestWorker extends HandlerThread {
 
         Log.d(TAG, "exiting");
         mClient = null;
+    }
+
+    /** Schedules request worker exit as soon as possible. */
+    public void idle() {
+        mIdle = true;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
+                    @Override
+                    public boolean queueIdle() {
+                        synchronized (mIdle) {
+                            if (mIdle)
+                                MessageCenterService
+                                    .stopMessageCenter(mContext);
+                        }
+                        return false;
+                    }
+                });
+            }
+        });
     }
 }

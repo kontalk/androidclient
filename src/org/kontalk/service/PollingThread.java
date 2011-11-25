@@ -57,6 +57,7 @@ public class PollingThread extends Thread {
     private PollingClient mClient;
     private MessageListener mListener;
 
+    private boolean mIdle;
     private boolean mInterrupted;
     private String mPushRegistrationId;
 
@@ -90,6 +91,10 @@ public class PollingThread extends Thread {
         return mInterrupted;
     }
 
+    public boolean isIdle() {
+        return mIdle;
+    }
+
     @Override
     public void run() {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
@@ -107,65 +112,77 @@ public class PollingThread extends Thread {
 
         int numErrors = 0;
         int numIdle = 0;
-        while(!isInterrupted()) {
-            try {
-                List<AbstractMessage<?>> list = null;
+        try {
+            while(!mInterrupted) {
                 try {
-                    list = mClient.poll();
-                }
-                catch (InterruptedIOException interrupted) {
-                    // interrupted
-                }
+                    List<AbstractMessage<?>> list = null;
+                    try {
+                        list = mClient.poll();
+                    }
+                    catch (InterruptedIOException interrupted) {
+                        // interrupted
+                    }
 
-                if (isInterrupted()) {
-                    Log.d(TAG, "shutdown request");
-                    break;
-                }
+                    if (mInterrupted) {
+                        Log.d(TAG, "shutdown request");
+                        break;
+                    }
 
-                if (list != null) {
-                    Log.i(TAG, list.toString());
+                    if (list != null) {
+                        Log.i(TAG, list.toString());
 
-                    if (mListener != null)
-                        mListener.incoming(list);
-                }
+                        if (mListener != null)
+                            mListener.incoming(list);
+                    }
 
-                // success - wait just 1s
-                if (!isInterrupted()) {
-                    if (list == null || list.size() == 0) {
-                        numIdle++;
+                    // success - wait just 1s
+                    if (!mInterrupted) {
+                        if (list == null || list.size() == 0) {
+                            numIdle++;
+                            if (mIdle) {
+                                Log.v(TAG, "idle shutdown request");
+                                return;
+                            }
 
-                        // push notifications enabled - we can stop our parent :)
-                        if (numIdle >= MAX_IDLES && mPushRegistrationId != null) {
-                            Log.d(TAG, "shutting down message center due to inactivity");
-                            MessageCenterService.stopMessageCenter(mContext);
+                            if (numIdle >= MAX_IDLES && mPushRegistrationId != null) {
+                                // push notifications enabled - we can stop our parent :)
+                                Log.d(TAG, "shutting down message center due to inactivity");
+                                MessageCenterService.idleMessageCenter(mContext);
+                            }
                         }
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {}
+
+                        if (numErrors > 0)
+                            numErrors--;
+                        else
+                            cancelError();
                     }
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "polling error", e);
+                    numErrors++;
+                    if (!mInterrupted) {
+                        if (numErrors > MAX_ERRORS) {
+                            notifyError();
+                            numErrors = 0;
+                        }
 
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {}
-
-                    if (numErrors > 0)
-                        numErrors--;
-                    else
-                        cancelError();
+                        // error - wait longer - 5s
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e1) {}
+                    }
                 }
             }
-            catch (Exception e) {
-                Log.e(TAG, "polling error", e);
-                numErrors++;
-                if (!isInterrupted()) {
-                    if (numErrors > MAX_ERRORS) {
-                        notifyError();
-                        numErrors = 0;
-                    }
+        }
 
-                    // error - wait longer - 5s
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e1) {}
-                }
-            }
+        finally {
+            mInterrupted = true;
+            // quitting - cancel error notification
+            cancelError();
         }
     }
 
@@ -209,5 +226,10 @@ public class PollingThread extends Thread {
         NotificationManager nm = (NotificationManager) mContext
             .getSystemService(Context.NOTIFICATION_SERVICE);
         nm.cancel(NOTIFICATION_ID_POLLING_ERROR);
+    }
+
+    /** Schedules polling thread exit as soon as possible. */
+    public void idle() {
+        mIdle = true;
     }
 }
