@@ -196,7 +196,9 @@ public class MessagingNotification {
         /** Returns the text that should be used as a ticker in the notification. */
         public CharSequence getTicker() {
             cacheContact();
-            String peer = (mContact != null) ? mContact.getName() : conversation.peer;
+            String peer = (mContact != null) ? mContact.getName() :
+                mContext.getString(R.string.peer_unknown);
+                // debug mode -- conversation.peer;
 
             SpannableStringBuilder buf = new SpannableStringBuilder();
             buf.append(peer).append(':').append(' ');
@@ -214,7 +216,9 @@ public class MessagingNotification {
             else {
                 // FIXME use a contact cache
                 cacheContact();
-                return (mContact != null) ? mContact.getName() : conversation.peer;
+                return (mContact != null) ? mContact.getName() :
+                    mContext.getString(R.string.peer_unknown);
+                    // debug mode -- conversation.peer;
             }
         }
 
