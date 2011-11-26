@@ -48,7 +48,7 @@
             <TextView android:id="@+id/progress_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#ff000000"
                 android:singleLine="true"
                 android:layout_gravity="center_horizontal"
                 android:text="50%"
@@ -72,20 +72,17 @@
                 android:paddingTop="10dp"
                 >
                 <TextView android:id="@+id/title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearance"
-                    android:singleLine="true"
-                    android:paddingLeft="2dp"
-                    android:text="Downloading attachment..."
-                    />
-                <TextView android:id="@+id/description"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:singleLine="true"
-                    android:paddingLeft="5dp"
-                    />
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:singleLine="true"
+                  android:ellipsize="marquee"
+                  android:fadingEdge="horizontal"
+                  android:textStyle="bold"
+                  android:textSize="18sp"
+                  android:paddingLeft="4dp"
+                  android:text="Downloading attachment..."
+                  android:textColor="#ff000000" />
             </LinearLayout>
             <!-- Only one of progress_bar and paused_text will be visible. -->
             <ProgressBar android:id="@+id/progress_bar"
