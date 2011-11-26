@@ -659,6 +659,7 @@ public class MessageCenterService extends Service
                 throw new CancellationException("job has been canceled.");
         }
         publishProgress(bytes);
+        Thread.yield();
     }
 
     /** TODO this should not be used */

@@ -202,6 +202,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             nm.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
         }
 
+        Thread.yield();
     }
 
 }
