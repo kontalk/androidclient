@@ -678,17 +678,19 @@ public class MessageCenterService extends Service
 
     /** Acquires the message center lock. */
     private static void lock() {
+        /*
         try {
             mLock.acquire();
         }
         catch (InterruptedException e) {
             // ignored
         }
+        */
     }
 
     /** Releases the message center lock. */
     private static void unlock() {
-        mLock.release();
+        //mLock.release();
     }
 
     /** Starts the message center. */

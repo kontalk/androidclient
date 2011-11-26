@@ -43,10 +43,11 @@ public abstract class MediaStorage {
 
     /** Writes a media to the internal cache. */
     public static File writeInternalMedia(Context context, String filename, byte[] contents) throws IOException {
-        FileOutputStream fout = context.openFileOutput(filename, Context.MODE_PRIVATE);
+        File file = new File(context.getCacheDir(), filename);
+        FileOutputStream fout = new FileOutputStream(file);
         fout.write(contents);
         fout.close();
-        return new File(context.getCacheDir(), filename);
+        return file;
     }
 
     private static BitmapFactory.Options processOptions(BitmapFactory.Options options) {
@@ -76,10 +77,9 @@ public abstract class MediaStorage {
 
     /** Writes a thumbnail of a media to the internal cache. */
     public static File cacheThumbnail(Context context, Uri media, String filename) throws IOException {
-        FileOutputStream fout = context.openFileOutput(filename, Context.MODE_PRIVATE);
-        cacheThumbnail(context, media, fout);
-        fout.close();
-        return new File(context.getCacheDir(), filename);
+        File file = new File(context.getCacheDir(), filename);
+        cacheThumbnail(context, media, file);
+        return file;
     }
 
     /** Writes a thumbnail of a media to a {@link File}. */
