@@ -18,13 +18,16 @@
 
 package org.kontalk;
 
+import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.MessagingNotification;
 
 import android.app.Application;
+import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.ContentObserver;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -76,5 +79,17 @@ public class Kontalk extends Application {
         getContentResolver()
             .registerContentObserver(ContactsContract.CommonDataKinds
                 .Phone.CONTENT_URI, false, mContactsObserver);
+
+        /*
+         * should we request a manual sync the first time?
+         * Technically, a sync would be possible only *after* account creation,
+         * so let's just do a UsersProvider.resync here - with bootstrap param
+         */
+        // FIXME this might be called twice because of SyncAdapter
+        Uri uri = Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.RESYNC, "true")
+            .appendQueryParameter(Users.BOOTSTRAP, "true")
+            .build();
+        getContentResolver().update(uri, new ContentValues(), null, null);
     }
 }
