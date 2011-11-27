@@ -41,11 +41,13 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
@@ -53,8 +55,15 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 
 
+/**
+ * The Sync Adapter.
+ * @author Daniele Ricci
+ */
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
+
+    /** How many seconds between sync operations. */
+    private static final int MAX_SYNC_DELAY = 120;
 
     /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
@@ -83,6 +92,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
+
+        long lastSync = MessagingPreferences.getLastSyncTimestamp(mContext);
+        float diff = (System.currentTimeMillis() - lastSync) / 1000;
+        if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
+            Log.d(TAG, "not starting sync - throttling");
+            syncResult.delayUntil = (long) diff;
+            return;
+        }
+
         Log.i(TAG, "sync started (authority=" + authority + ")");
 
         try {
@@ -90,6 +108,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
         catch (OperationCanceledException e) {
             Log.w(TAG, "sync canceled!", e);
+        }
+        finally {
+            MessagingPreferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
         }
     }
 
@@ -129,6 +150,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final RequestClient client = new RequestClient(mContext, server, token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
         final List<String> hashList = new ArrayList<String>();
+
+        // resync users database
+        Log.v(TAG, "resyncing users database");
+        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+
+        // update users database
+        Uri uri = Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.RESYNC, "true")
+            .build();
+        int count = mContentResolver.update(uri, new ContentValues(), null, null);
+        Log.d(TAG, "users database resynced (" + count + ")");
 
         String countryCode = NumberValidator.getCountryPrefix(mContext);
         if (countryCode == null) {
@@ -208,29 +240,31 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
 
+            operations = new ArrayList<ContentProviderOperation>();
+
+            int op = 0;
             for (int i = 0; i < res.getEntryCount(); i++) {
                 Protocol.LookupResponseEntry entry = res.getEntry(i);
                 String userId = entry.getUserId().toString();
                 final RawPhoneNumberEntry data = lookupNumbers.get(userId);
                 if (data != null) {
-                    operations = new ArrayList<ContentProviderOperation>();
-                    addContact(account, data.displayName, data.number, -1, operations);
-
-                    try {
-                        provider.applyBatch(operations);
-                    }
-                    catch (Exception e) {
-                        Log.e(TAG, "contact write error", e);
-                        syncResult.stats.numSkippedEntries = res.getEntryCount();
-                        syncResult.databaseError = true;
-                        return;
-                    }
-
-                    syncResult.stats.numEntries++;
+                    addContact(account, data.displayName, data.number, -1, operations, op);
+                    op++;
                 }
                 else {
                     syncResult.stats.numSkippedEntries++;
                 }
+            }
+
+            try {
+                provider.applyBatch(operations);
+                syncResult.stats.numEntries += op;
+            }
+            catch (Exception e) {
+                Log.e(TAG, "contact write error", e);
+                syncResult.stats.numSkippedEntries = op;
+                syncResult.databaseError = true;
+                return;
             }
         }
 
@@ -269,9 +303,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     */
 
     private void addContact(Account account, String username, String phone,
-            long rowContactId, List<ContentProviderOperation> operations) {
+            long rowContactId, List<ContentProviderOperation> operations, int index) {
         Log.d(TAG, "adding contact username = \"" + username + "\", phone: " + phone);
         ContentProviderOperation.Builder builder;
+        final int NUM_OPS = 3;
 
         if (rowContactId < 0) {
             try {
@@ -293,7 +328,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // create a Data record of common type 'StructuredName' for our RawContact
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
         if (rowContactId < 0)
-            builder.withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, 0);
+            builder.withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, index * NUM_OPS);
         else
             builder.withValue(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, rowContactId);
 
@@ -304,7 +339,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // create a Data record of custom type 'org.kontalk.user' to display a link to the conversation
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI);
         if (rowContactId < 0)
-            builder.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0);
+            builder.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, index * NUM_OPS);
         else
             builder.withValue(ContactsContract.Data.RAW_CONTACT_ID, rowContactId);
 
@@ -315,4 +350,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         operations.add(builder.build());
     }
 
+    /** Requests a manual sync to the system. */
+    public static void requestSync(Context context) {
+        Account acc = Authenticator.getDefaultAccount(context);
+        Bundle extra = new Bundle();
+        // override auto-sync and background data settings
+        extra.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        // put our sync ahead of other sync operations :)
+        extra.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(acc, ContactsContract.AUTHORITY, extra);
+    }
 }

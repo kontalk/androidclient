@@ -25,12 +25,10 @@ import org.kontalk.sync.SyncAdapter;
 
 import android.accounts.Account;
 import android.app.ListActivity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.RawContacts;
 import android.text.Html;
 import android.view.Menu;
@@ -97,14 +95,7 @@ public class ContactsListActivity extends ListActivity
     }
 
     private void startSync() {
-        Account acc = Authenticator.getDefaultAccount(this);
-        Bundle extra = new Bundle();
-        // override auto-sync and background data settings
-        extra.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        // put our sync ahead of other sync operations :)
-        extra.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(acc, ContactsContract.AUTHORITY, extra);
-
+        SyncAdapter.requestSync(this);
         Toast.makeText(this, R.string.msg_sync_started,
                 Toast.LENGTH_LONG).show();
     }

@@ -162,6 +162,11 @@ public class MessagingPreferences extends PreferenceActivity {
         return prefs.getInt(key, defaultValue);
     }
 
+    private static long getLong(Context context, String key, long defaultValue) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getLong(key, defaultValue);
+    }
+
     private static boolean getBoolean(Context context, String key, boolean defaultValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(key, defaultValue);
@@ -245,4 +250,16 @@ public class MessagingPreferences extends PreferenceActivity {
     public static boolean getContactsListVisited(Context context) {
         return getBooleanOnce(context, "pref_contacts_visited");
     }
+
+    public static long getLastSyncTimestamp(Context context) {
+        return getLong(context, "pref_last_sync", -1);
+    }
+
+    public static boolean setLastSyncTimestamp(Context context, long timestamp) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putLong("pref_last_sync", timestamp)
+            .commit();
+    }
+
 }

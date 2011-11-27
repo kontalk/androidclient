@@ -55,6 +55,10 @@
             android:authorities="org.kontalk.messages"
             android:syncable="false"/>
 
+        <provider android:name=".provider.UsersProvider"
+            android:authorities="org.kontalk.users"
+            android:syncable="false"/>
+
         <activity android:name=".ui.ConversationList"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@style/Theme.Light">

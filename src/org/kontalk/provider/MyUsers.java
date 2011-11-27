@@ -18,6 +18,7 @@
 
 package org.kontalk.provider;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 
@@ -27,10 +28,20 @@ public class MyUsers {
     public static final class Users implements BaseColumns {
         private Users() {}
 
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+                + UsersProvider.AUTHORITY + "/users");
+
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.user";
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.user";
 
         public static final String HASH = "hash";
         public static final String NUMBER = "number";
+        public static final String LOOKUP_KEY = "lookup_key";
+
+        // uri parameter for update: triggers a complete resync
+        public static final String RESYNC = "resync";
+        // uri parameter for update: used with resync, triggers a complete sync
+        // only if the database is newly created
+        public static final String BOOTSTRAP = "bootstrap";
     }
 }
