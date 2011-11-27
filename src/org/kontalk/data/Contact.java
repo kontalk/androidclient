@@ -207,6 +207,7 @@ public class Contact {
         return c;
     }
 
+    // TODO convert to UsersProvider
     public static String numberByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Account acc = Authenticator.getDefaultAccount(context);
@@ -238,6 +239,7 @@ public class Contact {
         return cache.get(context, userId);
     }
 
+    // TODO convert to UsersProvider
     private static Contact _findByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Account acc = Authenticator.getDefaultAccount(context);
@@ -303,6 +305,7 @@ public class Contact {
         return data;
     }
 
+    // TODO convert to UsersProvider
     public static String getUserId(Context context, Uri rawContactUri) {
         Cursor c = context.getContentResolver().query(rawContactUri,
                 new String[] {
