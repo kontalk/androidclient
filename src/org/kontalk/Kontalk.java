@@ -28,6 +28,7 @@ import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Process;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -85,11 +86,16 @@ public class Kontalk extends Application {
          * Technically, a sync would be possible only *after* account creation,
          * so let's just do a UsersProvider.resync here - with bootstrap param
          */
-        // FIXME this might be called twice because of SyncAdapter
-        Uri uri = Users.CONTENT_URI.buildUpon()
-            .appendQueryParameter(Users.RESYNC, "true")
-            .appendQueryParameter(Users.BOOTSTRAP, "true")
-            .build();
-        getContentResolver().update(uri, new ContentValues(), null, null);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                Uri uri = Users.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(Users.RESYNC, "true")
+                    .appendQueryParameter(Users.BOOTSTRAP, "true")
+                    .build();
+                getContentResolver().update(uri, new ContentValues(), null, null);
+            }
+        }).start();
     }
 }

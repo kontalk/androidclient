@@ -18,10 +18,19 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
+import static org.kontalk.ui.MessagingPreferences.SYNC_ANSWER_ENABLE_AUTOSYNC;
+import static org.kontalk.ui.MessagingPreferences.SYNC_ANSWER_LEAVE_SETTINGS;
 
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+
+import android.accounts.Account;
+import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
 import android.view.Window;
 import android.widget.ListAdapter;
@@ -41,6 +50,44 @@ public class ConversationList extends FragmentActivity {
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.conversation_list_screen);
+
+        // show first time warning for synchronization if necessary
+        final Account acc = Authenticator.getDefaultAccount(this);
+        if (acc != null) {
+            boolean autoSync = ContentResolver.getSyncAutomatically(acc,
+                    ContactsContract.AUTHORITY) &&
+                        ContentResolver.getMasterSyncAutomatically();
+
+            if (!autoSync && MessagingPreferences
+                    .getSyncQuestionAnswer(this) != SYNC_ANSWER_LEAVE_SETTINGS) {
+
+                // ask the big question
+                DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MessagingPreferences.setSyncQuestionAnswer(
+                                ConversationList.this, SYNC_ANSWER_ENABLE_AUTOSYNC);
+                        ContentResolver.setMasterSyncAutomatically(true);
+                        ContentResolver.setSyncAutomatically(acc, ContactsContract.AUTHORITY, true);
+                    }
+                };
+                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MessagingPreferences.setSyncQuestionAnswer(
+                                ConversationList.this, SYNC_ANSWER_LEAVE_SETTINGS);
+                    }
+                };
+
+                AlertDialog.Builder build = new AlertDialog.Builder(this);
+                build
+                    .setTitle(R.string.title_auto_sync_disabled)
+                    .setMessage(R.string.message_auto_sync_disabled)
+                    .setPositiveButton(R.string.yes_auto_sync_disabled, yesListener)
+                    .setNegativeButton(R.string.no_auto_sync_disabled, noListener)
+                    .create().show();
+            }
+        }
     }
 
     /** Called when a new intent is sent to the activity (if already started). */

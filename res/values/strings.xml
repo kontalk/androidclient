@@ -145,4 +145,8 @@
     <string name="msg_sync_started">Refreshing contacts list.</string>
     <string name="text_invite_message">Hey! Check out Kontalk on the Android Market, a free messaging app! https://market.android.com/details?id=org.kontalk</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; to send an invitation message to someone.</string>
+    <string name="title_auto_sync_disabled">Auto-sync disabled</string>
+    <string name="message_auto_sync_disabled">We found that auto-sync is disabled on this device. Auto-sync is necessary for keeping your Kontalk contacts always list up to date. Do you want to activate auto-sync? Otherwise you will have to manually update your contacts list by going to New Message screen, then Menu &gt; Refresh</string>
+    <string name="yes_auto_sync_disabled">Yes, enable auto-sync</string>
+    <string name="no_auto_sync_disabled">No, I can do it by myself</string>
 </resources>
