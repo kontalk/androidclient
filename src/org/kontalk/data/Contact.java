@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.sync.SyncAdapter;
 
 import android.accounts.Account;
@@ -137,8 +138,8 @@ public class Contact {
 
     private Contact(Uri uri, long rawContactId, String name, String number) {
         mContactId = ContentUris.parseId(uri);
-        mContactUri = uri;
         mRawContactId = rawContactId;
+        mContactUri = uri;
         mName = name;
         mNumber = number;
     }
@@ -239,8 +240,57 @@ public class Contact {
         return cache.get(context, userId);
     }
 
-    // TODO convert to UsersProvider
     private static Contact _findByUserId(Context context, String userId) {
+        ContentResolver cres = context.getContentResolver();
+        Cursor c = cres.query(Uri.withAppendedPath(Users.CONTENT_URI, userId),
+                new String[] { Users.NUMBER, Users.LOOKUP_KEY },
+                null, null, null);
+
+        if (c.moveToFirst()) {
+            String number = c.getString(0);
+            String key = c.getString(1);
+            c.close();
+
+            Contact contact = _lookupByKey(context, key, number);
+            if (contact != null)
+                return contact;
+        }
+        c.close();
+
+        // fallback to RawContacts
+        return _lookupByUserId(context, userId);
+    }
+
+    private static Contact _lookupByKey(Context context, String lookupKey, String number) {
+        Uri lookupUri = Uri.withAppendedPath(Contacts.CONTENT_LOOKUP_URI, lookupKey);
+        Cursor c = context.getContentResolver().query(lookupUri,
+                new String[] {
+                    Contacts._ID,
+                    Contacts.DISPLAY_NAME,
+                }, null, null, null);
+        if (c.moveToFirst()) {
+            long id = c.getLong(0);
+            String name = c.getString(1);
+            c.close();
+
+            // create contact
+            Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id);
+            Log.v(TAG, "found contact " + uri + " (lookup)");
+
+            // RawContact ID not available here
+            Contact contact = new Contact(uri, -1, name, number);
+
+            // load avatar (if any)
+            contact.mAvatarData = loadAvatarData(context, uri);
+
+            return contact;
+        }
+
+        c.close();
+        return null;
+    }
+
+    private static Contact _lookupByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Account acc = Authenticator.getDefaultAccount(context);
 
@@ -269,7 +319,7 @@ public class Contact {
 
             // create contact
             Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id);
-            Log.i(TAG, "found contact " + uri);
+            Log.v(TAG, "found contact " + uri + " (native)");
             Contact contact = new Contact(uri, rid, name, number);
             // load avatar (if any)
             contact.mAvatarData = loadAvatarData(context, uri);

@@ -127,7 +127,8 @@ public class UsersProvider extends ContentProvider {
             case USERS_HASH:
                 qb.setTables(TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
-                qb.appendWhere(Users.HASH + "=" + uri.getPathSegments().get(1));
+                selection = Users.HASH + " = ?";
+                selectionArgs = new String[] { uri.getPathSegments().get(1) };
                 break;
 
             default:
@@ -162,7 +163,7 @@ public class UsersProvider extends ContentProvider {
 
         // query for phone numbers
         final Cursor phones = cr.query(Phone.CONTENT_URI,
-            new String[] { Phone.NUMBER, Phone.CONTACT_ID },
+            new String[] { Phone.NUMBER, Phone.LOOKUP_KEY },
             null, null, null);
 
         // begin transaction
