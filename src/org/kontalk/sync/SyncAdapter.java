@@ -48,6 +48,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
@@ -94,10 +95,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider, SyncResult syncResult) {
 
         long lastSync = MessagingPreferences.getLastSyncTimestamp(mContext);
-        float diff = (System.currentTimeMillis() - lastSync) / 1000;
+        long diff = (System.currentTimeMillis() - lastSync) / 1000;
         if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
             Log.d(TAG, "not starting sync - throttling");
-            syncResult.delayUntil = (long) diff;
+            // TEST do not delay - syncResult.delayUntil = (long) diff;
             return;
         }
 
@@ -228,11 +229,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         if (res != null) {
             ArrayList<ContentProviderOperation> operations =
                 new ArrayList<ContentProviderOperation>();
+            // TODO operations.size() could be used instead (?)
+            int op = 0;
 
             // this is the time - delete all Kontalk raw contacts
             try {
-                deleteAll(account, operations);
-                provider.applyBatch(operations);
+                syncResult.stats.numDeletes += deleteAll(account, provider);
             }
             catch (Exception e) {
                 Log.e(TAG, "contact delete error", e);
@@ -240,9 +242,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
 
-            operations = new ArrayList<ContentProviderOperation>();
-
-            int op = 0;
             for (int i = 0; i < res.getEntryCount(); i++) {
                 Protocol.LookupResponseEntry entry = res.getEntry(i);
                 String userId = entry.getUserId().toString();
@@ -258,6 +257,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             try {
                 provider.applyBatch(operations);
+                syncResult.stats.numInserts += op;
                 syncResult.stats.numEntries += op;
             }
             catch (Exception e) {
@@ -270,13 +270,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
-    private void deleteAll(Account account, List<ContentProviderOperation> operations) {
-        Uri uri = RawContacts.CONTENT_URI.buildUpon()
+    private int deleteAll(Account account, ContentProviderClient provider)
+            throws RemoteException {
+        return provider.delete(RawContacts.CONTENT_URI.buildUpon()
             .appendQueryParameter(ContactsContract.CALLER_IS_SYNCADAPTER, "true")
             .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
             .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
-            .build();
-        operations.add(ContentProviderOperation.newDelete(uri).build());
+            .build(), null, null);
     }
 
     /*
