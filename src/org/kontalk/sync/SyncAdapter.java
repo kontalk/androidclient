@@ -63,7 +63,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
 
     /** How many seconds between sync operations. */
-    private static final int MAX_SYNC_DELAY = 120;
+    private static final int MAX_SYNC_DELAY = 600;
 
     /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
@@ -352,6 +352,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     /** Requests a manual sync to the system. */
     public static void requestSync(Context context) {
+        long lastSync = MessagingPreferences.getLastSyncTimestamp(context);
+        float diff = (System.currentTimeMillis() - lastSync) / 1000;
+        if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
+            Log.d(TAG, "not requesting sync - throttling");
+            return;
+        }
+
         Account acc = Authenticator.getDefaultAccount(context);
         Bundle extra = new Bundle();
         // override auto-sync and background data settings
