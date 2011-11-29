@@ -142,4 +142,8 @@
     <string name="msg_sync_started">Aggiornamento lista contatti in corso.</string>
     <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk sul Market! https://market.android.com/details?id=org.kontalk</string>
     <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.&lt;br/&gt;&lt;br/&gt;Usa &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invita utenti&lt;/b&gt; per inviare un messaggio di invito a qualcuno.</string>
+    <string name="title_auto_sync_disabled">Auto-sync disattivato</string>
+    <string name="message_auto_sync_disabled">Abbiamo rilevato che la sincronizzazione automatica è disattivata su questo sistema. La sincronizzazione automatica è necessaria per mantenere la lista contatti di Kontalk sempre aggiornata. Vuoi attivarla? Se non lo fai, dovrai mantenere manualmente la tua lista aggiornata entrando nella schermata Nuovo messaggio, poi Menu &gt; Aggiorna.</string>
+    <string name="yes_auto_sync_disabled">Sì, abilita sincron. automatica</string>
+    <string name="no_auto_sync_disabled">No, posso pensarci io</string>
 </resources>
