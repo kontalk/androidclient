@@ -19,7 +19,6 @@
 package org.kontalk.sync;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +51,6 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 
 
@@ -103,6 +101,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         Log.i(TAG, "sync started (authority=" + authority + ")");
+        // avoid other syncs to get scheduled in the meanwhile
+        MessagingPreferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
 
         try {
             performSync(mContext, account, extras, authority, provider, syncResult);
@@ -172,42 +172,38 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.i(TAG, "using country code: " + countryCode);
 
         // query all contacts
-        final Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        final Cursor cursor = mContentResolver.query(Users.CONTENT_URI,
+                new String[] { Users.HASH, Users.NUMBER, Users.LOOKUP_KEY },
+                null, null, null);
 
         while (cursor.moveToNext()) {
             if (mCanceled) throw new OperationCanceledException();
 
-            String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            //Log.w(TAG, "contact " + contactId + ", name: " + displayName);
+            String hash = cursor.getString(0);
+            String number = cursor.getString(1);
+            String lookupKey = cursor.getString(2);
+            String displayName;
+            final Cursor nameQuery = mContentResolver.query(
+                    Uri.withAppendedPath(ContactsContract.Contacts
+                            .CONTENT_LOOKUP_URI, lookupKey),
+                            new String[] { ContactsContract.Contacts.DISPLAY_NAME },
+                            null, null, null);
+            if (nameQuery.moveToFirst())
+                displayName = nameQuery.getString(0);
+            else
+                displayName = number;
+            nameQuery.close();
 
-            // query for phone numbers
-            final Cursor phones = mContentResolver.query(Phone.CONTENT_URI, null,
-                Phone.CONTACT_ID + " = ?", new String[] { contactId }, null);
+            // a phone number with less than 4 digits???
+            if (number.length() < 4)
+                continue;
 
-            while (phones.moveToNext()) {
-                if (mCanceled) throw new OperationCanceledException();
+            // fix number
+            number = NumberValidator.fixNumber(mContext, number);
 
-                String number = phones.getString(phones.getColumnIndex(Phone.NUMBER));
-
-                // a phone number with less than 4 digits???
-                if (number.length() < 4)
-                    continue;
-
-                // fix number
-                number = NumberValidator.fixNumber(mContext, number);
-
-                try {
-                    String hash = MessageUtils.sha1(number);
-                    // avoid to send duplicates to server
-                    if (lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash)) == null)
-                        hashList.add(hash);
-                } catch (NoSuchAlgorithmException e) {
-                    Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
-                    syncResult.stats.numIoExceptions++;
-                }
-            }
-            phones.close();
+            // avoid to send duplicates to server
+            if (lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash)) == null)
+                hashList.add(hash);
         }
         cursor.close();
 
@@ -216,6 +212,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Protocol.LookupResponse res = null;
         try {
             // request lookup to server
+            Log.v(TAG, "sending lookup request to server");
             res = client.lookup(hashList);
         }
         catch (IOException e) {
