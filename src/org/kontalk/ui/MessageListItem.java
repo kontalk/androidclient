@@ -57,6 +57,7 @@ public class MessageListItem extends RelativeLayout {
     private CharSequence formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
+    private ImageView mLockView;
     private TextView mDateViewIncoming;
     private TextView mDateViewOutgoing;
     private TextView mDateView;
@@ -96,6 +97,7 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
+        mLockView = (ImageView) findViewById(R.id.lock_icon);
         mBalloonView = findViewById(R.id.balloon_view);
         mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
         mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
@@ -104,9 +106,9 @@ public class MessageListItem extends RelativeLayout {
         mBackground = findViewById(R.id.msg_list_item_background);
 
         if (isInEditMode()) {
-            mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
-            /* INCOMING */
-            //mTextView.setBackgroundResource(R.drawable.light_blue_background);
+            mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
+            //mTextView.setText(":-)");
+            /* INCOMING
             if (mStatusIcon != null)
             	mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             if (mDateView == null) {
@@ -126,17 +128,27 @@ public class MessageListItem extends RelativeLayout {
             	mNameView.setText("Daniele Ricci");
             	mDateView.setText("11:56");
             }
-	        /* OUTGOING
-            setGravity(Gravity.RIGHT);
-            setBackgroundResource(R.drawable.white_background);
-            if (mBalloonView != null)
-            	mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
-            if (mDateViewIncoming != null) {
-	            mDateViewIncoming.setVisibility(GONE);
-	            mDateViewOutgoing.setVisibility(VISIBLE);
-	            mDateViewOutgoing.setText("10:46");
-            }
             */
+	        /* OUTGOING */
+            if (mStatusIcon != null)
+                mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
+            if (mDateView == null) {
+                if (mBalloonView != null)
+                    mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
+                if (mDateViewIncoming != null) {
+                    mDateViewIncoming.setVisibility(VISIBLE);
+                    mDateViewOutgoing.setVisibility(GONE);
+                    mDateViewIncoming.setText("10:46");
+                }
+            }
+            else {
+                int backId = R.drawable.message_list_item_out_fill;
+                mNameView.setBackgroundResource(backId);
+                mDateView.setBackgroundResource(backId);
+                mBackground.setBackgroundResource(R.drawable.message_list_item_out_border);
+                mNameView.setText("Daniele Ricci");
+                mDateView.setText("11:56");
+            }
         }
     }
 
@@ -149,12 +161,11 @@ public class MessageListItem extends RelativeLayout {
 
         int resId = -1;
 
+        mLockView.setVisibility((mMessage.wasEncrypted()) ? VISIBLE : GONE);
+
         if (mMessage.getSender() != null) {
             if (mBalloonView != null)
-	            mBalloonView.setBackgroundResource(
-	                (mMessage.wasEncrypted()) ?
-	                R.drawable.encrypted_incoming :
-	                R.drawable.balloon_incoming);
+	            mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
 
             if (mDateView == null) {
                 setGravity(Gravity.LEFT);
@@ -171,10 +182,7 @@ public class MessageListItem extends RelativeLayout {
         }
         else {
             if (mBalloonView != null)
-            	mBalloonView.setBackgroundResource(
-                    mMessage.wasEncrypted() ?
-                    R.drawable.encrypted_outgoing :
-                    R.drawable.balloon_outgoing);
+            	mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
 
             if (mDateView == null) {
                 setGravity(Gravity.RIGHT);
