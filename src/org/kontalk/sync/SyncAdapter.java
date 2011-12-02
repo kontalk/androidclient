@@ -32,7 +32,6 @@ import org.kontalk.client.Protocol;
 import org.kontalk.client.RequestClient;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.ui.MessagingPreferences;
-import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -92,6 +91,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
 
+        final long startTime = System.currentTimeMillis();
+
         long lastSync = MessagingPreferences.getLastSyncTimestamp(mContext);
         long diff = (System.currentTimeMillis() - lastSync) / 1000;
         if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
@@ -111,7 +112,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             Log.w(TAG, "sync canceled!", e);
         }
         finally {
-            MessagingPreferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
+            long endTime = System.currentTimeMillis();
+            MessagingPreferences.setLastSyncTimestamp(mContext, endTime);
+            Log.d(TAG, String.format("sync took %.5f seconds", ((float)(endTime - startTime)) / 1000));
         }
     }
 
@@ -122,13 +125,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private static final class RawPhoneNumberEntry {
-        public final String displayName;
         public final String number;
-        // TODO find a use for this
         public final String hash;
+        public final String lookupKey;
 
-        public RawPhoneNumberEntry(String displayName, String number, String hash) {
-            this.displayName = displayName;
+        public RawPhoneNumberEntry(String lookupKey, String number, String hash) {
+            this.lookupKey = lookupKey;
             this.number = number;
             this.hash = hash;
         }
@@ -182,17 +184,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             String hash = cursor.getString(0);
             String number = cursor.getString(1);
             String lookupKey = cursor.getString(2);
-            String displayName;
-            final Cursor nameQuery = mContentResolver.query(
-                    Uri.withAppendedPath(ContactsContract.Contacts
-                            .CONTENT_LOOKUP_URI, lookupKey),
-                            new String[] { ContactsContract.Contacts.DISPLAY_NAME },
-                            null, null, null);
-            if (nameQuery.moveToFirst())
-                displayName = nameQuery.getString(0);
-            else
-                displayName = number;
-            nameQuery.close();
 
             // a phone number with less than 4 digits???
             if (number.length() < 4)
@@ -202,7 +193,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             number = NumberValidator.fixNumber(mContext, number);
 
             // avoid to send duplicates to server
-            if (lookupNumbers.put(hash, new RawPhoneNumberEntry(displayName, number, hash)) == null)
+            if (lookupNumbers.put(hash, new RawPhoneNumberEntry(lookupKey, number, hash)) == null)
                 hashList.add(hash);
         }
         cursor.close();
@@ -244,7 +235,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 String userId = entry.getUserId().toString();
                 final RawPhoneNumberEntry data = lookupNumbers.get(userId);
                 if (data != null) {
-                    addContact(account, data.displayName, data.number, -1, operations, op);
+                    addContact(account,
+                            getDisplayName(provider, data.lookupKey, data.number),
+                            data.number, data.hash, -1, operations, op);
                     op++;
                 }
                 else {
@@ -265,6 +258,32 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
         }
 
+    }
+
+    private String getDisplayName(ContentProviderClient client, String lookupKey, String defaultValue) {
+        String displayName = null;
+        Cursor nameQuery = null;
+        try {
+            nameQuery = client.query(
+                    Uri.withAppendedPath(ContactsContract.Contacts
+                            .CONTENT_LOOKUP_URI, lookupKey),
+                            new String[] { ContactsContract.Contacts.DISPLAY_NAME },
+                            null, null, null);
+            if (nameQuery.moveToFirst())
+                displayName = nameQuery.getString(0);
+        }
+        catch (Exception e) {
+            // ignored
+        }
+        finally {
+            // close cursor
+            try {
+                nameQuery.close();
+            }
+            catch (Exception e) {}
+        }
+
+        return (displayName != null) ? displayName : defaultValue;
     }
 
     private int deleteAll(Account account, ContentProviderClient provider)
@@ -299,27 +318,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
     */
 
-    private void addContact(Account account, String username, String phone,
+    private void addContact(Account account, String username, String phone, String hash,
             long rowContactId, List<ContentProviderOperation> operations, int index) {
         Log.d(TAG, "adding contact username = \"" + username + "\", phone: " + phone);
         ContentProviderOperation.Builder builder;
         final int NUM_OPS = 3;
 
         if (rowContactId < 0) {
-            try {
-                // create our RawContact
-                builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI);
-                builder.withValue(RawContacts.ACCOUNT_NAME, account.name);
-                builder.withValue(RawContacts.ACCOUNT_TYPE, account.type);
-                builder.withValue(RAW_COLUMN_DISPLAY_NAME, username);
-                builder.withValue(RAW_COLUMN_PHONE, phone);
-                builder.withValue(RAW_COLUMN_USERID, MessageUtils.sha1(phone));
+            // create our RawContact
+            builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI);
+            builder.withValue(RawContacts.ACCOUNT_NAME, account.name);
+            builder.withValue(RawContacts.ACCOUNT_TYPE, account.type);
+            builder.withValue(RAW_COLUMN_DISPLAY_NAME, username);
+            builder.withValue(RAW_COLUMN_PHONE, phone);
+            builder.withValue(RAW_COLUMN_USERID, hash);
 
-                operations.add(builder.build());
-            }
-            catch (Exception e) {
-                Log.e(TAG, "sha1 digest failed", e);
-            }
+            operations.add(builder.build());
         }
 
         // create a Data record of common type 'StructuredName' for our RawContact
