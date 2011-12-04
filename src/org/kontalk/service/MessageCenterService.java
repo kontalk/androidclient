@@ -588,12 +588,13 @@ public class MessageCenterService extends Service
                     Protocol.Received response2 = (Protocol.Received) response;
                     List<Protocol.ReceivedEntry> list = response2.getEntryList();
                     for (Protocol.ReceivedEntry entry : list) {
-                        if (entry.getStatus() == Protocol.Status.STATUS_SUCCESS) {
-                            String id = entry.getMessageId();
-                            mReceived.remove(id);
+                        String id = entry.getMessageId();
+                        if (entry.getStatus() == Protocol.Status.STATUS_SUCCESS)
                             MessagesProvider.changeMessageStatus(this,
                                     id, true, Messages.STATUS_CONFIRMED);
-                        }
+
+                        // remove the entry so it will be processed again if necessary
+                        mReceived.remove(id);
                     }
                 }
             }

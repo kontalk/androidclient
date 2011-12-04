@@ -233,7 +233,7 @@ public class RequestWorker extends HandlerThread {
         push(job, 0);
     }
 
-    public void push(RequestJob job, long delay) {
+    public void push(RequestJob job, long delayMillis) {
         synchronized (mIdle) {
             // max wait time 10 seconds
             int retries = 20;
@@ -252,7 +252,7 @@ public class RequestWorker extends HandlerThread {
 
             mHandler.sendMessageDelayed(
                     mHandler.obtainMessage(MSG_REQUEST_JOB, job),
-                    delay);
+                    delayMillis);
 
             // abort any idle request
             if (mIdle) {
