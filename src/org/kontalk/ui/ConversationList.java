@@ -26,6 +26,7 @@ import org.kontalk.authenticator.Authenticator;
 
 import android.accounts.Account;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -62,20 +63,19 @@ public class ConversationList extends FragmentActivity {
                     .getSyncQuestionAnswer(this) != SYNC_ANSWER_LEAVE_SETTINGS) {
 
                 // ask the big question
-                DialogInterface.OnClickListener yesListener = new DialogInterface.OnClickListener() {
+                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        MessagingPreferences.setSyncQuestionAnswer(
-                                ConversationList.this, SYNC_ANSWER_ENABLE_AUTOSYNC);
-                        ContentResolver.setMasterSyncAutomatically(true);
-                        ContentResolver.setSyncAutomatically(acc, ContactsContract.AUTHORITY, true);
-                    }
-                };
-                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        MessagingPreferences.setSyncQuestionAnswer(
+                        if (which == Dialog.BUTTON_NEGATIVE) {
+                            MessagingPreferences.setSyncQuestionAnswer(
                                 ConversationList.this, SYNC_ANSWER_LEAVE_SETTINGS);
+                        }
+                        else if (which == Dialog.BUTTON_POSITIVE) {
+                            MessagingPreferences.setSyncQuestionAnswer(
+                                    ConversationList.this, SYNC_ANSWER_ENABLE_AUTOSYNC);
+                            ContentResolver.setMasterSyncAutomatically(true);
+                            ContentResolver.setSyncAutomatically(acc, ContactsContract.AUTHORITY, true);
+                        }
                     }
                 };
 
@@ -83,8 +83,8 @@ public class ConversationList extends FragmentActivity {
                 build
                     .setTitle(R.string.title_auto_sync_disabled)
                     .setMessage(R.string.message_auto_sync_disabled)
-                    .setPositiveButton(R.string.yes_auto_sync_disabled, yesListener)
-                    .setNegativeButton(R.string.no_auto_sync_disabled, noListener)
+                    .setPositiveButton(R.string.yes_auto_sync_disabled, listener)
+                    .setNegativeButton(R.string.no_auto_sync_disabled, listener)
                     .create().show();
             }
         }

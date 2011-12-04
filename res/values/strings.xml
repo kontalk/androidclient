@@ -151,4 +151,8 @@
     <string name="no_auto_sync_disabled">No, I can do it by myself</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
     <string name="notify_text_external_storage">Unable to write to external storage.</string>
+    <string name="title_user_not_found">User not found</string>
+    <string name="message_user_not_found">This contact seems not to be registered on Kontalk. You can try to contact the user anyway or send him/her an invitation message.</string>
+    <string name="yes_user_not_found">Yes, contact the user anyway</string>
+    <string name="no_user_not_found">No, send an invite</string>
 </resources>

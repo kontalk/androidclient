@@ -793,6 +793,35 @@ public class ComposeMessageFragment extends ListFragment {
         if (mConversation != null)
             onConversationCreated();
 
+        // non existant thread - check for not synced contact
+        if (threadId <= 0) {
+            Contact contact = mConversation.getContact();
+            if (userPhone != null && contact != null ? contact.getRawContactId() <= 0 : true) {
+                // ask user to send invitation
+                DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // FIXME is this specific to sms app?
+                        Intent i = new Intent(Intent.ACTION_SENDTO,
+                                Uri.parse("smsto:" + userPhone));
+                        i.putExtra("sms_body", getString(R.string.text_invite_message));
+                        startActivity(i);
+                        getActivity().finish();
+                    }
+                };
+
+                AlertDialog.Builder build = new AlertDialog.Builder(getActivity());
+                build
+                    .setTitle(R.string.title_user_not_found)
+                    .setMessage(R.string.message_user_not_found)
+                    // nothing happens if user chooses to contact the user anyway
+                    .setPositiveButton(R.string.yes_user_not_found, null)
+                    .setNegativeButton(R.string.no_user_not_found, noListener)
+                    .create().show();
+
+            }
+        }
+
         if (userId != null && MessagingPreferences.getLastSeenEnabled(getActivity())) {
             // FIXME this should be handled better and of course honour activity
             // pause/resume/saveState/restoreState/display rotation.

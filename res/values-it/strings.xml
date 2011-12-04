@@ -148,4 +148,8 @@
     <string name="no_auto_sync_disabled">No, posso pensarci io</string>
     <string name="notify_ticker_external_storage">Memoria esterna non disponibile</string>
     <string name="notify_text_external_storage">Impossibile scrivere sulla memoria esterna.</string>
+    <string name="title_user_not_found">Utente non trovato</string>
+    <string name="message_user_not_found">Questo contatto sembra non essere registrato su Kontalk. Puoi provare a contattarlo ugualmente oppure puoi inviare un messaggio di invito.</string>
+    <string name="yes_user_not_found">Sì, contatta ugualmente l\'utente</string>
+    <string name="no_user_not_found">No, manda un invito</string>
 </resources>

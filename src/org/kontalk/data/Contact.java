@@ -168,7 +168,7 @@ public class Contact {
 
     /** Returns the {@link RawContacts} {@link Uri} identified by this object. */
     public Uri getRawContactUri() {
-        if (mRawContactUri == null)
+        if (mRawContactUri == null && mRawContactId > 0)
             mRawContactUri = ContentUris.withAppendedId(RawContacts.CONTENT_URI, mRawContactId);
         return mRawContactUri;
     }
