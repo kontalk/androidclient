@@ -208,8 +208,27 @@ public class Contact {
         return c;
     }
 
-    // TODO convert to UsersProvider
     public static String numberByUserId(Context context, String userId) {
+        Cursor c = null;
+        String number = null;
+        try {
+            ContentResolver cres = context.getContentResolver();
+            c = cres.query(Uri.withAppendedPath(Users.CONTENT_URI, userId),
+                    new String[] { Users.NUMBER },
+                    null, null, null);
+
+            if (c.moveToFirst())
+                number = c.getString(0);
+        }
+        finally {
+            if (c != null)
+                c.close();
+        }
+
+        return (number != null) ? number : _numberByUserId(context, userId);
+    }
+
+    private static String _numberByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Account acc = Authenticator.getDefaultAccount(context);
 
@@ -355,7 +374,6 @@ public class Contact {
         return data;
     }
 
-    // TODO convert to UsersProvider
     public static String getUserId(Context context, Uri rawContactUri) {
         Cursor c = context.getContentResolver().query(rawContactUri,
                 new String[] {
