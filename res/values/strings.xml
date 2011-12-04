@@ -149,4 +149,6 @@
     <string name="message_auto_sync_disabled">We found that auto-sync is disabled on this device. Auto-sync is necessary for keeping your Kontalk contact list always up to date. Do you want to activate auto-sync? Otherwise you will have to manually update your contact list by going to New Message screen, then Menu &gt; Refresh.</string>
     <string name="yes_auto_sync_disabled">Yes, enable auto-sync</string>
     <string name="no_auto_sync_disabled">No, I can do it by myself</string>
+    <string name="notify_ticker_external_storage">External storage not available</string>
+    <string name="notify_text_external_storage">Unable to write to external storage.</string>
 </resources>

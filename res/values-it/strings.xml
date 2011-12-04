@@ -146,4 +146,6 @@
     <string name="message_auto_sync_disabled">Abbiamo rilevato che la sincronizzazione automatica è disattivata su questo sistema. La sincronizzazione automatica è necessaria per mantenere la lista contatti di Kontalk sempre aggiornata. Vuoi attivarla? Se non lo fai, dovrai mantenere manualmente la tua lista aggiornata entrando nella schermata Nuovo messaggio, poi Menu &gt; Aggiorna.</string>
     <string name="yes_auto_sync_disabled">Sì, abilita sincron. automatica</string>
     <string name="no_auto_sync_disabled">No, posso pensarci io</string>
+    <string name="notify_ticker_external_storage">Memoria esterna non disponibile</string>
+    <string name="notify_text_external_storage">Impossibile scrivere sulla memoria esterna.</string>
 </resources>

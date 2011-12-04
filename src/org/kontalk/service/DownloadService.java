@@ -81,6 +81,13 @@ public class DownloadService extends IntentService implements DownloadListener {
         messageId = intent.getStringExtra(AbstractMessage.MSG_ID);
 
         try {
+            // check if external storage is available
+            if (!MediaStorage.isExternalStorageAvailable()) {
+                errorNotification(getString(R.string.notify_ticker_external_storage),
+                        getString(R.string.notify_text_external_storage));
+                return;
+            }
+
             // make sure storage directory is present
             MediaStorage.MEDIA_ROOT.mkdirs();
 
@@ -105,7 +112,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mCurrentNotification = new Notification(R.drawable.icon, "Downloading attachment...", System.currentTimeMillis());
+        mCurrentNotification = new Notification(R.drawable.icon_stat, "Downloading attachment...", System.currentTimeMillis());
         mCurrentNotification.contentIntent = pi;
         mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
 
@@ -172,6 +179,11 @@ public class DownloadService extends IntentService implements DownloadListener {
     public void error(String url, File destination, Throwable exc) {
         Log.e(TAG, "download error", exc);
 
+        errorNotification(getString(R.string.notify_ticker_download_error),
+                getString(R.string.notify_text_download_error));
+    }
+
+    private void errorNotification(String ticker, String text) {
         // create intent for download error notification
         Intent i = new Intent(this, ConversationList.class);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
@@ -179,11 +191,11 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         // create notification
         Notification no = new Notification(R.drawable.icon_stat,
-                getString(R.string.notify_ticker_download_error),
+                ticker,
                 System.currentTimeMillis());
         no.setLatestEventInfo(getApplicationContext(),
                 getString(R.string.notify_title_download_error),
-                getString(R.string.notify_text_download_error), pi);
+                text, pi);
         no.flags |= Notification.FLAG_AUTO_CANCEL;
 
         // notify!!

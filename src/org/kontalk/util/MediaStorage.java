@@ -41,6 +41,11 @@ public abstract class MediaStorage {
     private static final int THUMBNAIL_WIDTH = 80;
     private static final int THUMBNAIL_HEIGHT = 80;
 
+    public static boolean isExternalStorageAvailable() {
+        return Environment.getExternalStorageState()
+            .equals(Environment.MEDIA_MOUNTED);
+    }
+
     /** Writes a media to the internal cache. */
     public static File writeInternalMedia(Context context, String filename, byte[] contents) throws IOException {
         File file = new File(context.getCacheDir(), filename);
