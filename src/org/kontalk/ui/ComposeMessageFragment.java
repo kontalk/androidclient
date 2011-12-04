@@ -832,11 +832,17 @@ public class ComposeMessageFragment extends ListFragment {
                                 context.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        mLastSeenBanner.setText(bannerText);
-                                        mLastSeenBanner.setVisibility(View.VISIBLE);
-                                        mLastSeenBanner.startAnimation(
-                                                AnimationUtils.loadAnimation(
-                                                        getActivity(), R.anim.header_appear));
+                                        try {
+                                            mLastSeenBanner.setText(bannerText);
+                                            mLastSeenBanner.setVisibility(View.VISIBLE);
+                                            mLastSeenBanner.startAnimation(
+                                                    AnimationUtils.loadAnimation(
+                                                            getActivity(), R.anim.header_appear));
+                                        }
+                                        catch (Exception e) {
+                                            // something could happen in the meanwhile
+                                            // e.g. fragment destruction
+                                        }
                                     }
                                 });
                         }
