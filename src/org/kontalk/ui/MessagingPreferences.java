@@ -276,4 +276,8 @@ public class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
+    public static String getFontSize(Context context) {
+        return getString(context, "pref_font_size", "medium");
+    }
+
 }

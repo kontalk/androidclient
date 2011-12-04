@@ -152,4 +152,9 @@
     <string name="message_user_not_found">Questo contatto sembra non essere registrato su Kontalk. Puoi provare a contattarlo ugualmente oppure puoi inviare un messaggio di invito.</string>
     <string name="yes_user_not_found">Sì, contatta ugualmente l\'utente</string>
     <string name="no_user_not_found">No, manda un invito</string>
+    <string name="pref_appearance_settings">Impostazioni aspetto</string>
+    <string name="pref_font_size">Dimensione testo</string>
+    <string name="message_text_small">Piccolo</string>
+    <string name="message_text_medium">Medio</string>
+    <string name="message_text_large">Grande</string>
 </resources>

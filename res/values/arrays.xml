@@ -17,14 +17,25 @@
  -->
 
 <resources>
-    <string-array name="vibrateValues">
+    <string-array name="vibrate_values">
         <item>always</item>
         <item>silent_only</item>
         <item>never</item>
     </string-array>
-    <string-array name="vibrateLabels">
+    <string-array name="vibrate_labels">
         <item>@string/vibrate_always</item>
         <item>@string/vibrate_silent_only</item>
         <item>@string/vibrate_never</item>
+    </string-array>
+
+    <string-array name="fontsize_values">
+        <item>small</item>
+        <item>medium</item>
+        <item>large</item>
+    </string-array>
+    <string-array name="fontsize_labels">
+        <item>@string/message_text_small</item>
+        <item>@string/message_text_medium</item>
+        <item>@string/message_text_large</item>
     </string-array>
 </resources>

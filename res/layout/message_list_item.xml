@@ -76,12 +76,9 @@
                 android:paddingLeft="5dip"
                 android:paddingRight="5dip"
                 android:maxWidth="200dip"
-                android:minWidth="50dip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:linksClickable="false"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textSize="16sp" />
+                android:linksClickable="false"/>
 
         </LinearLayout>
 

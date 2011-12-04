@@ -54,6 +54,15 @@
             android:defaultValue="true"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:key="pref_appearance_settings"
+        android:title="@string/pref_appearance_settings">
+        <ListPreference android:key="pref_font_size"
+            android:title="@string/pref_font_size"
+            android:entries="@array/fontsize_labels"
+            android:entryValues="@array/fontsize_values"
+            android:defaultValue="medium"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:key="pref_notification_settings"
         android:title="@string/pref_notification_settings">
         <CheckBoxPreference android:key="pref_enable_notifications"
@@ -70,8 +79,8 @@
             android:dependency="pref_enable_notifications"
             android:title="@string/pref_vibrate"
             android:summary="@string/pref_title_vibrate"
-            android:entries="@array/vibrateLabels"
-            android:entryValues="@array/vibrateValues"
+            android:entries="@array/vibrate_labels"
+            android:entryValues="@array/vibrate_values"
             android:defaultValue="never"/>
     </PreferenceCategory>
 

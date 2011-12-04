@@ -157,6 +157,15 @@ public class MessageListItem extends RelativeLayout {
         mMessage = msg;
 
         formattedMessage = formatMessage(contact, highlight);
+        String size = MessagingPreferences.getFontSize(context);
+        int sizeId;
+        if (size.equals("small"))
+            sizeId = android.R.style.TextAppearance_Small;
+        else if (size.equals("large"))
+            sizeId = android.R.style.TextAppearance_Large;
+        else
+            sizeId = android.R.style.TextAppearance;
+        mTextView.setTextAppearance(context, sizeId);
         mTextView.setText(formattedMessage);
 
         int resId = -1;
