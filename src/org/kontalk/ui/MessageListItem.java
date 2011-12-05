@@ -117,7 +117,7 @@ public class MessageListItem extends RelativeLayout {
                 if (mDateViewIncoming != null) {
     	            mDateViewIncoming.setVisibility(VISIBLE);
     	            mDateViewOutgoing.setVisibility(GONE);
-    	            mDateViewIncoming.setText("10:46");
+    	            mDateViewIncoming.setText("28 Nov");
                 }
             }
             else {
@@ -136,9 +136,9 @@ public class MessageListItem extends RelativeLayout {
                 if (mBalloonView != null)
                     mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
                 if (mDateViewIncoming != null) {
-                    mDateViewIncoming.setVisibility(VISIBLE);
-                    mDateViewOutgoing.setVisibility(GONE);
-                    mDateViewIncoming.setText("10:46");
+                    mDateViewIncoming.setVisibility(GONE);
+                    mDateViewOutgoing.setVisibility(VISIBLE);
+                    mDateViewOutgoing.setText("28 Novembre");
                 }
             }
             else {
