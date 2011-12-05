@@ -794,7 +794,7 @@ public class ComposeMessageFragment extends ListFragment {
             onConversationCreated();
 
         // non existant thread - check for not synced contact
-        if (threadId <= 0) {
+        if (threadId <= 0 && mConversation != null) {
             Contact contact = mConversation.getContact();
             if (userPhone != null && contact != null ? contact.getRawContactId() <= 0 : true) {
                 // ask user to send invitation
