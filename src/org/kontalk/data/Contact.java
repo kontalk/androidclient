@@ -54,7 +54,7 @@ public class Contact {
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
     /** The Kontalk RawContact id identified by this object. */
-    private final long mRawContactId;
+    private long mRawContactId;
     private String mNumber;
     private String mName;
 
@@ -162,6 +162,35 @@ public class Contact {
         return mContactId;
     }
 
+    /** Retrieves the raw contact id if needed and returns it. */
+    public long getRawContactId(Context context) {
+        if (mRawContactId <= 0) {
+            Account acc = Authenticator.getDefaultAccount(context);
+            Cursor c = context.getContentResolver()
+                .query(RawContacts.CONTENT_URI,
+                    new String[] {
+                        RawContacts._ID
+                    },
+                    RawContacts.ACCOUNT_NAME + " = ? AND " +
+                    RawContacts.ACCOUNT_TYPE + " = ? AND " +
+                    SyncAdapter.RAW_COLUMN_PHONE + " = ?",
+                    new String[] {
+                        acc.name,
+                        acc.type,
+                        mNumber
+                    }, null);
+
+            if (c.moveToFirst()) {
+                mRawContactId = c.getLong(0);
+                // invalidate old uri
+                mRawContactUri = null;
+            }
+            c.close();
+        }
+
+        return mRawContactId;
+    }
+
     public long getRawContactId() {
         return mRawContactId;
     }
@@ -236,9 +265,9 @@ public class Contact {
                 new String[] {
                     SyncAdapter.RAW_COLUMN_PHONE
                 },
-                RawContacts.ACCOUNT_NAME + " = ? AND " +
-                RawContacts.ACCOUNT_TYPE + " = ? AND " +
-                RawContacts.SYNC3        + " = ?",
+                RawContacts.ACCOUNT_NAME        + " = ? AND " +
+                RawContacts.ACCOUNT_TYPE        + " = ? AND " +
+                SyncAdapter.RAW_COLUMN_USERID   + " = ?",
                 new String[] {
                     acc.name,
                     acc.type,
