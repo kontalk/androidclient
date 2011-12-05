@@ -23,7 +23,6 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.service.MessageCenterService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -58,8 +57,7 @@ public class ConversationListFragment extends ListFragment {
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
-    private static final int REQUEST_AUTHENTICATE = 7720;
-    private static final int REQUEST_CONTACT_PICKER = 7721;
+    private static final int REQUEST_CONTACT_PICKER = 7720;
 
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
@@ -273,9 +271,8 @@ public class ConversationListFragment extends ListFragment {
         super.onResume();
 
         if (Authenticator.getDefaultAccount(getActivity()) == null) {
-            startActivityForResult(new Intent(getActivity(), NumberValidation.class), REQUEST_AUTHENTICATE);
-            // finish for now...
-            return;
+            NumberValidation.startValidation(getActivity());
+            getActivity().finish();
         }
     }
 
@@ -293,18 +290,8 @@ public class ConversationListFragment extends ListFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // authentication
-        if (requestCode == REQUEST_AUTHENTICATE) {
-            // ok, start message center
-            if (resultCode == Activity.RESULT_OK)
-                MessageCenterService.startMessageCenter(getActivity());
-            // failed - exit
-            else
-                getActivity().finish();
-        }
-
         // contact chooser
-        else if (requestCode == REQUEST_CONTACT_PICKER) {
+        if (requestCode == REQUEST_CONTACT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
                 Uri rawContact = data.getData();
                 if (rawContact != null) {

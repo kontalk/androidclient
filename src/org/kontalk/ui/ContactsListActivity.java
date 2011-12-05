@@ -63,6 +63,16 @@ public class ContactsListActivity extends ListActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (Authenticator.getDefaultAccount(this) == null) {
+            NumberValidation.startValidation(this);
+            finish();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.contacts_list_menu, menu);
         return true;

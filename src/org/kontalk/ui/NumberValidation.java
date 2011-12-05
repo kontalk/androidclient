@@ -24,6 +24,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.service.MessageCenterService;
 
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
@@ -32,6 +33,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
@@ -119,6 +121,11 @@ public class NumberValidation extends AccountAuthenticatorActivity
                 return true;
         }
         return false;
+    }
+
+    /** Starts the validation activity. */
+    public static void startValidation(Context context) {
+        context.startActivity(new Intent(context, NumberValidation.class));
     }
 
     private void enableControls(boolean enabled) {
@@ -287,6 +294,9 @@ public class NumberValidation extends AccountAuthenticatorActivity
         setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
 
+        // ok, start message center
+        MessageCenterService.startMessageCenter(getApplicationContext());
+        // end this
         finish();
     }
 

@@ -996,6 +996,12 @@ public class ComposeMessageFragment extends ListFragment {
     public void onResume() {
         super.onResume();
 
+        if (Authenticator.getDefaultAccount(getActivity()) == null) {
+            NumberValidation.startValidation(getActivity());
+            getActivity().finish();
+            return;
+        }
+
         // cursor was previously destroyed -- reload everything
         //mConversation = null;
         processStart();

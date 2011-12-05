@@ -135,7 +135,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             Account account, String authTokenType, Bundle options)
             throws NetworkErrorException {
 
-        Log.w(TAG, "auth token requested");
+        //Log.v(TAG, "auth token requested");
         if (!authTokenType.equals(AUTHTOKEN_TYPE)) {
             final Bundle result = new Bundle();
             result.putString(AccountManager.KEY_ERROR_MESSAGE,
@@ -145,7 +145,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         final AccountManager am = AccountManager.get(mContext);
         final String password = am.getPassword(account);
         if (password != null) {
-            Log.w(TAG, "returning configured password: " + password);
+            // exposing sensitive data - Log.v(TAG, "returning configured password: " + password);
             final Bundle result = new Bundle();
             result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
             result.putString(AccountManager.KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
