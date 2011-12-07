@@ -3906,6 +3906,10 @@ public final class Protocol {
     // optional uint64 timestamp = 2;
     boolean hasTimestamp();
     long getTimestamp();
+    
+    // optional string status = 3;
+    boolean hasStatus();
+    String getStatus();
   }
   public static final class LookupResponseEntry extends
       com.google.protobuf.GeneratedMessageLite
@@ -3968,9 +3972,42 @@ public final class Protocol {
       return timestamp_;
     }
     
+    // optional string status = 3;
+    public static final int STATUS_FIELD_NUMBER = 3;
+    private java.lang.Object status_;
+    public boolean hasStatus() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public String getStatus() {
+      java.lang.Object ref = status_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          status_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getStatusBytes() {
+      java.lang.Object ref = status_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        status_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
     private void initFields() {
       userId_ = "";
       timestamp_ = 0L;
+      status_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3994,6 +4031,9 @@ public final class Protocol {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeUInt64(2, timestamp_);
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getStatusBytes());
+      }
     }
     
     private int memoizedSerializedSize = -1;
@@ -4009,6 +4049,10 @@ public final class Protocol {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(2, timestamp_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getStatusBytes());
       }
       memoizedSerializedSize = size;
       return size;
@@ -4116,6 +4160,8 @@ public final class Protocol {
         bitField0_ = (bitField0_ & ~0x00000001);
         timestamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
+        status_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       
@@ -4157,6 +4203,10 @@ public final class Protocol {
           to_bitField0_ |= 0x00000002;
         }
         result.timestamp_ = timestamp_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.status_ = status_;
         result.bitField0_ = to_bitField0_;
         return result;
       }
@@ -4168,6 +4218,9 @@ public final class Protocol {
         }
         if (other.hasTimestamp()) {
           setTimestamp(other.getTimestamp());
+        }
+        if (other.hasStatus()) {
+          setStatus(other.getStatus());
         }
         return this;
       }
@@ -4205,6 +4258,11 @@ public final class Protocol {
             case 16: {
               bitField0_ |= 0x00000002;
               timestamp_ = input.readUInt64();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              status_ = input.readBytes();
               break;
             }
           }
@@ -4268,6 +4326,42 @@ public final class Protocol {
         timestamp_ = 0L;
         
         return this;
+      }
+      
+      // optional string status = 3;
+      private java.lang.Object status_ = "";
+      public boolean hasStatus() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public String getStatus() {
+        java.lang.Object ref = status_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          status_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setStatus(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        status_ = value;
+        
+        return this;
+      }
+      public Builder clearStatus() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        status_ = getDefaultInstance().getStatus();
+        
+        return this;
+      }
+      void setStatus(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000004;
+        status_ = value;
+        
       }
       
       // @@protoc_insertion_point(builder_scope:LookupResponseEntry)

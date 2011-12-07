@@ -123,6 +123,7 @@ public class ComposeMessageFragment extends ListFragment {
     private String userPhone;
 
     private PeerObserver mPeerObserver;
+    private Handler mHandler;
 
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromContactPicker(Context context, Uri rawContactUri) {
@@ -165,6 +166,7 @@ public class ComposeMessageFragment extends ListFragment {
     	super.onActivityCreated(savedInstanceState);
         // setListAdapter() is post-poned
 
+    	mHandler = new Handler();
         registerForContextMenu(getListView());
 
         mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
@@ -829,6 +831,7 @@ public class ComposeMessageFragment extends ListFragment {
                 @Override
                 public void run() {
                     String text = null;
+                    String text2 = null;
                     try {
                         try {
                             Context context = getActivity();
@@ -844,6 +847,9 @@ public class ComposeMessageFragment extends ListFragment {
                                     if (time > 0)
                                         text = getResources().getString(R.string.last_seen_label) +
                                             MessageUtils.formatTimeStampString(context, time * 1000, true);
+                                    if (res.hasStatus()) {
+                                        text2 = res.getStatus();
+                                    }
                                 }
                             }
                         }
@@ -857,7 +863,7 @@ public class ComposeMessageFragment extends ListFragment {
                             final String bannerText = text;
                             // show last seen banner
                             Activity context = getActivity();
-                            if (context != null)
+                            if (context != null) {
                                 context.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -874,11 +880,51 @@ public class ComposeMessageFragment extends ListFragment {
                                         }
                                     }
                                 });
+                                // display status message after 3 seconds
+                                if (text2 != null) {
+                                    final String bannerText2 = text2;
+                                    mHandler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                mLastSeenBanner.setText(bannerText2);
+                                                // hide status after 10 seconds
+                                                mHandler.postDelayed(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        try {
+                                                            mLastSeenBanner.startAnimation(
+                                                                    AnimationUtils.loadAnimation(
+                                                                            getActivity(), R.anim.header_disappear));
+                                                            mLastSeenBanner.setVisibility(View.GONE);
+                                                        }
+                                                        catch (Exception e) {}
+                                                    }
+                                                }, 10000);
+                                            }
+                                            catch (Exception e) {}
+                                        }
+                                    }, 3000);
+                                }
+                                // no status message - hide last seen banner
+                                else {
+                                    mHandler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                mLastSeenBanner.startAnimation(
+                                                        AnimationUtils.loadAnimation(
+                                                                getActivity(), R.anim.header_disappear));
+                                                mLastSeenBanner.setVisibility(View.GONE);
+                                            }
+                                            catch (Exception e) {}
+                                        }
+                                    }, 5000);
+                                }
+                            }
                         }
                     }
-                    catch (Exception e) {
-                        // ignore exceptions for now
-                    }
+                    catch (Exception e) {}
                 }
             }).start();
         }
