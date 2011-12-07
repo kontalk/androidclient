@@ -160,4 +160,5 @@
     <string name="message_text_small">Small</string>
     <string name="message_text_medium">Medium</string>
     <string name="message_text_large">Large</string>
+    <string name="all_threads">All threads</string>
 </resources>

@@ -467,6 +467,11 @@ public class ComposeMessageFragment extends ListFragment implements View.OnTouch
                     deleteThread();
 
                 return true;
+
+            case R.id.goto_conversation_list:
+                startActivity(new Intent(getActivity(), ConversationList.class));
+                getActivity().finish();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

@@ -61,6 +61,7 @@
 
         <activity android:name=".ui.ConversationList"
             android:configChanges="orientation|keyboardHidden"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -86,6 +87,7 @@
 
         <activity android:name=".ui.ComposeMessage"
             android:theme="@style/Theme.Light"
+            android:launchMode="singleTop"
             android:configChanges="orientation|keyboardHidden"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
