@@ -70,18 +70,24 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.ListFragment;
 import android.text.ClipboardManager;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.animation.AnimationUtils;
@@ -96,7 +102,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
  * The composer fragment.
  * @author Daniele Ricci
  */
-public class ComposeMessageFragment extends ListFragment {
+public class ComposeMessageFragment extends ListFragment implements View.OnTouchListener, View.OnLongClickListener {
     private static final String TAG = ComposeMessageFragment.class.getSimpleName();
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -124,6 +130,7 @@ public class ComposeMessageFragment extends ListFragment {
 
     private PeerObserver mPeerObserver;
     private Handler mHandler;
+    private int mTouchSlop;
 
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromContactPicker(Context context, Uri rawContactUri) {
@@ -195,6 +202,11 @@ public class ComposeMessageFragment extends ListFragment {
         });
 
         mLastSeenBanner = (TextView) getView().findViewById(R.id.last_seen_text);
+        View v = (View) mLastSeenBanner.getParent();
+        v.setOnTouchListener(this);
+        v.setOnLongClickListener(this);
+
+        mTouchSlop = ViewConfiguration.get(getActivity()).getScaledTouchSlop();
 
         Configuration config = getResources().getConfiguration();
         mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
@@ -868,6 +880,7 @@ public class ComposeMessageFragment extends ListFragment {
                                     @Override
                                     public void run() {
                                         try {
+                                            mLastSeenBanner.setGravity(Gravity.CENTER);
                                             mLastSeenBanner.setText(bannerText);
                                             mLastSeenBanner.setVisibility(View.VISIBLE);
                                             mLastSeenBanner.startAnimation(
@@ -887,8 +900,23 @@ public class ComposeMessageFragment extends ListFragment {
                                         @Override
                                         public void run() {
                                             try {
+                                                // restore gravity for all the moving stuff to work
+                                                mLastSeenBanner.setGravity(Gravity.NO_GRAVITY);
+
+                                                // FIXME this isn't right...
+                                                mLastSeenBanner.startAnimation(
+                                                        AnimationUtils.loadAnimation(
+                                                                getActivity(), R.anim.header_disappear));
                                                 mLastSeenBanner.setText(bannerText2);
-                                                // hide status after 10 seconds
+                                                mLastSeenBanner.startAnimation(
+                                                        AnimationUtils.loadAnimation(
+                                                                getActivity(), R.anim.header_appear));
+
+                                                // FIXME this should be used for marquee...
+                                                //mLastSeenBanner.setSelected(true);
+
+                                                // hide status after 40 seconds
+                                                /*
                                                 mHandler.postDelayed(new Runnable() {
                                                     @Override
                                                     public void run() {
@@ -900,7 +928,8 @@ public class ComposeMessageFragment extends ListFragment {
                                                         }
                                                         catch (Exception e) {}
                                                     }
-                                                }, 10000);
+                                                }, 40000);
+                                                */
                                             }
                                             catch (Exception e) {}
                                         }
@@ -919,7 +948,7 @@ public class ComposeMessageFragment extends ListFragment {
                                             }
                                             catch (Exception e) {}
                                         }
-                                    }, 5000);
+                                    }, 10000);
                                 }
                             }
                         }
@@ -1189,5 +1218,105 @@ public class ComposeMessageFragment extends ListFragment {
 
     public void setTextEntry(CharSequence text) {
         mTextEntry.setText(text);
+    }
+
+    private int mInitialX = -1;
+    private int mLastX = -1;
+    private int mTextWidth = 0;
+    private int mViewWidth = 0;
+    private boolean mDraggingLabel = false;
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        int action = event.getAction();
+        TextView tv = (TextView) v.findViewById(R.id.last_seen_text);
+        if (tv == null) {
+            return false;
+        }
+        if (action == MotionEvent.ACTION_DOWN) {
+            mInitialX = mLastX = (int) event.getX();
+            mDraggingLabel = false;
+        } else if (action == MotionEvent.ACTION_UP ||
+                action == MotionEvent.ACTION_CANCEL) {
+            if (mDraggingLabel) {
+                Message msg = mLabelScroller.obtainMessage(0, tv);
+                mLabelScroller.sendMessageDelayed(msg, 2000);
+            }
+        } else if (action == MotionEvent.ACTION_MOVE) {
+            if (mDraggingLabel) {
+                int scrollx = tv.getScrollX();
+                int x = (int) event.getX();
+                int delta = mLastX - x;
+                if (delta != 0) {
+                    mLastX = x;
+                    scrollx += delta;
+                    if (scrollx > mTextWidth) {
+                        // scrolled the text completely off the view to the left
+                        scrollx -= mTextWidth;
+                        scrollx -= mViewWidth;
+                    }
+                    if (scrollx < -mViewWidth) {
+                        // scrolled the text completely off the view to the right
+                        scrollx += mViewWidth;
+                        scrollx += mTextWidth;
+                    }
+                    tv.scrollTo(scrollx, 0);
+                }
+                return true;
+            }
+            int delta = mInitialX - (int) event.getX();
+            if (Math.abs(delta) > mTouchSlop) {
+                // start moving
+                mLabelScroller.removeMessages(0, tv);
+
+                // Only turn ellipsizing off when it's not already off, because it
+                // causes the scroll position to be reset to 0.
+                if (tv.getEllipsize() != null) {
+                    tv.setEllipsize(null);
+                }
+                Layout ll = tv.getLayout();
+                // layout might be null if the text just changed, or ellipsizing
+                // was just turned off
+                if (ll == null) {
+                    return false;
+                }
+                // get the non-ellipsized line width, to determine whether scrolling
+                // should even be allowed
+                mTextWidth = (int) tv.getLayout().getLineWidth(0);
+                mViewWidth = tv.getWidth();
+                if (mViewWidth > mTextWidth) {
+                    tv.setEllipsize(TruncateAt.END);
+                    v.cancelLongPress();
+                    return false;
+                }
+                mDraggingLabel = true;
+                tv.setHorizontalFadingEdgeEnabled(true);
+                v.cancelLongPress();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    Handler mLabelScroller = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            TextView tv = (TextView) msg.obj;
+            int x = tv.getScrollX();
+            x = x * 3 / 4;
+            tv.scrollTo(x, 0);
+            if (x == 0) {
+                tv.setEllipsize(TruncateAt.END);
+            } else {
+                Message newmsg = obtainMessage(0, tv);
+                mLabelScroller.sendMessageDelayed(newmsg, 15);
+            }
+        }
+    };
+
+    @Override
+    public boolean onLongClick(View v) {
+        // this seems to be necessary...
+        return false;
     }
 }

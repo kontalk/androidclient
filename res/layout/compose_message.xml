@@ -22,7 +22,27 @@
     android:orientation="vertical"
     android:background="@android:color/white">
 
-    <include layout="@layout/last_seen_banner"/>
+    <LinearLayout android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:baselineAligned="false">
+    
+        <!-- header area -->
+        <TextView android:id="@+id/last_seen_text"
+            style="?android:attr/listViewWhiteStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dip"
+            android:paddingBottom="5dip"
+            android:paddingLeft="5dip"
+            android:paddingRight="5dip"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:background="@color/last_seen_banner" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="fill_parent"
