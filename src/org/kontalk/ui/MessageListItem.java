@@ -133,12 +133,13 @@ public class MessageListItem extends RelativeLayout {
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             if (mDateView == null) {
+                setGravity(Gravity.RIGHT);
                 if (mBalloonView != null)
                     mBalloonView.setBackgroundResource(R.drawable.balloon_outgoing);
                 if (mDateViewIncoming != null) {
                     mDateViewIncoming.setVisibility(GONE);
                     mDateViewOutgoing.setVisibility(VISIBLE);
-                    mDateViewOutgoing.setText("28 Novembre");
+                    mDateViewOutgoing.setText("28 Nov");
                 }
             }
             else {
