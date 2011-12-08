@@ -40,6 +40,7 @@ import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -404,6 +405,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
                             }
                         });
 
+                    txt.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
                     final Dialog dialog = builder.create();
                     dialog.show();
                 }

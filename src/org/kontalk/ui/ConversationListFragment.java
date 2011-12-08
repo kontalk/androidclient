@@ -39,6 +39,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
+import android.text.InputType;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -256,7 +257,9 @@ public class ConversationListFragment extends ListFragment {
             public void onClick(DialogInterface dialog, int which) {
                 if (which == Dialog.BUTTON_POSITIVE) {
                     Log.v(TAG, "using status: " + txt.getText());
-                    String text = txt.getText().toString().trim();
+                    String text = txt.getText().toString();
+                    if (text.trim().length() <= 0)
+                        text = text.trim();
                     MessagingPreferences.setStatusMessage(getActivity(), text);
 
                     // start the message center to push the status message
@@ -272,6 +275,8 @@ public class ConversationListFragment extends ListFragment {
             .setView(view);
 
         txt.setText(MessagingPreferences.getStatusMessage(getActivity()));
+        txt.setSelection(txt.getText().length());
+        txt.setInputType(InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
         final Dialog dialog = builder.create();
         dialog.show();
     }
