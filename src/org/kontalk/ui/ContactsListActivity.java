@@ -105,7 +105,7 @@ public class ContactsListActivity extends ListActivity
     }
 
     private void startSync() {
-        SyncAdapter.requestSync(this);
+        SyncAdapter.requestSync(this, true);
         Toast.makeText(this, R.string.msg_sync_started,
                 Toast.LENGTH_LONG).show();
     }

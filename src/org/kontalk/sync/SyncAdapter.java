@@ -92,13 +92,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider, SyncResult syncResult) {
 
         final long startTime = System.currentTimeMillis();
+        boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 
-        long lastSync = MessagingPreferences.getLastSyncTimestamp(mContext);
-        long diff = (System.currentTimeMillis() - lastSync) / 1000;
-        if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
-            Log.d(TAG, "not starting sync - throttling");
-            // TEST do not delay - syncResult.delayUntil = (long) diff;
-            return;
+        if (!force) {
+            long lastSync = MessagingPreferences.getLastSyncTimestamp(mContext);
+            long diff = (System.currentTimeMillis() - lastSync) / 1000;
+            if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
+                Log.d(TAG, "not starting sync - throttling");
+                // TEST do not delay - syncResult.delayUntil = (long) diff;
+                return;
+            }
         }
 
         Log.i(TAG, "sync started (authority=" + authority + ")");
@@ -362,12 +365,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     /** Requests a manual sync to the system. */
-    public static void requestSync(Context context) {
-        long lastSync = MessagingPreferences.getLastSyncTimestamp(context);
-        float diff = (System.currentTimeMillis() - lastSync) / 1000;
-        if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
-            Log.d(TAG, "not requesting sync - throttling");
-            return;
+    public static void requestSync(Context context, boolean force) {
+        if (!force) {
+            long lastSync = MessagingPreferences.getLastSyncTimestamp(context);
+            float diff = (System.currentTimeMillis() - lastSync) / 1000;
+            if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
+                Log.d(TAG, "not requesting sync - throttling");
+                return;
+            }
         }
 
         Account acc = Authenticator.getDefaultAccount(context);

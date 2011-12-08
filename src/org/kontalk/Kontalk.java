@@ -52,7 +52,7 @@ public class Kontalk extends Application {
         @Override
         public void onChange(boolean selfChange) {
             Log.v(TAG, "contacts have changed, resyncing users database");
-            SyncAdapter.requestSync(Kontalk.this);
+            SyncAdapter.requestSync(Kontalk.this, false);
         }
     }
 
