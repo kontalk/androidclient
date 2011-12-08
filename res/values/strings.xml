@@ -161,4 +161,7 @@
     <string name="message_text_medium">Medium</string>
     <string name="message_text_large">Large</string>
     <string name="all_threads">All threads</string>
+    <string name="menu_status">Status</string>
+    <string name="title_validation_code">Validation code</string>
+    <string name="title_status_message">Status message</string>
 </resources>

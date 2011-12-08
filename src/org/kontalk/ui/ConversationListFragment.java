@@ -23,9 +23,11 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.service.MessageCenterService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
@@ -46,6 +48,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -147,6 +150,10 @@ public class ConversationListFragment extends ListFragment {
                 chooseContact();
                 return true;
 
+            case R.id.menu_status:
+                setStatus();
+                return true;
+
             case R.id.menu_search:
                 getActivity().onSearchRequested();
                 return true;
@@ -237,6 +244,36 @@ public class ConversationListFragment extends ListFragment {
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(getActivity(), ContactsListActivity.class);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
+    }
+
+    private void setStatus() {
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        final View view = inflater.inflate(R.layout.edittext_dialog, null);
+        final EditText txt = (EditText) view.findViewById(R.id.textinput);
+
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == Dialog.BUTTON_POSITIVE) {
+                    Log.v(TAG, "using status: " + txt.getText());
+                    String text = txt.getText().toString().trim();
+                    MessagingPreferences.setStatusMessage(getActivity(), text);
+
+                    // start the message center to push the status message
+                    MessageCenterService.startMessageCenter(getActivity());
+                }
+            }
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder
+            .setTitle(R.string.title_status_message)
+            .setPositiveButton(android.R.string.ok, listener)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setView(view);
+
+        txt.setText(MessagingPreferences.getStatusMessage(getActivity()));
+        final Dialog dialog = builder.create();
+        dialog.show();
     }
 
     private void deleteAll() {

@@ -369,16 +369,14 @@ public class NumberValidation extends AccountAuthenticatorActivity
                 @Override
                 public void run() {
                     // open validation code input dialog
-                    LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = getLayoutInflater();
                     final View view = inflater.inflate(R.layout.edittext_dialog, null);
                     final EditText txt = (EditText) view.findViewById(R.id.textinput);
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(NumberValidation.this);
-                    builder
-                        .setTitle("Validation code")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (which == Dialog.BUTTON_POSITIVE) {
                                 startProgress();
                                 // send the code
                                 if (mValidator != null) {
@@ -387,13 +385,17 @@ public class NumberValidation extends AccountAuthenticatorActivity
                                     mValidator.start();
                                 }
                             }
-                        })
-                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            else if (which == Dialog.BUTTON_NEGATIVE) {
                                 dialog.cancel();
                             }
-                        })
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(NumberValidation.this);
+                    builder
+                        .setTitle(R.string.title_validation_code)
+                        .setPositiveButton(android.R.string.ok, listener)
+                        .setNegativeButton(android.R.string.cancel, listener)
                         .setView(view)
                         .setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override

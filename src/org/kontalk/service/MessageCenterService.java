@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.Semaphore;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -85,7 +84,7 @@ public class MessageCenterService extends Service
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
     /** The global message center lock. */
-    private static final Semaphore mLock = new Semaphore(1, true);
+    // TODO find a use for this -- private static final Semaphore mLock = new Semaphore(1, true);
 
     public static final String ACTION_RESTART = "org.kontalk.RESTART";
     public static final String ACTION_IDLE = "org.kontalk.IDLE";
@@ -238,6 +237,16 @@ public class MessageCenterService extends Service
                         mPollingThread.setPushRegistrationId(mPushRegistrationId);
                         mPollingThread.start();
                     }
+
+                    // update status message
+                    pushRequest(new RequestJob() {
+                        @Override
+                        public MessageLite call(RequestClient client, RequestListener listener,
+                                Context context) throws IOException {
+                            String msg = MessagingPreferences.getStatusMessage(context);
+                            return client.update(msg, null);
+                        }
+                    });
 
                     /*
                      * FIXME c2dm stays on since in onDestroy() we commented
@@ -803,7 +812,7 @@ public class MessageCenterService extends Service
         setPushRegistrationId(null);
     }
 
-    private void setPushRegistrationId(final String regId) {
+    private void setPushRegistrationId(String regId) {
         mPushRegistrationId = regId;
         if (mPollingThread != null)
             mPollingThread.setPushRegistrationId(regId);
@@ -813,7 +822,7 @@ public class MessageCenterService extends Service
             @Override
             public MessageLite call(RequestClient client, RequestListener listener,
                     Context context) throws IOException {
-                return client.update(null, regId);
+                return client.update(null, mPushRegistrationId);
             }
         });
     }

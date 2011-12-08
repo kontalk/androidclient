@@ -280,4 +280,14 @@ public class MessagingPreferences extends PreferenceActivity {
         return getString(context, "pref_font_size", "medium");
     }
 
+    public static String getStatusMessage(Context context) {
+        return getString(context, "pref_status_message", null);
+    }
+
+    public static boolean setStatusMessage(Context context, String message) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putString("pref_status_message", message)
+            .commit();
+    }
 }
