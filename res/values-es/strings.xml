@@ -149,4 +149,19 @@
     <string name="message_auto_sync_disabled">Hemos encontrado que la sincronización automática está deshabilitada en este dispositivo. Auto-sincronización es necesaria para mantener su lista de contactos Kontalk siempre al día. ¿Quieres activar la sincronización automática? De lo contrario, tendrá que actualizar manualmente su lista de contactos, vaya a la pantalla Mensaje nuevo, a continuación, en Menú&gt; Actualizar.</string>
     <string name="yes_auto_sync_disabled">Si, Habilitar sincronización automática</string>
     <string name="no_auto_sync_disabled">No, puedo hacerlo por mí mismo</string>
+    <string name="notify_ticker_external_storage">Dispositivo Almacenamiento externo no está disponible</string>
+    <string name="notify_text_external_storage">No se puede escribir sobre el dispositivo almacenamiento externo.</string>
+    <string name="title_user_not_found">Usuario no encontrado</string>
+    <string name="message_user_not_found">Este contacto parece no estar registrado en Kontalk. Usted puede intentar ponerse en contacto con el usuario de todas formas o enviar un mensaje de invitación.</string>
+    <string name="yes_user_not_found">Sí, póngase en contacto con el usuario de todas manera</string>
+    <string name="no_user_not_found">No, enviar una invitación</string>
+    <string name="pref_appearance_settings">Configuración de la apariencia</string>
+    <string name="pref_font_size">Tamaño del font</string>
+    <string name="message_text_small">Pequeño</string>
+    <string name="message_text_medium">Medio</string>
+    <string name="message_text_large">Grande</string>
+    <string name="all_threads">Todos los threads</string>
+    <string name="menu_status">Estado</string>
+    <string name="title_validation_code">Código de validación</string>
+    <string name="title_status_message">Mensaje de estado</string>
 </resources>
