@@ -79,7 +79,8 @@
                 android:maxWidth="200dip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:linksClickable="false"/>
+                android:autoLink="all"
+                android:linksClickable="true"/>
 
         </LinearLayout>
 
