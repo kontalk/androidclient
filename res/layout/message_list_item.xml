@@ -63,12 +63,13 @@
 
             <ImageView
                 android:id="@+id/lock_icon"
+                android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@+id/text_view"
                 android:layout_alignRight="@+id/text_view"
                 android:paddingBottom="4dip"
-                android:src="@drawable/lock" />
+                android:src="@drawable/ic_msg_crypt" />
 
             <TextView android:id="@+id/text_view"
                 android:paddingTop="4dip"
