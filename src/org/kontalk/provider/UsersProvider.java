@@ -169,13 +169,9 @@ public class UsersProvider extends ContentProvider {
         // begin transaction
         if (android.os.Build.VERSION.SDK_INT >= 11)
             db.beginTransactionNonExclusive();
-        else {
+        else
             // this is because API < 11 doesn't have beginTransactionNonExclusive()
-            // FIXME this is really a hack...
-            db.beginTransaction();
-            db.execSQL("ROLLBACK;");
             db.execSQL("BEGIN IMMEDIATE;");
-        }
 
         // we are trying to be fast here
         SQLiteStatement stm = db.compileStatement("REPLACE INTO " + TABLE_USERS + " VALUES(?, ?, ?)");
@@ -205,11 +201,15 @@ public class UsersProvider extends ContentProvider {
                 }
             }
 
-            db.setTransactionSuccessful();
+            if (android.os.Build.VERSION.SDK_INT >= 11)
+                db.setTransactionSuccessful();
         }
         finally {
             // commit!
-            db.endTransaction();
+            if (android.os.Build.VERSION.SDK_INT >= 11)
+                db.endTransaction();
+            else
+                db.execSQL("COMMIT;");
             phones.close();
             stm.close();
         }
