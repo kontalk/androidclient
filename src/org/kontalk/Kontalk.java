@@ -20,17 +20,14 @@ package org.kontalk;
 
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.MessageCenterService;
-import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.MessagingNotification;
 
 import android.app.Application;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
-import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Process;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 
@@ -41,20 +38,6 @@ import android.util.Log;
  */
 public class Kontalk extends Application {
     private static final String TAG = Kontalk.class.getSimpleName();
-
-    private ContactsObserver mContactsObserver;
-
-    private final class ContactsObserver extends ContentObserver {
-        public ContactsObserver() {
-            super(null);
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            Log.v(TAG, "contacts have changed, resyncing users database");
-            SyncAdapter.requestSync(Kontalk.this, false);
-        }
-    }
 
     @Override
     public void onCreate() {
@@ -75,11 +58,7 @@ public class Kontalk extends Application {
             }
         });
 
-        // listen for changes to phone numbers
-        mContactsObserver = new ContactsObserver();
-        getContentResolver()
-            .registerContentObserver(ContactsContract.CommonDataKinds
-                .Phone.CONTENT_URI, false, mContactsObserver);
+        // TODO listen for changes to phone numbers
 
         /*
          * should we request a manual sync the first time?
