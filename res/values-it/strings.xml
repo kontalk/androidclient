@@ -157,4 +157,8 @@
     <string name="message_text_small">Piccolo</string>
     <string name="message_text_medium">Medio</string>
     <string name="message_text_large">Grande</string>
+    <string name="all_threads">Conversazioni</string>
+    <string name="menu_status">Stato</string>
+    <string name="title_validation_code">Codice di verifica</string>
+    <string name="title_status_message">Messaggio di stato</string>
 </resources>
