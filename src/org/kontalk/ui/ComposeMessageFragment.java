@@ -674,6 +674,12 @@ public class ComposeMessageFragment extends ListFragment implements View.OnTouch
     private void loadConversationMetadata(Uri uri) {
         threadId = ContentUris.parseId(uri);
         mConversation = Conversation.loadFromId(getActivity(), threadId);
+        if (mConversation == null) {
+            Log.w(TAG, "conversation for thread " + threadId + " not found!");
+            startActivity(new Intent(getActivity(), ConversationList.class));
+            getActivity().finish();
+            return;
+        }
 
         userId = mConversation.getRecipient();
         Contact contact = mConversation.getContact();
