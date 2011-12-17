@@ -161,4 +161,5 @@
     <string name="menu_status">Stato</string>
     <string name="title_validation_code">Codice di verifica</string>
     <string name="title_status_message">Messaggio di stato</string>
+    <string name="menu_attachment">Allega</string>
 </resources>

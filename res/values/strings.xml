@@ -164,4 +164,5 @@
     <string name="menu_status">Status</string>
     <string name="title_validation_code">Validation code</string>
     <string name="title_status_message">Status message</string>
+    <string name="menu_attachment">Attach</string>
 </resources>

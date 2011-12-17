@@ -171,11 +171,10 @@ public class ComposeMessage extends FragmentActivity {
                     }
                 }
             }
-            // nothing to do - exit
-            else {
-                Log.w(TAG, "unknown request code " + requestCode);
-                finish();
-            }
+        }
+        else {
+            Log.w(TAG, "unknown request code " + requestCode);
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 

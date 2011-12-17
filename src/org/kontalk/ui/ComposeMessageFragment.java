@@ -108,6 +108,8 @@ public class ComposeMessageFragment extends ListFragment implements View.OnTouch
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;
 
+    private static final int SELECT_ATTACHMENT = 1;
+
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
     private EditText mTextEntry;
@@ -462,6 +464,10 @@ public class ComposeMessageFragment extends ListFragment implements View.OnTouch
                 }
                 return true;
 
+            case R.id.menu_attachment:
+                selectAttachment();
+                return true;
+
             case R.id.delete_thread:
                 if (threadId > 0)
                     deleteThread();
@@ -475,6 +481,13 @@ public class ComposeMessageFragment extends ListFragment implements View.OnTouch
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void selectAttachment() {
+        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("image/*");
+        startActivityForResult(i, SELECT_ATTACHMENT);
     }
 
     private void deleteThread() {
@@ -698,6 +711,25 @@ public class ComposeMessageFragment extends ListFragment implements View.OnTouch
 
     public void setMyArguments(Bundle args) {
         mArguments = args;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == SELECT_ATTACHMENT) {
+                Uri uri = data.getData();
+                String mime = data.getType();
+                if (uri != null) {
+                    if (mime == null || mime.startsWith("*/") || mime.endsWith("/*")) {
+                        Log.d(TAG, "looking up mime type for uri " + uri);
+                        mime = getActivity().getContentResolver().getType(uri);
+                        Log.d(TAG, "using detected mime type " + mime);
+                    }
+
+                    sendImageMessage(uri, mime);
+                }
+            }
+        }
     }
 
     private void onKeyboardStateChanged(boolean isKeyboardOpen) {
