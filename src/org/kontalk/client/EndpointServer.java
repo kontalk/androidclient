@@ -75,6 +75,8 @@ public class EndpointServer {
 
     private final String baseURL;
 
+    private HttpClient mClient;
+
     public EndpointServer(String baseURL) {
         this.baseURL = baseURL;
     }
@@ -312,12 +314,14 @@ public class EndpointServer {
     public HttpResponse execute(HttpRequestBase request) throws IOException {
         // execute!
         try {
-            HttpClient client = new DefaultHttpClient();
-            // handle redirects :)
-            client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
-            // HttpClient bug caused by Lighttpd
-            client.getParams().setBooleanParameter("http.protocol.expect-continue", false);
-            return client.execute(request);
+            if (mClient == null) {
+                mClient = new DefaultHttpClient();
+                // handle redirects :)
+                mClient.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+                // HttpClient bug caused by Lighttpd
+                mClient.getParams().setBooleanParameter("http.protocol.expect-continue", false);
+            }
+            return mClient.execute(request);
         }
         catch (ClientProtocolException e) {
             IOException ie = new IOException("client protocol error");
