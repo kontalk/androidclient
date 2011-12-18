@@ -21,11 +21,11 @@ package org.kontalk.ui;
 import java.util.regex.Pattern;
 
 import org.kontalk.R;
-import org.kontalk.client.ImageMessage;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.client.PlainTextMessage;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.message.ImageMessage;
+import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MessageUtils;

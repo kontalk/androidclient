@@ -21,8 +21,8 @@ package org.kontalk.ui;
 import java.util.regex.Pattern;
 
 import org.kontalk.R;
-import org.kontalk.client.AbstractMessage;
 import org.kontalk.data.Contact;
+import org.kontalk.message.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
 
 import android.content.Context;

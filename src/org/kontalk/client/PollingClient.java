@@ -24,6 +24,9 @@ import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.kontalk.crypto.Coder;
+import org.kontalk.message.AbstractMessage;
+import org.kontalk.message.ImageMessage;
+import org.kontalk.message.PlainTextMessage;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.content.Context;

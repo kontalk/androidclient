@@ -20,7 +20,7 @@ package org.kontalk.service;
 
 import java.util.List;
 
-import org.kontalk.client.AbstractMessage;
+import org.kontalk.message.AbstractMessage;
 
 /**
  * Listener interface for message receivers.

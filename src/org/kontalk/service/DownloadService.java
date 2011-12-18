@@ -26,9 +26,9 @@ import java.io.File;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.DownloadClient;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.message.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingPreferences;

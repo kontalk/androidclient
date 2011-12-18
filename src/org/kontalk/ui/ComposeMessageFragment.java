@@ -29,15 +29,15 @@ import java.util.regex.Pattern;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.AbstractMessage;
-import org.kontalk.client.ImageMessage;
 import org.kontalk.client.MessageSender;
-import org.kontalk.client.PlainTextMessage;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.RequestClient;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.message.AbstractMessage;
+import org.kontalk.message.ImageMessage;
+import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;

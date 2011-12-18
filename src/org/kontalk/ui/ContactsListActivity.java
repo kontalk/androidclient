@@ -20,7 +20,7 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.PlainTextMessage;
+import org.kontalk.message.PlainTextMessage;
 import org.kontalk.sync.SyncAdapter;
 
 import android.accounts.Account;

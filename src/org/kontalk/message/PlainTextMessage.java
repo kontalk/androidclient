@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.client;
+package org.kontalk.message;
 
 import java.security.GeneralSecurityException;
 import java.util.List;

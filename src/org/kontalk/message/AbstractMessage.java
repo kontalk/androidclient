@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.client;
+package org.kontalk.message;
 
 import java.io.File;
 import java.security.GeneralSecurityException;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.kontalk.client.PollingClient;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.MessageID;
 import org.kontalk.provider.MyMessages.Messages;
@@ -307,7 +308,7 @@ public abstract class AbstractMessage<T> {
     }
 
     /** Reserved for the {@link PollingClient}. */
-    protected void setWasEncrypted(boolean encrypted) {
+    public void setWasEncrypted(boolean encrypted) {
         this.encryptKey = encrypted ? "" : null;
     }
 

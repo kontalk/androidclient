@@ -25,9 +25,9 @@ import java.util.List;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.AbstractMessage;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.PollingClient;
+import org.kontalk.message.AbstractMessage;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.accounts.Account;
