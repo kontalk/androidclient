@@ -26,6 +26,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
+import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MessageUtils;
@@ -250,6 +251,14 @@ public class ComposeMessage extends FragmentActivity {
             // send image immediately
             mFragment.sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
         }
+
+        /* TODO not supported for now
+        else if (VCardMessage.supportsMimeType(mime)) {
+            mFragment.setTextEntry(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+            //mFragment.sendTextMessage(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+        }
+        */
+
         else {
             // notify to user
             Log.w(TAG, "mime " + mime + " not supported");

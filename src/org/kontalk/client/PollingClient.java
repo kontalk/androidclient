@@ -27,6 +27,7 @@ import org.kontalk.crypto.Coder;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
+import org.kontalk.message.VCardMessage;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.content.Context;
@@ -126,6 +127,10 @@ public class PollingClient extends AbstractClient {
                     else if (ImageMessage.supportsMimeType(mime)) {
                         // extra argument: mime (first parameter)
                         msg = new ImageMessage(mContext, mime, id, from, content, encrypted, group);
+                    }
+
+                    else if (VCardMessage.supportsMimeType(mime)) {
+                        msg = new VCardMessage(mContext, id, from, content, encrypted, group);
                     }
 
                     // TODO else other mime types
