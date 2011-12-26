@@ -193,7 +193,9 @@ public class MessageCenterService extends Service
                 Bundle extras = intent.getExtras();
                 String serverUrl = (String) extras.get(EndpointServer.class.getName());
                 Log.d(TAG, "using server uri: " + serverUrl);
-                EndpointServer server = new EndpointServer(serverUrl);
+                // create two different objects because of the http client instances
+                EndpointServer pollingServer = new EndpointServer(serverUrl);
+                EndpointServer requestServer = new EndpointServer(serverUrl);
 
                 mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
                 mAccount = Authenticator.getDefaultAccount(this);
@@ -216,7 +218,7 @@ public class MessageCenterService extends Service
 
                     // activate request worker
                     if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
-                        mRequestWorker = new RequestWorker(this, server);
+                        mRequestWorker = new RequestWorker(this, requestServer);
                         mRequestWorker.addListener(this);
                         mRequestWorker.start();
 
@@ -232,7 +234,7 @@ public class MessageCenterService extends Service
                     if (mPollingThread == null ||
                             mPollingThread.isInterrupted() ||
                             mPollingThread.isIdle()) {
-                        mPollingThread = new PollingThread(this, server);
+                        mPollingThread = new PollingThread(this, pollingServer);
                         mPollingThread.setMessageListener(this);
                         mPollingThread.setPushRegistrationId(mPushRegistrationId);
                         mPollingThread.start();
