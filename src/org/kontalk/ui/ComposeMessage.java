@@ -252,12 +252,10 @@ public class ComposeMessage extends FragmentActivity {
             mFragment.sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
         }
 
-        /* TODO not supported for now
         else if (VCardMessage.supportsMimeType(mime)) {
             mFragment.setTextEntry(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
             //mFragment.sendTextMessage(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
         }
-        */
 
         else {
             // notify to user

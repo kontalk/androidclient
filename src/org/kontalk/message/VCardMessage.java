@@ -6,7 +6,7 @@ import android.content.Context;
 
 public class VCardMessage extends PlainTextMessage {
 
-    public static final String MIME_TYPE = "text/vcard";
+    public static final String[] MIME_TYPES = { "text/vcard", "text/x-vcard" };
 
     public VCardMessage(Context context) {
         super(context);
@@ -22,11 +22,15 @@ public class VCardMessage extends PlainTextMessage {
 
     @Override
     public String getTextContent() {
-        return MIME_TYPE;
+        return MIME_TYPES[0];
     }
 
     public static boolean supportsMimeType(String mime) {
-        return MIME_TYPE.equalsIgnoreCase(mime);
+        for (int i = 0; i < MIME_TYPES.length; i++)
+            if (MIME_TYPES[i].equalsIgnoreCase(mime))
+                return true;
+
+        return false;
     }
 
 }
