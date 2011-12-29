@@ -193,7 +193,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 continue;
 
             // fix number
-            number = NumberValidator.fixNumber(mContext, number);
+            try {
+            	number = NumberValidator.fixNumber(mContext, number);
+            }
+            catch (Exception e) {
+            	Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+            	// skip number
+            	continue;
+            }
 
             // avoid to send duplicates to server
             if (lookupNumbers.put(hash, new RawPhoneNumberEntry(lookupKey, number, hash)) == null)

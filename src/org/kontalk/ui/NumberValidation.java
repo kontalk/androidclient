@@ -144,7 +144,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
             phone = NumberValidator
                 .fixNumber(this, mPhone.getText().toString());
         }
-        catch (IllegalArgumentException e ) {
+        catch (Exception e ) {
             new AlertDialog.Builder(this)
                 .setTitle(R.string.title_invalid_number)
                 .setMessage(R.string.msg_invalid_number)

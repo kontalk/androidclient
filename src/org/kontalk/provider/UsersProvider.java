@@ -185,7 +185,15 @@ public class UsersProvider extends ContentProvider {
                     continue;
 
                 // fix number
-                number = NumberValidator.fixNumber(context, number);
+                try {
+                	number = NumberValidator.fixNumber(context, number);
+                }
+                catch (Exception e) {
+                	Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+                	// skip number
+                	continue;
+                }
+
                 try {
                     String hash = MessageUtils.sha1(number);
 
