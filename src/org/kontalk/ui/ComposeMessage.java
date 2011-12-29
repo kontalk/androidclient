@@ -249,12 +249,12 @@ public class ComposeMessage extends FragmentActivity {
 
         else if (ImageMessage.supportsMimeType(mime)) {
             // send image immediately
-            mFragment.sendImageMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime);
+            mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, true, ImageMessage.class);
         }
 
         else if (VCardMessage.supportsMimeType(mime)) {
-            mFragment.setTextEntry(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
-            //mFragment.sendTextMessage(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
+        	// send vcard immediately
+        	mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, false, VCardMessage.class);
         }
 
         else {

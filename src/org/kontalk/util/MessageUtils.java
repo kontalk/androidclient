@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import org.kontalk.R;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
+import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MyMessages.Messages;
 
 import android.content.Context;
@@ -110,6 +111,8 @@ public final class MessageUtils {
         int resId;
         if (msg instanceof ImageMessage)
             resId = R.string.image_message;
+        else if (msg instanceof VCardMessage)
+        	resId = R.string.vcard_message;
         else
             resId = R.string.text_message;
 

@@ -165,4 +165,6 @@
     <string name="title_validation_code">Validation code</string>
     <string name="title_status_message">Status message</string>
     <string name="menu_attachment">Attach</string>
+    <string name="vcard_message">vCard message</string>
+    <string name="open_file">Open file</string>
 </resources>

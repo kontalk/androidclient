@@ -359,6 +359,12 @@ public abstract class AbstractMessage<T> {
             return msg;
         }
 
+        else if (VCardMessage.supportsMimeType(mime)) {
+        	VCardMessage msg = new VCardMessage(context);
+        	msg.populateFromCursor(cursor);
+        	return msg;
+        }
+
         return null;
     }
 

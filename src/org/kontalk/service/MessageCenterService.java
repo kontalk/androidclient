@@ -38,6 +38,7 @@ import org.kontalk.client.RequestClient;
 import org.kontalk.client.ServerinfoJob;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
+import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -442,6 +443,22 @@ public class MessageCenterService extends Service
                             }
                             // update uri
                             msg.setPreviewFile(file);
+
+                            // use text content for database table
+                            content = msg.getTextContent().getBytes();
+                        }
+                        else if (msg instanceof VCardMessage) {
+                            String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
+                            File file = null;
+                            try {
+                                file = MediaStorage.writeInternalMedia(this, filename, content);
+                            }
+                            catch (IOException e) {
+                                Log.e(TAG, "unable to write to media storage", e);
+                            }
+                            // update uri
+                            if (file != null)
+                            	msg.setLocalUri(Uri.fromFile(file));
 
                             // use text content for database table
                             content = msg.getTextContent().getBytes();
