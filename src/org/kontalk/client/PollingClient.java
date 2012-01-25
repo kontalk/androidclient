@@ -129,6 +129,7 @@ public class PollingClient extends AbstractClient {
                         msg = new ImageMessage(mContext, mime, id, from, content, encrypted, group);
                     }
 
+                    // vcard message
                     else if (VCardMessage.supportsMimeType(mime)) {
                         msg = new VCardMessage(mContext, id, from, content, encrypted, group);
                     }
