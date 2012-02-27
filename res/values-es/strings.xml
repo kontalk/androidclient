@@ -168,4 +168,7 @@
     <string name="menu_status">Estado</string>
     <string name="title_validation_code">Código de validación</string>
     <string name="title_status_message">Mensaje de estado</string>
+    <!-- TODO
+    <string name="msg_msgcenter_restarted">Message center restarted.</string>
+     -->
 </resources>

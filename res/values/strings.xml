@@ -168,4 +168,5 @@
     <string name="menu_attachment">Attach</string>
     <string name="vcard_message">vCard message</string>
     <string name="open_file">Open file</string>
+    <string name="msg_msgcenter_restarted">Message center restarted.</string>
 </resources>

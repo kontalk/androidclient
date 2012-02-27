@@ -72,6 +72,7 @@ public class MessagingPreferences extends PreferenceActivity {
             public boolean onPreferenceClick(Preference preference) {
                 Log.w(TAG, "manual message center restart requested");
                 MessageCenterService.restartMessageCenter(getApplicationContext());
+                Toast.makeText(MessagingPreferences.this, R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
