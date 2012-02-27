@@ -22,7 +22,6 @@
     android:layout_height="fill_parent"
     android:drawSelectorOnTop="false"
     android:scrollbarStyle="insideOverlay"
-    android:background="@android:color/white"
     android:cacheColorHint="@android:color/white"
     android:fadingEdgeLength="16dip">
     <!-- Preview: listitem=@layout/conversation_list_item -->

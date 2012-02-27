@@ -33,7 +33,8 @@
     <string name="pref_network_settings">Impostazioni di rete</string>
     <string name="pref_network_uri">Indirizzo server manuale</string>
     <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
-    <string name="number_validation_intro">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
+    <string name="number_validation_intro1">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
+    <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
     <string name="hint_phone_number">Inserisci il tuo numero</string>
     <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
     <string name="msg_validating_phone">Validazione numero di telefono...</string>

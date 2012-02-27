@@ -33,7 +33,11 @@
     <string name="pref_network_settings">Configuración de la red</string>
     <string name="pref_network_uri">Dirección del servidor Manual</string>
     <string name="pref_title_network_uri">Esto anulará la gestión de la lista de servidores automáticos</string>
-    <string name="number_validation_intro">Por favor, ingrese su número de teléfono móvil, incluyendo el prefijo internacional.</string>
+    <string name="number_validation_intro1">Por favor, ingrese su número de teléfono móvil, incluyendo el prefijo internacional.</string>
+    <!--
+    TODO
+    <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
+     -->
     <string name="hint_phone_number">Ingrese su número de teléfono</string>
     <string name="warn_invalid_number">Por favor, ingrese un número de teléfono válido.</string>
     <string name="msg_validating_phone">Validando el número de teléfono...</string>
