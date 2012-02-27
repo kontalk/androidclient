@@ -211,12 +211,14 @@ public class MessageListItem extends RelativeLayout {
             if (mMessage.getSender() == null)
             switch (mMessage.getStatus()) {
                 case Messages.STATUS_SENDING:
+                // use pending icon even for errors
+                case Messages.STATUS_ERROR:
                     resId = R.drawable.ic_msg_pending;
                     break;
                 case Messages.STATUS_RECEIVED:
                     resId = R.drawable.ic_msg_delivered;
                     break;
-                case Messages.STATUS_ERROR:
+                // here we use the error icon
                 case Messages.STATUS_NOTACCEPTED:
                     resId = R.drawable.ic_msg_error;
                     break;
