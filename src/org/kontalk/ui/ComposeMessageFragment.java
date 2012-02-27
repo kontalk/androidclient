@@ -1004,13 +1004,11 @@ public class ComposeMessageFragment extends ListFragment implements
 																	getActivity(),
 																	R.anim.header_appear));
 										} catch (Exception e) {
-											// something could happen in the
-											// meanwhile
-											// e.g. fragment destruction
+											// something could happen in the meanwhile e.g. fragment destruction
 										}
 									}
 								});
-								// display status message after 3 seconds
+								// display status message after 5 seconds
 								if (text2 != null) {
 									final String bannerText2 = text2;
 									mHandler.postDelayed(new Runnable() {
@@ -1022,63 +1020,13 @@ public class ComposeMessageFragment extends ListFragment implements
 												mLastSeenBanner
 														.setGravity(Gravity.NO_GRAVITY);
 
-												// FIXME this isn't right...
-												mLastSeenBanner
-														.startAnimation(AnimationUtils
-																.loadAnimation(
-																		getActivity(),
-																		R.anim.header_disappear));
 												mLastSeenBanner
 														.setText(bannerText2);
-												mLastSeenBanner
-														.startAnimation(AnimationUtils
-																.loadAnimation(
-																		getActivity(),
-																		R.anim.header_appear));
-
-												// FIXME this should be used for
-												// marquee...
-												// mLastSeenBanner.setSelected(true);
-
-												// hide status after 40 seconds
-												/*
-												 * mHandler.postDelayed(new
-												 * Runnable() {
-												 *
-												 * @Override public void run() {
-												 * try {
-												 * mLastSeenBanner.startAnimation
-												 * (
-												 * AnimationUtils.loadAnimation(
-												 * getActivity(),
-												 * R.anim.header_disappear));
-												 * mLastSeenBanner
-												 * .setVisibility(View.GONE); }
-												 * catch (Exception e) {} } },
-												 * 40000);
-												 */
-											} catch (Exception e) {
+											}
+											catch (Exception e) {
 											}
 										}
-									}, 3000);
-								}
-								// no status message - hide last seen banner
-								else {
-									mHandler.postDelayed(new Runnable() {
-										@Override
-										public void run() {
-											try {
-												mLastSeenBanner
-														.startAnimation(AnimationUtils
-																.loadAnimation(
-																		getActivity(),
-																		R.anim.header_disappear));
-												mLastSeenBanner
-														.setVisibility(View.GONE);
-											} catch (Exception e) {
-											}
-										}
-									}, 10000);
+									}, 5000);
 								}
 							}
 						}
