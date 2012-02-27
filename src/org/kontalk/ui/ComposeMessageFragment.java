@@ -301,7 +301,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		// list adapter creation is post-poned
 	}
 
-	/** Sends out an image message. */
+	/** Sends out a binary message. */
 	public void sendBinaryMessage(Uri uri, String mime, boolean media,
 			Class<? extends AbstractMessage<?>> klass) {
 		Log.i(TAG, "sending binary content: " + uri);
@@ -350,8 +350,10 @@ public class ComposeMessageFragment extends ListFragment implements
 					threadId = c.getLong(0);
 					mConversation = null;
 					startQuery(true);
-				} else
+				}
+				else {
 					Log.i(TAG, "no data - cannot start query for this composer");
+				}
 				c.close();
 			}
 
@@ -367,7 +369,8 @@ public class ComposeMessageFragment extends ListFragment implements
 				// mMessageSenderListener.error(conn.job, new
 				// IllegalArgumentException("unable to bind to message center"));
 			}
-		} else {
+		}
+		else {
 			getActivity().runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
@@ -419,9 +422,11 @@ public class ComposeMessageFragment extends ListFragment implements
 						threadId = c.getLong(0);
 						mConversation = null;
 						startQuery(true);
-					} else
+					}
+					else {
 						Log.i(TAG,
 								"no data - cannot start query for this composer");
+					}
 					c.close();
 				}
 
@@ -443,7 +448,8 @@ public class ComposeMessageFragment extends ListFragment implements
 					// mMessageSenderListener.error(conn.job, new
 					// IllegalArgumentException("unable to bind to service"));
 				}
-			} else {
+			}
+			else {
 				Toast.makeText(getActivity(), R.string.error_store_outbox,
 						Toast.LENGTH_LONG).show();
 			}
@@ -466,7 +472,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (!getActivity().getPackageManager().hasSystemFeature(
 				PackageManager.FEATURE_TELEPHONY)) {
 			i.setVisible(false);
-		} else {
+		}
+		else {
 			i.setVisible(true);
 			i.setEnabled(contactEnabled);
 		}
@@ -761,7 +768,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (contact != null) {
 			userName = contact.getName();
 			userPhone = contact.getNumber();
-		} else {
+		}
+		else {
 			userName = userId;
 		}
 	}
@@ -798,7 +806,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (isKeyboardOpen) {
 			mTextEntry.setFocusableInTouchMode(true);
 			mTextEntry.setHint(R.string.hint_type_to_compose);
-		} else {
+		}
+		else {
 			mTextEntry.setFocusableInTouchMode(false);
 			mTextEntry.setHint(R.string.hint_open_kbd_to_compose);
 		}
@@ -820,7 +829,8 @@ public class ComposeMessageFragment extends ListFragment implements
 			args = new Bundle();
 			args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
 			args.putParcelable("data", uri);
-		} else {
+		}
+		else {
 			args = myArguments();
 		}
 
@@ -861,7 +871,8 @@ public class ComposeMessageFragment extends ListFragment implements
 				if (threadId > 0) {
 					mConversation = Conversation.loadFromId(getActivity(),
 							threadId);
-				} else {
+				}
+				else {
 					mConversation = Conversation.createNew(getActivity());
 					mConversation.setRecipient(userId);
 				}
@@ -890,7 +901,8 @@ public class ComposeMessageFragment extends ListFragment implements
 				if (contact != null) {
 					userName = contact.getName();
 					userPhone = contact.getNumber();
-				} else {
+				}
+				else {
 					userName = userId;
 				}
 			}
@@ -966,13 +978,8 @@ public class ComposeMessageFragment extends ListFragment implements
 								if (res.hasTimestamp()) {
 									long time = res.getTimestamp();
 									if (time > 0)
-										text = getResources().getString(
-												R.string.last_seen_label)
-												+ MessageUtils
-														.formatTimeStampString(
-																context,
-																time * 1000,
-																true);
+										text = getResources().getString(R.string.last_seen_label) +
+												MessageUtils.formatTimeStampString(context, time * 1000, true);
 									if (res.hasStatus()) {
 										text2 = res.getStatus();
 									}
@@ -993,17 +1000,13 @@ public class ComposeMessageFragment extends ListFragment implements
 									@Override
 									public void run() {
 										try {
-											mLastSeenBanner
-													.setGravity(Gravity.CENTER);
+											mLastSeenBanner.setGravity(Gravity.CENTER);
 											mLastSeenBanner.setText(bannerText);
-											mLastSeenBanner
-													.setVisibility(View.VISIBLE);
-											mLastSeenBanner
-													.startAnimation(AnimationUtils
-															.loadAnimation(
-																	getActivity(),
-																	R.anim.header_appear));
-										} catch (Exception e) {
+											mLastSeenBanner.setVisibility(View.VISIBLE);
+											mLastSeenBanner.startAnimation(AnimationUtils
+											        .loadAnimation(getActivity(), R.anim.header_appear));
+										}
+										catch (Exception e) {
 											// something could happen in the meanwhile e.g. fragment destruction
 										}
 									}
@@ -1015,15 +1018,12 @@ public class ComposeMessageFragment extends ListFragment implements
 										@Override
 										public void run() {
 											try {
-												// restore gravity for all the
-												// moving stuff to work
-												mLastSeenBanner
-														.setGravity(Gravity.NO_GRAVITY);
-
-												mLastSeenBanner
-														.setText(bannerText2);
+												// restore gravity for all the moving stuff to work
+												mLastSeenBanner.setGravity(Gravity.NO_GRAVITY);
+												mLastSeenBanner.setText(bannerText2);
 											}
 											catch (Exception e) {
+	                                            // something could happen in the meanwhile e.g. fragment destruction
 											}
 										}
 									}, 5000);
@@ -1070,7 +1070,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		Log.i(TAG, "starting query with threadId " + threadId);
 		if (threadId > 0) {
 			startQuery((mConversation == null));
-		} else {
+		}
+		else {
 			// HACK this is for crappy honeycomb :)
 			getActivity().setProgressBarIndeterminateVisibility(false);
 
@@ -1093,7 +1094,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (mConversation.getThreadId() > 0) {
 			// mark all messages as read
 			mConversation.markAsRead();
-		} else {
+		}
+		else {
 			// new conversation -- observe peer Uri
 			registerPeerObserver();
 		}
@@ -1244,7 +1246,8 @@ public class ComposeMessageFragment extends ListFragment implements
 								.getText().length() == 0)) {
 					Log.w(TAG, "no data to view - exit");
 					getActivity().finish();
-				} else {
+				}
+				else {
 					// see if we have to scroll to a specific message
 					int newSelectionPos = -1;
 
@@ -1305,6 +1308,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		mTextEntry.setText(text);
 	}
 
+	/* header view - thanks to Android Mail and Android Music player :) */
+
 	private int mInitialX = -1;
 	private int mLastX = -1;
 	private int mTextWidth = 0;
@@ -1321,13 +1326,15 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (action == MotionEvent.ACTION_DOWN) {
 			mInitialX = mLastX = (int) event.getX();
 			mDraggingLabel = false;
-		} else if (action == MotionEvent.ACTION_UP
+		}
+		else if (action == MotionEvent.ACTION_UP
 				|| action == MotionEvent.ACTION_CANCEL) {
 			if (mDraggingLabel) {
 				Message msg = mLabelScroller.obtainMessage(0, tv);
 				mLabelScroller.sendMessageDelayed(msg, 2000);
 			}
-		} else if (action == MotionEvent.ACTION_MOVE) {
+		}
+		else if (action == MotionEvent.ACTION_MOVE) {
 			if (mDraggingLabel) {
 				int scrollx = tv.getScrollX();
 				int x = (int) event.getX();
@@ -1395,7 +1402,8 @@ public class ComposeMessageFragment extends ListFragment implements
 			tv.scrollTo(x, 0);
 			if (x == 0) {
 				tv.setEllipsize(TruncateAt.END);
-			} else {
+			}
+			else {
 				Message newmsg = obtainMessage(0, tv);
 				mLabelScroller.sendMessageDelayed(newmsg, 15);
 			}
