@@ -304,7 +304,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	/** Sends out a binary message. */
 	public void sendBinaryMessage(Uri uri, String mime, boolean media,
 			Class<? extends AbstractMessage<?>> klass) {
-		Log.i(TAG, "sending binary content: " + uri);
+		Log.v(TAG, "sending binary content: " + uri);
 		Uri newMsg = null;
 
 		try {
@@ -352,7 +352,7 @@ public class ComposeMessageFragment extends ListFragment implements
 					startQuery(true);
 				}
 				else {
-					Log.i(TAG, "no data - cannot start query for this composer");
+					Log.v(TAG, "no data - cannot start query for this composer");
 				}
 				c.close();
 			}
@@ -382,77 +382,116 @@ public class ComposeMessageFragment extends ListFragment implements
 		}
 	}
 
+	private final class TextMessageThread extends Thread {
+	    private final String mText;
+
+	    TextMessageThread(String text) {
+	        mText = text;
+	    }
+
+	    @Override
+	    public void run() {
+	        try {
+                // get encryption key if needed
+                String key = null;
+                if (MessagingPreferences.getEncryptionEnabled(getActivity())) {
+                    key = MessagingPreferences.getDefaultPassphrase(getActivity());
+                    // no global passphrase defined -- use recipient phone number
+                    if (key == null || key.length() == 0)
+                        key = Contact.numberByUserId(getActivity(), userId);
+                }
+
+                /* TODO maybe this hack could work...?
+                MessageListItem v = (MessageListItem) LayoutInflater.from(getActivity())
+                        .inflate(R.layout.message_list_item, getListView(), false);
+                v.bind(getActivity(), msg, contact, null);
+                getListView().addFooterView(v);
+                */
+
+                // save to local storage
+                ContentValues values = new ContentValues();
+                // must supply a message ID...
+                values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
+                values.put(Messages.PEER, userId);
+                values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
+                values.put(Messages.CONTENT, mText.getBytes());
+                values.put(Messages.UNREAD, false);
+                values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
+                values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+                values.put(Messages.STATUS, Messages.STATUS_SENDING);
+                values.put(Messages.ENCRYPT_KEY, key);
+                Uri newMsg = getActivity().getContentResolver().insert(
+                        Messages.CONTENT_URI, values);
+                if (newMsg != null) {
+                    // update thread id from the inserted message
+                    if (threadId <= 0) {
+                        Cursor c = getActivity().getContentResolver().query(newMsg,
+                                new String[] { Messages.THREAD_ID }, null, null,
+                                null);
+                        if (c.moveToFirst()) {
+                            threadId = c.getLong(0);
+                            mConversation = null;
+                            startQuery(true);
+                        }
+                        else {
+                            Log.v(TAG,
+                                    "no data - cannot start query for this composer");
+                        }
+                        c.close();
+                    }
+
+                    // send the message!
+                    ComposerServiceConnection conn = new ComposerServiceConnection(
+                            userId, mText.getBytes(), PlainTextMessage.MIME_TYPE,
+                            newMsg, key);
+                    if (!getActivity().bindService(
+                            new Intent(getActivity().getApplicationContext(),
+                                    MessageCenterService.class), conn,
+                            Context.BIND_AUTO_CREATE)) {
+                        // cannot bind :(
+                        // mMessageSenderListener.error(conn.job, new
+                        // IllegalArgumentException("unable to bind to service"));
+                    }
+                }
+                else {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), R.string.error_store_outbox,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+	        }
+	        catch (Exception e) {
+	            // whatever
+	            Log.d(TAG, "broken message thread", e);
+	        }
+	    }
+	}
+
 	/** Sends out the text message in the composing entry. */
 	public void sendTextMessage() {
 		String text = mTextEntry.getText().toString();
 		if (!TextUtils.isEmpty(text)) {
-			Log.w(TAG, "sending message...");
-			// get encryption key if needed
-			String key = null;
-			if (MessagingPreferences.getEncryptionEnabled(getActivity())) {
-				key = MessagingPreferences.getDefaultPassphrase(getActivity());
-				// no global passphrase defined -- use recipient phone number
-				if (key == null || key.length() == 0)
-					key = Contact.numberByUserId(getActivity(), userId);
-			}
-			// save to local storage
-			ContentValues values = new ContentValues();
-			// must supply a message ID...
-			values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
-			values.put(Messages.PEER, userId);
-			values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-			values.put(Messages.CONTENT, text.getBytes());
-			values.put(Messages.UNREAD, false);
-			values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
-			values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-			values.put(Messages.STATUS, Messages.STATUS_SENDING);
-			values.put(Messages.ENCRYPT_KEY, key);
-			Uri newMsg = getActivity().getContentResolver().insert(
-					Messages.CONTENT_URI, values);
-			if (newMsg != null) {
-				// empty text
-				mTextEntry.setText("");
+			Log.v(TAG, "sending message...");
 
-				// update thread id from the inserted message
-				if (threadId <= 0) {
-					Cursor c = getActivity().getContentResolver().query(newMsg,
-							new String[] { Messages.THREAD_ID }, null, null,
-							null);
-					if (c.moveToFirst()) {
-						threadId = c.getLong(0);
-						mConversation = null;
-						startQuery(true);
-					}
-					else {
-						Log.i(TAG,
-								"no data - cannot start query for this composer");
-					}
-					c.close();
-				}
+			/*
+			 * TODO show an animation to warn the user that the message
+			 * is being sent (actually stored).
+			 */
 
-				// hide softkeyboard
-				InputMethodManager imm = (InputMethodManager) getActivity()
-						.getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(),
-						InputMethodManager.HIDE_IMPLICIT_ONLY);
+			// start thread
+			new TextMessageThread(text).start();
 
-				// send the message!
-				ComposerServiceConnection conn = new ComposerServiceConnection(
-						userId, text.getBytes(), PlainTextMessage.MIME_TYPE,
-						newMsg, key);
-				if (!getActivity().bindService(
-						new Intent(getActivity().getApplicationContext(),
-								MessageCenterService.class), conn,
-						Context.BIND_AUTO_CREATE)) {
-					// cannot bind :(
-					// mMessageSenderListener.error(conn.job, new
-					// IllegalArgumentException("unable to bind to service"));
-				}
-			}
-			else {
-				Toast.makeText(getActivity(), R.string.error_store_outbox,
-						Toast.LENGTH_LONG).show();
-			}
+            // empty text
+            mTextEntry.setText("");
+
+            // hide softkeyboard
+            InputMethodManager imm = (InputMethodManager) getActivity()
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(),
+                    InputMethodManager.HIDE_IMPLICIT_ONLY);
 		}
 	}
 
