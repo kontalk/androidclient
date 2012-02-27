@@ -1130,6 +1130,9 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 		}
 
+		// set notifications on pause
+		MessagingNotification.setPaused(userId);
+
 		if (mConversation.getThreadId() > 0) {
 			// mark all messages as read
 			mConversation.markAsRead();
@@ -1207,6 +1210,9 @@ public class ComposeMessageFragment extends ListFragment implements
 		super.onPause();
 		CharSequence text = mTextEntry.getText();
 		int len = text.length();
+
+        // resume notifications
+        MessagingNotification.setPaused(null);
 
 		// save last message as draft
 		if (threadId > 0) {

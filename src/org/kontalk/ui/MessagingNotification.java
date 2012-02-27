@@ -63,10 +63,17 @@ public class MessagingNotification {
         Threads.UNREAD + " <> 0 AND " +
         Threads.DIRECTION + " = " + Messages.DIRECTION_IN;
 
+    /** Peer to NOT be notified for new messages. */
+    private static String mPaused;
+
     /** This class is not instanciable. */
     private MessagingNotification() {}
 
-    /** Delays by 3 seconds any messages notification updates. */
+    public static void setPaused(String peer) {
+        mPaused = peer;
+    }
+
+    /** Starts messages notification updates in another thread. */
     public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
         // notifications are disabled
         if (!MessagingPreferences.getNotificationsEnabled(context))
@@ -75,9 +82,6 @@ public class MessagingNotification {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {}
                 updateMessagesNotification(context, isNew);
             }
         }).start();
@@ -98,8 +102,14 @@ public class MessagingNotification {
             .getSystemService(Context.NOTIFICATION_SERVICE);
 
         // query for unread threads
+        String query = THREADS_UNREAD_SELECTION;
+        String[] args = null;
+        if (mPaused != null) {
+            query += " AND " + Threads.PEER + " <> ?";
+            args = new String[] { mPaused };
+        }
         Cursor c = res.query(Threads.CONTENT_URI,
-                THREADS_UNREAD_PROJECTION, THREADS_UNREAD_SELECTION, null,
+                THREADS_UNREAD_PROJECTION, query, args,
                 Threads.INVERTED_SORT_ORDER);
 
         // no unread messages - delete notification
