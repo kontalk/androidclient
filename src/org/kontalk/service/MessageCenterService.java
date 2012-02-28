@@ -89,6 +89,8 @@ public class MessageCenterService extends Service
 
     public static final String ACTION_RESTART = "org.kontalk.RESTART";
     public static final String ACTION_IDLE = "org.kontalk.IDLE";
+    public static final String ACTION_HOLD = "org.kontalk.HOLD";
+    public static final String ACTION_RELEASE = "org.kontalk.RELEASE";
     public static final String ACTION_C2DM_START = "org.kontalk.CD2M_START";
     public static final String ACTION_C2DM_STOP = "org.kontalk.CD2M_STOP";
     public static final String ACTION_C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
@@ -159,6 +161,7 @@ public class MessageCenterService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "Message Center starting - " + intent);
+        boolean execStart = false;
 
         if (intent != null) {
             String action = intent.getAction();
@@ -188,9 +191,26 @@ public class MessageCenterService extends Service
                     mRequestWorker.idle();
             }
 
+            // hold - increment reference count
+            else if (ACTION_HOLD.equals(action)) {
+                if (mPollingThread != null)
+                    mPollingThread.hold();
+                execStart = true;
+            }
+
+            // release - decrement reference count
+            else if (ACTION_RELEASE.equals(action)) {
+                if (mPollingThread != null)
+                    mPollingThread.release();
+            }
+
             // normal start
             else {
+                execStart = true;
+            }
 
+            // normal start
+            if (execStart) {
                 Bundle extras = intent.getExtras();
                 String serverUrl = (String) extras.get(EndpointServer.class.getName());
                 Log.d(TAG, "using server uri: " + serverUrl);
@@ -774,9 +794,31 @@ public class MessageCenterService extends Service
 
     /** Tells the message center we are idle, taking necessary actions. */
     public static void idleMessageCenter(final Context context) {
-        Log.d(TAG, "idling message center");
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_IDLE);
+        context.startService(i);
+    }
+
+    /**
+     * Tells the message center we are holding on to it, preventing any
+     * shutdown for inactivity.
+     */
+    public static void holdMessageCenter(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_HOLD);
+        // include server uri if server needs to be started
+        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        i.putExtra(EndpointServer.class.getName(), server.toString());
+        context.startService(i);
+    }
+
+    /**
+     * Tells the message center we are releasing it, allowing any shutdown
+     * for inactivity.
+     */
+    public static void releaseMessageCenter(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_RELEASE);
         context.startService(i);
     }
 

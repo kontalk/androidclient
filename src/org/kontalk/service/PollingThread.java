@@ -52,6 +52,9 @@ public class PollingThread extends Thread {
     private boolean mInterrupted;
     private String mPushRegistrationId;
 
+    /** Reference counter. */
+    private int mRefCount;
+
     public PollingThread(Context context, EndpointServer server) {
         super(PollingThread.class.getSimpleName());
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -84,6 +87,14 @@ public class PollingThread extends Thread {
 
     public boolean isIdle() {
         return mIdle;
+    }
+
+    public void hold() {
+        mRefCount++;
+    }
+
+    public void release() {
+        mRefCount--;
     }
 
     @Override
@@ -135,9 +146,14 @@ public class PollingThread extends Thread {
                             }
 
                             if (numIdle >= MAX_IDLES && mPushRegistrationId != null) {
-                                // push notifications enabled - we can stop our parent :)
-                                Log.d(TAG, "shutting down message center due to inactivity");
-                                MessageCenterService.idleMessageCenter(mContext);
+                                if (mRefCount > 0) {
+                                    Log.d(TAG, "message center is in use - going on with polling");
+                                }
+                                else {
+                                    // push notifications enabled - we can stop our parent :)
+                                    Log.d(TAG, "shutting down message center due to inactivity");
+                                    MessageCenterService.idleMessageCenter(mContext);
+                                }
                             }
                         }
 

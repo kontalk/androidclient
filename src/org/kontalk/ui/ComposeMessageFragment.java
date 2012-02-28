@@ -1191,6 +1191,13 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	@Override
+	public void onStart() {
+	    super.onStart();
+        // hold message center
+        MessageCenterService.holdMessageCenter(getActivity());
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
 
@@ -1254,6 +1261,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		unregisterPeerObserver();
 		if (mListAdapter != null)
 			mListAdapter.changeCursor(null);
+		// release message center
+		MessageCenterService.releaseMessageCenter(getActivity());
 	}
 
 	public final boolean isFinishing() {
