@@ -64,7 +64,9 @@
             android:stackFromBottom="true"
             android:fadingEdge="none"
             android:layout_marginBottom="1dip"
-            />
+            >
+            <!-- Preview: listitem=@layout/message_list_item -->
+        </ListView>
 
         <include layout="@layout/composer_bar"/>
 

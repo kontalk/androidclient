@@ -76,7 +76,7 @@
                     style="@android:style/TextAppearance.StatusBar.EventContent.Title"
                     android:singleLine="true"
                     android:paddingLeft="2dp"
-                    android:text="Downloading attachment..."
+                    android:text="@string/downloading_attachment"
                     />
                 <TextView android:id="@+id/description"
                     android:layout_width="wrap_content"

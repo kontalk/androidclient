@@ -40,16 +40,16 @@
      -->
     <string name="hint_phone_number">Ingrese su número de teléfono</string>
     <string name="warn_invalid_number">Por favor, ingrese un número de teléfono válido.</string>
-    <string name="msg_validating_phone">Validando el número de teléfono...</string>
+    <string name="msg_validating_phone">Validando el número de teléfono&#8230;</string>
     <string name="msg_authenticated">Registradose en la red!</string>
-    <string name="refreshing">Actualizando...</string>
+    <string name="refreshing">Actualizando&#8230;</string>
     <string name="share">Compartir</string>
     <string name="copy_message_text">Copia mensaje de texto</string>
     <string name="delete_message">Eliminar el mensaje</string>
     <string name="confirm_delete_all">Eliminar todas las discusiones</string>
     <string name="confirm_will_delete_all">Todas las discusiones serán borradas.</string>
-    <string name="sending">Enviando...</string>
-    <string name="sending_message">Enviando mensaje...</string>
+    <string name="sending">Enviando&#8230;</string>
+    <string name="sending_message">Enviando mensaje&#8230;</string>
     <string name="message_text_copied">Mensaje de texto copiado.</string>
     <string name="call">Llamada</string>
     <string name="view_contact">Ver contacto</string>
@@ -168,7 +168,8 @@
     <string name="menu_status">Estado</string>
     <string name="title_validation_code">Código de validación</string>
     <string name="title_status_message">Mensaje de estado</string>
+    <string name="msg_msgcenter_restarted">Centro de mensajes reiniciado.</string>
     <!-- TODO
-    <string name="msg_msgcenter_restarted">Message center restarted.</string>
+    <string name="downloading_attachment">Download in corso&#8230;</string>
      -->
 </resources>

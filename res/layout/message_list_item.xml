@@ -66,8 +66,6 @@
                 android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignBottom="@+id/text_view"
-                android:layout_alignRight="@+id/text_view"
                 android:paddingBottom="4dip"
                 android:src="@drawable/ic_msg_crypt" />
 

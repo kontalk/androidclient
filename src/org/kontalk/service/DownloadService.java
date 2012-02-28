@@ -112,7 +112,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mCurrentNotification = new Notification(R.drawable.icon_stat, "Downloading attachment...", System.currentTimeMillis());
+        mCurrentNotification = new Notification(R.drawable.icon_stat,
+                getString(R.string.downloading_attachment), System.currentTimeMillis());
         mCurrentNotification.contentIntent = pi;
         mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
 
@@ -122,7 +123,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     private void foregroundNotification(int progress) {
         mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setTextViewText(R.id.title, "Downloading attachment...");
+        mCurrentNotification.contentView.setTextViewText(R.id.title, getString(R.string.downloading_attachment));
         mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
         mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
     }
