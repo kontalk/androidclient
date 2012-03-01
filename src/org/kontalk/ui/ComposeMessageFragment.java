@@ -431,7 +431,14 @@ public class ComposeMessageFragment extends ListFragment implements
                         if (c.moveToFirst()) {
                             threadId = c.getLong(0);
                             mConversation = null;
-                            startQuery(true);
+                            // re-run query on UI thread - actually will be run
+                            // on another thread, this is just for setProgressBarIndeterminate
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startQuery(true);
+                                }
+                            });
                         }
                         else {
                             Log.v(TAG,
