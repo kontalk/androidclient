@@ -1018,7 +1018,7 @@ public class ComposeMessageFragment extends ListFragment implements
 									long time = res.getTimestamp();
 									if (time > 0)
 										text = getResources().getString(R.string.last_seen_label) +
-												MessageUtils.formatTimeStampString(context, time * 1000, true);
+												MessageUtils.formatRelativeTimeSpan(context, time * 1000);
 									if (res.hasStatus()) {
 										text2 = res.getStatus();
 									}

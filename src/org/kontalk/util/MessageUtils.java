@@ -36,6 +36,16 @@ import android.text.format.Time;
 public final class MessageUtils {
     private MessageUtils() {}
 
+    public static CharSequence formatRelativeTimeSpan(Context context, long when) {
+        int format_flags = DateUtils.FORMAT_NO_NOON_MIDNIGHT |
+                DateUtils.FORMAT_ABBREV_ALL |
+                DateUtils.FORMAT_CAP_AMPM;
+
+        return DateUtils.getRelativeDateTimeString(context, when,
+                DateUtils.SECOND_IN_MILLIS, DateUtils.DAY_IN_MILLIS * 2,
+                format_flags);
+    }
+
     public static String formatTimeStampString(Context context, long when) {
         return formatTimeStampString(context, when, false);
     }
