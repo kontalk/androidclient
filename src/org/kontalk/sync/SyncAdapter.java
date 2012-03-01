@@ -210,64 +210,78 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (mCanceled) throw new OperationCanceledException();
 
-        Protocol.LookupResponse res = null;
-        try {
-            // request lookup to server
-            Log.v(TAG, "sending lookup request to server");
-            res = client.lookup(hashList);
-        }
-        catch (IOException e) {
-            Log.e(TAG, "error in user lookup", e);
-            syncResult.stats.numIoExceptions++;
-        }
-
-        // last chance to quit
-        if (mCanceled) throw new OperationCanceledException();
-
-        if (res != null) {
-            ArrayList<ContentProviderOperation> operations =
-                new ArrayList<ContentProviderOperation>();
-            // TODO operations.size() could be used instead (?)
-            int op = 0;
-
-            // this is the time - delete all Kontalk raw contacts
+        // empty contacts :-|
+        if (hashList.size() == 0) {
+            // delete all Kontalk raw contacts
             try {
                 syncResult.stats.numDeletes += deleteAll(account, provider);
             }
             catch (Exception e) {
                 Log.e(TAG, "contact delete error", e);
                 syncResult.databaseError = true;
-                return;
             }
-
-            for (int i = 0; i < res.getEntryCount(); i++) {
-                Protocol.LookupResponseEntry entry = res.getEntry(i);
-                String userId = entry.getUserId().toString();
-                final RawPhoneNumberEntry data = lookupNumbers.get(userId);
-                if (data != null) {
-                    addContact(account,
-                            getDisplayName(provider, data.lookupKey, data.number),
-                            data.number, data.hash, -1, operations, op);
-                    op++;
-                }
-                else {
-                    syncResult.stats.numSkippedEntries++;
-                }
-            }
-
-            try {
-                provider.applyBatch(operations);
-                syncResult.stats.numInserts += op;
-                syncResult.stats.numEntries += op;
-            }
-            catch (Exception e) {
-                Log.e(TAG, "contact write error", e);
-                syncResult.stats.numSkippedEntries = op;
-                syncResult.databaseError = true;
-                return;
-            }
+            return;
         }
 
+        else {
+            Protocol.LookupResponse res = null;
+            try {
+                // request lookup to server
+                Log.v(TAG, "sending lookup request to server");
+                res = client.lookup(hashList);
+            }
+            catch (IOException e) {
+                Log.e(TAG, "error in user lookup", e);
+                syncResult.stats.numIoExceptions++;
+            }
+
+            // last chance to quit
+            if (mCanceled) throw new OperationCanceledException();
+
+            if (res != null) {
+                ArrayList<ContentProviderOperation> operations =
+                    new ArrayList<ContentProviderOperation>();
+                // TODO operations.size() could be used instead (?)
+                int op = 0;
+
+                // this is the time - delete all Kontalk raw contacts
+                try {
+                    syncResult.stats.numDeletes += deleteAll(account, provider);
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "contact delete error", e);
+                    syncResult.databaseError = true;
+                    return;
+                }
+
+                for (int i = 0; i < res.getEntryCount(); i++) {
+                    Protocol.LookupResponseEntry entry = res.getEntry(i);
+                    String userId = entry.getUserId().toString();
+                    final RawPhoneNumberEntry data = lookupNumbers.get(userId);
+                    if (data != null) {
+                        addContact(account,
+                                getDisplayName(provider, data.lookupKey, data.number),
+                                data.number, data.hash, -1, operations, op);
+                        op++;
+                    }
+                    else {
+                        syncResult.stats.numSkippedEntries++;
+                    }
+                }
+
+                try {
+                    provider.applyBatch(operations);
+                    syncResult.stats.numInserts += op;
+                    syncResult.stats.numEntries += op;
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "contact write error", e);
+                    syncResult.stats.numSkippedEntries = op;
+                    syncResult.databaseError = true;
+                    return;
+                }
+            }
+        }
     }
 
     private String getDisplayName(ContentProviderClient client, String lookupKey, String defaultValue) {
