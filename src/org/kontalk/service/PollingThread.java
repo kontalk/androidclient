@@ -55,11 +55,12 @@ public class PollingThread extends Thread {
     /** Reference counter. */
     private int mRefCount;
 
-    public PollingThread(Context context, EndpointServer server) {
+    public PollingThread(Context context, EndpointServer server, int refCount) {
         super(PollingThread.class.getSimpleName());
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
         mServer = server;
         mContext = context;
+        mRefCount = refCount;
     }
 
     public void setMessageListener(MessageListener listener) {

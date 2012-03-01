@@ -109,6 +109,9 @@ public class MessageCenterService extends Service
     private String mPushEmail;
     private String mPushRegistrationId;
 
+    /** Used in case PollingThread is down. */
+    private int mRefCount;
+
     /**
      * This list will contain the received messages - avoiding multiple
      * received jobs.
@@ -193,13 +196,16 @@ public class MessageCenterService extends Service
 
             // hold - increment reference count
             else if (ACTION_HOLD.equals(action)) {
+                mRefCount++;
                 if (mPollingThread != null)
                     mPollingThread.hold();
-                execStart = true;
+                // proceed to start only if network is available
+                execStart = isNetworkConnectionAvailable(this);
             }
 
             // release - decrement reference count
             else if (ACTION_RELEASE.equals(action)) {
+                mRefCount--;
                 if (mPollingThread != null)
                     mPollingThread.release();
             }
@@ -214,7 +220,7 @@ public class MessageCenterService extends Service
                 Bundle extras = intent.getExtras();
                 String serverUrl = (String) extras.get(EndpointServer.class.getName());
                 Log.d(TAG, "using server uri: " + serverUrl);
-                // create two different objects because of the http client instances
+                // create two different objects to keep two different http client connections
                 EndpointServer pollingServer = new EndpointServer(serverUrl);
                 EndpointServer requestServer = new EndpointServer(serverUrl);
 
@@ -255,7 +261,7 @@ public class MessageCenterService extends Service
                     if (mPollingThread == null ||
                             mPollingThread.isInterrupted() ||
                             mPollingThread.isIdle()) {
-                        mPollingThread = new PollingThread(this, pollingServer);
+                        mPollingThread = new PollingThread(this, pollingServer, mRefCount);
                         mPollingThread.setMessageListener(this);
                         mPollingThread.setPushRegistrationId(mPushRegistrationId);
                         mPollingThread.start();
@@ -743,32 +749,37 @@ public class MessageCenterService extends Service
         //mLock.release();
     }
 
-    /** Starts the message center. */
-    public static void startMessageCenter(final Context context) {
-        // check for network state
+    /** Checks for network availability. */
+    private static boolean isNetworkConnectionAvailable(Context context) {
         final ConnectivityManager cm = (ConnectivityManager) context
             .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm.getBackgroundDataSetting()) {
             NetworkInfo info = cm.getActiveNetworkInfo();
-            if (info != null && info.getState() == NetworkInfo.State.CONNECTED) {
-                Log.d(TAG, "starting message center");
-                // onStartCommand will unlock later
-                lock();
-
-                final Intent intent = new Intent(context, MessageCenterService.class);
-
-                // get the URI from the preferences
-                EndpointServer server = MessagingPreferences.getEndpointServer(context);
-                intent.putExtra(EndpointServer.class.getName(), server.toString());
-                // shouldn't happen, but better be sure...
-                if (context.startService(intent) == null)
-                    unlock();
-            }
-            else
-                Log.d(TAG, "network not available - abort service start");
+            if (info != null && info.getState() == NetworkInfo.State.CONNECTED)
+                return true;
         }
-        else
-            Log.d(TAG, "background data disabled - abort service start");
+
+        return false;
+    }
+
+    /** Starts the message center. */
+    public static void startMessageCenter(final Context context) {
+        // check for network state
+        if (isNetworkConnectionAvailable(context)) {
+            Log.d(TAG, "starting message center");
+            // onStartCommand will unlock later
+            lock();
+
+            final Intent intent = new Intent(context, MessageCenterService.class);
+
+            // get the URI from the preferences
+            EndpointServer server = MessagingPreferences.getEndpointServer(context);
+            intent.putExtra(EndpointServer.class.getName(), server.toString());
+            // shouldn't happen, but better be sure...
+            if (context.startService(intent) == null)
+                unlock();
+        }
+        Log.d(TAG, "network not available or background data disabled - abort service start");
     }
 
     /** Stops the message center. */
