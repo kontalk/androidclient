@@ -179,7 +179,7 @@ public class MessageListItem extends RelativeLayout {
 
             if (mDateView == null) {
                 setGravity(Gravity.LEFT);
-                setBackgroundResource(R.drawable.light_blue_background);
+                //setBackgroundResource(R.drawable.light_blue_background);
 	            mDateViewIncoming.setVisibility(VISIBLE);
 	            mDateViewOutgoing.setVisibility(GONE);
             }
@@ -196,7 +196,7 @@ public class MessageListItem extends RelativeLayout {
 
             if (mDateView == null) {
                 setGravity(Gravity.RIGHT);
-                setBackgroundResource(R.drawable.white_background);
+                //setBackgroundResource(R.drawable.white_background);
 	            mDateViewIncoming.setVisibility(GONE);
 	            mDateViewOutgoing.setVisibility(VISIBLE);
 	        }

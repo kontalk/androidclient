@@ -291,4 +291,9 @@ public class MessagingPreferences extends PreferenceActivity {
             .putString("pref_status_message", message)
             .commit();
     }
+
+    public static int getConversationBackground(Context context) {
+        return getBoolean(context, "pref_woody_background", false) ?
+                R.drawable.bg_wood : -1;
+    }
 }

@@ -67,6 +67,7 @@ import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -95,6 +96,7 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -183,7 +185,15 @@ public class ComposeMessageFragment extends ListFragment implements
 		// setListAdapter() is post-poned
 
 		mHandler = new Handler();
-		registerForContextMenu(getListView());
+        ListView list = getListView();
+		registerForContextMenu(list);
+
+		// set custom background (if any)
+		int resBg = MessagingPreferences.getConversationBackground(getActivity());
+		if (resBg > 0) {
+		    list.setCacheColorHint(Color.TRANSPARENT);
+		    list.setBackgroundResource(resBg);
+		}
 
 		mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
 		mTextEntry.addTextChangedListener(new TextWatcher() {
