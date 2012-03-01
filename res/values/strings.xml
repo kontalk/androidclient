@@ -170,4 +170,6 @@
     <string name="open_file">Open file</string>
     <string name="msg_msgcenter_restarted">Message center restarted.</string>
     <string name="downloading_attachment">Downloading attachment&#8230;</string>
+    <string name="pref_woody_background">Woody background</string>
+    <string name="pref_title_woody_background">Use a woody background in conversations</string>
 </resources>
