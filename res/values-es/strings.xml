@@ -34,10 +34,7 @@
     <string name="pref_network_uri">Dirección del servidor Manual</string>
     <string name="pref_title_network_uri">Esto anulará la gestión de la lista de servidores automáticos</string>
     <string name="number_validation_intro1">Por favor, ingrese su número de teléfono móvil, incluyendo el prefijo internacional.</string>
-    <!--
-    TODO
-    <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
-     -->
+    <string name="number_validation_intro2">Si usted no puede recibir mensajes SMS en este dispositivo, inserte otro numero de  teléfono que posee y el código de validación de forma manual mediante el botón que aparece arriba.</string>
     <string name="hint_phone_number">Ingrese su número de teléfono</string>
     <string name="warn_invalid_number">Por favor, ingrese un número de teléfono válido.</string>
     <string name="msg_validating_phone">Validando el número de teléfono&#8230;</string>
@@ -169,7 +166,5 @@
     <string name="title_validation_code">Código de validación</string>
     <string name="title_status_message">Mensaje de estado</string>
     <string name="msg_msgcenter_restarted">Centro de mensajes reiniciado.</string>
-    <!-- TODO
-    <string name="downloading_attachment">Download in corso&#8230;</string>
-     -->
+    <string name="downloading_attachment">Descarga de archivo adjunto &#8230;</string>
 </resources>
