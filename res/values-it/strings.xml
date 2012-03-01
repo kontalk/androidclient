@@ -165,4 +165,6 @@
     <string name="menu_attachment">Allega</string>
     <string name="msg_msgcenter_restarted">Centro messaggi riavviato.</string>
     <string name="downloading_attachment">Download in corso&#8230;</string>
+    <string name="pref_woody_background">Sfondo alternativo</string>
+    <string name="pref_title_woody_background">Usa uno sfondo legnoso nelle conversazioni</string>
 </resources>
