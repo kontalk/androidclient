@@ -18,8 +18,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.kontalk"
-      android:versionCode="8"
-      android:versionName="1.0-beta2">
+      android:versionCode="9"
+      android:versionName="1.0-beta3">
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="14"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>

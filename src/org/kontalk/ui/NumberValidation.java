@@ -141,8 +141,8 @@ public class NumberValidation extends AccountAuthenticatorActivity
         // check number input
         String phone = null;
         try {
-            phone = NumberValidator
-                .fixNumber(this, mPhone.getText().toString());
+            String t = mPhone.getText().toString();
+            phone = NumberValidator.fixNumber(this, t, t);
         }
         catch (Exception e ) {
             new AlertDialog.Builder(this)

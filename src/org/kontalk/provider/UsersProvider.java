@@ -21,6 +21,7 @@ package org.kontalk.provider;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.MessageUtils;
@@ -186,7 +187,8 @@ public class UsersProvider extends ContentProvider {
 
                 // fix number
                 try {
-                	number = NumberValidator.fixNumber(context, number);
+                	number = NumberValidator.fixNumber(context, number,
+                	        Authenticator.getDefaultAccountName(context));
                 }
                 catch (Exception e) {
                 	Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);

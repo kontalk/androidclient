@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import java.util.regex.Pattern;
 
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -130,7 +131,8 @@ public class ComposeMessage extends FragmentActivity {
                     Uri uri = intent.getData();
                     // a phone number should come here...
                     String number = NumberValidator.fixNumber(this,
-                            uri.getSchemeSpecificPart());
+                            uri.getSchemeSpecificPart(),
+                            Authenticator.getDefaultAccountName(this));
                     // compute hash and open conversation
                     String userId = MessageUtils.sha1(number);
 

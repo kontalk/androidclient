@@ -76,6 +76,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return (accs.length > 0) ? accs[0] : null;
     }
 
+    public static String getDefaultAccountName(Context ctx) {
+        Account acc = getDefaultAccount(ctx);
+        return (acc != null) ? acc.name : null;
+    }
+
     @Override
     public Bundle addAccount(AccountAuthenticatorResponse response,
             String accountType, String authTokenType,

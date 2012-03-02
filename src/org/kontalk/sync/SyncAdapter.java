@@ -194,7 +194,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             // fix number
             try {
-            	number = NumberValidator.fixNumber(mContext, number);
+            	number = NumberValidator.fixNumber(mContext, number, account.name);
             }
             catch (Exception e) {
             	Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);

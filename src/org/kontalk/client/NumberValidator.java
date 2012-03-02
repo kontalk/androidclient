@@ -32,6 +32,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
 /**
@@ -254,17 +255,39 @@ public class NumberValidator implements Runnable {
     }
 
     public static String getCountryPrefix(Context context) {
+        return getCountryPrefix(context, null);
+    }
+
+    public static String getCountryPrefix(Context context, String from) {
         final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         final String regionCode = tm.getSimCountryIso().toUpperCase();
         int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
-        if (cc <= 0)
+        if (cc <= 0) {
             cc = MessagingPreferences.getLastCountryCode(context);
-        else
+            // still no country code - take it from the given number (if any)
+            if (cc <= 0 && from != null) {
+                try {
+                    PhoneNumber n = PhoneNumberUtil.getInstance().parse(from, null);
+                    cc = n.getCountryCode();
+                }
+                catch (Exception e) {
+                    // ignore exception for now
+                    Log.d(TAG, "error parsing number: " + from, e);
+                }
+            }
+        }
+
+        // try again...
+        if (cc > 0) {
             MessagingPreferences.setLastCountryCode(context, cc);
-        return (cc > 0) ? "+" + cc : null;
+            return "+" + cc;
+        }
+
+        // give up... :(
+        return null;
     }
 
-    public static String fixNumber(Context context, String number)
+    public static String fixNumber(Context context, String number, String myNumber)
             throws IllegalArgumentException {
         // normalize number: strip separators
         number = PhoneNumberUtils.stripSeparators(number.trim());
@@ -273,7 +296,7 @@ public class NumberValidator implements Runnable {
         if (number.startsWith("00"))
             number = '+' + number.substring(2);
         else if (number.charAt(0) != '+') {
-            String prefix = getCountryPrefix(context);
+            String prefix = getCountryPrefix(context, myNumber);
             if (prefix == null)
                 throw new IllegalArgumentException("no country code available");
             number = prefix + number;
