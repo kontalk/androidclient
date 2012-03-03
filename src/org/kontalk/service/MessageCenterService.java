@@ -220,9 +220,6 @@ public class MessageCenterService extends Service
                 Bundle extras = intent.getExtras();
                 String serverUrl = (String) extras.get(EndpointServer.class.getName());
                 Log.d(TAG, "using server uri: " + serverUrl);
-                // create two different objects to keep two different http client connections
-                EndpointServer pollingServer = new EndpointServer(serverUrl);
-                EndpointServer requestServer = new EndpointServer(serverUrl);
 
                 mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
                 mAccount = Authenticator.getDefaultAccount(this);
@@ -245,6 +242,7 @@ public class MessageCenterService extends Service
 
                     // activate request worker
                     if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
+                        EndpointServer requestServer = new EndpointServer(serverUrl);
                         mRequestWorker = new RequestWorker(this, requestServer);
                         mRequestWorker.addListener(this);
                         mRequestWorker.start();
@@ -261,6 +259,7 @@ public class MessageCenterService extends Service
                     if (mPollingThread == null ||
                             mPollingThread.isInterrupted() ||
                             mPollingThread.isIdle()) {
+                        EndpointServer pollingServer = new EndpointServer(serverUrl);
                         mPollingThread = new PollingThread(this, pollingServer, mRefCount);
                         mPollingThread.setMessageListener(this);
                         mPollingThread.setPushRegistrationId(mPushRegistrationId);
@@ -779,7 +778,8 @@ public class MessageCenterService extends Service
             if (context.startService(intent) == null)
                 unlock();
         }
-        Log.d(TAG, "network not available or background data disabled - abort service start");
+        else
+            Log.d(TAG, "network not available or background data disabled - abort service start");
     }
 
     /** Stops the message center. */
