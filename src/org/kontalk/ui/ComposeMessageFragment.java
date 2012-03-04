@@ -1037,6 +1037,7 @@ public class ComposeMessageFragment extends ListFragment implements
 									    if (res.hasTimediff()) {
 									        long diff = res.getTimediff();
 									        if (diff >= 0 && diff <= 10) {
+									            // TODO i18n
 									            text = "User is online";
 									        }
 									    }
