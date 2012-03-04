@@ -1,4 +1,4 @@
-// Client protocol definitions - revision 1
+// Client protocol definitions - revision 2
 option java_package = "org.kontalk.client";
 option java_outer_classname = "Protocol";
 option optimize_for = LITE_RUNTIME;
@@ -73,6 +73,8 @@ message LookupResponseEntry {
     required string user_id = 1;
     optional uint64 timestamp = 2;
     optional string status = 3;
+    // difference between timestamp and local server time
+    optional uint64 timediff = 4;
 }
 
 // new messages (polling)

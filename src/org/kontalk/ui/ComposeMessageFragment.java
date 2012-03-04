@@ -1033,9 +1033,19 @@ public class ComposeMessageFragment extends ListFragment implements
 										.getEntry(0);
 								if (res.hasTimestamp()) {
 									long time = res.getTimestamp();
-									if (time > 0)
-										text = getResources().getString(R.string.last_seen_label) +
-												MessageUtils.formatRelativeTimeSpan(context, time * 1000);
+									if (time > 0) {
+									    if (res.hasTimediff()) {
+									        long diff = res.getTimediff();
+									        if (diff >= 0 && diff <= 10) {
+									            text = "User is online";
+									        }
+									    }
+
+									    if (text == null)
+    										text = getResources().getString(R.string.last_seen_label) +
+    												MessageUtils.formatRelativeTimeSpan(context, time * 1000);
+									}
+
 									if (res.hasStatus()) {
 										text2 = res.getStatus();
 									}

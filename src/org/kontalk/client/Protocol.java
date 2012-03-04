@@ -3910,6 +3910,10 @@ public final class Protocol {
     // optional string status = 3;
     boolean hasStatus();
     String getStatus();
+    
+    // optional uint64 timediff = 4;
+    boolean hasTimediff();
+    long getTimediff();
   }
   public static final class LookupResponseEntry extends
       com.google.protobuf.GeneratedMessageLite
@@ -4004,10 +4008,21 @@ public final class Protocol {
       }
     }
     
+    // optional uint64 timediff = 4;
+    public static final int TIMEDIFF_FIELD_NUMBER = 4;
+    private long timediff_;
+    public boolean hasTimediff() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    public long getTimediff() {
+      return timediff_;
+    }
+    
     private void initFields() {
       userId_ = "";
       timestamp_ = 0L;
       status_ = "";
+      timediff_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4034,6 +4049,9 @@ public final class Protocol {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getStatusBytes());
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt64(4, timediff_);
+      }
     }
     
     private int memoizedSerializedSize = -1;
@@ -4053,6 +4071,10 @@ public final class Protocol {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, getStatusBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(4, timediff_);
       }
       memoizedSerializedSize = size;
       return size;
@@ -4162,6 +4184,8 @@ public final class Protocol {
         bitField0_ = (bitField0_ & ~0x00000002);
         status_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        timediff_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       
@@ -4207,6 +4231,10 @@ public final class Protocol {
           to_bitField0_ |= 0x00000004;
         }
         result.status_ = status_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.timediff_ = timediff_;
         result.bitField0_ = to_bitField0_;
         return result;
       }
@@ -4221,6 +4249,9 @@ public final class Protocol {
         }
         if (other.hasStatus()) {
           setStatus(other.getStatus());
+        }
+        if (other.hasTimediff()) {
+          setTimediff(other.getTimediff());
         }
         return this;
       }
@@ -4263,6 +4294,11 @@ public final class Protocol {
             case 26: {
               bitField0_ |= 0x00000004;
               status_ = input.readBytes();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              timediff_ = input.readUInt64();
               break;
             }
           }
@@ -4362,6 +4398,27 @@ public final class Protocol {
         bitField0_ |= 0x00000004;
         status_ = value;
         
+      }
+      
+      // optional uint64 timediff = 4;
+      private long timediff_ ;
+      public boolean hasTimediff() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      public long getTimediff() {
+        return timediff_;
+      }
+      public Builder setTimediff(long value) {
+        bitField0_ |= 0x00000008;
+        timediff_ = value;
+        
+        return this;
+      }
+      public Builder clearTimediff() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        timediff_ = 0L;
+        
+        return this;
       }
       
       // @@protoc_insertion_point(builder_scope:LookupResponseEntry)
