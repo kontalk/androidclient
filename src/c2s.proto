@@ -87,3 +87,42 @@ message ReceiptMessage {
     }
     repeated Entry entry = 1;
 }
+
+// registration request
+message RegistrationRequest {
+    required string username = 1;
+}
+
+// registration response
+message RegistrationResponse {
+    enum RegistrationStatus {
+        STATUS_SUCCESS = 0;
+        STATUS_ERROR = 1;
+        // registration requires more steps to complete
+        STATUS_CONTINUE = 2;
+        STATUS_INVALID_USERNAME = 2;
+    }
+    required RegistrationStatus status = 1;
+    // used only in single-step authentication
+    optional string token = 2;
+    // used only in SMS-based registration
+    optional string sms_from = 3;
+    // used only in email-based registration
+    optional string email_from = 4;
+}
+
+// validation request (registration 2nd step)
+message ValidationRequest {
+    required string validation_code = 1;
+}
+
+// validation response (registration 2nd step)
+message ValidationResponse {
+    enum ValidationStatus {
+        STATUS_SUCCESS = 0;
+        STATUS_ERROR = 1;
+        STATUS_FAILED = 2;
+    }
+    required ValidationStatus status = 1;
+    optional string token = 2;
+}

@@ -20,8 +20,6 @@ package org.kontalk.service;
 
 import java.io.IOException;
 
-import org.kontalk.client.RequestClient;
-
 import android.content.Context;
 
 import com.google.protobuf.MessageLite;
@@ -41,8 +39,7 @@ public abstract class RequestJob {
     }
 
     /** Implement this to do the actual task the child should execute. */
-    public abstract MessageLite call(RequestClient client,
-            RequestListener listener, Context context) throws IOException;
+    public abstract MessageLite call(RequestListener listener, Context context) throws IOException;
 
     /**
      * Sets the cancel flag.

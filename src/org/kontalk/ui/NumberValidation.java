@@ -22,8 +22,9 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.client.Protocol;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
+import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.service.MessageCenterService;
 
 import android.accounts.Account;
@@ -35,8 +36,8 @@ import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
@@ -257,7 +258,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     }
 
     @Override
-    public void onAuthTokenFailed(NumberValidator v, Protocol.Status reason) {
+    public void onAuthTokenFailed(NumberValidator v, ValidationStatus reason) {
         Log.e(TAG, "authorization token request failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override
@@ -348,7 +349,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     }
 
     @Override
-    public void onValidationFailed(NumberValidator v, Protocol.Status reason) {
+    public void onValidationFailed(NumberValidator v, RegistrationStatus reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override

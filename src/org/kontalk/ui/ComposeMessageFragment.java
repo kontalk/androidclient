@@ -21,7 +21,6 @@ package org.kontalk.ui;
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
@@ -29,9 +28,6 @@ import java.util.regex.Pattern;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.MessageSender;
-import org.kontalk.client.Protocol;
-import org.kontalk.client.RequestClient;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -43,7 +39,6 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.sync.SyncAdapter;
@@ -83,7 +78,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -92,7 +86,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
@@ -272,18 +265,18 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	/** Used for binding to the message center to send messages. */
 	private class ComposerServiceConnection implements ServiceConnection {
-		public final MessageSender job;
+		//public final MessageSender job;
 		private MessageCenterService service;
 
 		public ComposerServiceConnection(String userId, byte[] text,
 				String mime, Uri msgUri, String encryptKey) {
-			job = new MessageSender(userId, text, mime, msgUri, encryptKey);
+			//job = new MessageSender(userId, text, mime, msgUri, encryptKey);
 			// job.setListener(mMessageSenderListener);
 		}
 
 		public ComposerServiceConnection(String userId, Uri fileUri,
 				String mime, Uri msgUri, String encryptKey) {
-			job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
+			//job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
 			// job.setListener(mMessageSenderListener);
 		}
 
@@ -296,7 +289,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		public void onServiceConnected(ComponentName name, IBinder ibinder) {
 			MessageCenterInterface binder = (MessageCenterInterface) ibinder;
 			service = binder.getService();
-			service.sendMessage(job);
+			// TODO service.sendMessage(job);
 			getActivity().unbindService(this);
 		}
 	}
@@ -754,11 +747,13 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			case MENU_DOWNLOAD: {
 				Log.d(TAG, "downloading attachment");
+				/*
 				Intent i = new Intent(getActivity(), DownloadService.class);
 				i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
 				i.putExtra(AbstractMessage.MSG_ID, msg.getId());
 				i.setData(Uri.parse(msg.getFetchUrl()));
 				getActivity().startService(i);
+				*/
 				return true;
 			}
 
@@ -1012,6 +1007,7 @@ public class ComposeMessageFragment extends ListFragment implements
 				&& MessagingPreferences.getLastSeenEnabled(getActivity())) {
 			// FIXME this should be handled better and of course honour activity
 			// pause/resume/saveState/restoreState/display rotation.
+		    /*
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -1101,6 +1097,7 @@ public class ComposeMessageFragment extends ListFragment implements
 					}
 				}
 			}).start();
+			*/
 		}
 	}
 

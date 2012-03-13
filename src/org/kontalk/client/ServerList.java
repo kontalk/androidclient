@@ -29,11 +29,11 @@ import java.util.Random;
  * @author Daniele Ricci
  */
 public class ServerList extends ArrayList<EndpointServer> {
-    private static final long serialVersionUID = -8798498388829449277L;
+    private static final long serialVersionUID = 1L;
 
     protected final Date mDate;
 
-    private Random mSeed;
+    private final Random mSeed = new Random();
 
     public ServerList(Date date) {
         super();
@@ -51,11 +51,8 @@ public class ServerList extends ArrayList<EndpointServer> {
 
     /** Returns a random entry in the list. */
     public EndpointServer random() {
-        if (mSeed == null)
-            mSeed = new Random();
         return (size() > 0) ?
-            get(mSeed.nextInt(size())) :
-            null;
+            get(mSeed.nextInt(size())) : null;
     }
 
 }

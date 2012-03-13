@@ -18,32 +18,22 @@
 
 package org.kontalk.service;
 
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 
-import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.ReceiptMessage;
-import org.kontalk.client.ReceivedJob;
-import org.kontalk.client.RequestClient;
-import org.kontalk.client.ServerinfoJob;
+import org.kontalk.client.TxListener;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.ui.ComposeMessage;
-import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
@@ -51,15 +41,12 @@ import org.kontalk.util.MediaStorage;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -67,7 +54,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 import com.google.protobuf.MessageLite;
 
@@ -80,7 +66,7 @@ import com.google.protobuf.MessageLite;
  * @version 1.0
  */
 public class MessageCenterService extends Service
-        implements MessageListener, RequestListener {
+        implements MessageListener, TxListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
@@ -98,18 +84,14 @@ public class MessageCenterService extends Service
 
     public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
 
-    private Notification mCurrentNotification;
-    private long mTotalBytes;
-
-    private PollingThread mPollingThread;
-    private RequestWorker mRequestWorker;
+    private ClientThread mClientThread;
     private Account mAccount;
 
     private boolean mPushNotifications;
     private String mPushEmail;
     private String mPushRegistrationId;
 
-    /** Used in case PollingThread is down. */
+    /** Used in case ClientThread is down. */
     private int mRefCount;
 
     /**
@@ -142,8 +124,6 @@ public class MessageCenterService extends Service
             }
         }
     };
-
-    private MessageRequestListener mMessageRequestListener; // created in onCreate
 
     private final IBinder mBinder = new MessageCenterInterface();
 
@@ -186,19 +166,13 @@ public class MessageCenterService extends Service
 
             // idle - schedule shutdown
             else if (ACTION_IDLE.equals(action)) {
-                // send idle signals to worker threads
-
-                if (mPollingThread != null)
-                    mPollingThread.idle();
-                if (mRequestWorker != null)
-                    mRequestWorker.idle();
+                // TODO send idle signals to worker threads
             }
 
             // hold - increment reference count
             else if (ACTION_HOLD.equals(action)) {
                 mRefCount++;
-                if (mPollingThread != null)
-                    mPollingThread.hold();
+                // TODO mClientThread.hold()
                 // proceed to start only if network is available
                 execStart = isNetworkConnectionAvailable(this);
             }
@@ -206,8 +180,7 @@ public class MessageCenterService extends Service
             // release - decrement reference count
             else if (ACTION_RELEASE.equals(action)) {
                 mRefCount--;
-                if (mPollingThread != null)
-                    mPollingThread.release();
+                // TODO mClientThread.release()
             }
 
             // normal start
@@ -240,49 +213,23 @@ public class MessageCenterService extends Service
                         mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
                     }
 
-                    // activate request worker
-                    if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
-                        EndpointServer requestServer = new EndpointServer(serverUrl);
-                        mRequestWorker = new RequestWorker(this, requestServer);
-                        mRequestWorker.addListener(this);
-                        mRequestWorker.start();
-
-                        // request serverinfo
-                        requestServerinfo();
-                        // lookup for messages with error status and try to re-send them
-                        requeuePendingMessages();
-                        // lookup for incoming messages not confirmed yet
-                        requeuePendingReceipts();
+                    // start client thread
+                    if (mClientThread == null ||
+                            mClientThread.isInterrupted()) {
+                        // TODO from intent please :)
+                        EndpointServer server = new EndpointServer("10.0.2.2", 5554);
+                        mClientThread = new ClientThread(this, server);
+                        mClientThread.setDefaultTxListener(this);
+                        mClientThread.setMessageListener(this);
+                        mClientThread.start();
                     }
 
-                    // start polling thread
-                    if (mPollingThread == null ||
-                            mPollingThread.isInterrupted() ||
-                            mPollingThread.isIdle()) {
-                        EndpointServer pollingServer = new EndpointServer(serverUrl);
-                        mPollingThread = new PollingThread(this, pollingServer, mRefCount);
-                        mPollingThread.setMessageListener(this);
-                        mPollingThread.setPushRegistrationId(mPushRegistrationId);
-                        mPollingThread.start();
-                    }
-
-                    // update status message
-                    pushRequest(new RequestJob() {
-                        @Override
-                        public MessageLite call(RequestClient client, RequestListener listener,
-                                Context context) throws IOException {
-                            String msg = MessagingPreferences.getStatusMessage(context);
-                            return client.update(msg, null);
-                        }
-                    });
+                    // TODO update status message
 
                     /*
                      * FIXME c2dm stays on since in onDestroy() we commented
                      * the unregistration call, and here we do nothing about it
                      */
-
-                    // release lock
-                    unlock();
                 }
             }
         }
@@ -291,123 +238,18 @@ public class MessageCenterService extends Service
     }
 
     /**
-     * Shuts down the polling thread.
+     * Shuts down the client thread.
      * @return true if the thread has been stopped, false if it wasn't running.
      */
-    private synchronized boolean shutdownPollingThread() {
-        if (mPollingThread != null) {
-            PollingThread tmp = mPollingThread;
+    private synchronized boolean shutdownClientThread() {
+        if (mClientThread != null) {
+            ClientThread tmp = mClientThread;
             // discard the reference to the thread immediately
-            mPollingThread = null;
+            mClientThread = null;
             tmp.shutdown();
             return true;
         }
         return false;
-    }
-
-    /**
-     * Shuts down the request worker.
-     * @return true if the thread has been stopped, false if it wasn't running.
-     */
-    private synchronized boolean shutdownRequestWorker() {
-        // Be sure to clear the pending jobs queue.
-        // Since we are stopping the message center, any pending request would
-        // be lost anyway.
-        RequestWorker.pendingJobs.clear();
-
-        if (mRequestWorker != null) {
-            RequestWorker tmp = mRequestWorker;
-            // discard the reference to the thread immediately
-            mRequestWorker = null;
-            tmp.shutdown();
-            return true;
-        }
-        return false;
-    }
-
-    private void requestServerinfo() {
-        pushRequest(new ServerinfoJob());
-    }
-
-    /**
-     * Searches for messages with error or pending status and pushes them
-     * through the request queue to re-send them.
-     */
-    private void requeuePendingMessages() {
-        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-                new String[] {
-                    Messages._ID,
-                    Messages.PEER,
-                    Messages.CONTENT,
-                    Messages.MIME,
-                    Messages.LOCAL_URI,
-                    Messages.ENCRYPT_KEY
-                },
-                Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
-                Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
-                Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
-                Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED,
-                null, null);
-
-        while (c.moveToNext()) {
-            long id = c.getLong(0);
-            String userId = c.getString(1);
-            byte[] text = c.getBlob(2);
-            String mime = c.getString(3);
-            String _fileUri = c.getString(4);
-            String key = c.getString(5);
-            Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
-
-            MessageSender m;
-
-            // check if the message contains some large file to be sent
-            if (_fileUri != null) {
-                Uri fileUri = Uri.parse(_fileUri);
-                // FIXME do not encrypt binary messages for now
-                m = new MessageSender(userId, fileUri, mime, uri, null);
-            }
-            // we have a simple boring plain text message :(
-            else {
-                m = new MessageSender(userId, text, mime, uri, key);
-            }
-
-            m.setListener(mMessageRequestListener);
-            Log.d(TAG, "resending failed message " + id);
-            sendMessage(m);
-        }
-
-        c.close();
-    }
-
-    /**
-     * Searches for incoming messages not yet confirmed and send a received
-     * notification through the request queue.
-     */
-    private void requeuePendingReceipts() {
-        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-                new String[] { Messages.REAL_ID },
-                Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
-                Messages.STATUS + " = 0",
-                null, null);
-
-        List<String> list = new ArrayList<String>();
-        while (c.moveToNext()) {
-            String msgId = c.getString(0);
-            Log.d(TAG, "sending received notification for message " + msgId);
-            list.add(msgId);
-        }
-        c.close();
-
-        if (list.size() > 0) {
-            // here we send the received notification
-            RequestJob job = new ReceivedJob(list);
-            pushRequest(job);
-        }
-    }
-
-    @Override
-    public void onCreate() {
-        mMessageRequestListener = new MessageRequestListener(this);
     }
 
     private void stop() {
@@ -420,116 +262,113 @@ public class MessageCenterService extends Service
             mAccountManager = null;
         }
 
-        // stop polling thread
-        shutdownPollingThread();
-
-        // stop request worker
-        shutdownRequestWorker();
+        // stop client thread
+        shutdownClientThread();
     }
 
     @Override
     public void onDestroy() {
         stop();
-
-        // release lock
-        unlock();
     }
 
     @Override
-    public void incoming(List<AbstractMessage<?>> messages) {
+    public void tx(ClientConnection connection, String txId, MessageLite pack) {
+        // TODO default tx listener
+    }
+
+    @Override
+    public void incoming(AbstractMessage<?> msg) {
         List<String> list = new ArrayList<String>();
 
         // access to mReceived list is protected
         synchronized (mReceived) {
             boolean notify = false;
 
-            for (AbstractMessage<?> msg : messages) {
-                // TODO check for null (unsupported) messages to be notified
+            // TODO check for null (unsupported) messages to be notified
 
-                if (!mReceived.contains(msg.getId())) {
-                    // the message need to be confirmed
-                    list.add(msg.getRealId());
-                    mReceived.add(msg.getId());
+            if (!mReceived.contains(msg.getId())) {
+                // the message need to be confirmed
+                list.add(msg.getRealId());
+                mReceived.add(msg.getId());
 
-                    // do not store receipts...
-                    if (!(msg instanceof ReceiptMessage)) {
-                        // store to file if it's an image message
-                        // FIXME this should be abstracted somehow
-                        byte[] content = msg.getBinaryContent();
+                // do not store receipts...
+                if (!(msg instanceof ReceiptMessage)) {
+                    // store to file if it's an image message
+                    // FIXME this should be abstracted somehow
+                    byte[] content = msg.getBinaryContent();
 
-                        if (msg instanceof ImageMessage) {
-                            String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
-                            File file = null;
-                            try {
-                                file = MediaStorage.writeInternalMedia(this, filename, content);
-                            }
-                            catch (IOException e) {
-                                Log.e(TAG, "unable to write to media storage", e);
-                            }
-                            // update uri
-                            msg.setPreviewFile(file);
-
-                            // use text content for database table
-                            content = msg.getTextContent().getBytes();
+                    if (msg instanceof ImageMessage) {
+                        String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
+                        File file = null;
+                        try {
+                            file = MediaStorage.writeInternalMedia(this, filename, content);
                         }
-                        else if (msg instanceof VCardMessage) {
-                            String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
-                            File file = null;
-                            try {
-                                file = MediaStorage.writeInternalMedia(this, filename, content);
-                            }
-                            catch (IOException e) {
-                                Log.e(TAG, "unable to write to media storage", e);
-                            }
-                            // update uri
-                            if (file != null)
-                            	msg.setLocalUri(Uri.fromFile(file));
-
-                            // use text content for database table
-                            content = msg.getTextContent().getBytes();
+                        catch (IOException e) {
+                            Log.e(TAG, "unable to write to media storage", e);
                         }
+                        // update uri
+                        msg.setPreviewFile(file);
 
-                        // save to local storage
-                        ContentValues values = new ContentValues();
-                        values.put(Messages.MESSAGE_ID, msg.getId());
-                        values.put(Messages.REAL_ID, msg.getRealId());
-                        values.put(Messages.PEER, msg.getSender(true));
-                        values.put(Messages.MIME, msg.getMime());
-                        values.put(Messages.CONTENT, content);
-                        values.put(Messages.ENCRYPTED, msg.isEncrypted());
-                        values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
-                        values.put(Messages.FETCH_URL, msg.getFetchUrl());
-                        File previewFile = msg.getPreviewFile();
-                        if (previewFile != null)
-                            values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
-                        values.put(Messages.UNREAD, true);
-                        values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
-                        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                        Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
-                        msg.setDatabaseId(ContentUris.parseId(newMsg));
+                        // use text content for database table
+                        content = msg.getTextContent().getBytes();
+                    }
+                    else if (msg instanceof VCardMessage) {
+                        String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
+                        File file = null;
+                        try {
+                            file = MediaStorage.writeInternalMedia(this, filename, content);
+                        }
+                        catch (IOException e) {
+                            Log.e(TAG, "unable to write to media storage", e);
+                        }
+                        // update uri
+                        if (file != null)
+                        	msg.setLocalUri(Uri.fromFile(file));
 
-                        // we will have to notify the user
-                        notify = true;
+                        // use text content for database table
+                        content = msg.getTextContent().getBytes();
                     }
 
-                    // we have a receipt, update the corresponding message
-                    else {
-                        ReceiptMessage msg2 = (ReceiptMessage) msg;
-                        Log.d(TAG, "receipt for message " + msg2.getMessageId());
+                    // save to local storage
+                    ContentValues values = new ContentValues();
+                    values.put(Messages.MESSAGE_ID, msg.getId());
+                    values.put(Messages.REAL_ID, msg.getRealId());
+                    values.put(Messages.PEER, msg.getSender(true));
+                    values.put(Messages.MIME, msg.getMime());
+                    values.put(Messages.CONTENT, content);
+                    values.put(Messages.ENCRYPTED, msg.isEncrypted());
+                    values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
+                    values.put(Messages.FETCH_URL, msg.getFetchUrl());
+                    File previewFile = msg.getPreviewFile();
+                    if (previewFile != null)
+                        values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
+                    values.put(Messages.UNREAD, true);
+                    values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+                    values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+                    Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
+                    msg.setDatabaseId(ContentUris.parseId(newMsg));
 
-                        int status = msg2.getStatus();
-                        int code = (status == Protocol.Status.STATUS_SUCCESS_VALUE) ?
-                                Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
-
-                        MessagesProvider.changeMessageStatusWhere(this,
-                                true, Messages.STATUS_RECEIVED,
-                                msg2.getMessageId(), false, code,
-                                -1, msg.getServerTimestamp().getTime());
-                    }
-
-                    // broadcast message
-                    broadcastMessage(msg);
+                    // we will have to notify the user
+                    notify = true;
                 }
+
+                // we have a receipt, update the corresponding message
+                else {
+                    ReceiptMessage msg2 = (ReceiptMessage) msg;
+                    Log.d(TAG, "receipt for message " + msg2.getMessageId());
+
+                    int status = msg2.getStatus();
+                    int code = (status == Protocol.ReceiptMessage.Entry.ReceiptStatus.STATUS_SUCCESS_VALUE) ?
+                            Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
+
+                    MessagesProvider.changeMessageStatusWhere(this,
+                            true, Messages.STATUS_RECEIVED,
+                            msg2.getMessageId(), false, code,
+                            -1, msg.getServerTimestamp().getTime());
+                }
+
+                // broadcast message
+                broadcastMessage(msg);
             }
 
             if (notify)
@@ -539,187 +378,9 @@ public class MessageCenterService extends Service
 
         if (list.size() > 0) {
             Log.d(TAG, "pushing receive confirmation");
-            RequestJob job = new ReceivedJob(list);
-            pushRequest(job);
+            //RequestJob job = new ReceivedJob(list);
+            // TODO pushRequest(job);
         }
-    }
-
-    private synchronized void pushRequest(final RequestJob job) {
-        if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
-            mRequestWorker.push(job);
-        else {
-            if (job instanceof ReceivedJob || job instanceof MessageSender) {
-                Log.i(TAG, "not queueing message job");
-            }
-            else {
-                Log.i(TAG, "request worker is down, queueing job");
-                RequestWorker.pendingJobs.add(job);
-            }
-
-            Log.d(TAG, "trying to start message center");
-            startMessageCenter(getApplicationContext());
-        }
-    }
-
-    /** Sends a message using the request worker. */
-    public void sendMessage(final MessageSender job) {
-        // global listener
-        job.setListener(mMessageRequestListener);
-
-        // not a plain text message - use progress notification
-        if (job.getSourceUri() != null) {
-            try {
-                startForeground(job.getUserId(), job.getContentLength(this));
-            }
-            catch (IOException e) {
-                Log.e(TAG, "error reading message data to send", e);
-                MessagesProvider.changeMessageStatus(this,
-                        job.getMessageUri(), Messages.STATUS_ERROR,
-                        -1, System.currentTimeMillis());
-                // just don't send for now
-                return;
-            }
-        }
-
-        pushRequest(job);
-    }
-
-    public void startForeground(String userId, long totalBytes) {
-        Log.v(TAG, "starting foreground progress notification");
-        mTotalBytes = totalBytes;
-
-        Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
-        ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
-        ni.setData(Threads.getUri(userId));
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_UPLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        mCurrentNotification = new Notification(R.drawable.icon_stat,
-                getResources().getString(R.string.sending_message),
-                System.currentTimeMillis());
-        mCurrentNotification.contentIntent = pi;
-        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-
-        foregroundNotification(0);
-        startForeground(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
-    }
-
-    private void foregroundNotification(int progress) {
-        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setTextViewText(R.id.title, getResources().getString(R.string.sending_message));
-        mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
-        mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
-    }
-
-    public void publishProgress(long bytes) {
-        if (mCurrentNotification != null) {
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            nm.cancel(NOTIFICATION_ID_UPLOAD_ERROR);
-
-            int progress = (int)((100 * bytes) / mTotalBytes);
-            foregroundNotification(progress);
-            // send the updates to the notification manager
-            nm.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
-        }
-    }
-
-    public void stopForeground() {
-        stopForeground(true);
-        mCurrentNotification = null;
-        mTotalBytes = 0;
-    }
-
-    @Override
-    public void response(RequestJob job, MessageLite response) {
-        Log.d(TAG, "job=" + job + ", response=" + response);
-
-        if (response != null) {
-            // received command
-            if (response instanceof Protocol.Received) {
-                // access to mReceived list is protected
-                synchronized (mReceived) {
-                    Protocol.Received response2 = (Protocol.Received) response;
-                    List<Protocol.ReceivedEntry> list = response2.getEntryList();
-                    for (Protocol.ReceivedEntry entry : list) {
-                        String id = entry.getMessageId();
-                        if (entry.getStatus() == Protocol.Status.STATUS_SUCCESS)
-                            MessagesProvider.changeMessageStatus(this,
-                                    id, true, Messages.STATUS_CONFIRMED);
-
-                        // remove the entry so it will be processed again if necessary
-                        mReceived.remove(id);
-                    }
-                }
-            }
-
-            else if (job instanceof MessageSender) {
-                // stop foreground if any
-                stopForeground();
-            }
-
-            else if (job instanceof ServerinfoJob) {
-                Protocol.ServerInfo response2 = (Protocol.ServerInfo) response;
-                for (int i = 0; i < response2.getSupportsCount(); i++) {
-                    String data = response2.getSupports(i);
-                    if (data.startsWith("google_c2dm=")) {
-                        mPushEmail = data.substring("google_c2dm=".length());
-                        if (mPushNotifications)
-                            c2dmRegister();
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public boolean error(RequestJob job, Throwable e) {
-        Log.e(TAG, "request error", e);
-        // stop any foreground if the job is a message
-        if (job instanceof MessageSender) {
-            stopForeground();
-
-            MessageSender job2 = (MessageSender) job;
-            if (job2.getSourceUri() != null) {
-                // create intent for upload error notification
-                // TODO this Intent should bring the user to the actual conversation
-                Intent i = new Intent(this, ConversationList.class);
-                PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                        NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                // create notification
-                Notification no = new Notification(R.drawable.icon_stat,
-                        getString(R.string.notify_ticker_upload_error),
-                        System.currentTimeMillis());
-                no.setLatestEventInfo(getApplicationContext(),
-                        getString(R.string.notify_title_upload_error),
-                        getString(R.string.notify_text_upload_error), pi);
-                no.flags |= Notification.FLAG_AUTO_CANCEL;
-
-                // notify!!
-                NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, no);
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public void uploadProgress(RequestJob job, long bytes) {
-        //Log.v(TAG, "bytes sent: " + bytes);
-        if (job instanceof MessageSender) {
-            boolean cancel = ((MessageSender)job).isCanceled();
-            if (cancel)
-                throw new CancellationException("job has been canceled.");
-        }
-        publishProgress(bytes);
-        Thread.yield();
-    }
-
-    /** TODO this should not be used */
-    @Override
-    public void downloadProgress(RequestJob job, long bytes) {
-        //Log.v(TAG, "bytes received: " + bytes);
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {
@@ -729,23 +390,6 @@ public class MessageCenterService extends Service
         msg.putExtras(message.toBundle());
         sendBroadcast(msg);
         */
-    }
-
-    /** Acquires the message center lock. */
-    private static void lock() {
-        /*
-        try {
-            mLock.acquire();
-        }
-        catch (InterruptedException e) {
-            // ignored
-        }
-        */
-    }
-
-    /** Releases the message center lock. */
-    private static void unlock() {
-        //mLock.release();
     }
 
     /** Checks for network availability. */
@@ -766,17 +410,12 @@ public class MessageCenterService extends Service
         // check for network state
         if (isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");
-            // onStartCommand will unlock later
-            lock();
-
             final Intent intent = new Intent(context, MessageCenterService.class);
 
             // get the URI from the preferences
             EndpointServer server = MessagingPreferences.getEndpointServer(context);
             intent.putExtra(EndpointServer.class.getName(), server.toString());
-            // shouldn't happen, but better be sure...
-            if (context.startService(intent) == null)
-                unlock();
+            context.startService(intent);
         }
         else
             Log.d(TAG, "network not available or background data disabled - abort service start");
@@ -784,17 +423,12 @@ public class MessageCenterService extends Service
 
     /** Stops the message center. */
     public static void stopMessageCenter(final Context context) {
-        // onDestroy will unlock later
-        lock();
         Log.d(TAG, "shutting down message center");
-        if (!context.stopService(new Intent(context, MessageCenterService.class)))
-            unlock();
+        context.stopService(new Intent(context, MessageCenterService.class));
     }
 
     /** Triggers a managed message center restart. */
     public static void restartMessageCenter(final Context context) {
-        // onStartCommand will unlock later
-        lock();
         Log.d(TAG, "restarting message center");
         Intent i = new Intent(context, MessageCenterService.class);
         EndpointServer server = MessagingPreferences.getEndpointServer(context);
@@ -886,17 +520,13 @@ public class MessageCenterService extends Service
 
     private void setPushRegistrationId(String regId) {
         mPushRegistrationId = regId;
+        // TODO setPushRegistrationId
+        /*
         if (mPollingThread != null)
             mPollingThread.setPushRegistrationId(regId);
+         */
 
-        // notify the server about the change
-        pushRequest(new RequestJob() {
-            @Override
-            public MessageLite call(RequestClient client, RequestListener listener,
-                    Context context) throws IOException {
-                return client.update(null, mPushRegistrationId);
-            }
-        });
+        // TODO notify the server about the change
     }
 
     public final class MessageCenterInterface extends Binder {

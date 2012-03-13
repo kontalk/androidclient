@@ -18,7 +18,6 @@
 
 package org.kontalk.sync;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +27,6 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.client.Protocol;
-import org.kontalk.client.RequestClient;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.ui.MessagingPreferences;
 
@@ -153,7 +150,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // setup the request client
         final EndpointServer server = MessagingPreferences.getEndpointServer(context);
         final String token = Authenticator.getDefaultAccountToken(mContext);
-        final RequestClient client = new RequestClient(mContext, server, token);
+        //final RequestClient client = new RequestClient(mContext, server, token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
         final List<String> hashList = new ArrayList<String>();
 
@@ -224,6 +221,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         else {
+            /*
             Protocol.LookupResponse res = null;
             try {
                 // request lookup to server
@@ -281,6 +279,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     return;
                 }
             }
+            */
         }
     }
 

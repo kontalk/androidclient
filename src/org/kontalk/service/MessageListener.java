@@ -18,20 +18,17 @@
 
 package org.kontalk.service;
 
-import java.util.List;
-
 import org.kontalk.message.AbstractMessage;
 
 /**
  * Listener interface for message receivers.
  * @author Daniele Ricci
- * @version 1.0
  */
 public interface MessageListener {
 
     /**
-     * Notifies pending incoming messages.
+     * Notifies a pending incoming message.
      * @param messages
      */
-    public void incoming(List<AbstractMessage<?>> messages);
+    public void incoming(AbstractMessage<?> message);
 }

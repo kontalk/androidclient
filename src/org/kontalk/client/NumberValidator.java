@@ -18,6 +18,10 @@
 
 package org.kontalk.client;
 
+import org.kontalk.client.Protocol.RegistrationResponse;
+import org.kontalk.client.Protocol.ValidationResponse;
+import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
+import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.content.BroadcastReceiver;
@@ -56,7 +60,7 @@ public class NumberValidator implements Runnable {
     private final Context mContext;
     private final EndpointServer mServer;
     private final String mPhone;
-    private final RequestClient mClient;
+    private final ClientConnection mClient;
     private final boolean mManual;
     private NumberValidatorListener mListener;
     private int mStep;
@@ -70,7 +74,7 @@ public class NumberValidator implements Runnable {
         mContext = context;
         mServer = server;
         mPhone = phone;
-        mClient = new RequestClient(context, mServer, null);
+        mClient = new ClientConnection(context, mServer);
         mManual = manual;
     }
 
@@ -139,10 +143,10 @@ public class NumberValidator implements Runnable {
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
-                Protocol.PhoneValidation res = mClient.validate(mPhone);
+                RegistrationResponse res = mClient.registerWait(mPhone);
                 if (mListener != null) {
 
-                    if (res.getStatus() == Protocol.Status.STATUS_SUCCESS) {
+                    if (res.getStatus() == RegistrationStatus.STATUS_SUCCESS) {
 
                         if (res.hasSmsFrom()) {
                             mSmsFrom = res.getSmsFrom();
@@ -169,9 +173,9 @@ public class NumberValidator implements Runnable {
             else if (mStep == STEP_AUTH_TOKEN) {
                 Log.d(TAG, "requesting authentication token");
 
-                Protocol.Authentication res = mClient.authenticate(mValidationCode.toString());
+                ValidationResponse res = mClient.validateWait(mValidationCode.toString());
                 if (mListener != null) {
-                    if (res.getStatus() == Protocol.Status.STATUS_SUCCESS) {
+                    if (res.getStatus() == ValidationStatus.STATUS_SUCCESS) {
                         if (res.hasToken()) {
                             String token = res.getToken();
                             if (!TextUtils.isEmpty(token))
@@ -202,7 +206,7 @@ public class NumberValidator implements Runnable {
         Log.w(TAG, "shutting down");
         try {
             if (mThread != null) {
-                mClient.abort();
+                mClient.close();
                 mThread.interrupt();
                 mThread.join();
                 mThread = null;
@@ -212,7 +216,7 @@ public class NumberValidator implements Runnable {
                 mSmsReceiver = null;
             }
         }
-        catch (InterruptedException e) {
+        catch (Exception e) {
             // ignored
         }
         Log.w(TAG, "exiting");
@@ -242,7 +246,7 @@ public class NumberValidator implements Runnable {
         public void onValidationRequested(NumberValidator v);
 
         /** Called if phone number validation failed. */
-        public void onValidationFailed(NumberValidator v, Protocol.Status reason);
+        public void onValidationFailed(NumberValidator v, RegistrationStatus reason);
 
         /** Called when the validation code SMS has been received. */
         public void onValidationCodeReceived(NumberValidator v, CharSequence code);
@@ -251,7 +255,7 @@ public class NumberValidator implements Runnable {
         public void onAuthTokenReceived(NumberValidator v, CharSequence token);
 
         /** Called if validation code has not been verified. */
-        public void onAuthTokenFailed(NumberValidator v, Protocol.Status reason);
+        public void onAuthTokenFailed(NumberValidator v, ValidationStatus reason);
     }
 
     public static String getCountryPrefix(Context context) {

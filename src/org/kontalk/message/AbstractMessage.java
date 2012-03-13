@@ -25,11 +25,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.kontalk.client.PollingClient;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.MessageID;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.service.ClientThread;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
@@ -307,7 +307,7 @@ public abstract class AbstractMessage<T> {
         encryptKey = "";
     }
 
-    /** Reserved for the {@link PollingClient}. */
+    /** Reserved for the {@link ClientThread}. */
     public void setWasEncrypted(boolean encrypted) {
         this.encryptKey = encrypted ? "" : null;
     }
