@@ -1,0 +1,89 @@
+// Client protocol definitions - revision 3
+option java_package = "org.kontalk.client";
+option java_outer_classname = "Protocol";
+option optimize_for = LITE_RUNTIME;
+
+
+// authentication request
+message AuthenticateRequest {
+    required string token = 1;
+}
+
+// authentication response
+message AuthenticateResponse {
+    required bool valid = 1;
+}
+
+// message post request
+message MessagePostRequest {
+    repeated string recipient = 1;
+    optional string mime = 2;
+    repeated string flags = 3;
+    optional bytes content = 4;
+}
+
+// message post response
+message MessagePostResponse {
+    message MessageSent {
+        enum MessageSentStatus {
+            STATUS_SUCCESS = 0;
+            STATUS_ERROR = 1;
+            STATUS_BUSY = 2;
+            STATUS_USER_NOTFOUND = 3;
+        }
+        required MessageSentStatus status = 1;
+        required string user_id = 2;
+        optional string message_id = 3;
+    }
+    repeated MessageSent entry = 1;
+}
+
+// new message
+message NewMessage {
+    required string message_id = 1;
+    // timestamp string: YYYY-MM-DD hh:mm:ss +zhzm
+    required string timestamp = 2;
+    required string sender = 3;
+    repeated string group = 4;
+    optional string original_id = 5;
+    required string mime = 6;
+    repeated string flags = 7;
+    required bytes content = 8;
+    optional string url = 9;
+}
+
+// message acknowledgement request
+message MessageAckRequest {
+    repeated string message_id = 1;
+}
+
+// message acknowledgement response
+message MessageAckResponse {
+    message Entry {
+        enum MessageAckStatus {
+            STATUS_SUCCESS = 0;
+            STATUS_ERROR = 1;
+            STATUS_NOTFOUND = 2;
+        }
+        required string message_id = 1;
+        required MessageAckStatus status = 2;
+    }
+    repeated Entry entry = 1;
+}
+
+// receipt message
+message ReceiptMessage {
+    message Entry {
+        enum ReceiptStatus {
+            STATUS_SUCCESS = 0;
+            STATUS_ERROR = 1;
+            STATUS_USER_NOTFOUND = 2;
+            STATUS_TTL_EXPIRED = 3;
+        }
+        required string message_id = 1;
+        required ReceiptStatus status = 2;
+        // timestamp string: YYYY-MM-DD hh:mm:ss +zhzm
+        optional string timestamp = 3;
+    }
+    repeated Entry entry = 1;
+}
