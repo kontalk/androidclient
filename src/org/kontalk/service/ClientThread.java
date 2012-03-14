@@ -49,6 +49,7 @@ public class ClientThread extends Thread {
     private final Context mContext;
     private final EndpointServer mServer;
     private final Map<String, TxListener> mTxListeners;
+    private final Map<String, TxListener> mHandlers;
     private TxListener mDefaultTxListener;
     private MessageListener mMessageListener;
     private String mAuthToken;
@@ -63,6 +64,7 @@ public class ClientThread extends Thread {
         mServer = server;
         mClient = new ClientConnection(mContext, mServer);
         mTxListeners = new HashMap<String, TxListener>();
+        mHandlers = new HashMap<String, TxListener>();
     }
 
     public void setDefaultTxListener(TxListener listener) {
@@ -75,6 +77,14 @@ public class ClientThread extends Thread {
      */
     public void setMessageListener(MessageListener listener) {
         mMessageListener = listener;
+    }
+
+    /**
+     * Sets a listener that will be called for a specific received pack type.
+     * If a transaction listener matches the txId, it will be called instead.
+     */
+    public void setHandler(Class<? extends MessageLite> klass, TxListener listener) {
+        mHandlers.put(klass.getSimpleName(), listener);
     }
 
     @SuppressWarnings("unchecked")
@@ -113,10 +123,9 @@ public class ClientThread extends Thread {
                 try {
                     // damn java reflection :S
                     Class<? extends MessageLite> msgc = (Class<? extends MessageLite>) Thread.currentThread()
-                            .getContextClassLoader().loadClass("org.kontalk.client.Protocol." + name);
-                    msg = msgc.newInstance();
+                            .getContextClassLoader().loadClass("org.kontalk.client.Protocol$" + name);
                     Method parseDelimitedFrom = msgc.getMethod("parseFrom", ByteString.class);
-                    parseDelimitedFrom.invoke(msg, box.getValue());
+                    msg = (MessageLite) parseDelimitedFrom.invoke(null, box.getValue());
                 }
                 catch (Exception e) {
                     Log.e(TAG, "protocol error", e);
@@ -133,6 +142,12 @@ public class ClientThread extends Thread {
                         // try to get the tx-specific listener
                         String txId = box.getTxId();
                         TxListener listener = mTxListeners.get(txId);
+
+                        // try to get the pack-specific listener
+                        if (listener == null)
+                            listener = mHandlers.get(name);
+
+                        // no registered listeners found - fallback to default
                         if (listener == null)
                             listener = mDefaultTxListener;
 

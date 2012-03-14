@@ -27,10 +27,11 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol;
-import org.kontalk.client.ReceiptMessage;
+import org.kontalk.client.Protocol.AuthenticateResponse;
 import org.kontalk.client.TxListener;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
+import org.kontalk.message.ReceiptMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
@@ -69,9 +70,6 @@ public class MessageCenterService extends Service
         implements MessageListener, TxListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
-
-    /** The global message center lock. */
-    // TODO find a use for this -- private static final Semaphore mLock = new Semaphore(1, true);
 
     public static final String ACTION_RESTART = "org.kontalk.RESTART";
     public static final String ACTION_IDLE = "org.kontalk.IDLE";
@@ -185,7 +183,7 @@ public class MessageCenterService extends Service
 
             // normal start
             else {
-                // TODO execStart = true;
+                execStart = true;
             }
 
             // normal start
@@ -221,6 +219,7 @@ public class MessageCenterService extends Service
                         mClientThread = new ClientThread(this, server);
                         mClientThread.setDefaultTxListener(this);
                         mClientThread.setMessageListener(this);
+                        mClientThread.setHandler(AuthenticateResponse.class, new AuthenticateListener());
                         mClientThread.start();
                     }
 
@@ -274,6 +273,27 @@ public class MessageCenterService extends Service
     @Override
     public void tx(ClientConnection connection, String txId, MessageLite pack) {
         // TODO default tx listener
+        Log.d(TAG, "tx=" + txId + ", pack=" + pack);
+    }
+
+    private final class AuthenticateListener implements TxListener {
+        @Override
+        public void tx(ClientConnection connection, String txId, MessageLite pack) {
+            // TODO
+            AuthenticateResponse res = (AuthenticateResponse) pack;
+            Log.d(TAG, "authentication result=" + res.getValid());
+            if (res.getValid()) {
+                authenticated();
+            }
+            else {
+                // TODO WTF ??
+            }
+        }
+    }
+
+    /** Called when authentication is successful. */
+    private void authenticated() {
+        // TODO requeue pending messages
     }
 
     @Override
@@ -408,7 +428,6 @@ public class MessageCenterService extends Service
     /** Starts the message center. */
     public static void startMessageCenter(final Context context) {
         // check for network state
-        /* TODO
         if (isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");
             final Intent intent = new Intent(context, MessageCenterService.class);
@@ -420,7 +439,6 @@ public class MessageCenterService extends Service
         }
         else
             Log.d(TAG, "network not available or background data disabled - abort service start");
-        */
     }
 
     /** Stops the message center. */
@@ -451,14 +469,12 @@ public class MessageCenterService extends Service
      * shutdown for inactivity.
      */
     public static void holdMessageCenter(final Context context) {
-        /* TODO
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_HOLD);
         // include server uri if server needs to be started
         EndpointServer server = MessagingPreferences.getEndpointServer(context);
         i.putExtra(EndpointServer.class.getName(), server.toString());
         context.startService(i);
-        */
     }
 
     /**

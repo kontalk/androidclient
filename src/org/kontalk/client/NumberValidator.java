@@ -147,7 +147,7 @@ public class NumberValidator implements Runnable {
                 RegistrationResponse res = mClient.registerWait(mPhone);
                 if (mListener != null) {
 
-                    if (res.getStatus() == RegistrationStatus.STATUS_SUCCESS) {
+                    if (res.getStatus() == RegistrationStatus.STATUS_CONTINUE) {
 
                         if (res.hasSmsFrom()) {
                             mSmsFrom = res.getSmsFrom();
