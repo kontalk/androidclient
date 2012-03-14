@@ -1,5 +1,8 @@
 package org.kontalk.client;
 
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,8 +28,8 @@ import com.google.protobuf.MessageLite;
  */
 public class ClientConnection {
     private final EndpointServer mServer;
-    private final Context mContext;
-    private final Socket mSocket;
+    private Context mContext;
+    private Socket mSocket;
 
     private OutputStream out;
     private InputStream in;
@@ -34,11 +37,14 @@ public class ClientConnection {
     public ClientConnection(Context context, EndpointServer server) {
         mContext = context;
         mServer = server;
-        mSocket = new Socket();
     }
 
-    public void connect() throws IOException {
-        mSocket.connect(new InetSocketAddress(mServer.getHost(), mServer.getPort()));
+    public synchronized void connect() throws IOException {
+        if (mSocket == null) {
+            mSocket = new Socket(mServer.getHost(), mServer.getPort());
+            out = mSocket.getOutputStream();
+            in = mSocket.getInputStream();
+        }
     }
 
     public void authenticate(String token) throws IOException {
@@ -97,8 +103,13 @@ public class ClientConnection {
         return BoxContainer.parseDelimitedFrom(in);
     }
 
-    public void close() throws IOException {
-        mSocket.close();
+    public synchronized void close() throws IOException {
+        if (mSocket != null) {
+            mSocket.close();
+            mSocket = null;
+            in = null;
+            out = null;
+        }
     }
 
 }

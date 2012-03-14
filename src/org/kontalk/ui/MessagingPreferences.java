@@ -24,9 +24,12 @@ import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -75,7 +78,6 @@ public class MessagingPreferences extends PreferenceActivity {
         });
 
         // server list last update timestamp
-        /*
         final Preference updateServerList = findPreference("pref_update_server_list");
         updateServerList.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
@@ -138,14 +140,11 @@ public class MessagingPreferences extends PreferenceActivity {
                 return true;
             }
         });
-        */
 
         // update 'last update' string
-        /*
         ServerList list = ServerListUpdater.getCurrentList(this);
         if (list != null)
             updateServerListLastUpdate(updateServerList, list);
-         */
     }
 
     private static void updateServerListLastUpdate(Preference pref, ServerList list) {
@@ -193,11 +192,8 @@ public class MessagingPreferences extends PreferenceActivity {
         if (!TextUtils.isEmpty(customUri))
             return new EndpointServer(customUri);
 
-        /*
         ServerList list = ServerListUpdater.getCurrentList(context);
         return (list != null) ? list.random() : null;
-        */
-        return null;
     }
 
     public static boolean getEncryptionEnabled(Context context) {

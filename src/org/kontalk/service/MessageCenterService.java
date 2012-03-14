@@ -185,7 +185,7 @@ public class MessageCenterService extends Service
 
             // normal start
             else {
-                execStart = true;
+                // TODO execStart = true;
             }
 
             // normal start
@@ -408,6 +408,7 @@ public class MessageCenterService extends Service
     /** Starts the message center. */
     public static void startMessageCenter(final Context context) {
         // check for network state
+        /* TODO
         if (isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");
             final Intent intent = new Intent(context, MessageCenterService.class);
@@ -419,6 +420,7 @@ public class MessageCenterService extends Service
         }
         else
             Log.d(TAG, "network not available or background data disabled - abort service start");
+        */
     }
 
     /** Stops the message center. */
@@ -449,12 +451,14 @@ public class MessageCenterService extends Service
      * shutdown for inactivity.
      */
     public static void holdMessageCenter(final Context context) {
+        /* TODO
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_HOLD);
         // include server uri if server needs to be started
         EndpointServer server = MessagingPreferences.getEndpointServer(context);
         i.putExtra(EndpointServer.class.getName(), server.toString());
         context.startService(i);
+        */
     }
 
     /**

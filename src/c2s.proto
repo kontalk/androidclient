@@ -100,7 +100,7 @@ message RegistrationResponse {
         STATUS_ERROR = 1;
         // registration requires more steps to complete
         STATUS_CONTINUE = 2;
-        STATUS_INVALID_USERNAME = 2;
+        STATUS_INVALID_USERNAME = 3;
     }
     required RegistrationStatus status = 1;
     // used only in single-step authentication

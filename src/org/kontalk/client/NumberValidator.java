@@ -19,8 +19,8 @@
 package org.kontalk.client;
 
 import org.kontalk.client.Protocol.RegistrationResponse;
-import org.kontalk.client.Protocol.ValidationResponse;
 import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
+import org.kontalk.client.Protocol.ValidationResponse;
 import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.ui.MessagingPreferences;
 
@@ -143,6 +143,7 @@ public class NumberValidator implements Runnable {
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
+                mClient.connect();
                 RegistrationResponse res = mClient.registerWait(mPhone);
                 if (mListener != null) {
 
@@ -173,6 +174,7 @@ public class NumberValidator implements Runnable {
             else if (mStep == STEP_AUTH_TOKEN) {
                 Log.d(TAG, "requesting authentication token");
 
+                mClient.connect();
                 ValidationResponse res = mClient.validateWait(mValidationCode.toString());
                 if (mListener != null) {
                     if (res.getStatus() == ValidationStatus.STATUS_SUCCESS) {
@@ -196,6 +198,14 @@ public class NumberValidator implements Runnable {
                 mListener.onError(this, e);
 
             mStep = STEP_INIT;
+        }
+        finally {
+            try {
+                mClient.close();
+            }
+            catch (Exception e) {
+                Log.e(TAG, "error closing connection to server", e);
+            }
         }
     }
 

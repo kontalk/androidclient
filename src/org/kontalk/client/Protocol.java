@@ -5717,13 +5717,13 @@ public final class Protocol {
       STATUS_SUCCESS(0, 0),
       STATUS_ERROR(1, 1),
       STATUS_CONTINUE(2, 2),
+      STATUS_INVALID_USERNAME(3, 3),
       ;
       
-      public static final RegistrationStatus STATUS_INVALID_USERNAME = STATUS_CONTINUE;
       public static final int STATUS_SUCCESS_VALUE = 0;
       public static final int STATUS_ERROR_VALUE = 1;
       public static final int STATUS_CONTINUE_VALUE = 2;
-      public static final int STATUS_INVALID_USERNAME_VALUE = 2;
+      public static final int STATUS_INVALID_USERNAME_VALUE = 3;
       
       
       public final int getNumber() { return value; }
@@ -5733,6 +5733,7 @@ public final class Protocol {
           case 0: return STATUS_SUCCESS;
           case 1: return STATUS_ERROR;
           case 2: return STATUS_CONTINUE;
+          case 3: return STATUS_INVALID_USERNAME;
           default: return null;
         }
       }
