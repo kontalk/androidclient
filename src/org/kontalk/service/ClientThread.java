@@ -21,6 +21,7 @@ package org.kontalk.service;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.kontalk.authenticator.Authenticator;
@@ -28,9 +29,17 @@ import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol;
+import org.kontalk.client.Protocol.NewMessage;
 import org.kontalk.client.TxListener;
+import org.kontalk.crypto.Coder;
 import org.kontalk.message.AbstractMessage;
+import org.kontalk.message.ImageMessage;
+import org.kontalk.message.PlainTextMessage;
+import org.kontalk.message.ReceiptMessage;
+import org.kontalk.message.VCardMessage;
+import org.kontalk.ui.MessagingPreferences;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.os.Process;
 import android.util.Log;
@@ -53,6 +62,7 @@ public class ClientThread extends Thread {
     private TxListener mDefaultTxListener;
     private MessageListener mMessageListener;
     private String mAuthToken;
+    private String mMyUsername;
 
     private boolean mInterrupted;
 
@@ -99,6 +109,8 @@ public class ClientThread extends Thread {
         }
 
         // exposing sensitive data - Log.d(TAG, "using token: " + mAuthToken);
+        Account acc = Authenticator.getDefaultAccount(mContext);
+        mMyUsername = acc.name;
 
         Log.d(TAG, "using server " + mServer.toString());
         try {
@@ -119,13 +131,13 @@ public class ClientThread extends Thread {
                 }
 
                 String name = box.getName();
-                MessageLite msg = null;
+                MessageLite pack = null;
                 try {
                     // damn java reflection :S
                     Class<? extends MessageLite> msgc = (Class<? extends MessageLite>) Thread.currentThread()
                             .getContextClassLoader().loadClass("org.kontalk.client.Protocol$" + name);
                     Method parseDelimitedFrom = msgc.getMethod("parseFrom", ByteString.class);
-                    msg = (MessageLite) parseDelimitedFrom.invoke(null, box.getValue());
+                    pack = (MessageLite) parseDelimitedFrom.invoke(null, box.getValue());
                 }
                 catch (Exception e) {
                     Log.e(TAG, "protocol error", e);
@@ -133,9 +145,11 @@ public class ClientThread extends Thread {
                     break;
                 }
 
-                if (msg != null) {
-                    if (name.equals(Protocol.NewMessage.class.getSimpleName())) {
-                        // TODO parse message into AbstractMessage
+                if (pack != null) {
+                    if (name.equals(NewMessage.class.getSimpleName())) {
+                        // parse message into AbstractMessage
+                        AbstractMessage<?> msg = parseNewMessage((NewMessage) pack);
+                        mMessageListener.incoming(msg);
                     }
 
                     else {
@@ -151,7 +165,7 @@ public class ClientThread extends Thread {
                         if (listener == null)
                             listener = mDefaultTxListener;
 
-                        listener.tx(mClient, txId, msg);
+                        listener.tx(mClient, txId, pack);
                     }
                 }
             }
@@ -172,6 +186,95 @@ public class ClientThread extends Thread {
         }
     }
 
+    private AbstractMessage<?> parseNewMessage(NewMessage pack) {
+        String id = pack.getMessageId();
+        String origId = (pack.hasOriginalId()) ? pack.getOriginalId() : null;
+        String mime = (pack.hasMime()) ? pack.getMime() : null;
+        String from = pack.getSender();
+        ByteString text = pack.getContent();
+        String fetchUrl = (pack.hasUrl()) ? pack.getUrl() : null;
+        List<String> group = pack.getGroupList();
+
+        // flag for originally encrypted message
+        boolean origEncrypted = false;
+
+        for (int i = 0; i < pack.getFlagsCount(); i++) {
+            if ("encrypted".equals(pack.getFlags(i)))
+                origEncrypted = true;
+        }
+
+        // add the message to the list
+        AbstractMessage<?> msg = null;
+        String realId = null;
+
+        // use the originating id as the message id to match with message in database
+        if (origId != null) {
+            realId = id;
+            id = origId;
+        }
+
+        // content
+        byte[] content = text.toByteArray();
+
+        // flag for left encrypted message
+        boolean encrypted = false;
+
+        if (origEncrypted) {
+            Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyUsername);
+            try {
+                content = coder.decrypt(content);
+            }
+            catch (Exception exc) {
+                // pass over the message even if encrypted
+                // UI will warn the user about that and wait
+                // for user decisions
+                Log.e(TAG, "decryption failed", exc);
+                encrypted = true;
+            }
+        }
+
+        // plain text message
+        if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
+            msg = new PlainTextMessage(mContext, id, from, content, encrypted, group);
+        }
+
+        // message receipt
+        else if (ReceiptMessage.supportsMimeType(mime)) {
+            msg = new ReceiptMessage(mContext, id, from, content, group);
+        }
+
+        // image message
+        else if (ImageMessage.supportsMimeType(mime)) {
+            // extra argument: mime (first parameter)
+            msg = new ImageMessage(mContext, mime, id, from, content, encrypted, group);
+        }
+
+        // vcard message
+        else if (VCardMessage.supportsMimeType(mime)) {
+            msg = new VCardMessage(mContext, id, from, content, encrypted, group);
+        }
+
+        // TODO else other mime types
+
+        if (msg != null) {
+            // set the real message id
+            msg.setRealId(realId);
+
+            // remember encryption! :)
+            if (origEncrypted)
+                msg.setWasEncrypted(true);
+
+            // set the fetch url (if any)
+            if (fetchUrl != null) {
+                Log.d(TAG, "using fetch url: " + fetchUrl);
+                msg.setFetchUrl(fetchUrl);
+            }
+        }
+
+        // might be a null to notify that the mime type is not supported.
+        return msg;
+    }
+
     @Override
     public void interrupt() {
         super.interrupt();
@@ -190,7 +293,8 @@ public class ClientThread extends Thread {
 
         Log.d(TAG, "aborting client");
         try {
-            mClient.close();
+            if (mClient != null)
+                mClient.close();
         }
         catch (IOException e) {
             // ignore exception

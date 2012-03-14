@@ -27,7 +27,7 @@ package org.kontalk.client;
  */
 public class EndpointServer {
     /** Default Kontalk client port. */
-    public static final int DEFAULT_PORT = 5554;
+    public static final int DEFAULT_PORT = 6126;
 
     private String mHost;
     private int mPort;

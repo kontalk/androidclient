@@ -215,7 +215,7 @@ public class MessageCenterService extends Service
                     if (mClientThread == null ||
                             mClientThread.isInterrupted()) {
                         // TODO from intent please :)
-                        EndpointServer server = new EndpointServer("10.0.2.2", 5554);
+                        EndpointServer server = new EndpointServer(serverUrl);
                         mClientThread = new ClientThread(this, server);
                         mClientThread.setDefaultTxListener(this);
                         mClientThread.setMessageListener(this);
