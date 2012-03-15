@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.MessageSender;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -261,23 +262,23 @@ public class ComposeMessageFragment extends ListFragment implements
 	};
 
 	/** Used by the service binder to receive responses from the request worker. */
-	// private MessageRequestListener mMessageSenderListener;
+	//private MessageRequestListener mMessageSenderListener;
 
 	/** Used for binding to the message center to send messages. */
 	private class ComposerServiceConnection implements ServiceConnection {
-		//public final MessageSender job;
+		public final MessageSender job;
 		private MessageCenterService service;
 
 		public ComposerServiceConnection(String userId, byte[] text,
 				String mime, Uri msgUri, String encryptKey) {
-			//job = new MessageSender(userId, text, mime, msgUri, encryptKey);
-			// job.setListener(mMessageSenderListener);
+			job = new MessageSender(userId, text, mime, msgUri, encryptKey);
+			//job.setListener(mMessageSenderListener);
 		}
 
 		public ComposerServiceConnection(String userId, Uri fileUri,
 				String mime, Uri msgUri, String encryptKey) {
-			//job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
-			// job.setListener(mMessageSenderListener);
+			job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
+			//job.setListener(mMessageSenderListener);
 		}
 
 		@Override
@@ -289,7 +290,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		public void onServiceConnected(ComponentName name, IBinder ibinder) {
 			MessageCenterInterface binder = (MessageCenterInterface) ibinder;
 			service = binder.getService();
-			// TODO service.sendMessage(job);
+			service.sendMessage(job);
 			getActivity().unbindService(this);
 		}
 	}

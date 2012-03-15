@@ -18,9 +18,12 @@
 
 package org.kontalk.service;
 
-import com.google.protobuf.MessageLite;
 
-
+/**
+ * Generic interface for listening to progress and status of a
+ * {@link RequestJob}.
+ * @author Daniele Ricci
+ */
 public interface RequestListener {
 
     /**
@@ -28,17 +31,17 @@ public interface RequestListener {
      * Useful for checking the upload progress.
      * @param bytes how many bytes have been uploaded so far
      */
-    public void uploadProgress(RequestJob job, long bytes);
+    public void uploadProgress(ClientThread client, RequestJob job, long bytes);
 
     /**
      * Called now and then while receiving data in.
      * Useful for checking the download progress.
      * @param bytes how many bytes have been downloaded so far
      */
-    public void downloadProgress(RequestJob job, long bytes);
+    public void downloadProgress(ClientThread client, RequestJob job, long bytes);
 
-    /** Manages the statuses receved from one request job. */
-    public void response(RequestJob job, MessageLite response);
+    /** Called when the request to the server has been completed. */
+    public void done(ClientThread client, RequestJob job, String txId);
 
     /**
      * Called if an error occured while sending a request to the server.
@@ -46,6 +49,6 @@ public interface RequestListener {
      * @param exc the exception occured
      * @return true if the job should be re-queued, false to discard it.
      */
-    public boolean error(RequestJob job, Throwable exc);
+    public boolean error(ClientThread client, RequestJob job, Throwable exc);
 
 }

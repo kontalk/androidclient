@@ -25,6 +25,7 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.kontalk.client.Protocol;
 import org.kontalk.crypto.Coder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,10 +38,8 @@ import android.util.Log;
 
 
 /**
- * A receipt messages. Wraps a DOM representation of the receipt message in XML
- * format.
+ * A receipt messages. Wraps an object of type {@link Protocol.ReceiptMessage}.
  * @author Daniele Ricci
- * @version 1.0
  */
 public final class ReceiptMessage extends AbstractMessage<Document> {
     private static final String TAG = ReceiptMessage.class.getSimpleName();
@@ -54,16 +53,16 @@ public final class ReceiptMessage extends AbstractMessage<Document> {
     private String mMessageId;
 
     protected ReceiptMessage(Context context) {
-        super(context, null, null, null, null, false);
+        super(context, null, null, null, null, null, false);
     }
 
-    public ReceiptMessage(Context context, String id, String sender, byte[] content) {
-        this(context, id, sender, content, null);
+    public ReceiptMessage(Context context, String id, String timestamp, String sender, byte[] content) {
+        this(context, id, timestamp, sender, content, null);
     }
 
-    public ReceiptMessage(Context context, String id, String sender, byte[] content, List<String> group) {
+    public ReceiptMessage(Context context, String id, String timestamp, String sender, byte[] content, List<String> group) {
         // receipts are not encrypted
-        super(context, id, sender, MIME_TYPE, null, false, group);
+        super(context, id, timestamp, sender, MIME_TYPE, null, false, group);
 
         xmlContent = new String(content);
         parseXML();

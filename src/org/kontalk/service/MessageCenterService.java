@@ -26,8 +26,10 @@ import java.util.List;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.AuthenticateResponse;
+import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.TxListener;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
@@ -67,7 +69,7 @@ import com.google.protobuf.MessageLite;
  * @version 1.0
  */
 public class MessageCenterService extends Service
-        implements MessageListener, TxListener {
+        implements MessageListener, TxListener, RequestListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
@@ -83,6 +85,7 @@ public class MessageCenterService extends Service
     public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
 
     private ClientThread mClientThread;
+    private RequestWorker mRequestWorker;
     private Account mAccount;
 
     private boolean mPushNotifications;
@@ -91,12 +94,6 @@ public class MessageCenterService extends Service
 
     /** Used in case ClientThread is down. */
     private int mRefCount;
-
-    /**
-     * This list will contain the received messages - avoiding multiple
-     * received jobs.
-     */
-    private List<String> mReceived = new ArrayList<String>();
 
     private AccountManager mAccountManager;
     private final OnAccountsUpdateListener mAccountsListener = new OnAccountsUpdateListener() {
@@ -122,6 +119,8 @@ public class MessageCenterService extends Service
             }
         }
     };
+
+    private MessageRequestListener mMessageRequestListener; // created in onCreate
 
     private final IBinder mBinder = new MessageCenterInterface();
 
@@ -170,7 +169,7 @@ public class MessageCenterService extends Service
             // hold - increment reference count
             else if (ACTION_HOLD.equals(action)) {
                 mRefCount++;
-                // TODO mClientThread.hold()
+                mClientThread.hold();
                 // proceed to start only if network is available
                 execStart = isNetworkConnectionAvailable(this);
             }
@@ -178,7 +177,7 @@ public class MessageCenterService extends Service
             // release - decrement reference count
             else if (ACTION_RELEASE.equals(action)) {
                 mRefCount--;
-                // TODO mClientThread.release()
+                mClientThread.release();
             }
 
             // normal start
@@ -213,14 +212,29 @@ public class MessageCenterService extends Service
 
                     // start client thread
                     if (mClientThread == null ||
-                            mClientThread.isInterrupted()) {
-                        // TODO from intent please :)
+                            mClientThread.isInterrupted() || !mClientThread.isAlive()) {
                         EndpointServer server = new EndpointServer(serverUrl);
-                        mClientThread = new ClientThread(this, server);
+                        mClientThread = new ClientThread(this, server, mRefCount);
                         mClientThread.setDefaultTxListener(this);
                         mClientThread.setMessageListener(this);
                         mClientThread.setHandler(AuthenticateResponse.class, new AuthenticateListener());
                         mClientThread.start();
+                    }
+
+                    // activate request worker
+                    if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
+                        mRequestWorker = new RequestWorker(this, mClientThread);
+                        mRequestWorker.addListener(this);
+                        mRequestWorker.start();
+
+                        // TODO request serverinfo
+                        //requestServerinfo();
+                        // TODO lookup for messages with error status and try to re-send them
+                        //requeuePendingMessages();
+                    }
+                    // update reference to client thread
+                    else {
+                        mRequestWorker.setClient(mClientThread);
                     }
 
                     // TODO update status message
@@ -249,6 +263,11 @@ public class MessageCenterService extends Service
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onCreate() {
+        mMessageRequestListener = new MessageRequestListener(this);
     }
 
     private void stop() {
@@ -300,107 +319,144 @@ public class MessageCenterService extends Service
     public void incoming(AbstractMessage<?> msg) {
         List<String> list = new ArrayList<String>();
 
-        // access to mReceived list is protected
-        synchronized (mReceived) {
-            boolean notify = false;
+        boolean notify = false;
 
-            // TODO check for null (unsupported) messages to be notified
+        // TODO check for null (unsupported) messages to be notified
 
-            if (!mReceived.contains(msg.getId())) {
-                // the message need to be confirmed
-                list.add(msg.getRealId());
-                mReceived.add(msg.getId());
+        // the message need to be confirmed
+        list.add(msg.getRealId());
 
-                // do not store receipts...
-                if (!(msg instanceof ReceiptMessage)) {
-                    // store to file if it's an image message
-                    // FIXME this should be abstracted somehow
-                    byte[] content = msg.getBinaryContent();
+        // do not store receipts...
+        if (!(msg instanceof ReceiptMessage)) {
+            // store to file if it's an image message
+            // FIXME this should be abstracted somehow
+            byte[] content = msg.getBinaryContent();
 
-                    if (msg instanceof ImageMessage) {
-                        String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
-                        File file = null;
-                        try {
-                            file = MediaStorage.writeInternalMedia(this, filename, content);
-                        }
-                        catch (IOException e) {
-                            Log.e(TAG, "unable to write to media storage", e);
-                        }
-                        // update uri
-                        msg.setPreviewFile(file);
-
-                        // use text content for database table
-                        content = msg.getTextContent().getBytes();
-                    }
-                    else if (msg instanceof VCardMessage) {
-                        String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
-                        File file = null;
-                        try {
-                            file = MediaStorage.writeInternalMedia(this, filename, content);
-                        }
-                        catch (IOException e) {
-                            Log.e(TAG, "unable to write to media storage", e);
-                        }
-                        // update uri
-                        if (file != null)
-                        	msg.setLocalUri(Uri.fromFile(file));
-
-                        // use text content for database table
-                        content = msg.getTextContent().getBytes();
-                    }
-
-                    // save to local storage
-                    ContentValues values = new ContentValues();
-                    values.put(Messages.MESSAGE_ID, msg.getId());
-                    values.put(Messages.REAL_ID, msg.getRealId());
-                    values.put(Messages.PEER, msg.getSender(true));
-                    values.put(Messages.MIME, msg.getMime());
-                    values.put(Messages.CONTENT, content);
-                    values.put(Messages.ENCRYPTED, msg.isEncrypted());
-                    values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
-                    values.put(Messages.FETCH_URL, msg.getFetchUrl());
-                    File previewFile = msg.getPreviewFile();
-                    if (previewFile != null)
-                        values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
-                    values.put(Messages.UNREAD, true);
-                    values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
-                    values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                    Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
-                    msg.setDatabaseId(ContentUris.parseId(newMsg));
-
-                    // we will have to notify the user
-                    notify = true;
+            if (msg instanceof ImageMessage) {
+                String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
+                File file = null;
+                try {
+                    file = MediaStorage.writeInternalMedia(this, filename, content);
                 }
-
-                // we have a receipt, update the corresponding message
-                else {
-                    ReceiptMessage msg2 = (ReceiptMessage) msg;
-                    Log.d(TAG, "receipt for message " + msg2.getMessageId());
-
-                    int status = msg2.getStatus();
-                    int code = (status == Protocol.ReceiptMessage.Entry.ReceiptStatus.STATUS_SUCCESS_VALUE) ?
-                            Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
-
-                    MessagesProvider.changeMessageStatusWhere(this,
-                            true, Messages.STATUS_RECEIVED,
-                            msg2.getMessageId(), false, code,
-                            -1, msg.getServerTimestamp().getTime());
+                catch (IOException e) {
+                    Log.e(TAG, "unable to write to media storage", e);
                 }
+                // update uri
+                msg.setPreviewFile(file);
 
-                // broadcast message
-                broadcastMessage(msg);
+                // use text content for database table
+                content = msg.getTextContent().getBytes();
+            }
+            else if (msg instanceof VCardMessage) {
+                String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
+                File file = null;
+                try {
+                    file = MediaStorage.writeInternalMedia(this, filename, content);
+                }
+                catch (IOException e) {
+                    Log.e(TAG, "unable to write to media storage", e);
+                }
+                // update uri
+                if (file != null)
+                	msg.setLocalUri(Uri.fromFile(file));
+
+                // use text content for database table
+                content = msg.getTextContent().getBytes();
             }
 
-            if (notify)
-                // update notifications (delayed)
-                MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+            // save to local storage
+            ContentValues values = new ContentValues();
+            values.put(Messages.MESSAGE_ID, msg.getId());
+            values.put(Messages.REAL_ID, msg.getRealId());
+            values.put(Messages.PEER, msg.getSender(true));
+            values.put(Messages.MIME, msg.getMime());
+            values.put(Messages.CONTENT, content);
+            values.put(Messages.ENCRYPTED, msg.isEncrypted());
+            values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
+            values.put(Messages.FETCH_URL, msg.getFetchUrl());
+            File previewFile = msg.getPreviewFile();
+            if (previewFile != null)
+                values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
+            values.put(Messages.UNREAD, true);
+            values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+            values.put(Messages.TIMESTAMP, msg.getTimestamp());
+            values.put(Messages.SERVER_TIMESTAMP, msg.getRawServerTimestamp());
+            Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
+            msg.setDatabaseId(ContentUris.parseId(newMsg));
+
+            // we will have to notify the user
+            notify = true;
         }
+
+        // we have a receipt, update the corresponding message
+        else {
+            ReceiptMessage msg2 = (ReceiptMessage) msg;
+            Log.d(TAG, "receipt for message " + msg2.getMessageId());
+
+            int status = msg2.getStatus();
+            int code = (status == Protocol.ReceiptMessage.Entry.ReceiptStatus.STATUS_SUCCESS_VALUE) ?
+                    Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
+
+            MessagesProvider.changeMessageStatusWhere(this,
+                    true, Messages.STATUS_RECEIVED,
+                    msg2.getMessageId(), false, code,
+                    -1, msg.getServerTimestamp().getTime());
+        }
+
+        // broadcast message
+        broadcastMessage(msg);
+
+        if (notify)
+            // update notifications (delayed)
+            MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
 
         if (list.size() > 0) {
             Log.d(TAG, "pushing receive confirmation");
-            //RequestJob job = new ReceivedJob(list);
-            // TODO pushRequest(job);
+            RequestJob job = new ReceivedJob(list);
+            pushRequest(job);
         }
+    }
+
+    private synchronized void pushRequest(final RequestJob job) {
+        if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
+            mRequestWorker.push(job);
+        else {
+            if (job instanceof ReceivedJob || job instanceof MessageSender) {
+                Log.i(TAG, "not queueing message job");
+            }
+            else {
+                Log.i(TAG, "request worker is down, queueing job");
+                RequestWorker.pendingJobs.add(job);
+            }
+
+            Log.d(TAG, "trying to start message center");
+            startMessageCenter(getApplicationContext());
+        }
+    }
+
+    /** Sends a message using the request worker. */
+    public void sendMessage(final MessageSender job) {
+        // global listener
+        job.setListener(mMessageRequestListener);
+
+        // not a plain text message - use progress notification
+        /* TODO
+        if (job.getSourceUri() != null) {
+            try {
+                startForeground(job.getUserId(), job.getContentLength(this));
+            }
+            catch (IOException e) {
+                Log.e(TAG, "error reading message data to send", e);
+                MessagesProvider.changeMessageStatus(this,
+                        job.getMessageUri(), Messages.STATUS_ERROR,
+                        -1, System.currentTimeMillis());
+                // just don't send for now
+                return;
+            }
+        }
+        */
+
+        pushRequest(job);
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {
@@ -553,6 +609,27 @@ public class MessageCenterService extends Service
         public MessageCenterService getService() {
             return MessageCenterService.this;
         }
+    }
+
+    @Override
+    public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void done(ClientThread client, RequestJob job, String txId) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public boolean error(ClientThread client, RequestJob job, Throwable exc) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

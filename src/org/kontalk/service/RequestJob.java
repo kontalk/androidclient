@@ -22,9 +22,12 @@ import java.io.IOException;
 
 import android.content.Context;
 
-import com.google.protobuf.MessageLite;
 
-
+/**
+ * Extend this class to implement custom jobs to be carried out by the
+ * {@link RequestWorker}.
+ * @author Daniele Ricci
+ */
 public abstract class RequestJob {
 
     protected RequestListener mListener;
@@ -38,8 +41,11 @@ public abstract class RequestJob {
         return mListener;
     }
 
-    /** Implement this to do the actual task the child should execute. */
-    public abstract MessageLite call(RequestListener listener, Context context) throws IOException;
+    /**
+     * Implement this to do the actual task the child should execute.
+     * @return the transaction id (if any, can be null)
+     */
+    public abstract String call(ClientThread client, RequestListener listener, Context context) throws IOException;
 
     /**
      * Sets the cancel flag.

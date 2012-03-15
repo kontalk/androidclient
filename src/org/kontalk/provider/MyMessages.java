@@ -40,6 +40,8 @@ public final class MyMessages {
         public static final int STATUS_NOTACCEPTED = 3;
         public static final int STATUS_SENT = 4;
         public static final int STATUS_RECEIVED = 5;
+        /** @deprecated Incoming messages will always be confirmed */
+        @Deprecated
         public static final int STATUS_CONFIRMED = 6;
         public static final int STATUS_NOTDELIVERED = 7;
 
@@ -72,6 +74,7 @@ public final class MyMessages {
         public static final String DIRECTION = "direction";
         public static final String UNREAD = "unread";
         public static final String TIMESTAMP = "timestamp";
+        public static final String SERVER_TIMESTAMP = "server_timestamp";
         public static final String STATUS_CHANGED = "status_changed";
         public static final String STATUS = "status";
         public static final String FETCH_URL = "fetch_url";

@@ -28,7 +28,9 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
+import org.kontalk.client.Protocol.MessageAckRequest;
 import org.kontalk.client.Protocol.NewMessage;
 import org.kontalk.client.TxListener;
 import org.kontalk.crypto.Coder;
@@ -41,6 +43,7 @@ import org.kontalk.ui.MessagingPreferences;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Process;
 import android.util.Log;
 
@@ -65,16 +68,19 @@ public class ClientThread extends Thread {
     private String mMyUsername;
 
     private boolean mInterrupted;
+    /** Reference counter. */
+    private int mRefCount;
 
     private ClientConnection mClient;
 
-    public ClientThread(Context context, EndpointServer server) {
+    public ClientThread(Context context, EndpointServer server, int refCount) {
         super(ClientThread.class.getSimpleName());
         mContext = context;
         mServer = server;
         mClient = new ClientConnection(mContext, mServer);
         mTxListeners = new HashMap<String, TxListener>();
         mHandlers = new HashMap<String, TxListener>();
+        mRefCount = refCount;
     }
 
     public void setDefaultTxListener(TxListener listener) {
@@ -176,6 +182,7 @@ public class ClientThread extends Thread {
         }
 
         finally {
+            Log.v(TAG, "exiting client thread");
             try {
                 mClient.close();
                 mClient = null;
@@ -191,6 +198,7 @@ public class ClientThread extends Thread {
         String origId = (pack.hasOriginalId()) ? pack.getOriginalId() : null;
         String mime = (pack.hasMime()) ? pack.getMime() : null;
         String from = pack.getSender();
+        String timestamp = pack.getTimestamp();
         ByteString text = pack.getContent();
         String fetchUrl = (pack.hasUrl()) ? pack.getUrl() : null;
         List<String> group = pack.getGroupList();
@@ -235,23 +243,23 @@ public class ClientThread extends Thread {
 
         // plain text message
         if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
-            msg = new PlainTextMessage(mContext, id, from, content, encrypted, group);
+            msg = new PlainTextMessage(mContext, id, timestamp, from, content, encrypted, group);
         }
 
         // message receipt
         else if (ReceiptMessage.supportsMimeType(mime)) {
-            msg = new ReceiptMessage(mContext, id, from, content, group);
+            msg = new ReceiptMessage(mContext, id, timestamp, from, content, group);
         }
 
         // image message
         else if (ImageMessage.supportsMimeType(mime)) {
             // extra argument: mime (first parameter)
-            msg = new ImageMessage(mContext, mime, id, from, content, encrypted, group);
+            msg = new ImageMessage(mContext, mime, timestamp, id, from, content, encrypted, group);
         }
 
         // vcard message
         else if (VCardMessage.supportsMimeType(mime)) {
-            msg = new VCardMessage(mContext, id, from, content, encrypted, group);
+            msg = new VCardMessage(mContext, id, timestamp, from, content, encrypted, group);
         }
 
         // TODO else other mime types
@@ -273,6 +281,18 @@ public class ClientThread extends Thread {
 
         // might be a null to notify that the mime type is not supported.
         return msg;
+    }
+
+    public ClientConnection getConnection() {
+        return mClient;
+    }
+
+    public void hold() {
+        mRefCount++;
+    }
+
+    public void release() {
+        mRefCount--;
     }
 
     @Override
@@ -304,4 +324,23 @@ public class ClientThread extends Thread {
         Log.d(TAG, "exiting");
         mClient = null;
     }
+
+    public String received(String[] msgList) throws IOException {
+        MessageAckRequest.Builder b = MessageAckRequest.newBuilder();
+        for (String id : msgList) {
+            b.addMessageId(id);
+        }
+        return mClient.send(b.build());
+    }
+
+    public String message(String[] recipients, String mime, byte[] content, MessageSender job, RequestListener listener) {
+        // TODO
+        return null;
+    }
+
+    public String message(String[] recipients, String mime, Uri uri, Context context, MessageSender job, RequestListener listener) {
+        // TODO
+        return null;
+    }
+
 }

@@ -15,14 +15,14 @@ public class VCardMessage extends PlainTextMessage {
         super(context);
     }
 
-    public VCardMessage(Context context, String id, String sender, byte[] content, boolean encrypted) {
-        super(context, id, sender, content, encrypted);
+    public VCardMessage(Context context, String id, String timestamp, String sender, byte[] content, boolean encrypted) {
+        super(context, id, timestamp, sender, content, encrypted);
         // force mime type
         mime = MIME_TYPES[0];
     }
 
-    public VCardMessage(Context context, String id, String sender, byte[] content, boolean encrypted, List<String> group) {
-        super(context, id, sender, content, encrypted, group);
+    public VCardMessage(Context context, String id, String timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
+        super(context, id, timestamp, sender, content, encrypted, group);
         // force mime type
         mime = MIME_TYPES[0];
     }

@@ -21,12 +21,12 @@ package org.kontalk.message;
 import java.io.File;
 import java.security.GeneralSecurityException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.kontalk.crypto.Coder;
-import org.kontalk.data.MessageID;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.service.ClientThread;
@@ -48,6 +48,8 @@ import android.util.Log;
  */
 public abstract class AbstractMessage<T> {
     private static final String TAG = AbstractMessage.class.getSimpleName();
+    private static final SimpleDateFormat dateFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
@@ -59,6 +61,7 @@ public abstract class AbstractMessage<T> {
         Messages.PEER,
         Messages.DIRECTION,
         Messages.TIMESTAMP,
+        Messages.SERVER_TIMESTAMP,
         Messages.STATUS_CHANGED,
         Messages.MIME,
         Messages.CONTENT,
@@ -87,10 +90,11 @@ public abstract class AbstractMessage<T> {
     protected String mime;
     protected T content;
     protected long timestamp;
+    protected Date serverTimestamp;
+    protected String rawServerTimestamp;
     protected long statusChanged;
     protected int status;
     protected boolean fetched;
-    protected MessageID messageId;
     protected boolean encrypted;
     /** Of course this is used only for outgoing messages. */
     protected String encryptKey;
@@ -114,21 +118,22 @@ public abstract class AbstractMessage<T> {
     /** Preview file path. */
     protected File previewFile;
 
-    public AbstractMessage(Context context, String id, String sender, String mime, T content, boolean encrypted, List<String> group) {
-        this(context, id, sender, mime, content, encrypted);
+    public AbstractMessage(Context context, String id, String timestamp, String sender, String mime, T content, boolean encrypted, List<String> group) {
+        this(context, id, timestamp, sender, mime, content, encrypted);
         this.group = group;
     }
 
-    public AbstractMessage(Context context, String id, String sender, String mime, T content, boolean encrypted) {
+    public AbstractMessage(Context context, String id, String timestamp, String sender, String mime, T content, boolean encrypted) {
         this.mContext = context;
 
-        if (id != null) setId(id);
+        this.id = id;
         this.sender = sender;
         this.mime = mime;
         this.content = content;
         this.recipients = new ArrayList<String>();
         // will be updated if necessary
         this.timestamp = System.currentTimeMillis();
+        setServerTimestamp(timestamp);
 
         if (encrypted) {
             this.encrypted = encrypted;
@@ -143,13 +148,6 @@ public abstract class AbstractMessage<T> {
 
     public void setId(String id) {
         this.id = id;
-        try {
-            this.messageId = MessageID.parse(id);
-        }
-        catch (ParseException e) {
-            if (id == null || !id.startsWith("draft"))
-                Log.e(TAG, "invalid server message id - " + id);
-        }
     }
 
     public String getRealId() {
@@ -209,9 +207,25 @@ public abstract class AbstractMessage<T> {
         this.statusChanged = statusChanged;
     }
 
-    /** Returns the timestamp extracted from the server message ID. */
     public Date getServerTimestamp() {
-        return (messageId != null) ? messageId.getDate() : null;
+        return serverTimestamp;
+    }
+
+    private void setServerTimestamp(String timestamp) {
+        // save it for future reference
+        rawServerTimestamp = timestamp;
+        try {
+            if (timestamp != null)
+                serverTimestamp = dateFormat.parse(timestamp);
+        }
+        catch (ParseException e) {
+            Log.e(TAG, "error parsing server timestamp - setting to now", e);
+            serverTimestamp = new Date();
+        }
+    }
+
+    public String getRawServerTimestamp() {
+        return rawServerTimestamp;
     }
 
     public int getStatus() {
@@ -317,7 +331,7 @@ public abstract class AbstractMessage<T> {
 
     protected void populateFromCursor(Cursor c) {
         databaseId = c.getLong(c.getColumnIndex(Messages._ID));
-        setId(c.getString(c.getColumnIndex(Messages.MESSAGE_ID)));
+        id = c.getString(c.getColumnIndex(Messages.MESSAGE_ID));
         realId = c.getString(c.getColumnIndex(Messages.REAL_ID));
         mime = c.getString(c.getColumnIndex(Messages.MIME));
         timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
@@ -328,6 +342,7 @@ public abstract class AbstractMessage<T> {
         fetched = (c.getShort(c.getColumnIndex(Messages.FETCHED)) > 0);
         encrypted = (c.getShort(c.getColumnIndex(Messages.ENCRYPTED)) > 0);
         encryptKey = c.getString(c.getColumnIndex(Messages.ENCRYPT_KEY));
+        setServerTimestamp(c.getString(c.getColumnIndex(Messages.SERVER_TIMESTAMP)));
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
         int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));

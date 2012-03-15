@@ -56,15 +56,15 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     private byte[] decodedContent;
 
     protected ImageMessage(Context context) {
-        super(context, null, null, null, null, false);
+        super(context, null, null, null, null, null, false);
     }
 
-    public ImageMessage(Context context, String mime, String id, String sender, byte[] content, boolean encrypted) {
-        this(context, mime, id, sender, null, encrypted, null);
+    public ImageMessage(Context context, String mime, String id, String timestamp, String sender, byte[] content, boolean encrypted) {
+        this(context, mime, id, timestamp, sender, null, encrypted, null);
     }
 
-    public ImageMessage(Context context, String mime, String id, String sender, byte[] content, boolean encrypted, List<String> group) {
-        super(context, id, sender, mime, null, encrypted, group);
+    public ImageMessage(Context context, String mime, String id, String timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
+        super(context, id, timestamp, sender, mime, null, encrypted, group);
         decodedContent = content;
     }
 

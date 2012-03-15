@@ -1,12 +1,8 @@
 package org.kontalk.client;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.kontalk.client.BoxProtocol.BoxContainer;
@@ -85,17 +81,18 @@ public class ClientConnection {
         return mSocket != null && mSocket.isConnected();
     }
 
-    public void send(MessageLite pack) throws IOException {
-        send(pack, RandomString.generate(8));
+    public String send(MessageLite pack) throws IOException {
+        return send(pack, RandomString.generate(8));
     }
 
     /** Writes a pack to the connection (blocking). */
-    public void send(MessageLite pack, String txId) throws IOException {
+    public String send(MessageLite pack, String txId) throws IOException {
         BoxContainer.Builder b = BoxContainer.newBuilder();
         b.setTxId(txId);
         b.setName(pack.getClass().getSimpleName());
         b.setValue(pack.toByteString());
         b.build().writeDelimitedTo(out);
+        return txId;
     }
 
     /** Reads a pack from the connection (blocking). */
