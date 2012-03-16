@@ -9,7 +9,10 @@ import com.google.protobuf.MessageLite;
  */
 public interface TxListener {
 
-    /** Called when a pack has been received from the server. */
-    public void tx(ClientConnection connection, String txId, MessageLite pack);
+    /**
+     * Called when a pack has been received from the server.
+     * @return true to prevent the listener from being called the next time.
+     */
+    public boolean tx(ClientConnection connection, String txId, MessageLite pack);
 
 }

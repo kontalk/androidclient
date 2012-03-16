@@ -33,8 +33,10 @@ import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.TxListener;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
+import org.kontalk.message.ReceiptEntry;
 import org.kontalk.message.ReceiptMessage;
 import org.kontalk.message.VCardMessage;
+import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.ui.MessagingNotification;
@@ -84,7 +86,6 @@ public class MessageCenterService extends Service
 
     public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
 
-    private ClientThread mClientThread;
     private RequestWorker mRequestWorker;
     private Account mAccount;
 
@@ -163,13 +164,17 @@ public class MessageCenterService extends Service
 
             // idle - schedule shutdown
             else if (ACTION_IDLE.equals(action)) {
-                // TODO send idle signals to worker threads
+                // send idle signals to worker threads
+                if (mRequestWorker != null)
+                    mRequestWorker.idle();
             }
 
             // hold - increment reference count
             else if (ACTION_HOLD.equals(action)) {
                 mRefCount++;
-                mClientThread.hold();
+                if (mRequestWorker != null)
+                    mRequestWorker.hold();
+
                 // proceed to start only if network is available
                 execStart = isNetworkConnectionAvailable(this);
             }
@@ -177,7 +182,8 @@ public class MessageCenterService extends Service
             // release - decrement reference count
             else if (ACTION_RELEASE.equals(action)) {
                 mRefCount--;
-                mClientThread.release();
+                if (mRequestWorker != null)
+                    mRequestWorker.release();
             }
 
             // normal start
@@ -210,31 +216,23 @@ public class MessageCenterService extends Service
                         mAccountManager.addOnAccountsUpdatedListener(mAccountsListener, null, true);
                     }
 
-                    // start client thread
-                    if (mClientThread == null ||
-                            mClientThread.isInterrupted() || !mClientThread.isAlive()) {
-                        EndpointServer server = new EndpointServer(serverUrl);
-                        mClientThread = new ClientThread(this, server, mRefCount);
-                        mClientThread.setDefaultTxListener(this);
-                        mClientThread.setMessageListener(this);
-                        mClientThread.setHandler(AuthenticateResponse.class, new AuthenticateListener());
-                        mClientThread.start();
-                    }
-
                     // activate request worker
                     if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
-                        mRequestWorker = new RequestWorker(this, mClientThread);
+                        EndpointServer server = new EndpointServer(serverUrl);
+                        mRequestWorker = new RequestWorker(this, server, mRefCount);
                         mRequestWorker.addListener(this);
+
+                        ClientThread client = mRequestWorker.getClient();
+                        client.setDefaultTxListener(this);
+                        client.setMessageListener(this);
+                        client.setHandler(AuthenticateResponse.class, new AuthenticateListener());
+
                         mRequestWorker.start();
 
                         // TODO request serverinfo
                         //requestServerinfo();
                         // TODO lookup for messages with error status and try to re-send them
                         //requeuePendingMessages();
-                    }
-                    // update reference to client thread
-                    else {
-                        mRequestWorker.setClient(mClientThread);
                     }
 
                     // TODO update status message
@@ -251,14 +249,19 @@ public class MessageCenterService extends Service
     }
 
     /**
-     * Shuts down the client thread.
+     * Shuts down the request worker.
      * @return true if the thread has been stopped, false if it wasn't running.
      */
-    private synchronized boolean shutdownClientThread() {
-        if (mClientThread != null) {
-            ClientThread tmp = mClientThread;
+    private synchronized boolean shutdownRequestWorker() {
+        // Be sure to clear the pending jobs queue.
+        // Since we are stopping the message center, any pending request would
+        // be lost anyway.
+        RequestWorker.pendingJobs.clear();
+
+        if (mRequestWorker != null) {
+            RequestWorker tmp = mRequestWorker;
             // discard the reference to the thread immediately
-            mClientThread = null;
+            mRequestWorker = null;
             tmp.shutdown();
             return true;
         }
@@ -280,8 +283,8 @@ public class MessageCenterService extends Service
             mAccountManager = null;
         }
 
-        // stop client thread
-        shutdownClientThread();
+        // stop request worker
+        shutdownRequestWorker();
     }
 
     @Override
@@ -290,14 +293,15 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public void tx(ClientConnection connection, String txId, MessageLite pack) {
+    public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
         // TODO default tx listener
         Log.d(TAG, "tx=" + txId + ", pack=" + pack);
+        return true;
     }
 
     private final class AuthenticateListener implements TxListener {
         @Override
-        public void tx(ClientConnection connection, String txId, MessageLite pack) {
+        public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
             // TODO
             AuthenticateResponse res = (AuthenticateResponse) pack;
             Log.d(TAG, "authentication result=" + res.getValid());
@@ -307,6 +311,8 @@ public class MessageCenterService extends Service
             else {
                 // TODO WTF ??
             }
+
+            return true;
         }
     }
 
@@ -391,16 +397,19 @@ public class MessageCenterService extends Service
         // we have a receipt, update the corresponding message
         else {
             ReceiptMessage msg2 = (ReceiptMessage) msg;
-            Log.d(TAG, "receipt for message " + msg2.getMessageId());
+            ReceiptEntryList rlist = msg2.getContent();
+            for (ReceiptEntry rentry : rlist) {
+                Log.d(TAG, "receipt for message " + rentry.messageId);
 
-            int status = msg2.getStatus();
-            int code = (status == Protocol.ReceiptMessage.Entry.ReceiptStatus.STATUS_SUCCESS_VALUE) ?
-                    Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
+                int status = rentry.status;
+                int code = (status == Protocol.ReceiptMessage.Entry.ReceiptStatus.STATUS_SUCCESS_VALUE) ?
+                        Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
 
-            MessagesProvider.changeMessageStatusWhere(this,
-                    true, Messages.STATUS_RECEIVED,
-                    msg2.getMessageId(), false, code,
-                    -1, msg.getServerTimestamp().getTime());
+                MessagesProvider.changeMessageStatusWhere(this,
+                        true, Messages.STATUS_RECEIVED,
+                        rentry.messageId, false, code,
+                        -1, msg.getServerTimestamp().getTime());
+            }
         }
 
         // broadcast message

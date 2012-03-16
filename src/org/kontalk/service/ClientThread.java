@@ -31,6 +31,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.MessageAckRequest;
+import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.client.Protocol.NewMessage;
 import org.kontalk.client.TxListener;
 import org.kontalk.crypto.Coder;
@@ -58,6 +59,9 @@ import com.google.protobuf.MessageLite;
 public class ClientThread extends Thread {
     private static final String TAG = ClientThread.class.getSimpleName();
 
+    /** Max connection retry count if idle. */
+    private static final int MAX_IDLE_BACKOFF = 10;
+
     private final Context mContext;
     private final EndpointServer mServer;
     private final Map<String, TxListener> mTxListeners;
@@ -68,19 +72,29 @@ public class ClientThread extends Thread {
     private String mMyUsername;
 
     private boolean mInterrupted;
-    /** Reference counter. */
-    private int mRefCount;
 
+    /** Connection retry count for exponential backoff. */
+    private int mRetryCount;
+
+    /** Connection is re-created on demand if necessary. */
     private ClientConnection mClient;
 
-    public ClientThread(Context context, EndpointServer server, int refCount) {
+    /** Parent thread to be notified. */
+    private final ParentThread mParent;
+
+    /**
+     * The pack lock. This is used to block receiving packs to allow pack
+     * senders to setup their own transaction listeners.
+     */
+    private final Object mPackLock = new Object();
+
+    public ClientThread(Context context, ParentThread parent, EndpointServer server) {
         super(ClientThread.class.getSimpleName());
         mContext = context;
         mServer = server;
-        mClient = new ClientConnection(mContext, mServer);
         mTxListeners = new HashMap<String, TxListener>();
         mHandlers = new HashMap<String, TxListener>();
-        mRefCount = refCount;
+        mParent = parent;
     }
 
     public void setDefaultTxListener(TxListener listener) {
@@ -103,93 +117,140 @@ public class ClientThread extends Thread {
         mHandlers.put(klass.getSimpleName(), listener);
     }
 
+    /** Sets a listener that will be called for a specific transaction id. */
+    public void setTxListener(String txId, TxListener listener) {
+        mTxListeners.put(txId, listener);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public void run() {
-        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-
-        mAuthToken = Authenticator.getDefaultAccountToken(mContext);
-        if (mAuthToken == null) {
-            Log.w(TAG, "invalid token - exiting");
-            return;
-        }
-
-        // exposing sensitive data - Log.d(TAG, "using token: " + mAuthToken);
-        Account acc = Authenticator.getDefaultAccount(mContext);
-        mMyUsername = acc.name;
-
-        Log.d(TAG, "using server " + mServer.toString());
         try {
-            // connect
-            mClient.connect();
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
-            // authenticate
-            Log.v(TAG, "connected. Authenticating...");
-            mClient.authenticate(mAuthToken);
+            mAuthToken = Authenticator.getDefaultAccountToken(mContext);
+            if (mAuthToken == null) {
+                Log.w(TAG, "invalid token - exiting");
+                return;
+            }
+
+            // exposing sensitive data - Log.d(TAG, "using token: " + mAuthToken);
+            Account acc = Authenticator.getDefaultAccount(mContext);
+            mMyUsername = acc.name;
 
             // now start the main loop
             while (!mInterrupted) {
-                BoxContainer box = mClient.recv();
-                if (box == null) {
-                    Log.d(TAG, "no data from server - shutting down.");
-                    shutdown();
-                    break;
-                }
-
-                String name = box.getName();
-                MessageLite pack = null;
+                Log.d(TAG, "using server " + mServer.toString());
                 try {
-                    // damn java reflection :S
-                    Class<? extends MessageLite> msgc = (Class<? extends MessageLite>) Thread.currentThread()
-                            .getContextClassLoader().loadClass("org.kontalk.client.Protocol$" + name);
-                    Method parseDelimitedFrom = msgc.getMethod("parseFrom", ByteString.class);
-                    pack = (MessageLite) parseDelimitedFrom.invoke(null, box.getValue());
-                }
-                catch (Exception e) {
-                    Log.e(TAG, "protocol error", e);
-                    shutdown();
-                    break;
-                }
+                    if (mClient == null)
+                        mClient = new ClientConnection(mContext, mServer);
 
-                if (pack != null) {
-                    if (name.equals(NewMessage.class.getSimpleName())) {
-                        // parse message into AbstractMessage
-                        AbstractMessage<?> msg = parseNewMessage((NewMessage) pack);
-                        mMessageListener.incoming(msg);
+                    // connect
+                    mClient.connect();
+
+                    // authenticate
+                    Log.v(TAG, "connected. Authenticating...");
+                    mClient.authenticate(mAuthToken);
+
+                    // now start the main loop
+                    while (!mInterrupted) {
+                        // this should be the right moment
+                        mRetryCount = 0;
+
+                        /*
+                         * This recv() will block until delimited data is
+                         * received from the server. To allow the message
+                         * center to timeout after a given amount of time, the
+                         * request worker issues a idle message to be run after
+                         * 60 seconds when no requests are received.
+                         */
+                        BoxContainer box = mClient.recv();
+
+                        if (box == null) {
+                            Log.d(TAG, "no data from server");
+                            throw new IOException("connection lost");
+                        }
+
+                        // synchronize on pack lock
+                        synchronized (mPackLock) {
+
+                            String name = box.getName();
+                            MessageLite pack = null;
+                            try {
+                                // damn java reflection :S
+                                Class<? extends MessageLite> msgc = (Class<? extends MessageLite>) Thread.currentThread()
+                                        .getContextClassLoader().loadClass("org.kontalk.client.Protocol$" + name);
+                                Method parseDelimitedFrom = msgc.getMethod("parseFrom", ByteString.class);
+                                pack = (MessageLite) parseDelimitedFrom.invoke(null, box.getValue());
+                            }
+                            catch (Exception e) {
+                                Log.e(TAG, "protocol error", e);
+                                shutdown();
+                                break;
+                            }
+
+                            if (pack != null) {
+                                if (name.equals(NewMessage.class.getSimpleName())) {
+                                    // parse message into AbstractMessage
+                                    AbstractMessage<?> msg = parseNewMessage((NewMessage) pack);
+                                    mMessageListener.incoming(msg);
+                                }
+
+                                else {
+                                    // try to get the tx-specific listener
+                                    String txId = box.getTxId();
+                                    TxListener listener = mTxListeners.get(txId);
+
+                                    // try to get the pack-specific listener
+                                    if (listener == null)
+                                        listener = mHandlers.get(name);
+
+                                    // no registered listeners found - fallback to default
+                                    if (listener == null)
+                                        listener = mDefaultTxListener;
+
+                                    listener.tx(mClient, txId, pack);
+                                }
+                            }
+                        }
                     }
+                }
 
-                    else {
-                        // try to get the tx-specific listener
-                        String txId = box.getTxId();
-                        TxListener listener = mTxListeners.get(txId);
+                catch (IOException ie) {
+                    // just disconnect here...
+                    mClient.close();
+                    mClient = null;
 
-                        // try to get the pack-specific listener
-                        if (listener == null)
-                            listener = mHandlers.get(name);
+                    // uncontrolled interrupt - handle errors
+                    if (!mInterrupted) {
+                        Log.e(TAG, "connection error", ie);
+                        try {
+                            // max reconnections - idle message center
+                            if (mRetryCount >= MAX_IDLE_BACKOFF) {
+                                Log.d(TAG, "maximum number of reconnections - idling message center");
+                                MessageCenterService.idleMessageCenter(mContext);
+                            }
 
-                        // no registered listeners found - fallback to default
-                        if (listener == null)
-                            listener = mDefaultTxListener;
-
-                        listener.tx(mClient, txId, pack);
+                            // exponential backoff :)
+                            float time = (float) ((Math.pow(2, ++mRetryCount)) - 1) / 2;
+                            Log.d(TAG, "retrying in " + time + " seconds (retry="+mRetryCount+")");
+                            Thread.sleep((long) (time * 1000));
+                            // this is to avoid the exponential backoff counter to be reset
+                            continue;
+                        }
+                        catch (InterruptedException intexc) {
+                            // interrupted - exit
+                            break;
+                        }
                     }
                 }
+
+                mRetryCount = 0;
             }
         }
-
-        catch (Exception e) {
-            Log.e(TAG, e.toString(), e);
-        }
-
         finally {
-            Log.v(TAG, "exiting client thread");
-            try {
-                mClient.close();
-                mClient = null;
-            }
-            catch (Exception e) {
-                // ignore exception
-            }
+            // reason not used for now
+            mParent.childTerminated(0);
         }
     }
 
@@ -287,14 +348,6 @@ public class ClientThread extends Thread {
         return mClient;
     }
 
-    public void hold() {
-        mRefCount++;
-    }
-
-    public void release() {
-        mRefCount--;
-    }
-
     @Override
     public void interrupt() {
         super.interrupt();
@@ -312,17 +365,11 @@ public class ClientThread extends Thread {
         interrupt();
 
         Log.d(TAG, "aborting client");
-        try {
-            if (mClient != null)
-                mClient.close();
-        }
-        catch (IOException e) {
-            // ignore exception
-        }
+        if (mClient != null)
+            mClient.close();
         // do not join - just discard the thread
 
         Log.d(TAG, "exiting");
-        mClient = null;
     }
 
     public String received(String[] msgList) throws IOException {
@@ -333,9 +380,19 @@ public class ClientThread extends Thread {
         return mClient.send(b.build());
     }
 
-    public String message(String[] recipients, String mime, byte[] content, MessageSender job, RequestListener listener) {
-        // TODO
-        return null;
+    public String message(String[] recipients, String mime, byte[] content,
+            MessageSender job, RequestListener listener) throws IOException {
+        MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
+        b.addRecipient(job.getUserId());
+        if (job.getEncryptKey() != null)
+            b.addFlags("encrypted");
+        b.setMime(job.getMime());
+        b.setContent(ByteString.copyFrom(content));
+        return mClient.send(b.build());
+    }
+
+    public Object getPackLock() {
+        return mPackLock;
     }
 
     public String message(String[] recipients, String mime, Uri uri, Context context, MessageSender job, RequestListener listener) {

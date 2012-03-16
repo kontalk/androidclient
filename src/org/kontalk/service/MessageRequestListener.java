@@ -20,13 +20,12 @@ package org.kontalk.service;
 
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.MessageSender;
+import org.kontalk.client.Protocol.MessagePostResponse;
 import org.kontalk.client.Protocol.MessagePostResponse.MessageSent;
 import org.kontalk.client.Protocol.MessagePostResponse.MessageSent.MessageSentStatus;
 import org.kontalk.client.TxListener;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
-
-import com.google.protobuf.MessageLite;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -34,6 +33,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.google.protobuf.MessageLite;
 
 
 /**
@@ -59,40 +60,46 @@ public class MessageRequestListener implements RequestListener {
         final MessageSender job2 = (MessageSender) job;
         TxListener listener = new TxListener() {
             @Override
-            public void tx(ClientConnection connection, String txId, MessageLite pack) {
+            public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
                 Uri uri = job2.getMessageUri();
-                MessageSent res = (MessageSent) pack;
+                MessagePostResponse list = (MessagePostResponse) pack;
 
-                // message accepted!
-                if (res.getStatus() == MessageSentStatus.STATUS_SUCCESS) {
-                    if (res.hasMessageId()) {
-                        String msgId = res.getMessageId();
-                        if (!TextUtils.isEmpty(msgId)) {
-                            /* FIXME this should use changeMessageStatus, but it
-                             * won't work because of the newly messageId included
-                             * in values, which is not handled by changeMessageStatus
-                             */
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.MESSAGE_ID, msgId);
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                            int n = mContentResolver.update(uri, values, null, null);
-                            Log.i(TAG, "message sent and updated (" + n + ")");
+                for (int i = 0; i < list.getEntryCount(); i++) {
+                    MessageSent res = list.getEntry(i);
+
+                    // message accepted!
+                    if (res.getStatus() == MessageSentStatus.STATUS_SUCCESS) {
+                        if (res.hasMessageId()) {
+                            String msgId = res.getMessageId();
+                            if (!TextUtils.isEmpty(msgId)) {
+                                /* FIXME this should use changeMessageStatus, but it
+                                 * won't work because of the newly messageId included
+                                 * in values, which is not handled by changeMessageStatus
+                                 */
+                                ContentValues values = new ContentValues(2);
+                                values.put(Messages.MESSAGE_ID, msgId);
+                                values.put(Messages.STATUS, Messages.STATUS_SENT);
+                                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                                int n = mContentResolver.update(uri, values, null, null);
+                                Log.i(TAG, "message sent and updated (" + n + ")");
+                            }
                         }
+                    }
+
+                    // message refused!
+                    else {
+                        MessagesProvider.changeMessageStatus(mContext, uri,
+                                Messages.STATUS_NOTACCEPTED, -1, System.currentTimeMillis());
+                        Log.w(TAG, "message not accepted by server and updated (" + res.getStatus() + ")");
                     }
                 }
 
-                // message refused!
-                else {
-                    MessagesProvider.changeMessageStatus(mContext, uri,
-                            Messages.STATUS_NOTACCEPTED, -1, System.currentTimeMillis());
-                    Log.w(TAG, "message not accepted by server and updated (" + res.getStatus() + ")");
-                }
+                return false;
             }
         };
 
         // set listener for message sent response
-        client.setHandler(MessageSent.class, listener);
+        client.setTxListener(txId, listener);
     }
 
     @Override

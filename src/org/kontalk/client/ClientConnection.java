@@ -3,6 +3,7 @@ package org.kontalk.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.kontalk.client.BoxProtocol.BoxContainer;
@@ -23,24 +24,23 @@ import com.google.protobuf.MessageLite;
  * @author Daniele Ricci
  */
 public class ClientConnection {
-    private final EndpointServer mServer;
-    private Context mContext;
-    private Socket mSocket;
+    protected final EndpointServer mServer;
+    protected Context mContext;
+    protected Socket mSocket;
 
-    private OutputStream out;
-    private InputStream in;
+    protected OutputStream out;
+    protected InputStream in;
 
     public ClientConnection(Context context, EndpointServer server) {
         mContext = context;
         mServer = server;
+        mSocket = new Socket();
     }
 
     public synchronized void connect() throws IOException {
-        if (mSocket == null) {
-            mSocket = new Socket(mServer.getHost(), mServer.getPort());
-            out = mSocket.getOutputStream();
-            in = mSocket.getInputStream();
-        }
+        mSocket.connect(new InetSocketAddress(mServer.getHost(), mServer.getPort()));
+        out = mSocket.getOutputStream();
+        in = mSocket.getInputStream();
     }
 
     public void authenticate(String token) throws IOException {
@@ -100,12 +100,20 @@ public class ClientConnection {
         return BoxContainer.parseDelimitedFrom(in);
     }
 
-    public synchronized void close() throws IOException {
-        if (mSocket != null) {
+    public synchronized void close() {
+        try {
+            in.close();
+            out.close();
             mSocket.close();
-            mSocket = null;
+        }
+        catch (Exception e) {
+            // ignore exceptions
+        }
+        finally {
+            // discard any reference
             in = null;
             out = null;
+            mSocket = null;
         }
     }
 

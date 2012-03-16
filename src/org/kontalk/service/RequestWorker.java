@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 
 import android.content.Context;
@@ -32,16 +33,20 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.Process;
+import android.os.MessageQueue.IdleHandler;
 import android.util.Log;
 
 
 /**
  * Manages a queue of outgoing requests, including messages to be sent.
+ * It also creates a {@link ClientThread} to handle the actual connection and
+ * incoming messages/packs.
  * @author Daniele Ricci
  */
-public class RequestWorker extends HandlerThread {
+public class RequestWorker extends HandlerThread implements ParentThread {
     private static final String TAG = RequestWorker.class.getSimpleName();
     private static final int MSG_REQUEST_JOB = 1;
+    private static final int MSG_IDLE = 2;
 
     private static final long DEFAULT_RETRY_DELAY = 10000;
 
@@ -52,16 +57,20 @@ public class RequestWorker extends HandlerThread {
     private Boolean mIdle = false;
     private boolean mInterrupted;
 
+    /** Reference counter - will be passed to {@link PauseHandler}. */
+    private int mRefCount;
+
     private ClientThread mClient;
     private RequestListenerList mListeners = new RequestListenerList();
 
     /** Pending jobs queue - will be used on thread start to initialize the messages. */
     static public LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
 
-    public RequestWorker(Context context, ClientThread client) {
+    public RequestWorker(Context context, EndpointServer server, int refCount) {
         super(RequestWorker.class.getSimpleName(), Process.THREAD_PRIORITY_BACKGROUND);
         mContext = context;
-        mClient = client;
+        mRefCount = refCount;
+        mClient = new ClientThread(context, this, server);
     }
 
     public void addListener(RequestListener listener) {
@@ -73,12 +82,17 @@ public class RequestWorker extends HandlerThread {
         this.mListeners.remove(listener);
     }
 
+    /** Client thread has terminated. */
+    @Override
+    public void childTerminated(int reason) {
+    }
+
     @Override
     protected void onLooperPrepared() {
         // create handler and empty pending jobs queue
         // this must be done synchronized on the queue
         synchronized (pendingJobs) {
-            mHandler = new PauseHandler(new LinkedList<RequestJob>(pendingJobs));
+            mHandler = new PauseHandler(new LinkedList<RequestJob>(pendingJobs), mRefCount);
             pendingJobs = new LinkedList<RequestJob>();
         }
     }
@@ -129,10 +143,21 @@ public class RequestWorker extends HandlerThread {
         }
     }
 
-    private final class PauseHandler extends Handler {
+    private final class PauseHandler extends Handler implements IdleHandler {
+        /** How much time to wait to idle the message center. */
+        private final int IDLE_MSG_TIME = 5000; //60000;
+        /** Reference counter. */
+        private int mRefCount;
 
-        public PauseHandler(Queue<RequestJob> pending) {
+        public PauseHandler(Queue<RequestJob> pending, int refCount) {
             // no need to super(), will use looper from the current thread
+
+            this.mRefCount = refCount;
+
+            // set idle handler
+            Log.v(TAG, "setting idle handler");
+            if (this.mRefCount <= 0)
+                Looper.myQueue().addIdleHandler(this);
 
             // requeue the old messages
             Log.d(TAG, "processing pending jobs queue (" + pending.size() + " jobs)");
@@ -142,9 +167,26 @@ public class RequestWorker extends HandlerThread {
             }
         }
 
+        /** Schedules idleMessageCenter() after IDLE_MSG_TIME ms. */
+        @Override
+        public boolean queueIdle() {
+            // remove the idle message anyway
+            removeMessages(MSG_IDLE);
+
+            Log.d(TAG, "no more messages (ref=" + mRefCount + ")");
+            if (mRefCount <= 0)
+                sendMessageDelayed(obtainMessage(MSG_IDLE), IDLE_MSG_TIME);
+
+            return true;
+        }
+
         @Override
         public void handleMessage(Message msg) {
+            // something to work out
             if (msg.what == MSG_REQUEST_JOB) {
+                // remove any pending idle messages
+                removeMessages(MSG_IDLE);
+
                 // not running - queue message
                 if (mInterrupted) {
                     Log.i(TAG, "request worker is not running - dropping message");
@@ -165,49 +207,85 @@ public class RequestWorker extends HandlerThread {
                 if (listener != null)
                     addListener(listener);
 
-                try {
-                    // FIXME this should be abstracted/delegated some way
-                    if (job instanceof MessageSender) {
-                        MessageSender mess = (MessageSender) job;
-                        // observe the content for cancel requests
-                        mess.observe(mContext, this);
+                // synchronize on client pack lock
+                synchronized (mClient.getPackLock()) {
+
+                    try {
+                        // FIXME this should be abstracted/delegated some way
+                        if (job instanceof MessageSender) {
+                            MessageSender mess = (MessageSender) job;
+                            // observe the content for cancel requests
+                            mess.observe(mContext, this);
+                        }
+
+                        String txId = job.call(mClient, mListeners, mContext);
+
+                        mListeners.done(mClient, job, txId);
                     }
+                    catch (IOException e) {
+                        if (mInterrupted) {
+                            Log.v(TAG, "worker has been interrupted");
+                            return;
+                        }
 
-                    String txId = job.call(mClient, mListeners, mContext);
+                        boolean requeue = true;
+                        Log.e(TAG, "request error", e);
+                        requeue = mListeners.error(mClient, job, e);
 
-                    mListeners.done(mClient, job, txId);
+                        if (requeue) {
+                            Log.d(TAG, "requeuing job " + job);
+                            push(job, DEFAULT_RETRY_DELAY);
+                        }
+                    }
+                    finally {
+                        // unobserve if necessary
+                        if (job != null && job instanceof MessageSender) {
+                            MessageSender mess = (MessageSender) job;
+                            mess.unobserve(mContext);
+                        }
+
+                        // remove our old custom listener
+                        if (listener != null)
+                            removeListener(listener);
+                    }
                 }
-                catch (IOException e) {
-                    if (mInterrupted) {
-                        Log.v(TAG, "worker has been interrupted");
-                        return;
-                    }
+            }
 
-                    boolean requeue = true;
-                    Log.e(TAG, "request error", e);
-                    requeue = mListeners.error(mClient, job, e);
-
-                    if (requeue) {
-                        Log.d(TAG, "requeuing job " + job);
-                        push(job, DEFAULT_RETRY_DELAY);
-                    }
-                }
-                finally {
-                    // unobserve if necessary
-                    if (job != null && job instanceof MessageSender) {
-                        MessageSender mess = (MessageSender) job;
-                        mess.unobserve(mContext);
-                    }
-
-                    // remove our old custom listener
-                    if (listener != null)
-                        removeListener(listener);
-                }
+            // idle message
+            else if (msg.what == MSG_IDLE) {
+                MessageCenterService.idleMessageCenter(mContext);
             }
 
             else
                 super.handleMessage(msg);
-        };
+        }
+
+        public void hold() {
+            this.mRefCount++;
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.v(TAG, "removing idle handler");
+                    Looper.myQueue().removeIdleHandler(mHandler);
+                    removeMessages(MSG_IDLE);
+                }
+            });
+        }
+
+        public void release() {
+            this.mRefCount--;
+            if (mRefCount <= 0) {
+                mRefCount = 0;
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.v(TAG, "adding idle handler");
+                        removeMessages(MSG_IDLE);
+                        Looper.myQueue().addIdleHandler(mHandler);
+                    }
+                });
+            }
+        }
     }
 
     public void push(RequestJob job) {
@@ -257,8 +335,12 @@ public class RequestWorker extends HandlerThread {
         quit();
         // do not join - just discard the thread
 
+        if (mClient != null) {
+            mClient.shutdown();
+            mClient = null;
+        }
+
         Log.d(TAG, "exiting");
-        mClient = null;
     }
 
     /** Schedules request worker exit as soon as possible. */
@@ -282,7 +364,28 @@ public class RequestWorker extends HandlerThread {
         });
     }
 
-    public synchronized void setClient(ClientThread client) {
-        mClient = client;
+    public ClientThread getClient() {
+        return mClient;
     }
+
+    public void hold() {
+        if (mHandler != null)
+            mHandler.hold();
+        else
+            mRefCount++;
+    }
+
+    public void release() {
+        if (mHandler != null)
+            mHandler.release();
+        else
+            mRefCount--;
+    }
+
+    @Override
+    public void run() {
+        mClient.start();
+        super.run();
+    }
+
 }
