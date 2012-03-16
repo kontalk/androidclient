@@ -193,6 +193,13 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                     return;
                 }
 
+                // still not connected - requeue message after 500 ms
+                if (mClient == null || mClient.getConnection() == null) {
+                    Log.v(TAG, "client not ready - retrying message in 500 ms");
+                    sendMessageDelayed(obtainMessage(msg.what, msg.obj), 500);
+                    return;
+                }
+
                 RequestJob job = (RequestJob) msg.obj;
                 Log.d(TAG, "JOB: " + job.toString());
 

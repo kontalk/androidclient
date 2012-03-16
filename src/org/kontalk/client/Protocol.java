@@ -7066,6 +7066,1258 @@ public final class Protocol {
     // @@protoc_insertion_point(class_scope:ValidationResponse)
   }
   
+  public interface UserLookupRequestOrBuilder
+      extends com.google.protobuf.MessageLiteOrBuilder {
+    
+    // repeated string user_id = 1;
+    java.util.List<String> getUserIdList();
+    int getUserIdCount();
+    String getUserId(int index);
+  }
+  public static final class UserLookupRequest extends
+      com.google.protobuf.GeneratedMessageLite
+      implements UserLookupRequestOrBuilder {
+    // Use UserLookupRequest.newBuilder() to construct.
+    private UserLookupRequest(Builder builder) {
+      super(builder);
+    }
+    private UserLookupRequest(boolean noInit) {}
+    
+    private static final UserLookupRequest defaultInstance;
+    public static UserLookupRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public UserLookupRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    // repeated string user_id = 1;
+    public static final int USER_ID_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList userId_;
+    public java.util.List<String>
+        getUserIdList() {
+      return userId_;
+    }
+    public int getUserIdCount() {
+      return userId_.size();
+    }
+    public String getUserId(int index) {
+      return userId_.get(index);
+    }
+    
+    private void initFields() {
+      userId_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < userId_.size(); i++) {
+        output.writeBytes(1, userId_.getByteString(i));
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < userId_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(userId_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getUserIdList().size();
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.kontalk.client.Protocol.UserLookupRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageLite.Builder<
+          org.kontalk.client.Protocol.UserLookupRequest, Builder>
+        implements org.kontalk.client.Protocol.UserLookupRequestOrBuilder {
+      // Construct using org.kontalk.client.Protocol.UserLookupRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private void maybeForceBuilderInitialization() {
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        userId_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public org.kontalk.client.Protocol.UserLookupRequest getDefaultInstanceForType() {
+        return org.kontalk.client.Protocol.UserLookupRequest.getDefaultInstance();
+      }
+      
+      public org.kontalk.client.Protocol.UserLookupRequest build() {
+        org.kontalk.client.Protocol.UserLookupRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.kontalk.client.Protocol.UserLookupRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.kontalk.client.Protocol.UserLookupRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.kontalk.client.Protocol.UserLookupRequest buildPartial() {
+        org.kontalk.client.Protocol.UserLookupRequest result = new org.kontalk.client.Protocol.UserLookupRequest(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          userId_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              userId_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.userId_ = userId_;
+        return result;
+      }
+      
+      public Builder mergeFrom(org.kontalk.client.Protocol.UserLookupRequest other) {
+        if (other == org.kontalk.client.Protocol.UserLookupRequest.getDefaultInstance()) return this;
+        if (!other.userId_.isEmpty()) {
+          if (userId_.isEmpty()) {
+            userId_ = other.userId_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureUserIdIsMutable();
+            userId_.addAll(other.userId_);
+          }
+          
+        }
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              
+              return this;
+            default: {
+              if (!parseUnknownField(input, extensionRegistry, tag)) {
+                
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              ensureUserIdIsMutable();
+              userId_.add(input.readBytes());
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // repeated string user_id = 1;
+      private com.google.protobuf.LazyStringList userId_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureUserIdIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          userId_ = new com.google.protobuf.LazyStringArrayList(userId_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      public java.util.List<String>
+          getUserIdList() {
+        return java.util.Collections.unmodifiableList(userId_);
+      }
+      public int getUserIdCount() {
+        return userId_.size();
+      }
+      public String getUserId(int index) {
+        return userId_.get(index);
+      }
+      public Builder setUserId(
+          int index, String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureUserIdIsMutable();
+        userId_.set(index, value);
+        
+        return this;
+      }
+      public Builder addUserId(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureUserIdIsMutable();
+        userId_.add(value);
+        
+        return this;
+      }
+      public Builder addAllUserId(
+          java.lang.Iterable<String> values) {
+        ensureUserIdIsMutable();
+        super.addAll(values, userId_);
+        
+        return this;
+      }
+      public Builder clearUserId() {
+        userId_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        
+        return this;
+      }
+      void addUserId(com.google.protobuf.ByteString value) {
+        ensureUserIdIsMutable();
+        userId_.add(value);
+        
+      }
+      
+      // @@protoc_insertion_point(builder_scope:UserLookupRequest)
+    }
+    
+    static {
+      defaultInstance = new UserLookupRequest(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:UserLookupRequest)
+  }
+  
+  public interface UserLookupResponseOrBuilder
+      extends com.google.protobuf.MessageLiteOrBuilder {
+    
+    // repeated .UserLookupResponse.Entry entry = 1;
+    java.util.List<org.kontalk.client.Protocol.UserLookupResponse.Entry> 
+        getEntryList();
+    org.kontalk.client.Protocol.UserLookupResponse.Entry getEntry(int index);
+    int getEntryCount();
+  }
+  public static final class UserLookupResponse extends
+      com.google.protobuf.GeneratedMessageLite
+      implements UserLookupResponseOrBuilder {
+    // Use UserLookupResponse.newBuilder() to construct.
+    private UserLookupResponse(Builder builder) {
+      super(builder);
+    }
+    private UserLookupResponse(boolean noInit) {}
+    
+    private static final UserLookupResponse defaultInstance;
+    public static UserLookupResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public UserLookupResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public interface EntryOrBuilder
+        extends com.google.protobuf.MessageLiteOrBuilder {
+      
+      // required string user_id = 1;
+      boolean hasUserId();
+      String getUserId();
+      
+      // optional uint64 timestamp = 2;
+      boolean hasTimestamp();
+      long getTimestamp();
+      
+      // optional string status = 3;
+      boolean hasStatus();
+      String getStatus();
+      
+      // optional uint64 timediff = 4;
+      boolean hasTimediff();
+      long getTimediff();
+    }
+    public static final class Entry extends
+        com.google.protobuf.GeneratedMessageLite
+        implements EntryOrBuilder {
+      // Use Entry.newBuilder() to construct.
+      private Entry(Builder builder) {
+        super(builder);
+      }
+      private Entry(boolean noInit) {}
+      
+      private static final Entry defaultInstance;
+      public static Entry getDefaultInstance() {
+        return defaultInstance;
+      }
+      
+      public Entry getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+      
+      private int bitField0_;
+      // required string user_id = 1;
+      public static final int USER_ID_FIELD_NUMBER = 1;
+      private java.lang.Object userId_;
+      public boolean hasUserId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public String getUserId() {
+        java.lang.Object ref = userId_;
+        if (ref instanceof String) {
+          return (String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+            userId_ = s;
+          }
+          return s;
+        }
+      }
+      private com.google.protobuf.ByteString getUserIdBytes() {
+        java.lang.Object ref = userId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+          userId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      
+      // optional uint64 timestamp = 2;
+      public static final int TIMESTAMP_FIELD_NUMBER = 2;
+      private long timestamp_;
+      public boolean hasTimestamp() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public long getTimestamp() {
+        return timestamp_;
+      }
+      
+      // optional string status = 3;
+      public static final int STATUS_FIELD_NUMBER = 3;
+      private java.lang.Object status_;
+      public boolean hasStatus() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public String getStatus() {
+        java.lang.Object ref = status_;
+        if (ref instanceof String) {
+          return (String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+            status_ = s;
+          }
+          return s;
+        }
+      }
+      private com.google.protobuf.ByteString getStatusBytes() {
+        java.lang.Object ref = status_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+          status_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      
+      // optional uint64 timediff = 4;
+      public static final int TIMEDIFF_FIELD_NUMBER = 4;
+      private long timediff_;
+      public boolean hasTimediff() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      public long getTimediff() {
+        return timediff_;
+      }
+      
+      private void initFields() {
+        userId_ = "";
+        timestamp_ = 0L;
+        status_ = "";
+        timediff_ = 0L;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+        
+        if (!hasUserId()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+      
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, getUserIdBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeUInt64(2, timestamp_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBytes(3, getStatusBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          output.writeUInt64(4, timediff_);
+        }
+      }
+      
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+      
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, getUserIdBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeUInt64Size(2, timestamp_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(3, getStatusBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeUInt64Size(4, timediff_);
+        }
+        memoizedSerializedSize = size;
+        return size;
+      }
+      
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+      
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return newBuilder().mergeFrom(data).buildParsed();
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return newBuilder().mergeFrom(data, extensionRegistry)
+                 .buildParsed();
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return newBuilder().mergeFrom(data).buildParsed();
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return newBuilder().mergeFrom(data, extensionRegistry)
+                 .buildParsed();
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return newBuilder().mergeFrom(input).buildParsed();
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return newBuilder().mergeFrom(input, extensionRegistry)
+                 .buildParsed();
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        Builder builder = newBuilder();
+        if (builder.mergeDelimitedFrom(input)) {
+          return builder.buildParsed();
+        } else {
+          return null;
+        }
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        Builder builder = newBuilder();
+        if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+          return builder.buildParsed();
+        } else {
+          return null;
+        }
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return newBuilder().mergeFrom(input).buildParsed();
+      }
+      public static org.kontalk.client.Protocol.UserLookupResponse.Entry parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return newBuilder().mergeFrom(input, extensionRegistry)
+                 .buildParsed();
+      }
+      
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.kontalk.client.Protocol.UserLookupResponse.Entry prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+      
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageLite.Builder<
+            org.kontalk.client.Protocol.UserLookupResponse.Entry, Builder>
+          implements org.kontalk.client.Protocol.UserLookupResponse.EntryOrBuilder {
+        // Construct using org.kontalk.client.Protocol.UserLookupResponse.Entry.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+        
+        private void maybeForceBuilderInitialization() {
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+        
+        public Builder clear() {
+          super.clear();
+          userId_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          timestamp_ = 0L;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          status_ = "";
+          bitField0_ = (bitField0_ & ~0x00000004);
+          timediff_ = 0L;
+          bitField0_ = (bitField0_ & ~0x00000008);
+          return this;
+        }
+        
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+        
+        public org.kontalk.client.Protocol.UserLookupResponse.Entry getDefaultInstanceForType() {
+          return org.kontalk.client.Protocol.UserLookupResponse.Entry.getDefaultInstance();
+        }
+        
+        public org.kontalk.client.Protocol.UserLookupResponse.Entry build() {
+          org.kontalk.client.Protocol.UserLookupResponse.Entry result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+        
+        private org.kontalk.client.Protocol.UserLookupResponse.Entry buildParsed()
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          org.kontalk.client.Protocol.UserLookupResponse.Entry result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(
+              result).asInvalidProtocolBufferException();
+          }
+          return result;
+        }
+        
+        public org.kontalk.client.Protocol.UserLookupResponse.Entry buildPartial() {
+          org.kontalk.client.Protocol.UserLookupResponse.Entry result = new org.kontalk.client.Protocol.UserLookupResponse.Entry(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.userId_ = userId_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.timestamp_ = timestamp_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.status_ = status_;
+          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+            to_bitField0_ |= 0x00000008;
+          }
+          result.timediff_ = timediff_;
+          result.bitField0_ = to_bitField0_;
+          return result;
+        }
+        
+        public Builder mergeFrom(org.kontalk.client.Protocol.UserLookupResponse.Entry other) {
+          if (other == org.kontalk.client.Protocol.UserLookupResponse.Entry.getDefaultInstance()) return this;
+          if (other.hasUserId()) {
+            setUserId(other.getUserId());
+          }
+          if (other.hasTimestamp()) {
+            setTimestamp(other.getTimestamp());
+          }
+          if (other.hasStatus()) {
+            setStatus(other.getStatus());
+          }
+          if (other.hasTimediff()) {
+            setTimediff(other.getTimediff());
+          }
+          return this;
+        }
+        
+        public final boolean isInitialized() {
+          if (!hasUserId()) {
+            
+            return false;
+          }
+          return true;
+        }
+        
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          while (true) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                
+                return this;
+              default: {
+                if (!parseUnknownField(input, extensionRegistry, tag)) {
+                  
+                  return this;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                userId_ = input.readBytes();
+                break;
+              }
+              case 16: {
+                bitField0_ |= 0x00000002;
+                timestamp_ = input.readUInt64();
+                break;
+              }
+              case 26: {
+                bitField0_ |= 0x00000004;
+                status_ = input.readBytes();
+                break;
+              }
+              case 32: {
+                bitField0_ |= 0x00000008;
+                timediff_ = input.readUInt64();
+                break;
+              }
+            }
+          }
+        }
+        
+        private int bitField0_;
+        
+        // required string user_id = 1;
+        private java.lang.Object userId_ = "";
+        public boolean hasUserId() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        public String getUserId() {
+          java.lang.Object ref = userId_;
+          if (!(ref instanceof String)) {
+            String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+            userId_ = s;
+            return s;
+          } else {
+            return (String) ref;
+          }
+        }
+        public Builder setUserId(String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          userId_ = value;
+          
+          return this;
+        }
+        public Builder clearUserId() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          userId_ = getDefaultInstance().getUserId();
+          
+          return this;
+        }
+        void setUserId(com.google.protobuf.ByteString value) {
+          bitField0_ |= 0x00000001;
+          userId_ = value;
+          
+        }
+        
+        // optional uint64 timestamp = 2;
+        private long timestamp_ ;
+        public boolean hasTimestamp() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        public long getTimestamp() {
+          return timestamp_;
+        }
+        public Builder setTimestamp(long value) {
+          bitField0_ |= 0x00000002;
+          timestamp_ = value;
+          
+          return this;
+        }
+        public Builder clearTimestamp() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          timestamp_ = 0L;
+          
+          return this;
+        }
+        
+        // optional string status = 3;
+        private java.lang.Object status_ = "";
+        public boolean hasStatus() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        public String getStatus() {
+          java.lang.Object ref = status_;
+          if (!(ref instanceof String)) {
+            String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+            status_ = s;
+            return s;
+          } else {
+            return (String) ref;
+          }
+        }
+        public Builder setStatus(String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          status_ = value;
+          
+          return this;
+        }
+        public Builder clearStatus() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          status_ = getDefaultInstance().getStatus();
+          
+          return this;
+        }
+        void setStatus(com.google.protobuf.ByteString value) {
+          bitField0_ |= 0x00000004;
+          status_ = value;
+          
+        }
+        
+        // optional uint64 timediff = 4;
+        private long timediff_ ;
+        public boolean hasTimediff() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        public long getTimediff() {
+          return timediff_;
+        }
+        public Builder setTimediff(long value) {
+          bitField0_ |= 0x00000008;
+          timediff_ = value;
+          
+          return this;
+        }
+        public Builder clearTimediff() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          timediff_ = 0L;
+          
+          return this;
+        }
+        
+        // @@protoc_insertion_point(builder_scope:UserLookupResponse.Entry)
+      }
+      
+      static {
+        defaultInstance = new Entry(true);
+        defaultInstance.initFields();
+      }
+      
+      // @@protoc_insertion_point(class_scope:UserLookupResponse.Entry)
+    }
+    
+    // repeated .UserLookupResponse.Entry entry = 1;
+    public static final int ENTRY_FIELD_NUMBER = 1;
+    private java.util.List<org.kontalk.client.Protocol.UserLookupResponse.Entry> entry_;
+    public java.util.List<org.kontalk.client.Protocol.UserLookupResponse.Entry> getEntryList() {
+      return entry_;
+    }
+    public java.util.List<? extends org.kontalk.client.Protocol.UserLookupResponse.EntryOrBuilder> 
+        getEntryOrBuilderList() {
+      return entry_;
+    }
+    public int getEntryCount() {
+      return entry_.size();
+    }
+    public org.kontalk.client.Protocol.UserLookupResponse.Entry getEntry(int index) {
+      return entry_.get(index);
+    }
+    public org.kontalk.client.Protocol.UserLookupResponse.EntryOrBuilder getEntryOrBuilder(
+        int index) {
+      return entry_.get(index);
+    }
+    
+    private void initFields() {
+      entry_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      for (int i = 0; i < getEntryCount(); i++) {
+        if (!getEntry(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < entry_.size(); i++) {
+        output.writeMessage(1, entry_.get(i));
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      for (int i = 0; i < entry_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, entry_.get(i));
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.UserLookupResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.kontalk.client.Protocol.UserLookupResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageLite.Builder<
+          org.kontalk.client.Protocol.UserLookupResponse, Builder>
+        implements org.kontalk.client.Protocol.UserLookupResponseOrBuilder {
+      // Construct using org.kontalk.client.Protocol.UserLookupResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private void maybeForceBuilderInitialization() {
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        entry_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public org.kontalk.client.Protocol.UserLookupResponse getDefaultInstanceForType() {
+        return org.kontalk.client.Protocol.UserLookupResponse.getDefaultInstance();
+      }
+      
+      public org.kontalk.client.Protocol.UserLookupResponse build() {
+        org.kontalk.client.Protocol.UserLookupResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.kontalk.client.Protocol.UserLookupResponse buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.kontalk.client.Protocol.UserLookupResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.kontalk.client.Protocol.UserLookupResponse buildPartial() {
+        org.kontalk.client.Protocol.UserLookupResponse result = new org.kontalk.client.Protocol.UserLookupResponse(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          entry_ = java.util.Collections.unmodifiableList(entry_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.entry_ = entry_;
+        return result;
+      }
+      
+      public Builder mergeFrom(org.kontalk.client.Protocol.UserLookupResponse other) {
+        if (other == org.kontalk.client.Protocol.UserLookupResponse.getDefaultInstance()) return this;
+        if (!other.entry_.isEmpty()) {
+          if (entry_.isEmpty()) {
+            entry_ = other.entry_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureEntryIsMutable();
+            entry_.addAll(other.entry_);
+          }
+          
+        }
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        for (int i = 0; i < getEntryCount(); i++) {
+          if (!getEntry(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              
+              return this;
+            default: {
+              if (!parseUnknownField(input, extensionRegistry, tag)) {
+                
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              org.kontalk.client.Protocol.UserLookupResponse.Entry.Builder subBuilder = org.kontalk.client.Protocol.UserLookupResponse.Entry.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addEntry(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // repeated .UserLookupResponse.Entry entry = 1;
+      private java.util.List<org.kontalk.client.Protocol.UserLookupResponse.Entry> entry_ =
+        java.util.Collections.emptyList();
+      private void ensureEntryIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          entry_ = new java.util.ArrayList<org.kontalk.client.Protocol.UserLookupResponse.Entry>(entry_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      
+      public java.util.List<org.kontalk.client.Protocol.UserLookupResponse.Entry> getEntryList() {
+        return java.util.Collections.unmodifiableList(entry_);
+      }
+      public int getEntryCount() {
+        return entry_.size();
+      }
+      public org.kontalk.client.Protocol.UserLookupResponse.Entry getEntry(int index) {
+        return entry_.get(index);
+      }
+      public Builder setEntry(
+          int index, org.kontalk.client.Protocol.UserLookupResponse.Entry value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEntryIsMutable();
+        entry_.set(index, value);
+        
+        return this;
+      }
+      public Builder setEntry(
+          int index, org.kontalk.client.Protocol.UserLookupResponse.Entry.Builder builderForValue) {
+        ensureEntryIsMutable();
+        entry_.set(index, builderForValue.build());
+        
+        return this;
+      }
+      public Builder addEntry(org.kontalk.client.Protocol.UserLookupResponse.Entry value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEntryIsMutable();
+        entry_.add(value);
+        
+        return this;
+      }
+      public Builder addEntry(
+          int index, org.kontalk.client.Protocol.UserLookupResponse.Entry value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEntryIsMutable();
+        entry_.add(index, value);
+        
+        return this;
+      }
+      public Builder addEntry(
+          org.kontalk.client.Protocol.UserLookupResponse.Entry.Builder builderForValue) {
+        ensureEntryIsMutable();
+        entry_.add(builderForValue.build());
+        
+        return this;
+      }
+      public Builder addEntry(
+          int index, org.kontalk.client.Protocol.UserLookupResponse.Entry.Builder builderForValue) {
+        ensureEntryIsMutable();
+        entry_.add(index, builderForValue.build());
+        
+        return this;
+      }
+      public Builder addAllEntry(
+          java.lang.Iterable<? extends org.kontalk.client.Protocol.UserLookupResponse.Entry> values) {
+        ensureEntryIsMutable();
+        super.addAll(values, entry_);
+        
+        return this;
+      }
+      public Builder clearEntry() {
+        entry_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        
+        return this;
+      }
+      public Builder removeEntry(int index) {
+        ensureEntryIsMutable();
+        entry_.remove(index);
+        
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:UserLookupResponse)
+    }
+    
+    static {
+      defaultInstance = new UserLookupResponse(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:UserLookupResponse)
+  }
+  
   
   static {
   }

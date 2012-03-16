@@ -30,7 +30,6 @@ import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
-import org.kontalk.client.Protocol.MessageAckRequest;
 import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.client.Protocol.NewMessage;
 import org.kontalk.client.TxListener;
@@ -372,13 +371,11 @@ public class ClientThread extends Thread {
         Log.d(TAG, "exiting");
     }
 
-    public String received(String[] msgList) throws IOException {
-        MessageAckRequest.Builder b = MessageAckRequest.newBuilder();
-        for (String id : msgList) {
-            b.addMessageId(id);
-        }
-        return mClient.send(b.build());
+    public Object getPackLock() {
+        return mPackLock;
     }
+
+    // TODO move message() methods to MessageSender
 
     public String message(String[] recipients, String mime, byte[] content,
             MessageSender job, RequestListener listener) throws IOException {
@@ -389,10 +386,6 @@ public class ClientThread extends Thread {
         b.setMime(job.getMime());
         b.setContent(ByteString.copyFrom(content));
         return mClient.send(b.build());
-    }
-
-    public Object getPackLock() {
-        return mPackLock;
     }
 
     public String message(String[] recipients, String mime, Uri uri, Context context, MessageSender job, RequestListener listener) {

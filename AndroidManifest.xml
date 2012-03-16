@@ -144,7 +144,7 @@
             </intent-filter>
         </receiver>
         <service android:name=".sync.ContactsSyncAdapterService"
-            android:exported="true" android:process=":contacts" android:label="@string/sync_service_name">
+            android:exported="true" android:label="@string/sync_service_name">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>

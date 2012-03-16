@@ -34,11 +34,12 @@ import org.kontalk.client.TxListener;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.ReceiptEntry;
+import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
 import org.kontalk.message.ReceiptMessage;
 import org.kontalk.message.VCardMessage;
-import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
@@ -466,6 +467,13 @@ public class MessageCenterService extends Service
         */
 
         pushRequest(job);
+    }
+
+    /** Used by the {@link SyncAdapter}. */
+    public UserLookupJob lookupUsers(List<String> hashList) {
+        UserLookupJob job = new UserLookupJob(hashList);
+        pushRequest(job);
+        return job;
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {

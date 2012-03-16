@@ -126,3 +126,20 @@ message ValidationResponse {
     required ValidationStatus status = 1;
     optional string token = 2;
 }
+
+// user lookup request
+message UserLookupRequest {
+    repeated string user_id = 1;
+}
+
+// user lookup response
+message UserLookupResponse {
+    message Entry {
+        required string user_id = 1;
+        optional uint64 timestamp = 2;
+        optional string status = 3;
+        // difference between timestamp and local server time
+        optional uint64 timediff = 4;
+    }
+    repeated Entry entry = 1;
+}

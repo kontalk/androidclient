@@ -25,23 +25,36 @@ import java.util.Map;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ClientConnection;
 import org.kontalk.client.NumberValidator;
+import org.kontalk.client.TxListener;
+import org.kontalk.client.Protocol.UserLookupResponse;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.service.ClientThread;
+import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.MessageCenterService.MessageCenterInterface;
+import org.kontalk.service.RequestJob;
+import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
+
+import com.google.protobuf.MessageLite;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
+import android.content.ComponentName;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
@@ -59,6 +72,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     /** How many seconds between sync operations. */
     private static final int MAX_SYNC_DELAY = 600;
+    /** How many seconds to wait for the message center to complete lookup. */
+    private static final int MAX_SYNC_WAIT = 30;
 
     /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
@@ -118,6 +133,70 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    /** Used for binding to the message center to send messages. */
+    private class ClientServiceConnection implements ServiceConnection {
+        private MessageCenterService service;
+        private List<String> hashList;
+        private UserLookupResponse response;
+
+        public ClientServiceConnection(List<String> hashList) {
+            this.hashList = hashList;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            service = null;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder ibinder) {
+            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
+            service = binder.getService();
+            RequestJob job = service.lookupUsers(hashList);
+            job.setListener(new RequestListener() {
+                @Override
+                public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
+                    // not used
+                }
+
+                @Override
+                public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
+                    // not used
+                }
+
+                @Override
+                public boolean error(ClientThread client, RequestJob job, Throwable exc) {
+                    // TODO
+                    synchronized (SyncAdapter.this) {
+                        SyncAdapter.this.notifyAll();
+                    }
+                    return false;
+                }
+
+                @Override
+                public void done(ClientThread client, RequestJob job, String txId) {
+                    // listen for response :)
+                    TxListener listener = new TxListener() {
+                        @Override
+                        public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
+                            synchronized (SyncAdapter.this) {
+                                response = (UserLookupResponse) pack;
+                                SyncAdapter.this.notifyAll();
+                            }
+                            return false;
+                        }
+                    };
+                    client.setTxListener(txId, listener);
+                }
+            });
+            getContext().unbindService(this);
+        }
+
+        public UserLookupResponse getResponse() {
+            return response;
+        }
+    }
+
     @Override
     public void onSyncCanceled() {
         super.onSyncCanceled();
@@ -147,10 +226,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             String authority, ContentProviderClient provider, SyncResult syncResult)
             throws OperationCanceledException {
 
-        // setup the request client
-        final EndpointServer server = MessagingPreferences.getEndpointServer(context);
-        final String token = Authenticator.getDefaultAccountToken(mContext);
-        //final RequestClient client = new RequestClient(mContext, server, token);
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
         final List<String> hashList = new ArrayList<String>();
 
@@ -221,21 +296,31 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         else {
-            /*
-            Protocol.LookupResponse res = null;
-            try {
-                // request lookup to server
-                Log.v(TAG, "sending lookup request to server");
-                res = client.lookup(hashList);
-            }
-            catch (IOException e) {
-                Log.e(TAG, "error in user lookup", e);
+            // bind to message center to make it do the dirty stuff :)
+            ClientServiceConnection conn = new ClientServiceConnection(hashList);
+            if (!mContext.bindService(
+                    new Intent(mContext, MessageCenterService.class), conn,
+                    Context.BIND_AUTO_CREATE)) {
+                // cannot bind :(
+                Log.e(TAG, "unable to bind to message center!");
                 syncResult.stats.numIoExceptions++;
+            }
+
+            // wait for the service connection to complete its job
+            synchronized (this) {
+                try {
+                    wait(MAX_SYNC_WAIT * 1000);
+                }
+                catch (InterruptedException e) {
+                    // simulate canceled operation
+                    throw new OperationCanceledException();
+                }
             }
 
             // last chance to quit
             if (mCanceled) throw new OperationCanceledException();
 
+            UserLookupResponse res = conn.getResponse();
             if (res != null) {
                 ArrayList<ContentProviderOperation> operations =
                     new ArrayList<ContentProviderOperation>();
@@ -253,7 +338,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
 
                 for (int i = 0; i < res.getEntryCount(); i++) {
-                    Protocol.LookupResponseEntry entry = res.getEntry(i);
+                    UserLookupResponse.Entry entry = res.getEntry(i);
                     String userId = entry.getUserId().toString();
                     final RawPhoneNumberEntry data = lookupNumbers.get(userId);
                     if (data != null) {
@@ -279,7 +364,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     return;
                 }
             }
-            */
         }
     }
 
