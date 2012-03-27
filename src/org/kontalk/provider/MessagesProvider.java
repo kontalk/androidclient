@@ -82,7 +82,7 @@ public class MessagesProvider extends ContentProvider {
             "CREATE TABLE " + TABLE_MESSAGES + " (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "thread_id INTEGER NOT NULL, " +
-            "msg_id TEXT NOT NULL UNIQUE, " +
+            "msg_id TEXT NOT NULL, " +  // UNIQUE
             "real_id TEXT, " +
             "peer TEXT NOT NULL, " +
             "mime TEXT NOT NULL, " +
@@ -102,13 +102,13 @@ public class MessagesProvider extends ContentProvider {
             "preview_path TEXT," +
             // server-received timestamp (or local sending time)
             "server_timestamp TEXT" +
-            ");";
+            ")";
 
         /** This table will contain the latest message from each conversation. */
         private static final String SCHEMA_THREADS =
             "CREATE TABLE " + TABLE_THREADS + " (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "msg_id TEXT NOT NULL UNIQUE, " +
+            "msg_id TEXT NOT NULL, " +  // UNIQUE
             "peer TEXT NOT NULL UNIQUE, " +
             "direction INTEGER NOT NULL, " +
             "count INTEGER NOT NULL DEFAULT 0, " +
@@ -121,14 +121,14 @@ public class MessagesProvider extends ContentProvider {
             "status_changed INTEGER," +
             "status INTEGER," +
             "draft TEXT" +
-            ");";
+            ")";
 
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
             "CREATE VIRTUAL TABLE " + TABLE_FULLTEXT + " USING fts3 (" +
             "thread_id INTEGER NOT NULL, " +
             "content TEXT" +
-            ");";
+            ")";
 
         /** Updates the thread messages count. */
         private static final String UPDATE_MESSAGES_COUNT_NEW =
@@ -169,7 +169,7 @@ public class MessagesProvider extends ContentProvider {
             UPDATE_MESSAGES_COUNT_NEW + ";" +
             UPDATE_UNREAD_COUNT_NEW   + ";" +
             UPDATE_STATUS_NEW         + ";" +
-            "END;";
+            "END";
 
         /** This trigger will update the threads table counters on UPDATE. */
         private static final String TRIGGER_THREADS_UPDATE_COUNT =
@@ -178,7 +178,7 @@ public class MessagesProvider extends ContentProvider {
             UPDATE_MESSAGES_COUNT_NEW + ";" +
             UPDATE_UNREAD_COUNT_NEW   + ";" +
             UPDATE_STATUS_NEW         + ";" +
-            "END;";
+            "END";
 
 
         /** This trigger will update the threads table counters on DELETE. */
@@ -188,14 +188,72 @@ public class MessagesProvider extends ContentProvider {
             UPDATE_MESSAGES_COUNT_OLD + ";" +
             UPDATE_UNREAD_COUNT_OLD   + ";" +
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
-            "END;";
+            "END";
 
 
         private static final String SCHEMA_V1_TO_V2 =
+            // add column preview_path to table messages
             "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN preview_path TEXT";
 
-        private static final String SCHEMA_V2_TO_V3 =
-                "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN server_timestamp TEXT";
+        private static final String[] SCHEMA_V2_TO_V3 = {
+            // add column server_timestamp to table messages
+            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN server_timestamp TEXT",
+            // create temporary messages tables without msg_id UNIQUE constraint
+            "CREATE TABLE " + TABLE_MESSAGES + "_new (" +
+            "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "thread_id INTEGER NOT NULL, " +
+            "msg_id TEXT NOT NULL, " +
+            "real_id TEXT, " +
+            "peer TEXT NOT NULL, " +
+            "mime TEXT NOT NULL, " +
+            "content BLOB," +
+            "direction INTEGER NOT NULL, " +
+            "unread INTEGER NOT NULL DEFAULT 0, " +
+            // this the sent/received timestamp
+            "timestamp INTEGER NOT NULL," +
+            // this the timestamp of the latest status change
+            "status_changed INTEGER," +
+            "status INTEGER," +
+            "fetch_url TEXT," +
+            "fetched INTEGER NOT NULL DEFAULT 0," +
+            "local_uri TEXT," +
+            "encrypted INTEGER NOT NULL DEFAULT 0, " +
+            "encrypt_key TEXT," +
+            "preview_path TEXT," +
+            // server-received timestamp (or local sending time)
+            "server_timestamp TEXT" +
+            ")",
+            // create temporary threads tables without msg_id UNIQUE constraint
+            "CREATE TABLE " + TABLE_THREADS + "_new (" +
+            "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "msg_id TEXT NOT NULL, " +
+            "peer TEXT NOT NULL UNIQUE, " +
+            "direction INTEGER NOT NULL, " +
+            "count INTEGER NOT NULL DEFAULT 0, " +
+            "unread INTEGER NOT NULL DEFAULT 0, " +
+            "mime TEXT NOT NULL, " +
+            "content TEXT, " +
+            // this the sent/received timestamp
+            "timestamp INTEGER NOT NULL," +
+            // this the timestamp of the latest status change
+            "status_changed INTEGER," +
+            "status INTEGER," +
+            "draft TEXT" +
+            ")",
+            // copy contents of messages table
+            "INSERT INTO " + TABLE_MESSAGES + "_new SELECT * FROM " + TABLE_MESSAGES,
+            // copy contents of threads table
+            "INSERT INTO " + TABLE_THREADS + "_new SELECT * FROM " + TABLE_THREADS,
+            // drop table messages
+            "DROP TABLE " + TABLE_MESSAGES,
+            // drop table threads
+            "DROP TABLE " + TABLE_THREADS,
+            // rename messages_new to messages
+            "ALTER TABLE " + TABLE_MESSAGES + "_new RENAME TO " + TABLE_MESSAGES,
+            // rename threads_new to threads
+            "ALTER TABLE " + TABLE_THREADS + "_new RENAME TO " + TABLE_THREADS
+        };
+
 
         protected DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -214,12 +272,11 @@ public class MessagesProvider extends ContentProvider {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             if (oldVersion < 2) {
-                // add column preview_path to table messages
                 db.execSQL(SCHEMA_V1_TO_V2);
             }
             if (oldVersion < 3) {
-                // add column server_timestamp to table messages
-                db.execSQL(SCHEMA_V2_TO_V3);
+                for (int i = 0; i < SCHEMA_V2_TO_V3.length; i++)
+                    db.execSQL(SCHEMA_V2_TO_V3[i]);
             }
         }
     }
