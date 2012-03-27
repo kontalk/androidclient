@@ -19,6 +19,8 @@
 package org.kontalk.client;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.crypto.Coder;
@@ -26,6 +28,7 @@ import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
+import org.kontalk.util.SendingOutputStream;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -143,12 +146,15 @@ public class MessageSender extends RequestJob {
     }
 
     @Override
-    public String call(ClientThread client, RequestListener listener,
+    public String execute(ClientThread client, RequestListener listener,
             Context context) throws IOException {
 
+        SendingOutputStream stream = null;
+        MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
+        b.addRecipient(mPeer);
+        b.setMime(mMime);
+
         if (mContent != null) {
-            MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
-            b.addRecipient(mPeer);
 
             byte[] toMessage = null;
             Coder coder = null;
@@ -156,9 +162,8 @@ public class MessageSender extends RequestJob {
             if (mEncryptKey != null) {
                 try {
                     coder = MessagingPreferences.getEncryptCoder(mEncryptKey);
-                    if (coder != null) {
+                    if (coder != null)
                         toMessage = coder.encrypt(mContent);
-                    }
                 }
                 catch (Exception e) {
                     // TODO notify/ask user this message will be sent cleartext
@@ -172,20 +177,49 @@ public class MessageSender extends RequestJob {
                 b.addFlags("encrypted");
 
             b.setContent(ByteString.copyFrom(toMessage));
-            b.setMime(mMime);
-            return client.getConnection().send(b.build());
         }
 
-        // TODO mContent == null
-        return null;
+        else {
+            AssetFileDescriptor stat = context.getContentResolver()
+                    .openAssetFileDescriptor(mSourceDataUri, "r");
+            long length = stat.getLength();
+            InputStream in = context.getContentResolver().openInputStream(mSourceDataUri);
 
-        /*
-        if (mContent != null)
-            return client.message(new String[] { mPeer },
-                    mMime, mContent, this, listener);
-        else
-            return client.message(new String[] { mPeer },
-                    mMime, mSourceDataUri, context, this, listener);
-        */
+            InputStream toMessage = null;
+            long toLength = 0;
+            Coder coder = null;
+            // check if we have to encrypt the message
+            if (mEncryptKey != null) {
+                try {
+                    coder = MessagingPreferences.getEncryptCoder(mEncryptKey);
+                    if (coder != null) {
+                        toMessage = coder.wrapInputStream(in);
+                        toLength = Coder.getEncryptedLength(length);
+                    }
+                }
+                catch (Exception e) {
+                    // TODO notify/ask user this message will be sent cleartext
+                    coder = null;
+                }
+            }
+
+            if (coder == null) {
+                toMessage = in;
+                toLength = length;
+            }
+            else {
+                b.addFlags("encrypted");
+            }
+
+            byte[] buf = new byte[4096];
+            int read;
+            // TODO ehm...
+            b.setContent(ByteStr)
+            OutputStream out = new SendingOutputStream(client.getConnection().out, client, this, mListener);
+            while ((read = toMessage.read(buf)) != -1)
+                out.write(buf, 0, read);
+        }
+
+        return client.getConnection().send(b.build());
     }
 }

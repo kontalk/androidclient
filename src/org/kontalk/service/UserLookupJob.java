@@ -20,7 +20,7 @@ public class UserLookupJob extends RequestJob {
     }
 
     @Override
-    public String call(ClientThread client, RequestListener listener, Context context) throws IOException {
+    public String execute(ClientThread client, RequestListener listener, Context context) throws IOException {
         UserLookupRequest.Builder b = UserLookupRequest.newBuilder();
         b.addAllUserId(mUsers);
         return client.getConnection().send(b.build());

@@ -225,7 +225,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             mess.observe(mContext, this);
                         }
 
-                        String txId = job.call(mClient, mListeners, mContext);
+                        String txId = job.execute(mClient, mListeners, mContext);
 
                         mListeners.done(mClient, job, txId);
                     }

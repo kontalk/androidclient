@@ -47,7 +47,7 @@ public class ReceivedJob extends RequestJob {
     }
 
     @Override
-    public String call(ClientThread client, RequestListener listener,
+    public String execute(ClientThread client, RequestListener listener,
             Context context) throws IOException {
         MessageAckRequest.Builder b = MessageAckRequest.newBuilder();
         for (String id : mMessageList)
