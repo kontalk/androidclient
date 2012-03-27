@@ -19,8 +19,6 @@
 package org.kontalk.client;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.crypto.Coder;
@@ -28,7 +26,6 @@ import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
-import org.kontalk.util.SendingOutputStream;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -149,7 +146,6 @@ public class MessageSender extends RequestJob {
     public String execute(ClientThread client, RequestListener listener,
             Context context) throws IOException {
 
-        SendingOutputStream stream = null;
         MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
         b.addRecipient(mPeer);
         b.setMime(mMime);
@@ -180,6 +176,7 @@ public class MessageSender extends RequestJob {
         }
 
         else {
+            /*
             AssetFileDescriptor stat = context.getContentResolver()
                     .openAssetFileDescriptor(mSourceDataUri, "r");
             long length = stat.getLength();
@@ -214,10 +211,11 @@ public class MessageSender extends RequestJob {
             byte[] buf = new byte[4096];
             int read;
             // TODO ehm...
-            b.setContent(ByteStr)
+            b.setContent()
             OutputStream out = new SendingOutputStream(client.getConnection().out, client, this, mListener);
             while ((read = toMessage.read(buf)) != -1)
                 out.write(buf, 0, read);
+            */
         }
 
         return client.getConnection().send(b.build());
