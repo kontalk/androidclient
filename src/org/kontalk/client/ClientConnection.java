@@ -43,6 +43,13 @@ public class ClientConnection {
         in = mSocket.getInputStream();
     }
 
+    /** Recreates connection based on the parameters given to the constructor. */
+    public synchronized void reconnect() throws IOException {
+        if (!isConnected())
+            mSocket = new Socket();
+        connect();
+    }
+
     public void authenticate(String token) throws IOException {
         AuthenticateRequest.Builder b = AuthenticateRequest.newBuilder();
         b.setToken(token);

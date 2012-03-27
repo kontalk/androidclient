@@ -143,7 +143,7 @@ public class NumberValidator implements Runnable {
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
-                mClient.connect();
+                mClient.reconnect();
                 RegistrationResponse res = mClient.registerWait(mPhone);
                 if (mListener != null) {
 
@@ -174,7 +174,7 @@ public class NumberValidator implements Runnable {
             else if (mStep == STEP_AUTH_TOKEN) {
                 Log.d(TAG, "requesting authentication token");
 
-                mClient.connect();
+                mClient.reconnect();
                 ValidationResponse res = mClient.validateWait(mValidationCode.toString());
                 if (mListener != null) {
                     if (res.getStatus() == ValidationStatus.STATUS_SUCCESS) {
@@ -200,12 +200,7 @@ public class NumberValidator implements Runnable {
             mStep = STEP_INIT;
         }
         finally {
-            try {
-                mClient.close();
-            }
-            catch (Exception e) {
-                Log.e(TAG, "error closing connection to server", e);
-            }
+            mClient.close();
         }
     }
 
