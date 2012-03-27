@@ -28,9 +28,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
-import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.client.Protocol.NewMessage;
 import org.kontalk.client.TxListener;
 import org.kontalk.crypto.Coder;
@@ -43,7 +41,6 @@ import org.kontalk.ui.MessagingPreferences;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Process;
 import android.util.Log;
 
@@ -373,24 +370,6 @@ public class ClientThread extends Thread {
 
     public Object getPackLock() {
         return mPackLock;
-    }
-
-    // TODO move message() methods to MessageSender
-
-    public String message(String[] recipients, String mime, byte[] content,
-            MessageSender job, RequestListener listener) throws IOException {
-        MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
-        b.addRecipient(job.getUserId());
-        if (job.getEncryptKey() != null)
-            b.addFlags("encrypted");
-        b.setMime(job.getMime());
-        b.setContent(ByteString.copyFrom(content));
-        return mClient.send(b.build());
-    }
-
-    public String message(String[] recipients, String mime, Uri uri, Context context, MessageSender job, RequestListener listener) {
-        // TODO
-        return null;
     }
 
 }

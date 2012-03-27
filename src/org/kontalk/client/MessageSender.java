@@ -20,9 +20,12 @@ package org.kontalk.client;
 
 import java.io.IOException;
 
+import org.kontalk.client.Protocol.MessagePostRequest;
+import org.kontalk.crypto.Coder;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
+import org.kontalk.ui.MessagingPreferences;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -31,6 +34,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.BaseColumns;
+
+import com.google.protobuf.ByteString;
 
 
 /**
@@ -141,11 +146,46 @@ public class MessageSender extends RequestJob {
     public String call(ClientThread client, RequestListener listener,
             Context context) throws IOException {
 
+        if (mContent != null) {
+            MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
+            b.addRecipient(mPeer);
+
+            byte[] toMessage = null;
+            Coder coder = null;
+            // check if we have to encrypt the message
+            if (mEncryptKey != null) {
+                try {
+                    coder = MessagingPreferences.getEncryptCoder(mEncryptKey);
+                    if (coder != null) {
+                        toMessage = coder.encrypt(mContent);
+                    }
+                }
+                catch (Exception e) {
+                    // TODO notify/ask user this message will be sent cleartext
+                    coder = null;
+                }
+            }
+
+            if (coder == null)
+                toMessage = mContent;
+            else
+                b.addFlags("encrypted");
+
+            b.setContent(ByteString.copyFrom(toMessage));
+            b.setMime(mMime);
+            return client.getConnection().send(b.build());
+        }
+
+        // TODO mContent == null
+        return null;
+
+        /*
         if (mContent != null)
             return client.message(new String[] { mPeer },
                     mMime, mContent, this, listener);
         else
             return client.message(new String[] { mPeer },
                     mMime, mSourceDataUri, context, this, listener);
+        */
     }
 }
