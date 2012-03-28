@@ -41,17 +41,19 @@ import com.google.protobuf.MessageLite;
  * A {@link RequestListener} to be used for message requests.
  * Could be subclassed by UI to get notifications about message deliveries.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class MessageRequestListener implements RequestListener {
     private static final String TAG = MessageRequestListener.class.getSimpleName();
+    private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
 
     protected final Context mContext;
     protected final ContentResolver mContentResolver;
+    protected final RequestListener mParentListener;
 
-    public MessageRequestListener(Context context) {
+    public MessageRequestListener(Context context, RequestListener parent) {
         mContext = context;
         mContentResolver = context.getContentResolver();
+        mParentListener = parent;
     }
 
     @Override
@@ -80,7 +82,7 @@ public class MessageRequestListener implements RequestListener {
                                 values.put(Messages.MESSAGE_ID, msgId);
                                 values.put(Messages.STATUS, Messages.STATUS_SENT);
                                 values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                                int n = mContentResolver.update(uri, values, null, null);
+                                int n = mContentResolver.update(uri, values, selectionOutgoing, null);
                                 Log.i(TAG, "message sent and updated (" + n + ")");
                             }
                         }
@@ -88,7 +90,7 @@ public class MessageRequestListener implements RequestListener {
 
                     // message refused!
                     else {
-                        MessagesProvider.changeMessageStatus(mContext, uri,
+                        MessagesProvider.changeMessageStatus(mContext, uri, Messages.DIRECTION_OUT,
                                 Messages.STATUS_NOTACCEPTED, -1, System.currentTimeMillis());
                         Log.w(TAG, "message not accepted by server and updated (" + res.getStatus() + ")");
                     }
@@ -107,19 +109,19 @@ public class MessageRequestListener implements RequestListener {
         Log.e(TAG, "error sending message", e);
         MessageSender job2 = (MessageSender) job;
         Uri uri = job2.getMessageUri();
-        MessagesProvider.changeMessageStatus(mContext, uri,
+        MessagesProvider.changeMessageStatus(mContext, uri, Messages.DIRECTION_OUT,
                 Messages.STATUS_ERROR, -1, System.currentTimeMillis());
         return false;
     }
 
     @Override
     public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
-        // TODO
+        mParentListener.uploadProgress(client, job, bytes);
     }
 
     @Override
     public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
-        // TODO
+        mParentListener.downloadProgress(client, job, bytes);
     }
 
 }

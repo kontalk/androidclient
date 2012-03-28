@@ -948,38 +948,39 @@ public class MessagesProvider extends ContentProvider {
         return values;
     }
 
-    public static int changeMessageStatus(Context context, Uri uri, int status) {
-        return changeMessageStatus(context, uri, status, -1, -1);
+    public static int changeMessageStatus(Context context, Uri uri, int direction, int status) {
+        return changeMessageStatus(context, uri, direction, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, Uri uri, int status, long timestamp, long statusChanged) {
+    public static int changeMessageStatus(Context context, Uri uri, int direction, int status, long timestamp, long statusChanged) {
         Log.i(TAG, "changing message status to " + status + " (uri=" + uri + ")");
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
-        return context.getContentResolver().update(uri, values, null, null);
+        return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
     }
 
-    public static int changeMessageStatus(Context context, long id, int status) {
-        return changeMessageStatus(context, id, status, -1, -1);
+    public static int changeMessageStatus(Context context, long id, int direction, int status) {
+        return changeMessageStatus(context, id, direction, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, long id, int status, long timestamp, long statusChanged) {
+    public static int changeMessageStatus(Context context, long id, int direction, int status, long timestamp, long statusChanged) {
         Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
         Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
-        return context.getContentResolver().update(uri, values, null, null);
+        return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
     }
 
-    public static int changeMessageStatus(Context context, String id, boolean realId, int status) {
-        return changeMessageStatus(context, id, realId, status, -1, -1);
+    public static int changeMessageStatus(Context context, String id, int direction, boolean realId, int status) {
+        return changeMessageStatus(context, id, direction, realId, status, -1, -1);
     }
 
-    public static int changeMessageStatus(Context context, String id, boolean realId, int status, long timestamp, long statusChanged) {
+    public static int changeMessageStatus(Context context, String id, int direction, boolean realId, int status, long timestamp, long statusChanged) {
         Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
 
         String field = (realId) ? Messages.REAL_ID : Messages.MESSAGE_ID;
         return context.getContentResolver().update(Messages.CONTENT_URI, values,
-                field + " = ?",
+                field + " = ? AND " +
+                Messages.DIRECTION + "=" + direction,
                 new String[] { id });
     }
 

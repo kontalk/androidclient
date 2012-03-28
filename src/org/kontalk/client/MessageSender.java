@@ -19,6 +19,8 @@
 package org.kontalk.client;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.crypto.Coder;
@@ -26,6 +28,7 @@ import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
+import org.kontalk.util.SendingOutputStream;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -146,6 +149,7 @@ public class MessageSender extends RequestJob {
     public String execute(ClientThread client, RequestListener listener,
             Context context) throws IOException {
 
+        OutputStream stream = null;
         MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
         b.addRecipient(mPeer);
         b.setMime(mMime);
@@ -176,14 +180,13 @@ public class MessageSender extends RequestJob {
         }
 
         else {
-            /*
-            AssetFileDescriptor stat = context.getContentResolver()
-                    .openAssetFileDescriptor(mSourceDataUri, "r");
-            long length = stat.getLength();
+            //AssetFileDescriptor stat = context.getContentResolver()
+            //        .openAssetFileDescriptor(mSourceDataUri, "r");
+            //long length = stat.getLength();
             InputStream in = context.getContentResolver().openInputStream(mSourceDataUri);
 
             InputStream toMessage = null;
-            long toLength = 0;
+            //long toLength = 0;
             Coder coder = null;
             // check if we have to encrypt the message
             if (mEncryptKey != null) {
@@ -191,7 +194,7 @@ public class MessageSender extends RequestJob {
                     coder = MessagingPreferences.getEncryptCoder(mEncryptKey);
                     if (coder != null) {
                         toMessage = coder.wrapInputStream(in);
-                        toLength = Coder.getEncryptedLength(length);
+                        //toLength = Coder.getEncryptedLength(length);
                     }
                 }
                 catch (Exception e) {
@@ -202,7 +205,7 @@ public class MessageSender extends RequestJob {
 
             if (coder == null) {
                 toMessage = in;
-                toLength = length;
+                //toLength = length;
             }
             else {
                 b.addFlags("encrypted");
@@ -210,14 +213,21 @@ public class MessageSender extends RequestJob {
 
             byte[] buf = new byte[4096];
             int read;
-            // TODO ehm...
-            b.setContent()
-            OutputStream out = new SendingOutputStream(client.getConnection().out, client, this, mListener);
+            ByteString.Output prebuf = ByteString.newOutput();
             while ((read = toMessage.read(buf)) != -1)
-                out.write(buf, 0, read);
-            */
+                prebuf.write(buf, 0, read);
+            // close input file
+            toMessage.close();
+
+            // get bytes and close buffer
+            b.setContent(prebuf.toByteString());
+            prebuf.close();
+
+            // setup the output stream
+            // FIXME using a private field
+            stream = new SendingOutputStream(client.getConnection().out, client, this, mListener);
         }
 
-        return client.getConnection().send(b.build());
+        return client.getConnection().send(b.build(), stream);
     }
 }

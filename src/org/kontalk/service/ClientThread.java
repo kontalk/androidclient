@@ -311,7 +311,7 @@ public class ClientThread extends Thread {
         // image message
         else if (ImageMessage.supportsMimeType(mime)) {
             // extra argument: mime (first parameter)
-            msg = new ImageMessage(mContext, mime, timestamp, id, from, content, encrypted, group);
+            msg = new ImageMessage(mContext, mime, id, timestamp, from, content, encrypted, group);
         }
 
         // vcard message

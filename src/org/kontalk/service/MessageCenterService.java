@@ -18,11 +18,16 @@
 
 package org.kontalk.service;
 
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.EndpointServer;
@@ -39,7 +44,9 @@ import org.kontalk.message.ReceiptMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.sync.SyncAdapter;
+import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
@@ -47,6 +54,8 @@ import org.kontalk.util.MediaStorage;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
@@ -60,6 +69,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import com.google.protobuf.MessageLite;
 
@@ -86,6 +96,9 @@ public class MessageCenterService extends Service
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
 
     public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
+
+    private Notification mCurrentNotification;
+    private long mTotalBytes;
 
     private RequestWorker mRequestWorker;
     private Account mAccount;
@@ -271,7 +284,7 @@ public class MessageCenterService extends Service
 
     @Override
     public void onCreate() {
-        mMessageRequestListener = new MessageRequestListener(this);
+        mMessageRequestListener = new MessageRequestListener(this, this);
     }
 
     private void stop() {
@@ -450,7 +463,6 @@ public class MessageCenterService extends Service
         job.setListener(mMessageRequestListener);
 
         // not a plain text message - use progress notification
-        /* TODO
         if (job.getSourceUri() != null) {
             try {
                 startForeground(job.getUserId(), job.getContentLength(this));
@@ -458,15 +470,59 @@ public class MessageCenterService extends Service
             catch (IOException e) {
                 Log.e(TAG, "error reading message data to send", e);
                 MessagesProvider.changeMessageStatus(this,
-                        job.getMessageUri(), Messages.STATUS_ERROR,
+                        job.getMessageUri(), Messages.DIRECTION_OUT, Messages.STATUS_ERROR,
                         -1, System.currentTimeMillis());
                 // just don't send for now
                 return;
             }
         }
-        */
 
         pushRequest(job);
+    }
+
+    public void startForeground(String userId, long totalBytes) {
+        Log.v(TAG, "starting foreground progress notification");
+        mTotalBytes = totalBytes;
+
+        Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
+        ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
+        ni.setData(Threads.getUri(userId));
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                NOTIFICATION_ID_UPLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        mCurrentNotification = new Notification(R.drawable.icon_stat,
+                getResources().getString(R.string.sending_message),
+                System.currentTimeMillis());
+        mCurrentNotification.contentIntent = pi;
+        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+        foregroundNotification(0);
+        startForeground(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
+    }
+
+    private void foregroundNotification(int progress) {
+        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
+        mCurrentNotification.contentView.setTextViewText(R.id.title, getResources().getString(R.string.sending_message));
+        mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
+        mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
+    }
+
+    public void publishProgress(long bytes) {
+        if (mCurrentNotification != null) {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.cancel(NOTIFICATION_ID_UPLOAD_ERROR);
+
+            int progress = (int)((100 * bytes) / mTotalBytes);
+            foregroundNotification(progress);
+            // send the updates to the notification manager
+            nm.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
+        }
+    }
+
+    public void stopForeground() {
+        stopForeground(true);
+        mCurrentNotification = null;
+        mTotalBytes = 0;
     }
 
     /** Used by the {@link SyncAdapter}. */
@@ -630,22 +686,31 @@ public class MessageCenterService extends Service
 
     @Override
     public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
-        // TODO Auto-generated method stub
+        //Log.v(TAG, "bytes sent: " + bytes);
+        if (job instanceof MessageSender) {
+            boolean cancel = ((MessageSender)job).isCanceled();
+            if (cancel)
+                throw new CancellationException("job has been canceled.");
+        }
+        publishProgress(bytes);
+        Thread.yield();
     }
 
     @Override
     public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
-        // TODO Auto-generated method stub
+        // TODO
     }
 
     @Override
     public void done(ClientThread client, RequestJob job, String txId) {
-        // TODO Auto-generated method stub
+        // TODO
+        stopForeground();
     }
 
     @Override
     public boolean error(ClientThread client, RequestJob job, Throwable exc) {
-        // TODO Auto-generated method stub
+        // TODO
+        stopForeground();
         return false;
     }
 
