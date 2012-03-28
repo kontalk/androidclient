@@ -379,6 +379,7 @@ public class ComposeMessageFragment extends ListFragment implements
 				@Override
 				public void run() {
 					Toast.makeText(getActivity(),
+					        // TODO i18n
 							"Unable to store message to outbox.",
 							Toast.LENGTH_LONG).show();
 				}

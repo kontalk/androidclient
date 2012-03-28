@@ -211,6 +211,14 @@ public class MessageSender extends RequestJob {
                 b.addFlags("encrypted");
             }
 
+            /**
+             * FIXME this shouldn't be here.
+             * This is a hack to workaround limitation of {@link ByteString} which
+             * stores all bytes of the input entity in-memory.
+             * ByteString class should be at least extended (therefore removing the
+             * final modifier) to accept bytes from a feeding {@link InputStream}.
+             */
+
             byte[] buf = new byte[4096];
             int read;
             ByteString.Output prebuf = ByteString.newOutput();
