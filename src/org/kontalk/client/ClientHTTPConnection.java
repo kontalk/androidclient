@@ -1,9 +1,15 @@
 package org.kontalk.client;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -15,19 +21,29 @@ import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.kontalk.client.Protocol.FileUploadResponse;
 import org.kontalk.crypto.Coder;
 import org.kontalk.service.ClientThread;
+import org.kontalk.service.DownloadListener;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.ProgressInputStreamEntity;
+import org.kontalk.util.ProgressOutputStreamEntity;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
+import android.util.Log;
 
 
 public class ClientHTTPConnection {
+    private static final String TAG = ClientHTTPConnection.class.getSimpleName();
+
+    /** Regex used to parse content-disposition headers */
+    private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
+            .compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
+
 
     /** The authentication token header. */
     private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
@@ -148,6 +164,23 @@ public class ClientHTTPConnection {
     }
 
     /**
+     * A generic download request, with optional authorization token.
+     * @param token the authentication token
+     * @param url URL to download
+     * @return the request object
+     * @throws IOException
+     */
+    public HttpRequestBase prepareURLDownload(String token, String url) throws IOException {
+        HttpGet req = new HttpGet(url);
+
+        if (token != null)
+            req.addHeader(HEADER_NAME_AUTHORIZATION,
+                    HEADER_VALUE_AUTHORIZATION + token);
+
+        return req;
+    }
+
+    /**
      * A message posting method.
      * @param listener the uploading listener
      * @param token the autentication token
@@ -197,6 +230,61 @@ public class ClientHTTPConnection {
             throw ie;
         }
 
+    }
+
+    /** Downloads to a directory represented by a {@link File} object,
+     * determining the file name from the Content-Disposition header. */
+    public void downloadAutofilename(String url, File base, DownloadListener listener) throws IOException {
+        _download(url, base, listener);
+    }
+
+    private void _download(String url, File base, DownloadListener listener) throws IOException {
+        currentRequest = prepareURLDownload(mAuthToken, url);
+        HttpResponse response = execute(currentRequest);
+
+        // HTTP/1.1 200 OK -- other codes should throw Exceptions
+        if (response.getStatusLine().getStatusCode() == 200) {
+            Header disp = response.getFirstHeader("Content-Disposition");
+            if (disp != null) {
+                String name = parseContentDisposition(disp.getValue());
+                // TODO should check for content-disposition parsing here
+                // and choose another filename if necessary
+
+                HttpEntity _entity = response.getEntity();
+                if (name != null && _entity != null) {
+                    // we need to wrap the entity to monitor the download progress
+                    File destination = new File(base, name);
+                    ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(_entity, url, destination, listener);
+                    FileOutputStream out = new FileOutputStream(destination);
+                    entity.writeTo(out);
+                    out.close();
+                    return;
+                }
+            }
+        }
+
+        Log.e(TAG, "invalid response: " + response.getStatusLine().getStatusCode());
+        HttpEntity entity = response.getEntity();
+        Log.e(TAG, EntityUtils.toString(entity));
+    }
+
+    /*
+     * Parse the Content-Disposition HTTP Header. The format of the header
+     * is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * This header provides a filename for content that is going to be
+     * downloaded to the file system. We only support the attachment type.
+     */
+    private static String parseContentDisposition(String contentDisposition) {
+        try {
+            Matcher m = CONTENT_DISPOSITION_PATTERN.matcher(contentDisposition);
+            if (m.find()) {
+                return m.group(1);
+            }
+        }
+        catch (IllegalStateException ex) {
+            // This function is defined as returning null when it can't parse the header
+        }
+        return null;
     }
 
 }

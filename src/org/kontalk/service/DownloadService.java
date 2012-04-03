@@ -26,7 +26,7 @@ import java.io.File;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.DownloadClient;
+import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
@@ -60,7 +60,7 @@ public class DownloadService extends IntentService implements DownloadListener {
     private long mTotalBytes;
 
     private String messageId;
-    private DownloadClient mDownloadClient;
+    private ClientHTTPConnection mDownloadClient;
 
     public DownloadService() {
         super(DownloadService.class.getSimpleName());
@@ -74,7 +74,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         if (mDownloadClient == null) {
             EndpointServer server = MessagingPreferences.getEndpointServer(this);
             String token = Authenticator.getDefaultAccountToken(this);
-            mDownloadClient = new DownloadClient(this, server, token);
+            mDownloadClient = new ClientHTTPConnection(null, this, server, token);
         }
 
         Uri uri = intent.getData();

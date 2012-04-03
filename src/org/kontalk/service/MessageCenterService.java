@@ -47,6 +47,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
@@ -722,9 +723,35 @@ public class MessageCenterService extends Service
 
     @Override
     public boolean error(ClientThread client, RequestJob job, Throwable exc) {
-        // TODO
-        stopForeground();
-        return false;
+        Log.e(TAG, "request error", exc);
+        // stop any foreground if the job is a message
+        if (job instanceof MessageSender) {
+            stopForeground();
+
+            MessageSender job2 = (MessageSender) job;
+            if (job2.getSourceUri() != null) {
+                // create intent for upload error notification
+                // TODO this Intent should bring the user to the actual conversation
+                Intent i = new Intent(this, ConversationList.class);
+                PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                        NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                // create notification
+                Notification no = new Notification(R.drawable.icon_stat,
+                        getString(R.string.notify_ticker_upload_error),
+                        System.currentTimeMillis());
+                no.setLatestEventInfo(getApplicationContext(),
+                        getString(R.string.notify_title_upload_error),
+                        getString(R.string.notify_text_upload_error), pi);
+                no.flags |= Notification.FLAG_AUTO_CANCEL;
+
+                // notify!!
+                NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, no);
+            }
+        }
+
+        return true;
     }
 
 }
