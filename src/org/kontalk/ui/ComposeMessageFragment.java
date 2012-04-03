@@ -40,6 +40,7 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.sync.SyncAdapter;
@@ -271,14 +272,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		public ComposerServiceConnection(String userId, byte[] text,
 				String mime, Uri msgUri, String encryptKey) {
-			job = new MessageSender(userId, text, mime, msgUri, encryptKey);
-			//job.setListener(mMessageSenderListener);
+			job = new MessageSender(userId, text, mime, msgUri, encryptKey, false);
+			// listener will be set by message center
 		}
 
 		public ComposerServiceConnection(String userId, Uri fileUri,
 				String mime, Uri msgUri, String encryptKey) {
 			job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
-			//job.setListener(mMessageSenderListener);
+            // listener will be set by message center
 		}
 
 		@Override
@@ -718,7 +719,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		switch (item.getItemId()) {
 			case MENU_SHARE: {
-				Log.d(TAG, "sharing message: " + msg.getId());
+				Log.v(TAG, "sharing message: " + msg.getId());
 				Intent i;
 				if (msg instanceof PlainTextMessage)
 					i = ComposeMessage.sendTextMessage(msg.getTextContent());
@@ -731,7 +732,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			case MENU_COPY_TEXT: {
-				Log.d(TAG, "copying message text: " + msg.getId());
+				Log.v(TAG, "copying message text: " + msg.getId());
 				ClipboardManager cpm = (ClipboardManager) getActivity()
 						.getSystemService(Context.CLIPBOARD_SERVICE);
 				cpm.setText(msg.getTextContent());
@@ -742,25 +743,23 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			case MENU_DECRYPT: {
-				Log.d(TAG, "decrypting message: " + msg.getId());
+				Log.v(TAG, "decrypting message: " + msg.getId());
 				decryptMessage(msg);
 				return true;
 			}
 
 			case MENU_DOWNLOAD: {
-				Log.d(TAG, "downloading attachment");
-				/*
+				Log.v(TAG, "downloading attachment");
 				Intent i = new Intent(getActivity(), DownloadService.class);
 				i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
 				i.putExtra(AbstractMessage.MSG_ID, msg.getId());
 				i.setData(Uri.parse(msg.getFetchUrl()));
 				getActivity().startService(i);
-				*/
 				return true;
 			}
 
 			case MENU_DETAILS: {
-				Log.d(TAG, "opening message details");
+				Log.v(TAG, "opening message details");
 				CharSequence messageDetails = MessageUtils.getMessageDetails(
 						getActivity(), msg, userPhone != null ? userPhone : userId);
 				new AlertDialog.Builder(getActivity())
@@ -772,13 +771,13 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			case MENU_DELETE: {
-				Log.d(TAG, "deleting message: " + msg.getDatabaseId());
+				Log.v(TAG, "deleting message: " + msg.getDatabaseId());
 				deleteMessage(msg.getDatabaseId());
 				return true;
 			}
 
 			case MENU_OPEN: {
-				Log.d(TAG, "opening file");
+				Log.v(TAG, "opening file");
 				Intent i = new Intent(Intent.ACTION_VIEW);
 				i.setDataAndType(msg.getLocalUri(), msg.getMime());
 				startActivity(i);
@@ -793,7 +792,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		try {
 			getActivity().setProgressBarIndeterminateVisibility(true);
 
-			Log.i(TAG, "starting query for thread " + threadId);
+			Log.d(TAG, "starting query for thread " + threadId);
 			AbstractMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
 					threadId);
 
@@ -844,9 +843,9 @@ public class ComposeMessageFragment extends ListFragment implements
 				if (uri != null) {
 					if (mime == null || mime.startsWith("*/")
 							|| mime.endsWith("/*")) {
-						Log.d(TAG, "looking up mime type for uri " + uri);
+						Log.v(TAG, "looking up mime type for uri " + uri);
 						mime = getActivity().getContentResolver().getType(uri);
-						Log.d(TAG, "using detected mime type " + mime);
+						Log.v(TAG, "using detected mime type " + mime);
 					}
 
 					sendBinaryMessage(uri, mime, true, ImageMessage.class);
@@ -876,7 +875,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	private void processArguments(Bundle savedInstanceState) {
 		Bundle args = null;
 		if (savedInstanceState != null) {
-			Log.w(TAG, "restoring from saved instance");
+			Log.v(TAG, "restoring from saved instance");
 			Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
 			// threadId = ContentUris.parseId(uri);
 			args = new Bundle();

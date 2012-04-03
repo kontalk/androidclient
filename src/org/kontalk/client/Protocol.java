@@ -1295,12 +1295,16 @@ public final class Protocol {
         STATUS_ERROR(1, 1),
         STATUS_BUSY(2, 2),
         STATUS_USER_NOTFOUND(3, 3),
+        STATUS_BIG(4, 4),
+        STATUS_NOTSUPPORTED(5, 5),
         ;
         
         public static final int STATUS_SUCCESS_VALUE = 0;
         public static final int STATUS_ERROR_VALUE = 1;
         public static final int STATUS_BUSY_VALUE = 2;
         public static final int STATUS_USER_NOTFOUND_VALUE = 3;
+        public static final int STATUS_BIG_VALUE = 4;
+        public static final int STATUS_NOTSUPPORTED_VALUE = 5;
         
         
         public final int getNumber() { return value; }
@@ -1311,6 +1315,8 @@ public final class Protocol {
             case 1: return STATUS_ERROR;
             case 2: return STATUS_BUSY;
             case 3: return STATUS_USER_NOTFOUND;
+            case 4: return STATUS_BIG;
+            case 5: return STATUS_NOTSUPPORTED;
             default: return null;
           }
         }
@@ -8316,6 +8322,448 @@ public final class Protocol {
     }
     
     // @@protoc_insertion_point(class_scope:UserLookupResponse)
+  }
+  
+  public interface FileUploadResponseOrBuilder
+      extends com.google.protobuf.MessageLiteOrBuilder {
+    
+    // required .FileUploadResponse.FileUploadStatus status = 1;
+    boolean hasStatus();
+    org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus getStatus();
+    
+    // optional string file_id = 2;
+    boolean hasFileId();
+    String getFileId();
+  }
+  public static final class FileUploadResponse extends
+      com.google.protobuf.GeneratedMessageLite
+      implements FileUploadResponseOrBuilder {
+    // Use FileUploadResponse.newBuilder() to construct.
+    private FileUploadResponse(Builder builder) {
+      super(builder);
+    }
+    private FileUploadResponse(boolean noInit) {}
+    
+    private static final FileUploadResponse defaultInstance;
+    public static FileUploadResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public FileUploadResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public enum FileUploadStatus
+        implements com.google.protobuf.Internal.EnumLite {
+      STATUS_SUCCESS(0, 0),
+      STATUS_ERROR(1, 1),
+      STATUS_FAILED(2, 2),
+      STATUS_BIG(3, 3),
+      STATUS_NOTSUPPORTED(4, 4),
+      ;
+      
+      public static final int STATUS_SUCCESS_VALUE = 0;
+      public static final int STATUS_ERROR_VALUE = 1;
+      public static final int STATUS_FAILED_VALUE = 2;
+      public static final int STATUS_BIG_VALUE = 3;
+      public static final int STATUS_NOTSUPPORTED_VALUE = 4;
+      
+      
+      public final int getNumber() { return value; }
+      
+      public static FileUploadStatus valueOf(int value) {
+        switch (value) {
+          case 0: return STATUS_SUCCESS;
+          case 1: return STATUS_ERROR;
+          case 2: return STATUS_FAILED;
+          case 3: return STATUS_BIG;
+          case 4: return STATUS_NOTSUPPORTED;
+          default: return null;
+        }
+      }
+      
+      public static com.google.protobuf.Internal.EnumLiteMap<FileUploadStatus>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<FileUploadStatus>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<FileUploadStatus>() {
+              public FileUploadStatus findValueByNumber(int number) {
+                return FileUploadStatus.valueOf(number);
+              }
+            };
+      
+      private final int value;
+      
+      private FileUploadStatus(int index, int value) {
+        this.value = value;
+      }
+      
+      // @@protoc_insertion_point(enum_scope:FileUploadResponse.FileUploadStatus)
+    }
+    
+    private int bitField0_;
+    // required .FileUploadResponse.FileUploadStatus status = 1;
+    public static final int STATUS_FIELD_NUMBER = 1;
+    private org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus status_;
+    public boolean hasStatus() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus getStatus() {
+      return status_;
+    }
+    
+    // optional string file_id = 2;
+    public static final int FILE_ID_FIELD_NUMBER = 2;
+    private java.lang.Object fileId_;
+    public boolean hasFileId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public String getFileId() {
+      java.lang.Object ref = fileId_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          fileId_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getFileIdBytes() {
+      java.lang.Object ref = fileId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        fileId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
+    private void initFields() {
+      status_ = org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus.STATUS_SUCCESS;
+      fileId_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      if (!hasStatus()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, status_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getFileIdBytes());
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, status_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getFileIdBytes());
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.FileUploadResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.kontalk.client.Protocol.FileUploadResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageLite.Builder<
+          org.kontalk.client.Protocol.FileUploadResponse, Builder>
+        implements org.kontalk.client.Protocol.FileUploadResponseOrBuilder {
+      // Construct using org.kontalk.client.Protocol.FileUploadResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private void maybeForceBuilderInitialization() {
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        status_ = org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus.STATUS_SUCCESS;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        fileId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public org.kontalk.client.Protocol.FileUploadResponse getDefaultInstanceForType() {
+        return org.kontalk.client.Protocol.FileUploadResponse.getDefaultInstance();
+      }
+      
+      public org.kontalk.client.Protocol.FileUploadResponse build() {
+        org.kontalk.client.Protocol.FileUploadResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.kontalk.client.Protocol.FileUploadResponse buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.kontalk.client.Protocol.FileUploadResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.kontalk.client.Protocol.FileUploadResponse buildPartial() {
+        org.kontalk.client.Protocol.FileUploadResponse result = new org.kontalk.client.Protocol.FileUploadResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.status_ = status_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.fileId_ = fileId_;
+        result.bitField0_ = to_bitField0_;
+        return result;
+      }
+      
+      public Builder mergeFrom(org.kontalk.client.Protocol.FileUploadResponse other) {
+        if (other == org.kontalk.client.Protocol.FileUploadResponse.getDefaultInstance()) return this;
+        if (other.hasStatus()) {
+          setStatus(other.getStatus());
+        }
+        if (other.hasFileId()) {
+          setFileId(other.getFileId());
+        }
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        if (!hasStatus()) {
+          
+          return false;
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              
+              return this;
+            default: {
+              if (!parseUnknownField(input, extensionRegistry, tag)) {
+                
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus value = org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus.valueOf(rawValue);
+              if (value != null) {
+                bitField0_ |= 0x00000001;
+                status_ = value;
+              }
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              fileId_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // required .FileUploadResponse.FileUploadStatus status = 1;
+      private org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus status_ = org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus.STATUS_SUCCESS;
+      public boolean hasStatus() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus getStatus() {
+        return status_;
+      }
+      public Builder setStatus(org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        status_ = value;
+        
+        return this;
+      }
+      public Builder clearStatus() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        status_ = org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus.STATUS_SUCCESS;
+        
+        return this;
+      }
+      
+      // optional string file_id = 2;
+      private java.lang.Object fileId_ = "";
+      public boolean hasFileId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public String getFileId() {
+        java.lang.Object ref = fileId_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          fileId_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setFileId(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        fileId_ = value;
+        
+        return this;
+      }
+      public Builder clearFileId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        fileId_ = getDefaultInstance().getFileId();
+        
+        return this;
+      }
+      void setFileId(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000002;
+        fileId_ = value;
+        
+      }
+      
+      // @@protoc_insertion_point(builder_scope:FileUploadResponse)
+    }
+    
+    static {
+      defaultInstance = new FileUploadResponse(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:FileUploadResponse)
   }
   
   

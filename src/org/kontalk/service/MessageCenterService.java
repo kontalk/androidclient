@@ -71,6 +71,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 
@@ -232,7 +233,8 @@ public class MessageCenterService extends Service
 
                     // activate request worker
                     if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
-                        EndpointServer server = new EndpointServer(serverUrl);
+                        // TODO http port!!
+                        EndpointServer server = new EndpointServer(serverUrl, EndpointServer.DEFAULT_HTTP_PORT);
                         mRequestWorker = new RequestWorker(this, server, mRefCount);
                         mRequestWorker.addListener(this);
 
@@ -703,8 +705,19 @@ public class MessageCenterService extends Service
 
     @Override
     public void done(ClientThread client, RequestJob job, String txId) {
-        // TODO
-        stopForeground();
+        if (job instanceof MessageSender) {
+            // we are sending a message, check if it's a binary content
+            MessageSender msg = (MessageSender) job;
+            if (msg.getSourceUri() != null) {
+                // stop any foreground notification
+                stopForeground();
+                // queue an attachment MessageSender (txId is the fileid)
+                ByteString bf = ByteString.copyFromUtf8(txId);
+                MessageSender inc = new MessageSender(msg.getUserId(), bf.toByteArray(),
+                        msg.getMime(), msg.getMessageUri(), msg.getEncryptKey(), true);
+                sendMessage(inc);
+            }
+        }
     }
 
     @Override

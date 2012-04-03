@@ -31,6 +31,8 @@ public class ClientConnection {
     protected OutputStream out;
     protected InputStream in;
 
+    protected String mAuthToken;
+
     public ClientConnection(Context context, EndpointServer server) {
         mContext = context;
         mServer = server;
@@ -51,6 +53,7 @@ public class ClientConnection {
     }
 
     public void authenticate(String token) throws IOException {
+        mAuthToken = token;
         AuthenticateRequest.Builder b = AuthenticateRequest.newBuilder();
         b.setToken(token);
         send(b.build());

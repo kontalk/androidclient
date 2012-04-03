@@ -19,16 +19,15 @@
 package org.kontalk.client;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
+import org.kontalk.client.Protocol.FileUploadResponse;
+import org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus;
 import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.crypto.Coder;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
-import org.kontalk.util.SendingOutputStream;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -54,15 +53,17 @@ public class MessageSender extends RequestJob {
     private final Uri mSourceDataUri;
     private ContentObserver mObserver;
     private final String mEncryptKey;
+    private final boolean mAttachment;
 
     /** A {@link MessageSender} for raw byte contents. */
-    public MessageSender(String userId, byte[] content, String mime, Uri msgUri, String encryptKey) {
+    public MessageSender(String userId, byte[] content, String mime, Uri msgUri, String encryptKey, boolean attachment) {
         mContent = content;
         mPeer = userId;
         mUri = msgUri;
         mMime = mime;
         mSourceDataUri = null;
         mEncryptKey = encryptKey;
+        mAttachment = attachment;
     }
 
     /** A {@link MessageSender} for a file {@link Uri}. */
@@ -73,6 +74,7 @@ public class MessageSender extends RequestJob {
         mMime = mime;
         mSourceDataUri = fileUri;
         mEncryptKey = encryptKey;
+        mAttachment = false;
     }
 
     public void observe(Context context, Handler handler) {
@@ -145,16 +147,21 @@ public class MessageSender extends RequestJob {
         return mEncryptKey;
     }
 
+    public boolean isAttachment() {
+        return mAttachment;
+    }
+
     @Override
     public String execute(ClientThread client, RequestListener listener,
             Context context) throws IOException {
 
-        OutputStream stream = null;
-        MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
-        b.addRecipient(mPeer);
-        b.setMime(mMime);
-
         if (mContent != null) {
+            MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
+            b.addRecipient(mPeer);
+            b.setMime(mMime);
+
+            if (mAttachment)
+                b.addFlags("attachment");
 
             byte[] toMessage = null;
             Coder coder = null;
@@ -177,65 +184,23 @@ public class MessageSender extends RequestJob {
                 b.addFlags("encrypted");
 
             b.setContent(ByteString.copyFrom(toMessage));
+            return client.getConnection().send(b.build());
         }
 
         else {
-            //AssetFileDescriptor stat = context.getContentResolver()
-            //        .openAssetFileDescriptor(mSourceDataUri, "r");
-            //long length = stat.getLength();
-            InputStream in = context.getContentResolver().openInputStream(mSourceDataUri);
-
-            InputStream toMessage = null;
-            //long toLength = 0;
-            Coder coder = null;
-            // check if we have to encrypt the message
-            if (mEncryptKey != null) {
-                try {
-                    coder = MessagingPreferences.getEncryptCoder(mEncryptKey);
-                    if (coder != null) {
-                        toMessage = coder.wrapInputStream(in);
-                        //toLength = Coder.getEncryptedLength(length);
-                    }
-                }
-                catch (Exception e) {
-                    // TODO notify/ask user this message will be sent cleartext
-                    coder = null;
+            ClientHTTPConnection conn = client.getHttpConnection();
+            FileUploadResponse res = conn.message(new String[] { mPeer }, mMime, mSourceDataUri, context, this, mListener);
+            if (res != null) {
+                // TODO other statuses??
+                if (res.getStatus() == FileUploadStatus.STATUS_SUCCESS) {
+                    // return the fileid so we can go on with message post
+                    return res.getFileId();
                 }
             }
 
-            if (coder == null) {
-                toMessage = in;
-                //toLength = length;
-            }
-            else {
-                b.addFlags("encrypted");
-            }
-
-            /**
-             * FIXME this shouldn't be here.
-             * This is a hack to workaround limitation of {@link ByteString} which
-             * stores all bytes of the input entity in-memory.
-             * ByteString class should be at least extended (therefore removing the
-             * final modifier) to accept bytes from a feeding {@link InputStream}.
-             */
-
-            byte[] buf = new byte[4096];
-            int read;
-            ByteString.Output prebuf = ByteString.newOutput();
-            while ((read = toMessage.read(buf)) != -1)
-                prebuf.write(buf, 0, read);
-            // close input file
-            toMessage.close();
-
-            // get bytes and close buffer
-            b.setContent(prebuf.toByteString());
-            prebuf.close();
-
-            // setup the output stream
-            // FIXME using a private field
-            stream = new SendingOutputStream(client.getConnection().out, client, this, mListener);
+            // TODO shall we notify something went wrong?
+            return null;
         }
 
-        return client.getConnection().send(b.build(), stream);
     }
 }

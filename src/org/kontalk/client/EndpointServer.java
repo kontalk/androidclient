@@ -28,12 +28,17 @@ package org.kontalk.client;
 public class EndpointServer {
     /** Default Kontalk client port. */
     public static final int DEFAULT_PORT = 6126;
+    /** Default Kontalk HTTP port. */
+    public static final int DEFAULT_HTTP_PORT = 6128;
 
     private String mHost;
     private int mPort;
+    private int mHttpPort;
 
-    public EndpointServer(String host) {
-        this(host, DEFAULT_PORT);
+    private String mUrl;
+
+    public EndpointServer(String host, int httpPort) {
+        this(host, DEFAULT_PORT, httpPort);
         if (host.contains(":")) {
             String[] parsed = host.split(":");
             mHost = parsed[0];
@@ -41,9 +46,10 @@ public class EndpointServer {
         }
     }
 
-    public EndpointServer(String host, int port) {
+    public EndpointServer(String host, int port, int httpPort) {
         this.mHost = host;
         this.mPort = port;
+        this.mHttpPort = httpPort;
     }
 
     @Override
@@ -57,5 +63,15 @@ public class EndpointServer {
 
     public int getPort() {
         return mPort;
+    }
+
+    public String getHttpUrl() {
+        if (mUrl == null)
+            mUrl = String.format("http://%s:%d", mHost, mHttpPort);
+        return mUrl;
+    }
+
+    public int getHttpPort() {
+        return mHttpPort;
     }
 }

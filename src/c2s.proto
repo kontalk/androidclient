@@ -18,6 +18,7 @@ message AuthenticateResponse {
 message MessagePostRequest {
     repeated string recipient = 1;
     optional string mime = 2;
+    // flags: encrypted, attachment
     repeated string flags = 3;
     optional bytes content = 4;
 }
@@ -30,6 +31,8 @@ message MessagePostResponse {
             STATUS_ERROR = 1;
             STATUS_BUSY = 2;
             STATUS_USER_NOTFOUND = 3;
+            STATUS_BIG = 4;
+            STATUS_NOTSUPPORTED = 5;
         }
         required MessageSentStatus status = 1;
         required string user_id = 2;
@@ -138,8 +141,21 @@ message UserLookupResponse {
         required string user_id = 1;
         optional uint64 timestamp = 2;
         optional string status = 3;
-        // difference between timestamp and local server time
+        // difference between timestamp and local server time (0 means online)
         optional uint64 timediff = 4;
     }
     repeated Entry entry = 1;
+}
+
+// file upload response
+message FileUploadResponse {
+    enum FileUploadStatus {
+        STATUS_SUCCESS = 0;
+        STATUS_ERROR = 1;
+        STATUS_FAILED = 2;
+        STATUS_BIG = 3;
+        STATUS_NOTSUPPORTED = 4;
+    }
+    required FileUploadStatus status = 1;
+    optional string file_id = 2;
 }

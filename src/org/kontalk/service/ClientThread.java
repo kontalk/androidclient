@@ -27,6 +27,7 @@ import java.util.Map;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.ClientConnection;
+import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.NewMessage;
@@ -74,6 +75,9 @@ public class ClientThread extends Thread {
 
     /** Connection is re-created on demand if necessary. */
     private ClientConnection mClient;
+
+    /** HTTP connection to server. */
+    protected ClientHTTPConnection mHttpConn;
 
     /** Parent thread to be notified. */
     private final ParentThread mParent;
@@ -342,6 +346,12 @@ public class ClientThread extends Thread {
 
     public ClientConnection getConnection() {
         return mClient;
+    }
+
+    public ClientHTTPConnection getHttpConnection() {
+        if (mHttpConn == null)
+            mHttpConn = new ClientHTTPConnection(this, mContext, mServer, mAuthToken);
+        return mHttpConn;
     }
 
     @Override

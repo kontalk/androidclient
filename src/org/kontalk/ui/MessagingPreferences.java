@@ -190,7 +190,8 @@ public class MessagingPreferences extends PreferenceActivity {
     public static EndpointServer getEndpointServer(Context context) {
         String customUri = getServerURI(context);
         if (!TextUtils.isEmpty(customUri))
-            return new EndpointServer(customUri);
+            // TODO http port!!!
+            return new EndpointServer(customUri, EndpointServer.DEFAULT_HTTP_PORT);
 
         ServerList list = ServerListUpdater.getCurrentList(context);
         return (list != null) ? list.random() : null;

@@ -162,7 +162,8 @@ public class ServerListUpdater extends Thread {
             int i = 1;
             String server;
             while ((server = prop.getProperty("server" + i)) != null) {
-                list.add(new EndpointServer(server));
+                // TODO http port!!
+                list.add(new EndpointServer(server, EndpointServer.DEFAULT_HTTP_PORT));
                 i++;
             }
 
