@@ -174,8 +174,11 @@ public class UsersProvider extends ContentProvider {
             // this is because API < 11 doesn't have beginTransactionNonExclusive()
             db.execSQL("BEGIN IMMEDIATE;");
 
+        // delete old contacts
+        db.execSQL("DELETE FROM " + TABLE_USERS);
+
         // we are trying to be fast here
-        SQLiteStatement stm = db.compileStatement("REPLACE INTO " + TABLE_USERS + " VALUES(?, ?, ?)");
+        SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS + " VALUES(?, ?, ?)");
 
         try {
             while (phones.moveToNext()) {
