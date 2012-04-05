@@ -8766,6 +8766,1054 @@ public final class Protocol {
     // @@protoc_insertion_point(class_scope:FileUploadResponse)
   }
   
+  public interface ServerInfoRequestOrBuilder
+      extends com.google.protobuf.MessageLiteOrBuilder {
+    
+    // optional uint32 client_protocol = 1;
+    boolean hasClientProtocol();
+    int getClientProtocol();
+    
+    // optional string client_version = 2;
+    boolean hasClientVersion();
+    String getClientVersion();
+  }
+  public static final class ServerInfoRequest extends
+      com.google.protobuf.GeneratedMessageLite
+      implements ServerInfoRequestOrBuilder {
+    // Use ServerInfoRequest.newBuilder() to construct.
+    private ServerInfoRequest(Builder builder) {
+      super(builder);
+    }
+    private ServerInfoRequest(boolean noInit) {}
+    
+    private static final ServerInfoRequest defaultInstance;
+    public static ServerInfoRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public ServerInfoRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    private int bitField0_;
+    // optional uint32 client_protocol = 1;
+    public static final int CLIENT_PROTOCOL_FIELD_NUMBER = 1;
+    private int clientProtocol_;
+    public boolean hasClientProtocol() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public int getClientProtocol() {
+      return clientProtocol_;
+    }
+    
+    // optional string client_version = 2;
+    public static final int CLIENT_VERSION_FIELD_NUMBER = 2;
+    private java.lang.Object clientVersion_;
+    public boolean hasClientVersion() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public String getClientVersion() {
+      java.lang.Object ref = clientVersion_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          clientVersion_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getClientVersionBytes() {
+      java.lang.Object ref = clientVersion_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        clientVersion_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
+    private void initFields() {
+      clientProtocol_ = 0;
+      clientVersion_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeUInt32(1, clientProtocol_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getClientVersionBytes());
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(1, clientProtocol_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getClientVersionBytes());
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.kontalk.client.Protocol.ServerInfoRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageLite.Builder<
+          org.kontalk.client.Protocol.ServerInfoRequest, Builder>
+        implements org.kontalk.client.Protocol.ServerInfoRequestOrBuilder {
+      // Construct using org.kontalk.client.Protocol.ServerInfoRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private void maybeForceBuilderInitialization() {
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        clientProtocol_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        clientVersion_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public org.kontalk.client.Protocol.ServerInfoRequest getDefaultInstanceForType() {
+        return org.kontalk.client.Protocol.ServerInfoRequest.getDefaultInstance();
+      }
+      
+      public org.kontalk.client.Protocol.ServerInfoRequest build() {
+        org.kontalk.client.Protocol.ServerInfoRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.kontalk.client.Protocol.ServerInfoRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.kontalk.client.Protocol.ServerInfoRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.kontalk.client.Protocol.ServerInfoRequest buildPartial() {
+        org.kontalk.client.Protocol.ServerInfoRequest result = new org.kontalk.client.Protocol.ServerInfoRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.clientProtocol_ = clientProtocol_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.clientVersion_ = clientVersion_;
+        result.bitField0_ = to_bitField0_;
+        return result;
+      }
+      
+      public Builder mergeFrom(org.kontalk.client.Protocol.ServerInfoRequest other) {
+        if (other == org.kontalk.client.Protocol.ServerInfoRequest.getDefaultInstance()) return this;
+        if (other.hasClientProtocol()) {
+          setClientProtocol(other.getClientProtocol());
+        }
+        if (other.hasClientVersion()) {
+          setClientVersion(other.getClientVersion());
+        }
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              
+              return this;
+            default: {
+              if (!parseUnknownField(input, extensionRegistry, tag)) {
+                
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              clientProtocol_ = input.readUInt32();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              clientVersion_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // optional uint32 client_protocol = 1;
+      private int clientProtocol_ ;
+      public boolean hasClientProtocol() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public int getClientProtocol() {
+        return clientProtocol_;
+      }
+      public Builder setClientProtocol(int value) {
+        bitField0_ |= 0x00000001;
+        clientProtocol_ = value;
+        
+        return this;
+      }
+      public Builder clearClientProtocol() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        clientProtocol_ = 0;
+        
+        return this;
+      }
+      
+      // optional string client_version = 2;
+      private java.lang.Object clientVersion_ = "";
+      public boolean hasClientVersion() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public String getClientVersion() {
+        java.lang.Object ref = clientVersion_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          clientVersion_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setClientVersion(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        clientVersion_ = value;
+        
+        return this;
+      }
+      public Builder clearClientVersion() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        clientVersion_ = getDefaultInstance().getClientVersion();
+        
+        return this;
+      }
+      void setClientVersion(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000002;
+        clientVersion_ = value;
+        
+      }
+      
+      // @@protoc_insertion_point(builder_scope:ServerInfoRequest)
+    }
+    
+    static {
+      defaultInstance = new ServerInfoRequest(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:ServerInfoRequest)
+  }
+  
+  public interface ServerInfoResponseOrBuilder
+      extends com.google.protobuf.MessageLiteOrBuilder {
+    
+    // required string version = 1;
+    boolean hasVersion();
+    String getVersion();
+    
+    // required uint32 client_protocol = 2;
+    boolean hasClientProtocol();
+    int getClientProtocol();
+    
+    // required uint32 server_protocol = 3;
+    boolean hasServerProtocol();
+    int getServerProtocol();
+    
+    // required string fingerprint = 4;
+    boolean hasFingerprint();
+    String getFingerprint();
+    
+    // repeated string supports = 5;
+    java.util.List<String> getSupportsList();
+    int getSupportsCount();
+    String getSupports(int index);
+  }
+  public static final class ServerInfoResponse extends
+      com.google.protobuf.GeneratedMessageLite
+      implements ServerInfoResponseOrBuilder {
+    // Use ServerInfoResponse.newBuilder() to construct.
+    private ServerInfoResponse(Builder builder) {
+      super(builder);
+    }
+    private ServerInfoResponse(boolean noInit) {}
+    
+    private static final ServerInfoResponse defaultInstance;
+    public static ServerInfoResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public ServerInfoResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    private int bitField0_;
+    // required string version = 1;
+    public static final int VERSION_FIELD_NUMBER = 1;
+    private java.lang.Object version_;
+    public boolean hasVersion() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public String getVersion() {
+      java.lang.Object ref = version_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          version_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getVersionBytes() {
+      java.lang.Object ref = version_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        version_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
+    // required uint32 client_protocol = 2;
+    public static final int CLIENT_PROTOCOL_FIELD_NUMBER = 2;
+    private int clientProtocol_;
+    public boolean hasClientProtocol() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public int getClientProtocol() {
+      return clientProtocol_;
+    }
+    
+    // required uint32 server_protocol = 3;
+    public static final int SERVER_PROTOCOL_FIELD_NUMBER = 3;
+    private int serverProtocol_;
+    public boolean hasServerProtocol() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public int getServerProtocol() {
+      return serverProtocol_;
+    }
+    
+    // required string fingerprint = 4;
+    public static final int FINGERPRINT_FIELD_NUMBER = 4;
+    private java.lang.Object fingerprint_;
+    public boolean hasFingerprint() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    public String getFingerprint() {
+      java.lang.Object ref = fingerprint_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          fingerprint_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getFingerprintBytes() {
+      java.lang.Object ref = fingerprint_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        fingerprint_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
+    // repeated string supports = 5;
+    public static final int SUPPORTS_FIELD_NUMBER = 5;
+    private com.google.protobuf.LazyStringList supports_;
+    public java.util.List<String>
+        getSupportsList() {
+      return supports_;
+    }
+    public int getSupportsCount() {
+      return supports_.size();
+    }
+    public String getSupports(int index) {
+      return supports_.get(index);
+    }
+    
+    private void initFields() {
+      version_ = "";
+      clientProtocol_ = 0;
+      serverProtocol_ = 0;
+      fingerprint_ = "";
+      supports_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      if (!hasVersion()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasClientProtocol()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasServerProtocol()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasFingerprint()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getVersionBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeUInt32(2, clientProtocol_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeUInt32(3, serverProtocol_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getFingerprintBytes());
+      }
+      for (int i = 0; i < supports_.size(); i++) {
+        output.writeBytes(5, supports_.getByteString(i));
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getVersionBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(2, clientProtocol_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(3, serverProtocol_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getFingerprintBytes());
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < supports_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(supports_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getSupportsList().size();
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.ServerInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.kontalk.client.Protocol.ServerInfoResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageLite.Builder<
+          org.kontalk.client.Protocol.ServerInfoResponse, Builder>
+        implements org.kontalk.client.Protocol.ServerInfoResponseOrBuilder {
+      // Construct using org.kontalk.client.Protocol.ServerInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private void maybeForceBuilderInitialization() {
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        version_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        clientProtocol_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        serverProtocol_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        fingerprint_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        supports_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public org.kontalk.client.Protocol.ServerInfoResponse getDefaultInstanceForType() {
+        return org.kontalk.client.Protocol.ServerInfoResponse.getDefaultInstance();
+      }
+      
+      public org.kontalk.client.Protocol.ServerInfoResponse build() {
+        org.kontalk.client.Protocol.ServerInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.kontalk.client.Protocol.ServerInfoResponse buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.kontalk.client.Protocol.ServerInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.kontalk.client.Protocol.ServerInfoResponse buildPartial() {
+        org.kontalk.client.Protocol.ServerInfoResponse result = new org.kontalk.client.Protocol.ServerInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.version_ = version_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.clientProtocol_ = clientProtocol_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.serverProtocol_ = serverProtocol_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.fingerprint_ = fingerprint_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          supports_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              supports_);
+          bitField0_ = (bitField0_ & ~0x00000010);
+        }
+        result.supports_ = supports_;
+        result.bitField0_ = to_bitField0_;
+        return result;
+      }
+      
+      public Builder mergeFrom(org.kontalk.client.Protocol.ServerInfoResponse other) {
+        if (other == org.kontalk.client.Protocol.ServerInfoResponse.getDefaultInstance()) return this;
+        if (other.hasVersion()) {
+          setVersion(other.getVersion());
+        }
+        if (other.hasClientProtocol()) {
+          setClientProtocol(other.getClientProtocol());
+        }
+        if (other.hasServerProtocol()) {
+          setServerProtocol(other.getServerProtocol());
+        }
+        if (other.hasFingerprint()) {
+          setFingerprint(other.getFingerprint());
+        }
+        if (!other.supports_.isEmpty()) {
+          if (supports_.isEmpty()) {
+            supports_ = other.supports_;
+            bitField0_ = (bitField0_ & ~0x00000010);
+          } else {
+            ensureSupportsIsMutable();
+            supports_.addAll(other.supports_);
+          }
+          
+        }
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        if (!hasVersion()) {
+          
+          return false;
+        }
+        if (!hasClientProtocol()) {
+          
+          return false;
+        }
+        if (!hasServerProtocol()) {
+          
+          return false;
+        }
+        if (!hasFingerprint()) {
+          
+          return false;
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              
+              return this;
+            default: {
+              if (!parseUnknownField(input, extensionRegistry, tag)) {
+                
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              version_ = input.readBytes();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              clientProtocol_ = input.readUInt32();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              serverProtocol_ = input.readUInt32();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              fingerprint_ = input.readBytes();
+              break;
+            }
+            case 42: {
+              ensureSupportsIsMutable();
+              supports_.add(input.readBytes());
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // required string version = 1;
+      private java.lang.Object version_ = "";
+      public boolean hasVersion() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public String getVersion() {
+        java.lang.Object ref = version_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          version_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setVersion(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        version_ = value;
+        
+        return this;
+      }
+      public Builder clearVersion() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        version_ = getDefaultInstance().getVersion();
+        
+        return this;
+      }
+      void setVersion(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000001;
+        version_ = value;
+        
+      }
+      
+      // required uint32 client_protocol = 2;
+      private int clientProtocol_ ;
+      public boolean hasClientProtocol() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public int getClientProtocol() {
+        return clientProtocol_;
+      }
+      public Builder setClientProtocol(int value) {
+        bitField0_ |= 0x00000002;
+        clientProtocol_ = value;
+        
+        return this;
+      }
+      public Builder clearClientProtocol() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        clientProtocol_ = 0;
+        
+        return this;
+      }
+      
+      // required uint32 server_protocol = 3;
+      private int serverProtocol_ ;
+      public boolean hasServerProtocol() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public int getServerProtocol() {
+        return serverProtocol_;
+      }
+      public Builder setServerProtocol(int value) {
+        bitField0_ |= 0x00000004;
+        serverProtocol_ = value;
+        
+        return this;
+      }
+      public Builder clearServerProtocol() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        serverProtocol_ = 0;
+        
+        return this;
+      }
+      
+      // required string fingerprint = 4;
+      private java.lang.Object fingerprint_ = "";
+      public boolean hasFingerprint() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      public String getFingerprint() {
+        java.lang.Object ref = fingerprint_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          fingerprint_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setFingerprint(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        fingerprint_ = value;
+        
+        return this;
+      }
+      public Builder clearFingerprint() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        fingerprint_ = getDefaultInstance().getFingerprint();
+        
+        return this;
+      }
+      void setFingerprint(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000008;
+        fingerprint_ = value;
+        
+      }
+      
+      // repeated string supports = 5;
+      private com.google.protobuf.LazyStringList supports_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureSupportsIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          supports_ = new com.google.protobuf.LazyStringArrayList(supports_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+      public java.util.List<String>
+          getSupportsList() {
+        return java.util.Collections.unmodifiableList(supports_);
+      }
+      public int getSupportsCount() {
+        return supports_.size();
+      }
+      public String getSupports(int index) {
+        return supports_.get(index);
+      }
+      public Builder setSupports(
+          int index, String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSupportsIsMutable();
+        supports_.set(index, value);
+        
+        return this;
+      }
+      public Builder addSupports(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSupportsIsMutable();
+        supports_.add(value);
+        
+        return this;
+      }
+      public Builder addAllSupports(
+          java.lang.Iterable<String> values) {
+        ensureSupportsIsMutable();
+        super.addAll(values, supports_);
+        
+        return this;
+      }
+      public Builder clearSupports() {
+        supports_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        
+        return this;
+      }
+      void addSupports(com.google.protobuf.ByteString value) {
+        ensureSupportsIsMutable();
+        supports_.add(value);
+        
+      }
+      
+      // @@protoc_insertion_point(builder_scope:ServerInfoResponse)
+    }
+    
+    static {
+      defaultInstance = new ServerInfoResponse(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:ServerInfoResponse)
+  }
+  
   
   static {
   }

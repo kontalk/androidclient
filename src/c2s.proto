@@ -159,3 +159,19 @@ message FileUploadResponse {
     required FileUploadStatus status = 1;
     optional string file_id = 2;
 }
+
+// server info request
+message ServerInfoRequest {
+    optional uint32 client_protocol = 1;
+    optional string client_version = 2;
+}
+
+// server info response
+message ServerInfoResponse {
+    required string version = 1;
+    required uint32 client_protocol = 2;
+    required uint32 server_protocol = 3;
+    required string fingerprint = 4;
+    // supported features
+    repeated string supports = 5;
+}
