@@ -39,6 +39,9 @@ import android.util.Log;
 public class Kontalk extends Application {
     private static final String TAG = Kontalk.class.getSimpleName();
 
+    /** Supported client protocol revision. */
+    public static final int CLIENT_PROTOCOL = 3;
+
     @Override
     public void onCreate() {
         super.onCreate();

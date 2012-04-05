@@ -62,6 +62,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
     private ClientThread mClient;
     private RequestListenerList mListeners = new RequestListenerList();
+    private String mPushRegistrationId;
 
     /** Pending jobs queue - will be used on thread start to initialize the messages. */
     static public LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
@@ -201,11 +202,11 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 }
 
                 RequestJob job = (RequestJob) msg.obj;
-                Log.d(TAG, "JOB: " + job.toString());
+                Log.v(TAG, "JOB: " + job.toString());
 
                 // check now if job has been canceled
                 if (job.isCanceled()) {
-                    Log.i(TAG, "request has been canceled - dropping");
+                    Log.d(TAG, "request has been canceled - dropping");
                     return;
                 }
 
@@ -260,7 +261,11 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
             // idle message
             else if (msg.what == MSG_IDLE) {
-                MessageCenterService.idleMessageCenter(mContext);
+                // we registered push notification - shutdown message center
+                if (mPushRegistrationId != null) {
+                    Log.d(TAG, "shutting down message center due to inactivity");
+                    MessageCenterService.idleMessageCenter(mContext);
+                }
             }
 
             else
@@ -393,6 +398,10 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     public void run() {
         mClient.start();
         super.run();
+    }
+
+    public void setPushRegistrationId(String regId) {
+        mPushRegistrationId = regId;
     }
 
 }

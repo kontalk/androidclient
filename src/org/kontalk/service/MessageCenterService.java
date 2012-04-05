@@ -34,7 +34,9 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.AuthenticateResponse;
+import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.ReceivedJob;
+import org.kontalk.client.ServerinfoJob;
 import org.kontalk.client.TxListener;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
@@ -63,6 +65,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -243,13 +246,12 @@ public class MessageCenterService extends Service
                         client.setDefaultTxListener(this);
                         client.setMessageListener(this);
                         client.setHandler(AuthenticateResponse.class, new AuthenticateListener());
+                        client.setHandler(ServerInfoResponse.class, new ServerinfoListener());
 
                         mRequestWorker.start();
 
-                        // TODO request serverinfo
-                        //requestServerinfo();
-                        // TODO lookup for messages with error status and try to re-send them
-                        //requeuePendingMessages();
+                        // request serverinfo
+                        requestServerinfo();
                     }
 
                     // TODO update status message
@@ -283,6 +285,60 @@ public class MessageCenterService extends Service
             return true;
         }
         return false;
+    }
+
+    private void requestServerinfo() {
+        pushRequest(new ServerinfoJob());
+    }
+
+    /**
+     * Searches for messages with error or pending status and pushes them
+     * through the request queue to re-send them.
+     */
+    private void requeuePendingMessages() {
+        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
+                new String[] {
+                    Messages._ID,
+                    Messages.PEER,
+                    Messages.CONTENT,
+                    Messages.MIME,
+                    Messages.LOCAL_URI,
+                    Messages.ENCRYPT_KEY
+                },
+                Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
+                Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
+                Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
+                Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED,
+                null, null);
+
+        while (c.moveToNext()) {
+            long id = c.getLong(0);
+            String userId = c.getString(1);
+            byte[] text = c.getBlob(2);
+            String mime = c.getString(3);
+            String _fileUri = c.getString(4);
+            String key = c.getString(5);
+            Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
+
+            MessageSender m;
+
+            // check if the message contains some large file to be sent
+            if (_fileUri != null) {
+                Uri fileUri = Uri.parse(_fileUri);
+                // FIXME do not encrypt binary messages for now
+                m = new MessageSender(userId, fileUri, mime, uri, null);
+            }
+            // we have a simple boring plain text message :(
+            else {
+                m = new MessageSender(userId, text, mime, uri, key, false);
+            }
+
+            m.setListener(mMessageRequestListener);
+            Log.d(TAG, "resending failed message " + id);
+            sendMessage(m);
+        }
+
+        c.close();
     }
 
     @Override
@@ -333,9 +389,28 @@ public class MessageCenterService extends Service
         }
     }
 
+    private final class ServerinfoListener implements TxListener {
+        @Override
+        public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
+            ServerInfoResponse res = (ServerInfoResponse) pack;
+            for (int i = 0; i < res.getSupportsCount(); i++) {
+                String data = res.getSupports(i);
+                if (data.startsWith("google_c2dm=")) {
+                    mPushEmail = data.substring("google_c2dm=".length());
+                    if (mPushNotifications)
+                        c2dmRegister();
+                }
+            }
+
+            return true;
+        }
+    }
+
     /** Called when authentication is successful. */
     private void authenticated() {
-        // TODO requeue pending messages
+        // lookup for messages with error status and try to re-send them
+        requeuePendingMessages();
+        // receipts will be sent while consuming
     }
 
     @Override
@@ -386,6 +461,13 @@ public class MessageCenterService extends Service
                 // use text content for database table
                 content = msg.getTextContent().getBytes();
             }
+
+            /*
+             * FIXME if a message is not acknowledged for any reason, it will
+             * get received and stored again in the database! We must avoid it
+             * by either 1) enforce a constraint on message_id and direction or
+             * 2) searching the message before inserting it
+             */
 
             // save to local storage
             ContentValues values = new ContentValues();
@@ -672,13 +754,18 @@ public class MessageCenterService extends Service
 
     private void setPushRegistrationId(String regId) {
         mPushRegistrationId = regId;
-        // TODO setPushRegistrationId
-        /*
-        if (mPollingThread != null)
-            mPollingThread.setPushRegistrationId(regId);
-         */
+        if (mRequestWorker != null)
+            mRequestWorker.setPushRegistrationId(regId);
 
-        // TODO notify the server about the change
+        // notify the server about the change
+        pushRequest(new RequestJob() {
+            @Override
+            public String execute(ClientThread client, RequestListener listener, Context context)
+                    throws IOException {
+                // TODO status update request :)
+                return null;
+            }
+        });
     }
 
     public final class MessageCenterInterface extends Binder {
