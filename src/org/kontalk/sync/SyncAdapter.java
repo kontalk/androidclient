@@ -338,6 +338,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
 
                 for (int i = 0; i < res.getEntryCount(); i++) {
+
                     UserLookupResponse.Entry entry = res.getEntry(i);
                     String userId = entry.getUserId().toString();
                     final RawPhoneNumberEntry data = lookupNumbers.get(userId);
@@ -465,6 +466,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         builder.withValue(DATA_COLUMN_DISPLAY_NAME, username);
         builder.withValue(DATA_COLUMN_ACCOUNT_NAME, mContext.getString(R.string.app_name));
         builder.withValue(DATA_COLUMN_PHONE, phone);
+
+        builder.withYieldAllowed(true);
         operations.add(builder.build());
     }
 

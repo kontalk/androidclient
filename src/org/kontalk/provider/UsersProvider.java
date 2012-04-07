@@ -32,6 +32,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
@@ -202,15 +203,18 @@ public class UsersProvider extends ContentProvider {
                 try {
                     String hash = MessageUtils.sha1(number);
 
+                    stm.clearBindings();
                     stm.bindString(1, hash);
                     stm.bindString(2, number);
                     stm.bindString(3, phones.getString(1));
                     stm.executeInsert();
-                    stm.clearBindings();
                     count++;
                 }
                 catch (NoSuchAlgorithmException e) {
                     Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
+                }
+                catch (SQLiteConstraintException sqe) {
+                    // skip duplicate number
                 }
             }
 
