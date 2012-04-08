@@ -175,3 +175,19 @@ message ServerInfoResponse {
     // supported features
     repeated string supports = 5;
 }
+
+// user update request
+message UserInfoUpdateRequest {
+    optional string status_message = 1;
+    optional string google_registration_id = 2;
+}
+
+// user update response
+message UserInfoUpdateResponse {
+    enum UserInfoUpdateStatus {
+        STATUS_SUCCESS = 0;
+        STATUS_ERROR = 1;
+        STATUS_BIG = 2;
+    }
+    required UserInfoUpdateStatus status = 1;
+}
