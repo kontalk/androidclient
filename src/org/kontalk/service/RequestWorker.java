@@ -156,7 +156,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             this.mRefCount = refCount;
 
             // set idle handler
-            Log.v(TAG, "setting idle handler");
+            //Log.v(TAG, "setting idle handler");
             if (this.mRefCount <= 0)
                 Looper.myQueue().addIdleHandler(this);
 
@@ -174,7 +174,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             // remove the idle message anyway
             removeMessages(MSG_IDLE);
 
-            Log.d(TAG, "no more messages (ref=" + mRefCount + ")");
+            //Log.v(TAG, "no more messages (ref=" + mRefCount + ")");
             if (mRefCount <= 0)
                 sendMessageDelayed(obtainMessage(MSG_IDLE), IDLE_MSG_TIME);
 
@@ -277,7 +277,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    Log.v(TAG, "removing idle handler");
+                    //Log.v(TAG, "removing idle handler");
                     Looper.myQueue().removeIdleHandler(mHandler);
                     removeMessages(MSG_IDLE);
                 }
@@ -291,7 +291,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        Log.v(TAG, "adding idle handler");
+                        //Log.v(TAG, "adding idle handler");
                         removeMessages(MSG_IDLE);
                         Looper.myQueue().addIdleHandler(mHandler);
                     }
