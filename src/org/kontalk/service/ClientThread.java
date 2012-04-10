@@ -28,6 +28,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.ClientHTTPConnection;
+import org.kontalk.client.ClientListener;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.NewMessage;
@@ -63,6 +64,7 @@ public class ClientThread extends Thread {
     private final EndpointServer mServer;
     private final Map<String, TxListener> mTxListeners;
     private final Map<String, TxListener> mHandlers;
+    private ClientListener mClientListener;
     private TxListener mDefaultTxListener;
     private MessageListener mMessageListener;
     private String mAuthToken;
@@ -95,6 +97,10 @@ public class ClientThread extends Thread {
         mTxListeners = new HashMap<String, TxListener>();
         mHandlers = new HashMap<String, TxListener>();
         mParent = parent;
+    }
+
+    public void setClientListener(ClientListener listener) {
+        mClientListener = listener;
     }
 
     public void setDefaultTxListener(TxListener listener) {
@@ -147,6 +153,8 @@ public class ClientThread extends Thread {
 
                     // connect
                     mClient.connect();
+                    if (mClientListener != null)
+                        mClientListener.connected(this);
 
                     // authenticate
                     Log.v(TAG, "connected. Authenticating...");

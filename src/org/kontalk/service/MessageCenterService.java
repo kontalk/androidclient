@@ -380,6 +380,7 @@ public class MessageCenterService extends Service
         stop();
     }
 
+
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
         // TODO default tx listener

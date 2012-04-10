@@ -1,2 +1,2 @@
-[ ] requeue failed messages upon internal reconnection
+[x] requeue failed messages upon internal reconnection
 [x] status update/google c2dm registration id update
