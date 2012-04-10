@@ -98,6 +98,8 @@ public abstract class AbstractMessage<T> {
     protected boolean encrypted;
     /** Of course this is used only for outgoing messages. */
     protected String encryptKey;
+    /** For internal use. True if the message need to be acknowledged. */
+    protected boolean needAck;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -305,6 +307,14 @@ public abstract class AbstractMessage<T> {
 
     public File getPreviewFile() {
         return previewFile;
+    }
+
+    public void setNeedAck(boolean needAck) {
+        this.needAck = needAck;
+    }
+
+    public boolean isNeedAck() {
+        return needAck;
     }
 
     public boolean isEncrypted() {

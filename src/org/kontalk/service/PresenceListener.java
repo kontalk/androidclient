@@ -18,14 +18,14 @@
 
 package org.kontalk.service;
 
-import org.kontalk.message.AbstractMessage;
+import org.kontalk.message.UserPresenceMessage;
 
 /**
- * Listener interface for message receivers.
+ * Listener interface for presence messages receivers.
  * @author Daniele Ricci
  */
-public interface MessageListener {
+public interface PresenceListener {
 
-    /** Notifies a pending incoming message. */
-    public void incoming(AbstractMessage<?> message);
+    /** Notifies an incoming presence message.*/
+    public void presence(UserPresenceMessage message);
 }

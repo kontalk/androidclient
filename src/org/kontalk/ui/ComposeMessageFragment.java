@@ -29,12 +29,15 @@ import java.util.regex.Pattern;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.MessageSender;
+import org.kontalk.client.Protocol;
+import org.kontalk.client.UserPresenceRequestJob;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
+import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
@@ -43,6 +46,7 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
+import org.kontalk.service.PresenceListener;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -101,7 +105,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnTouchListener, View.OnLongClickListener {
+		View.OnTouchListener, View.OnLongClickListener, PresenceListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -295,6 +299,32 @@ public class ComposeMessageFragment extends ListFragment implements
 			getActivity().unbindService(this);
 		}
 	}
+
+    /** Used for binding to the message center to listen for user presence. */
+    private class PresenceServiceConnection implements ServiceConnection {
+        public final UserPresenceRequestJob job;
+        private MessageCenterService service;
+
+        public PresenceServiceConnection(String userId) {
+            job = new UserPresenceRequestJob(userId, Protocol.UserEventMask.USER_EVENT_MASK_ALL_VALUE);
+            // listener will be set by message center
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            service = null;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder ibinder) {
+            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
+            service = binder.getService();
+            // FIXME FIXME FIXME HUGE MEMORY LEAK!!!
+            service.addPresenceListener(job.getUserId(), ComposeMessageFragment.this);
+            service.pushRequest(job);
+            getActivity().unbindService(this);
+        }
+    }
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -1158,6 +1188,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		// set notifications on pause
 		MessagingNotification.setPaused(userId);
+		// subscribe to presence notifications
+		subscribePresence();
 
 		if (mConversation.getThreadId() > 0) {
 			// mark all messages as read
@@ -1167,6 +1199,24 @@ public class ComposeMessageFragment extends ListFragment implements
 			// new conversation -- observe peer Uri
 			registerPeerObserver();
 		}
+	}
+
+	private void subscribePresence() {
+	    PresenceServiceConnection conn = new PresenceServiceConnection(userId);
+        getActivity().bindService(
+                new Intent(getActivity().getApplicationContext(),
+                        MessageCenterService.class), conn,
+                Context.BIND_AUTO_CREATE);
+	}
+
+	private void unsubcribePresence() {
+	    // TODO unsubscribe presence :)
+	}
+
+	@Override
+	public void presence(UserPresenceMessage message) {
+	    // TODO presence :)
+	    Log.d(TAG, "presence: " + message.getTextContent());
 	}
 
 	private synchronized void registerPeerObserver() {
@@ -1289,6 +1339,8 @@ public class ComposeMessageFragment extends ListFragment implements
 			mListAdapter.changeCursor(null);
 		// release message center
 		MessageCenterService.releaseMessageCenter(getActivity());
+		// unsubcribe presence notifications
+		unsubcribePresence();
 	}
 
 	public final boolean isFinishing() {

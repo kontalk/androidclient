@@ -24,7 +24,9 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 
 import org.kontalk.R;
@@ -42,6 +44,7 @@ import org.kontalk.client.TxListener;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.ReceiptEntry;
+import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
 import org.kontalk.message.ReceiptMessage;
 import org.kontalk.message.VCardMessage;
@@ -88,7 +91,7 @@ import com.google.protobuf.MessageLite;
  * @version 1.0
  */
 public class MessageCenterService extends Service
-        implements MessageListener, TxListener, RequestListener {
+        implements MessageListener, TxListener, RequestListener, PresenceListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
@@ -108,6 +111,8 @@ public class MessageCenterService extends Service
 
     private RequestWorker mRequestWorker;
     private Account mAccount;
+
+    private Map<String, PresenceListener> mPresenceListeners = new HashMap<String, PresenceListener>();
 
     private boolean mPushNotifications;
     private String mPushEmail;
@@ -246,6 +251,7 @@ public class MessageCenterService extends Service
                         ClientThread client = mRequestWorker.getClient();
                         client.setDefaultTxListener(this);
                         client.setMessageListener(this);
+                        client.setPresenceListener(this);
                         client.setHandler(AuthenticateResponse.class, new AuthenticateListener());
                         client.setHandler(ServerInfoResponse.class, new ServerinfoListener());
 
@@ -439,11 +445,12 @@ public class MessageCenterService extends Service
 
         // TODO check for null (unsupported) messages to be notified
 
-        // the message need to be confirmed
-        list.add(msg.getRealId());
+        // check if the message needs to be confirmed
+        if (msg.isNeedAck())
+            list.add(msg.getRealId());
 
         // do not store receipts...
-        if (!(msg instanceof ReceiptMessage)) {
+        if (!(msg instanceof ReceiptMessage) && !(msg instanceof UserPresenceMessage)) {
             // store to file if it's an image message
             // FIXME this should be abstracted somehow
             byte[] content = msg.getBinaryContent();
@@ -543,7 +550,18 @@ public class MessageCenterService extends Service
         }
     }
 
-    private synchronized void pushRequest(final RequestJob job) {
+    @Override
+    public void presence(UserPresenceMessage message) {
+        PresenceListener l = mPresenceListeners.get(message.getSender(true));
+        if (l == null)
+            l = mPresenceListeners.get(message.getSender(false));
+        if (l != null)
+            l.presence(message);
+        else
+            Log.d(TAG, "unhandled user presence message " + message.getTextContent());
+    }
+
+    public synchronized void pushRequest(final RequestJob job) {
         if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
             mRequestWorker.push(job);
         else {
@@ -581,6 +599,11 @@ public class MessageCenterService extends Service
         }
 
         pushRequest(job);
+    }
+
+    /** Adds a {@link PresenceListener} for the given user. */
+    public void addPresenceListener(String userId, PresenceListener listener) {
+        mPresenceListeners.put(userId, listener);
     }
 
     public void startForeground(String userId, long totalBytes) {

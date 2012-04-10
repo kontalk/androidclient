@@ -23,60 +23,58 @@ import java.util.List;
 
 import org.kontalk.client.Protocol;
 import org.kontalk.crypto.Coder;
-import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
 
 import android.content.Context;
 import android.util.Log;
 
 
 /**
- * A receipt messages. Wraps an object of type {@link ReceiptEntryList}.
+ * A message representing a user presence notification.
  * @author Daniele Ricci
  */
-public final class ReceiptMessage extends AbstractMessage<ReceiptEntryList> {
-    private static final String TAG = ReceiptMessage.class.getSimpleName();
+public class UserPresenceMessage extends AbstractMessage<UserPresenceData> {
+    private static final String TAG = UserPresenceMessage.class.getSimpleName();
 
     /** A special mime type for a special type of message. */
-    private static final String MIME_TYPE = "internal/receipt";
+    private static final String MIME_TYPE = "internal/presence";
 
-    private byte[] rawContent;
-
-    protected ReceiptMessage(Context context) {
+    protected UserPresenceMessage(Context context) {
         super(context, null, null, null, null, null, false);
     }
 
-    public ReceiptMessage(Context context, String id, String timestamp, String sender, byte[] content) {
+    public UserPresenceMessage(Context context, String id, String timestamp, String sender, byte[] content) {
         this(context, id, timestamp, sender, content, null);
     }
 
-    public ReceiptMessage(Context context, String id, String timestamp, String sender, byte[] content, List<String> group) {
-        // receipts are not encrypted
+    public UserPresenceMessage(Context context, String id, String timestamp, String sender, byte[] content, List<String> group) {
+        // presence messages are not encrypted
         super(context, id, timestamp, sender, MIME_TYPE, null, false, group);
 
-        this.rawContent = content;
-        this.content = new ReceiptEntryList();
-        parseContent();
+        this.content = parseContent(content);
     }
 
-    private void parseContent() {
+    private UserPresenceData parseContent(byte[] content) {
         try {
-            Protocol.ReceiptMessage entries = Protocol.ReceiptMessage.parseFrom(rawContent);
-            for (int i = 0; i < entries.getEntryCount(); i++)
-                content.add(entries.getEntry(i));
+            Protocol.UserPresence entry = Protocol.UserPresence.parseFrom(content);
+            String statusMsg = (entry.hasStatusMessage()) ? entry.getStatusMessage() : null;
+            return new UserPresenceData(entry.getEvent().getNumber(), statusMsg);
         }
         catch (Exception e) {
-            Log.e(TAG, "cannot parse receipt", e);
+            Log.e(TAG, "cannot parse presence message", e);
+            return null;
         }
     }
 
     @Override
     public String getTextContent() {
-        return rawContent.toString();
+        if (content != null)
+            return sender + "/" + content.event;
+        return null;
     }
 
     @Override
     public byte[] getBinaryContent() {
-        return rawContent;
+        return null;
     }
 
     @Override

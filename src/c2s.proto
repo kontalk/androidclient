@@ -195,6 +195,7 @@ message UserInfoUpdateResponse {
 
 // user presence subscription request
 message UserPresenceSubscribeRequest {
+    // TODO support for multiple subscriptions
     required string user_id = 1;
     required uint32 events = 2;
 }

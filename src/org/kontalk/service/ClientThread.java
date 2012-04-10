@@ -38,6 +38,7 @@ import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.message.ReceiptMessage;
+import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.ui.MessagingPreferences;
 
@@ -67,6 +68,7 @@ public class ClientThread extends Thread {
     private ClientListener mClientListener;
     private TxListener mDefaultTxListener;
     private MessageListener mMessageListener;
+    private PresenceListener mPresenceListener;
     private String mAuthToken;
     private String mMyUsername;
 
@@ -113,6 +115,13 @@ public class ClientThread extends Thread {
      */
     public void setMessageListener(MessageListener listener) {
         mMessageListener = listener;
+    }
+
+    /**
+     * Sets a special listener for incoming {@link UserPresenceMessage} messages.
+     */
+    public void setPresenceListener(PresenceListener listener) {
+        mPresenceListener = listener;
     }
 
     /**
@@ -201,7 +210,10 @@ public class ClientThread extends Thread {
                                 if (name.equals(NewMessage.class.getSimpleName())) {
                                     // parse message into AbstractMessage
                                     AbstractMessage<?> msg = parseNewMessage((NewMessage) pack);
-                                    mMessageListener.incoming(msg);
+                                    if (msg instanceof UserPresenceMessage)
+                                        mPresenceListener.presence((UserPresenceMessage) msg);
+                                    else
+                                        mMessageListener.incoming(msg);
                                 }
 
                                 else {
@@ -320,6 +332,11 @@ public class ClientThread extends Thread {
             msg = new ReceiptMessage(mContext, id, timestamp, from, content, group);
         }
 
+        // presence message
+        else if (UserPresenceMessage.supportsMimeType(mime)) {
+            msg = new UserPresenceMessage(mContext, id, timestamp, from, content);
+        }
+
         // image message
         else if (ImageMessage.supportsMimeType(mime)) {
             // extra argument: mime (first parameter)
@@ -334,8 +351,10 @@ public class ClientThread extends Thread {
         // TODO else other mime types
 
         if (msg != null) {
-            // set the real message id
+            // set real message id
             msg.setRealId(realId);
+            // set need ack flag
+            msg.setNeedAck(pack.getNeedAck());
 
             // remember encryption! :)
             if (origEncrypted)

@@ -19,40 +19,34 @@
 package org.kontalk.client;
 
 import java.io.IOException;
-import java.util.Collection;
 
-import org.kontalk.client.Protocol.MessageAckRequest;
+import org.kontalk.client.Protocol.UserPresenceSubscribeRequest;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 
 import android.content.Context;
 
+public class UserPresenceRequestJob extends RequestJob {
+    private final String mUserId;
+    private final int mEvents;
 
-/**
- * Request job for acknowledging incoming messages.
- * @author Daniele Ricci
- */
-public class ReceivedJob extends RequestJob {
-
-    private String[] mMessageList;
-
-    public ReceivedJob(String[] msgId) {
-        mMessageList = msgId;
-    }
-
-    public ReceivedJob(Collection<String> msgId) {
-        mMessageList = new String[msgId.size()];
-        msgId.toArray(mMessageList);
+    public UserPresenceRequestJob(String userId, int events) {
+        this.mUserId = userId;
+        this.mEvents = events;
     }
 
     @Override
-    public String execute(ClientThread client, RequestListener listener,
-            Context context) throws IOException {
-        MessageAckRequest.Builder b = MessageAckRequest.newBuilder();
-        for (String id : mMessageList)
-            b.addMessageId(id);
+    public String execute(ClientThread client, RequestListener listener, Context context)
+            throws IOException {
+        UserPresenceSubscribeRequest.Builder b = UserPresenceSubscribeRequest.newBuilder();
+        b.setUserId(mUserId);
+        b.setEvents(mEvents);
         return client.getConnection().send(b.build());
+    }
+
+    public String getUserId() {
+        return mUserId;
     }
 
 }
