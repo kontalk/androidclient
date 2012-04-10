@@ -35,6 +35,7 @@ import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.AuthenticateResponse;
 import org.kontalk.client.Protocol.ServerInfoResponse;
+import org.kontalk.client.Protocol.UserInfoUpdateRequest;
 import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.ServerinfoJob;
 import org.kontalk.client.TxListener;
@@ -253,8 +254,10 @@ public class MessageCenterService extends Service
                         // request serverinfo
                         requestServerinfo();
                     }
-
-                    // TODO update status message
+                    else {
+                        // update status message
+                        updateStatusMessage();
+                    }
 
                     /*
                      * FIXME c2dm stays on since in onDestroy() we commented
@@ -341,6 +344,18 @@ public class MessageCenterService extends Service
         c.close();
     }
 
+    private void updateStatusMessage() {
+        pushRequest(new RequestJob() {
+            @Override
+            public String execute(ClientThread client, RequestListener listener, Context context)
+                    throws IOException {
+                UserInfoUpdateRequest.Builder b = UserInfoUpdateRequest.newBuilder();
+                b.setStatusMessage(MessagingPreferences.getStatusMessage(MessageCenterService.this));
+                return client.getConnection().send(b.build());
+            }
+        });
+    }
+
     @Override
     public void onCreate() {
         mMessageRequestListener = new MessageRequestListener(this, this);
@@ -408,6 +423,8 @@ public class MessageCenterService extends Service
 
     /** Called when authentication is successful. */
     private void authenticated() {
+        // update status message
+        updateStatusMessage();
         // lookup for messages with error status and try to re-send them
         requeuePendingMessages();
         // receipts will be sent while consuming
@@ -762,8 +779,9 @@ public class MessageCenterService extends Service
             @Override
             public String execute(ClientThread client, RequestListener listener, Context context)
                     throws IOException {
-                // TODO status update request :)
-                return null;
+                UserInfoUpdateRequest.Builder b = UserInfoUpdateRequest.newBuilder();
+                b.setGoogleRegistrationId(mPushRegistrationId);
+                return client.getConnection().send(b.build());
             }
         });
     }
