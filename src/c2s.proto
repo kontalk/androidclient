@@ -53,6 +53,7 @@ message NewMessage {
     repeated string flags = 7;
     required bytes content = 8;
     optional string url = 9;
+    required bool need_ack = 10;
 }
 
 // message acknowledgement request
@@ -190,4 +191,41 @@ message UserInfoUpdateResponse {
         STATUS_BIG = 2;
     }
     required UserInfoUpdateStatus status = 1;
+}
+
+// user presence subscription request
+message UserPresenceSubscribeRequest {
+    required string user_id = 1;
+    required uint32 events = 2;
+}
+
+enum UserEventMask {
+    USER_EVENT_MASK_ONLINE = 1;
+    USER_EVENT_MASK_OFFLINE = 2;
+    USER_EVENT_MASK_STATUS_CHANGED = 4;
+    // max value - just for checking
+    USER_EVENT_MASK_ALL = 7;
+}
+
+// user presence subscription response
+message UserPresenceSubscribeResponse {
+    enum UserPresenceStatus {
+        STATUS_SUCCESS = 0;
+        STATUS_ERROR = 1;
+        STATUS_INVALID_USERNAME = 2;
+        STATUS_USER_NOTFOUND = 3;
+        STATUS_NOTSUPPORTED = 4;
+    }
+    required UserPresenceStatus status = 1;
+}
+
+// user presence message
+message UserPresence {
+    enum UserEvent {
+        EVENT_ONLINE = 1;
+        EVENT_OFFLINE = 2;
+        EVENT_STATUS_CHANGED = 3;
+    }
+    required UserEvent event = 2;
+    optional string status_message = 3;
 }
