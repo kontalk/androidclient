@@ -154,6 +154,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	private Handler mHandler;
 	private int mTouchSlop;
 
+	private LocalBroadcastManager mLocalBroadcastManager;
+    private UserPresenceBroadcastReceiver mPresenceReceiver;
+
+
 	/** Returns a new fragment instance from a picked contact. */
 	public static ComposeMessageFragment fromContactPicker(Context context,
 			Uri rawContactUri) {
@@ -251,6 +255,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		onKeyboardStateChanged(mIsKeyboardOpen);
 
 		processArguments(savedInstanceState);
+
+		mLocalBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
 	}
 
 	@Override
@@ -319,11 +325,13 @@ public class ComposeMessageFragment extends ListFragment implements
     /** Used for binding to the message center to listen for user presence. */
     private class PresenceServiceConnection implements ServiceConnection {
         private final String userId;
+        private final boolean lookupOnly;
         private UserLookupJob job2;
         private MessageCenterService service;
 
-        public PresenceServiceConnection(String userId) {
+        public PresenceServiceConnection(String userId, boolean lookupOnly) {
             this.userId = userId;
+            this.lookupOnly = lookupOnly;
             if (MessagingPreferences.getLastSeenEnabled(getActivity()))
                 job2 = new UserLookupJob(userId);
         }
@@ -337,7 +345,8 @@ public class ComposeMessageFragment extends ListFragment implements
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
-            service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE);
+            if (!lookupOnly)
+                service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE);
 
             if (job2 != null) {
                 job2.setListener(ComposeMessageFragment.this);
@@ -1147,37 +1156,47 @@ public class ComposeMessageFragment extends ListFragment implements
 	private final class UserPresenceBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int event = intent.getIntExtra("org.kontalk.presence.event", 0);
-            String text = null;
+            String action = intent.getAction();
+            if (MessageCenterService.ACTION_USER_PRESENCE.equals(action)) {
+                int event = intent.getIntExtra("org.kontalk.presence.event", 0);
+                String text = null;
 
-            if (event == UserEvent.EVENT_OFFLINE_VALUE) {
-                text = getResources().getString(R.string.last_seen_label) +
-                        getResources().getString(R.string.seen_moment_ago_label);
-            }
-            else if (event == UserEvent.EVENT_ONLINE_VALUE) {
-                text = getResources().getString(R.string.seen_online_label);
-            }
-            else if (event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
-                // TODO user changed status
+                if (event == UserEvent.EVENT_OFFLINE_VALUE) {
+                    text = getResources().getString(R.string.last_seen_label) +
+                            getResources().getString(R.string.seen_moment_ago_label);
+                }
+                else if (event == UserEvent.EVENT_ONLINE_VALUE) {
+                    text = getResources().getString(R.string.seen_online_label);
+                }
+                else if (event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
+                    // TODO user changed status
+                }
+
+                if (text != null) {
+                    final String bannerText = text;
+                    try {
+                        showLastSeenBanner(bannerText);
+                    }
+                    catch (Exception e) {
+                        // something could happen in the mean time - e.g. fragment destruction
+                    }
+                }
             }
 
-            if (text != null) {
-                final String bannerText = text;
-                try {
-                    showLastSeenBanner(bannerText);
-                }
-                catch (Exception e) {
-                    // something could happen in the mean time - e.g. fragment destruction
-                }
+            else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+                // request user lookup
+                PresenceServiceConnection conn = new PresenceServiceConnection(userId, true);
+                getActivity().bindService(
+                        new Intent(getActivity().getApplicationContext(),
+                                MessageCenterService.class), conn,
+                        Context.BIND_AUTO_CREATE);
             }
         }
 	}
 
-	private UserPresenceBroadcastReceiver mPresenceReceiver;
-
 	private void subscribePresence() {
         if (mPresenceReceiver == null) {
-    	    PresenceServiceConnection conn = new PresenceServiceConnection(userId);
+    	    PresenceServiceConnection conn = new PresenceServiceConnection(userId, false);
             getActivity().bindService(
                     new Intent(getActivity().getApplicationContext(),
                             MessageCenterService.class), conn,
@@ -1186,11 +1205,15 @@ public class ComposeMessageFragment extends ListFragment implements
             mPresenceReceiver = new UserPresenceBroadcastReceiver();
 
     	    try {
+    	        // filter for user presence
                 IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_USER_PRESENCE, "internal/presence");
                 filter.addDataScheme("user");
                 filter.addDataAuthority(UsersProvider.AUTHORITY, null);
                 filter.addDataPath("/" + userId, PatternMatcher.PATTERN_PREFIX);
-                LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mPresenceReceiver, filter);
+                mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
+                // filter for message center reconnection
+                filter = new IntentFilter(MessageCenterService.ACTION_CONNECTED);
+                mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
     	    }
             catch (MalformedMimeTypeException e) {
                 Log.e(TAG, "malformed mime type", e);
@@ -1205,7 +1228,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     new Intent(getActivity().getApplicationContext(),
                             MessageCenterService.class), conn,
                     Context.BIND_AUTO_CREATE);
-            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mPresenceReceiver);
+            mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
 	        mPresenceReceiver = null;
 	    }
 	}

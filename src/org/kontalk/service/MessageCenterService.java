@@ -109,6 +109,7 @@ public class MessageCenterService extends Service
     public static final String ACTION_C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
 
     // broadcasted intents
+    public static final String ACTION_CONNECTED = "org.kontalk.connected";
     public static final String ACTION_USER_PRESENCE = "org.kontalk.USER_PRESENCE";
 
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
@@ -155,6 +156,7 @@ public class MessageCenterService extends Service
         }
     };
 
+    private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
     private MessageRequestListener mMessageRequestListener; // created in onCreate
 
     private final IBinder mBinder = new MessageCenterInterface();
@@ -387,6 +389,7 @@ public class MessageCenterService extends Service
     @Override
     public void onCreate() {
         mMessageRequestListener = new MessageRequestListener(this, this);
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
     }
 
     private void stop() {
@@ -459,6 +462,9 @@ public class MessageCenterService extends Service
         // lookup for messages with error status and try to re-send them
         requeuePendingMessages();
         // receipts will be sent while consuming
+
+        // broadcast connected event
+        mLocalBroadcastManager.sendBroadcast(new Intent(ACTION_CONNECTED));
     }
 
     @Override
