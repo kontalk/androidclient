@@ -1,2 +1,4 @@
+[ ] re-lookup user when reconnecting: composer should listen for reconnection
+    events and push the UserLookupJob again. 
 [x] requeue failed messages upon internal reconnection
 [x] status update/google c2dm registration id update

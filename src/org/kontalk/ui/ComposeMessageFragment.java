@@ -28,25 +28,33 @@ import java.util.regex.Pattern;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.ClientConnection;
 import org.kontalk.client.MessageSender;
-import org.kontalk.client.Protocol;
-import org.kontalk.client.UserPresenceRequestJob;
+import org.kontalk.client.Protocol.UserEventMask;
+import org.kontalk.client.Protocol.UserLookupResponse;
+import org.kontalk.client.Protocol.UserPresence.UserEvent;
+import org.kontalk.client.TxListener;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
+import org.kontalk.message.UserPresenceData;
 import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.service.ClientThread;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.service.PresenceListener;
+import org.kontalk.service.RequestJob;
+import org.kontalk.service.RequestListener;
+import org.kontalk.service.UserLookupJob;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -84,6 +92,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -92,6 +101,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
@@ -99,13 +109,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.protobuf.MessageLite;
+
 /**
  * The composer fragment.
  *
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnTouchListener, View.OnLongClickListener, PresenceListener {
+		View.OnTouchListener, View.OnLongClickListener, PresenceListener, RequestListener, TxListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -302,11 +314,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Used for binding to the message center to listen for user presence. */
     private class PresenceServiceConnection implements ServiceConnection {
-        public final UserPresenceRequestJob job;
+        private final String userId;
+        private UserLookupJob job2;
         private MessageCenterService service;
 
         public PresenceServiceConnection(String userId) {
-            job = new UserPresenceRequestJob(userId, Protocol.UserEventMask.USER_EVENT_MASK_ALL_VALUE);
+            this.userId = userId;
+            if (MessagingPreferences.getLastSeenEnabled(getActivity()))
+                job2 = new UserLookupJob(userId);
         }
 
         @Override
@@ -318,19 +333,24 @@ public class ComposeMessageFragment extends ListFragment implements
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
-            service.addPresenceListener(job.getUserId(), ComposeMessageFragment.this);
-            service.pushRequest(job);
+            service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE, ComposeMessageFragment.this);
+
+            if (job2 != null) {
+                job2.setListener(ComposeMessageFragment.this);
+                service.pushRequest(job2);
+            }
+
             getActivity().unbindService(this);
         }
     }
 
     /** Used for binding to the message center to unlisten for user presence. */
     private class PresenceServiceDisconnection implements ServiceConnection {
-        public final UserPresenceRequestJob job;
+        public final String userId;
         private MessageCenterService service;
 
         public PresenceServiceDisconnection(String userId) {
-            job = new UserPresenceRequestJob(userId, 0);
+            this.userId = userId;
         }
 
         @Override
@@ -342,8 +362,7 @@ public class ComposeMessageFragment extends ListFragment implements
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
-            service.removePresenceListener(job.getUserId());
-            service.pushRequest(job);
+            service.unsubscribePresence(this.userId);
             getActivity().unbindService(this);
         }
     }
@@ -1055,103 +1074,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			}
 		}
-
-		if (userId != null
-				&& MessagingPreferences.getLastSeenEnabled(getActivity())) {
-			// FIXME this should be handled better and of course honour activity
-			// pause/resume/saveState/restoreState/display rotation.
-		    /*
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					String text = null;
-					String text2 = null;
-					try {
-						try {
-							Context context = getActivity();
-							RequestClient client = new RequestClient(context,
-									MessagingPreferences
-											.getEndpointServer(context),
-									Authenticator
-											.getDefaultAccountToken(context));
-
-							final Protocol.LookupResponse data = client
-									.lookup(userId);
-							if (data != null && data.getEntryCount() > 0) {
-								final Protocol.LookupResponseEntry res = data
-										.getEntry(0);
-								if (res.hasTimestamp()) {
-									long time = res.getTimestamp();
-									if (time > 0) {
-									    if (res.hasTimediff()) {
-									        long diff = res.getTimediff();
-									        if (diff >= 0 && diff <= 10) {
-									            // TODO i18n
-									            text = "User is online";
-									        }
-									    }
-
-									    if (text == null)
-    										text = getResources().getString(R.string.last_seen_label) +
-    												MessageUtils.formatRelativeTimeSpan(context, time * 1000);
-									}
-
-									if (res.hasStatus()) {
-										text2 = res.getStatus();
-									}
-								}
-							}
-						} catch (IOException e) {
-							Log.e(TAG, "unable to lookup user " + userId, e);
-							// TODO really silent error??
-							// text = "(error)";
-						}
-
-						if (text != null) {
-							final String bannerText = text;
-							// show last seen banner
-							Activity context = getActivity();
-							if (context != null) {
-								context.runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										try {
-											mLastSeenBanner.setGravity(Gravity.CENTER);
-											mLastSeenBanner.setText(bannerText);
-											mLastSeenBanner.setVisibility(View.VISIBLE);
-											mLastSeenBanner.startAnimation(AnimationUtils
-											        .loadAnimation(getActivity(), R.anim.header_appear));
-										}
-										catch (Exception e) {
-											// something could happen in the meanwhile e.g. fragment destruction
-										}
-									}
-								});
-								// display status message after 5 seconds
-								if (text2 != null) {
-									final String bannerText2 = text2;
-									mHandler.postDelayed(new Runnable() {
-										@Override
-										public void run() {
-											try {
-												// restore gravity for all the moving stuff to work
-												mLastSeenBanner.setGravity(Gravity.NO_GRAVITY);
-												mLastSeenBanner.setText(bannerText2);
-											}
-											catch (Exception e) {
-	                                            // something could happen in the meanwhile e.g. fragment destruction
-											}
-										}
-									}, 5000);
-								}
-							}
-						}
-					} catch (Exception e) {
-					}
-				}
-			}).start();
-			*/
-		}
 	}
 
 	public ComposeMessage getParentActivity() {
@@ -1208,11 +1130,6 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 		}
 
-		// set notifications on pause
-		MessagingNotification.setPaused(userId);
-		// subscribe to presence notifications
-		subscribePresence();
-
 		if (mConversation.getThreadId() > 0) {
 			// mark all messages as read
 			mConversation.markAsRead();
@@ -1241,9 +1158,152 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	@Override
 	public void presence(UserPresenceMessage message) {
-	    // TODO presence :)
 	    Log.d(TAG, "presence: " + message.getTextContent());
+	    UserPresenceData data = message.getContent();
+	    if (data != null) {
+	        String text = null;
+
+	        if (data.event == UserEvent.EVENT_OFFLINE_VALUE) {
+                text = getResources().getString(R.string.last_seen_label) +
+                        getResources().getString(R.string.seen_moment_ago_label);
+	        }
+	        else if (data.event == UserEvent.EVENT_ONLINE_VALUE) {
+                text = getResources().getString(R.string.seen_online_label);
+	        }
+	        else if (data.event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
+	            // TODO user changed status
+	        }
+
+	        if (text != null) {
+    	        final String bannerText = text;
+    	        getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        try {
+                            showLastSeenBanner(bannerText);
+                        }
+                        catch (Exception e) {
+                            // something could happen in the mean time - e.g. fragment destruction
+                        }
+                    }
+                });
+	        }
+	    }
 	}
+
+	@Override
+	public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
+	    if (pack instanceof UserLookupResponse) {
+	        UserLookupResponse _pack = (UserLookupResponse) pack;
+	        if (_pack.getEntryCount() > 0) {
+	            UserLookupResponse.Entry res = _pack.getEntry(0);
+                String text = null;
+                String text2 = null;
+                try {
+                    Activity context = getActivity();
+
+                    if (res.hasTimediff()) {
+                        long diff = res.getTimediff();
+                        if (diff == 0) {
+                            text = getResources().getString(R.string.seen_online_label);
+                        }
+                        else if (diff <= 10) {
+                            text = getResources().getString(R.string.last_seen_label) +
+                                    getResources().getString(R.string.seen_moment_ago_label);
+                        }
+                    }
+
+                    if (text == null && res.hasTimestamp()) {
+                        long time = res.getTimestamp();
+                        if (time > 0) {
+                            text = getResources().getString(R.string.last_seen_label) +
+                                    MessageUtils.formatRelativeTimeSpan(context, time * 1000);
+                        }
+                    }
+
+                    if (res.hasStatus()) {
+                        text2 = res.getStatus();
+                    }
+
+
+                    if (text != null) {
+                        final String bannerText = text;
+                        // show last seen banner
+                        if (context != null) {
+                            context.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        showLastSeenBanner(bannerText);
+                                    }
+                                    catch (Exception e) {
+                                        // something could happen in the meanwhile e.g. fragment destruction
+                                    }
+                                }
+                            });
+                            /*
+                             * TODO find another way of showing status message
+                            // display status message after 5 seconds
+                            if (text2 != null) {
+                                final String bannerText2 = text2;
+                                mHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            // restore gravity for all the moving stuff to work
+                                            mLastSeenBanner.setGravity(Gravity.NO_GRAVITY);
+                                            mLastSeenBanner.setText(bannerText2);
+                                        }
+                                        catch (Exception e) {
+                                            // something could happen in the meanwhile e.g. fragment destruction
+                                        }
+                                    }
+                                }, 5000);
+                            }
+                            */
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    // what here?
+                    Log.e(TAG, "user lookup response error!", e);
+                }
+	        }
+	    }
+
+	    return false;
+	}
+
+	private void showLastSeenBanner(String text) {
+        mLastSeenBanner.setText(text);
+	    if (mLastSeenBanner.getVisibility() != View.VISIBLE) {
+            mLastSeenBanner.setGravity(Gravity.CENTER);
+            mLastSeenBanner.setVisibility(View.VISIBLE);
+            mLastSeenBanner.startAnimation(AnimationUtils
+                    .loadAnimation(getActivity(), R.anim.header_appear));
+	    }
+	}
+
+    @Override
+    public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
+        // not used
+    }
+
+    @Override
+    public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
+        // not used
+    }
+
+    @Override
+    public void done(ClientThread client, RequestJob job, String txId) {
+        Log.v(TAG, "lookup request sent, listening to transaction packs (txid="+txId+")");
+        client.setTxListener(txId, this);
+    }
+
+    @Override
+    public boolean error(ClientThread client, RequestJob job, Throwable exc) {
+        // TODO
+        return false;
+    }
 
 	private synchronized void registerPeerObserver() {
 		if (mPeerObserver == null) {
@@ -1312,6 +1372,10 @@ public class ComposeMessageFragment extends ListFragment implements
 		// cursor was previously destroyed -- reload everything
 		// mConversation = null;
 		processStart();
+        // set notifications on pause
+        MessagingNotification.setPaused(userId);
+        // subscribe to presence notifications
+        subscribePresence();
 	}
 
 	@Override
@@ -1355,6 +1419,9 @@ public class ComposeMessageFragment extends ListFragment implements
 			Toast.makeText(getActivity(), R.string.msg_draft_saved,
 					Toast.LENGTH_LONG).show();
 		}
+
+        // unsubcribe presence notifications
+        unsubcribePresence();
 	}
 
 	@Override
@@ -1365,8 +1432,6 @@ public class ComposeMessageFragment extends ListFragment implements
 			mListAdapter.changeCursor(null);
 		// release message center
 		MessageCenterService.releaseMessageCenter(getActivity());
-		// unsubcribe presence notifications
-		unsubcribePresence();
 	}
 
 	public final boolean isFinishing() {

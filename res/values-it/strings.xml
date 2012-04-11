@@ -56,7 +56,7 @@
     <string name="confirm_will_delete_thread">L\'intera conversazione sarà cancellata.</string>
     <string name="new_messages">Nuovi messaggi</string>
     <string name="unread_messages">%d messaggi non letti</string>
-    <string name="only_one_account_supported">Puoi usare solo un account Kontalk.</string>
+    <string name="only_one_account_supported">Puoi usare un solo account Kontalk.</string>
     <string name="send">Invia</string>
     <string name="hint_enter_text">Inserisci il testo qui</string>
     <string name="hint_type_to_compose">Digita il testo qui</string>
@@ -167,4 +167,6 @@
     <string name="downloading_attachment">Download in corso&#8230;</string>
     <string name="pref_woody_background">Sfondo alternativo</string>
     <string name="pref_title_woody_background">Usa uno sfondo legnoso nelle conversazioni</string>
+    <string name="seen_moment_ago_label">un momento fa</string>
+    <string name="seen_online_label">Utente online</string>
 </resources>

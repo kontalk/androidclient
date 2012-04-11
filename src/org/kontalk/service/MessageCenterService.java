@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 
 import org.kontalk.R;
@@ -41,12 +42,13 @@ import org.kontalk.client.Protocol.UserInfoUpdateRequest;
 import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.ServerinfoJob;
 import org.kontalk.client.TxListener;
+import org.kontalk.client.UserPresenceRequestJob;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.ReceiptEntry;
-import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
 import org.kontalk.message.ReceiptMessage;
+import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
@@ -112,7 +114,15 @@ public class MessageCenterService extends Service
     private RequestWorker mRequestWorker;
     private Account mAccount;
 
-    private Map<String, PresenceListener> mPresenceListeners = new HashMap<String, PresenceListener>();
+    private final static class PresenceListenerData {
+        public final PresenceListener listener;
+        public final int eventMask;
+        public PresenceListenerData(PresenceListener listener, int eventMask) {
+            this.listener = listener;
+            this.eventMask = eventMask;
+        }
+    }
+    private Map<String, PresenceListenerData> mPresenceListeners = new HashMap<String, PresenceListenerData>();
 
     private boolean mPushNotifications;
     private String mPushEmail;
@@ -301,6 +311,19 @@ public class MessageCenterService extends Service
     }
 
     /**
+     * Requests subscription to presence notification, looking into the map of
+     * listeners.
+     */
+    private void restorePresenceSubscriptions() {
+        Set<String> keys = mPresenceListeners.keySet();
+        for (String userId : keys) {
+            Log.v(TAG, "restoring presence subscription for " + userId);
+            PresenceListenerData d = mPresenceListeners.get(userId);
+            pushRequest(new UserPresenceRequestJob(userId, d.eventMask));
+        }
+    }
+
+    /**
      * Searches for messages with error or pending status and pushes them
      * through the request queue to re-send them.
      */
@@ -432,6 +455,8 @@ public class MessageCenterService extends Service
     private void authenticated() {
         // update status message
         updateStatusMessage();
+        // subscribe to presence notifications
+        restorePresenceSubscriptions();
         // lookup for messages with error status and try to re-send them
         requeuePendingMessages();
         // receipts will be sent while consuming
@@ -552,11 +577,11 @@ public class MessageCenterService extends Service
 
     @Override
     public void presence(UserPresenceMessage message) {
-        PresenceListener l = mPresenceListeners.get(message.getSender(true));
+        PresenceListenerData l = mPresenceListeners.get(message.getSender(true));
         if (l == null)
             l = mPresenceListeners.get(message.getSender(false));
         if (l != null)
-            l.presence(message);
+            l.listener.presence(message);
         else
             Log.d(TAG, "unhandled user presence message " + message.getTextContent());
     }
@@ -602,13 +627,15 @@ public class MessageCenterService extends Service
     }
 
     /** Adds a {@link PresenceListener} for the given user. */
-    public void addPresenceListener(String userId, PresenceListener listener) {
-        mPresenceListeners.put(userId, listener);
+    public void subscribePresence(String userId, int events, PresenceListener listener) {
+        mPresenceListeners.put(userId, new PresenceListenerData(listener, events));
+        pushRequest(new UserPresenceRequestJob(userId, events));
     }
 
     /** Removes the {@link PresenceListener} for the given user. */
-    public void removePresenceListener(String userId) {
+    public void unsubscribePresence(String userId) {
         mPresenceListeners.remove(userId);
+        pushRequest(new UserPresenceRequestJob(userId, 0));
     }
 
     public void startForeground(String userId, long totalBytes) {

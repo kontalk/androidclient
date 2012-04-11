@@ -172,4 +172,6 @@
     <string name="downloading_attachment">Downloading attachment&#8230;</string>
     <string name="pref_woody_background">Woody background</string>
     <string name="pref_title_woody_background">Use a woody background in conversations</string>
+    <string name="seen_moment_ago_label">a moment ago</string>
+    <string name="seen_online_label">User is online</string>
 </resources>
