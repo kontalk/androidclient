@@ -307,7 +307,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
         public PresenceServiceConnection(String userId) {
             job = new UserPresenceRequestJob(userId, Protocol.UserEventMask.USER_EVENT_MASK_ALL_VALUE);
-            // listener will be set by message center
         }
 
         @Override
@@ -319,8 +318,31 @@ public class ComposeMessageFragment extends ListFragment implements
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
-            // FIXME FIXME FIXME HUGE MEMORY LEAK!!!
             service.addPresenceListener(job.getUserId(), ComposeMessageFragment.this);
+            service.pushRequest(job);
+            getActivity().unbindService(this);
+        }
+    }
+
+    /** Used for binding to the message center to unlisten for user presence. */
+    private class PresenceServiceDisconnection implements ServiceConnection {
+        public final UserPresenceRequestJob job;
+        private MessageCenterService service;
+
+        public PresenceServiceDisconnection(String userId) {
+            job = new UserPresenceRequestJob(userId, 0);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            service = null;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder ibinder) {
+            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
+            service = binder.getService();
+            service.removePresenceListener(job.getUserId());
             service.pushRequest(job);
             getActivity().unbindService(this);
         }
@@ -1210,7 +1232,11 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void unsubcribePresence() {
-	    // TODO unsubscribe presence :)
+        PresenceServiceDisconnection conn = new PresenceServiceDisconnection(userId);
+        getActivity().bindService(
+                new Intent(getActivity().getApplicationContext(),
+                        MessageCenterService.class), conn,
+                Context.BIND_AUTO_CREATE);
 	}
 
 	@Override

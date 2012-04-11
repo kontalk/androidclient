@@ -606,6 +606,11 @@ public class MessageCenterService extends Service
         mPresenceListeners.put(userId, listener);
     }
 
+    /** Removes the {@link PresenceListener} for the given user. */
+    public void removePresenceListener(String userId) {
+        mPresenceListeners.remove(userId);
+    }
+
     public void startForeground(String userId, long totalBytes) {
         Log.v(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
