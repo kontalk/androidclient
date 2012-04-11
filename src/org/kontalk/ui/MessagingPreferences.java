@@ -77,6 +77,8 @@ public class MessagingPreferences extends PreferenceActivity {
             }
         });
 
+        // TODO manual server address: restart message center
+
         // server list last update timestamp
         final Preference updateServerList = findPreference("pref_update_server_list");
         updateServerList.setOnPreferenceClickListener(new OnPreferenceClickListener() {

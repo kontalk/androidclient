@@ -68,7 +68,6 @@ public class ClientThread extends Thread {
     private ClientListener mClientListener;
     private TxListener mDefaultTxListener;
     private MessageListener mMessageListener;
-    private PresenceListener mPresenceListener;
     private String mAuthToken;
     private String mMyUsername;
 
@@ -115,13 +114,6 @@ public class ClientThread extends Thread {
      */
     public void setMessageListener(MessageListener listener) {
         mMessageListener = listener;
-    }
-
-    /**
-     * Sets a special listener for incoming {@link UserPresenceMessage} messages.
-     */
-    public void setPresenceListener(PresenceListener listener) {
-        mPresenceListener = listener;
     }
 
     /**
@@ -210,10 +202,7 @@ public class ClientThread extends Thread {
                                 if (name.equals(NewMessage.class.getSimpleName())) {
                                     // parse message into AbstractMessage
                                     AbstractMessage<?> msg = parseNewMessage((NewMessage) pack);
-                                    if (msg instanceof UserPresenceMessage)
-                                        mPresenceListener.presence((UserPresenceMessage) msg);
-                                    else
-                                        mMessageListener.incoming(msg);
+                                    mMessageListener.incoming(msg);
                                 }
 
                                 else {

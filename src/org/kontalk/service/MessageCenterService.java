@@ -48,11 +48,13 @@ import org.kontalk.message.ImageMessage;
 import org.kontalk.message.ReceiptEntry;
 import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
 import org.kontalk.message.ReceiptMessage;
+import org.kontalk.message.UserPresenceData;
 import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.ConversationList;
@@ -78,6 +80,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -93,7 +96,7 @@ import com.google.protobuf.MessageLite;
  * @version 1.0
  */
 public class MessageCenterService extends Service
-        implements MessageListener, TxListener, RequestListener, PresenceListener {
+        implements MessageListener, TxListener, RequestListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
@@ -104,6 +107,10 @@ public class MessageCenterService extends Service
     public static final String ACTION_C2DM_START = "org.kontalk.CD2M_START";
     public static final String ACTION_C2DM_STOP = "org.kontalk.CD2M_STOP";
     public static final String ACTION_C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
+
+    // broadcasted intents
+    public static final String ACTION_USER_PRESENCE = "org.kontalk.USER_PRESENCE";
+
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
 
     public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
@@ -114,15 +121,7 @@ public class MessageCenterService extends Service
     private RequestWorker mRequestWorker;
     private Account mAccount;
 
-    private final static class PresenceListenerData {
-        public final PresenceListener listener;
-        public final int eventMask;
-        public PresenceListenerData(PresenceListener listener, int eventMask) {
-            this.listener = listener;
-            this.eventMask = eventMask;
-        }
-    }
-    private Map<String, PresenceListenerData> mPresenceListeners = new HashMap<String, PresenceListenerData>();
+    private Map<String, Byte> mPresenceListeners = new HashMap<String, Byte>();
 
     private boolean mPushNotifications;
     private String mPushEmail;
@@ -261,7 +260,6 @@ public class MessageCenterService extends Service
                         ClientThread client = mRequestWorker.getClient();
                         client.setDefaultTxListener(this);
                         client.setMessageListener(this);
-                        client.setPresenceListener(this);
                         client.setHandler(AuthenticateResponse.class, new AuthenticateListener());
                         client.setHandler(ServerInfoResponse.class, new ServerinfoListener());
 
@@ -318,8 +316,8 @@ public class MessageCenterService extends Service
         Set<String> keys = mPresenceListeners.keySet();
         for (String userId : keys) {
             Log.v(TAG, "restoring presence subscription for " + userId);
-            PresenceListenerData d = mPresenceListeners.get(userId);
-            pushRequest(new UserPresenceRequestJob(userId, d.eventMask));
+            Byte _eventMask = mPresenceListeners.get(userId);
+            pushRequest(new UserPresenceRequestJob(userId, _eventMask.intValue()));
         }
     }
 
@@ -378,8 +376,9 @@ public class MessageCenterService extends Service
             @Override
             public String execute(ClientThread client, RequestListener listener, Context context)
                     throws IOException {
+                String status = MessagingPreferences.getStatusMessage(MessageCenterService.this);
                 UserInfoUpdateRequest.Builder b = UserInfoUpdateRequest.newBuilder();
-                b.setStatusMessage(MessagingPreferences.getStatusMessage(MessageCenterService.this));
+                b.setStatusMessage(status != null ? status : "");
                 return client.getConnection().send(b.build());
             }
         });
@@ -474,8 +473,25 @@ public class MessageCenterService extends Service
         if (msg.isNeedAck())
             list.add(msg.getRealId());
 
+        if (msg instanceof UserPresenceMessage) {
+            UserPresenceMessage pres = (UserPresenceMessage) msg;
+
+            // broadcast :)
+            LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
+            Intent i = new Intent(ACTION_USER_PRESENCE);
+            Uri.Builder b = new Uri.Builder();
+            b.scheme("user");
+            b.authority(UsersProvider.AUTHORITY);
+            b.path(pres.getSender(true));
+            i.setDataAndType(b.build(), "internal/presence");
+            UserPresenceData data = pres.getContent();
+            i.putExtra("org.kontalk.presence.event", data.event);
+            i.putExtra("org.kontalk.presence.status", data.statusMessage);
+            lbm.sendBroadcast(i);
+        }
+
         // do not store receipts...
-        if (!(msg instanceof ReceiptMessage) && !(msg instanceof UserPresenceMessage)) {
+        else if (!(msg instanceof ReceiptMessage)) {
             // store to file if it's an image message
             // FIXME this should be abstracted somehow
             byte[] content = msg.getBinaryContent();
@@ -575,17 +591,6 @@ public class MessageCenterService extends Service
         }
     }
 
-    @Override
-    public void presence(UserPresenceMessage message) {
-        PresenceListenerData l = mPresenceListeners.get(message.getSender(true));
-        if (l == null)
-            l = mPresenceListeners.get(message.getSender(false));
-        if (l != null)
-            l.listener.presence(message);
-        else
-            Log.d(TAG, "unhandled user presence message " + message.getTextContent());
-    }
-
     public synchronized void pushRequest(final RequestJob job) {
         if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
             mRequestWorker.push(job);
@@ -626,13 +631,11 @@ public class MessageCenterService extends Service
         pushRequest(job);
     }
 
-    /** Adds a {@link PresenceListener} for the given user. */
-    public void subscribePresence(String userId, int events, PresenceListener listener) {
-        mPresenceListeners.put(userId, new PresenceListenerData(listener, events));
+    public void subscribePresence(String userId, int events) {
+        mPresenceListeners.put(userId, Byte.valueOf((byte) events));
         pushRequest(new UserPresenceRequestJob(userId, events));
     }
 
-    /** Removes the {@link PresenceListener} for the given user. */
     public void unsubscribePresence(String userId) {
         mPresenceListeners.remove(userId);
         pushRequest(new UserPresenceRequestJob(userId, 0));

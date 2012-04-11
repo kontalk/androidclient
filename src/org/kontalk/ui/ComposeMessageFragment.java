@@ -40,18 +40,16 @@ import org.kontalk.data.Conversation;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
-import org.kontalk.message.UserPresenceData;
-import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
-import org.kontalk.service.PresenceListener;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.service.UserLookupJob;
@@ -63,6 +61,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -70,6 +69,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentFilter.MalformedMimeTypeException;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -82,7 +83,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PatternMatcher;
 import android.support.v4.app.ListFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.Layout;
@@ -117,7 +120,8 @@ import com.google.protobuf.MessageLite;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnTouchListener, View.OnLongClickListener, PresenceListener, RequestListener, TxListener {
+		View.OnTouchListener, View.OnLongClickListener,
+		RequestListener, TxListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -333,7 +337,7 @@ public class ComposeMessageFragment extends ListFragment implements
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
-            service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE, ComposeMessageFragment.this);
+            service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE);
 
             if (job2 != null) {
                 job2.setListener(ComposeMessageFragment.this);
@@ -1140,53 +1144,69 @@ public class ComposeMessageFragment extends ListFragment implements
 		}
 	}
 
+	private final class UserPresenceBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int event = intent.getIntExtra("org.kontalk.presence.event", 0);
+            String text = null;
+
+            if (event == UserEvent.EVENT_OFFLINE_VALUE) {
+                text = getResources().getString(R.string.last_seen_label) +
+                        getResources().getString(R.string.seen_moment_ago_label);
+            }
+            else if (event == UserEvent.EVENT_ONLINE_VALUE) {
+                text = getResources().getString(R.string.seen_online_label);
+            }
+            else if (event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
+                // TODO user changed status
+            }
+
+            if (text != null) {
+                final String bannerText = text;
+                try {
+                    showLastSeenBanner(bannerText);
+                }
+                catch (Exception e) {
+                    // something could happen in the mean time - e.g. fragment destruction
+                }
+            }
+        }
+	}
+
+	private UserPresenceBroadcastReceiver mPresenceReceiver;
+
 	private void subscribePresence() {
-	    PresenceServiceConnection conn = new PresenceServiceConnection(userId);
-        getActivity().bindService(
-                new Intent(getActivity().getApplicationContext(),
-                        MessageCenterService.class), conn,
-                Context.BIND_AUTO_CREATE);
+        if (mPresenceReceiver == null) {
+    	    PresenceServiceConnection conn = new PresenceServiceConnection(userId);
+            getActivity().bindService(
+                    new Intent(getActivity().getApplicationContext(),
+                            MessageCenterService.class), conn,
+                    Context.BIND_AUTO_CREATE);
+
+            mPresenceReceiver = new UserPresenceBroadcastReceiver();
+
+    	    try {
+                IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_USER_PRESENCE, "internal/presence");
+                filter.addDataScheme("user");
+                filter.addDataAuthority(UsersProvider.AUTHORITY, null);
+                filter.addDataPath("/" + userId, PatternMatcher.PATTERN_PREFIX);
+                LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mPresenceReceiver, filter);
+    	    }
+            catch (MalformedMimeTypeException e) {
+                Log.e(TAG, "malformed mime type", e);
+            }
+	    }
 	}
 
 	private void unsubcribePresence() {
-        PresenceServiceDisconnection conn = new PresenceServiceDisconnection(userId);
-        getActivity().bindService(
-                new Intent(getActivity().getApplicationContext(),
-                        MessageCenterService.class), conn,
-                Context.BIND_AUTO_CREATE);
-	}
-
-	@Override
-	public void presence(UserPresenceMessage message) {
-	    Log.d(TAG, "presence: " + message.getTextContent());
-	    UserPresenceData data = message.getContent();
-	    if (data != null) {
-	        String text = null;
-
-	        if (data.event == UserEvent.EVENT_OFFLINE_VALUE) {
-                text = getResources().getString(R.string.last_seen_label) +
-                        getResources().getString(R.string.seen_moment_ago_label);
-	        }
-	        else if (data.event == UserEvent.EVENT_ONLINE_VALUE) {
-                text = getResources().getString(R.string.seen_online_label);
-	        }
-	        else if (data.event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
-	            // TODO user changed status
-	        }
-
-	        if (text != null) {
-    	        final String bannerText = text;
-    	        getActivity().runOnUiThread(new Runnable() {
-                    public void run() {
-                        try {
-                            showLastSeenBanner(bannerText);
-                        }
-                        catch (Exception e) {
-                            // something could happen in the mean time - e.g. fragment destruction
-                        }
-                    }
-                });
-	        }
+        if (mPresenceReceiver != null) {
+            PresenceServiceDisconnection conn = new PresenceServiceDisconnection(userId);
+            getActivity().bindService(
+                    new Intent(getActivity().getApplicationContext(),
+                            MessageCenterService.class), conn,
+                    Context.BIND_AUTO_CREATE);
+            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mPresenceReceiver);
+	        mPresenceReceiver = null;
 	    }
 	}
 

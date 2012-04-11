@@ -309,7 +309,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             // max wait time 10 seconds
             int retries = 20;
 
-            while(!isAlive() || mHandler == null || retries <= 0) {
+            while(!isAlive() || mHandler == null || mClient == null || retries <= 0) {
                 try {
                     // 500ms should do the job...
                     Thread.sleep(500);
