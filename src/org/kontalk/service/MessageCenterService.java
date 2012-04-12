@@ -33,6 +33,7 @@ import java.util.concurrent.CancellationException;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
+import org.kontalk.client.ClientListener;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
@@ -97,7 +98,7 @@ import com.google.protobuf.MessageLite;
  * @version 1.0
  */
 public class MessageCenterService extends Service
-        implements MessageListener, TxListener, RequestListener {
+        implements MessageListener, TxListener, RequestListener, ClientListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
@@ -108,6 +109,7 @@ public class MessageCenterService extends Service
     public static final String ACTION_C2DM_START = "org.kontalk.CD2M_START";
     public static final String ACTION_C2DM_STOP = "org.kontalk.CD2M_STOP";
     public static final String ACTION_C2DM_REGISTERED = "org.kontalk.C2DM_REGISTERED";
+    public static final String ACTION_UPDATE_STATUS = "org.kontalk.UPDATE_STATUS";
 
     // broadcasted intents
     public static final String ACTION_CONNECTED = "org.kontalk.connected";
@@ -243,8 +245,11 @@ public class MessageCenterService extends Service
                 else {
                     // stop first
                     if (ACTION_RESTART.equals(action)) {
-                        Log.d(TAG, "restart requested");
                         stop();
+                    }
+                    else if (ACTION_UPDATE_STATUS.equals(action)) {
+                        if (mRequestWorker != null && mRequestWorker.getClient() != null && mRequestWorker.getClient().isConnected())
+                            updateStatusMessage();
                     }
 
                     // check changing accounts
@@ -260,19 +265,14 @@ public class MessageCenterService extends Service
                         mRequestWorker.addListener(this);
 
                         ClientThread client = mRequestWorker.getClient();
+                        client.setClientListener(this);
                         client.setDefaultTxListener(this);
                         client.setMessageListener(this);
                         client.setHandler(AuthenticateResponse.class, new AuthenticateListener());
                         client.setHandler(ServerInfoResponse.class, new ServerinfoListener());
 
                         mRequestWorker.start();
-
-                        // request serverinfo
-                        requestServerinfo();
-                    }
-                    else {
-                        // update status message
-                        updateStatusMessage();
+                        // rest will be done in connected()
                     }
 
                     /*
@@ -411,6 +411,13 @@ public class MessageCenterService extends Service
         stop();
     }
 
+    @Override
+    public void connected(ClientThread client) {
+        // request serverinfo
+        requestServerinfo();
+        // update status message
+        updateStatusMessage();
+    }
 
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
@@ -742,6 +749,15 @@ public class MessageCenterService extends Service
         }
         else
             Log.d(TAG, "network not available or background data disabled - abort service start");
+    }
+
+    public static void updateStatus(final Context context) {
+        Log.d(TAG, "updating status message");
+        Intent i = new Intent(context, MessageCenterService.class);
+        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        i.putExtra(EndpointServer.class.getName(), server.toString());
+        i.setAction(MessageCenterService.ACTION_UPDATE_STATUS);
+        context.startService(i);
     }
 
     /** Stops the message center. */

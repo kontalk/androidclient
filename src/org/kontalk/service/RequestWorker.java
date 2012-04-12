@@ -195,8 +195,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 }
 
                 // still not connected - requeue message after 500 ms
-                if (mClient == null || mClient.getConnection() == null) {
-                    Log.v(TAG, "client not ready - retrying message in 500 ms");
+                if (mClient == null || !mClient.isConnected()) {
+                    //Log.v(TAG, "client not ready - retrying message in 500 ms");
                     sendMessageDelayed(obtainMessage(msg.what, msg.obj), 500);
                     return;
                 }
@@ -306,10 +306,10 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
     public void push(RequestJob job, long delayMillis) {
         synchronized (mIdle) {
-            // max wait time 10 seconds
-            int retries = 20;
+            // max wait time 5 seconds
+            int retries = 10;
 
-            while(!isAlive() || mHandler == null || mClient == null || retries <= 0) {
+            while(!isAlive() || mHandler == null || retries <= 0) {
                 try {
                     // 500ms should do the job...
                     Thread.sleep(500);

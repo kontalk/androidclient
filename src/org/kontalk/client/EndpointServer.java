@@ -39,14 +39,15 @@ public class EndpointServer {
 
     public EndpointServer(String host) {
         this(host, DEFAULT_PORT, DEFAULT_HTTP_PORT);
+        if (host.contains("/")) {
+            String[] parsed = host.split("/");
+            host = parsed[0];
+            mHttpPort = Integer.parseInt(parsed[1]);
+        }
         if (host.contains(":")) {
             String[] parsed = host.split(":");
             mHost = parsed[0];
             mPort = Integer.parseInt(parsed[1]);
-        }
-        if (host.contains("/")) {
-            String[] parsed = host.split("/");
-            mHttpPort = Integer.parseInt(parsed[1]);
         }
     }
 

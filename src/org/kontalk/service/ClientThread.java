@@ -381,6 +381,10 @@ public class ClientThread extends Thread {
         return mInterrupted;
     }
 
+    public boolean isConnected() {
+        return (mClient != null && mClient.isConnected());
+    }
+
     /** Shuts down this client thread gracefully. */
     public synchronized void shutdown() {
         Log.d(TAG, "shutting down");

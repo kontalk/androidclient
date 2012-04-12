@@ -263,7 +263,7 @@ public class ConversationListFragment extends ListFragment {
                     MessagingPreferences.setStatusMessage(getActivity(), text);
 
                     // start the message center to push the status message
-                    MessageCenterService.startMessageCenter(getActivity());
+                    MessageCenterService.updateStatus(getActivity());
                 }
             }
         };
