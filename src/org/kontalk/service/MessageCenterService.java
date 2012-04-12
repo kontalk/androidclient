@@ -868,7 +868,7 @@ public class MessageCenterService extends Service
             public String execute(ClientThread client, RequestListener listener, Context context)
                     throws IOException {
                 UserInfoUpdateRequest.Builder b = UserInfoUpdateRequest.newBuilder();
-                b.setGoogleRegistrationId(mPushRegistrationId);
+                b.setGoogleRegistrationId(mPushRegistrationId != null ? mPushRegistrationId: "");
                 return client.getConnection().send(b.build());
             }
         });
