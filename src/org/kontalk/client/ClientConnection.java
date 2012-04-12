@@ -116,8 +116,8 @@ public class ClientConnection {
 
     public synchronized void close() {
         try {
-            in.close();
-            out.close();
+            mSocket.shutdownInput();
+            mSocket.shutdownOutput();
             mSocket.close();
         }
         catch (Exception e) {
