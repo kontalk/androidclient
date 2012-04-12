@@ -326,14 +326,11 @@ public class ComposeMessageFragment extends ListFragment implements
     private class PresenceServiceConnection implements ServiceConnection {
         private final String userId;
         private final boolean lookupOnly;
-        private UserLookupJob job2;
         private MessageCenterService service;
 
         public PresenceServiceConnection(String userId, boolean lookupOnly) {
             this.userId = userId;
             this.lookupOnly = lookupOnly;
-            if (MessagingPreferences.getLastSeenEnabled(getActivity()))
-                job2 = new UserLookupJob(userId);
         }
 
         @Override
@@ -348,9 +345,9 @@ public class ComposeMessageFragment extends ListFragment implements
             if (!lookupOnly)
                 service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE);
 
-            if (job2 != null) {
-                job2.setListener(ComposeMessageFragment.this);
-                service.pushRequest(job2);
+            if (MessagingPreferences.getLastSeenEnabled(getActivity())) {
+                UserLookupJob job = service.lookupUser(userId);
+                job.setListener(ComposeMessageFragment.this);
             }
 
             getActivity().unbindService(this);

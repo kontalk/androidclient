@@ -113,6 +113,24 @@ public class ClientHTTPConnection {
         }
     }
 
+    public Protocol.ServerList serverList() throws IOException {
+        HttpResponse response = null;
+        try {
+            // http request!
+            currentRequest = prepareServerListRequest();
+            response = execute(currentRequest);
+            return Protocol.ServerList.parseFrom(response.getEntity().getContent());
+        }
+        catch (Exception e) {
+            throw innerException("serverlist download error", e);
+        }
+        finally {
+            currentRequest = null;
+            if (response != null && response.getEntity() != null)
+                response.getEntity().consumeContent();
+        }
+    }
+
     private IOException innerException(String detail, Throwable cause) {
         IOException ie = new IOException(detail);
         ie.initCause(cause);
@@ -204,6 +222,10 @@ public class ClientHTTPConnection {
             req.addHeader(HEADER_MESSAGE_FLAGS, "encrypted");
 
         return req;
+    }
+
+    private HttpRequestBase prepareServerListRequest() throws IOException {
+        return prepare("/serverlist", null, null, null, null, false);
     }
 
     /**

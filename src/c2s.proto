@@ -230,3 +230,14 @@ message UserPresence {
     required UserEvent event = 2;
     optional string status_message = 3;
 }
+
+// server list
+message ServerList {
+    required uint64 timestamp = 1;
+    message Entry {
+        required string address = 1;
+        optional uint32 port = 2;
+        optional uint32 http_port = 3;
+    }
+    repeated Entry entry = 2;
+}

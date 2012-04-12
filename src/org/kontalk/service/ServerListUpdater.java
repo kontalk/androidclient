@@ -29,12 +29,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.kontalk.R;
+import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.ServerList;
+import org.kontalk.ui.MessagingPreferences;
 
 import android.content.Context;
 import android.util.Log;
@@ -56,7 +56,7 @@ public class ServerListUpdater extends Thread {
 
     private final Context mContext;
     private UpdaterListener mListener;
-    private HttpRequestBase mRequest;
+    private ClientHTTPConnection mConnection;
 
     public ServerListUpdater(Context context) {
         mContext = context;
@@ -74,56 +74,35 @@ public class ServerListUpdater extends Thread {
          * either the builtin one or the cached one.
          */
 
-        ServerList current = null;
-        Throwable exc = null;
+        /**
+         * We have a server list - either builtin or cached. Now pick a random
+         * server from the list and contact it for the latest server list.
+         */
+        EndpointServer random = MessagingPreferences.getEndpointServer(mContext);
 
-        try {
-            Log.d(TAG, "loading cached server list");
-            current = parseCachedList(mContext);
-        }
-        catch (IOException e) {
-            // invalid or no cached list :(
-            Log.e(TAG, "invalid or no cached list", e);
-            exc = e;
-
-            try {
-                Log.d(TAG, "loading builtin server list");
-                current = parseBuiltinList(mContext);
-            }
-            catch (IOException be) {
-                // WHAT?!?!? Error loading builtin list!???
-                exc = be;
-            }
-        }
-
-        /** no server list -- notify to user */
-        if (current == null) {
+        /** no server found -- notify to user */
+        if (random == null) {
             Log.i(TAG, "no list to pick a random server from - aborting");
 
             // notify to UI
             if (mListener != null)
-                mListener.nodata(exc);
+                mListener.nodata();
 
             return;
         }
 
         try {
-            /**
-             * We have a server list - either builtin or cached. Now pick a random
-             * server from the list and contact it for the latest server list.
-             */
-            EndpointServer random = current.random();
-            mRequest = null; // TODO
-            HttpResponse res = null; // TODO
-            // write down to cache
-            OutputStream out = new FileOutputStream(getCachedListFile(mContext));
-            res.getEntity().writeTo(out);
-            out.close();
-            // free resources
-            res.getEntity().consumeContent();
+            mConnection = new ClientHTTPConnection(null, mContext, random, null);
+            Protocol.ServerList data = mConnection.serverList();
+            if (data != null) {
+                // write down to cache
+                OutputStream out = new FileOutputStream(getCachedListFile(mContext));
+                data.writeTo(out);
+                out.close();
+            }
 
             // parse cached list :)
-            mCurrentList = parseCachedList(mContext);
+            mCurrentList = parseList(data);
             if (mListener != null)
                 mListener.updated(mCurrentList);
 
@@ -135,13 +114,13 @@ public class ServerListUpdater extends Thread {
                 mListener.error(e);
         }
         finally {
-            mRequest = null;
+            mConnection = null;
         }
     }
 
     public void cancel() {
-        if (mRequest != null)
-            mRequest.abort();
+        if (mConnection != null)
+            mConnection.abort();
     }
 
     private static File getCachedListFile(Context context) {
@@ -162,8 +141,7 @@ public class ServerListUpdater extends Thread {
             int i = 1;
             String server;
             while ((server = prop.getProperty("server" + i)) != null) {
-                // TODO http port!!
-                list.add(new EndpointServer(server, EndpointServer.DEFAULT_HTTP_PORT));
+                list.add(new EndpointServer(server));
                 i++;
             }
 
@@ -176,20 +154,21 @@ public class ServerListUpdater extends Thread {
         }
     }
 
-    private static ServerList parseCachedList(Context context) throws IOException {
-        InputStream in = new FileInputStream(getCachedListFile(context));
-        // TODO
-        return null;
-        /*
-        Protocol.ServerList pack = Protocol.ServerList.parseFrom(in);
+    private static ServerList parseList(Protocol.ServerList pack) {
         Date date = new Date(pack.getTimestamp() * 1000);
         ServerList list = new ServerList(date);
-        for (int i = 0; i < pack.getAddressCount(); i++) {
-            list.add(new EndpointServer(pack.getAddress(i)));
+        for (int i = 0; i < pack.getEntryCount(); i++) {
+            Protocol.ServerList.Entry e = pack.getEntry(i);
+            list.add(new EndpointServer(e.getAddress(), e.getPort(), e.getHttpPort()));
         }
 
         return list;
-        */
+    }
+
+    private static ServerList parseCachedList(Context context) throws IOException {
+        InputStream in = new FileInputStream(getCachedListFile(context));
+        Protocol.ServerList pack = Protocol.ServerList.parseFrom(in);
+        return parseList(pack);
     }
 
     /** Returns (and loads if necessary) the current server list. */
@@ -214,7 +193,7 @@ public class ServerListUpdater extends Thread {
 
     public interface UpdaterListener {
         /** Called if either the cached list or the built-in list cannot be loaded.*/
-        public void nodata(Throwable e);
+        public void nodata();
         /** Called if an error occurs during update. */
         public void error(Throwable e);
         /** Called when list update has finished. */

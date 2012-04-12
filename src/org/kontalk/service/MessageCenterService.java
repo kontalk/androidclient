@@ -57,6 +57,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
+import org.kontalk.ui.ComposeMessageFragment;
 import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
@@ -254,8 +255,7 @@ public class MessageCenterService extends Service
 
                     // activate request worker
                     if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
-                        // TODO http port!!
-                        EndpointServer server = new EndpointServer(serverUrl, EndpointServer.DEFAULT_HTTP_PORT);
+                        EndpointServer server = new EndpointServer(serverUrl);
                         mRequestWorker = new RequestWorker(this, server, mRefCount);
                         mRequestWorker.addListener(this);
 
@@ -597,7 +597,7 @@ public class MessageCenterService extends Service
         }
     }
 
-    public synchronized void pushRequest(final RequestJob job) {
+    private synchronized void pushRequest(final RequestJob job) {
         if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
             mRequestWorker.push(job);
         else {
@@ -695,6 +695,13 @@ public class MessageCenterService extends Service
     /** Used by the {@link SyncAdapter}. */
     public UserLookupJob lookupUsers(List<String> hashList) {
         UserLookupJob job = new UserLookupJob(hashList);
+        pushRequest(job);
+        return job;
+    }
+
+    /** Used by the {@link ComposeMessageFragment}. */
+    public UserLookupJob lookupUser(String userId) {
+        UserLookupJob job = new UserLookupJob(userId);
         pushRequest(job);
         return job;
     }

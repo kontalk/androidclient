@@ -112,7 +112,7 @@ public class MessagingPreferences extends PreferenceActivity {
                     }
 
                     @Override
-                    public void nodata(Throwable e) {
+                    public void nodata() {
                         diag.cancel();
                         MessagingPreferences.this.runOnUiThread(new Runnable() {
                             @Override
@@ -192,8 +192,7 @@ public class MessagingPreferences extends PreferenceActivity {
     public static EndpointServer getEndpointServer(Context context) {
         String customUri = getServerURI(context);
         if (!TextUtils.isEmpty(customUri))
-            // TODO http port!!!
-            return new EndpointServer(customUri, EndpointServer.DEFAULT_HTTP_PORT);
+            return new EndpointServer(customUri);
 
         ServerList list = ServerListUpdater.getCurrentList(context);
         return (list != null) ? list.random() : null;
