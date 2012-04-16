@@ -21,19 +21,21 @@ package org.kontalk.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
-import android.os.Process;
 import android.os.MessageQueue.IdleHandler;
+import android.os.Process;
 import android.util.Log;
 
 
@@ -61,7 +63,14 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     private int mRefCount;
 
     private ClientThread mClient;
+
+    // here we use two different lists because of concurrency
     private RequestListenerList mListeners = new RequestListenerList();
+    private RequestListenerList mAsyncListeners = new RequestListenerList();
+
+    /** A list of messages currently being sent. Used for concurrency */
+    private List<Long> mSendingMessages = new ArrayList<Long>();
+
     private String mPushRegistrationId;
 
     /** Pending jobs queue - will be used on thread start to initialize the messages. */
@@ -74,13 +83,15 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         mClient = new ClientThread(context, this, server);
     }
 
-    public void addListener(RequestListener listener) {
-        if (!this.mListeners.contains(listener))
-            this.mListeners.add(listener);
+    public void addListener(RequestListener listener, boolean async) {
+        RequestListenerList list = async ? mAsyncListeners : mListeners;
+        if (!list.contains(listener))
+            list.add(listener);
     }
 
-    public void removeListener(RequestListener listener) {
-        this.mListeners.remove(listener);
+    public void removeListener(RequestListener listener, boolean async) {
+        RequestListenerList list = async ? mAsyncListeners : mListeners;
+        list.remove(listener);
     }
 
     /** Client thread has terminated. */
@@ -213,7 +224,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 // try to use the custom listener
                 RequestListener listener = job.getListener();
                 if (listener != null)
-                    addListener(listener);
+                    addListener(listener, job.isAsync());
 
                 // synchronize on client pack lock
                 synchronized (mClient.getPackLock()) {
@@ -222,13 +233,32 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         // FIXME this should be abstracted/delegated some way
                         if (job instanceof MessageSender) {
                             MessageSender mess = (MessageSender) job;
+
+                            // add to sending list
+                            Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
+                            if (mSendingMessages.contains(msgId)) {
+                                Log.v(TAG, "message already underway - dropping");
+                                return;
+                            }
+
+                            mSendingMessages.add(msgId);
+
                             // observe the content for cancel requests
                             mess.observe(mContext, this);
                         }
 
-                        String txId = job.execute(mClient, mListeners, mContext);
+                        if (job.isAsync()) {
+                            // FIXME we really should keep a reference
+                            // FIXME also we should keep the worker alive
+                            Thread tjob = new AsyncRequestJob(job, mClient, mListeners, mContext);
+                            tjob.start();
+                        }
 
-                        mListeners.done(mClient, job, txId);
+                        else {
+                            String txId = job.execute(mClient, mListeners, mContext);
+
+                            mListeners.done(mClient, job, txId);
+                        }
                     }
                     catch (IOException e) {
                         if (mInterrupted) {
@@ -246,15 +276,19 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         }
                     }
                     finally {
-                        // unobserve if necessary
-                        if (job != null && job instanceof MessageSender) {
-                            MessageSender mess = (MessageSender) job;
-                            mess.unobserve(mContext);
-                        }
+                        if (!job.isAsync()) {
+                            // unobserve if necessary
+                            if (job instanceof MessageSender) {
+                                MessageSender mess = (MessageSender) job;
+                                mess.unobserve(mContext);
+                                Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
+                                mSendingMessages.remove(msgId);
+                            }
 
-                        // remove our old custom listener
-                        if (listener != null)
-                            removeListener(listener);
+                            // remove our old custom listener
+                            if (listener != null)
+                                removeListener(listener, false);
+                        }
                     }
                 }
             }
@@ -296,6 +330,62 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         Looper.myQueue().addIdleHandler(mHandler);
                     }
                 });
+            }
+        }
+
+        /** Executes a {@link RequestJob} asynchronously. */
+        private final class AsyncRequestJob extends Thread {
+            private final RequestJob mJob;
+            private final ClientThread mClient;
+            private final RequestListener mListener;
+            private final Context mContext;
+
+            public AsyncRequestJob(RequestJob job, ClientThread client, RequestListener listener, Context context) {
+                super();
+                mJob = job;
+                mClient = client;
+                mListener = listener;
+                mContext = context;
+            }
+
+            @Override
+            public final void run() {
+                // FIXME there is some duplicated code here
+
+                try {
+                    String txId = mJob.execute(mClient, mListener, mContext);
+
+                    mListener.done(mClient, mJob, txId);
+                }
+                catch (IOException e) {
+                    if (mInterrupted) {
+                        Log.v(TAG, "worker has been interrupted");
+                        return;
+                    }
+
+                    boolean requeue = true;
+                    Log.e(TAG, "request error", e);
+                    requeue = mListener.error(mClient, mJob, e);
+
+                    if (requeue) {
+                        Log.d(TAG, "requeuing job " + mJob);
+                        push(mJob, DEFAULT_RETRY_DELAY);
+                    }
+                }
+                finally {
+                    // unobserve if necessary
+                    if (mJob instanceof MessageSender) {
+                        MessageSender mess = (MessageSender) mJob;
+                        mess.unobserve(mContext);
+                        Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
+                        mSendingMessages.remove(msgId);
+                    }
+
+                    // remove our old custom listener
+                    RequestListener listener = mJob.getListener();
+                    if (listener != null)
+                        removeListener(listener, true);
+                }
             }
         }
     }

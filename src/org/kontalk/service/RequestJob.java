@@ -21,6 +21,7 @@ package org.kontalk.service;
 import java.io.IOException;
 
 import android.content.Context;
+import android.util.Log;
 
 
 /**
@@ -53,10 +54,17 @@ public abstract class RequestJob {
      * request if still possible.
      */
     public void cancel() {
+        Log.v("RequestJob", "canceling job " + toString());
         mCancel = true;
     }
 
     public boolean isCanceled() {
         return mCancel;
     }
+
+    /** Returns true if this job need to be executed in a separate thread. */
+    public boolean isAsync() {
+        return false;
+    }
+
 }

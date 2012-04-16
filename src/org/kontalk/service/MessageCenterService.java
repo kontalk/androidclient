@@ -262,7 +262,9 @@ public class MessageCenterService extends Service
                     if (mRequestWorker == null || mRequestWorker.isInterrupted()) {
                         EndpointServer server = new EndpointServer(serverUrl);
                         mRequestWorker = new RequestWorker(this, server, mRefCount);
-                        mRequestWorker.addListener(this);
+                        // we must be in control! SHUASHUASHUASHAUSHAUSHA!
+                        mRequestWorker.addListener(this, true);
+                        mRequestWorker.addListener(this, false);
 
                         ClientThread client = mRequestWorker.getClient();
                         client.setClientListener(this);
@@ -916,10 +918,12 @@ public class MessageCenterService extends Service
 
     @Override
     public boolean error(ClientThread client, RequestJob job, Throwable exc) {
-        Log.e(TAG, "request error", exc);
         // stop any foreground if the job is a message
         if (job instanceof MessageSender) {
             stopForeground();
+
+            if (job.isCanceled())
+                return false;
 
             MessageSender job2 = (MessageSender) job;
             if (job2.getSourceUri() != null) {

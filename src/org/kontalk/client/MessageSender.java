@@ -36,6 +36,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 import com.google.protobuf.ByteString;
 
@@ -84,8 +85,10 @@ public class MessageSender extends RequestJob {
     }
 
     public void unobserve(Context context) {
-        if (mObserver != null)
+        if (mObserver != null) {
             context.getContentResolver().unregisterContentObserver(mObserver);
+            mObserver = null;
+        }
     }
 
     private final class MessageSenderObserver extends ContentObserver {
@@ -98,6 +101,7 @@ public class MessageSender extends RequestJob {
 
         @Override
         public void onChange(boolean selfChange) {
+            Log.v("MessageSender", "observed message changed - checking");
             // cancel the request if the content doesn't exist
             Cursor c = mContext.getContentResolver()
                 .query(mUri, new String[] { BaseColumns._ID }, null, null, null);
@@ -149,6 +153,11 @@ public class MessageSender extends RequestJob {
 
     public boolean isAttachment() {
         return mAttachment;
+    }
+
+    @Override
+    public boolean isAsync() {
+        return (mSourceDataUri != null);
     }
 
     @Override

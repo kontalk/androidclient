@@ -83,7 +83,7 @@ public class MessageRequestListener implements RequestListener {
                                 values.put(Messages.STATUS, Messages.STATUS_SENT);
                                 values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
                                 int n = mContentResolver.update(uri, values, selectionOutgoing, null);
-                                Log.i(TAG, "message sent and updated (" + n + ")");
+                                Log.v(TAG, "message sent and updated (" + n + ")");
                             }
                         }
                     }
@@ -106,11 +106,14 @@ public class MessageRequestListener implements RequestListener {
 
     @Override
     public boolean error(ClientThread client, RequestJob job, Throwable e) {
-        Log.e(TAG, "error sending message", e);
-        MessageSender job2 = (MessageSender) job;
-        Uri uri = job2.getMessageUri();
-        MessagesProvider.changeMessageStatus(mContext, uri, Messages.DIRECTION_OUT,
-                Messages.STATUS_ERROR, -1, System.currentTimeMillis());
+        // sending is canceled only if the user deleted the message, so no need
+        // to update its status
+        if (!job.isCanceled()) {
+            MessageSender job2 = (MessageSender) job;
+            Uri uri = job2.getMessageUri();
+            MessagesProvider.changeMessageStatus(mContext, uri, Messages.DIRECTION_OUT,
+                    Messages.STATUS_ERROR, -1, System.currentTimeMillis());
+        }
         return false;
     }
 

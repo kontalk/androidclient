@@ -394,6 +394,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		Uri newMsg = null;
 
 		try {
+		    // TODO convert to thread (?)
+
 			String msgId = "draft" + (new Random().nextInt());
 			String content = AbstractMessage.getSampleTextContent(klass, mime);
 
@@ -422,7 +424,8 @@ public class ComposeMessageFragment extends ListFragment implements
 			values.put(Messages.FETCHED, true);
 			newMsg = getActivity().getContentResolver().insert(
 					Messages.CONTENT_URI, values);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			Log.e(TAG, "unable to store media", e);
 		}
 
