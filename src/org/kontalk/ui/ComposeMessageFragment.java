@@ -1412,10 +1412,12 @@ public class ComposeMessageFragment extends ListFragment implements
 		// cursor was previously destroyed -- reload everything
 		// mConversation = null;
 		processStart();
-        // set notifications on pause
-        MessagingNotification.setPaused(userId);
-        // subscribe to presence notifications
-        subscribePresence();
+		if (userId != null) {
+            // set notifications on pause
+            MessagingNotification.setPaused(userId);
+            // subscribe to presence notifications
+            subscribePresence();
+		}
 	}
 
 	@Override
