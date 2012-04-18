@@ -24,6 +24,7 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -585,10 +586,20 @@ public class MessageCenterService extends Service
                 int code = (status == Protocol.ReceiptMessage.Entry.ReceiptStatus.STATUS_SUCCESS_VALUE) ?
                         Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
 
+                Date ts;
+                try {
+                    ts = rentry.getTimestamp();
+                    Log.v(TAG, "using receipt timestamp: " + ts);
+                }
+                catch (Exception e) {
+                    ts = msg.getServerTimestamp();
+                    Log.v(TAG, "using message timestamp: " + ts);
+                }
+
                 MessagesProvider.changeMessageStatusWhere(this,
                         true, Messages.STATUS_RECEIVED,
                         rentry.messageId, false, code,
-                        -1, msg.getServerTimestamp().getTime());
+                        -1, ts.getTime());
             }
         }
 

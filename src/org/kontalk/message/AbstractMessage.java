@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.Messages;
@@ -49,7 +50,10 @@ import android.util.Log;
 public abstract class AbstractMessage<T> {
     private static final String TAG = AbstractMessage.class.getSimpleName();
     private static final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    static {
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
 
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
