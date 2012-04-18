@@ -44,7 +44,7 @@ message MessagePostResponse {
 // new message
 message NewMessage {
     required string message_id = 1;
-    // timestamp string: YYYY-MM-DD hh:mm:ss +zhzm
+    // timestamp string: YYYY-MM-DD hh:mm:ss
     required string timestamp = 2;
     required string sender = 3;
     repeated string group = 4;
@@ -86,7 +86,7 @@ message ReceiptMessage {
         }
         required string message_id = 1;
         required ReceiptStatus status = 2;
-        // timestamp string: YYYY-MM-DD hh:mm:ss +zhzm
+        // timestamp string: YYYY-MM-DD hh:mm:ss
         optional string timestamp = 3;
     }
     repeated Entry entry = 1;
