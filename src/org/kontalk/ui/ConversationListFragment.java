@@ -31,8 +31,8 @@ import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
@@ -42,17 +42,17 @@ import android.support.v4.app.ListFragment;
 import android.text.InputType;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 public class ConversationListFragment extends ListFragment {
@@ -62,6 +62,9 @@ public class ConversationListFragment extends ListFragment {
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
+
+    /** Context menu group ID for this fragment. */
+    private static final int CONTEXT_MENU_GROUP_ID = 1;
 
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
@@ -191,15 +194,19 @@ public class ConversationListFragment extends ListFragment {
                 title = conv.getRecipient();
 
             menu.setHeaderTitle(title);
-            menu.add(Menu.NONE, MENU_OPEN_THREAD, MENU_OPEN_THREAD, R.string.view_conversation);
+            menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN_THREAD, MENU_OPEN_THREAD, R.string.view_conversation);
             if (contact != null)
-                menu.add(Menu.NONE, MENU_VIEW_CONTACT, MENU_VIEW_CONTACT, R.string.view_contact);
-            menu.add(Menu.NONE, MENU_DELETE_THREAD, MENU_DELETE_THREAD, R.string.delete_thread);
+                menu.add(CONTEXT_MENU_GROUP_ID, MENU_VIEW_CONTACT, MENU_VIEW_CONTACT, R.string.view_contact);
+            menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE_THREAD, MENU_DELETE_THREAD, R.string.delete_thread);
         }
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
+        // not our context
+        if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
+            return false;
+
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
         ConversationListItem vitem = (ConversationListItem) info.targetView;
         Conversation conv = vitem.getConversation();
@@ -342,12 +349,8 @@ public class ConversationListFragment extends ListFragment {
                 Uri rawContact = data.getData();
                 if (rawContact != null) {
                     Log.i(TAG, "composing message for contact: " + rawContact);
-                    Intent i = ComposeMessage.fromContactPicker(getActivity(), rawContact);
-                    if (i != null)
-                        startActivity(i);
-                    else
-                        Toast.makeText(getActivity(), R.string.contact_not_registered, Toast.LENGTH_LONG)
-                            .show();
+
+                    openConversation(rawContact);
                 }
             }
         }
@@ -391,6 +394,50 @@ public class ConversationListFragment extends ListFragment {
 	        Intent i = ComposeMessage.fromConversation(getActivity(), conv);
 	        startActivity(i);
     	}
+    }
+
+    private void openConversation(Uri rawContactUri) {
+        if (mDualPane) {
+            // TODO position
+            //getListView().setItemChecked(position, true);
+
+            // load conversation
+            String userId = Contact.getUserId(getActivity(), rawContactUri);
+            Conversation conv = Conversation.loadFromUserId(getActivity(), userId);
+
+            // get the old fragment
+            ComposeMessageFragment f = (ComposeMessageFragment) getActivity()
+                    .getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
+
+            // check if we are replacing the same fragment
+            if (f == null || conv == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
+                if (conv == null)
+                    f = ComposeMessageFragment.fromContactPicker(getActivity(), rawContactUri);
+                else
+                    f = ComposeMessageFragment.fromConversation(getActivity(), conv);
+
+                // Execute a transaction, replacing any existing fragment
+                // with this one inside the frame.
+                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_compose_message, f);
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.addToBackStack(null);
+                ft.commitAllowingStateLoss();
+            }
+        }
+        else {
+            Intent i = ComposeMessage.fromContactPicker(getActivity(), rawContactUri);
+            if (i != null)
+                startActivity(i);
+            else
+                Toast.makeText(getActivity(), R.string.contact_not_registered, Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
+
+    /** Used only in fragment contexts. */
+    public void endConversation(ComposeMessageFragment composer) {
+        getFragmentManager().beginTransaction().remove(composer).commit();
     }
 
     public final boolean isFinishing() {

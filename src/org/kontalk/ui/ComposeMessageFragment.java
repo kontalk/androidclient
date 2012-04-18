@@ -130,6 +130,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	private static final int SELECT_ATTACHMENT = 1;
 
+    /** Context menu group ID for this fragment. */
+    private static final int CONTEXT_MENU_GROUP_ID = 2;
+
 	private MessageListQueryHandler mQueryHandler;
 	private MessageListAdapter mListAdapter;
 	private EditText mTextEntry;
@@ -740,7 +743,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			// retrieved yet
 			if (msg instanceof PlainTextMessage ? true
 					: msg.getLocalUri() != null)
-				menu.add(Menu.NONE, MENU_SHARE, MENU_SHARE, R.string.share);
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_SHARE, MENU_SHARE, R.string.share);
 		}
 
 		if (msg instanceof ImageMessage) {
@@ -749,7 +752,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			int string;
 			// outgoing or already fetched
 			if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
-				menu.add(Menu.NONE, MENU_OPEN, MENU_OPEN,
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN,
 						R.string.view_image);
 
 			// incoming
@@ -759,7 +762,7 @@ public class ComposeMessageFragment extends ListFragment implements
 					string = R.string.download_again;
 				else
 					string = R.string.download_file;
-				menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, string);
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_DOWNLOAD, MENU_DOWNLOAD, string);
 			}
 		}
 		else if (msg instanceof VCardMessage) {
@@ -767,7 +770,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			int string;
 			// outgoing or already fetched
 			if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
-				menu.add(Menu.NONE, MENU_OPEN, MENU_OPEN,
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN,
 						R.string.open_file);
 
 			// incoming
@@ -777,25 +780,29 @@ public class ComposeMessageFragment extends ListFragment implements
 					string = R.string.download_again;
 				else
 					string = R.string.download_file;
-				menu.add(Menu.NONE, MENU_DOWNLOAD, MENU_DOWNLOAD, string);
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_DOWNLOAD, MENU_DOWNLOAD, string);
 			}
 		}
 		else {
 			if (msg.isEncrypted())
-				menu.add(Menu.NONE, MENU_DECRYPT, MENU_DECRYPT,
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_DECRYPT, MENU_DECRYPT,
 						R.string.decrypt_message);
 			else
-				menu.add(Menu.NONE, MENU_COPY_TEXT, MENU_COPY_TEXT,
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_COPY_TEXT, MENU_COPY_TEXT,
 						R.string.copy_message_text);
 		}
 
-		menu.add(Menu.NONE, MENU_DETAILS, MENU_DETAILS,
+		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DETAILS, MENU_DETAILS,
 				R.string.menu_message_details);
-		menu.add(Menu.NONE, MENU_DELETE, MENU_DELETE, R.string.delete_message);
+		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE, MENU_DELETE, R.string.delete_message);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+	    // not our context
+	    if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
+	        return false;
+
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 		MessageListItem v = (MessageListItem) info.targetView;
@@ -1505,61 +1512,70 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			switch (token) {
-			case MESSAGE_LIST_QUERY_TOKEN:
+    			case MESSAGE_LIST_QUERY_TOKEN:
 
-				// no messages to show - exit
-				if (cursor.getCount() == 0
-						&& (mConversation == null
-								|| mConversation.getDraft() == null || mTextEntry
-								.getText().length() == 0)) {
-					Log.w(TAG, "no data to view - exit");
-					getActivity().finish();
-				}
-				else {
-					// see if we have to scroll to a specific message
-					int newSelectionPos = -1;
+    				// no messages to show - exit
+    				if (cursor.getCount() == 0
+    						&& (mConversation == null
+    								|| mConversation.getDraft() == null || mTextEntry
+    								.getText().length() == 0)) {
+    					Log.w(TAG, "no data to view - exit");
 
-					Bundle args = myArguments();
-					if (args != null) {
-						long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
-								-1);
-						if (msgId > 0) {
+    					// we have a ComposeMessageActivity - no fragments
+    					if (getParentActivity() != null) {
+    					    getActivity().finish();
+    					}
+    					// using fragments...
+    					else {
+    					    ConversationList activity = (ConversationList) getActivity();
+    					    activity.getListFragment().endConversation(ComposeMessageFragment.this);
+    					}
+    				}
+    				else {
+    					// see if we have to scroll to a specific message
+    					int newSelectionPos = -1;
 
-							cursor.moveToPosition(-1);
-							while (cursor.moveToNext()) {
-								long curId = cursor.getLong(cursor
-										.getColumnIndex(Messages._ID));
-								if (curId == msgId) {
-									newSelectionPos = cursor.getPosition();
-									break;
-								}
-							}
-						}
-					}
+    					Bundle args = myArguments();
+    					if (args != null) {
+    						long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
+    								-1);
+    						if (msgId > 0) {
 
-					mListAdapter.changeCursor(cursor);
-					if (newSelectionPos > 0)
-						getListView().setSelection(newSelectionPos);
+    							cursor.moveToPosition(-1);
+    							while (cursor.moveToNext()) {
+    								long curId = cursor.getLong(cursor
+    										.getColumnIndex(Messages._ID));
+    								if (curId == msgId) {
+    									newSelectionPos = cursor.getPosition();
+    									break;
+    								}
+    							}
+    						}
+    					}
 
-					getActivity().setProgressBarIndeterminateVisibility(false);
-				}
+    					mListAdapter.changeCursor(cursor);
+    					if (newSelectionPos > 0)
+    						getListView().setSelection(newSelectionPos);
 
-				break;
+    					getActivity().setProgressBarIndeterminateVisibility(false);
+    				}
 
-			case CONVERSATION_QUERY_TOKEN:
-				Log.i(TAG, "conversation query completed, marking as read");
-				if (cursor.moveToFirst()) {
-					mConversation = Conversation.createFromCursor(
-							getActivity(), cursor);
-					onConversationCreated();
-				}
+    				break;
 
-				cursor.close();
+    			case CONVERSATION_QUERY_TOKEN:
+    				Log.i(TAG, "conversation query completed, marking as read");
+    				if (cursor.moveToFirst()) {
+    					mConversation = Conversation.createFromCursor(
+    							getActivity(), cursor);
+    					onConversationCreated();
+    				}
 
-				break;
+    				cursor.close();
 
-			default:
-				Log.e(TAG, "onQueryComplete called with unknown token " + token);
+    				break;
+
+    			default:
+    				Log.e(TAG, "onQueryComplete called with unknown token " + token);
 			}
 		}
 	}

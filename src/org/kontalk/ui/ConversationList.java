@@ -114,4 +114,10 @@ public class ConversationList extends FragmentActivity {
         return true;
     }
 
+    public ConversationListFragment getListFragment() {
+        return (ConversationListFragment)
+                getSupportFragmentManager().
+                findFragmentById(R.id.fragment_conversation_list);
+    }
+
 }
