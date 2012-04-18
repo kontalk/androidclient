@@ -234,14 +234,22 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         if (job instanceof MessageSender) {
                             MessageSender mess = (MessageSender) job;
 
-                            // add to sending list
                             Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
                             if (mSendingMessages.contains(msgId)) {
-                                Log.v(TAG, "message already underway - dropping");
-                                return;
+                                /*
+                                 * This is a hack to allow a MessageSender to
+                                 * be requeued if we are resending it as an
+                                 * attachment message.
+                                 */
+                                if (!mess.isAttachment()) {
+                                    Log.v(TAG, "message already underway - dropping");
+                                    return;
+                                }
                             }
-
-                            mSendingMessages.add(msgId);
+                            else {
+                                // add to sending list
+                                mSendingMessages.add(msgId);
+                            }
 
                             // observe the content for cancel requests
                             mess.observe(mContext, this);
