@@ -182,7 +182,7 @@ public class ClientHTTPConnection {
     }
 
     /**
-     * A generic download request, with optional authorization token.
+     * A generic download request, with optional authentication token.
      * @param token the authentication token
      * @param url URL to download
      * @return the request object

@@ -60,7 +60,6 @@ public class NumberValidation extends AccountAuthenticatorActivity
     public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
 
     public static final String PARAM_AUTHTOKEN_TYPE = "authtokenType";
-    public static final String PARAM_CONFIRMCREDENTIALS = "confirmCredentials";
     public static final String PARAM_PHONENUMBER = "phoneNumber";
 
     private AccountManager mAccountManager;
@@ -74,12 +73,6 @@ public class NumberValidation extends AccountAuthenticatorActivity
     private String mAuthtokenType;
     private String mPhoneNumber;
     private boolean mManualValidation;
-
-    /**
-     * If set we are just checking that the user knows their credentials; this
-     * doesn't cause the user's password to be changed on the device.
-     */
-    private Boolean mConfirmCredentials = false;
 
     /** Was the original caller asking for an entirely new account? */
     protected boolean mRequestNewAccount = false;
@@ -96,8 +89,6 @@ public class NumberValidation extends AccountAuthenticatorActivity
         mPhoneNumber = intent.getStringExtra(PARAM_PHONENUMBER);
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
         mRequestNewAccount = (mPhoneNumber == null);
-        mConfirmCredentials =
-            intent.getBooleanExtra(PARAM_CONFIRMCREDENTIALS, false);
 
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
@@ -259,7 +250,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
     @Override
     public void onAuthTokenFailed(NumberValidator v, ValidationStatus reason) {
-        Log.e(TAG, "authorization token request failed (" + reason + ")");
+        Log.e(TAG, "authentication token request failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -302,36 +293,17 @@ public class NumberValidation extends AccountAuthenticatorActivity
         finish();
     }
 
-    protected void finishConfirmCredentials(boolean result) {
-        Log.v(TAG, "finishing confirm credentials");
-
-        // the password is actually the auth token
-        final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
-        mAccountManager.setPassword(account, mAuthtoken);
-
-        final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_BOOLEAN_RESULT, result);
-        setAccountAuthenticatorResult(intent.getExtras());
-        setResult(RESULT_OK, intent);
-        finish();
-    }
-
     @Override
     public void onAuthTokenReceived(NumberValidator v, final CharSequence token) {
-        Log.d(TAG, "got authorization token!");
+        Log.d(TAG, "got authentication token!");
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abort(true);
 
-                if (!mConfirmCredentials) {
-                    Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
-                    finishLogin(token.toString());
-                }
-                else {
-                    finishConfirmCredentials(true);
-                }
+                Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
+                finishLogin(token.toString());
             }
         });
     }

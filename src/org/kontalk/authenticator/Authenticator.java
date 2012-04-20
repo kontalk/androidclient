@@ -108,24 +108,21 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return bundle;
     }
 
+    /**
+     * System is requesting to confirm our credentials - this usually means that
+     * something has changed (e.g. new SIM card), so we simply delete the
+     * account for safety.
+     */
     @Override
     public Bundle confirmCredentials(AccountAuthenticatorResponse response,
             Account account, Bundle options) throws NetworkErrorException {
-        if (options != null && options.containsKey(AccountManager.KEY_PASSWORD)) {
-            final String password =
-                options.getString(AccountManager.KEY_PASSWORD);
-            final Bundle result = new Bundle();
-            result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, (password != null));
-            return result;
-        }
-        // Launch NumberValidation to confirm credentials
-        final Intent intent = new Intent(mContext, NumberValidation.class);
-        intent.putExtra(NumberValidation.PARAM_PHONENUMBER, account.name);
-        intent.putExtra(NumberValidation.PARAM_CONFIRMCREDENTIALS, true);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
+
+        // remove account
+        AccountManager man = AccountManager.get(mContext);
+        man.removeAccount(account, null, null);
 
         final Bundle bundle = new Bundle();
-        bundle.putParcelable(AccountManager.KEY_INTENT, intent);
+        bundle.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
         return bundle;
     }
 
