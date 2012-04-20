@@ -1,7 +1,5 @@
+[ ] ComposeMessage autoclosing when sending an image as first message
 [ ] duplicate incoming messages (FIXME MessageCenterService:548)
+[ ] better confirmCredentials handling
+[ ] display user status message somehow
 [ ] massive message sending tests and benchmarks (especially memory leaks)
-[x] message sender should execute in a separate thread
-[x] re-lookup user when reconnecting: composer should listen for reconnection
-    events and push the UserLookupJob again. 
-[x] requeue failed messages upon internal reconnection
-[x] status update/google c2dm registration id update

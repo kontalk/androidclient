@@ -223,7 +223,6 @@ public class MessagingNotification {
                 return mContext.getString(R.string.new_messages);
             }
             else {
-                // FIXME use a contact cache
                 cacheContact();
                 return (mContact != null) ? mContact.getName() :
                     mContext.getString(R.string.peer_unknown);
