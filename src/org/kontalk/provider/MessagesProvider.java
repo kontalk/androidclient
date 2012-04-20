@@ -130,6 +130,10 @@ public class MessagesProvider extends ContentProvider {
             "content TEXT" +
             ")";
 
+        private static final String SCHEMA_MESSAGES_INDEX =
+            "CREATE UNIQUE INDEX IF NOT EXISTS unique_message ON " + TABLE_MESSAGES +
+            " (msg_id, direction)";
+
         /** Updates the thread messages count. */
         private static final String UPDATE_MESSAGES_COUNT_NEW =
             "UPDATE " + TABLE_THREADS + " SET count = (" +
@@ -251,7 +255,9 @@ public class MessagesProvider extends ContentProvider {
             // rename messages_new to messages
             "ALTER TABLE " + TABLE_MESSAGES + "_new RENAME TO " + TABLE_MESSAGES,
             // rename threads_new to threads
-            "ALTER TABLE " + TABLE_THREADS + "_new RENAME TO " + TABLE_THREADS
+            "ALTER TABLE " + TABLE_THREADS + "_new RENAME TO " + TABLE_THREADS,
+            // unique message index
+            SCHEMA_MESSAGES_INDEX
         };
 
 
@@ -264,6 +270,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
             db.execSQL(SCHEMA_FULLTEXT);
+            db.execSQL(SCHEMA_MESSAGES_INDEX);
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
             db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);

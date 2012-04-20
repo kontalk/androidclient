@@ -1,6 +1,6 @@
 [ ] ComposeMessage autoclosing when sending an image as first message
-[ ] duplicate incoming messages (FIXME MessageCenterService:548)
 [ ] display user status message somehow
 [ ] custom conversations wallpaper
 [ ] massive message sending tests and benchmarks (especially memory leaks)
+[x] duplicated incoming messages (FIXME MessageCenterService:548)
 [x] confirmCredentials should delete the account
