@@ -26,6 +26,9 @@ package org.kontalk.service;
  */
 public interface RequestListener {
 
+    /** Called just before the job gets started. */
+    public void starting(ClientThread client, RequestJob job);
+
     /**
      * Called now and then while sending out data.
      * Useful for checking the upload progress.

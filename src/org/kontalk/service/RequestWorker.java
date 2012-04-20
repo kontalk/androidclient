@@ -128,6 +128,12 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         private static final long serialVersionUID = 1L;
 
         @Override
+        public void starting(ClientThread client, RequestJob job) {
+            for (RequestListener l : this)
+                l.starting(client, job);
+        }
+
+        @Override
         public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
             for (RequestListener l : this)
                 l.downloadProgress(client, job, bytes);
@@ -268,6 +274,9 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         }
 
                         else {
+                            // start callback
+                            mListeners.starting(mClient, job);
+
                             String txId = job.execute(mClient, mListeners, mContext);
 
                             mListeners.done(mClient, job, txId);
@@ -371,6 +380,9 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 // FIXME there is some duplicated code here
 
                 try {
+                    // start callback
+                    mListeners.starting(mClient, mJob);
+
                     String txId = mJob.execute(mClient, mListener, mContext);
 
                     mListener.done(mClient, mJob, txId);

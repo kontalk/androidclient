@@ -638,22 +638,6 @@ public class MessageCenterService extends Service
     public void sendMessage(final MessageSender job) {
         // global listener
         job.setListener(mMessageRequestListener);
-
-        // not a plain text message - use progress notification
-        if (job.getSourceUri() != null) {
-            try {
-                startForeground(job.getUserId(), job.getContentLength(this));
-            }
-            catch (IOException e) {
-                Log.e(TAG, "error reading message data to send", e);
-                MessagesProvider.changeMessageStatus(this,
-                        job.getMessageUri(), Messages.DIRECTION_OUT, Messages.STATUS_ERROR,
-                        -1, System.currentTimeMillis());
-                // just don't send for now
-                return;
-            }
-        }
-
         pushRequest(job);
     }
 
@@ -890,6 +874,27 @@ public class MessageCenterService extends Service
     public final class MessageCenterInterface extends Binder {
         public MessageCenterService getService() {
             return MessageCenterService.this;
+        }
+    }
+
+    @Override
+    public void starting(ClientThread client, RequestJob job) {
+        // not a plain text message - use progress notification
+        if (job instanceof MessageSender) {
+            MessageSender msg = (MessageSender) job;
+            if (msg.getSourceUri() != null) {
+                try {
+                    startForeground(msg.getUserId(), msg.getContentLength(this));
+                }
+                catch (IOException e) {
+                    Log.e(TAG, "error reading message data to send", e);
+                    MessagesProvider.changeMessageStatus(this,
+                            msg.getMessageUri(), Messages.DIRECTION_OUT, Messages.STATUS_ERROR,
+                            -1, System.currentTimeMillis());
+                    // just don't send for now
+                    return;
+                }
+            }
         }
     }
 

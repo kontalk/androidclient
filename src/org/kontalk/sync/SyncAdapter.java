@@ -155,6 +155,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             RequestJob job = service.lookupUsers(hashList);
             job.setListener(new RequestListener() {
                 @Override
+                public void starting(ClientThread client, RequestJob job) {
+                    // not used
+                }
+
+                @Override
                 public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
                     // not used
                 }

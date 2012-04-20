@@ -116,7 +116,6 @@ import com.google.protobuf.MessageLite;
 
 /**
  * The composer fragment.
- *
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
@@ -1331,6 +1330,11 @@ public class ComposeMessageFragment extends ListFragment implements
             mLastSeenBanner.startAnimation(AnimationUtils
                     .loadAnimation(getActivity(), R.anim.header_appear));
 	    }
+	}
+
+	@Override
+	public void starting(ClientThread client, RequestJob job) {
+	    // not used
 	}
 
     @Override

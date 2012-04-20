@@ -118,6 +118,11 @@ public class MessageRequestListener implements RequestListener {
     }
 
     @Override
+    public void starting(ClientThread client, RequestJob job) {
+        mParentListener.starting(client, job);
+    }
+
+    @Override
     public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
         mParentListener.uploadProgress(client, job, bytes);
     }
