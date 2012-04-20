@@ -1,4 +1,4 @@
-[ ] ComposeMessage autoclosing when sending an image as first message
+[ ] ComposeMessage autoclosing when sending a message as first message
 [ ] display user status message somehow
 [ ] custom conversations wallpaper
 [ ] massive message sending tests and benchmarks (especially memory leaks)
