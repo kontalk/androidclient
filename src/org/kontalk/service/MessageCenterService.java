@@ -509,9 +509,9 @@ public class MessageCenterService extends Service
         // do not store receipts...
         else if (!(msg instanceof ReceiptMessage)) {
             // store to file if it's an image message
-            // FIXME this should be abstracted somehow
             byte[] content = msg.getBinaryContent();
 
+            // FIXME this should be abstracted somehow (e.g. MediaMessage supertype)
             if (msg instanceof ImageMessage) {
                 String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
                 File file = null;

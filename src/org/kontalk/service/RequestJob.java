@@ -33,6 +33,8 @@ public abstract class RequestJob {
 
     protected RequestListener mListener;
     protected boolean mCancel;
+    /** Used only if job is asynchronous. */
+    protected Thread mThread;
 
     public void setListener(RequestListener listener) {
         mListener = listener;
@@ -40,6 +42,14 @@ public abstract class RequestJob {
 
     public RequestListener getListener() {
         return mListener;
+    }
+
+    public Thread getThread() {
+        return mThread;
+    }
+
+    public void setThread(Thread thread) {
+        mThread = thread;
     }
 
     /**

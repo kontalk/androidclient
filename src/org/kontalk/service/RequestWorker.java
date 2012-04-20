@@ -70,6 +70,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
     /** A list of messages currently being sent. Used for concurrency */
     private List<Long> mSendingMessages = new ArrayList<Long>();
+    /** List of asynchronous started jobs. */
+    private List<PauseHandler.AsyncRequestJob> mAsyncJobs = new ArrayList<PauseHandler.AsyncRequestJob>();
 
     private String mPushRegistrationId;
 
@@ -256,9 +258,12 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         }
 
                         if (job.isAsync()) {
-                            // FIXME we really should keep a reference
-                            // FIXME also we should keep the worker alive
-                            Thread tjob = new AsyncRequestJob(job, mClient, mListeners, mContext);
+                            // we should keep the worker alive
+                            hold();
+                            AsyncRequestJob tjob = new AsyncRequestJob(job, mClient, mListeners, mContext);
+                            // keep a reference to the thread
+                            job.setThread(tjob);
+                            mAsyncJobs.add(tjob);
                             tjob.start();
                         }
 
@@ -357,6 +362,11 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             }
 
             @Override
+            public String toString() {
+                return mJob.toString();
+            }
+
+            @Override
             public final void run() {
                 // FIXME there is some duplicated code here
 
@@ -388,6 +398,9 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
                         mSendingMessages.remove(msgId);
                     }
+
+                    // remove reference to this thread
+                    mAsyncJobs.remove(this);
 
                     // remove our old custom listener
                     RequestListener listener = mJob.getListener();
@@ -440,6 +453,15 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     public synchronized void shutdown() {
         Log.d(TAG, "shutting down");
         interrupt();
+
+        // stop async jobs
+        synchronized (mAsyncJobs) {
+            for (PauseHandler.AsyncRequestJob tjob : mAsyncJobs) {
+                Log.v(TAG, "terminating async job " + tjob.toString());
+                tjob.interrupt();
+            }
+            mAsyncJobs.clear();
+        }
 
         Log.d(TAG, "quitting looper");
         quit();

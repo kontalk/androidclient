@@ -1,4 +1,4 @@
-[ ] why MessageSenders loop???
+[ ] duplicate incoming messages (FIXME MessageCenterService:548)
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [x] message sender should execute in a separate thread
 [x] re-lookup user when reconnecting: composer should listen for reconnection
