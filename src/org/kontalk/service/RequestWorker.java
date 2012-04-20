@@ -159,7 +159,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
     private final class PauseHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
-        private final int IDLE_MSG_TIME = 5000; //60000;
+        private final int IDLE_MSG_TIME = 60000;
         /** Reference counter. */
         private int mRefCount;
 
@@ -401,6 +401,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
                     // remove reference to this thread
                     mAsyncJobs.remove(this);
+                    release();
 
                     // remove our old custom listener
                     RequestListener listener = mJob.getListener();
