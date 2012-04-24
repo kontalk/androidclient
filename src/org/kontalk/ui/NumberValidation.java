@@ -26,6 +26,7 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
 import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.sync.SyncAdapter;
 
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
@@ -59,8 +60,9 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
     public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
 
-    public static final String PARAM_AUTHTOKEN_TYPE = "authtokenType";
-    public static final String PARAM_PHONENUMBER = "phoneNumber";
+    public static final String PARAM_AUTHTOKEN_TYPE = "org.kontalk.authtokenType";
+    public static final String PARAM_PHONENUMBER = "org.kontalk.phoneNumber";
+    public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     private AccountManager mAccountManager;
     private EditText mPhone;
@@ -74,9 +76,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     private String mPhoneNumber;
     private boolean mManualValidation;
 
-    /** Was the original caller asking for an entirely new account? */
-    protected boolean mRequestNewAccount = false;
-
+    private boolean mFromInternal;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,7 +88,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         final Intent intent = getIntent();
         mPhoneNumber = intent.getStringExtra(PARAM_PHONENUMBER);
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
-        mRequestNewAccount = (mPhoneNumber == null);
+        mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
@@ -118,7 +118,9 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
     /** Starts the validation activity. */
     public static void startValidation(Context context) {
-        context.startActivity(new Intent(context, NumberValidation.class));
+        Intent i = new Intent(context, NumberValidation.class);
+        i.putExtra(PARAM_FROM_INTERNAL, true);
+        context.startActivity(i);
     }
 
     private void enableControls(boolean enabled) {
@@ -267,14 +269,10 @@ public class NumberValidation extends AccountAuthenticatorActivity
         final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
         mAuthtoken = token;
 
-        if (mRequestNewAccount) {
-            // the password is actually the auth token
-            mAccountManager.addAccountExplicitly(account, mAuthtoken, null);
-            // Set contacts sync for this account.
-            ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
-        } else {
-            // TODO what here??
-        }
+        // the password is actually the auth token
+        mAccountManager.addAccountExplicitly(account, mAuthtoken, null);
+        // Set contacts sync for this account.
+        ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
 
         // send back result
         final Intent intent = new Intent();
@@ -289,6 +287,14 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
         // ok, start message center
         MessageCenterService.startMessageCenter(getApplicationContext());
+
+        // if we have been called internally, start ConversationList
+        if (mFromInternal)
+            startActivity(new Intent(this, ConversationList.class));
+
+        // manual sync
+        SyncAdapter.requestSync(this, true);
+
         // end this
         finish();
     }

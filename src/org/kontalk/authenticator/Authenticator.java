@@ -155,15 +155,13 @@ public class Authenticator extends AbstractAccountAuthenticator {
             return result;
         }
 
-        Log.w(TAG, "token not found, launching validation");
-        // incorrect or missing password - launch validation
-        final Intent intent = new Intent(mContext, NumberValidation.class);
-        intent.putExtra(NumberValidation.PARAM_PHONENUMBER, account.name);
-        intent.putExtra(NumberValidation.PARAM_AUTHTOKEN_TYPE, authTokenType);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
+        Log.w(TAG, "token not found, deleting account");
+        // incorrect or missing password - remove account
+        AccountManager man = AccountManager.get(mContext);
+        man.removeAccount(account, null, null);
 
         final Bundle bundle = new Bundle();
-        bundle.putParcelable(AccountManager.KEY_INTENT, intent);
+        bundle.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
         return bundle;
     }
 

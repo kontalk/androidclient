@@ -1,6 +1,9 @@
 [ ] ComposeMessage autoclosing when sending a message as first message
+[ ] ActionBar menus activation problem
 [ ] display user status message somehow
+[ ] put encryption icon above message status icon
 [ ] custom conversations wallpaper
 [ ] massive message sending tests and benchmarks (especially memory leaks)
+[x] NumberValidation should go back to ConversationList
 [x] duplicated incoming messages (FIXME MessageCenterService:548)
 [x] confirmCredentials should delete the account

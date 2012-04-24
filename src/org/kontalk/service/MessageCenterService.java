@@ -240,7 +240,6 @@ public class MessageCenterService extends Service
                 mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
                 mAccount = Authenticator.getDefaultAccount(this);
                 if (mAccount == null) {
-                    // onDestroy will unlock()
                     stopSelf();
                 }
                 else {

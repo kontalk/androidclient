@@ -49,6 +49,7 @@ public class Kontalk extends Application {
         MessageCenterService.startMessageCenter(this);
         MessagingNotification.updateMessagesNotification(this, false);
 
+        // manual server address: restart message center
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override

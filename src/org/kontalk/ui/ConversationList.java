@@ -114,6 +114,16 @@ public class ConversationList extends FragmentActivity {
         return true;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (Authenticator.getDefaultAccount(this) == null) {
+            NumberValidation.startValidation(this);
+            finish();
+        }
+    }
+
     public ConversationListFragment getListFragment() {
         return (ConversationListFragment)
                 getSupportFragmentManager().

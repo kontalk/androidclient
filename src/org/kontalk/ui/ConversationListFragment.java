@@ -19,7 +19,6 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
@@ -316,18 +315,9 @@ public class ConversationListFragment extends ListFragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        if (Authenticator.getDefaultAccount(getActivity()) == null) {
-            NumberValidation.startValidation(getActivity());
-            getActivity().finish();
-        }
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
+
         // hold message center
         MessageCenterService.holdMessageCenter(getActivity());
         startQuery();

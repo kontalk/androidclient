@@ -77,7 +77,7 @@ public class MessagingPreferences extends PreferenceActivity {
             }
         });
 
-        // TODO manual server address: restart message center
+        // manual server address is handled in Application context
 
         // server list last update timestamp
         final Preference updateServerList = findPreference("pref_update_server_list");
