@@ -1,3 +1,4 @@
+[ ] FIXME in MessagesProvider:819
 [ ] still queue concurrency problems sending binary messages
 [ ] put encryption icon above message status icon
 [ ] display user status message somehow
