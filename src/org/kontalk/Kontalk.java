@@ -28,7 +28,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Process;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 
 /**
@@ -56,7 +55,7 @@ public class Kontalk extends Application {
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 if ("pref_network_uri".equals(key)) {
                     // just restart the message center for now
-                    Log.w(TAG, "network address changed");
+                    android.util.Log.w(TAG, "network address changed");
                     MessageCenterService.restartMessageCenter(Kontalk.this);
                 }
             }
