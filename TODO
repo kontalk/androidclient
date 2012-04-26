@@ -1,3 +1,4 @@
+[ ] still queue concurrency problems sending binary messages
 [ ] ComposeMessage autoclosing when sending a message as first message
 [ ] put encryption icon above message status icon
 [ ] display user status message somehow
