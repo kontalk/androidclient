@@ -20,6 +20,7 @@ package org.kontalk.provider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.kontalk.R;
 import org.kontalk.message.PlainTextMessage;
@@ -47,7 +48,7 @@ import android.util.Log;
 
 
 /**
- * The messages storage provider.
+ * The message storage provider.
  * @author Daniele Ricci
  */
 public class MessagesProvider extends ContentProvider {
@@ -364,63 +365,68 @@ public class MessagesProvider extends ContentProvider {
         if (sUriMatcher.match(uri) != MESSAGES) { throw new IllegalArgumentException("Unknown URI " + uri); }
         if (initialValues == null) { throw new IllegalArgumentException("No data"); }
 
-        ContentResolver cr = getContext().getContentResolver();
-
         // if this flag is true, we'll insert the thread only
         String draft = initialValues.getAsString(Threads.DRAFT);
 
         ContentValues values = new ContentValues(initialValues);
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        // create the thread first
-        long threadId = updateThreads(db, values);
+        boolean success = false;
+        List<Uri> notifications = new ArrayList<Uri>();
 
-        if (draft != null) {
-            // notify thread change
-            cr.notifyChange(
-                    ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
-                    null);
-            // notify conversation change
-            cr.notifyChange(
-                    ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
-                    null);
+        try {
+            beginTransaction(db);
 
-            Log.d(TAG, "draft thread created");
-            return null;
-        }
+            // create the thread first
+            long threadId = updateThreads(db, values, notifications);
 
-        values.put(Messages.THREAD_ID, threadId);
+            if (draft != null) {
+                // notify thread change
+                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                // notify conversation change
+                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
 
-        // insert the new message now!
-        long rowId = db.insert(TABLE_MESSAGES, null, values);
-
-        if (rowId > 0) {
-            // update fulltext table
-            Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-            String mime = values.getAsString(Messages.MIME);
-            if ((encrypted == null || !encrypted.booleanValue()) && PlainTextMessage.MIME_TYPE.equals(mime)) {
-                byte[] content = values.getAsByteArray(Messages.CONTENT);
-                updateFulltext(db, rowId, threadId, content);
+                Log.d(TAG, "draft thread created");
+                success = setTransactionSuccessful(db);
+                return null;
             }
 
+            values.put(Messages.THREAD_ID, threadId);
 
-            Uri msgUri = ContentUris.withAppendedId(uri, rowId);
-            cr.notifyChange(msgUri, null);
-            Log.w(TAG, "messages table inserted, id = " + rowId);
+            // insert the new message now!
+            long rowId = db.insert(TABLE_MESSAGES, null, values);
 
-            // notify thread change
-            cr.notifyChange(
-                    ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
-                    null);
-            // notify conversation change
-            cr.notifyChange(
-                    ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
-                    null);
+            if (rowId > 0) {
+                // update fulltext table
+                Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
+                String mime = values.getAsString(Messages.MIME);
+                if ((encrypted == null || !encrypted.booleanValue()) && PlainTextMessage.MIME_TYPE.equals(mime)) {
+                    byte[] content = values.getAsByteArray(Messages.CONTENT);
+                    updateFulltext(db, rowId, threadId, content);
+                }
 
-            return msgUri;
+
+                Uri msgUri = ContentUris.withAppendedId(uri, rowId);
+                notifications.add(msgUri);
+                Log.w(TAG, "messages table inserted, id = " + rowId);
+
+                // notify thread change
+                notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                // notify conversation change
+                notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+
+                success = setTransactionSuccessful(db);
+                return msgUri;
+            }
+
+            throw new SQLException("Failed to insert row into " + uri);
         }
-
-        throw new SQLException("Failed to insert row into " + uri);
+        finally {
+            endTransaction(db, success);
+            ContentResolver cr = getContext().getContentResolver();
+            for (Uri nuri : notifications)
+                cr.notifyChange(nuri, null);
+        }
     }
 
     /**
@@ -430,7 +436,7 @@ public class MessagesProvider extends ContentProvider {
      * @param values
      * @return the thread id
      */
-    private long updateThreads(SQLiteDatabase db, ContentValues initialValues) {
+    private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications) {
         ContentValues values = new ContentValues(initialValues);
         String peer = values.getAsString(Threads.PEER);
 
@@ -485,8 +491,7 @@ public class MessagesProvider extends ContentProvider {
 
             // notify newly created thread by userid
             // this will be used for fixing ticket #18
-            getContext().getContentResolver()
-                .notifyChange(Threads.getUri(peer), null);
+            notifications.add(Threads.getUri(peer));
         }
 
         return threadId;
@@ -550,83 +555,95 @@ public class MessagesProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
+        List<Uri> notifications = new ArrayList<Uri>();
+        boolean success = false;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        // retrieve old data for notifying.
-        // This was done because of the update call could make the old where
-        // condition not working any more.
-        String[] msgIdList = null;
-        if (table.equals(TABLE_MESSAGES)) {
-            // preserve a list of the matching messages for notification and
-            // fulltext update later
-            Cursor old = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
-                    where, args, null, null, null);
-            msgIdList = new String[old.getCount()];
-            int i = 0;
-            while (old.moveToNext()) {
-                msgIdList[i] = old.getString(0);
-                i++;
+        try {
+            beginTransaction(db);
+
+            // retrieve old data for notifying.
+            // This was done because of the update call could make the old where
+            // condition not working any more.
+            String[] msgIdList = null;
+            if (table.equals(TABLE_MESSAGES)) {
+                // preserve a list of the matching messages for notification and
+                // fulltext update later
+                Cursor old = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
+                        where, args, null, null, null);
+                msgIdList = new String[old.getCount()];
+                int i = 0;
+                while (old.moveToNext()) {
+                    msgIdList[i] = old.getString(0);
+                    i++;
+                }
+
+                old.close();
             }
 
-            old.close();
-        }
+            int rows = db.update(table, values, where, args);
+            Log.w(TAG, "messages table updated, affected: " + rows);
 
-        int rows = db.update(table, values, where, args);
+            // notify change only if rows are actually affected
+            if (rows > 0) {
+                notifications.add(uri);
 
-        Log.w(TAG, "messages table updated, affected: " + rows);
+                if (table.equals(TABLE_MESSAGES)) {
+                    // update fulltext only if content actually changed
+                    boolean doUpdateFulltext;
+                    String[] projection;
 
-        // notify change only if rows are actually affected
-        if (rows > 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
-
-            if (table.equals(TABLE_MESSAGES)) {
-                // update fulltext only if content actually changed
-                boolean doUpdateFulltext;
-                String[] projection;
-
-                byte[] oldContent = values.getAsByteArray(Messages.CONTENT);
-                if (oldContent != null) {
-                    doUpdateFulltext = true;
-                    projection = new String[] { Messages.THREAD_ID, Messages._ID,
-                            Messages.DIRECTION, Messages.MIME,
-                            Messages.ENCRYPTED, Messages.CONTENT };
-                }
-                else {
-                    doUpdateFulltext = false;
-                    projection = new String[] { Messages.THREAD_ID };
-                }
-
-                // build new IN where condition
-                if (msgIdList.length > 0) {
-                    StringBuilder whereBuilder = new StringBuilder(Messages._ID + " IN (?");
-                    for (int i = 1; i < msgIdList.length; i++)
-                        whereBuilder.append(",?");
-                    whereBuilder.append(")");
-
-                    Cursor c = db.query(TABLE_MESSAGES, projection,
-                            whereBuilder.toString(), msgIdList, null, null, null);
-
-                    while (c.moveToNext()) {
-                        long threadId = c.getLong(0);
-                        updateThreadInfo(db, threadId);
-
-                        // update fulltext if necessary
-                        if (doUpdateFulltext) {
-                            int direction = c.getInt(2);
-                            String mime = c.getString(3);
-                            int encrypted = c.getInt(4);
-                            if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
-                                    PlainTextMessage.MIME_TYPE.equals(mime))
-                                updateFulltext(db, c.getLong(1), threadId, c.getBlob(5));
-                        }
+                    byte[] oldContent = values.getAsByteArray(Messages.CONTENT);
+                    if (oldContent != null) {
+                        doUpdateFulltext = true;
+                        projection = new String[] { Messages.THREAD_ID, Messages._ID,
+                                Messages.DIRECTION, Messages.MIME,
+                                Messages.ENCRYPTED, Messages.CONTENT };
+                    }
+                    else {
+                        doUpdateFulltext = false;
+                        projection = new String[] { Messages.THREAD_ID };
                     }
 
-                    c.close();
+                    // build new IN where condition
+                    if (msgIdList.length > 0) {
+                        StringBuilder whereBuilder = new StringBuilder(Messages._ID + " IN (?");
+                        for (int i = 1; i < msgIdList.length; i++)
+                            whereBuilder.append(",?");
+                        whereBuilder.append(")");
+
+                        Cursor c = db.query(TABLE_MESSAGES, projection,
+                                whereBuilder.toString(), msgIdList, null, null, null);
+
+                        while (c.moveToNext()) {
+                            long threadId = c.getLong(0);
+                            updateThreadInfo(db, threadId, notifications);
+
+                            // update fulltext if necessary
+                            if (doUpdateFulltext) {
+                                int direction = c.getInt(2);
+                                String mime = c.getString(3);
+                                int encrypted = c.getInt(4);
+                                if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
+                                        PlainTextMessage.MIME_TYPE.equals(mime))
+                                    updateFulltext(db, c.getLong(1), threadId, c.getBlob(5));
+                            }
+                        }
+
+                        c.close();
+                    }
                 }
             }
-        }
 
-        return rows;
+            success = setTransactionSuccessful(db);
+            return rows;
+        }
+        finally {
+            endTransaction(db, success);
+            ContentResolver cr = getContext().getContentResolver();
+            for (Uri nuri : notifications)
+                cr.notifyChange(nuri, null);
+        }
     }
 
     private void updateFulltext(SQLiteDatabase db, long id, long threadId, byte[] content) {
@@ -699,67 +716,79 @@ public class MessagesProvider extends ContentProvider {
                     cr.notifyChange(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), null);
                 }
                 return rows;
+                // END :)
             }
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
+        int rows = 0;
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        long threadId = -1;
-        if (table.equals(TABLE_MESSAGES)) {
-            // retrieve the thread id for later use by updateThreadInfo(), and
-            // also update fulltext table
-            Cursor c = db.query(TABLE_MESSAGES, new String[] {
-                    Messages.THREAD_ID,
-                    Messages._ID,
-                    Messages.DIRECTION,
-                    Messages.MIME,
-                    Messages.ENCRYPTED
-                },
-                where, args, null, null, null);
-            if (c != null) {
-                while (c.moveToNext()) {
-                    // FIXME this way we'll get only one threadId...
-                    threadId = c.getLong(0);
+        boolean success = false;
+        List<Uri> notifications = new ArrayList<Uri>();
+        try {
+            // let's begin this big transaction :S
+            beginTransaction(db);
 
-                    // update fulltext
-                    int direction = c.getInt(2);
-                    String mime = c.getString(3);
-                    int encrypted = c.getInt(4);
-                    if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
-                            PlainTextMessage.MIME_TYPE.equals(mime))
-                        db.delete(TABLE_FULLTEXT, Fulltext._ID + " = " + c.getLong(1), null);
+            long threadId = -1;
+            if (table.equals(TABLE_MESSAGES)) {
+                // retrieve the thread id for later use by updateThreadInfo(), and
+                // also update fulltext table
+                Cursor c = db.query(TABLE_MESSAGES, new String[] {
+                        Messages.THREAD_ID,
+                        Messages._ID,
+                        Messages.DIRECTION,
+                        Messages.MIME,
+                        Messages.ENCRYPTED
+                    },
+                    where, args, null, null, null);
+                if (c != null) {
+                    while (c.moveToNext()) {
+                        // FIXME this way we'll only get one threadId...
+                        threadId = c.getLong(0);
+
+                        // update fulltext
+                        int direction = c.getInt(2);
+                        String mime = c.getString(3);
+                        int encrypted = c.getInt(4);
+                        if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
+                                PlainTextMessage.MIME_TYPE.equals(mime))
+                            db.delete(TABLE_FULLTEXT, Fulltext._ID + " = " + c.getLong(1), null);
+                    }
+
+                    c.close();
                 }
-
-                c.close();
             }
+
+            // DELETE!
+            rows = db.delete(table, where, args);
+
+            // notify change only if rows are actually affected
+            if (rows > 0)
+                notifications.add(uri);
+            Log.w(TAG, "table " + table + " deleted, affected: " + rows);
+
+            if (table.equals(TABLE_MESSAGES)) {
+                // check for empty threads
+                if (deleteEmptyThreads(db) > 0)
+                    notifications.add(Threads.CONTENT_URI);
+                // update thread with latest info and status
+                if (threadId > 0) {
+                    updateThreadInfo(db, threadId, notifications);
+                }
+                else
+                    Log.e(TAG, "unable to update thread metadata (threadId not found)");
+                // change notifications get triggered by previous method calls
+            }
+
+            success = setTransactionSuccessful(db);
         }
-
-        // DELETE!
-        int rows = db.delete(table, where, args);
-
-        // notify change only if rows are actually affected
-        if (rows > 0)
-            getContext().getContentResolver().notifyChange(uri, null);
-        Log.w(TAG, "table " + table + " deleted, affected: " + rows);
-
-        if (table.equals(TABLE_MESSAGES)) {
-            // check for empty threads
-            deleteEmptyThreads(db);
-            // update thread with latest info and status
-            if (threadId > 0) {
-                if (updateThreadInfo(db, threadId) < 0) {
-                    ContentResolver cr = getContext().getContentResolver();
-                    cr.notifyChange(
-                            ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), null);
-                    cr.notifyChange(
-                            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId), null);
-                }
-            }
-            else
-                Log.e(TAG, "unable to update thread metadata (threadId not found)");
-            // change notifications get triggered by previous method calls
+        finally {
+            endTransaction(db, success);
+            ContentResolver cr = getContext().getContentResolver();
+            for (Uri nuri : notifications)
+                cr.notifyChange(nuri, null);
         }
 
         return rows;
@@ -769,41 +798,29 @@ public class MessagesProvider extends ContentProvider {
         long threadId = ContentUris.parseId(uri);
         if (threadId > 0) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
+            boolean success = false;
             try {
                 int num = 0;
 
-                db.beginTransaction();
-                num += db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
-
-                // query all messages first because we need to notify changes
-                Cursor c = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
-                        Messages.THREAD_ID + " = " + threadId,
-                        null, null, null, null);
-                long[] messageList = new long[c.getCount()];
-                int i = 0;
-                while (c.moveToNext())
-                    messageList[i++] = c.getLong(0);
-                c.close();
-
+                beginTransaction(db);
+                num = db.delete(TABLE_THREADS, Threads._ID + " = " + threadId, null);
                 num += db.delete(TABLE_MESSAGES, Messages.THREAD_ID + " = " + threadId, null);
                 // update fulltext
                 db.delete(TABLE_FULLTEXT, Messages.THREAD_ID + " = " + threadId, null);
 
-                // commit!
-                db.setTransactionSuccessful();
-
-                // notify change for every message :(
-                ContentResolver cr = getContext().getContentResolver();
-                for (i = 0; i < messageList.length; i++) {
-                    cr.notifyChange(ContentUris
-                            .withAppendedId(Messages.CONTENT_URI, messageList[i]),
-                            null);
-                }
+                // set transaction successful
+                success = setTransactionSuccessful(db);
 
                 return num;
             }
             finally {
-                db.endTransaction();
+                endTransaction(db, success);
+                /*
+                 * FIXME WARNING here we removed the code that notified all
+                 * deleted messages in this transaction. MessageSender
+                 * observation depends on direct message URIs, so it will not
+                 * realize the messages have been deleted!!!
+                 */
             }
         }
 
@@ -811,7 +828,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     /** Updates metadata of a given thread. */
-    private int updateThreadInfo(SQLiteDatabase db, long threadId) {
+    private int updateThreadInfo(SQLiteDatabase db, long threadId, List<Uri> notifications) {
         Cursor c = db.query(TABLE_MESSAGES, new String[] {
                 Messages.MESSAGE_ID,
                 Messages.DIRECTION,
@@ -848,11 +865,8 @@ public class MessagesProvider extends ContentProvider {
                 v.put(Threads.TIMESTAMP, c.getLong(5));
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
                 if (rc > 0) {
-                    ContentResolver cres = getContext().getContentResolver();
-                    cres.notifyChange(
-                            ContentUris.withAppendedId(Threads.CONTENT_URI, threadId), null);
-                    cres.notifyChange(
-                            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId), null);
+                    notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
+                    notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
                 }
             }
             c.close();
@@ -865,8 +879,6 @@ public class MessagesProvider extends ContentProvider {
         int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0 AND " +
                 Threads.DRAFT + " IS NULL", null);
         Log.i(TAG, "deleting empty threads: " + rows);
-        if (rows > 0)
-            getContext().getContentResolver().notifyChange(Threads.CONTENT_URI, null);
         return rows;
     }
 
@@ -886,6 +898,29 @@ public class MessagesProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
+    }
+
+    /* Transactions compatibility layer */
+
+    private void beginTransaction(SQLiteDatabase db) {
+        if (android.os.Build.VERSION.SDK_INT >= 11)
+            db.beginTransactionNonExclusive();
+        else
+            // this is because API < 11 doesn't have beginTransactionNonExclusive()
+            db.execSQL("BEGIN IMMEDIATE");
+    }
+
+    private boolean setTransactionSuccessful(SQLiteDatabase db) {
+        if (android.os.Build.VERSION.SDK_INT >= 11)
+            db.setTransactionSuccessful();
+        return true;
+    }
+
+    private void endTransaction(SQLiteDatabase db, boolean success) {
+        if (android.os.Build.VERSION.SDK_INT >= 11)
+            db.endTransaction();
+        else
+            db.execSQL(success ? "COMMIT" : "ROLLBACK");
     }
 
     public static boolean deleteDatabase(Context ctx) {

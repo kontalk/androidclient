@@ -173,7 +173,7 @@ public class UsersProvider extends ContentProvider {
             db.beginTransactionNonExclusive();
         else
             // this is because API < 11 doesn't have beginTransactionNonExclusive()
-            db.execSQL("BEGIN IMMEDIATE;");
+            db.execSQL("BEGIN IMMEDIATE");
 
         // delete old contacts
         db.execSQL("DELETE FROM " + TABLE_USERS);
@@ -226,7 +226,7 @@ public class UsersProvider extends ContentProvider {
             if (android.os.Build.VERSION.SDK_INT >= 11)
                 db.endTransaction();
             else
-                db.execSQL("COMMIT;");
+                db.execSQL("COMMIT");
             phones.close();
             stm.close();
         }
