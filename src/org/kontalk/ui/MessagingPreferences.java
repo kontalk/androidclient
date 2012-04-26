@@ -219,10 +219,6 @@ public class MessagingPreferences extends PreferenceActivity {
         return new Coder(new PassKey(key));
     }
 
-    public static boolean getLastSeenEnabled(Context context) {
-        return getBoolean(context, "pref_show_last_seen", true);
-    }
-
     public static boolean getPushNotificationsEnabled(Context context) {
         return getBoolean(context, "pref_push_notifications", true);
     }

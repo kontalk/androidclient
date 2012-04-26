@@ -87,8 +87,6 @@
     <string name="pref_passphrase">Password</string>
     <string name="pref_prompt_passphrase">Lasciare vuoto per usare il numero di telefono del destinatario.</string>
     <string name="pref_title_passphrase">La password sarà utilizzata anche per la decifratura quando necessario</string>
-    <string name="pref_show_last_seen">Utente visto l\'ultima volta</string>
-    <string name="pref_title_show_last_seen">Mostra l\'ultima volta che è stato visto l\'utente</string>
     <string name="contact_not_registered">Il contatto sembra non essere registrato su Kontalk.</string>
     <string name="error_store_outbox">Impossibile memorizzare il messaggio in uscita.</string>
     <string name="decrypt_message">Decifra messaggio</string>

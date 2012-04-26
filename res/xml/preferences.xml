@@ -48,10 +48,6 @@
             android:inputType="textPassword"
             android:summary="@string/pref_title_passphrase"
             android:dialogMessage="@string/pref_prompt_passphrase"/>
-        <CheckBoxPreference android:key="pref_show_last_seen"
-            android:summary="@string/pref_title_show_last_seen"
-            android:title="@string/pref_show_last_seen"
-            android:defaultValue="true"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_appearance_settings"
@@ -61,7 +57,9 @@
             android:entries="@array/fontsize_labels"
             android:entryValues="@array/fontsize_values"
             android:defaultValue="medium"/>
-        <CheckBoxPreference android:title="@string/pref_woody_background" android:summary="@string/pref_title_woody_background" android:key="pref_woody_background"/>
+        <CheckBoxPreference android:key="pref_woody_background"
+            android:title="@string/pref_woody_background"
+            android:summary="@string/pref_title_woody_background"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_notification_settings"

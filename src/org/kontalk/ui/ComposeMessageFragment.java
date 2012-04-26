@@ -349,10 +349,8 @@ public class ComposeMessageFragment extends ListFragment implements
             if (!lookupOnly)
                 service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE);
 
-            if (MessagingPreferences.getLastSeenEnabled(getActivity())) {
-                UserLookupJob job = service.lookupUser(userId);
-                job.setListener(ComposeMessageFragment.this);
-            }
+            UserLookupJob job = service.lookupUser(userId);
+            job.setListener(ComposeMessageFragment.this);
 
             getActivity().unbindService(this);
         }
