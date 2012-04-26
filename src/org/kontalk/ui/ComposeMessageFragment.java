@@ -114,6 +114,7 @@ import android.widget.Toast;
 
 import com.google.protobuf.MessageLite;
 
+
 /**
  * The composer fragment.
  * @author Daniele Ricci
@@ -207,6 +208,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		mHandler = new Handler();
         ListView list = getListView();
+        list.setFastScrollEnabled(true);
 		registerForContextMenu(list);
 
 		// set custom background (if any)
