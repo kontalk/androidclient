@@ -386,7 +386,7 @@ public class MessagesProvider extends ContentProvider {
                 // notify conversation change
                 notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
 
-                Log.d(TAG, "draft thread created");
+                Log.v(TAG, "draft thread created");
                 success = setTransactionSuccessful(db);
                 return null;
             }
@@ -408,7 +408,7 @@ public class MessagesProvider extends ContentProvider {
 
                 Uri msgUri = ContentUris.withAppendedId(uri, rowId);
                 notifications.add(msgUri);
-                Log.w(TAG, "messages table inserted, id = " + rowId);
+                Log.v(TAG, "messages table inserted, id = " + rowId);
 
                 // notify thread change
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
@@ -483,11 +483,11 @@ public class MessagesProvider extends ContentProvider {
                     threadId = c.getLong(0);
                 c.close();
             }
-            Log.w(TAG, "thread " + threadId + " updated");
+            Log.v(TAG, "thread " + threadId + " updated");
         }
         else {
             threadId = resThreadId;
-            Log.w(TAG, "new thread inserted with id " + threadId);
+            Log.v(TAG, "new thread inserted with id " + threadId);
 
             // notify newly created thread by userid
             // this will be used for fixing ticket #18
@@ -582,7 +582,7 @@ public class MessagesProvider extends ContentProvider {
             }
 
             int rows = db.update(table, values, where, args);
-            Log.w(TAG, "messages table updated, affected: " + rows);
+            Log.v(TAG, "messages table updated, affected: " + rows);
 
             // notify change only if rows are actually affected
             if (rows > 0) {
@@ -767,7 +767,7 @@ public class MessagesProvider extends ContentProvider {
             // notify change only if rows are actually affected
             if (rows > 0)
                 notifications.add(uri);
-            Log.w(TAG, "table " + table + " deleted, affected: " + rows);
+            Log.v(TAG, "table " + table + " deleted, affected: " + rows);
 
             if (table.equals(TABLE_MESSAGES)) {
                 // check for empty threads
@@ -878,7 +878,7 @@ public class MessagesProvider extends ContentProvider {
     private int deleteEmptyThreads(SQLiteDatabase db) {
         int rows = db.delete(TABLE_THREADS, "\"" + Threads.COUNT + "\"" + " = 0 AND " +
                 Threads.DRAFT + " IS NULL", null);
-        Log.i(TAG, "deleting empty threads: " + rows);
+        Log.v(TAG, "deleting empty threads: " + rows);
         return rows;
     }
 
@@ -995,7 +995,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     public static int changeMessageStatus(Context context, Uri uri, int direction, int status, long timestamp, long statusChanged) {
-        Log.i(TAG, "changing message status to " + status + " (uri=" + uri + ")");
+        Log.v(TAG, "changing message status to " + status + " (uri=" + uri + ")");
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
         return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
     }
@@ -1005,7 +1005,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     public static int changeMessageStatus(Context context, long id, int direction, int status, long timestamp, long statusChanged) {
-        Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
+        Log.v(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
         Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
         return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
@@ -1016,7 +1016,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     public static int changeMessageStatus(Context context, String id, int direction, boolean realId, int status, long timestamp, long statusChanged) {
-        Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
+        Log.v(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
 
         String field = (realId) ? Messages.REAL_ID : Messages.MESSAGE_ID;
@@ -1030,7 +1030,7 @@ public class MessagesProvider extends ContentProvider {
     public static int changeMessageStatusWhere(Context context,
             boolean notEquals, int whereStatus, String id, boolean realId,
             int status, long timestamp, long statusChanged) {
-        Log.i(TAG, "changing message status to " + status + " (id=" + id + ")");
+        Log.v(TAG, "changing message status to " + status + " (id=" + id + ")");
         ContentValues values = prepareChangeMessageStatus(status, timestamp, statusChanged);
 
         String field = (realId) ? Messages.REAL_ID : Messages.MESSAGE_ID;
