@@ -224,7 +224,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 Log.v(TAG, "JOB: " + job.toString());
 
                 // check now if job has been canceled
-                if (job.isCanceled()) {
+                if (job.isCanceled(mContext)) {
                     Log.d(TAG, "request has been canceled - dropping");
                     return;
                 }
@@ -258,9 +258,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                                 // add to sending list
                                 mSendingMessages.add(msgId);
                             }
-
-                            // observe the content for cancel requests
-                            mess.observe(mContext, this);
                         }
 
                         if (job.isAsync()) {
@@ -302,7 +299,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             // unobserve if necessary
                             if (job instanceof MessageSender) {
                                 MessageSender mess = (MessageSender) job;
-                                mess.unobserve(mContext);
                                 Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
                                 mSendingMessages.remove(msgId);
                             }
@@ -406,7 +402,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                     // unobserve if necessary
                     if (mJob instanceof MessageSender) {
                         MessageSender mess = (MessageSender) mJob;
-                        mess.unobserve(mContext);
                         Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
                         mSendingMessages.remove(msgId);
                     }

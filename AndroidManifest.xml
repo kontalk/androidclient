@@ -131,7 +131,7 @@
         <activity android:name=".ui.NumberValidation"
             android:theme="@style/Theme.Light"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
-            android:exported="true" android:process=":auth" android:label="@string/authenticator_name">
+                android:process=":auth" android:label="@string/authenticator_name">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
@@ -143,14 +143,12 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
-        <service android:name=".sync.ContactsSyncAdapterService"
-            android:exported="true" android:label="@string/sync_service_name">
+        <service android:name=".sync.ContactsSyncAdapterService" android:label="@string/sync_service_name">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
             <meta-data android:name="android.content.SyncAdapter" android:resource="@xml/sync_contacts"/>
-            <meta-data android:name="android.provider.CONTACTS_STRUCTURE" android:resource="@xml/contacts" />
-            
+            <meta-data android:name="android.provider.CONTACTS_STRUCTURE" android:resource="@xml/contacts"/>            
         </service>
         <receiver android:name=".service.NetworkStateReceiver">
             <intent-filter>
@@ -158,8 +156,11 @@
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
             </intent-filter>
         </receiver>
-        <activity android:name=".ui.ContactsListActivity" android:label="@string/contacts_list_title" android:theme="@style/Theme.Light"></activity>
-        <service android:name=".service.DownloadService" android:label="@string/download_service"></service>
+        <activity android:name=".ui.ContactsListActivity" 
+            android:label="@string/contacts_list_title"
+            android:theme="@style/Theme.Light"/>
+
+        <service android:name=".service.DownloadService" android:label="@string/download_service"/>
         
         <receiver android:name=".service.C2DMReceiver" android:permission="com.google.android.c2dm.permission.SEND">
             <!-- Receive the actual message -->

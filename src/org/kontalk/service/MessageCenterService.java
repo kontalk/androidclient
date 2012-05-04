@@ -901,7 +901,7 @@ public class MessageCenterService extends Service
     public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
         //Log.v(TAG, "bytes sent: " + bytes);
         if (job instanceof MessageSender) {
-            boolean cancel = ((MessageSender)job).isCanceled();
+            boolean cancel = ((MessageSender)job).isCanceled(this);
             if (cancel)
                 throw new CancellationException("job has been canceled.");
         }
@@ -937,7 +937,7 @@ public class MessageCenterService extends Service
         if (job instanceof MessageSender) {
             stopForeground();
 
-            if (job.isCanceled())
+            if (job.isCanceled(this))
                 return false;
 
             MessageSender job2 = (MessageSender) job;

@@ -108,7 +108,7 @@ public class MessageRequestListener implements RequestListener {
     public boolean error(ClientThread client, RequestJob job, Throwable e) {
         // sending is canceled only if the user deleted the message, so no need
         // to update its status
-        if (!job.isCanceled()) {
+        if (!job.isCanceled(mContext)) {
             MessageSender job2 = (MessageSender) job;
             Uri uri = job2.getMessageUri();
             MessagesProvider.changeMessageStatus(mContext, uri, Messages.DIRECTION_OUT,

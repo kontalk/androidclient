@@ -68,7 +68,7 @@ public abstract class RequestJob {
         mCancel = true;
     }
 
-    public boolean isCanceled() {
+    public boolean isCanceled(Context context) {
         return mCancel;
     }
 

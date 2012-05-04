@@ -1,5 +1,5 @@
-[ ] FIXME in MessagesProvider:819
 [ ] still queue concurrency problems sending binary messages
+[ ] make IBinder from MessageCenterService a static class
 [ ] put encryption icon above message status icon
 [ ] display user status message somehow
 [ ] custom conversations wallpaper

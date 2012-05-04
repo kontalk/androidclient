@@ -24,6 +24,7 @@ import org.kontalk.client.Protocol.FileUploadResponse;
 import org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus;
 import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.crypto.Coder;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
@@ -31,12 +32,8 @@ import org.kontalk.ui.MessagingPreferences;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Handler;
-import android.provider.BaseColumns;
-import android.util.Log;
 
 import com.google.protobuf.ByteString;
 
@@ -52,7 +49,6 @@ public class MessageSender extends RequestJob {
     private final Uri mUri;
     private final String mMime;
     private final Uri mSourceDataUri;
-    private ContentObserver mObserver;
     private final String mEncryptKey;
     private final boolean mAttachment;
 
@@ -76,45 +72,6 @@ public class MessageSender extends RequestJob {
         mSourceDataUri = fileUri;
         mEncryptKey = encryptKey;
         mAttachment = false;
-    }
-
-    public void observe(Context context, Handler handler) {
-        mObserver = new MessageSenderObserver(context, handler);
-        context.getContentResolver().registerContentObserver(mUri, false,
-                mObserver);
-    }
-
-    public void unobserve(Context context) {
-        if (mObserver != null) {
-            context.getContentResolver().unregisterContentObserver(mObserver);
-            mObserver = null;
-        }
-    }
-
-    private final class MessageSenderObserver extends ContentObserver {
-        private final Context mContext;
-
-        public MessageSenderObserver(Context context, Handler handler) {
-            super(handler);
-            mContext = context;
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            Log.v("MessageSender", "observed message changed - checking");
-            // cancel the request if the content doesn't exist
-            Cursor c = mContext.getContentResolver()
-                .query(mUri, new String[] { BaseColumns._ID }, null, null, null);
-            if (c == null || !c.moveToFirst())
-                cancel();
-            if (c != null)
-                c.close();
-        }
-
-        @Override
-        public boolean deliverSelfNotifications() {
-            return false;
-        }
     }
 
     public byte[] getContent() {
@@ -158,6 +115,20 @@ public class MessageSender extends RequestJob {
     @Override
     public boolean isAsync() {
         return (mSourceDataUri != null);
+    }
+
+    @Override
+    public boolean isCanceled(Context context) {
+        if (!mCancel) {
+            // check if the message lives :)
+            Cursor c = context.getContentResolver().
+                query(mUri, new String[] { Messages._ID }, null, null, null);
+            if (!c.moveToFirst())
+                super.cancel();
+            c.close();
+        }
+
+        return mCancel;
     }
 
     @Override

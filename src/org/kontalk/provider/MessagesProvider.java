@@ -815,12 +815,6 @@ public class MessagesProvider extends ContentProvider {
             }
             finally {
                 endTransaction(db, success);
-                /*
-                 * FIXME WARNING here we removed the code that notified all
-                 * deleted messages in this transaction. MessageSender
-                 * observation depends on direct message URIs, so it will not
-                 * realize the messages have been deleted!!!
-                 */
             }
         }
 
@@ -1038,6 +1032,11 @@ public class MessagesProvider extends ContentProvider {
         return context.getContentResolver().update(Messages.CONTENT_URI, values,
                 field + " = ? AND " + Messages.STATUS + op + whereStatus,
                 new String[] { id });
+    }
+
+    public static long getConversationByMessage(Context context, long msgId) {
+        // TODO
+        return 0;
     }
 
     static {
