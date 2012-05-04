@@ -168,8 +168,11 @@
     <string name="open_file">Open file</string>
     <string name="msg_msgcenter_restarted">Message center restarted.</string>
     <string name="downloading_attachment">Downloading attachment&#8230;</string>
-    <string name="pref_woody_background">Woody background</string>
-    <string name="pref_title_woody_background">Use a woody background in conversations</string>
     <string name="seen_moment_ago_label">a moment ago</string>
     <string name="seen_online_label">User is online</string>
+    <string name="pref_custom_background">Custom background</string>
+    <string name="pref_background_uri">Background</string>
+    <string name="pref_title_background_uri">Set custom conversations background image</string>
+    <string name="pref_title_off_custom_background">Using default background</string>
+    <string name="pref_title_on_custom_background">Pick a background using the option below</string>
 </resources>

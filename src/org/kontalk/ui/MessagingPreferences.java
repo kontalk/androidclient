@@ -18,6 +18,8 @@
 
 package org.kontalk.ui;
 
+import java.io.InputStream;
+
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
@@ -30,7 +32,13 @@ import org.kontalk.util.MessageUtils;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -44,6 +52,9 @@ import android.widget.Toast;
 
 public class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
+
+    private static final int REQUEST_PICK_BACKGROUND = 2;
+    private static Drawable customBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +84,32 @@ public class MessagingPreferences extends PreferenceActivity {
                 Log.w(TAG, "manual message center restart requested");
                 MessageCenterService.restartMessageCenter(getApplicationContext());
                 Toast.makeText(MessagingPreferences.this, R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
+        // use custom background
+        final Preference customBg = findPreference("pref_custom_background");
+        customBg.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                // discard reference to custom background drawable
+                CheckBoxPreference pref = (CheckBoxPreference) preference;
+                if (!pref.isChecked())
+                    customBackground = null;
+                return false;
+            }
+        });
+
+        // set background
+        final Preference setBackground = findPreference("pref_background_uri");
+        setBackground.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("image/*");
+                startActivityForResult(i, REQUEST_PICK_BACKGROUND);
                 return true;
             }
         });
@@ -147,6 +184,20 @@ public class MessagingPreferences extends PreferenceActivity {
         ServerList list = ServerListUpdater.getCurrentList(this);
         if (list != null)
             updateServerListLastUpdate(updateServerList, list);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_PICK_BACKGROUND) {
+            if (resultCode == RESULT_OK) {
+                // invalidate any previous reference
+                customBackground = null;
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                prefs.edit()
+                    .putString("pref_background_uri", data.getDataString())
+                    .commit();
+            }
+        }
     }
 
     private static void updateServerListLastUpdate(Preference pref, ServerList list) {
@@ -290,8 +341,33 @@ public class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
-    public static int getConversationBackground(Context context) {
-        return getBoolean(context, "pref_woody_background", false) ?
-                R.drawable.bg_wood : -1;
+    public static Drawable getConversationBackground(Context context) {
+        InputStream in = null;
+        try {
+            if (getBoolean(context, "pref_custom_background", false)) {
+                if (customBackground == null) {
+                    String _customBg = getString(context, "pref_background_uri", null);
+                    in = context.getContentResolver().openInputStream(Uri.parse(_customBg));
+
+                    BitmapFactory.Options opt = new BitmapFactory.Options();
+                    opt.inSampleSize = 4;
+                    Bitmap bmap = BitmapFactory.decodeStream(in, null, opt);
+                    customBackground = new BitmapDrawable(context.getResources(), bmap);
+                }
+                return customBackground;
+            }
+        }
+        catch (Exception e) {
+            // ignored
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
     }
 }

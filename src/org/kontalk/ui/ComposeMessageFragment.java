@@ -78,6 +78,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -212,10 +213,10 @@ public class ComposeMessageFragment extends ListFragment implements
 		registerForContextMenu(list);
 
 		// set custom background (if any)
-		int resBg = MessagingPreferences.getConversationBackground(getActivity());
-		if (resBg > 0) {
+		Drawable bg = MessagingPreferences.getConversationBackground(getActivity());
+		if (bg != null) {
 		    list.setCacheColorHint(Color.TRANSPARENT);
-		    list.setBackgroundResource(resBg);
+		    list.setBackgroundDrawable(bg);
 		}
 
 		mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
