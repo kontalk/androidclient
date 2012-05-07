@@ -376,7 +376,12 @@ public class ComposeMessageFragment extends ListFragment implements
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
             service.unsubscribePresence(this.userId);
-            getActivity().unbindService(this);
+            try {
+                getActivity().unbindService(this);
+            }
+            catch (Exception e) {
+                // ignore exception on exit
+            }
         }
     }
 
