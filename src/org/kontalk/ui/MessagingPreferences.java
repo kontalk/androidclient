@@ -310,20 +310,6 @@ public class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
-    public static final int SYNC_ANSWER_LEAVE_SETTINGS = 0;
-    public static final int SYNC_ANSWER_ENABLE_AUTOSYNC = 1;
-
-    public static int getSyncQuestionAnswer(Context context) {
-        return getInt(context, "pref_sync_question_answer", -1);
-    }
-
-    public static boolean setSyncQuestionAnswer(Context context, int which) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
-            .putInt("pref_sync_question_answer", which)
-            .commit();
-    }
-
     public static String getFontSize(Context context) {
         return getString(context, "pref_font_size", "medium");
     }

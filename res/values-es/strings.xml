@@ -144,10 +144,6 @@
     <string name="msg_sync_progress">Refrescar lista de contactos&#8230;</string>
     <string name="text_invite_message">Hey! Echa un vistazo a Kontalk en el Android Market, una aplicación gratuita de mensajería! https://market.android.com/details?id=org.kontalk</string>
     <string name="text_contacts_empty">Los nuevos usuarios serán agregados automáticamente a esta lista. &lt;br/&gt; Use &lt;b&gt;Menú&lt;/b&gt; &gt; &lt;b&gt;Invitar usuarios&lt;/b&gt; para enviar un mensaje de invitación a alguien.</string>
-    <string name="title_auto_sync_disabled">Auto-sincronización disabilitada</string>
-    <string name="message_auto_sync_disabled">Hemos encontrado que la sincronización automática está deshabilitada en este dispositivo. Auto-sincronización es necesaria para mantener su lista de contactos Kontalk siempre al día. ¿Quieres activar la sincronización automática? De lo contrario, tendrá que actualizar manualmente su lista de contactos, vaya a la pantalla Mensaje nuevo, a continuación, en Menú&gt; Actualizar.</string>
-    <string name="yes_auto_sync_disabled">Si, Habilitar sincronización automática</string>
-    <string name="no_auto_sync_disabled">No, puedo hacerlo por mí mismo</string>
     <string name="notify_ticker_external_storage">Dispositivo Almacenamiento externo no está disponible</string>
     <string name="notify_text_external_storage">No se puede escribir sobre el dispositivo almacenamiento externo.</string>
     <string name="title_user_not_found">Usuario no encontrado</string>

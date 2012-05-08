@@ -38,6 +38,7 @@
     <string name="hint_phone_number">Inserisci il tuo numero</string>
     <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
     <string name="msg_validating_phone">Validazione numero di telefono&#8230;</string>
+    <string name="msg_initializing">Inizializzazione&#8230;</string>
     <string name="msg_authenticated">Registrazione sul network effettuata!</string>
     <string name="refreshing">Aggiornamento&#8230;</string>
     <string name="share">Condividi</string>
@@ -141,10 +142,6 @@
     <string name="msg_sync_progress">Aggiornamento lista contatti in corso&#8230;</string>
     <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk sul Market! https://market.android.com/details?id=org.kontalk</string>
     <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.&lt;br/&gt;&lt;br/&gt;Usa &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invita utenti&lt;/b&gt; per inviare un messaggio di invito a qualcuno.</string>
-    <string name="title_auto_sync_disabled">Auto-sync disattivato</string>
-    <string name="message_auto_sync_disabled">Abbiamo rilevato che la sincronizzazione automatica è disattivata su questo sistema. La sincronizzazione automatica è necessaria per mantenere la lista contatti di Kontalk sempre aggiornata. Vuoi attivarla? Se non lo fai, dovrai mantenere manualmente la tua lista aggiornata entrando nella schermata Nuovo messaggio, poi Menu &gt; Aggiorna.</string>
-    <string name="yes_auto_sync_disabled">Sì, abilita sincron. automatica</string>
-    <string name="no_auto_sync_disabled">No, posso pensarci io</string>
     <string name="notify_ticker_external_storage">Memoria esterna non disponibile</string>
     <string name="notify_text_external_storage">Impossibile scrivere sulla memoria esterna.</string>
     <string name="title_user_not_found">Utente non trovato</string>

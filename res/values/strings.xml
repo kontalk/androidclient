@@ -38,6 +38,7 @@
     <string name="hint_phone_number">Enter your phone number</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
     <string name="msg_validating_phone">Validating phone number&#8230;</string>
+    <string name="msg_initializing">Initializing&#8230;</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="refreshing">Refreshing&#8230;</string>
     <string name="share">Share</string>
@@ -144,10 +145,6 @@
     <string name="msg_sync_progress">Refreshing contacts list&#8230;</string>
     <string name="text_invite_message">Hey! Check out Kontalk on the Android Market, a free messaging app! https://market.android.com/details?id=org.kontalk</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; to send an invitation message to someone.</string>
-    <string name="title_auto_sync_disabled">Auto-sync disabled</string>
-    <string name="message_auto_sync_disabled">We found that auto-sync is disabled on this device. Auto-sync is necessary for keeping your Kontalk contact list always up to date. Do you want to activate auto-sync? Otherwise you will have to manually update your contact list by going to New Message screen, then Menu &gt; Refresh.</string>
-    <string name="yes_auto_sync_disabled">Yes, enable auto-sync</string>
-    <string name="no_auto_sync_disabled">No, I can do it by myself</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
     <string name="notify_text_external_storage">Unable to write to external storage.</string>
     <string name="title_user_not_found">User not found</string>

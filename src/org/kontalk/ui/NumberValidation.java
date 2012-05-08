@@ -26,7 +26,7 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
 import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.service.MessageCenterService;
-import org.kontalk.sync.SyncAdapter;
+import org.kontalk.util.SyncerUI;
 
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
@@ -241,9 +241,9 @@ public class NumberValidation extends AccountAuthenticatorActivity
     public void abort(boolean ending) {
         if (!ending) {
             enableControls(true);
+            abortProgress();
         }
 
-        abortProgress();
         if (mValidator != null) {
             mValidator.shutdown();
             mValidator = null;
@@ -288,15 +288,24 @@ public class NumberValidation extends AccountAuthenticatorActivity
         // ok, start message center
         MessageCenterService.startMessageCenter(getApplicationContext());
 
-        // if we have been called internally, start ConversationList
-        if (mFromInternal)
-            startActivity(new Intent(this, ConversationList.class));
-
+        mProgress.setCancelable(false);
+        mProgress.setCanceledOnTouchOutside(false);
+        mProgress.setMessage(getString(R.string.msg_initializing));
         // manual sync
-        SyncAdapter.requestSync(this, true);
+        Runnable endSync = new Runnable() {
+            public void run() {
+                // if we have been called internally, start ConversationList
+                if (mFromInternal)
+                    startActivity(new Intent(getApplicationContext(), ConversationList.class));
 
-        // end this
-        finish();
+                Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
+
+                // end this
+                abortProgress();
+                finish();
+            }
+        };
+        SyncerUI.execute(this, endSync, false);
     }
 
     @Override
@@ -307,8 +316,6 @@ public class NumberValidation extends AccountAuthenticatorActivity
             @Override
             public void run() {
                 abort(true);
-
-                Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
                 finishLogin(token.toString());
             }
         });

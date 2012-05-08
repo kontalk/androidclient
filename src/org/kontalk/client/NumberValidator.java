@@ -109,6 +109,17 @@ public class NumberValidator implements Runnable {
                                 byte[] byteData = (byte[])pdus[n];
                                 SmsMessage sms = SmsMessage.createFromPdu(byteData);
 
+                                // wait for sms origin to be filled
+                                synchronized (this) {
+                                    while (mSmsFrom == null) {
+                                        try {
+                                            wait();
+                                        }
+                                        catch (InterruptedException e) {
+                                        }
+                                    }
+                                }
+
                                 // possible message!
                                 if (mSmsFrom.equals(sms.getOriginatingAddress()) ||
                                         PhoneNumberUtils.compare(mSmsFrom, sms.getOriginatingAddress())) {
@@ -153,6 +164,9 @@ public class NumberValidator implements Runnable {
                             mSmsFrom = res.getSmsFrom();
                             Log.d(TAG, "using sms sender id: " + mSmsFrom);
                             mListener.onValidationRequested(this);
+                            synchronized (mSmsReceiver) {
+                                mSmsReceiver.notifyAll();
+                            }
                         }
                         else {
                             // no sms from identification?
