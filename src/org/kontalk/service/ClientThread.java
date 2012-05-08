@@ -32,6 +32,8 @@ import org.kontalk.client.ClientListener;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.NewMessage;
+import org.kontalk.client.Protocol.Ping;
+import org.kontalk.client.Protocol.Pong;
 import org.kontalk.client.TxListener;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.AbstractMessage;
@@ -203,6 +205,13 @@ public class ClientThread extends Thread {
                                     // parse message into AbstractMessage
                                     AbstractMessage<?> msg = parseNewMessage((NewMessage) pack);
                                     mMessageListener.incoming(msg);
+                                }
+
+                                else if (name.equals(Ping.class.getSimpleName())) {
+                                    // send pong directly
+                                    Pong.Builder b = Pong.newBuilder();
+                                    b.setTimestamp(System.currentTimeMillis()*1000);
+                                    mClient.send(b.build(), box.getTxId());
                                 }
 
                                 else {

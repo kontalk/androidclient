@@ -241,3 +241,15 @@ message ServerList {
     }
     repeated Entry entry = 2;
 }
+
+// ping request
+message Ping {
+    // utc timestamp
+    optional uint64 timestamp = 1;
+}
+
+// ping response
+message Pong {
+    // utc timestamp
+    optional uint64 timestamp = 1;
+}

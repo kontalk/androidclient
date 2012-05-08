@@ -92,20 +92,16 @@ public class ClientConnection {
     }
 
     public String send(MessageLite pack) throws IOException {
-        return send(pack, null);
-    }
-
-    public String send(MessageLite pack, OutputStream stream) throws IOException {
-        return send(pack, RandomString.generate(8), stream);
+        return send(pack, RandomString.generate(8));
     }
 
     /** Writes a pack to the connection (blocking). */
-    public String send(MessageLite pack, String txId, OutputStream stream) throws IOException {
+    public String send(MessageLite pack, String txId) throws IOException {
         BoxContainer.Builder b = BoxContainer.newBuilder();
         b.setTxId(txId);
         b.setName(pack.getClass().getSimpleName());
         b.setValue(pack.toByteString());
-        b.build().writeDelimitedTo(stream != null ? stream : out);
+        b.build().writeDelimitedTo(out);
         return txId;
     }
 
