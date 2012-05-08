@@ -94,9 +94,7 @@ public class MessagingPreferences extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 // discard reference to custom background drawable
-                CheckBoxPreference pref = (CheckBoxPreference) preference;
-                if (!pref.isChecked())
-                    customBackground = null;
+                customBackground = null;
                 return false;
             }
         });
