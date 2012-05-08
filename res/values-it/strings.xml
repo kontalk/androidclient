@@ -138,7 +138,7 @@
     <string name="menu_refresh">Aggiorna</string>
     <string name="menu_invite">Invita utenti</string>
     <string name="msg_do_refresh">Usa Menu > Aggiorna per aggiornare la lista contatti.</string>
-    <string name="msg_sync_started">Aggiornamento lista contatti in corso.</string>
+    <string name="msg_sync_progress">Aggiornamento lista contatti in corso&#8230;</string>
     <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk sul Market! https://market.android.com/details?id=org.kontalk</string>
     <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.&lt;br/&gt;&lt;br/&gt;Usa &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invita utenti&lt;/b&gt; per inviare un messaggio di invito a qualcuno.</string>
     <string name="title_auto_sync_disabled">Auto-sync disattivato</string>

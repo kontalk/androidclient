@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.sync.SyncAdapter;
+import org.kontalk.sync.Syncer;
 
 import android.accounts.Account;
 import android.content.ContentResolver;
@@ -173,7 +173,7 @@ public class Contact {
                     },
                     RawContacts.ACCOUNT_NAME + " = ? AND " +
                     RawContacts.ACCOUNT_TYPE + " = ? AND " +
-                    SyncAdapter.RAW_COLUMN_PHONE + " = ?",
+                    Syncer.RAW_COLUMN_PHONE + " = ?",
                     new String[] {
                         acc.name,
                         acc.type,
@@ -229,8 +229,8 @@ public class Contact {
     public static Contact fromRawContactCursor(Context context, Cursor cursor) {
         final long contactId = cursor.getLong(cursor.getColumnIndex(RawContacts.CONTACT_ID));
         final long rawContactId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
-        final String name = cursor.getString(cursor.getColumnIndex(SyncAdapter.RAW_COLUMN_DISPLAY_NAME));
-        final String number = cursor.getString(cursor.getColumnIndex(SyncAdapter.RAW_COLUMN_PHONE));
+        final String name = cursor.getString(cursor.getColumnIndex(Syncer.RAW_COLUMN_DISPLAY_NAME));
+        final String number = cursor.getString(cursor.getColumnIndex(Syncer.RAW_COLUMN_PHONE));
 
         Contact c = new Contact(contactId, rawContactId, name, number);
         c.mAvatarData = loadAvatarData(context, c.getUri());
@@ -263,11 +263,11 @@ public class Contact {
 
         Cursor c = cres.query(RawContacts.CONTENT_URI,
                 new String[] {
-                    SyncAdapter.RAW_COLUMN_PHONE
+                    Syncer.RAW_COLUMN_PHONE
                 },
                 RawContacts.ACCOUNT_NAME        + " = ? AND " +
                 RawContacts.ACCOUNT_TYPE        + " = ? AND " +
-                SyncAdapter.RAW_COLUMN_USERID   + " = ?",
+                Syncer.RAW_COLUMN_USERID   + " = ?",
                 new String[] {
                     acc.name,
                     acc.type,
@@ -346,8 +346,8 @@ public class Contact {
                 new String[] {
                     RawContacts._ID,
                     RawContacts.CONTACT_ID,
-                    SyncAdapter.RAW_COLUMN_DISPLAY_NAME,
-                    SyncAdapter.RAW_COLUMN_PHONE
+                    Syncer.RAW_COLUMN_DISPLAY_NAME,
+                    Syncer.RAW_COLUMN_PHONE
                 },
                 RawContacts.ACCOUNT_NAME + " = ? AND " +
                 RawContacts.ACCOUNT_TYPE + " = ? AND " +

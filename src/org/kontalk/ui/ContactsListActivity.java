@@ -21,16 +21,26 @@ package org.kontalk.ui;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.message.PlainTextMessage;
-import org.kontalk.sync.SyncAdapter;
+import org.kontalk.sync.Syncer;
 
 import android.accounts.Account;
+import android.accounts.OperationCanceledException;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
+import android.content.ContentProviderClient;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.RawContacts;
 import android.text.Html;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,6 +51,8 @@ import android.widget.Toast;
 
 public class ContactsListActivity extends ListActivity
         implements ContactsListAdapter.OnContentChangedListener {
+
+    private static final String TAG = "SyncTask";
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
@@ -105,9 +117,158 @@ public class ContactsListActivity extends ListActivity
     }
 
     private void startSync() {
-        SyncAdapter.requestSync(this, true);
-        Toast.makeText(this, R.string.msg_sync_started,
-                Toast.LENGTH_LONG).show();
+        if (Syncer.getInstance() == null) {
+            // start monitored sync
+            Log.v(TAG, "starting monitored sync");
+            new SyncTask().execute(Syncer.getInstance(this));
+        }
+        else {
+            // monitor existing instance
+            Log.v(TAG, "sync already in progress, monitoring it");
+            new SyncMonitorTask().execute();
+        }
+    }
+
+    /** Executes a sync asynchronously, monitoring its status. */
+    private final class SyncTask extends AsyncTask<Syncer, Integer, Boolean> {
+        private Syncer syncer;
+        private Dialog dialog;
+
+        @Override
+        protected Boolean doInBackground(Syncer... params) {
+            if (isCancelled())
+                return false;
+
+            String authority = ContactsContract.AUTHORITY;
+            Account account = Authenticator.getDefaultAccount(ContactsListActivity.this);
+            ContentProviderClient provider = getContentResolver()
+                    .acquireContentProviderClient(authority);
+
+            try {
+                syncer = params[0];
+                syncer.performSync(ContactsListActivity.this, account,
+                    authority, provider, new SyncResult());
+            }
+            catch (OperationCanceledException e) {
+                // ignored - normal cancelation
+            }
+            catch (Exception e) {
+                // TODO error string where??
+                return false;
+            }
+            finally {
+                provider.release();
+                Syncer.release();
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            Runnable action = null;
+            if (!result) {
+                action = new Runnable() {
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog
+                                .Builder(ContactsListActivity.this);
+                        builder
+                            // TODO i18n
+                            .setTitle("Error")
+                            .setMessage("Unable to refresh contacts list. Please retry later.")
+                            .setPositiveButton(android.R.string.ok, null)
+                            .create().show();
+                    }
+                };
+            }
+
+            finish(action);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            ProgressDialog dg = new ProgressDialog(ContactsListActivity.this);
+            dg.setMessage(getString(R.string.msg_sync_progress));
+            dg.setIndeterminate(true);
+            dg.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                public void onCancel(DialogInterface dialog) {
+                    cancel(true);
+                }
+            });
+
+            dialog = dg;
+            dg.show();
+        }
+
+        @Override
+        protected void onCancelled(Boolean result) {
+            if (syncer != null)
+                syncer.onSyncCanceled();
+            finish(null);
+        }
+
+        private void finish(Runnable action) {
+            // dismiss status dialog
+            if (dialog != null)
+                dialog.dismiss();
+
+            if (action != null)
+                action.run();
+
+            onContentChanged();
+        }
+    }
+
+    /** Monitors an already running {@link Syncer}. */
+    private final class SyncMonitorTask extends AsyncTask<Syncer, Integer, Boolean> {
+        private Dialog dialog;
+
+        @Override
+        protected Boolean doInBackground(Syncer... params) {
+            if (isCancelled())
+                return false;
+
+            while (Syncer.getInstance() != null) {
+                try {
+                    Thread.sleep(1000);
+                }
+                catch (InterruptedException e)  {
+                    // interrupted :)
+                }
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            finish();
+        }
+
+        @Override
+        protected void onPreExecute() {
+            ProgressDialog dg = new ProgressDialog(ContactsListActivity.this);
+            dg.setMessage(getString(R.string.msg_sync_progress));
+            dg.setIndeterminate(true);
+            dg.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                public void onCancel(DialogInterface dialog) {
+                    cancel(true);
+                }
+            });
+
+            dialog = dg;
+            dg.show();
+        }
+
+        @Override
+        protected void onCancelled(Boolean result) {
+            finish();
+        }
+
+        private void finish() {
+            // dismiss status dialog
+            if (dialog != null)
+                dialog.dismiss();
+            onContentChanged();
+        }
     }
 
     private void startQuery() {
@@ -116,7 +277,7 @@ public class ContactsListActivity extends ListActivity
             .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
             .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
             .build();
-        mCursor = getContentResolver().query(uri, null, null, null, SyncAdapter.RAW_COLUMN_DISPLAY_NAME);
+        mCursor = getContentResolver().query(uri, null, null, null, Syncer.RAW_COLUMN_DISPLAY_NAME);
         startManagingCursor(mCursor);
     }
 

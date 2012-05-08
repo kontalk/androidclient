@@ -53,7 +53,7 @@ import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.service.UserLookupJob;
-import org.kontalk.sync.SyncAdapter;
+import org.kontalk.sync.Syncer;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 
@@ -992,8 +992,8 @@ public class ComposeMessageFragment extends ListFragment implements
 				ContentResolver cres = getActivity().getContentResolver();
 
 				Cursor c = cres.query(uri, new String[] {
-						SyncAdapter.DATA_COLUMN_DISPLAY_NAME,
-						SyncAdapter.DATA_COLUMN_PHONE }, null, null, null);
+						Syncer.DATA_COLUMN_DISPLAY_NAME,
+						Syncer.DATA_COLUMN_PHONE }, null, null, null);
 				if (c.moveToFirst()) {
 					userName = c.getString(0);
 					userPhone = c.getString(1);
