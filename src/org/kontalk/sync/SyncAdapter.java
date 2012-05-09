@@ -19,6 +19,7 @@
 package org.kontalk.sync;
 
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.accounts.Account;
@@ -78,14 +79,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // avoid other syncs to get scheduled in the meanwhile
         MessagingPreferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
 
+        ContentProviderClient usersProvider = getContext().getContentResolver()
+            .acquireContentProviderClient(UsersProvider.AUTHORITY);
+
         try {
             mSyncer = Syncer.getInstance(mContext);
-            mSyncer.performSync(mContext, account, authority, provider, syncResult);
+            mSyncer.performSync(mContext, account, authority,
+                provider, usersProvider, syncResult);
         }
         catch (OperationCanceledException e) {
             Log.w(TAG, "sync canceled!", e);
         }
         finally {
+            usersProvider.release();
             Syncer.release();
             long endTime = System.currentTimeMillis();
             MessagingPreferences.setLastSyncTimestamp(mContext, endTime);

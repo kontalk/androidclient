@@ -163,25 +163,19 @@ public class ComposeMessageFragment extends ListFragment implements
 
 
 	/** Returns a new fragment instance from a picked contact. */
-	public static ComposeMessageFragment fromContactPicker(Context context,
-			Uri rawContactUri) {
-		String userId = Contact.getUserId(context, rawContactUri);
-		if (userId != null) {
-			ComposeMessageFragment f = new ComposeMessageFragment();
-			Conversation conv = Conversation.loadFromUserId(context, userId);
-			// not found - create new
-			if (conv == null) {
-				Bundle args = new Bundle();
-				args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
-				args.putParcelable("data", Threads.getUri(userId));
-				f.setArguments(args);
-				return f;
-			}
-
-			return fromConversation(context, conv);
+	public static ComposeMessageFragment fromUserId(Context context, String userId) {
+		ComposeMessageFragment f = new ComposeMessageFragment();
+		Conversation conv = Conversation.loadFromUserId(context, userId);
+		// not found - create new
+		if (conv == null) {
+			Bundle args = new Bundle();
+			args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
+			args.putParcelable("data", Threads.getUri(userId));
+			f.setArguments(args);
+			return f;
 		}
 
-		return null;
+		return fromConversation(context, conv);
 	}
 
 	/** Returns a new fragment instance from a {@link Conversation} instance. */

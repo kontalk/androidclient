@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
@@ -156,10 +155,11 @@ public class ComposeMessage extends FragmentActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CONTACT_PICKER) {
             if (resultCode == RESULT_OK) {
-                Uri rawContact = data.getData();
-                if (rawContact != null) {
-                    Log.i(TAG, "composing message for contact: " + rawContact);
-                    Intent i = fromContactPicker(this, rawContact);
+                Uri threadUri = data.getData();
+                if (threadUri != null) {
+                    Log.i(TAG, "composing message for conversation: " + threadUri);
+                    String userId = threadUri.getLastPathSegment();
+                    Intent i = fromUserId(this, userId);
                     if (i != null) {
                         onNewIntent(i);
 
@@ -181,22 +181,17 @@ public class ComposeMessage extends FragmentActivity {
         }
     }
 
-    public static Intent fromContactPicker(Context context, Uri rawContactUri) {
-        String userId = Contact.getUserId(context, rawContactUri);
-        if (userId != null) {
-            Conversation conv = Conversation.loadFromUserId(context, userId);
-            // not found - create new
-            if (conv == null) {
-                Intent ni = new Intent(context, ComposeMessage.class);
-                ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
-                ni.setData(Threads.getUri(userId));
-                return ni;
-            }
-
-            return fromConversation(context, conv);
+    public static Intent fromUserId(Context context, String userId) {
+        Conversation conv = Conversation.loadFromUserId(context, userId);
+        // not found - create new
+        if (conv == null) {
+            Intent ni = new Intent(context, ComposeMessage.class);
+            ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
+            ni.setData(Threads.getUri(userId));
+            return ni;
         }
 
-        return null;
+        return fromConversation(context, conv);
     }
 
     /** Creates an {@link Intent} for launching the composer for a given {@link Conversation}. */

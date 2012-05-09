@@ -2,6 +2,7 @@ package org.kontalk.util;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.Syncer;
 
 import android.accounts.Account;
@@ -57,20 +58,24 @@ public abstract class SyncerUI {
             Account account = Authenticator.getDefaultAccount(context);
             ContentProviderClient provider = context.getContentResolver()
                     .acquireContentProviderClient(authority);
+            ContentProviderClient usersProvider = context.getContentResolver()
+                    .acquireContentProviderClient(UsersProvider.AUTHORITY);
 
             try {
                 syncer = params[0];
                 syncer.performSync(context, account,
-                    authority, provider, new SyncResult());
+                    authority, provider, usersProvider, new SyncResult());
             }
             catch (OperationCanceledException e) {
                 // ignored - normal cancelation
             }
             catch (Exception e) {
                 // TODO error string where??
+                Log.e(TAG, "syncer error", e);
                 return false;
             }
             finally {
+                usersProvider.release();
                 provider.release();
                 Syncer.release();
             }

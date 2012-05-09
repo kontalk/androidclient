@@ -50,7 +50,7 @@ public class ContactsListAdapter extends CursorAdapter {
         }
 
         ContactsListItem headerView = (ContactsListItem) view;
-        Contact contact = Contact.fromRawContactCursor(context, cursor);
+        Contact contact = Contact.fromUsersCursor(context, cursor);
         headerView.bind(context, contact);
     }
 

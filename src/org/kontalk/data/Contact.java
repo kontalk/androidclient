@@ -38,6 +38,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
@@ -57,9 +58,10 @@ public class Contact {
     private long mRawContactId;
     private String mNumber;
     private String mName;
+    private String mHash;
 
+    private String mLookupKey;
     private Uri mContactUri;
-    private Uri mRawContactUri;
 
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
@@ -136,25 +138,18 @@ public class Contact {
 
     private final static ContactCache cache = new ContactCache();
 
-    private Contact(Uri uri, long rawContactId, String name, String number) {
-        mContactId = ContentUris.parseId(uri);
-        mRawContactId = rawContactId;
-        mContactUri = uri;
-        mName = name;
-        mNumber = number;
-    }
-
-    private Contact(long contactId, long rawContactId, String name, String number) {
+    private Contact(long contactId, String lookupKey, String name, String number, String hash) {
         mContactId = contactId;
-        mRawContactId = rawContactId;
+        mLookupKey = lookupKey;
         mName = name;
         mNumber = number;
+        mHash = hash;
     }
 
     /** Returns the {@link Contacts} {@link Uri} identified by this object. */
     public Uri getUri() {
         if (mContactUri == null)
-            mContactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, mContactId);
+            mContactUri = ContactsContract.Contacts.getLookupUri(mContactId, mLookupKey);
         return mContactUri;
     }
 
@@ -182,8 +177,6 @@ public class Contact {
 
             if (c.moveToFirst()) {
                 mRawContactId = c.getLong(0);
-                // invalidate old uri
-                mRawContactUri = null;
             }
             c.close();
         }
@@ -195,19 +188,16 @@ public class Contact {
         return mRawContactId;
     }
 
-    /** Returns the {@link RawContacts} {@link Uri} identified by this object. */
-    public Uri getRawContactUri() {
-        if (mRawContactUri == null && mRawContactId > 0)
-            mRawContactUri = ContentUris.withAppendedId(RawContacts.CONTENT_URI, mRawContactId);
-        return mRawContactUri;
-    }
-
     public String getNumber() {
         return mNumber;
     }
 
     public String getName() {
         return mName;
+    }
+
+    public String getHash() {
+        return mHash;
     }
 
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
@@ -220,26 +210,21 @@ public class Contact {
         return mAvatar != null ? mAvatar : defaultValue;
     }
 
-    /**
-     * Builds a contact from a RawContact cursor
-     * (e.g. a cursor querying only Kontalk RawContacts).
-     * @param cursor
-     * @return
-     */
-    public static Contact fromRawContactCursor(Context context, Cursor cursor) {
-        final long contactId = cursor.getLong(cursor.getColumnIndex(RawContacts.CONTACT_ID));
-        final long rawContactId = cursor.getLong(cursor.getColumnIndex(RawContacts._ID));
-        final String name = cursor.getString(cursor.getColumnIndex(Syncer.RAW_COLUMN_DISPLAY_NAME));
-        final String number = cursor.getString(cursor.getColumnIndex(Syncer.RAW_COLUMN_PHONE));
+    /** Builds a contact from a UsersProvider cursor. */
+    public static Contact fromUsersCursor(Context context, Cursor cursor) {
+        final long contactId = cursor.getLong(cursor.getColumnIndex(Users.CONTACT_ID));
+        final String key = cursor.getString(cursor.getColumnIndex(Users.LOOKUP_KEY));
+        final String name = cursor.getString(cursor.getColumnIndex(Users.DISPLAY_NAME));
+        final String number = cursor.getString(cursor.getColumnIndex(Users.NUMBER));
+        final String hash = cursor.getString(cursor.getColumnIndex(Users.HASH));
 
-        Contact c = new Contact(contactId, rawContactId, name, number);
+        Contact c = new Contact(contactId, key, name, number, hash);
         c.mAvatarData = loadAvatarData(context, c.getUri());
         return c;
     }
 
     public static String numberByUserId(Context context, String userId) {
         Cursor c = null;
-        String number = null;
         try {
             ContentResolver cres = context.getContentResolver();
             c = cres.query(Uri.withAppendedPath(Users.CONTENT_URI, userId),
@@ -247,40 +232,13 @@ public class Contact {
                     null, null, null);
 
             if (c.moveToFirst())
-                number = c.getString(0);
+                return c.getString(0);
         }
         finally {
             if (c != null)
                 c.close();
         }
 
-        return (number != null) ? number : _numberByUserId(context, userId);
-    }
-
-    private static String _numberByUserId(Context context, String userId) {
-        ContentResolver cres = context.getContentResolver();
-        Account acc = Authenticator.getDefaultAccount(context);
-
-        Cursor c = cres.query(RawContacts.CONTENT_URI,
-                new String[] {
-                    Syncer.RAW_COLUMN_PHONE
-                },
-                RawContacts.ACCOUNT_NAME        + " = ? AND " +
-                RawContacts.ACCOUNT_TYPE        + " = ? AND " +
-                Syncer.RAW_COLUMN_USERID   + " = ?",
-                new String[] {
-                    acc.name,
-                    acc.type,
-                    userId
-                }, null);
-
-        if (c.moveToFirst()) {
-            String number = c.getString(0);
-            c.close();
-            return number;
-        }
-
-        c.close();
         return null;
     }
 
@@ -291,90 +249,26 @@ public class Contact {
     private static Contact _findByUserId(Context context, String userId) {
         ContentResolver cres = context.getContentResolver();
         Cursor c = cres.query(Uri.withAppendedPath(Users.CONTENT_URI, userId),
-                new String[] { Users.NUMBER, Users.LOOKUP_KEY },
-                null, null, null);
+            new String[] {
+                Users.NUMBER,
+                Users.DISPLAY_NAME,
+                Users.LOOKUP_KEY,
+                Users.CONTACT_ID,
+                Users.HASH
+            }, null, null, null);
 
         if (c.moveToFirst()) {
             String number = c.getString(0);
-            String key = c.getString(1);
-            c.close();
-
-            Contact contact = _lookupByKey(context, key, number);
-            if (contact != null)
-                return contact;
-        }
-        c.close();
-
-        // fallback to RawContacts
-        return _lookupByUserId(context, userId);
-    }
-
-    private static Contact _lookupByKey(Context context, String lookupKey, String number) {
-        Uri lookupUri = Uri.withAppendedPath(Contacts.CONTENT_LOOKUP_URI, lookupKey);
-        Cursor c = context.getContentResolver().query(lookupUri,
-                new String[] {
-                    Contacts._ID,
-                    Contacts.DISPLAY_NAME,
-                }, null, null, null);
-        if (c.moveToFirst()) {
-            long id = c.getLong(0);
             String name = c.getString(1);
+            String key = c.getString(2);
+            long cid = c.getLong(3);
+            String hash = c.getString(4);
             c.close();
 
-            // create contact
-            Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id);
-            Log.v(TAG, "found contact " + uri + " (lookup)");
-
-            // RawContact ID not available here
-            Contact contact = new Contact(uri, -1, name, number);
-
-            // load avatar (if any)
-            contact.mAvatarData = loadAvatarData(context, uri);
-
+            Contact contact = new Contact(cid, key, name, number, hash);
+            contact.mAvatarData = loadAvatarData(context, contact.getUri());
             return contact;
         }
-
-        c.close();
-        return null;
-    }
-
-    private static Contact _lookupByUserId(Context context, String userId) {
-        ContentResolver cres = context.getContentResolver();
-        Account acc = Authenticator.getDefaultAccount(context);
-
-        Cursor c = cres.query(RawContacts.CONTENT_URI,
-                new String[] {
-                    RawContacts._ID,
-                    RawContacts.CONTACT_ID,
-                    Syncer.RAW_COLUMN_DISPLAY_NAME,
-                    Syncer.RAW_COLUMN_PHONE
-                },
-                RawContacts.ACCOUNT_NAME + " = ? AND " +
-                RawContacts.ACCOUNT_TYPE + " = ? AND " +
-                RawContacts.SYNC3        + " = ?",
-                new String[] {
-                    acc.name,
-                    acc.type,
-                    userId
-                }, null);
-
-        if (c.moveToFirst()) {
-            long rid = c.getLong(0);
-            long id = c.getLong(1);
-            String name = c.getString(2);
-            String number = c.getString(3);
-            c.close();
-
-            // create contact
-            Uri uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id);
-            Log.v(TAG, "found contact " + uri + " (native)");
-            Contact contact = new Contact(uri, rid, name, number);
-            // load avatar (if any)
-            contact.mAvatarData = loadAvatarData(context, uri);
-
-            return contact;
-        }
-
         c.close();
         return null;
     }
@@ -382,8 +276,17 @@ public class Contact {
     private static byte[] loadAvatarData(Context context, Uri contactUri) {
         byte[] data = null;
 
+        Uri uri;
+        try {
+            long cid = ContentUris.parseId(contactUri);
+            uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, cid);
+        }
+        catch (Exception e) {
+            uri = contactUri;
+        }
+
         InputStream avatarDataStream = Contacts.openContactPhotoInputStream(
-                    context.getContentResolver(), contactUri);
+                    context.getContentResolver(), uri);
         if (avatarDataStream != null) {
             try {
                     data = new byte[avatarDataStream.available()];

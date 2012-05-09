@@ -336,11 +336,11 @@ public class ConversationListFragment extends ListFragment {
         // contact chooser
         if (requestCode == REQUEST_CONTACT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
-                Uri rawContact = data.getData();
-                if (rawContact != null) {
-                    Log.i(TAG, "composing message for contact: " + rawContact);
+                Uri uri = data.getData();
+                if (uri != null) {
+                    Log.i(TAG, "composing message from conversation: " + uri);
 
-                    openConversation(rawContact);
+                    openConversation(uri);
                 }
             }
         }
@@ -386,13 +386,13 @@ public class ConversationListFragment extends ListFragment {
     	}
     }
 
-    private void openConversation(Uri rawContactUri) {
+    private void openConversation(Uri threadUri) {
         if (mDualPane) {
             // TODO position
             //getListView().setItemChecked(position, true);
 
             // load conversation
-            String userId = Contact.getUserId(getActivity(), rawContactUri);
+            String userId = threadUri.getLastPathSegment();
             Conversation conv = Conversation.loadFromUserId(getActivity(), userId);
 
             // get the old fragment
@@ -402,7 +402,7 @@ public class ConversationListFragment extends ListFragment {
             // check if we are replacing the same fragment
             if (f == null || conv == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
                 if (conv == null)
-                    f = ComposeMessageFragment.fromContactPicker(getActivity(), rawContactUri);
+                    f = ComposeMessageFragment.fromUserId(getActivity(), userId);
                 else
                     f = ComposeMessageFragment.fromConversation(getActivity(), conv);
 
@@ -416,7 +416,7 @@ public class ConversationListFragment extends ListFragment {
             }
         }
         else {
-            Intent i = ComposeMessage.fromContactPicker(getActivity(), rawContactUri);
+            Intent i = ComposeMessage.fromUserId(getActivity(), threadUri.getLastPathSegment());
             if (i != null)
                 startActivity(i);
             else

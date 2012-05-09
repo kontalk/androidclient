@@ -246,8 +246,10 @@ public class MessagesProvider extends ContentProvider {
             "draft TEXT" +
             ")",
             // copy contents of messages table
+            // FIXME what happens if columns doesn't match???
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT * FROM " + TABLE_MESSAGES,
             // copy contents of threads table
+            // FIXME what happens if columns doesn't match???
             "INSERT INTO " + TABLE_THREADS + "_new SELECT * FROM " + TABLE_THREADS,
             // drop table messages
             "DROP TABLE " + TABLE_MESSAGES,

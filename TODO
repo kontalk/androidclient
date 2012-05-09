@@ -4,6 +4,7 @@
 [ ] display user status message somehow
 [ ] ActionBar menus activation problem
 [ ] custom background: sampleSize hard-coded to 4
+[ ] messages database upgrade testing
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [x] custom conversations wallpaper
 [x] ComposeMessage autoclosing when sending a message as first message

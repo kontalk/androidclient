@@ -22,7 +22,6 @@ import android.accounts.OperationCanceledException;
 import android.content.ComponentName;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -65,7 +64,6 @@ public class Syncer {
 
     private boolean mCanceled;
     private final Context mContext;
-    private final ContentResolver mContentResolver;
 
     /** Used for binding to the message center to send messages. */
     private final class ClientServiceConnection implements ServiceConnection {
@@ -152,7 +150,6 @@ public class Syncer {
 
     private Syncer(Context context) {
         mContext = context;
-        mContentResolver = context.getContentResolver();
     }
 
     public void onSyncCanceled() {
@@ -178,8 +175,9 @@ public class Syncer {
      * is received, it deletes all the raw contacts created by us and then
      * recreates only the ones the server has found a match for.
      */
-    public void performSync(Context context, Account account,
-        String authority, ContentProviderClient provider, SyncResult syncResult)
+    public void performSync(Context context, Account account, String authority,
+        ContentProviderClient provider, ContentProviderClient usersProvider,
+        SyncResult syncResult)
             throws OperationCanceledException {
 
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
@@ -193,8 +191,15 @@ public class Syncer {
         Uri uri = Users.CONTENT_URI.buildUpon()
             .appendQueryParameter(Users.RESYNC, "true")
             .build();
-        int count = mContentResolver.update(uri, new ContentValues(), null, null);
-        Log.d(TAG, "users database resynced (" + count + ")");
+        try {
+            int count = usersProvider.update(uri, new ContentValues(), null, null);
+            Log.d(TAG, "users database resynced (" + count + ")");
+        }
+        catch (RemoteException e) {
+            Log.e(TAG, "error resyncing users database - aborting sync", e);
+            syncResult.databaseError = true;
+            return;
+        }
 
         String countryCode = NumberValidator.getCountryPrefix(mContext);
         if (countryCode == null) {
@@ -205,9 +210,17 @@ public class Syncer {
         Log.i(TAG, "using country code: " + countryCode);
 
         // query all contacts
-        final Cursor cursor = mContentResolver.query(Users.CONTENT_URI,
+        Cursor cursor = null;
+        try {
+            cursor = usersProvider.query(Users.CONTENT_URI,
                 new String[] { Users.HASH, Users.NUMBER, Users.LOOKUP_KEY },
                 null, null, null);
+        }
+        catch (RemoteException e) {
+            Log.e(TAG, "error querying users database - aborting sync", e);
+            syncResult.databaseError = true;
+            return;
+        }
 
         while (cursor.moveToNext()) {
             if (mCanceled) throw new OperationCanceledException();
@@ -293,15 +306,26 @@ public class Syncer {
                     return;
                 }
 
+                ContentValues registeredValues = new ContentValues(1);
+                registeredValues.put(Users.REGISTERED, 1);
                 for (int i = 0; i < res.getEntryCount(); i++) {
-
                     UserLookupResponse.Entry entry = res.getEntry(i);
                     String userId = entry.getUserId().toString();
                     final RawPhoneNumberEntry data = lookupNumbers.get(userId);
                     if (data != null) {
+                        // add contact
                         addContact(account,
                                 getDisplayName(provider, data.lookupKey, data.number),
                                 data.number, data.hash, -1, operations, op);
+                        // update registered status
+                        try {
+                            usersProvider.update(Users.CONTENT_URI, registeredValues,
+                                Users.HASH + " = ?", new String[] { data.hash });
+                        }
+                        catch (RemoteException e) {
+                            Log.e(TAG, "error updating users database", e);
+                            // we shall continue here...
+                        }
                         op++;
                     }
                     else {

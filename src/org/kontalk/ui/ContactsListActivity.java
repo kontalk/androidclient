@@ -21,16 +21,14 @@ package org.kontalk.ui;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.message.PlainTextMessage;
-import org.kontalk.sync.Syncer;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.SyncerUI;
 
-import android.accounts.Account;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract.RawContacts;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -100,7 +98,7 @@ public class ContactsListActivity extends ListActivity
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         ContactsListItem cl = (ContactsListItem) v;
-        Intent i = new Intent(Intent.ACTION_PICK, cl.getContact().getRawContactUri());
+        Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(cl.getContact().getHash()));
         setResult(RESULT_OK, i);
         finish();
     }
@@ -116,12 +114,8 @@ public class ContactsListActivity extends ListActivity
     }
 
     private void startQuery() {
-        Account account = Authenticator.getDefaultAccount(this);
-        Uri uri = RawContacts.CONTENT_URI.buildUpon()
-            .appendQueryParameter(RawContacts.ACCOUNT_NAME, account.name)
-            .appendQueryParameter(RawContacts.ACCOUNT_TYPE, account.type)
-            .build();
-        mCursor = getContentResolver().query(uri, null, null, null, Syncer.RAW_COLUMN_DISPLAY_NAME);
+        mCursor = getContentResolver().query(Users.CONTENT_URI, null,
+            Users.REGISTERED + " <> 0", null, Users.DISPLAY_NAME);
         startManagingCursor(mCursor);
     }
 
