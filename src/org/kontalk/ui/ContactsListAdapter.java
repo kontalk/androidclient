@@ -37,8 +37,8 @@ public class ContactsListAdapter extends CursorAdapter {
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
-    public ContactsListAdapter(Context context, Cursor cursor) {
-        super(context, cursor, false);
+    public ContactsListAdapter(Context context) {
+        super(context, null, false);
         mFactory = LayoutInflater.from(context);
     }
 

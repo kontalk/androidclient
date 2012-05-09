@@ -51,8 +51,7 @@ public class ContactsListActivity extends ListActivity
         TextView text = (TextView) findViewById(android.R.id.empty);
         text.setText(Html.fromHtml(getString(R.string.text_contacts_empty)));
 
-        startQuery();
-        mListAdapter = new ContactsListAdapter(this, mCursor);
+        mListAdapter = new ContactsListAdapter(this);
         mListAdapter.setOnContentChangedListener(this);
         setListAdapter(mListAdapter);
 
@@ -68,7 +67,10 @@ public class ContactsListActivity extends ListActivity
         if (Authenticator.getDefaultAccount(this) == null) {
             NumberValidation.startValidation(this);
             finish();
+            return;
         }
+
+        startQuery();
     }
 
     @Override
@@ -106,7 +108,7 @@ public class ContactsListActivity extends ListActivity
     private void startSync() {
         Runnable action = new Runnable() {
             public void run() {
-                onContentChanged();
+                startQuery();
             }
         };
 
@@ -114,9 +116,16 @@ public class ContactsListActivity extends ListActivity
     }
 
     private void startQuery() {
+        // destroy previous cursor
+        if (mCursor != null) {
+            stopManagingCursor(mCursor);
+            mCursor.close();
+        }
+
         mCursor = getContentResolver().query(Users.CONTENT_URI, null,
             Users.REGISTERED + " <> 0", null, Users.DISPLAY_NAME);
         startManagingCursor(mCursor);
+        mListAdapter.changeCursor(mCursor);
     }
 
     @Override
