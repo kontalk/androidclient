@@ -18,7 +18,29 @@
 
 <resources>
   <!-- default light theme selector -->
-  <style name="Theme.Light" parent="android:Theme.Light"/>
+  <style name="Theme.Light" parent="android:Theme.Light">
+    <item name="android:windowTitleSize">40dp</item>
+    <item name="android:windowTitleBackgroundStyle">@style/WindowTitleBackground</item>
+    <item name="android:windowTitleStyle">@style/titleTextStyle</item>
+  </style>
+  
+  <style name="WindowTitleBackground">
+    <item name="android:background">@drawable/titlebar_bg</item>
+  </style>
+  
+  <style name="titleTextStyle">
+    <item name="android:textAppearance">@style/TextAppearanceWindowTitle</item>
+    <item name="android:shadowColor">#BB000000</item>
+    <item name="android:shadowRadius">2.75</item>
+    <item name="android:paddingLeft">5sp</item>
+  </style>
+  
+  <style name="TextAppearanceWindowTitle">
+    <item name="android:textSize">20dp</item>
+    <item name="android:textColor">#FFFFFF</item>
+    <item name="android:textStyle">bold</item>
+  </style>
+
   <!-- default light-to-dark theme selector -->
   <style name="Theme.Light2" parent="android:Theme"/>
 </resources>
