@@ -450,21 +450,21 @@ public class ConversationListFragment extends ListFragment {
                 // close cursor - if any
                 if (cursor != null) cursor.close();
 
-                Log.e(TAG, "query aborted or error!");
+                Log.w(TAG, "query aborted or error!");
                 mListAdapter.changeCursor(null);
                 return;
             }
 
             switch (token) {
-            case THREAD_LIST_QUERY_TOKEN:
-                mListAdapter.changeCursor(cursor);
-                if (!mDualPane)
-                    getActivity().setTitle(getString(R.string.app_name));
-                getActivity().setProgressBarIndeterminateVisibility(false);
-                break;
+                case THREAD_LIST_QUERY_TOKEN:
+                    mListAdapter.changeCursor(cursor);
+                    if (!mDualPane)
+                        getActivity().setTitle(getString(R.string.app_name));
+                    getActivity().setProgressBarIndeterminateVisibility(false);
+                    break;
 
-            default:
-                Log.e(TAG, "onQueryComplete called with unknown token " + token);
+                default:
+                    Log.e(TAG, "onQueryComplete called with unknown token " + token);
             }
         }
     }

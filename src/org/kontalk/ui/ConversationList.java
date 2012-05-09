@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.util.SyncerUI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -42,6 +43,25 @@ public class ConversationList extends FragmentActivity {
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.conversation_list_screen);
+
+        checkBigUpgrade1();
+    }
+
+    /**
+     * Checks for the first big database upgrade - manually triggering a sync
+     * if necessary.
+     */
+    private void checkBigUpgrade1() {
+        if (!MessagingPreferences.getBigUpgrade1(this)) {
+            SyncerUI.execute(this, new Runnable() {
+                public void run() {
+                    ConversationListFragment fragment = (ConversationListFragment)
+                        getSupportFragmentManager().
+                        findFragmentById(R.id.fragment_conversation_list);
+                    fragment.startQuery();
+                }
+            }, true);
+        }
     }
 
     /** Called when a new intent is sent to the activity (if already started). */

@@ -240,8 +240,14 @@ public class MessagingPreferences extends PreferenceActivity {
     /** Returns a random server from the cached list or the user-defined server. */
     public static EndpointServer getEndpointServer(Context context) {
         String customUri = getServerURI(context);
-        if (!TextUtils.isEmpty(customUri))
-            return new EndpointServer(customUri);
+        if (!TextUtils.isEmpty(customUri)) {
+            try {
+                return new EndpointServer(customUri);
+            }
+            catch (Exception e) {
+                // custom is not valid - take one from list
+            }
+        }
 
         ServerList list = ServerListUpdater.getCurrentList(context);
         return (list != null) ? list.random() : null;
@@ -353,5 +359,9 @@ public class MessagingPreferences extends PreferenceActivity {
             }
         }
         return null;
+    }
+
+    public static boolean getBigUpgrade1(Context context) {
+        return getBooleanOnce(context, "bigupgrade1");
     }
 }

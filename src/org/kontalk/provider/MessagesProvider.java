@@ -201,8 +201,6 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN preview_path TEXT";
 
         private static final String[] SCHEMA_V2_TO_V3 = {
-            // add column server_timestamp to table messages
-            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN server_timestamp TEXT",
             // create temporary messages tables without msg_id UNIQUE constraint
             "CREATE TABLE " + TABLE_MESSAGES + "_new (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -246,10 +244,11 @@ public class MessagesProvider extends ContentProvider {
             "draft TEXT" +
             ")",
             // copy contents of messages table
-            // FIXME what happens if columns doesn't match???
-            "INSERT INTO " + TABLE_MESSAGES + "_new SELECT * FROM " + TABLE_MESSAGES,
+            "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
+            "_id, thread_id, msg_id, real_id, peer, mime, content, direction, unread, timestamp, status_changed, status, fetch_url, " +
+            "fetched, local_uri, encrypted, encrypt_key, preview_path, NULL"
+                + " FROM " + TABLE_MESSAGES,
             // copy contents of threads table
-            // FIXME what happens if columns doesn't match???
             "INSERT INTO " + TABLE_THREADS + "_new SELECT * FROM " + TABLE_THREADS,
             // drop table messages
             "DROP TABLE " + TABLE_MESSAGES,
