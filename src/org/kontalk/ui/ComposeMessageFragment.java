@@ -1081,15 +1081,14 @@ public class ComposeMessageFragment extends ListFragment implements
 					}
 				};
 
-				AlertDialog.Builder build = new AlertDialog.Builder(
-						getActivity());
-				build.setTitle(R.string.title_user_not_found)
-						.setMessage(R.string.message_user_not_found)
-						// nothing happens if user chooses to contact the user
-						// anyway
-						.setPositiveButton(R.string.yes_user_not_found, null)
-						.setNegativeButton(R.string.no_user_not_found,
-								noListener).create().show();
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				builder.
+				    setTitle(R.string.title_user_not_found)
+					.setMessage(R.string.message_user_not_found)
+					// nothing happens if user chooses to contact the user anyway
+					.setPositiveButton(R.string.yes_user_not_found, null)
+					.setNegativeButton(R.string.no_user_not_found, noListener)
+					.show();
 
 			}
 		}
