@@ -1,3 +1,4 @@
+[ ] Contact.java: remove contacts observers
 [ ] still queue concurrency problems sending binary messages
 [ ] make IBinder from MessageCenterService a static class
 [ ] put encryption icon above message status icon
