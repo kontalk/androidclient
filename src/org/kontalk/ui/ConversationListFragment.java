@@ -246,7 +246,7 @@ public class ConversationListFragment extends ListFragment {
         builder.create().show();
     }
 
-    private void chooseContact() {
+    public void chooseContact() {
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(getActivity(), ContactsListActivity.class);
@@ -302,11 +302,15 @@ public class ConversationListFragment extends ListFragment {
         builder.create().show();
     }
 
+    public ConversationList getParentActivity() {
+        return (ConversationList) getActivity();
+    }
+
     public void startQuery() {
         try {
             if (!mDualPane)
                 getActivity().setTitle(getString(R.string.refreshing));
-            getActivity().setProgressBarIndeterminateVisibility(true);
+            getParentActivity().setCustomProgressBarIndeterminateVisibility(true);
 
             Conversation.startQuery(mQueryHandler, THREAD_LIST_QUERY_TOKEN);
         } catch (SQLiteException e) {
@@ -460,13 +464,17 @@ public class ConversationListFragment extends ListFragment {
                     mListAdapter.changeCursor(cursor);
                     if (!mDualPane)
                         getActivity().setTitle(getString(R.string.app_name));
-                    getActivity().setProgressBarIndeterminateVisibility(false);
+                    getParentActivity().setCustomProgressBarIndeterminateVisibility(false);
                     break;
 
                 default:
                     Log.e(TAG, "onQueryComplete called with unknown token " + token);
             }
         }
+    }
+
+    public boolean isDualPane() {
+        return mDualPane;
     }
 
 }
