@@ -23,6 +23,11 @@ public abstract class SyncerUI {
     private static final String TAG = SyncerUI.class.getSimpleName();
 
     public static void execute(Activity context, Runnable finish, boolean dialog) {
+        if (Authenticator.getDefaultAccount(context) == null) {
+            Log.v(TAG, "account does not exists, skipping sync");
+            return;
+        }
+
         if (Syncer.getInstance() == null) {
             // start monitored sync
             Log.v(TAG, "starting monitored sync");
