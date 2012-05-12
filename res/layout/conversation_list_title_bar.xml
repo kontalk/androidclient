@@ -16,16 +16,29 @@
         android:layout_weight="1.0"
         android:gravity="center_vertical"
         android:text="@string/app_name" />
-    <!-- 
-    <View
-        style="?android:attr/listDivider"
-        android:layout_width="2dp"
-        android:layout_height="match_parent"
-        />
-     -->
+
+    <ImageView
+        android:background="@drawable/divider"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"/>
+
     <ImageButton
         android:background="@android:drawable/list_selector_background"
-        android:src="@drawable/ic_menu_compose"
+        android:src="@drawable/ic_title_search"
+        android:scaleType="centerInside"
+        android:layout_width="58dp"
+        android:layout_height="match_parent"
+        android:id="@+id/title_search"
+        android:onClick="titleSearch"/>
+
+    <ImageView
+        android:background="@drawable/divider"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"/>
+
+    <ImageButton
+        android:background="@android:drawable/list_selector_background"
+        android:src="@drawable/ic_title_compose"
         android:scaleType="centerInside"
         android:layout_width="58dp"
         android:layout_height="match_parent"

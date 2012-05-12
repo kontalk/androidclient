@@ -60,6 +60,10 @@ public class ConversationList extends FragmentActivity {
         getListFragment().chooseContact();
     }
 
+    public void titleSearch(View view) {
+        onSearchRequested();
+    }
+
     /** New UI only for pre-Honeycomb for now. */
     private boolean newUI() {
         return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB;
