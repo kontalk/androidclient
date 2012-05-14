@@ -143,6 +143,15 @@ public final class MessageUtils {
         resId = (msg.wasEncrypted()) ? R.string.yes : R.string.no;
         details.append(res.getString(resId));
 
+        // Message length
+        details.append('\n');
+        // TODO i18n
+        details.append("Size: ");
+        // TODO human-readable size
+        details.append((msg.getLength() >= 0) ?
+            // TODO i18n
+            humanReadableByteCount(msg.getLength(), false) : "(unknown)");
+
         // Date
         int status = msg.getStatus();
 
@@ -209,5 +218,18 @@ public final class MessageUtils {
         details.append(label);
         details.append(MessageUtils.formatTimeStampString(context, time, fullFormat));
     }
+
+    /**
+     * Cool handy method to format a size in bytes in some human readable form.
+     * @see http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
+     */
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "i" : "");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
 
 }

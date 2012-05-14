@@ -410,7 +410,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			// save to local storage
-			ContentValues values = new ContentValues();
+            ContentValues values = new ContentValues();
 			// must supply a message ID...
 			values.put(Messages.MESSAGE_ID, msgId);
 			values.put(Messages.PEER, userId);
@@ -421,6 +421,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 			values.put(Messages.STATUS, Messages.STATUS_SENDING);
 			values.put(Messages.LOCAL_URI, uri.toString());
+            values.put(Messages.LENGTH, MediaStorage.getLength(getActivity(), uri));
 			if (previewFile != null)
 				values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
 			values.put(Messages.FETCHED, true);
@@ -499,6 +500,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 v.bind(getActivity(), msg, contact, null);
                 getListView().addFooterView(v);
                 */
+                byte[] bytes = mText.getBytes();
 
                 // save to local storage
                 ContentValues values = new ContentValues();
@@ -506,12 +508,13 @@ public class ComposeMessageFragment extends ListFragment implements
                 values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
                 values.put(Messages.PEER, userId);
                 values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-                values.put(Messages.CONTENT, mText.getBytes());
+                values.put(Messages.CONTENT, bytes);
                 values.put(Messages.UNREAD, false);
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
                 values.put(Messages.ENCRYPT_KEY, key);
+                values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);
                 if (newMsg != null) {
@@ -657,6 +660,28 @@ public class ComposeMessageFragment extends ListFragment implements
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void onListItemClick(ListView listView, View view, int position, long id) {
+	    MessageListItem item = (MessageListItem) view;
+	    AbstractMessage<?> _msg = item.getMessage();
+	    if (_msg instanceof ImageMessage) {
+	        ImageMessage msg = (ImageMessage) _msg;
+	        // outgoing message or already fetched
+	        if (msg.getDirection() == Messages.DIRECTION_OUT || msg.isFetched()) {
+	            openFile(msg);
+	        }
+	        else {
+	            // TODO info & download dialog
+	        }
+	    }
+	}
+
+	private void openFile(AbstractMessage<?> msg) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setDataAndType(msg.getLocalUri(), msg.getMime());
+        startActivity(i);
+	}
+
 	private void selectAttachment() {
 		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
 		i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -750,7 +775,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			// sent that
 			int string;
 			// outgoing or already fetched
-			if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
+			if (msg.getDirection() == Messages.DIRECTION_OUT || msg.isFetched())
 				menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN,
 						R.string.view_image);
 
@@ -868,9 +893,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			case MENU_OPEN: {
 				Log.v(TAG, "opening file");
-				Intent i = new Intent(Intent.ACTION_VIEW);
-				i.setDataAndType(msg.getLocalUri(), msg.getMime());
-				startActivity(i);
+				openFile(msg);
 				return true;
 			}
 		}

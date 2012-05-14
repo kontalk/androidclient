@@ -107,6 +107,21 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         // TODO
     }
 
+    /** FIXME not used yet */
+    public boolean isValidMedia() {
+        if (localUri != null) {
+            try {
+                Log.d(TAG, "file size is " + MediaStorage.getLength(mContext, localUri));
+                return (MediaStorage.getLength(mContext, localUri) == this.length);
+            }
+            catch (Exception e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);

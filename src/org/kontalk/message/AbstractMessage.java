@@ -75,7 +75,8 @@ public abstract class AbstractMessage<T> {
         Messages.LOCAL_URI,
         Messages.PREVIEW_PATH,
         Messages.ENCRYPTED,
-        Messages.ENCRYPT_KEY
+        Messages.ENCRYPT_KEY,
+        Messages.LENGTH
     };
 
     public static final String MSG_ID = "org.kontalk.message.id";
@@ -123,6 +124,9 @@ public abstract class AbstractMessage<T> {
 
     /** Preview file path. */
     protected File previewFile;
+
+    /** Message length (original file length for media messages). */
+    protected long length;
 
     public AbstractMessage(Context context, String id, String timestamp, String sender, String mime, T content, boolean encrypted, List<String> group) {
         this(context, id, timestamp, sender, mime, content, encrypted);
@@ -236,6 +240,14 @@ public abstract class AbstractMessage<T> {
 
     public int getStatus() {
         return status;
+    }
+
+    public long getLength() {
+        return length;
+    }
+
+    public void setLength(long length) {
+        this.length = length;
     }
 
     @Override
@@ -357,6 +369,7 @@ public abstract class AbstractMessage<T> {
         encrypted = (c.getShort(c.getColumnIndex(Messages.ENCRYPTED)) > 0);
         encryptKey = c.getString(c.getColumnIndex(Messages.ENCRYPT_KEY));
         setServerTimestamp(c.getString(c.getColumnIndex(Messages.SERVER_TIMESTAMP)));
+        length = c.getLong(c.getColumnIndex(Messages.LENGTH));
 
         String peer = c.getString(c.getColumnIndex(Messages.PEER));
         int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));

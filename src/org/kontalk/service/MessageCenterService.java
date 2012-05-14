@@ -567,6 +567,7 @@ public class MessageCenterService extends Service
             values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
             values.put(Messages.TIMESTAMP, msg.getTimestamp());
             values.put(Messages.SERVER_TIMESTAMP, msg.getRawServerTimestamp());
+            values.put(Messages.LENGTH, msg.getLength());
             Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
             msg.setDatabaseId(ContentUris.parseId(newMsg));
 

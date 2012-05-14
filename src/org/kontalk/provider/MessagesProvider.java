@@ -102,7 +102,9 @@ public class MessagesProvider extends ContentProvider {
             "encrypt_key TEXT," +
             "preview_path TEXT," +
             // server-received timestamp (or local sending time)
-            "server_timestamp TEXT" +
+            "server_timestamp TEXT," +
+            // message length (original file length for media messages)
+            "length INTEGER NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -224,7 +226,9 @@ public class MessagesProvider extends ContentProvider {
             "encrypt_key TEXT," +
             "preview_path TEXT," +
             // server-received timestamp (or local sending time)
-            "server_timestamp TEXT" +
+            "server_timestamp TEXT," +
+            // message length (original file length for media messages)
+            "length INTEGER NOT NULL DEFAULT 0" +
             ")",
             // create temporary threads tables without msg_id UNIQUE constraint
             "CREATE TABLE " + TABLE_THREADS + "_new (" +
@@ -246,7 +250,7 @@ public class MessagesProvider extends ContentProvider {
             // copy contents of messages table
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
             "_id, thread_id, msg_id, real_id, peer, mime, content, direction, unread, timestamp, status_changed, status, fetch_url, " +
-            "fetched, local_uri, encrypted, encrypt_key, preview_path, NULL"
+            "fetched, local_uri, encrypted, encrypt_key, preview_path, NULL, 0"
                 + " FROM " + TABLE_MESSAGES,
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT * FROM " + TABLE_THREADS,
@@ -458,6 +462,7 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.ENCRYPTED);
         values.remove(Messages.ENCRYPT_KEY);
         values.remove(Messages.SERVER_TIMESTAMP);
+        values.remove(Messages.LENGTH);
 
         // use text content in threads instead of binary content
         Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
@@ -1071,6 +1076,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ENCRYPT_KEY, Messages.ENCRYPT_KEY);
         messagesProjectionMap.put(Messages.PREVIEW_PATH, Messages.PREVIEW_PATH);
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
+        messagesProjectionMap.put(Messages.LENGTH, Messages.LENGTH);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
