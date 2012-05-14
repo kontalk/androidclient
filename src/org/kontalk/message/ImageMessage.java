@@ -136,8 +136,12 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
             Log.w(TAG, "unable to load thumbnail, generating one");
 
             try {
-                // unable to load preview - generate thumbnail
-                if (previewFile != null) {
+                /*
+                 * unable to load preview - generate thumbnail
+                 * Of course a thumbnail can be generated only if the image has
+                 * already been downloaded.
+                 */
+                if (previewFile != null && localUri != null) {
                     MediaStorage.cacheThumbnail(mContext, localUri, previewFile);
                     loadPreview(previewFile);
                 }
