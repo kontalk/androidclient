@@ -356,6 +356,8 @@ public abstract class AbstractMessage<T> {
     public abstract void decrypt(Coder coder) throws GeneralSecurityException;
 
     protected void populateFromCursor(Cursor c) {
+        // TODO convert to manual column index for performance boost
+        // be sure to stick to our projection array
         databaseId = c.getLong(c.getColumnIndex(Messages._ID));
         id = c.getString(c.getColumnIndex(Messages.MESSAGE_ID));
         realId = c.getString(c.getColumnIndex(Messages.REAL_ID));

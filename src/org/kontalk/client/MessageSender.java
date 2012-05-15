@@ -51,6 +51,7 @@ public class MessageSender extends RequestJob {
     private final Uri mSourceDataUri;
     private final String mEncryptKey;
     private final boolean mAttachment;
+    private String mFileId;
 
     /** A {@link MessageSender} for raw byte contents. */
     public MessageSender(String userId, byte[] content, String mime, Uri msgUri, String encryptKey, boolean attachment) {
@@ -110,6 +111,10 @@ public class MessageSender extends RequestJob {
 
     public boolean isAttachment() {
         return mAttachment;
+    }
+
+    public String getFileId() {
+        return mFileId;
     }
 
     @Override
@@ -174,7 +179,8 @@ public class MessageSender extends RequestJob {
                 // TODO other statuses??
                 if (res.getStatus() == FileUploadStatus.STATUS_SUCCESS) {
                     // return the fileid so we can go on with message post
-                    return res.getFileId();
+                    mFileId = res.getFileId();
+                    return mFileId;
                 }
             }
 

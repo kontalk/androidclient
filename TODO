@@ -1,8 +1,9 @@
 [ ] duplicated messages - maybe it's because:
     * user sends a message while message center is up but still connecting
-    * message will be mark as pending in database but could be also in pendingJobs queue
+    * message will be marked as pending in database but could be also in pendingJobs queue
     * when message center finally connects and authenticates, it process pendingJobs queue *and* pending messages from database
 [ ] still queue concurrency problems sending binary messages
+[ ] sync i18n for all languages
 [ ] make IBinder from MessageCenterService a static class
 [ ] put encryption icon above message status icon
 [ ] display user status message somehow
