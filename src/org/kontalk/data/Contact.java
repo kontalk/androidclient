@@ -226,7 +226,8 @@ public class Contact {
                 Users.DISPLAY_NAME,
                 Users.LOOKUP_KEY,
                 Users.CONTACT_ID,
-                Users.HASH
+                Users.HASH,
+                Users.REGISTERED
             }, null, null, null);
 
         if (c.moveToFirst()) {
@@ -235,9 +236,11 @@ public class Contact {
             String key = c.getString(2);
             long cid = c.getLong(3);
             String hash = c.getString(4);
+            boolean registered = (c.getInt(5) != 0);
             c.close();
 
             Contact contact = new Contact(cid, key, name, number, hash);
+            contact.mRegistered = registered;
             contact.mAvatarData = loadAvatarData(context, contact.getUri());
             return contact;
         }
