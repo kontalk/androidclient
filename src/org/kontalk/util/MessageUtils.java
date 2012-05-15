@@ -110,6 +110,43 @@ public final class MessageUtils {
         return convertToHex(sha1hash);
     }
 
+    public static CharSequence getFileInfoMessage(Context context, AbstractMessage<?> msg, String decodedPeer) {
+        StringBuilder details = new StringBuilder();
+        Resources res = context.getResources();
+        int direction = msg.getDirection();
+
+        // To/From
+        if (direction == Messages.DIRECTION_OUT)
+            details.append(res.getString(R.string.to_address_label));
+        else
+            details.append(res.getString(R.string.from_label));
+
+        details.append(decodedPeer);
+
+        // Message type
+        details.append('\n');
+        details.append(res.getString(R.string.message_type_label));
+
+        int resId;
+        if (msg instanceof ImageMessage)
+            resId = R.string.image_message;
+        else if (msg instanceof VCardMessage)
+            resId = R.string.vcard_message;
+        else
+            resId = R.string.text_message;
+
+        details.append(res.getString(resId));
+
+        // Message length
+        details.append('\n');
+        details.append(res.getString(R.string.size_label));
+        details.append((msg.getLength() >= 0) ?
+            humanReadableByteCount(msg.getLength(), false) :
+                res.getString(R.string.size_unknown));
+
+        return details.toString();
+    }
+
     public static CharSequence getMessageDetails(Context context, AbstractMessage<?> msg, String decodedPeer) {
         StringBuilder details = new StringBuilder();
         Resources res = context.getResources();
@@ -145,12 +182,10 @@ public final class MessageUtils {
 
         // Message length
         details.append('\n');
-        // TODO i18n
-        details.append("Size: ");
-        // TODO human-readable size
+        details.append(res.getString(R.string.size_label));
         details.append((msg.getLength() >= 0) ?
-            // TODO i18n
-            humanReadableByteCount(msg.getLength(), false) : "(unknown)");
+            humanReadableByteCount(msg.getLength(), false) :
+                res.getString(R.string.size_unknown));
 
         // Date
         int status = msg.getStatus();

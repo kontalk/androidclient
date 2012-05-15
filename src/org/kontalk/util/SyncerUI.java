@@ -96,9 +96,8 @@ public abstract class SyncerUI {
                         AlertDialog.Builder builder = new AlertDialog
                                 .Builder(context);
                         builder
-                            // TODO i18n
-                            .setTitle("Error")
-                            .setMessage("Unable to refresh contacts list. Please retry later.")
+                            .setTitle(R.string.title_error)
+                            .setMessage(R.string.err_sync_failed)
                             .setPositiveButton(android.R.string.ok, null)
                             .create().show();
                     }

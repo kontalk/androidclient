@@ -23,11 +23,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.sync.Syncer;
 
-import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -54,14 +51,14 @@ public class Contact {
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
-    /** The Kontalk RawContact id identified by this object. */
-    private long mRawContactId;
+
     private String mNumber;
     private String mName;
     private String mHash;
 
     private String mLookupKey;
     private Uri mContactUri;
+    private boolean mRegistered;
 
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
@@ -157,37 +154,6 @@ public class Contact {
         return mContactId;
     }
 
-    /** Retrieves the raw contact id if needed and returns it. */
-    public long getRawContactId(Context context) {
-        if (mRawContactId <= 0) {
-            Account acc = Authenticator.getDefaultAccount(context);
-            Cursor c = context.getContentResolver()
-                .query(RawContacts.CONTENT_URI,
-                    new String[] {
-                        RawContacts._ID
-                    },
-                    RawContacts.ACCOUNT_NAME + " = ? AND " +
-                    RawContacts.ACCOUNT_TYPE + " = ? AND " +
-                    Syncer.RAW_COLUMN_PHONE + " = ?",
-                    new String[] {
-                        acc.name,
-                        acc.type,
-                        mNumber
-                    }, null);
-
-            if (c.moveToFirst()) {
-                mRawContactId = c.getLong(0);
-            }
-            c.close();
-        }
-
-        return mRawContactId;
-    }
-
-    public long getRawContactId() {
-        return mRawContactId;
-    }
-
     public String getNumber() {
         return mNumber;
     }
@@ -198,6 +164,10 @@ public class Contact {
 
     public String getHash() {
         return mHash;
+    }
+
+    public boolean isRegistered() {
+        return mRegistered;
     }
 
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
@@ -217,8 +187,10 @@ public class Contact {
         final String name = cursor.getString(cursor.getColumnIndex(Users.DISPLAY_NAME));
         final String number = cursor.getString(cursor.getColumnIndex(Users.NUMBER));
         final String hash = cursor.getString(cursor.getColumnIndex(Users.HASH));
+        final boolean registered = (cursor.getInt(cursor.getColumnIndex(Users.REGISTERED)) != 0);
 
         Contact c = new Contact(contactId, key, name, number, hash);
+        c.mRegistered = registered;
         c.mAvatarData = loadAvatarData(context, c.getUri());
         return c;
     }

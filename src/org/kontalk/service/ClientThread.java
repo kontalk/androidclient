@@ -312,6 +312,7 @@ public class ClientThread extends Thread {
             Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyUsername);
             try {
                 content = coder.decrypt(content);
+                length = content.length;
             }
             catch (Exception exc) {
                 // pass over the message even if encrypted
