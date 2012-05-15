@@ -107,7 +107,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         // this must be done synchronized on the queue
         synchronized (pendingJobs) {
             mHandler = new PauseHandler(new LinkedList<RequestJob>(pendingJobs), mRefCount);
-            pendingJobs = new LinkedList<RequestJob>();
+            pendingJobs.clear();
         }
     }
 
