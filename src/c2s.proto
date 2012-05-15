@@ -54,6 +54,7 @@ message NewMessage {
     required bytes content = 8;
     optional string url = 9;
     required bool need_ack = 10;
+    optional uint64 length = 11;
 }
 
 // message acknowledgement request

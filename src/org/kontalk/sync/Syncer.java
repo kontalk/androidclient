@@ -39,7 +39,13 @@ import android.util.Log;
 
 import com.google.protobuf.MessageLite;
 
+
+/**
+ * The syncer core.
+ * @author Daniele Ricci
+ */
 public class Syncer {
+    /** Singleton instance. */
     private static Syncer instance;
 
     // using SyncAdapter tag

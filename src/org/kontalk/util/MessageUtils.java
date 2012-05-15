@@ -110,6 +110,43 @@ public final class MessageUtils {
         return convertToHex(sha1hash);
     }
 
+    public static CharSequence getFileInfoMessage(Context context, AbstractMessage<?> msg, String decodedPeer) {
+        StringBuilder details = new StringBuilder();
+        Resources res = context.getResources();
+        int direction = msg.getDirection();
+
+        // To/From
+        if (direction == Messages.DIRECTION_OUT)
+            details.append(res.getString(R.string.to_address_label));
+        else
+            details.append(res.getString(R.string.from_label));
+
+        details.append(decodedPeer);
+
+        // Message type
+        details.append('\n');
+        details.append(res.getString(R.string.message_type_label));
+
+        int resId;
+        if (msg instanceof ImageMessage)
+            resId = R.string.image_message;
+        else if (msg instanceof VCardMessage)
+            resId = R.string.vcard_message;
+        else
+            resId = R.string.text_message;
+
+        details.append(res.getString(resId));
+
+        // Message length
+        details.append('\n');
+        details.append(res.getString(R.string.size_label));
+        details.append((msg.getLength() >= 0) ?
+            humanReadableByteCount(msg.getLength(), false) :
+                res.getString(R.string.size_unknown));
+
+        return details.toString();
+    }
+
     public static CharSequence getMessageDetails(Context context, AbstractMessage<?> msg, String decodedPeer) {
         StringBuilder details = new StringBuilder();
         Resources res = context.getResources();
@@ -142,6 +179,13 @@ public final class MessageUtils {
         details.append(res.getString(R.string.encrypted_label));
         resId = (msg.wasEncrypted()) ? R.string.yes : R.string.no;
         details.append(res.getString(resId));
+
+        // Message length
+        details.append('\n');
+        details.append(res.getString(R.string.size_label));
+        details.append((msg.getLength() >= 0) ?
+            humanReadableByteCount(msg.getLength(), false) :
+                res.getString(R.string.size_unknown));
 
         // Date
         int status = msg.getStatus();
@@ -209,5 +253,18 @@ public final class MessageUtils {
         details.append(label);
         details.append(MessageUtils.formatTimeStampString(context, time, fullFormat));
     }
+
+    /**
+     * Cool handy method to format a size in bytes in some human readable form.
+     * @see http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
+     */
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "i" : "");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
 
 }

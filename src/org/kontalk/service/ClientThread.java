@@ -281,6 +281,8 @@ public class ClientThread extends Thread {
         ByteString text = pack.getContent();
         String fetchUrl = (pack.hasUrl()) ? pack.getUrl() : null;
         List<String> group = pack.getGroupList();
+        // use content length if no length has been passed through
+        long length = (pack.hasLength()) ? pack.getLength() : text.size();
 
         // flag for originally encrypted message
         boolean origEncrypted = false;
@@ -310,6 +312,7 @@ public class ClientThread extends Thread {
             Coder coder = MessagingPreferences.getDecryptCoder(mContext, mMyUsername);
             try {
                 content = coder.decrypt(content);
+                length = content.length;
             }
             catch (Exception exc) {
                 // pass over the message even if encrypted
@@ -353,6 +356,8 @@ public class ClientThread extends Thread {
             msg.setRealId(realId);
             // set need ack flag
             msg.setNeedAck(pack.getNeedAck());
+            // set length
+            msg.setLength(length);
 
             // remember encryption! :)
             if (origEncrypted)

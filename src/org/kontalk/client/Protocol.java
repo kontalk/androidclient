@@ -2249,6 +2249,10 @@ public final class Protocol {
     // required bool need_ack = 10;
     boolean hasNeedAck();
     boolean getNeedAck();
+    
+    // optional uint64 length = 11;
+    boolean hasLength();
+    long getLength();
   }
   public static final class NewMessage extends
       com.google.protobuf.GeneratedMessageLite
@@ -2509,6 +2513,16 @@ public final class Protocol {
       return needAck_;
     }
     
+    // optional uint64 length = 11;
+    public static final int LENGTH_FIELD_NUMBER = 11;
+    private long length_;
+    public boolean hasLength() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    public long getLength() {
+      return length_;
+    }
+    
     private void initFields() {
       messageId_ = "";
       timestamp_ = "";
@@ -2520,6 +2534,7 @@ public final class Protocol {
       content_ = com.google.protobuf.ByteString.EMPTY;
       url_ = "";
       needAck_ = false;
+      length_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -2587,6 +2602,9 @@ public final class Protocol {
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeBool(10, needAck_);
       }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeUInt64(11, length_);
+      }
     }
     
     private int memoizedSerializedSize = -1;
@@ -2644,6 +2662,10 @@ public final class Protocol {
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(10, needAck_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(11, length_);
       }
       memoizedSerializedSize = size;
       return size;
@@ -2767,6 +2789,8 @@ public final class Protocol {
         bitField0_ = (bitField0_ & ~0x00000100);
         needAck_ = false;
         bitField0_ = (bitField0_ & ~0x00000200);
+        length_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
       
@@ -2844,6 +2868,10 @@ public final class Protocol {
           to_bitField0_ |= 0x00000080;
         }
         result.needAck_ = needAck_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.length_ = length_;
         result.bitField0_ = to_bitField0_;
         return result;
       }
@@ -2893,6 +2921,9 @@ public final class Protocol {
         }
         if (other.hasNeedAck()) {
           setNeedAck(other.getNeedAck());
+        }
+        if (other.hasLength()) {
+          setLength(other.getLength());
         }
         return this;
       }
@@ -2990,6 +3021,11 @@ public final class Protocol {
             case 80: {
               bitField0_ |= 0x00000200;
               needAck_ = input.readBool();
+              break;
+            }
+            case 88: {
+              bitField0_ |= 0x00000400;
+              length_ = input.readUInt64();
               break;
             }
           }
@@ -3367,6 +3403,27 @@ public final class Protocol {
       public Builder clearNeedAck() {
         bitField0_ = (bitField0_ & ~0x00000200);
         needAck_ = false;
+        
+        return this;
+      }
+      
+      // optional uint64 length = 11;
+      private long length_ ;
+      public boolean hasLength() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      public long getLength() {
+        return length_;
+      }
+      public Builder setLength(long value) {
+        bitField0_ |= 0x00000400;
+        length_ = value;
+        
+        return this;
+      }
+      public Builder clearLength() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        length_ = 0L;
         
         return this;
       }

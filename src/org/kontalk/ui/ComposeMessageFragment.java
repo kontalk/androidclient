@@ -410,7 +410,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			// save to local storage
-			ContentValues values = new ContentValues();
+            ContentValues values = new ContentValues();
 			// must supply a message ID...
 			values.put(Messages.MESSAGE_ID, msgId);
 			values.put(Messages.PEER, userId);
@@ -421,6 +421,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 			values.put(Messages.STATUS, Messages.STATUS_SENDING);
 			values.put(Messages.LOCAL_URI, uri.toString());
+            values.put(Messages.LENGTH, MediaStorage.getLength(getActivity(), uri));
 			if (previewFile != null)
 				values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
 			values.put(Messages.FETCHED, true);
@@ -463,12 +464,10 @@ public class ComposeMessageFragment extends ListFragment implements
 		}
 		else {
 			getActivity().runOnUiThread(new Runnable() {
-				@Override
 				public void run() {
 					Toast.makeText(getActivity(),
-					        // TODO i18n
-							"Unable to store message to outbox.",
-							Toast.LENGTH_LONG).show();
+						R.string.err_store_message_failed,
+						Toast.LENGTH_LONG).show();
 				}
 			});
 		}
@@ -499,6 +498,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 v.bind(getActivity(), msg, contact, null);
                 getListView().addFooterView(v);
                 */
+                byte[] bytes = mText.getBytes();
 
                 // save to local storage
                 ContentValues values = new ContentValues();
@@ -506,12 +506,13 @@ public class ComposeMessageFragment extends ListFragment implements
                 values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
                 values.put(Messages.PEER, userId);
                 values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-                values.put(Messages.CONTENT, mText.getBytes());
+                values.put(Messages.CONTENT, bytes);
                 values.put(Messages.UNREAD, false);
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
                 values.put(Messages.ENCRYPT_KEY, key);
+                values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);
                 if (newMsg != null) {
@@ -657,6 +658,53 @@ public class ComposeMessageFragment extends ListFragment implements
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void onListItemClick(ListView listView, View view, int position, long id) {
+	    MessageListItem item = (MessageListItem) view;
+	    final AbstractMessage<?> _msg = item.getMessage();
+	    if (_msg instanceof ImageMessage) {
+	        ImageMessage msg = (ImageMessage) _msg;
+	        // outgoing message or already fetched
+	        if (msg.getDirection() == Messages.DIRECTION_OUT || msg.isFetched()) {
+	            // open file
+	            openFile(msg);
+	        }
+	        else {
+	            // info & download dialog
+	            CharSequence message = MessageUtils
+	                .getFileInfoMessage(getActivity(), msg,
+	                    userPhone != null ? userPhone : userId);
+	            DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // start file download
+                        startDownload(_msg);
+                    }
+                };
+
+                new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.title_file_info)
+                    .setMessage(message)
+                    .setPositiveButton(R.string.download, startDL)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setCancelable(true).show();
+	        }
+	    }
+	}
+
+	private void startDownload(AbstractMessage<?> msg) {
+        Intent i = new Intent(getActivity(), DownloadService.class);
+        i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
+        i.putExtra(AbstractMessage.MSG_ID, msg.getId());
+        i.setData(Uri.parse(msg.getFetchUrl()));
+        getActivity().startService(i);
+	}
+
+	private void openFile(AbstractMessage<?> msg) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setDataAndType(msg.getLocalUri(), msg.getMime());
+        startActivity(i);
+	}
+
 	private void selectAttachment() {
 		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
 		i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -707,9 +755,11 @@ public class ComposeMessageFragment extends ListFragment implements
 			// decrypt the message
 			msg.decrypt(coder);
 			// update database
+			final byte[] content = msg.getBinaryContent();
 			ContentValues values = new ContentValues();
-			values.put(Messages.CONTENT, msg.getBinaryContent());
+			values.put(Messages.CONTENT, content);
 			values.put(Messages.ENCRYPTED, false);
+			values.put(Messages.LENGTH, content.length);
 			getActivity().getContentResolver().update(
 					Messages.getUri(msg.getId()), values, null, null);
 		} catch (GeneralSecurityException e) {
@@ -750,7 +800,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			// sent that
 			int string;
 			// outgoing or already fetched
-			if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
+			if (msg.getDirection() == Messages.DIRECTION_OUT || msg.isFetched())
 				menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN,
 						R.string.view_image);
 
@@ -840,11 +890,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			case MENU_DOWNLOAD: {
 				Log.v(TAG, "downloading attachment");
-				Intent i = new Intent(getActivity(), DownloadService.class);
-				i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
-				i.putExtra(AbstractMessage.MSG_ID, msg.getId());
-				i.setData(Uri.parse(msg.getFetchUrl()));
-				getActivity().startService(i);
+				startDownload(msg);
 				return true;
 			}
 
@@ -868,9 +914,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			case MENU_OPEN: {
 				Log.v(TAG, "opening file");
-				Intent i = new Intent(Intent.ACTION_VIEW);
-				i.setDataAndType(msg.getLocalUri(), msg.getMime());
-				startActivity(i);
+				openFile(msg);
 				return true;
 			}
 		}
@@ -985,6 +1029,10 @@ public class ComposeMessageFragment extends ListFragment implements
 				Log.w(TAG, "intent uri: " + uri);
 				ContentResolver cres = getActivity().getContentResolver();
 
+				/*
+				 * FIXME this will retrieve name directly from contacts,
+				 * resulting in a possible discrepancy with users database
+				 */
 				Cursor c = cres.query(uri, new String[] {
 						Syncer.DATA_COLUMN_DISPLAY_NAME,
 						Syncer.DATA_COLUMN_PHONE }, null, null, null);
@@ -1065,8 +1113,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		// non existant thread - check for not synced contact
 		if (threadId <= 0 && mConversation != null) {
 			Contact contact = mConversation.getContact();
-			if (userPhone != null && contact != null ? contact
-					.getRawContactId(getActivity()) <= 0 : true) {
+			if (userPhone != null && contact != null ? !contact.isRegistered() : true) {
 				// ask user to send invitation
 				DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
 					@Override
@@ -1124,7 +1171,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			setListAdapter(mListAdapter);
 		}
 
-		Log.i(TAG, "starting query with threadId " + threadId);
+		Log.v(TAG, "starting query with threadId " + threadId);
 		if (threadId > 0) {
 			startQuery((mConversation == null));
 		}

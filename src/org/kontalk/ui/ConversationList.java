@@ -25,6 +25,7 @@ import org.kontalk.util.SyncerUI;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
 import android.view.Window;
 import android.widget.ListAdapter;
 
@@ -41,10 +42,31 @@ public class ConversationList extends FragmentActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        if (newUI())
+            requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        else
+            requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         setContentView(R.layout.conversation_list_screen);
 
+        if (newUI()) {
+            getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.conversation_list_title_bar);
+        }
+
         checkBigUpgrade1();
+    }
+
+    public void titleComposeMessage(View view) {
+        getListFragment().chooseContact();
+    }
+
+    public void titleSearch(View view) {
+        onSearchRequested();
+    }
+
+    /** New UI only for pre-Honeycomb for now. */
+    private boolean newUI() {
+        return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB;
     }
 
     /**
@@ -55,9 +77,7 @@ public class ConversationList extends FragmentActivity {
         if (!MessagingPreferences.getBigUpgrade1(this)) {
             SyncerUI.execute(this, new Runnable() {
                 public void run() {
-                    ConversationListFragment fragment = (ConversationListFragment)
-                        getSupportFragmentManager().
-                        findFragmentById(R.id.fragment_conversation_list);
+                    ConversationListFragment fragment = getListFragment();
                     fragment.startQuery();
                 }
             }, true);
@@ -67,17 +87,23 @@ public class ConversationList extends FragmentActivity {
     /** Called when a new intent is sent to the activity (if already started). */
     @Override
     protected void onNewIntent(Intent intent) {
-        ConversationListFragment fragment = (ConversationListFragment)
-            getSupportFragmentManager().
-            findFragmentById(R.id.fragment_conversation_list);
+        ConversationListFragment fragment = getListFragment();
         fragment.startQuery();
+    }
+
+    public void setCustomProgressBarIndeterminateVisibility(boolean visible) {
+        if (newUI()) {
+            findViewById(R.id.progress_circular).setVisibility(visible ? View.VISIBLE : View.GONE);
+            findViewById(R.id.title_compose).setVisibility(visible ? View.GONE : View.VISIBLE);
+        }
+        else {
+            setProgressBarIndeterminateVisibility(visible);
+        }
     }
 
     @Override
     public boolean onSearchRequested() {
-        ConversationListFragment fragment = (ConversationListFragment)
-            getSupportFragmentManager().
-            findFragmentById(R.id.fragment_conversation_list);
+        ConversationListFragment fragment = getListFragment();
 
         ListAdapter list = fragment.getListAdapter();
         // no data found
@@ -102,6 +128,10 @@ public class ConversationList extends FragmentActivity {
         return (ConversationListFragment)
                 getSupportFragmentManager().
                 findFragmentById(R.id.fragment_conversation_list);
+    }
+
+    public boolean isDualPane() {
+        return findViewById(R.id.fragment_compose_message) != null;
     }
 
 }

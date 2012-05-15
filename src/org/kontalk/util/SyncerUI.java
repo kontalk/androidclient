@@ -23,6 +23,11 @@ public abstract class SyncerUI {
     private static final String TAG = SyncerUI.class.getSimpleName();
 
     public static void execute(Activity context, Runnable finish, boolean dialog) {
+        if (Authenticator.getDefaultAccount(context) == null) {
+            Log.v(TAG, "account does not exists, skipping sync");
+            return;
+        }
+
         if (Syncer.getInstance() == null) {
             // start monitored sync
             Log.v(TAG, "starting monitored sync");
@@ -91,9 +96,8 @@ public abstract class SyncerUI {
                         AlertDialog.Builder builder = new AlertDialog
                                 .Builder(context);
                         builder
-                            // TODO i18n
-                            .setTitle("Error")
-                            .setMessage("Unable to refresh contacts list. Please retry later.")
+                            .setTitle(R.string.title_error)
+                            .setMessage(R.string.err_sync_failed)
                             .setPositiveButton(android.R.string.ok, null)
                             .create().show();
                     }

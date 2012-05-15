@@ -48,6 +48,10 @@ public abstract class RequestJob {
         return mThread;
     }
 
+    /**
+     * Keeps a reference to the thread executing this job.
+     * Only for asynchronous jobs.
+     */
     public void setThread(Thread thread) {
         mThread = thread;
     }
@@ -72,7 +76,7 @@ public abstract class RequestJob {
         return mCancel;
     }
 
-    /** Returns true if this job need to be executed in a separate thread. */
+    /** Returns true if this job needs to be executed in a separate thread. */
     public boolean isAsync() {
         return false;
     }

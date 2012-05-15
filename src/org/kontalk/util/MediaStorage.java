@@ -25,6 +25,7 @@ import java.io.InputStream;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -123,6 +124,22 @@ public abstract class MediaStorage {
             fout.write(buffer, 0, len);
         fout.close();
         return f;
+    }
+
+    public static long getLength(Context context, Uri media) throws IOException {
+        AssetFileDescriptor stat = null;
+        try {
+            stat = context.getContentResolver().openAssetFileDescriptor(media, "r");
+            return stat.getDeclaredLength();
+        }
+        finally {
+            try {
+                stat.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
     }
 
 }

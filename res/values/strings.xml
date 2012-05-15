@@ -77,6 +77,9 @@
     <string name="refused_label">Not accepted:\u0020</string>
     <string name="notdelivered_label">Not delivered:\u0020</string>
     <string name="encrypted_label">Encrypted:\u0020</string>
+    <string name="size_label">Size:\u0020</string>
+    <string name="size_unknown">(unknown)</string>
+    <string name="title_file_info">File information</string>
     <string name="pref_restart_msgcenter">Restart message center</string>
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
     <string name="pref_maintainance">Maintainance</string>
@@ -93,6 +96,7 @@
     <string name="decrypt_message">Decrypt message</string>
     <string name="download_file">Download file</string>
     <string name="download_again">Download again</string>
+    <string name="download">Download</string>
     <string name="last_seen_label">Last seen:\u0020</string>
     <string name="myself_label">Me</string>
     <string name="has_draft">Draft</string>
@@ -138,19 +142,22 @@
     <string name="notify_title_polling_error">Network error</string>
     <string name="notify_text_polling_error">Unable to check for incoming messages. Check your network settings.</string>
     <string name="title_invalid_number">Invalid number</string>
+    <string name="err_store_message_failed">Unable to store message to outbox.</string>
     <string name="msg_invalid_number">Please insert a valid international prefix or insert a SIM card and go to online mode to automatically retrieve it.</string>
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
+    <string name="title_error">Error</string>
     <string name="msg_do_refresh">Use Menu &gt; Refresh to update contact list.</string>
     <string name="msg_sync_progress">Refreshing contacts list&#8230;</string>
+    <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>
     <string name="text_invite_message">Hey! Check out Kontalk on Google Play Store, a free messaging app! https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; to send an invitation message to someone.</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
     <string name="notify_text_external_storage">Unable to write to external storage.</string>
     <string name="title_user_not_found">User not found</string>
     <string name="message_user_not_found">This contact seems not to be registered on Kontalk. You can try to contact the user anyway or send him/her an invitation message.</string>
-    <string name="yes_user_not_found">Yes, contact the user anyway</string>
-    <string name="no_user_not_found">No, send an invite</string>
+    <string name="yes_user_not_found">Contact user anyway</string>
+    <string name="no_user_not_found">Send invite</string>
     <string name="pref_appearance_settings">Appearance settings</string>
     <string name="pref_font_size">Font size</string>
     <string name="message_text_small">Small</string>

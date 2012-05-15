@@ -107,6 +107,21 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         // TODO
     }
 
+    /** FIXME not used yet */
+    public boolean isValidMedia() {
+        if (localUri != null) {
+            try {
+                Log.d(TAG, "file size is " + MediaStorage.getLength(mContext, localUri));
+                return (MediaStorage.getLength(mContext, localUri) == this.length);
+            }
+            catch (Exception e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
@@ -136,8 +151,12 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
             Log.w(TAG, "unable to load thumbnail, generating one");
 
             try {
-                // unable to load preview - generate thumbnail
-                if (previewFile != null) {
+                /*
+                 * unable to load preview - generate thumbnail
+                 * Of course a thumbnail can be generated only if the image has
+                 * already been downloaded.
+                 */
+                if (previewFile != null && localUri != null) {
                     MediaStorage.cacheThumbnail(mContext, localUri, previewFile);
                     loadPreview(previewFile);
                 }
