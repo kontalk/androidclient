@@ -152,10 +152,11 @@
     <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>
     <string name="text_invite_message">Hey! Check out Kontalk on Google Play Store, a free messaging app! https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="text_contacts_empty">New users will be automatically added to this list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; to send an invitation message to someone.</string>
+    <string name="text_conversations_empty">To start writing messages use the &lt;b&gt;new message&lt;/b&gt; icon above.</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
     <string name="notify_text_external_storage">Unable to write to external storage.</string>
     <string name="title_user_not_found">User not found</string>
-    <string name="message_user_not_found">This contact seems not to be registered on Kontalk. You can try to contact the user anyway or send him/her an invitation message.</string>
+    <string name="message_user_not_found">Contact seems not to be registered on Kontalk. You can try to contact the user anyway or send him/her an invitation message.</string>
     <string name="yes_user_not_found">Contact user anyway</string>
     <string name="no_user_not_found">Send invite</string>
     <string name="pref_appearance_settings">Appearance settings</string>

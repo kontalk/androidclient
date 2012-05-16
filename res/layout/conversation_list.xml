@@ -16,14 +16,28 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<ListView android:id="@android:id/list" xmlns:android="http://schemas.android.com/apk/res/android"
-    style="?android:attr/listViewWhiteStyle"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:drawSelectorOnTop="false"
-    android:scrollbarStyle="insideOverlay"
-    android:cacheColorHint="@android:color/white"
-    android:transcriptMode="normal"
-    android:fadingEdgeLength="16dip">
-    <!-- Preview: listitem=@layout/conversation_list_item -->
-</ListView>
+    android:layout_height="fill_parent">
+
+    <ListView android:id="@android:id/list"
+        style="?android:attr/listViewWhiteStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:drawSelectorOnTop="false"
+        android:scrollbarStyle="insideOverlay"
+        android:cacheColorHint="@android:color/white"
+        android:transcriptMode="normal"
+        android:fadingEdgeLength="16dip">
+        <!-- Preview: listitem=@layout/conversation_list_item -->
+    </ListView>
+    
+    <TextView android:id="@android:id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="10dip"
+        android:maxLines="20"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+</LinearLayout>
