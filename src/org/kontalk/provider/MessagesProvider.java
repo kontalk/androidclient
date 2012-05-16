@@ -365,7 +365,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues initialValues) {
+    public synchronized Uri insert(Uri uri, ContentValues initialValues) {
         // only messages table can be inserted
         if (sUriMatcher.match(uri) != MESSAGES) { throw new IllegalArgumentException("Unknown URI " + uri); }
         if (initialValues == null) { throw new IllegalArgumentException("No data"); }
@@ -504,7 +504,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         if (values == null) { throw new IllegalArgumentException("No data"); }
 
         String table;
@@ -664,7 +664,7 @@ public class MessagesProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
         String table;
         String where;
         String[] args;
