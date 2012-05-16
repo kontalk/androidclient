@@ -25,10 +25,9 @@ import java.util.List;
 import org.kontalk.R;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
+import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
-
 
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
@@ -401,6 +400,42 @@ public class MessagesProvider extends ContentProvider {
             // insert the new message now!
             long rowId = db.insert(TABLE_MESSAGES, null, values);
 
+            /*
+             * this will be useful one day perhaps :)
+            long rowId = 0;
+            try {
+                rowId = db.insert(TABLE_MESSAGES, null, values);
+            }
+            catch (SQLiteConstraintException e) {
+                // unique constraint is on msg_id, direction
+                // already stored message, skip it and return uri
+                Cursor c = null;
+                try {
+                    c = db.query(TABLE_MESSAGES, new String[] { Messages._ID },
+                        Messages.MESSAGE_ID + " = ? AND " + Messages.DIRECTION + " = ?",
+                        new String[] {
+                            values.getAsString(Messages.MESSAGE_ID),
+                            values.getAsString(Messages.DIRECTION)
+                        }, null, null, null, "1");
+                    if (c.moveToFirst()) {
+                        rowId = c.getLong(0);
+                        return ContentUris.withAppendedId(uri, rowId);
+                    }
+                }
+                finally {
+                    try {
+                        c.close();
+                    }
+                    catch (Exception eClose) {
+                        // ignore exception
+                    }
+                }
+
+                // message not found (WHAT???)
+                throw e;
+            }
+            */
+
             if (rowId > 0) {
                 // update fulltext table
                 Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
@@ -409,7 +444,6 @@ public class MessagesProvider extends ContentProvider {
                     byte[] content = values.getAsByteArray(Messages.CONTENT);
                     updateFulltext(db, rowId, threadId, content);
                 }
-
 
                 Uri msgUri = ContentUris.withAppendedId(uri, rowId);
                 notifications.add(msgUri);

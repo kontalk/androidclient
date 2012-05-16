@@ -77,6 +77,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -543,13 +544,6 @@ public class MessageCenterService extends Service
                 content = msg.getTextContent().getBytes();
             }
 
-            /*
-             * FIXME if a message is not acknowledged for any reason, it will
-             * get received and stored again in the database! We must avoid it
-             * by either 1) enforce a constraint on message_id and direction or
-             * 2) searching the message before inserting it
-             */
-
             // save to local storage
             ContentValues values = new ContentValues();
             values.put(Messages.MESSAGE_ID, msg.getId());
@@ -568,11 +562,16 @@ public class MessageCenterService extends Service
             values.put(Messages.TIMESTAMP, msg.getTimestamp());
             values.put(Messages.SERVER_TIMESTAMP, msg.getRawServerTimestamp());
             values.put(Messages.LENGTH, msg.getLength());
-            Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
-            msg.setDatabaseId(ContentUris.parseId(newMsg));
+            try {
+                Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
+                msg.setDatabaseId(ContentUris.parseId(newMsg));
 
-            // we will have to notify the user
-            notify = true;
+                // we will have to notify the user
+                notify = true;
+            }
+            catch (SQLiteConstraintException econstr) {
+                // duplicated message, skip it
+            }
         }
 
         // we have a receipt, update the corresponding message
