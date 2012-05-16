@@ -164,7 +164,7 @@ public class UsersProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         boolean isResync = Boolean.parseBoolean(uri.getQueryParameter(Users.RESYNC));
         boolean bootstrap = Boolean.parseBoolean(uri.getQueryParameter(Users.BOOTSTRAP));
 
@@ -280,13 +280,13 @@ public class UsersProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public synchronized Uri insert(Uri uri, ContentValues values) {
         // TODO
         return null;
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
         // TODO
         return 0;
     }
