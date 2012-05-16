@@ -40,7 +40,6 @@
     <string name="msg_validating_phone">Validazione numero di telefono&#8230;</string>
     <string name="msg_initializing">Inizializzazione&#8230;</string>
     <string name="msg_authenticated">Registrazione sul network effettuata!</string>
-    <string name="refreshing">Aggiornamento&#8230;</string>
     <string name="share">Condividi</string>
     <string name="copy_message_text">Copia testo messaggio</string>
     <string name="delete_message">Elimina messaggio</string>

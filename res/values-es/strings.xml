@@ -39,7 +39,6 @@
     <string name="warn_invalid_number">Por favor, ingrese un número de teléfono válido.</string>
     <string name="msg_validating_phone">Validando el número de teléfono&#8230;</string>
     <string name="msg_authenticated">Registradose en la red!</string>
-    <string name="refreshing">Actualizando&#8230;</string>
     <string name="share">Compartir</string>
     <string name="copy_message_text">Copia mensaje de texto</string>
     <string name="delete_message">Eliminar el mensaje</string>

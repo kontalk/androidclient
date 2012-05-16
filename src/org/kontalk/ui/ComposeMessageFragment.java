@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
@@ -85,6 +86,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PatternMatcher;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
@@ -608,6 +610,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		MenuItem i;
 
 		i = menu.findItem(R.id.call_contact);
+		// FIXME what about VoIP?
 		if (!getActivity().getPackageManager().hasSystemFeature(
 				PackageManager.FEATURE_TELEPHONY)) {
 			i.setVisible(false);
@@ -1203,6 +1206,8 @@ public class ComposeMessageFragment extends ListFragment implements
 			// new conversation -- observe peer Uri
 			registerPeerObserver();
 		}
+
+		updateUI();
 	}
 
 	private final class UserPresenceBroadcastReceiver extends BroadcastReceiver {
@@ -1541,6 +1546,13 @@ public class ComposeMessageFragment extends ListFragment implements
 				.isFinishing())) || isRemoving();
 	}
 
+    private void updateUI() {
+        if (Kontalk.needInvalidateMenu()) {
+            FragmentActivity ctx = (FragmentActivity) getActivity();
+            ctx.supportInvalidateOptionsMenu();
+        }
+    }
+
 	/** The conversation list query handler. */
 	private final class MessageListQueryHandler extends AsyncQueryHandler {
 		public MessageListQueryHandler() {
@@ -1608,6 +1620,7 @@ public class ComposeMessageFragment extends ListFragment implements
     						getListView().setSelection(newSelectionPos);
 
     					getActivity().setProgressBarIndeterminateVisibility(false);
+    					updateUI();
     				}
 
     				break;

@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -144,7 +145,7 @@ public class ConversationListFragment extends ListFragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        boolean visible = (mListAdapter != null && mListAdapter.getCount() > 0);
+        boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
         MenuItem item;
         item = menu.findItem(R.id.menu_search);
         item.setEnabled(visible);
@@ -316,10 +317,6 @@ public class ConversationListFragment extends ListFragment {
 
     public void startQuery() {
         try {
-            if (!mDualPane)
-                getActivity().setTitle(getString(R.string.refreshing));
-            getParentActivity().setCustomProgressBarIndeterminateVisibility(true);
-
             Conversation.startQuery(mQueryHandler, THREAD_LIST_QUERY_TOKEN);
         } catch (SQLiteException e) {
             Log.e(TAG, "query error", e);
@@ -448,6 +445,13 @@ public class ConversationListFragment extends ListFragment {
                 isRemoving();
     }
 
+    private void updateUI() {
+        ConversationList ctx = getParentActivity();
+        ctx.setTitlebarSearchVisible(!mListAdapter.isEmpty());
+        if (Kontalk.needInvalidateMenu())
+            ctx.supportInvalidateOptionsMenu();
+    }
+
     /**
      * The conversation list query handler.
      */
@@ -470,9 +474,7 @@ public class ConversationListFragment extends ListFragment {
             switch (token) {
                 case THREAD_LIST_QUERY_TOKEN:
                     mListAdapter.changeCursor(cursor);
-                    if (!mDualPane)
-                        getActivity().setTitle(getString(R.string.app_name));
-                    getParentActivity().setCustomProgressBarIndeterminateVisibility(false);
+                    updateUI();
                     break;
 
                 default:

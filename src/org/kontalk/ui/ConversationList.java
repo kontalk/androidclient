@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.util.SyncerUI;
@@ -42,16 +43,13 @@ public class ConversationList extends FragmentActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (newUI())
+        if (Kontalk.customUI())
             requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-        else
-            requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.conversation_list_screen);
 
-        if (newUI()) {
+        if (Kontalk.customUI())
             getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.conversation_list_title_bar);
-        }
 
         checkBigUpgrade1();
     }
@@ -64,9 +62,11 @@ public class ConversationList extends FragmentActivity {
         onSearchRequested();
     }
 
-    /** New UI only for pre-Honeycomb for now. */
-    private boolean newUI() {
-        return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB;
+    public void setTitlebarSearchVisible(boolean visible) {
+        if (Kontalk.customUI()) {
+            findViewById(R.id.separator_search).setVisibility(visible ? View.VISIBLE: View.GONE);
+            findViewById(R.id.title_search).setVisibility(visible ? View.VISIBLE: View.GONE);
+        }
     }
 
     /**
@@ -89,16 +89,6 @@ public class ConversationList extends FragmentActivity {
     protected void onNewIntent(Intent intent) {
         ConversationListFragment fragment = getListFragment();
         fragment.startQuery();
-    }
-
-    public void setCustomProgressBarIndeterminateVisibility(boolean visible) {
-        if (newUI()) {
-            findViewById(R.id.progress_circular).setVisibility(visible ? View.VISIBLE : View.GONE);
-            findViewById(R.id.title_compose).setVisibility(visible ? View.GONE : View.VISIBLE);
-        }
-        else {
-            setProgressBarIndeterminateVisibility(visible);
-        }
     }
 
     @Override

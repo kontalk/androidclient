@@ -18,17 +18,21 @@
         android:text="@string/app_name" />
 
     <ImageView
+        android:id="@+id/separator_search"
         android:background="@drawable/divider"
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"/>
+        android:layout_height="fill_parent"
+        android:visibility="gone"/>
 
     <ImageButton
+        android:contentDescription="@string/menu_search"
         android:background="@android:drawable/list_selector_background"
         android:src="@drawable/ic_title_search"
         android:scaleType="centerInside"
         android:layout_width="58dp"
         android:layout_height="match_parent"
         android:id="@+id/title_search"
+        android:visibility="gone"
         android:onClick="titleSearch"/>
 
     <ImageView
@@ -37,6 +41,7 @@
         android:layout_height="fill_parent"/>
 
     <ImageButton
+        android:contentDescription="@string/menu_compose"
         android:background="@android:drawable/list_selector_background"
         android:src="@drawable/ic_title_compose"
         android:scaleType="centerInside"
@@ -44,16 +49,5 @@
         android:layout_height="match_parent"
         android:id="@+id/title_compose"
         android:onClick="titleComposeMessage"/>
-
-     <ProgressBar android:id="@+id/progress_circular"
-        style="?android:attr/progressBarStyleSmallTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5dip"
-        android:layout_gravity="center_vertical"
-        android:paddingRight="5dp"
-        android:indeterminate="true"
-        android:visibility="gone"
-        android:max="10000"/>
 
 </LinearLayout>

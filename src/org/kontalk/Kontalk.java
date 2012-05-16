@@ -80,4 +80,13 @@ public class Kontalk extends Application {
             }
         }).start();
     }
+
+    /** New UI only for pre-Honeycomb for now. */
+    public static boolean customUI() {
+        return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB;
+    }
+
+    public static boolean needInvalidateMenu() {
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB;
+    }
 }
