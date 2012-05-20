@@ -128,19 +128,19 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void starting(ClientThread client, RequestJob job) {
+        public synchronized void starting(ClientThread client, RequestJob job) {
             for (RequestListener l : this)
                 l.starting(client, job);
         }
 
         @Override
-        public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
+        public synchronized void downloadProgress(ClientThread client, RequestJob job, long bytes) {
             for (RequestListener l : this)
                 l.downloadProgress(client, job, bytes);
         }
 
         @Override
-        public boolean error(ClientThread client, RequestJob job, Throwable exc) {
+        public synchronized boolean error(ClientThread client, RequestJob job, Throwable exc) {
             boolean requeue = false;
             for (RequestListener l : this)
                 if (l.error(client, job, exc))
@@ -150,14 +150,14 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         }
 
         @Override
-        public void done(ClientThread client, RequestJob job, String txId) {
+        public synchronized void done(ClientThread client, RequestJob job, String txId) {
             for (RequestListener l : this) {
                 l.done(client, job, txId);
             }
         }
 
         @Override
-        public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
+        public synchronized void uploadProgress(ClientThread client, RequestJob job, long bytes) {
             for (RequestListener l : this)
                 l.uploadProgress(client, job, bytes);
         }
