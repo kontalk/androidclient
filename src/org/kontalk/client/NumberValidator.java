@@ -160,17 +160,22 @@ public class NumberValidator implements Runnable {
 
                     if (res.getStatus() == RegistrationStatus.STATUS_CONTINUE) {
 
-                        if (res.hasSmsFrom()) {
-                            mSmsFrom = res.getSmsFrom();
-                            Log.d(TAG, "using sms sender id: " + mSmsFrom);
-                            mListener.onValidationRequested(this);
-                            synchronized (mSmsReceiver) {
-                                mSmsReceiver.notifyAll();
+                        if (!mManual) {
+                            if (res.hasSmsFrom()) {
+                                mSmsFrom = res.getSmsFrom();
+                                Log.d(TAG, "using sms sender id: " + mSmsFrom);
+                                mListener.onValidationRequested(this);
+                                synchronized (mSmsReceiver) {
+                                    mSmsReceiver.notifyAll();
+                                }
+                            }
+                            else {
+                                // no sms from identification?
+                                throw new IllegalArgumentException("no sms from id");
                             }
                         }
                         else {
-                            // no sms from identification?
-                            throw new IllegalArgumentException("no sms from id");
+                            mListener.onValidationRequested(this);
                         }
                     }
                     else {
