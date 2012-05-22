@@ -207,8 +207,8 @@ public class UsersProvider extends ContentProvider {
 
         // we are trying to be fast here
         SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS +
-            " (hash, number, display_name, lookup_key, contact_id, registered) VALUES(?, ?, ?, ?, ?, ?)");
-        SQLiteStatement select = db.compileStatement("SELECT registered FROM " + TABLE_USERS + "_TEMP WHERE hash = ?");
+            " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
+        //SQLiteStatement select = db.compileStatement("SELECT registered FROM " + TABLE_USERS + "_TEMP WHERE hash = ?");
 
         try {
             while (phones.moveToNext()) {
@@ -232,6 +232,7 @@ public class UsersProvider extends ContentProvider {
                 try {
                     String hash = MessageUtils.sha1(number);
 
+                    /*
                     // retrieve old registered value
                     select.clearBindings();
                     select.bindString(1, hash);
@@ -242,6 +243,7 @@ public class UsersProvider extends ContentProvider {
                     catch (Exception e) {
                         registered = 0;
                     }
+                    */
 
                     stm.clearBindings();
                     stm.bindString(1, hash);
@@ -249,7 +251,7 @@ public class UsersProvider extends ContentProvider {
                     stm.bindString(3, phones.getString(1));
                     stm.bindString(4, phones.getString(2));
                     stm.bindLong(5, phones.getLong(3));
-                    stm.bindLong(6, registered);
+                    // don't keep registered status -- stm.bindLong(6, registered);
                     stm.executeInsert();
                     count++;
                 }
@@ -274,7 +276,7 @@ public class UsersProvider extends ContentProvider {
                 db.execSQL("COMMIT");
             phones.close();
             stm.close();
-            select.close();
+            //select.close();
         }
         return count;
     }
