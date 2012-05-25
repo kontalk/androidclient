@@ -244,11 +244,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		mLastSeenBanner = (TextView) getView()
 				.findViewById(R.id.last_seen_text);
-		View v = (View) mLastSeenBanner.getParent();
-		v.setOnTouchListener(this);
-		v.setOnLongClickListener(this);
+		if (mLastSeenBanner != null) {
+    		View v = (View) mLastSeenBanner.getParent();
+    		v.setOnTouchListener(this);
+    		v.setOnLongClickListener(this);
 
-		mTouchSlop = ViewConfiguration.get(getActivity()).getScaledTouchSlop();
+            mTouchSlop = ViewConfiguration.get(getActivity()).getScaledTouchSlop();
+		}
+
 
 		Configuration config = getResources().getConfiguration();
 		mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
@@ -705,7 +708,6 @@ public class ComposeMessageFragment extends ListFragment implements
 	    }
 	    else {
 	        // corrupted message :(
-	        // TODO i18n
 	        Toast.makeText(getActivity(), R.string.err_attachment_corrupted,
 	            Toast.LENGTH_LONG).show();
 	    }
@@ -717,7 +719,7 @@ public class ComposeMessageFragment extends ListFragment implements
         startActivity(i);
 	}
 
-	private void selectAttachment() {
+	public void selectAttachment() {
 		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
 		i.addCategory(Intent.CATEGORY_OPENABLE);
 		i.setType("image/*");
@@ -1115,7 +1117,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			String title = userName;
 			if (userPhone != null)
 				title += " <" + userPhone + ">";
-			getActivity().setTitle(title);
+			setActivityTitle(title, "");
 		}
 
 		// update conversation stuff
@@ -1151,6 +1153,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			}
 		}
+	}
+
+	public void setActivityTitle(String title, String status) {
+	    Activity parent = getActivity();
+	    if (parent instanceof ComposeMessage)
+	        ((ComposeMessage) parent).setTitle(title, status);
+	    else
+	        parent.setTitle(title);
 	}
 
 	public ComposeMessage getParentActivity() {
@@ -1333,7 +1343,6 @@ public class ComposeMessageFragment extends ListFragment implements
                         text2 = res.getStatus();
                     }
 
-
                     if (text != null) {
                         final String bannerText = text;
                         // show last seen banner
@@ -1349,10 +1358,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                     }
                                 }
                             });
-                            /*
-                             * TODO find another way of showing status message
                             // display status message after 5 seconds
-                            if (text2 != null) {
+                            if (text2 != null && mLastSeenBanner != null) {
                                 final String bannerText2 = text2;
                                 mHandler.postDelayed(new Runnable() {
                                     @Override
@@ -1368,7 +1375,6 @@ public class ComposeMessageFragment extends ListFragment implements
                                     }
                                 }, 5000);
                             }
-                            */
                         }
                     }
                 }
@@ -1383,12 +1389,17 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void showLastSeenBanner(String text) {
-        mLastSeenBanner.setText(text);
-	    if (mLastSeenBanner.getVisibility() != View.VISIBLE) {
-            mLastSeenBanner.setGravity(Gravity.CENTER);
-            mLastSeenBanner.setVisibility(View.VISIBLE);
-            mLastSeenBanner.startAnimation(AnimationUtils
-                    .loadAnimation(getActivity(), R.anim.header_appear));
+	    if (mLastSeenBanner != null) {
+            mLastSeenBanner.setText(text);
+    	    if (mLastSeenBanner.getVisibility() != View.VISIBLE) {
+                mLastSeenBanner.setGravity(Gravity.CENTER);
+                mLastSeenBanner.setVisibility(View.VISIBLE);
+                mLastSeenBanner.startAnimation(AnimationUtils
+                        .loadAnimation(getActivity(), R.anim.header_appear));
+    	    }
+	    }
+	    else {
+	        setActivityTitle(null, text);
 	    }
 	}
 

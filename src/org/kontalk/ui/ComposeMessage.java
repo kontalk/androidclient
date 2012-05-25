@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import java.util.regex.Pattern;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
@@ -38,7 +39,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -66,19 +69,47 @@ public class ComposeMessage extends FragmentActivity {
     private Intent sendIntent;
 
     private ComposeMessageFragment mFragment;
+    private TextView mTitleText;
+    private TextView mStatusText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        if (Kontalk.customUI())
+            requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        else
+            requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         setContentView(R.layout.compose_message_screen);
+
+        if (Kontalk.customUI()) {
+            getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.compose_message_title_bar);
+            mTitleText = (TextView) findViewById(android.R.id.title);
+            mStatusText = (TextView) findViewById(R.id.status);
+        }
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
 
         processIntent(savedInstanceState);
+    }
+
+    /** Sets custom title. Pass null to any of the arguments to skip setting it. */
+    public void setTitle(CharSequence title, CharSequence subtitle) {
+        if (mTitleText != null) {
+            if (title != null)
+                mTitleText.setText(title);
+            if (subtitle != null)
+                mStatusText.setText(subtitle);
+        }
+        else
+            setTitle(title);
+    }
+
+    public void titleAttachment(View view) {
+        mFragment.selectAttachment();
     }
 
     private void processIntent(Bundle savedInstanceState) {

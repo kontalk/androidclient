@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/titlebar_bg" >
+
+    <ImageView
+        android:id="@+id/avatar"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_contact_picture"
+        android:layout_height="match_parent"
+        android:layout_width="40dp"
+        android:scaleType="fitCenter"
+        android:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/divider"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/title_attach"
+        android:background="@drawable/divider" />
+
+    <ImageButton
+        android:id="@+id/title_attach"
+        android:layout_width="58dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:drawable/list_selector_background"
+        android:contentDescription="@string/menu_attachment"
+        android:onClick="titleAttachment"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_title_attach" />
+
+    <TextView
+        android:id="@android:id/title"
+        style="@style/titleTextStyleSmall"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_alignTop="@+id/avatar"
+        android:layout_toLeftOf="@+id/divider"
+        android:layout_toRightOf="@+id/avatar"
+        android:gravity="center_vertical"
+        android:text="+39123456" />
+
+    <TextView
+        android:id="@+id/status"
+        style="@style/titleTextStyleMicro"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_alignBottom="@+id/avatar"
+        android:layout_alignLeft="@android:id/title"
+        android:layout_alignRight="@+id/divider"
+        android:gravity="center_vertical"
+        android:text="Status text" />
+
+</RelativeLayout>

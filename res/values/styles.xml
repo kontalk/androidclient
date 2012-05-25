@@ -41,6 +41,31 @@
     <item name="android:textStyle">bold</item>
   </style>
 
+  <style name="titleTextStyleSmall">
+    <item name="android:textAppearance">@style/TextAppearanceWindowTitleSmall</item>
+    <item name="android:shadowColor">#BB000000</item>
+    <item name="android:shadowRadius">2.75</item>
+    <item name="android:paddingLeft">5sp</item>
+  </style>
+  
+  <style name="TextAppearanceWindowTitleSmall">
+    <item name="android:textSize">14dp</item>
+    <item name="android:textColor">#FFFFFF</item>
+    <item name="android:textStyle">bold</item>
+  </style>
+  
+  <style name="titleTextStyleMicro">
+    <item name="android:textAppearance">@style/TextAppearanceWindowTitleMicro</item>
+    <item name="android:shadowColor">#BB000000</item>
+    <item name="android:shadowRadius">2.75</item>
+    <item name="android:paddingLeft">5sp</item>
+  </style>
+  
+  <style name="TextAppearanceWindowTitleMicro">
+    <item name="android:textSize">12dp</item>
+    <item name="android:textColor">#FFFFFF</item>
+  </style>
+  
   <!-- default light-to-dark theme selector -->
   <style name="Theme.Light2" parent="android:Theme"/>
 </resources>

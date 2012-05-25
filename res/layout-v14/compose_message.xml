@@ -21,7 +21,6 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <!-- 
     <LinearLayout android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:orientation="horizontal"
@@ -42,7 +41,6 @@
             android:singleLine="true"
             android:background="@color/last_seen_banner" />
     </LinearLayout>
-     -->
 
     <LinearLayout
         android:layout_width="fill_parent"
