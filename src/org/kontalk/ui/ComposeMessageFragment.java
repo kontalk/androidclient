@@ -695,11 +695,20 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void startDownload(AbstractMessage<?> msg) {
-        Intent i = new Intent(getActivity(), DownloadService.class);
-        i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
-        i.putExtra(AbstractMessage.MSG_ID, msg.getId());
-        i.setData(Uri.parse(msg.getFetchUrl()));
-        getActivity().startService(i);
+	    String fetchUrl = msg.getFetchUrl();
+	    if (fetchUrl != null) {
+            Intent i = new Intent(getActivity(), DownloadService.class);
+            i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
+            i.putExtra(AbstractMessage.MSG_ID, msg.getId());
+            i.setData(Uri.parse(fetchUrl));
+            getActivity().startService(i);
+	    }
+	    else {
+	        // corrupted message :(
+	        // TODO i18n
+	        Toast.makeText(getActivity(), R.string.err_attachment_corrupted,
+	            Toast.LENGTH_LONG).show();
+	    }
 	}
 
 	private void openFile(AbstractMessage<?> msg) {
