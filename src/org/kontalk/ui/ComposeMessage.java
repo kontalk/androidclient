@@ -24,6 +24,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
+import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.PlainTextMessage;
@@ -35,12 +36,14 @@ import org.kontalk.util.MessageUtils;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,6 +74,7 @@ public class ComposeMessage extends FragmentActivity {
     private ComposeMessageFragment mFragment;
     private TextView mTitleText;
     private TextView mStatusText;
+    private ImageView mAvatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +91,7 @@ public class ComposeMessage extends FragmentActivity {
             getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.compose_message_title_bar);
             mTitleText = (TextView) findViewById(android.R.id.title);
             mStatusText = (TextView) findViewById(R.id.status);
+            mAvatar = (ImageView) findViewById(R.id.avatar);
         }
 
         // load the fragment
@@ -97,12 +102,17 @@ public class ComposeMessage extends FragmentActivity {
     }
 
     /** Sets custom title. Pass null to any of the arguments to skip setting it. */
-    public void setTitle(CharSequence title, CharSequence subtitle) {
+    public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
         if (mTitleText != null) {
             if (title != null)
                 mTitleText.setText(title);
             if (subtitle != null)
                 mStatusText.setText(subtitle);
+            if (contact != null) {
+                Drawable avatar = contact.getAvatar(this, null);
+                if (avatar != null)
+                    mAvatar.setImageDrawable(avatar);
+            }
         }
         else
             setTitle(title);

@@ -172,12 +172,27 @@ public class Contact {
 
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
         if (mAvatar == null) {
+            if (mAvatarData == null)
+                mAvatarData = loadAvatarData(context, getUri());
+
             if (mAvatarData != null) {
                 Bitmap b = BitmapFactory.decodeByteArray(mAvatarData, 0, mAvatarData.length);
                 mAvatar = new BitmapDrawable(context.getResources(), b);
             }
         }
         return mAvatar != null ? mAvatar : defaultValue;
+    }
+
+    /** Frees resources taken by the avatar bitmap. */
+    @Override
+    protected void finalize() throws Throwable {
+        if (mAvatar != null) {
+            Bitmap b = mAvatar.getBitmap();
+            mAvatar = null;
+            mAvatarData = null;
+            b.recycle();
+        }
+        super.finalize();
     }
 
     /** Builds a contact from a UsersProvider cursor. */
@@ -191,7 +206,6 @@ public class Contact {
 
         Contact c = new Contact(contactId, key, name, number, hash);
         c.mRegistered = registered;
-        c.mAvatarData = loadAvatarData(context, c.getUri());
         return c;
     }
 
@@ -241,7 +255,6 @@ public class Contact {
 
             Contact contact = new Contact(cid, key, name, number, hash);
             contact.mRegistered = registered;
-            contact.mAvatarData = loadAvatarData(context, contact.getUri());
             return contact;
         }
         c.close();

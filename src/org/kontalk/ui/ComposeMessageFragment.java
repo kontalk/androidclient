@@ -1117,7 +1117,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			String title = userName;
 			if (userPhone != null)
 				title += " <" + userPhone + ">";
-			setActivityTitle(title, "");
+			setActivityTitle(title, "", null);
 		}
 
 		// update conversation stuff
@@ -1155,10 +1155,10 @@ public class ComposeMessageFragment extends ListFragment implements
 		}
 	}
 
-	public void setActivityTitle(String title, String status) {
+	public void setActivityTitle(String title, String status, Contact contact) {
 	    Activity parent = getActivity();
 	    if (parent instanceof ComposeMessage)
-	        ((ComposeMessage) parent).setTitle(title, status);
+	        ((ComposeMessage) parent).setTitle(title, status, contact);
 	    else
 	        parent.setTitle(title);
 	}
@@ -1225,6 +1225,9 @@ public class ComposeMessageFragment extends ListFragment implements
 			// new conversation -- observe peer Uri
 			registerPeerObserver();
 		}
+
+		// update contact icon
+		setActivityTitle(null, null, mConversation.getContact());
 
 		updateUI();
 	}
@@ -1399,7 +1402,7 @@ public class ComposeMessageFragment extends ListFragment implements
     	    }
 	    }
 	    else {
-	        setActivityTitle(null, text);
+	        setActivityTitle(null, text, null);
 	    }
 	}
 
