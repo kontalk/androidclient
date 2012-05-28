@@ -38,6 +38,7 @@
     <string name="hint_phone_number">Ingrese su número de teléfono</string>
     <string name="warn_invalid_number">Por favor, ingrese un número de teléfono válido.</string>
     <string name="msg_validating_phone">Validando el número de teléfono&#8230;</string>
+    <string name="msg_initializing">Inicialización&#8230;</string>
     <string name="msg_authenticated">Registradose en la red!</string>
     <string name="share">Compartir</string>
     <string name="copy_message_text">Copia mensaje de texto</string>
@@ -75,6 +76,9 @@
     <string name="refused_label">No aceptado:\u0020</string>
     <string name="notdelivered_label">No entregado:\u0020</string>
     <string name="encrypted_label">Encriptado:\u0020</string>
+    <string name="size_label">Tamaño:\u0020</string>
+    <string name="size_unknown">(desconocido)</string>
+    <string name="title_file_info">Información del archivo</string>
     <string name="pref_restart_msgcenter">Reinicie centro de mensajes</string>
     <string name="pref_title_restart_msgcenter">Use esta opción si el centro de mensajes no funciona correctamente</string>
     <string name="pref_maintainance">Mantenimiento</string>
@@ -90,6 +94,8 @@
     <string name="error_store_outbox">Inhabilitado en almacenar mensajes en la bandeja de salida.</string>
     <string name="decrypt_message">Descifrar mensajes</string>
     <string name="download_file">Descargar archivo</string>
+    <string name="download_again">Descargue de nuevo</string>
+    <string name="download">Descargar</string>
     <string name="last_seen_label">Ultima vez:\u0020</string>
     <string name="text_hint_encrypted">(encriptado)</string>
     <string name="myself_label">Me</string>
@@ -136,13 +142,17 @@
     <string name="notify_title_polling_error">Error en la red</string>
     <string name="notify_text_polling_error">No se pueden comprobar los mensajes entrantes. Compruebe la configuración de red.</string>
     <string name="title_invalid_number">Número no válido</string>
+    <string name="err_store_message_failed">No se puede guardar mensaje en la bandeja de salida.</string>
     <string name="msg_invalid_number">Por favor, introduzca un prefijo internacional válido o inserte una tarjeta SIM e ir al modo en línea para recuperarlo de forma automática.</string>
     <string name="menu_refresh">Refrescar</string>
     <string name="menu_invite">Invitar usuarios</string>
+    <string name="title_error">Error</string>
     <string name="msg_do_refresh">Use Menú> Actualizar para actualizar la lista de contactos.</string>
     <string name="msg_sync_progress">Refrescar lista de contactos&#8230;</string>
+    <string name="err_sync_failed">No se puede actualizar la lista de contactos. Por favor, inténtelo más tarde.</string>
     <string name="text_invite_message">Hey! Echa un vistazo a Kontalk en Google Play Store, una aplicación gratuita de mensajería! https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="text_contacts_empty">Los nuevos usuarios serán agregados automáticamente a esta lista. &lt;br/&gt; Use &lt;b&gt;Menú&lt;/b&gt; &gt; &lt;b&gt;Invitar usuarios&lt;/b&gt; para enviar un mensaje de invitación a alguien.</string>
+    <string name="text_conversations_empty">Para comenzar a escribir mensajes usa &lt;b&gt;el icono de nuevo mensaje&lt;/b&gt; arriba.</string>
     <string name="notify_ticker_external_storage">Dispositivo Almacenamiento externo no está disponible</string>
     <string name="notify_text_external_storage">No se puede escribir sobre el dispositivo almacenamiento externo.</string>
     <string name="title_user_not_found">Usuario no encontrado</string>
@@ -158,6 +168,18 @@
     <string name="menu_status">Estado</string>
     <string name="title_validation_code">Código de validación</string>
     <string name="title_status_message">Mensaje de estado</string>
+    <string name="menu_attachment">Adjuntar</string>
+    <string name="vcard_message">vCard mensaje</string>
+    <string name="open_file">Abrir el archivo</string>
     <string name="msg_msgcenter_restarted">Centro de mensajes reiniciado.</string>
-    <string name="downloading_attachment">Descarga de archivo adjunto &#8230;</string>
+    <string name="downloading_attachment">Descargar archivo adjunto&#8230;</string>
+    <string name="seen_moment_ago_label">hace un momento</string>
+    <string name="seen_online_label">El usuario está en línea</string>
+    <string name="pref_custom_background">Fondo personalizado</string>
+    <string name="pref_background_uri">Fondo</string>
+    <string name="pref_title_background_uri">Configurar imagen personalizada de fondo</string>
+    <string name="pref_title_off_custom_background">Usar fondo predeterminado</string>
+    <string name="pref_title_on_custom_background">Elige un fondo con la opción a continuación</string>
+    <string name="err_attachment_corrupted">No se puede descargar archivo adjunto. Mensaje podría estar dañado.</string>
+
 </resources>
