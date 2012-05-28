@@ -275,6 +275,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             mListeners.starting(mClient, job);
 
                             String txId = job.execute(mClient, mListeners, mContext);
+                            // mark as done!
+                            job.done();
 
                             mListeners.done(mClient, job, txId);
                         }
@@ -380,6 +382,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                     mListeners.starting(mClient, mJob);
 
                     String txId = mJob.execute(mClient, mListener, mContext);
+                    // mark as done!
+                    mJob.done();
 
                     mListener.done(mClient, mJob, txId);
                 }
@@ -424,6 +428,10 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     }
 
     public void push(RequestJob job, long delayMillis) {
+        push(MSG_REQUEST_JOB, job, delayMillis);
+    }
+
+    public void push(int what, Object obj, long delayMillis) {
         synchronized (mIdle) {
             // max wait time 5 seconds
             int retries = 10;
@@ -441,7 +449,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             }
 
             mHandler.sendMessageDelayed(
-                    mHandler.obtainMessage(MSG_REQUEST_JOB, job),
+                    mHandler.obtainMessage(what, obj),
                     delayMillis);
 
             // abort any idle request

@@ -2,17 +2,9 @@
     * user sends a message while message center is up but still connecting
     * message will be marked as pending in database but could be also in pendingJobs queue
     * when message center finally connects and authenticates, it process pendingJobs queue *and* pending messages from database
-[ ] still queue concurrency problems sending binary messages
 [ ] sync i18n for all languages
 [ ] make IBinder from MessageCenterService a static class
 [ ] put encryption icon above message status icon
-[ ] display user status message somehow
 [ ] custom background: sampleSize hard-coded to 4
 [ ] messages database upgrade testing
 [ ] massive message sending tests and benchmarks (especially memory leaks)
-[x] ActionBar menus activation problem
-[x] custom conversations wallpaper
-[x] ComposeMessage autoclosing when sending a message as first message
-[x] NumberValidation should go back to ConversationList
-[x] duplicated incoming messages (FIXME MessageCenterService:548)
-[x] confirmCredentials should delete the account

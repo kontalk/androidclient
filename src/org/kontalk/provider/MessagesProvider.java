@@ -398,7 +398,7 @@ public class MessagesProvider extends ContentProvider {
             values.put(Messages.THREAD_ID, threadId);
 
             // insert the new message now!
-            long rowId = db.insert(TABLE_MESSAGES, null, values);
+            long rowId = db.insertOrThrow(TABLE_MESSAGES, null, values);
 
             /*
              * this will be useful one day perhaps :)

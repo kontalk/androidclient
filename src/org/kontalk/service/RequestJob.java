@@ -35,6 +35,7 @@ public abstract class RequestJob {
     protected boolean mCancel;
     /** Used only if job is asynchronous. */
     protected Thread mThread;
+    protected boolean mDone;
 
     public void setListener(RequestListener listener) {
         mListener = listener;
@@ -79,6 +80,14 @@ public abstract class RequestJob {
     /** Returns true if this job needs to be executed in a separate thread. */
     public boolean isAsync() {
         return false;
+    }
+
+    public void done() {
+        mDone = true;
+    }
+
+    public boolean isDone() {
+        return mDone;
     }
 
 }

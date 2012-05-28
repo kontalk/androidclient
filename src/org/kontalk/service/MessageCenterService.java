@@ -23,7 +23,6 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -135,6 +134,9 @@ public class MessageCenterService extends Service
 
     /** Used in case ClientThread is down. */
     private int mRefCount;
+
+    /** Private received job instance for message confirmation queueing. */
+    private ReceivedJob mReceivedJob;
 
     private AccountManager mAccountManager;
     private final OnAccountsUpdateListener mAccountsListener = new OnAccountsUpdateListener() {
@@ -479,15 +481,14 @@ public class MessageCenterService extends Service
 
     @Override
     public void incoming(AbstractMessage<?> msg) {
-        List<String> list = new ArrayList<String>();
-
+        String confirmId = null;
         boolean notify = false;
 
         // TODO check for null (unsupported) messages to be notified
 
         // check if the message needs to be confirmed
         if (msg.isNeedAck())
-            list.add(msg.getRealId());
+            confirmId = msg.getRealId();
 
         if (msg instanceof UserPresenceMessage) {
             UserPresenceMessage pres = (UserPresenceMessage) msg;
@@ -609,16 +610,32 @@ public class MessageCenterService extends Service
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
 
-        if (list.size() > 0) {
-            Log.d(TAG, "pushing receive confirmation");
-            RequestJob job = new ReceivedJob(list);
-            pushRequest(job);
+        if (confirmId != null)
+            pushReceived(confirmId);
+    }
+
+    /**
+     * Holds a received command for a while to let the message center process
+     * multiple incoming messages.
+     */
+    private synchronized void pushReceived(String msgId) {
+        if (mReceivedJob == null || mReceivedJob.isDone()) {
+            mReceivedJob = new ReceivedJob(msgId);
+            // delay message so we give time to the next message
+            pushRequest(mReceivedJob, 500);
+        }
+        else {
+            mReceivedJob.add(msgId);
         }
     }
 
     private synchronized void pushRequest(final RequestJob job) {
+        pushRequest(job, 0);
+    }
+
+    private synchronized void pushRequest(final RequestJob job, long delayMillis) {
         if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
-            mRequestWorker.push(job);
+            mRequestWorker.push(job, delayMillis);
         else {
             if (job instanceof ReceivedJob || job instanceof MessageSender) {
                 Log.i(TAG, "not queueing message job");

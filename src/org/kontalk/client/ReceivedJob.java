@@ -19,7 +19,10 @@
 package org.kontalk.client;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.kontalk.client.Protocol.MessageAckRequest;
 import org.kontalk.service.ClientThread;
@@ -35,24 +38,37 @@ import android.content.Context;
  */
 public class ReceivedJob extends RequestJob {
 
-    private String[] mMessageList;
+    private List<String> mMessageList;
+
+    public ReceivedJob(String msgId) {
+        mMessageList = new ArrayList<String>(1);
+        mMessageList.add(msgId);
+    }
 
     public ReceivedJob(String[] msgId) {
-        mMessageList = msgId;
+        mMessageList = new ArrayList<String>(Arrays.asList(msgId));
     }
 
     public ReceivedJob(Collection<String> msgId) {
-        mMessageList = new String[msgId.size()];
-        msgId.toArray(mMessageList);
+        // avoid allocating another list
+        if (msgId instanceof ArrayList<?>)
+            mMessageList = (List<String>) msgId;
+        else
+            mMessageList = new ArrayList<String>(msgId);
     }
 
     @Override
-    public String execute(ClientThread client, RequestListener listener,
+    public synchronized String execute(ClientThread client, RequestListener listener,
             Context context) throws IOException {
         MessageAckRequest.Builder b = MessageAckRequest.newBuilder();
-        for (String id : mMessageList)
-            b.addMessageId(id);
+        b.addAllMessageId(mMessageList);
         return client.getConnection().send(b.build());
+    }
+
+    public synchronized boolean add(String msgId) {
+        if (!mMessageList.contains(msgId))
+            return mMessageList.add(msgId);
+        return false;
     }
 
 }
