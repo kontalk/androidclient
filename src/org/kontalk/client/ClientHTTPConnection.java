@@ -264,8 +264,9 @@ public class ClientHTTPConnection {
         currentRequest = prepareURLDownload(mAuthToken, url);
         HttpResponse response = execute(currentRequest);
 
+        int code = response.getStatusLine().getStatusCode();
         // HTTP/1.1 200 OK -- other codes should throw Exceptions
-        if (response.getStatusLine().getStatusCode() == 200) {
+        if (code == 200) {
             Header disp = response.getFirstHeader("Content-Disposition");
             if (disp != null) {
                 String name = parseContentDisposition(disp.getValue());
@@ -285,9 +286,10 @@ public class ClientHTTPConnection {
             }
         }
 
-        Log.e(TAG, "invalid response: " + response.getStatusLine().getStatusCode());
+        Log.e(TAG, "invalid response: " + code);
         HttpEntity entity = response.getEntity();
         Log.e(TAG, EntityUtils.toString(entity));
+        listener.error(url, null, new IOException("invalid response: " + code));
     }
 
     /*
