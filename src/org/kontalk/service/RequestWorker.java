@@ -18,7 +18,6 @@
 
 package org.kontalk.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -281,7 +280,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             mListeners.done(mClient, job, txId);
                         }
                     }
-                    catch (IOException e) {
+                    catch (Exception e) {
                         if (mInterrupted) {
                             Log.v(TAG, "worker has been interrupted");
                             return;
@@ -387,7 +386,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
                     mListener.done(mClient, mJob, txId);
                 }
-                catch (IOException e) {
+                catch (Exception e) {
                     if (mInterrupted) {
                         Log.v(TAG, "worker has been interrupted");
                         return;
