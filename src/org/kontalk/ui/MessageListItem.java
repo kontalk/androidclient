@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -286,7 +287,9 @@ public class MessageListItem extends RelativeLayout {
         else
         	dateView = mDateView;
 
-        dateView.setText(MessageUtils.formatTimeStampString(getContext(), mMessage.getTimestamp()));
+        Date serverTime = mMessage.getServerTimestamp();
+        long ts = serverTime != null ? serverTime.getTime() : mMessage.getTimestamp();
+        dateView.setText(MessageUtils.formatTimeStampString(getContext(), ts));
 
         if (mNameView != null) {
         	String text;
