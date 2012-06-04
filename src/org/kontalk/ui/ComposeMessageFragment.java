@@ -1628,8 +1628,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     							cursor.moveToPosition(-1);
     							while (cursor.moveToNext()) {
-    								long curId = cursor.getLong(cursor
-    										.getColumnIndex(Messages._ID));
+    								long curId = cursor.getLong(AbstractMessage.COLUMN_ID);
     								if (curId == msgId) {
     									newSelectionPos = cursor.getPosition();
     									break;

@@ -38,15 +38,22 @@ public class Conversation {
     private static final String[] ALL_THREADS_PROJECTION = {
         Threads._ID,
         Threads.PEER,
-        Threads.DIRECTION,
         Threads.COUNT,
         Threads.UNREAD,
-        Threads.MIME,
         Threads.CONTENT,
         Threads.TIMESTAMP,
         Threads.STATUS,
         Threads.DRAFT
     };
+
+    private final int COLUMN_ID = 0;
+    private final int COLUMN_PEER = 1;
+    private final int COLUMN_COUNT = 2;
+    private final int COLUMN_UNREAD = 3;
+    private final int COLUMN_CONTENT = 4;
+    private final int COLUMN_TIMESTAMP = 5;
+    private final int COLUMN_STATUS = 6;
+    private final int COLUMN_DRAFT = 7;
 
     private final Context mContext;
 
@@ -69,18 +76,16 @@ public class Conversation {
     private Conversation(Context context, Cursor c) {
         mContext = context;
         synchronized (this) {
-            // FIXME we really should use column indexes for better performance
+            mThreadId = c.getLong(COLUMN_ID);
+            mDate = c.getLong(COLUMN_TIMESTAMP);
 
-            mThreadId = c.getLong(c.getColumnIndex(Threads._ID));
-            mDate = c.getLong(c.getColumnIndex(Threads.TIMESTAMP));
+            mRecipient = c.getString(COLUMN_PEER);
+            mSubject = c.getString(COLUMN_CONTENT);
 
-            mRecipient = c.getString(c.getColumnIndex(Threads.PEER));
-            mSubject = c.getString(c.getColumnIndex(Threads.CONTENT));
-
-            mUnreadCount = c.getInt(c.getColumnIndex(Threads.UNREAD));
-            mMessageCount = c.getInt(c.getColumnIndex(Threads.COUNT));
-            mStatus = c.getInt(c.getColumnIndex(Threads.STATUS));
-            mDraft = c.getString(c.getColumnIndex(Threads.DRAFT));
+            mUnreadCount = c.getInt(COLUMN_UNREAD);
+            mMessageCount = c.getInt(COLUMN_COUNT);
+            mStatus = c.getInt(COLUMN_STATUS);
+            mDraft = c.getString(COLUMN_DRAFT);
 
             loadContact();
         }
@@ -97,7 +102,7 @@ public class Conversation {
     public static Conversation loadFromUserId(Context context, String userId) {
         Conversation cv = null;
         Cursor cp = context.getContentResolver().query(Threads.CONTENT_URI,
-                null, Threads.PEER + " = ?", new String[] { userId }, null);
+                ALL_THREADS_PROJECTION, Threads.PEER + " = ?", new String[] { userId }, null);
         if (cp.moveToFirst())
             cv = createFromCursor(context, cp);
 
@@ -109,7 +114,7 @@ public class Conversation {
         Conversation cv = null;
         Cursor cp = context.getContentResolver().query(
                 ContentUris.withAppendedId(Threads.CONTENT_URI, id),
-                null, null, null, null);
+                ALL_THREADS_PROJECTION, null, null, null);
         if (cp.moveToFirst())
             cv = createFromCursor(context, cp);
 

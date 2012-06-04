@@ -49,6 +49,24 @@ import android.util.Log;
 public class Contact {
     private final static String TAG = Contact.class.getSimpleName();
 
+    private final static String[] ALL_CONTACTS_PROJECTION = {
+        Users._ID,
+        Users.CONTACT_ID,
+        Users.LOOKUP_KEY,
+        Users.DISPLAY_NAME,
+        Users.NUMBER,
+        Users.HASH,
+        Users.REGISTERED
+    };
+
+    public static final int COLUMN_ID = 0;
+    public static final int COLUMN_CONTACT_ID = 1;
+    public static final int COLUMN_LOOKUP_KEY = 2;
+    public static final int COLUMN_DISPLAY_NAME = 3;
+    public static final int COLUMN_NUMBER = 4;
+    public static final int COLUMN_HASH = 5;
+    public static final int COLUMN_REGISTERED = 6;
+
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
 
@@ -197,12 +215,12 @@ public class Contact {
 
     /** Builds a contact from a UsersProvider cursor. */
     public static Contact fromUsersCursor(Context context, Cursor cursor) {
-        final long contactId = cursor.getLong(cursor.getColumnIndex(Users.CONTACT_ID));
-        final String key = cursor.getString(cursor.getColumnIndex(Users.LOOKUP_KEY));
-        final String name = cursor.getString(cursor.getColumnIndex(Users.DISPLAY_NAME));
-        final String number = cursor.getString(cursor.getColumnIndex(Users.NUMBER));
-        final String hash = cursor.getString(cursor.getColumnIndex(Users.HASH));
-        final boolean registered = (cursor.getInt(cursor.getColumnIndex(Users.REGISTERED)) != 0);
+        final long contactId = cursor.getLong(COLUMN_CONTACT_ID);
+        final String key = cursor.getString(COLUMN_LOOKUP_KEY);
+        final String name = cursor.getString(COLUMN_DISPLAY_NAME);
+        final String number = cursor.getString(COLUMN_NUMBER);
+        final String hash = cursor.getString(COLUMN_HASH);
+        final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
 
         Contact c = new Contact(contactId, key, name, number, hash);
         c.mRegistered = registered;
@@ -307,5 +325,9 @@ public class Contact {
         return null;
     }
 
+    public static Cursor queryContacts(Context context) {
+        return context.getContentResolver().query(Users.CONTENT_URI, ALL_CONTACTS_PROJECTION,
+            Users.REGISTERED + " <> 0", null, Users.DISPLAY_NAME);
+    }
 
 }

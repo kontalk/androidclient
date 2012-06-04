@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.kontalk.R;
 import org.kontalk.crypto.Coder;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MediaStorage;
 
 import android.content.Context;
@@ -133,8 +132,8 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
          * generated on the fly from local_uri - if possible.
          */
 
-        String _localUri = c.getString(c.getColumnIndex(Messages.LOCAL_URI));
-        String _previewPath = c.getString(c.getColumnIndex(Messages.PREVIEW_PATH));
+        String _localUri = c.getString(COLUMN_LOCAL_URI);
+        String _previewPath = c.getString(COLUMN_PREVIEW_PATH);
         try {
             // load local uri
             if (_localUri != null && _localUri.length() > 0)

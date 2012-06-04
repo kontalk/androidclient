@@ -23,12 +23,11 @@ import java.util.List;
 
 import org.kontalk.R;
 import org.kontalk.crypto.Coder;
-import org.kontalk.provider.MyMessages.Messages;
-
-import com.google.protobuf.ByteString;
 
 import android.content.Context;
 import android.database.Cursor;
+
+import com.google.protobuf.ByteString;
 
 
 /**
@@ -57,7 +56,7 @@ public class PlainTextMessage extends AbstractMessage<ByteString> {
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
-        content = ByteString.copyFrom(c.getBlob(c.getColumnIndex(Messages.CONTENT)));
+        content = ByteString.copyFrom(c.getBlob(COLUMN_CONTENT));
     }
 
     @Override

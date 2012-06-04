@@ -37,7 +37,6 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteReadOnlyDatabaseException;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -281,12 +280,12 @@ public class UsersProvider extends ContentProvider {
 
     @Override
     public synchronized Uri insert(Uri uri, ContentValues values) {
-        throw new SQLiteReadOnlyDatabaseException("manual insert into users table not supported.");
+        throw new SQLException("manual insert into users table not supported.");
     }
 
     @Override
     public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
-        throw new SQLiteReadOnlyDatabaseException("manual delete from users table not supported.");
+        throw new SQLException("manual delete from users table not supported.");
     }
 
     /* Transactions compatibility layer */

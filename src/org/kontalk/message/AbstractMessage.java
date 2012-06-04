@@ -79,6 +79,26 @@ public abstract class AbstractMessage<T> {
         Messages.LENGTH
     };
 
+    // these indexes matches MESSAGE_LIST_PROJECTION
+    public static final int COLUMN_ID = 0;
+    public static final int COLUMN_MESSAGE_ID = 1;
+    public static final int COLUMN_REAL_ID = 2;
+    public static final int COLUMN_PEER = 3;
+    public static final int COLUMN_DIRECTION = 4;
+    public static final int COLUMN_TIMESTAMP = 5;
+    public static final int COLUMN_SERVER_TIMESTAMP = 6;
+    public static final int COLUMN_STATUS_CHANGED = 7;
+    public static final int COLUMN_MIME = 8;
+    public static final int COLUMN_CONTENT = 9;
+    public static final int COLUMN_STATUS = 10;
+    public static final int COLUMN_FETCH_URL = 11;
+    public static final int COLUMN_FETCHED = 12;
+    public static final int COLUMN_LOCAL_URI = 13;
+    public static final int COLUMN_PREVIEW_PATH = 14;
+    public static final int COLUMN_ENCRYPTED = 15;
+    public static final int COLUMN_ENCRYPT_KEY = 16;
+    public static final int COLUMN_LENGTH = 17;
+
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
     public static final String MSG_MIME = "org.kontalk.message.mime";
@@ -356,25 +376,24 @@ public abstract class AbstractMessage<T> {
     public abstract void decrypt(Coder coder) throws GeneralSecurityException;
 
     protected void populateFromCursor(Cursor c) {
-        // TODO convert to manual column index for performance boost
         // be sure to stick to our projection array
-        databaseId = c.getLong(c.getColumnIndex(Messages._ID));
-        id = c.getString(c.getColumnIndex(Messages.MESSAGE_ID));
-        realId = c.getString(c.getColumnIndex(Messages.REAL_ID));
-        mime = c.getString(c.getColumnIndex(Messages.MIME));
-        timestamp = c.getLong(c.getColumnIndex(Messages.TIMESTAMP));
-        statusChanged = c.getLong(c.getColumnIndex(Messages.STATUS_CHANGED));
-        status = c.getInt(c.getColumnIndex(Messages.STATUS));
+        databaseId = c.getLong(COLUMN_ID);
+        id = c.getString(COLUMN_MESSAGE_ID);
+        realId = c.getString(COLUMN_REAL_ID);
+        mime = c.getString(COLUMN_MIME);
+        timestamp = c.getLong(COLUMN_TIMESTAMP);
+        statusChanged = c.getLong(COLUMN_STATUS_CHANGED);
+        status = c.getInt(COLUMN_STATUS);
         recipients = new ArrayList<String>();
-        fetchUrl = c.getString(c.getColumnIndex(Messages.FETCH_URL));
-        fetched = (c.getShort(c.getColumnIndex(Messages.FETCHED)) > 0);
-        encrypted = (c.getShort(c.getColumnIndex(Messages.ENCRYPTED)) > 0);
-        encryptKey = c.getString(c.getColumnIndex(Messages.ENCRYPT_KEY));
-        setServerTimestamp(c.getString(c.getColumnIndex(Messages.SERVER_TIMESTAMP)));
-        length = c.getLong(c.getColumnIndex(Messages.LENGTH));
+        fetchUrl = c.getString(COLUMN_FETCH_URL);
+        fetched = (c.getShort(COLUMN_FETCHED) > 0);
+        encrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
+        encryptKey = c.getString(COLUMN_ENCRYPT_KEY);
+        setServerTimestamp(c.getString(COLUMN_SERVER_TIMESTAMP));
+        length = c.getLong(COLUMN_LENGTH);
 
-        String peer = c.getString(c.getColumnIndex(Messages.PEER));
-        int direction = c.getInt(c.getColumnIndex(Messages.DIRECTION));
+        String peer = c.getString(COLUMN_PEER);
+        int direction = c.getInt(COLUMN_DIRECTION);
         if (direction == Messages.DIRECTION_OUT) {
             // we are the origin
             sender = null;
@@ -389,7 +408,7 @@ public abstract class AbstractMessage<T> {
     }
 
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
-        String mime = cursor.getString(cursor.getColumnIndex(Messages.MIME));
+        String mime = cursor.getString(COLUMN_MIME);
 
         if (PlainTextMessage.supportsMimeType(mime)) {
             PlainTextMessage msg = new PlainTextMessage(context);

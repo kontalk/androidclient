@@ -20,9 +20,9 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.data.Contact;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.SyncerUI;
 
 import android.app.ListActivity;
@@ -122,8 +122,7 @@ public class ContactsListActivity extends ListActivity
             mCursor.close();
         }
 
-        mCursor = getContentResolver().query(Users.CONTENT_URI, null,
-            Users.REGISTERED + " <> 0", null, Users.DISPLAY_NAME);
+        mCursor = Contact.queryContacts(this);
         startManagingCursor(mCursor);
         mListAdapter.changeCursor(mCursor);
     }
