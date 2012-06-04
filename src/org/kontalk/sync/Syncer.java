@@ -51,9 +51,6 @@ public class Syncer {
     // using SyncAdapter tag
     private static final String TAG = SyncAdapter.class.getSimpleName();
 
-    /** How many seconds to wait for the message center to complete lookup. */
-    private static final int MAX_SYNC_WAIT = 30;
-
     /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
     /** {@link Data} column for the account name. */
@@ -217,8 +214,10 @@ public class Syncer {
 
         // query all contacts
         Cursor cursor = null;
+        Uri offlineUri = Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.OFFLINE, "true").build();
         try {
-            cursor = usersProvider.query(Users.CONTENT_URI,
+            cursor = usersProvider.query(offlineUri,
                 new String[] { Users.HASH, Users.NUMBER, Users.LOOKUP_KEY },
                 null, null, null);
         }
@@ -284,7 +283,7 @@ public class Syncer {
             // wait for the service connection to complete its job
             synchronized (this) {
                 try {
-                    wait(MAX_SYNC_WAIT * 1000);
+                    wait();
                 }
                 catch (InterruptedException e) {
                     // simulate canceled operation
@@ -325,7 +324,7 @@ public class Syncer {
                                 data.number, data.hash, -1, operations, op);
                         // update registered status
                         try {
-                            usersProvider.update(Users.CONTENT_URI, registeredValues,
+                            usersProvider.update(offlineUri, registeredValues,
                                 Users.HASH + " = ?", new String[] { data.hash });
                         }
                         catch (RemoteException e) {
@@ -350,6 +349,22 @@ public class Syncer {
                     syncResult.databaseError = true;
                     return;
                 }
+
+                // commit users table
+                uri = Users.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(Users.RESYNC, "true")
+                    .appendQueryParameter(Users.COMMIT, "true")
+                    .build();
+                try {
+                    usersProvider.update(uri, new ContentValues(), null, null);
+                    Log.d(TAG, "users database committed");
+                }
+                catch (RemoteException e) {
+                    Log.e(TAG, "error committing users database - aborting sync", e);
+                    syncResult.databaseError = true;
+                    return;
+                }
+
             }
         }
     }

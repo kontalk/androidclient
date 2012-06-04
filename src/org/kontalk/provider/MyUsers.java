@@ -47,5 +47,10 @@ public class MyUsers {
         // uri parameter for update: used with resync, triggers a complete sync
         // only if the database is newly created
         public static final String BOOTSTRAP = "bootstrap";
+        // uri parameter for update: used with resync, swap backup users table
+        // with the real one
+        public static final String COMMIT = "commit";
+        // uri parameter for select: use offline table
+        public static final String OFFLINE = "offline";
     }
 }

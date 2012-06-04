@@ -32,10 +32,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteReadOnlyDatabaseException;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -49,6 +51,7 @@ public class UsersProvider extends ContentProvider {
     private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
+    private static final String TABLE_USERS_OFFLINE = "users_offline";
 
     private static final int USERS = 1;
     private static final int USERS_HASH = 2;
@@ -73,8 +76,8 @@ public class UsersProvider extends ContentProvider {
         private static final String SCHEMA_USERS =
             "CREATE TABLE " + TABLE_USERS + " " + CREATE_TABLE_USERS;
 
-        private static final String SCHEMA_USERS_TEMP =
-            "CREATE TEMPORARY TABLE " + TABLE_USERS + "_TEMP AS SELECT * FROM " + TABLE_USERS;
+        private static final String SCHEMA_USERS_OFFLINE =
+            "CREATE TABLE " + TABLE_USERS_OFFLINE + CREATE_TABLE_USERS;
 
         // version 2 - just replace the table
         private static final String[] SCHEMA_V1_TO_V2 = {
@@ -107,10 +110,6 @@ public class UsersProvider extends ContentProvider {
         public boolean isNew() {
             return mNew;
         }
-
-        public void mirror(SQLiteDatabase db) {
-            db.execSQL(SCHEMA_USERS_TEMP);
-        }
     }
 
 
@@ -137,15 +136,16 @@ public class UsersProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
             String[] selectionArgs, String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
 
         switch (sUriMatcher.match(uri)) {
             case USERS:
-                qb.setTables(TABLE_USERS);
+                qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
                 break;
 
             case USERS_HASH:
-                qb.setTables(TABLE_USERS);
+                qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
                 // TODO append to selection
                 selection = Users.HASH + " = ?";
@@ -167,130 +167,149 @@ public class UsersProvider extends ContentProvider {
     public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         boolean isResync = Boolean.parseBoolean(uri.getQueryParameter(Users.RESYNC));
         boolean bootstrap = Boolean.parseBoolean(uri.getQueryParameter(Users.BOOTSTRAP));
+        boolean commit = Boolean.parseBoolean(uri.getQueryParameter(Users.COMMIT));
 
         if (isResync) {
             if (bootstrap ? dbHelper.isNew() : true)
-                return resync();
+                return resync(commit);
             return 0;
         }
 
         // simple update
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        return db.update(TABLE_USERS, values, selection, selectionArgs);
+        boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
+        return db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
     }
 
     /** Triggers a complete resync of the users database. */
-    private int resync() {
+    private int resync(boolean commit) {
         Context context = getContext();
         ContentResolver cr = context.getContentResolver();
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int count = 0;
-
-        // query for phone numbers
-        final Cursor phones = cr.query(Phone.CONTENT_URI,
-            new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
-            null, null, null);
 
         // begin transaction
+        beginTransaction(db);
+        boolean success = false;
+
+        if (commit) {
+            try {
+                // drop online and rename offline to online
+                db.execSQL("DROP TABLE " + TABLE_USERS);
+                db.execSQL("ALTER TABLE " + TABLE_USERS_OFFLINE + " RENAME TO " + TABLE_USERS);
+                success = setTransactionSuccessful(db);
+            }
+            catch (SQLException e) {
+                // ops :)
+                Log.i(TAG, "users table commit failed - already committed?", e);
+            }
+            finally {
+                endTransaction(db, success);
+            }
+
+            return 0;
+        }
+        else {
+            int count = 0;
+
+            // query for phone numbers
+            final Cursor phones = cr.query(Phone.CONTENT_URI,
+                new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
+                null, null, null);
+
+            // delete old users content
+            try {
+                db.execSQL("DELETE FROM " + TABLE_USERS_OFFLINE);
+            }
+            catch (SQLException e) {
+                // table might not exist - create it!
+                db.execSQL(DatabaseHelper.SCHEMA_USERS_OFFLINE);
+            }
+
+            // we are trying to be fast here
+            SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
+                " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
+
+            try {
+                while (phones.moveToNext()) {
+                    String number = phones.getString(0);
+
+                    // a phone number with less than 4 digits???
+                    if (number.length() < 4)
+                        continue;
+
+                    // fix number
+                    try {
+                        number = NumberValidator.fixNumber(context, number,
+                                Authenticator.getDefaultAccountName(context));
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+                        // skip number
+                        continue;
+                    }
+
+                    try {
+                        String hash = MessageUtils.sha1(number);
+
+                        stm.clearBindings();
+                        stm.bindString(1, hash);
+                        stm.bindString(2, number);
+                        stm.bindString(3, phones.getString(1));
+                        stm.bindString(4, phones.getString(2));
+                        stm.bindLong(5, phones.getLong(3));
+                        stm.executeInsert();
+                        count++;
+                    }
+                    catch (NoSuchAlgorithmException e) {
+                        Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
+                    }
+                    catch (SQLiteConstraintException sqe) {
+                        // skip duplicate number
+                    }
+                }
+
+                success = setTransactionSuccessful(db);
+            }
+            finally {
+                endTransaction(db, success);
+                phones.close();
+                stm.close();
+            }
+            return count;
+        }
+    }
+
+    @Override
+    public synchronized Uri insert(Uri uri, ContentValues values) {
+        throw new SQLiteReadOnlyDatabaseException("manual insert into users table not supported.");
+    }
+
+    @Override
+    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
+        throw new SQLiteReadOnlyDatabaseException("manual delete from users table not supported.");
+    }
+
+    /* Transactions compatibility layer */
+
+    private void beginTransaction(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= 11)
             db.beginTransactionNonExclusive();
         else
             // this is because API < 11 doesn't have beginTransactionNonExclusive()
             db.execSQL("BEGIN IMMEDIATE");
-
-        // create a temporary copy of the users table
-        // TODO are we sure this is the best choice for performance?
-        dbHelper.mirror(db);
-
-        // delete old users
-        db.execSQL("DELETE FROM " + TABLE_USERS);
-
-        // we are trying to be fast here
-        SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS +
-            " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
-        //SQLiteStatement select = db.compileStatement("SELECT registered FROM " + TABLE_USERS + "_TEMP WHERE hash = ?");
-
-        try {
-            while (phones.moveToNext()) {
-                String number = phones.getString(0);
-
-                // a phone number with less than 4 digits???
-                if (number.length() < 4)
-                    continue;
-
-                // fix number
-                try {
-                	number = NumberValidator.fixNumber(context, number,
-                	        Authenticator.getDefaultAccountName(context));
-                }
-                catch (Exception e) {
-                	Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
-                	// skip number
-                	continue;
-                }
-
-                try {
-                    String hash = MessageUtils.sha1(number);
-
-                    /*
-                    // retrieve old registered value
-                    select.clearBindings();
-                    select.bindString(1, hash);
-                    long registered;
-                    try {
-                        registered = select.simpleQueryForLong();
-                    }
-                    catch (Exception e) {
-                        registered = 0;
-                    }
-                    */
-
-                    stm.clearBindings();
-                    stm.bindString(1, hash);
-                    stm.bindString(2, number);
-                    stm.bindString(3, phones.getString(1));
-                    stm.bindString(4, phones.getString(2));
-                    stm.bindLong(5, phones.getLong(3));
-                    // don't keep registered status -- stm.bindLong(6, registered);
-                    stm.executeInsert();
-                    count++;
-                }
-                catch (NoSuchAlgorithmException e) {
-                    Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
-                }
-                catch (SQLiteConstraintException sqe) {
-                    // skip duplicate number
-                }
-            }
-
-            db.execSQL("DROP TABLE " + TABLE_USERS + "_TEMP");
-
-            if (android.os.Build.VERSION.SDK_INT >= 11)
-                db.setTransactionSuccessful();
-        }
-        finally {
-            // commit!
-            if (android.os.Build.VERSION.SDK_INT >= 11)
-                db.endTransaction();
-            else
-                db.execSQL("COMMIT");
-            phones.close();
-            stm.close();
-            //select.close();
-        }
-        return count;
     }
 
-    @Override
-    public synchronized Uri insert(Uri uri, ContentValues values) {
-        // TODO
-        return null;
+    private boolean setTransactionSuccessful(SQLiteDatabase db) {
+        if (android.os.Build.VERSION.SDK_INT >= 11)
+            db.setTransactionSuccessful();
+        return true;
     }
 
-    @Override
-    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
-        // TODO
-        return 0;
+    private void endTransaction(SQLiteDatabase db, boolean success) {
+        if (android.os.Build.VERSION.SDK_INT >= 11)
+            db.endTransaction();
+        else
+            db.execSQL(success ? "COMMIT" : "ROLLBACK");
     }
 
     static {
