@@ -75,6 +75,7 @@
     <string name="error_label">Errore:\u0020</string>
     <string name="refused_label">Non accettato:\u0020</string>
     <string name="notdelivered_label">Non consegnato:\u0020</string>
+    <string name="delivered_label">Consegnato:\u0020</string>
     <string name="encrypted_label">Cifrato:\u0020</string>
     <string name="pref_restart_msgcenter">Riavvia centro messaggi</string>
     <string name="pref_title_restart_msgcenter">Premilo se il centro messaggi non funziona correttamente</string>

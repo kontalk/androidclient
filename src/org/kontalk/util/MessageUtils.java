@@ -233,7 +233,7 @@ public final class MessageUtils {
             if (status == Messages.STATUS_RECEIVED) {
                 details.append('\n');
                 appendTimestamp(context, details,
-                        res.getString(R.string.received_label), msg.getStatusChanged(), true);
+                        res.getString(R.string.delivered_label), msg.getStatusChanged(), true);
             }
             else if (status == Messages.STATUS_NOTDELIVERED) {
                 details.append('\n');
