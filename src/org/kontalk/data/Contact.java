@@ -201,18 +201,6 @@ public class Contact {
         return mAvatar != null ? mAvatar : defaultValue;
     }
 
-    /** Frees resources taken by the avatar bitmap. */
-    @Override
-    protected void finalize() throws Throwable {
-        if (mAvatar != null) {
-            Bitmap b = mAvatar.getBitmap();
-            mAvatar = null;
-            mAvatarData = null;
-            b.recycle();
-        }
-        super.finalize();
-    }
-
     /** Builds a contact from a UsersProvider cursor. */
     public static Contact fromUsersCursor(Context context, Cursor cursor) {
         final long contactId = cursor.getLong(COLUMN_CONTACT_ID);
