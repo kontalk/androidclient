@@ -190,6 +190,16 @@ public class Conversation {
                 ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, Threads.DEFAULT_SORT_ORDER);
     }
 
+    public static Cursor startQuery(Context context) {
+        return context.getContentResolver().query(Threads.CONTENT_URI,
+                ALL_THREADS_PROJECTION, null, null, Threads.DEFAULT_SORT_ORDER);
+    }
+
+    public static Cursor startQuery(Context context, long threadId) {
+        return context.getContentResolver().query(Threads.CONTENT_URI,
+                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, Threads.DEFAULT_SORT_ORDER);
+    }
+
     public void markAsRead() {
         if (mThreadId > 0) {
             new Thread(new Runnable() {

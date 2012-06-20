@@ -314,11 +314,14 @@ public class ConversationListFragment extends ListFragment {
     }
 
     public void startQuery() {
+        Cursor c = null;
         try {
-            Conversation.startQuery(mQueryHandler, THREAD_LIST_QUERY_TOKEN);
-        } catch (SQLiteException e) {
+            c = Conversation.startQuery(getActivity());
+        }
+        catch (SQLiteException e) {
             Log.e(TAG, "query error", e);
         }
+        mQueryHandler.onQueryComplete(THREAD_LIST_QUERY_TOKEN, null, c);
     }
 
     @Override
