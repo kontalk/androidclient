@@ -24,8 +24,6 @@
     <string name="download_service">Download Service</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="new_message">New message</string>
-    <string name="create_new_message">Compose new message</string>
     <string name="menu_compose">Compose</string>
     <string name="menu_delete_all">Delete threads</string>
     <string name="menu_search">Search</string>
@@ -45,7 +43,6 @@
     <string name="delete_message">Delete message</string>
     <string name="confirm_delete_all">Delete all threads</string>
     <string name="confirm_will_delete_all">All threads will be deleted.</string>
-    <string name="sending">Sending&#8230;</string>
     <string name="sending_message">Sending message&#8230;</string>
     <string name="message_text_copied">Message text copied.</string>
     <string name="call">Call</string>
@@ -105,7 +102,6 @@
     <string name="pref_title_push_notifications">Use push notifications if server supports it, saves battery</string>
     <string name="pref_push_notifications">Push notifications</string>
     <string name="hint_search_full">Search messages</string>
-    <string name="hint_search_thread">Search in conversation</string>
     <string name="hint_search_quickbox">Text in your messages</string>
     <string name="title_search">Search: \"%s\"</string>
     <string name="pref_notification_settings">Notification settings</string>
@@ -138,9 +134,6 @@
     <string name="notify_ticker_upload_error">Upload failed</string>
     <string name="notify_title_upload_error">Upload error</string>
     <string name="notify_text_upload_error">Attachment upload failed</string>
-    <string name="notify_ticker_polling_error">Network error</string>
-    <string name="notify_title_polling_error">Network error</string>
-    <string name="notify_text_polling_error">Unable to check for incoming messages. Check your network settings.</string>
     <string name="title_invalid_number">Invalid number</string>
     <string name="err_store_message_failed">Unable to store message to outbox.</string>
     <string name="msg_invalid_number">Please insert a valid international prefix or insert a SIM card and go to online mode to automatically retrieve it.</string>

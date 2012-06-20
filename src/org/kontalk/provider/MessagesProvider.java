@@ -29,6 +29,7 @@ import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 
+import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
@@ -928,6 +929,7 @@ public class MessagesProvider extends ContentProvider {
 
     /* Transactions compatibility layer */
 
+    @TargetApi(11)
     private void beginTransaction(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= 11)
             db.beginTransactionNonExclusive();

@@ -61,8 +61,7 @@
         android:layout_alignTop="@+id/avatar"
         android:layout_toLeftOf="@+id/divider"
         android:layout_toRightOf="@+id/avatar"
-        android:gravity="center_vertical"
-        android:text="+39123456" />
+        android:gravity="center_vertical" />
 
     <TextView
         android:id="@+id/status"
@@ -72,7 +71,6 @@
         android:layout_alignBottom="@+id/avatar"
         android:layout_alignLeft="@android:id/title"
         android:layout_alignRight="@+id/divider"
-        android:gravity="center_vertical"
-        android:text="Status text" />
+        android:gravity="center_vertical" />
 
 </RelativeLayout>

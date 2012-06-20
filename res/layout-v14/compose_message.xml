@@ -21,55 +21,26 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <LinearLayout android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="horizontal"
-      android:baselineAligned="false">
-    
-        <TextView android:id="@+id/last_seen_text"
-            style="?android:attr/listViewWhiteStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_gravity="center_horizontal"
-            android:paddingTop="5dip"
-            android:paddingBottom="5dip"
-            android:paddingLeft="5dip"
-            android:paddingRight="5dip"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:background="@color/last_seen_banner" />
-    </LinearLayout>
-
-    <LinearLayout
+    <ListView android:id="@android:id/list"
+        style="?android:attr/listViewWhiteStyle"
+        android:cacheColorHint="@android:color/white"
+        android:divider="@null"
+        android:dividerHeight="0.0sp"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:gravity="bottom">
+        android:layout_height="0dp"
+        android:layout_weight="1.0"
+        android:drawSelectorOnTop="false"
+        android:transcriptMode="normal"
+        android:smoothScrollbar="false"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbarStyle="insideInset"
+        android:stackFromBottom="true"
+        android:fadingEdge="none"
+        android:layout_marginBottom="1dip"
+        >
+        <!-- Preview: listitem=@layout/message_list_item -->
+    </ListView>
 
-        <ListView android:id="@android:id/list"
-            style="?android:attr/listViewWhiteStyle"
-            android:cacheColorHint="@android:color/white"
-            android:divider="@null"
-            android:dividerHeight="0.0sp"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1.0"
-            android:drawSelectorOnTop="false"
-            android:transcriptMode="normal"
-            android:smoothScrollbar="false"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:scrollbarStyle="insideInset"
-            android:stackFromBottom="true"
-            android:fadingEdge="none"
-            android:layout_marginBottom="1dip"
-            >
-            <!-- Preview: listitem=@layout/message_list_item -->
-        </ListView>
-
-        <include layout="@layout/composer_bar"/>
-
-    </LinearLayout>
+    <include layout="@layout/composer_bar"/>
 
 </LinearLayout>

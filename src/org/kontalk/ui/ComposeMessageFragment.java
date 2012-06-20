@@ -84,35 +84,27 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.PatternMatcher;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextUtils;
-import android.text.TextUtils.TruncateAt;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.protobuf.MessageLite;
@@ -123,8 +115,7 @@ import com.google.protobuf.MessageLite;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnTouchListener, View.OnLongClickListener,
-		RequestListener, TxListener {
+		View.OnLongClickListener, RequestListener, TxListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -141,8 +132,6 @@ public class ComposeMessageFragment extends ListFragment implements
 	private EditText mTextEntry;
 	private View mSendButton;
 
-	private TextView mLastSeenBanner;
-
 	private boolean mIsKeyboardOpen;
 	private boolean mIsLandscape;
 
@@ -157,8 +146,6 @@ public class ComposeMessageFragment extends ListFragment implements
 	private String userPhone;
 
 	private PeerObserver mPeerObserver;
-	private Handler mHandler;
-	private int mTouchSlop;
 
 	private LocalBroadcastManager mLocalBroadcastManager;
     private UserPresenceBroadcastReceiver mPresenceReceiver;
@@ -203,7 +190,6 @@ public class ComposeMessageFragment extends ListFragment implements
 		super.onActivityCreated(savedInstanceState);
 		// setListAdapter() is post-poned
 
-		mHandler = new Handler();
         ListView list = getListView();
         list.setFastScrollEnabled(true);
 		registerForContextMenu(list);
@@ -241,17 +227,6 @@ public class ComposeMessageFragment extends ListFragment implements
 				sendTextMessage();
 			}
 		});
-
-		mLastSeenBanner = (TextView) getView()
-				.findViewById(R.id.last_seen_text);
-		if (mLastSeenBanner != null) {
-    		View v = (View) mLastSeenBanner.getParent();
-    		v.setOnTouchListener(this);
-    		v.setOnLongClickListener(this);
-
-            mTouchSlop = ViewConfiguration.get(getActivity()).getScaledTouchSlop();
-		}
-
 
 		Configuration config = getResources().getConfiguration();
 		mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
@@ -1240,7 +1215,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 if (text != null) {
                     final String bannerText = text;
                     try {
-                        showLastSeenBanner(bannerText);
+                        showLastSeen(bannerText);
                     }
                     catch (Exception e) {
                         // something could happen in the mean time - e.g. fragment destruction
@@ -1305,7 +1280,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	        if (_pack.getEntryCount() > 0) {
 	            UserLookupResponse.Entry res = _pack.getEntry(0);
                 String text = null;
-                String text2 = null;
+                // TODO String text2 = null;
                 try {
                     Activity context = getActivity();
 
@@ -1328,9 +1303,11 @@ public class ComposeMessageFragment extends ListFragment implements
                         }
                     }
 
+                    /* TODO where to display status text??
                     if (res.hasStatus()) {
                         text2 = res.getStatus();
                     }
+                    */
 
                     if (text != null) {
                         final String bannerText = text;
@@ -1340,30 +1317,13 @@ public class ComposeMessageFragment extends ListFragment implements
                                 @Override
                                 public void run() {
                                     try {
-                                        showLastSeenBanner(bannerText);
+                                        showLastSeen(bannerText);
                                     }
                                     catch (Exception e) {
                                         // something could happen in the meanwhile e.g. fragment destruction
                                     }
                                 }
                             });
-                            // display status message after 5 seconds
-                            if (text2 != null && mLastSeenBanner != null) {
-                                final String bannerText2 = text2;
-                                mHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            // restore gravity for all the moving stuff to work
-                                            mLastSeenBanner.setGravity(Gravity.NO_GRAVITY);
-                                            mLastSeenBanner.setText(bannerText2);
-                                        }
-                                        catch (Exception e) {
-                                            // something could happen in the meanwhile e.g. fragment destruction
-                                        }
-                                    }
-                                }, 5000);
-                            }
                         }
                     }
                 }
@@ -1377,19 +1337,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	    return false;
 	}
 
-	private void showLastSeenBanner(String text) {
-	    if (mLastSeenBanner != null) {
-            mLastSeenBanner.setText(text);
-    	    if (mLastSeenBanner.getVisibility() != View.VISIBLE) {
-                mLastSeenBanner.setGravity(Gravity.CENTER);
-                mLastSeenBanner.setVisibility(View.VISIBLE);
-                mLastSeenBanner.startAnimation(AnimationUtils
-                        .loadAnimation(getActivity(), R.anim.header_appear));
-    	    }
-	    }
-	    else {
-	        setActivityTitle(null, text, null);
-	    }
+	private void showLastSeen(String text) {
+        setActivityTitle(null, text, null);
 	}
 
 	@Override
@@ -1660,108 +1609,6 @@ public class ComposeMessageFragment extends ListFragment implements
 	public void setTextEntry(CharSequence text) {
 		mTextEntry.setText(text);
 	}
-
-	/* header view - thanks to Android Mail and Android Music player :) */
-
-	private int mInitialX = -1;
-	private int mLastX = -1;
-	private int mTextWidth = 0;
-	private int mViewWidth = 0;
-	private boolean mDraggingLabel = false;
-
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		int action = event.getAction();
-		TextView tv = (TextView) v.findViewById(R.id.last_seen_text);
-		if (tv == null) {
-			return false;
-		}
-		if (action == MotionEvent.ACTION_DOWN) {
-			mInitialX = mLastX = (int) event.getX();
-			mDraggingLabel = false;
-		}
-		else if (action == MotionEvent.ACTION_UP
-				|| action == MotionEvent.ACTION_CANCEL) {
-			if (mDraggingLabel) {
-				Message msg = mLabelScroller.obtainMessage(0, tv);
-				mLabelScroller.sendMessageDelayed(msg, 2000);
-			}
-		}
-		else if (action == MotionEvent.ACTION_MOVE) {
-			if (mDraggingLabel) {
-				int scrollx = tv.getScrollX();
-				int x = (int) event.getX();
-				int delta = mLastX - x;
-				if (delta != 0) {
-					mLastX = x;
-					scrollx += delta;
-					if (scrollx > mTextWidth) {
-						// scrolled the text completely off the view to the left
-						scrollx -= mTextWidth;
-						scrollx -= mViewWidth;
-					}
-					if (scrollx < -mViewWidth) {
-						// scrolled the text completely off the view to the
-						// right
-						scrollx += mViewWidth;
-						scrollx += mTextWidth;
-					}
-					tv.scrollTo(scrollx, 0);
-				}
-				return true;
-			}
-			int delta = mInitialX - (int) event.getX();
-			if (Math.abs(delta) > mTouchSlop) {
-				// start moving
-				mLabelScroller.removeMessages(0, tv);
-
-				// Only turn ellipsizing off when it's not already off, because
-				// it
-				// causes the scroll position to be reset to 0.
-				if (tv.getEllipsize() != null) {
-					tv.setEllipsize(null);
-				}
-				Layout ll = tv.getLayout();
-				// layout might be null if the text just changed, or ellipsizing
-				// was just turned off
-				if (ll == null) {
-					return false;
-				}
-				// get the non-ellipsized line width, to determine whether
-				// scrolling
-				// should even be allowed
-				mTextWidth = (int) tv.getLayout().getLineWidth(0);
-				mViewWidth = tv.getWidth();
-				if (mViewWidth > mTextWidth) {
-					tv.setEllipsize(TruncateAt.END);
-					v.cancelLongPress();
-					return false;
-				}
-				mDraggingLabel = true;
-				tv.setHorizontalFadingEdgeEnabled(true);
-				v.cancelLongPress();
-				return true;
-			}
-		}
-		return false;
-	}
-
-	Handler mLabelScroller = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			TextView tv = (TextView) msg.obj;
-			int x = tv.getScrollX();
-			x = x * 3 / 4;
-			tv.scrollTo(x, 0);
-			if (x == 0) {
-				tv.setEllipsize(TruncateAt.END);
-			}
-			else {
-				Message newmsg = obtainMessage(0, tv);
-				mLabelScroller.sendMessageDelayed(newmsg, 15);
-			}
-		}
-	};
 
 	@Override
 	public boolean onLongClick(View v) {

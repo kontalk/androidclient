@@ -24,8 +24,6 @@
     <string name="download_service">Download Service</string>
     <string name="yes">Sì</string>
     <string name="no">No</string>
-    <string name="new_message">Nuovo messaggio</string>
-    <string name="create_new_message">Scrivi nuovo messaggio</string>
     <string name="menu_compose">Nuovo messaggio</string>
     <string name="menu_delete_all">Elimina conversazioni</string>
     <string name="menu_search">Cerca</string>
@@ -45,7 +43,6 @@
     <string name="delete_message">Elimina messaggio</string>
     <string name="confirm_delete_all">Elimina tutte le conversazioni</string>
     <string name="confirm_will_delete_all">Tutte le conversazioni saranno eliminate.</string>
-    <string name="sending">Invio&#8230;</string>
     <string name="sending_message">Invio messaggio&#8230;</string>
     <string name="message_text_copied">Testo del messaggio copiato.</string>
     <string name="call">Chiama</string>
@@ -77,6 +74,9 @@
     <string name="notdelivered_label">Non consegnato:\u0020</string>
     <string name="delivered_label">Consegnato:\u0020</string>
     <string name="encrypted_label">Cifrato:\u0020</string>
+    <string name="size_label">Dimensione:\u0020</string>
+    <string name="size_unknown">(sconosciuta)</string>
+    <string name="title_file_info">Informazioni sul file</string>
     <string name="pref_restart_msgcenter">Riavvia centro messaggi</string>
     <string name="pref_title_restart_msgcenter">Premilo se il centro messaggi non funziona correttamente</string>
     <string name="pref_maintainance">Manutenzione</string>
@@ -93,6 +93,7 @@
     <string name="decrypt_message">Decifra messaggio</string>
     <string name="download_file">Scarica file</string>
     <string name="download_again">Riscarica file</string>
+    <string name="download">Scarica</string>
     <string name="last_seen_label">Visto ultima volta:\u0020</string>
     <string name="myself_label">Io</string>
     <string name="has_draft">Bozza</string>
@@ -101,7 +102,6 @@
     <string name="pref_title_push_notifications">Usa notifiche push se il server lo supporta, aumenta la durata della batteria</string>
     <string name="pref_push_notifications">Notifiche push</string>
     <string name="hint_search_full">Cerca messaggi</string>
-    <string name="hint_search_thread">Cerca nella conversazione</string>
     <string name="hint_search_quickbox">Testo nei messaggi</string>
     <string name="title_search">Cerca: \"%s\"</string>
     <string name="pref_notification_settings">Impostazioni notifiche</string>
@@ -135,13 +135,17 @@
     <string name="notify_title_upload_error">Errore invio</string>
     <string name="notify_text_upload_error">Invio allegato fallito</string>
     <string name="title_invalid_number">Numero non valido</string>
+    <string name="err_store_message_failed">Impossibile salvare il messaggio in uscita.</string>
     <string name="msg_invalid_number">Inserisci un prefisso internazionale valido oppure inserisci una SIM card e disattiva la modalità aereo per rilevarlo automaticamente.</string>
     <string name="menu_refresh">Aggiorna</string>
     <string name="menu_invite">Invita utenti</string>
+    <string name="title_error">Errore</string>
     <string name="msg_do_refresh">Usa Menu > Aggiorna per aggiornare la lista contatti.</string>
     <string name="msg_sync_progress">Aggiornamento lista contatti in corso&#8230;</string>
+    <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
     <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk! Lo trovi su Google Play Store https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.&lt;br/&gt;&lt;br/&gt;Usa &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invita utenti&lt;/b&gt; per inviare un messaggio di invito a qualcuno.</string>
+    <string name="text_conversations_empty">Per iniziare a scrivere messaggi usa l\'icona &lt;b&gt;nuovo messaggio&lt;/b&gt; in alto.</string>
     <string name="notify_ticker_external_storage">Memoria esterna non disponibile</string>
     <string name="notify_text_external_storage">Impossibile scrivere sulla memoria esterna.</string>
     <string name="title_user_not_found">Utente non trovato</string>
@@ -158,8 +162,16 @@
     <string name="title_validation_code">Codice di verifica</string>
     <string name="title_status_message">Messaggio di stato</string>
     <string name="menu_attachment">Allega</string>
+    <string name="vcard_message">Messaggio vCard</string>
+    <string name="open_file">Apri file</string>
     <string name="msg_msgcenter_restarted">Centro messaggi riavviato.</string>
     <string name="downloading_attachment">Download in corso&#8230;</string>
     <string name="seen_moment_ago_label">un momento fa</string>
     <string name="seen_online_label">Utente online</string>
+    <string name="pref_custom_background">Custom background</string>
+    <string name="pref_background_uri">Sfondo</string>
+    <string name="pref_title_background_uri">Imposta uno sfondo personalizzato nelle conversazioni</string>
+    <string name="pref_title_off_custom_background">Sarà usato lo sfondo predefinito</string>
+    <string name="pref_title_on_custom_background">Scegli uno sfondo usando l\'opzione di seguito</string>
+    <string name="err_attachment_corrupted">Impossibile scaricare l\'allegato. Il messaggio potrebbe essere danneggiato.</string>
 </resources>

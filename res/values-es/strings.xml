@@ -24,8 +24,6 @@
     <string name="download_service">Servicio Download</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
-    <string name="new_message">Nuevo mensaje</string>
-    <string name="create_new_message">Creación  nuevo mensaje</string>
     <string name="menu_compose">Componer</string>
     <string name="menu_delete_all">Borrar threads</string>
     <string name="menu_search">Búsqueda</string>
@@ -45,7 +43,6 @@
     <string name="delete_message">Eliminar el mensaje</string>
     <string name="confirm_delete_all">Eliminar todas las discusiones</string>
     <string name="confirm_will_delete_all">Todas las discusiones serán borradas.</string>
-    <string name="sending">Enviando&#8230;</string>
     <string name="sending_message">Enviando mensaje&#8230;</string>
     <string name="message_text_copied">Mensaje de texto copiado.</string>
     <string name="call">Llamada</string>
@@ -98,7 +95,6 @@
     <string name="download_again">Descargue de nuevo</string>
     <string name="download">Descargar</string>
     <string name="last_seen_label">Ultima vez:\u0020</string>
-    <string name="text_hint_encrypted">(encriptado)</string>
     <string name="myself_label">Me</string>
     <string name="has_draft">Borrador</string>
     <string name="pref_update_server_list">Actualización de la lista de servidores</string>
@@ -106,7 +102,6 @@
     <string name="pref_title_push_notifications">Use las notificaciones push si el servidor lo admite, ahorra batería</string>
     <string name="pref_push_notifications">Push notificaciones</string>
     <string name="hint_search_full">Buscar mensajes</string>
-    <string name="hint_search_thread">Buscar en la conversación</string>
     <string name="hint_search_quickbox">Texto en tus mensajes</string>
     <string name="title_search">Buscar: \"%s\"</string>
     <string name="pref_notification_settings">Configuración de las notificaciones</string>
@@ -139,9 +134,6 @@
     <string name="notify_ticker_upload_error">Error de subida</string>
     <string name="notify_title_upload_error">Error de subida</string>
     <string name="notify_text_upload_error">Error al subir archivo adjunto</string>
-    <string name="notify_ticker_polling_error">Error en la red</string>
-    <string name="notify_title_polling_error">Error en la red</string>
-    <string name="notify_text_polling_error">No se pueden comprobar los mensajes entrantes. Compruebe la configuración de red.</string>
     <string name="title_invalid_number">Número no válido</string>
     <string name="err_store_message_failed">No se puede guardar mensaje en la bandeja de salida.</string>
     <string name="msg_invalid_number">Por favor, introduzca un prefijo internacional válido o inserte una tarjeta SIM e ir al modo en línea para recuperarlo de forma automática.</string>

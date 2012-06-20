@@ -26,6 +26,7 @@ import org.kontalk.client.NumberValidator;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.util.MessageUtils;
 
+import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -318,6 +319,7 @@ public class UsersProvider extends ContentProvider {
 
     /* Transactions compatibility layer */
 
+    @TargetApi(11)
     private void beginTransaction(SQLiteDatabase db) {
         if (android.os.Build.VERSION.SDK_INT >= 11)
             db.beginTransactionNonExclusive();
