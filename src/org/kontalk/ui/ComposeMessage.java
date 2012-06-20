@@ -114,7 +114,7 @@ public class ComposeMessage extends FragmentActivity {
                     mAvatar.setImageDrawable(avatar);
             }
         }
-        else
+        else if (title != null)
             setTitle(title);
     }
 
