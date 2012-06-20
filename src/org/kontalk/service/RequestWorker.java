@@ -174,14 +174,12 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             this.mRefCount = refCount;
 
             // set idle handler
-            //Log.v(TAG, "setting idle handler");
             if (this.mRefCount <= 0)
                 Looper.myQueue().addIdleHandler(this);
 
             // requeue the old messages
             Log.d(TAG, "processing pending jobs queue (" + pending.size() + " jobs)");
             for (RequestJob job = pending.poll(); job != null; job = pending.poll()) {
-                //Log.d(TAG, "requeueing pending job " + job);
                 sendMessage(obtainMessage(MSG_REQUEST_JOB, job));
             }
         }
@@ -192,7 +190,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             // remove the idle message anyway
             removeMessages(MSG_IDLE);
 
-            //Log.v(TAG, "no more messages (ref=" + mRefCount + ")");
             if (mRefCount <= 0)
                 sendMessageDelayed(obtainMessage(MSG_IDLE), IDLE_MSG_TIME);
 
@@ -220,7 +217,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 }
 
                 RequestJob job = (RequestJob) msg.obj;
-                Log.v(TAG, "JOB: " + job.toString());
+                //Log.v(TAG, "JOB: " + job.toString());
 
                 // check now if job has been canceled
                 if (job.isCanceled(mContext)) {
@@ -330,7 +327,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    //Log.v(TAG, "removing idle handler");
                     Looper.myQueue().removeIdleHandler(mHandler);
                     removeMessages(MSG_IDLE);
                 }
@@ -344,7 +340,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        //Log.v(TAG, "adding idle handler");
                         removeMessages(MSG_IDLE);
                         Looper.myQueue().addIdleHandler(mHandler);
                     }
@@ -466,7 +461,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
     /** Shuts down this request worker gracefully. */
     public synchronized void shutdown() {
-        Log.d(TAG, "shutting down");
         interrupt();
 
         // stop async jobs
@@ -478,7 +472,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             mAsyncJobs.clear();
         }
 
-        Log.d(TAG, "quitting looper");
         quit();
         // do not join - just discard the thread
 
@@ -486,8 +479,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             mClient.shutdown();
             mClient = null;
         }
-
-        Log.d(TAG, "exiting");
     }
 
     /** Schedules request worker exit as soon as possible. */

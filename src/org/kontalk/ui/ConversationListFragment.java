@@ -231,7 +231,6 @@ public class ConversationListFragment extends ListFragment {
                 return true;
 
             case MENU_DELETE_THREAD:
-                Log.i(TAG, "deleting thread: " + conv.getThreadId());
                 deleteThread(conv.getThreadId());
                 return true;
         }
@@ -271,7 +270,6 @@ public class ConversationListFragment extends ListFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == Dialog.BUTTON_POSITIVE) {
-                    Log.v(TAG, "using status: " + txt.getText());
                     String text = txt.getText().toString();
                     if (text.trim().length() <= 0)
                         text = text.trim();
@@ -346,11 +344,8 @@ public class ConversationListFragment extends ListFragment {
         if (requestCode == REQUEST_CONTACT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
                 Uri uri = data.getData();
-                if (uri != null) {
-                    Log.i(TAG, "composing message from conversation: " + uri);
-
+                if (uri != null)
                     openConversation(uri);
-                }
             }
         }
     }

@@ -142,8 +142,6 @@ public class MessageCenterService extends Service
     private final OnAccountsUpdateListener mAccountsListener = new OnAccountsUpdateListener() {
         @Override
         public void onAccountsUpdated(Account[] accounts) {
-            Log.i(TAG, "accounts have been changed, checking");
-
             // restart workers
             Account my = null;
             for (int i = 0; i < accounts.length; i++) {
@@ -184,7 +182,7 @@ public class MessageCenterService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "Message Center starting - " + intent);
+        //Log.d(TAG, "Message Center starting - " + intent);
         boolean execStart = false;
 
         if (intent != null) {
@@ -238,7 +236,6 @@ public class MessageCenterService extends Service
             if (execStart) {
                 Bundle extras = intent.getExtras();
                 String serverUrl = (String) extras.get(EndpointServer.class.getName());
-                Log.d(TAG, "using server uri: " + serverUrl);
 
                 mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
                 mAccount = Authenticator.getDefaultAccount(this);
@@ -322,7 +319,6 @@ public class MessageCenterService extends Service
     private void restorePresenceSubscriptions() {
         Set<String> keys = mPresenceListeners.keySet();
         for (String userId : keys) {
-            Log.v(TAG, "restoring presence subscription for " + userId);
             Byte _eventMask = mPresenceListeners.get(userId);
             pushRequest(new UserPresenceRequestJob(userId, _eventMask.intValue()));
         }
@@ -427,7 +423,7 @@ public class MessageCenterService extends Service
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
         // TODO default tx listener
-        Log.d(TAG, "tx=" + txId + ", pack=" + pack);
+        Log.v(TAG, "tx=" + txId + ", pack=" + pack);
         return true;
     }
 
@@ -436,12 +432,12 @@ public class MessageCenterService extends Service
         public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
             // TODO
             AuthenticateResponse res = (AuthenticateResponse) pack;
-            Log.d(TAG, "authentication result=" + res.getValid());
             if (res.getValid()) {
                 authenticated();
             }
             else {
                 // TODO WTF ??
+                Log.w(TAG, "authentication failed!");
             }
 
             return true;
@@ -580,8 +576,6 @@ public class MessageCenterService extends Service
             ReceiptMessage msg2 = (ReceiptMessage) msg;
             ReceiptEntryList rlist = msg2.getContent();
             for (ReceiptEntry rentry : rlist) {
-                Log.d(TAG, "receipt for message " + rentry.messageId);
-
                 int status = rentry.status;
                 int code = (status == Protocol.ReceiptMessage.Entry.ReceiptStatus.STATUS_SUCCESS_VALUE) ?
                         Messages.STATUS_RECEIVED : Messages.STATUS_NOTDELIVERED;
@@ -589,11 +583,11 @@ public class MessageCenterService extends Service
                 Date ts;
                 try {
                     ts = rentry.getTimestamp();
-                    Log.v(TAG, "using receipt timestamp: " + ts);
+                    //Log.v(TAG, "using receipt timestamp: " + ts);
                 }
                 catch (Exception e) {
                     ts = msg.getServerTimestamp();
-                    Log.v(TAG, "using message timestamp: " + ts);
+                    //Log.v(TAG, "using message timestamp: " + ts);
                 }
 
                 MessagesProvider.changeMessageStatusWhere(this,
@@ -638,10 +632,10 @@ public class MessageCenterService extends Service
             mRequestWorker.push(job, delayMillis);
         else {
             if (job instanceof ReceivedJob || job instanceof MessageSender) {
-                Log.i(TAG, "not queueing message job");
+                Log.d(TAG, "not queueing message job");
             }
             else {
-                Log.i(TAG, "request worker is down, queueing job");
+                Log.d(TAG, "request worker is down, queueing job");
                 RequestWorker.pendingJobs.add(job);
             }
 
@@ -668,7 +662,6 @@ public class MessageCenterService extends Service
     }
 
     public void startForeground(String userId, long totalBytes) {
-        Log.v(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
 
         Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
@@ -765,7 +758,6 @@ public class MessageCenterService extends Service
     }
 
     public static void updateStatus(final Context context) {
-        Log.d(TAG, "updating status message");
         Intent i = new Intent(context, MessageCenterService.class);
         EndpointServer server = MessagingPreferences.getEndpointServer(context);
         i.putExtra(EndpointServer.class.getName(), server.toString());

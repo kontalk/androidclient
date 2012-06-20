@@ -82,8 +82,7 @@ public class MessageRequestListener implements RequestListener {
                                 values.put(Messages.MESSAGE_ID, msgId);
                                 values.put(Messages.STATUS, Messages.STATUS_SENT);
                                 values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                                int n = mContentResolver.update(uri, values, selectionOutgoing, null);
-                                Log.v(TAG, "message sent and updated (" + n + ")");
+                                mContentResolver.update(uri, values, selectionOutgoing, null);
                             }
                         }
                     }

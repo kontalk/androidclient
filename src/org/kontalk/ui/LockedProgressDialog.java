@@ -27,9 +27,9 @@ import android.content.Context;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class LockedDialog extends ProgressDialog {
+public class LockedProgressDialog extends ProgressDialog {
 
-    public LockedDialog(Context ctx) {
+    public LockedProgressDialog(Context ctx) {
         super(ctx);
         setCancelable(false);
         setCanceledOnTouchOutside(false);

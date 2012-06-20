@@ -4,6 +4,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.LockedProgressDialog;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -65,11 +66,12 @@ public abstract class SyncerUI {
                     .acquireContentProviderClient(authority);
             ContentProviderClient usersProvider = context.getContentResolver()
                     .acquireContentProviderClient(UsersProvider.AUTHORITY);
+            SyncResult syncResult = new SyncResult();
 
             try {
                 syncer = params[0];
                 syncer.performSync(context, account,
-                    authority, provider, usersProvider, new SyncResult());
+                    authority, provider, usersProvider, syncResult);
             }
             catch (OperationCanceledException e) {
                 // ignored - normal cancelation
@@ -84,7 +86,7 @@ public abstract class SyncerUI {
                 provider.release();
                 Syncer.release();
             }
-            return true;
+            return !Syncer.isError(syncResult);
         }
 
         @Override
@@ -179,8 +181,9 @@ public abstract class SyncerUI {
         @Override
         protected void onPreExecute() {
             if (useDialog) {
-                ProgressDialog dg = new ProgressDialog(context);
+                ProgressDialog dg = new LockedProgressDialog(context);
                 dg.setMessage(context.getString(R.string.msg_sync_progress));
+                dg.setCancelable(true);
                 dg.setIndeterminate(true);
                 dg.setOnCancelListener(new DialogInterface.OnCancelListener() {
                     public void onCancel(DialogInterface dialog) {

@@ -80,7 +80,6 @@ public class MessageListAdapter extends CursorAdapter {
     @Override
     protected void onContentChanged() {
         Cursor c = getCursor();
-        Log.i(TAG, "content has changed (c=" + c + ")");
         if (c != null && !c.isClosed() && mOnContentChangedListener != null) {
             mOnContentChangedListener.onContentChanged(this);
         }

@@ -23,6 +23,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.service.MessageCenterService;
 import org.kontalk.util.SyncerUI;
 
 import android.app.ListActivity;
@@ -58,6 +59,20 @@ public class ContactsListActivity extends ListActivity
         if (!MessagingPreferences.getContactsListVisited(this))
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // hold message center
+        MessageCenterService.holdMessageCenter(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // release message center
+        MessageCenterService.releaseMessageCenter(this);
     }
 
     @Override

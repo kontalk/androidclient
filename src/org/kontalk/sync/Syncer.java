@@ -50,6 +50,7 @@ public class Syncer {
 
     // using SyncAdapter tag
     private static final String TAG = SyncAdapter.class.getSimpleName();
+    private static final int MAX_WAIT_TIME = 60000;
 
     /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
@@ -73,6 +74,7 @@ public class Syncer {
         private MessageCenterService service;
         private List<String> hashList;
         private UserLookupResponse response;
+        private Throwable lastError;
 
         public ClientServiceConnection(List<String> hashList) {
             this.hashList = hashList;
@@ -106,7 +108,7 @@ public class Syncer {
 
                 @Override
                 public boolean error(ClientThread client, RequestJob job, Throwable exc) {
-                    // TODO error handling
+                    lastError = exc;
                     synchronized (Syncer.this) {
                         Syncer.this.notifyAll();
                     }
@@ -134,6 +136,10 @@ public class Syncer {
 
         public UserLookupResponse getResponse() {
             return response;
+        }
+
+        public Throwable getLastError() {
+            return lastError;
         }
     }
 
@@ -283,7 +289,7 @@ public class Syncer {
             // wait for the service connection to complete its job
             synchronized (this) {
                 try {
-                    wait();
+                    wait(MAX_WAIT_TIME);
                 }
                 catch (InterruptedException e) {
                     // simulate canceled operation
@@ -364,9 +370,25 @@ public class Syncer {
                     syncResult.databaseError = true;
                     return;
                 }
+            }
 
+            // timeout or error
+            else {
+                Throwable exc = conn.getLastError();
+                if (exc != null) {
+                    Log.e(TAG, "network error - aborting sync", exc);
+                }
+                else {
+                    Log.w(TAG, "connection timeout - aborting sync");
+                }
+
+                syncResult.stats.numIoExceptions++;
             }
         }
+    }
+
+    public static boolean isError(SyncResult syncResult) {
+        return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
     }
 
     private String getDisplayName(ContentProviderClient client, String lookupKey, String defaultValue) {

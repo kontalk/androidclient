@@ -579,8 +579,6 @@ public class ComposeMessageFragment extends ListFragment implements
 	public void sendTextMessage() {
 		String text = mTextEntry.getText().toString();
 		if (!TextUtils.isEmpty(text)) {
-			Log.v(TAG, "sending message...");
-
 			/*
 			 * TODO show an animation to warn the user that the message
 			 * is being sent (actually stored).
@@ -873,7 +871,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		switch (item.getItemId()) {
 			case MENU_SHARE: {
-				Log.v(TAG, "sharing message: " + msg.getId());
 				Intent i;
 				if (msg instanceof PlainTextMessage)
 					i = ComposeMessage.sendTextMessage(msg.getTextContent());
@@ -886,7 +883,6 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			case MENU_COPY_TEXT: {
-				Log.v(TAG, "copying message text: " + msg.getId());
 				ClipboardManager cpm = (ClipboardManager) getActivity()
 						.getSystemService(Context.CLIPBOARD_SERVICE);
 				cpm.setText(msg.getTextContent());
@@ -897,19 +893,16 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			case MENU_DECRYPT: {
-				Log.v(TAG, "decrypting message: " + msg.getId());
 				decryptMessage(msg);
 				return true;
 			}
 
 			case MENU_DOWNLOAD: {
-				Log.v(TAG, "downloading attachment");
 				startDownload(msg);
 				return true;
 			}
 
 			case MENU_DETAILS: {
-				Log.v(TAG, "opening message details");
 				CharSequence messageDetails = MessageUtils.getMessageDetails(
 						getActivity(), msg, userPhone != null ? userPhone : userId);
 				new AlertDialog.Builder(getActivity())
@@ -921,13 +914,11 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			case MENU_DELETE: {
-				Log.v(TAG, "deleting message: " + msg.getDatabaseId());
 				deleteMessage(msg.getDatabaseId());
 				return true;
 			}
 
 			case MENU_OPEN: {
-				Log.v(TAG, "opening file");
 				openFile(msg);
 				return true;
 			}
@@ -940,7 +931,6 @@ public class ComposeMessageFragment extends ListFragment implements
 		try {
 			getActivity().setProgressBarIndeterminateVisibility(true);
 
-			Log.d(TAG, "starting query for thread " + threadId);
 			AbstractMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
 					threadId);
 
@@ -991,7 +981,6 @@ public class ComposeMessageFragment extends ListFragment implements
 				if (uri != null) {
 					if (mime == null || mime.startsWith("*/")
 							|| mime.endsWith("/*")) {
-						Log.v(TAG, "looking up mime type for uri " + uri);
 						mime = getActivity().getContentResolver().getType(uri);
 						Log.v(TAG, "using detected mime type " + mime);
 					}
@@ -1023,7 +1012,6 @@ public class ComposeMessageFragment extends ListFragment implements
 	private void processArguments(Bundle savedInstanceState) {
 		Bundle args = null;
 		if (savedInstanceState != null) {
-			Log.v(TAG, "restoring from saved instance");
 			Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
 			// threadId = ContentUris.parseId(uri);
 			args = new Bundle();
@@ -1040,7 +1028,6 @@ public class ComposeMessageFragment extends ListFragment implements
 			// view intent
 			if (Intent.ACTION_VIEW.equals(action)) {
 				Uri uri = args.getParcelable("data");
-				Log.w(TAG, "intent uri: " + uri);
 				ContentResolver cres = getActivity().getContentResolver();
 
 				/*
@@ -1193,7 +1180,6 @@ public class ComposeMessageFragment extends ListFragment implements
 			setListAdapter(mListAdapter);
 		}
 
-		Log.v(TAG, "starting query with threadId " + threadId);
 		if (threadId > 0) {
 			startQuery((mConversation == null));
 		}
@@ -1423,7 +1409,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void done(ClientThread client, RequestJob job, String txId) {
-        Log.v(TAG, "lookup request sent, listening to transaction packs (txid="+txId+")");
         client.setTxListener(txId, this);
     }
 
@@ -1604,7 +1589,7 @@ public class ComposeMessageFragment extends ListFragment implements
     						&& (mConversation == null
     								|| mConversation.getDraft() == null || mTextEntry
     								.getText().length() == 0)) {
-    					Log.w(TAG, "no data to view - exit");
+    					Log.i(TAG, "no data to view - exit");
 
     					// we have a ComposeMessageActivity - no fragments
     					if (getParentActivity() != null) {
@@ -1648,7 +1633,6 @@ public class ComposeMessageFragment extends ListFragment implements
     				break;
 
     			case CONVERSATION_QUERY_TOKEN:
-    				Log.i(TAG, "conversation query completed, marking as read");
     				if (cursor.moveToFirst()) {
     					mConversation = Conversation.createFromCursor(
     							getActivity(), cursor);

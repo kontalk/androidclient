@@ -125,7 +125,6 @@ public class ComposeMessage extends FragmentActivity {
     private void processIntent(Bundle savedInstanceState) {
         Intent intent = null;
         if (savedInstanceState != null) {
-            Log.w(TAG, "restoring from saved instance");
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
             intent = new Intent(ACTION_VIEW_CONVERSATION, uri);
         }
@@ -145,8 +144,6 @@ public class ComposeMessage extends FragmentActivity {
                     ACTION_VIEW_USERID.equals(action)) {
                 args = new Bundle();
                 Uri uri = intent.getData();
-                Log.w(TAG, "intent uri: " + uri);
-
                 args.putString("action", action);
                 args.putParcelable("data", uri);
                 args.putLong(EXTRA_MESSAGE, intent.getLongExtra(EXTRA_MESSAGE, -1));
@@ -217,7 +214,6 @@ public class ComposeMessage extends FragmentActivity {
             }
         }
         else {
-            Log.w(TAG, "unknown request code " + requestCode);
             super.onActivityResult(requestCode, resultCode, data);
         }
     }

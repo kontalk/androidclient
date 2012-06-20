@@ -160,7 +160,6 @@ public class ClientThread extends Thread {
                         mClientListener.connected(this);
 
                     // authenticate
-                    Log.v(TAG, "connected. Authenticating...");
                     mClient.authenticate(mAuthToken);
 
                     // now start the main loop
@@ -364,10 +363,8 @@ public class ClientThread extends Thread {
                 msg.setWasEncrypted(true);
 
             // set the fetch url (if any)
-            if (fetchUrl != null) {
-                Log.d(TAG, "using fetch url: " + fetchUrl);
+            if (fetchUrl != null)
                 msg.setFetchUrl(fetchUrl);
-            }
         }
 
         // might be a null to notify that the mime type is not supported.
@@ -401,15 +398,11 @@ public class ClientThread extends Thread {
 
     /** Shuts down this client thread gracefully. */
     public synchronized void shutdown() {
-        Log.d(TAG, "shutting down");
         interrupt();
 
-        Log.d(TAG, "aborting client");
         if (mClient != null)
             mClient.close();
         // do not join - just discard the thread
-
-        Log.d(TAG, "exiting");
     }
 
     public Object getPackLock() {
