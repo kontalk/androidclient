@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Kontalk Android client
+<!--
+     Kontalk Android client
      Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -14,51 +15,78 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
- -->
+-->
 
-<ScrollView
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_height="fill_parent"   
-  android:layout_width="fill_parent"
-  android:scrollbars="vertical">
-  <LinearLayout
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="18dip"
-    android:gravity="center_horizontal"
-    >
+    android:layout_height="fill_parent"
+    android:scrollbars="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="18dip" >
+
         <TextView
-          android:text="@string/number_validation_intro1"
-          android:layout_width="fill_parent"
-          android:layout_height="fill_parent"
-          android:padding="20dip"
-          />
-        <EditText
-          android:hint="@string/hint_phone_number"
-          android:inputType="phone"
-          android:id="@+id/phone_number"
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-        />
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
+            android:paddingBottom="10dip"
+            android:text="@string/number_validation_intro1" />
+
+        <LinearLayout
+            android:gravity="center_vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="10dip"
+                android:paddingRight="5dip"
+                android:text="@string/number_validation_plus" />
+
+            <EditText
+                android:id="@+id/phone_cc"
+                android:layout_width="45dip"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:minWidth="45dip" />
+
+            <EditText
+                android:id="@+id/phone_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone" />
+
+        </LinearLayout>
+
         <Button
-          android:text="@string/button_validate"
-          android:id="@+id/button_validate"
-          android:layout_width="fill_parent"
-          android:layout_height="fill_parent"
-          android:onClick="validatePhone"
-        />
+            android:id="@+id/button_validate"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:onClick="validatePhone"
+            android:text="@string/button_validate" />
+
         <Button
-            android:text="@string/button_manual_validation"
             android:id="@+id/button_manual"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:onClick="validateManual"/>
+            android:onClick="validateManual"
+            android:text="@string/button_manual_validation" />
+
         <TextView
-          android:text="@string/number_validation_intro2"
-          android:layout_width="fill_parent"
-          android:layout_height="fill_parent"
-          android:padding="20dip"
-          />
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
+            android:paddingTop="10dip"
+            android:text="@string/number_validation_intro2" />
     </LinearLayout>
+
 </ScrollView>

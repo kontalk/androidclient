@@ -31,9 +31,9 @@
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
-    <string name="number_validation_intro1">Please enter your mobile phone number, including any international prefix.</string>
-    <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the validation code manually using the button above.</string>
-    <string name="hint_phone_number">Enter your phone number</string>
+    <string name="number_validation_plus">+</string>
+    <string name="number_validation_intro1">Please enter your country code and mobile phone number. A SMS with a validation code will be sent to you. Your phone number will be used once and then discarded.</string>
+    <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the validation code you will receive via SMS manually using the button above.</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
     <string name="msg_validating_phone">Validating phone number&#8230;</string>
     <string name="msg_initializing">Initializing&#8230;</string>
@@ -136,7 +136,8 @@
     <string name="notify_text_upload_error">Attachment upload failed</string>
     <string name="title_invalid_number">Invalid number</string>
     <string name="err_store_message_failed">Unable to store message to outbox.</string>
-    <string name="msg_invalid_number">Please insert a valid international prefix or insert a SIM card and go to online mode to automatically retrieve it.</string>
+    <string name="msg_invalid_number">Please insert a valid phone number.</string>
+    <string name="msg_invalid_cc">Please insert a valid country code.</string>
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
     <string name="title_error">Error</string>

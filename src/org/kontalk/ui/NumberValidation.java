@@ -43,6 +43,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -65,6 +66,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     private AccountManager mAccountManager;
+    private EditText mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
     private Button mManualButton;
@@ -90,9 +92,12 @@ public class NumberValidation extends AccountAuthenticatorActivity
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
+        mCountryCode = (EditText) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
         mManualButton = (Button) findViewById(R.id.button_manual);
+
+        mCountryCode.setText(NumberValidator.getCountryCode(this));
     }
 
     @Override
@@ -129,21 +134,35 @@ public class NumberValidation extends AccountAuthenticatorActivity
         mPhone.setEnabled(enabled);
     }
 
+    private void error(int title, int message) {
+        new AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setNeutralButton(android.R.string.ok, null)
+            .show();
+    }
+
     private void startValidation() {
         enableControls(false);
+
+        // check country code input
+        String cc = mCountryCode.getText().toString().trim();
+        if (cc.length() < 1) {
+            error(R.string.title_invalid_number, R.string.msg_invalid_cc);
+            enableControls(true);
+            return;
+        }
 
         // check number input
         String phone = null;
         try {
-            String t = mPhone.getText().toString();
+            String p = mPhone.getText().toString().trim();
+            if (p.length() < 3 || !TextUtils.isDigitsOnly(p)) throw new Exception();
+            String t = "+" + cc + p;
             phone = NumberValidator.fixNumber(this, t, t);
         }
-        catch (Exception e ) {
-            new AlertDialog.Builder(this)
-                .setTitle(R.string.title_invalid_number)
-                .setMessage(R.string.msg_invalid_number)
-                .setNeutralButton(android.R.string.ok, null)
-                .create().show();
+        catch (Exception e) {
+            error(R.string.title_invalid_number, R.string.msg_invalid_number);
             enableControls(true);
             return;
         }

@@ -1,5 +1,4 @@
 [ ] background loading of contact avatars
-[ ] refactor validation UI
 [ ] status icon displacement (conv list view)
 [ ] duplicated messages - maybe it's because:
     * user sends a message while message center is up but still connecting
@@ -10,3 +9,4 @@
 [ ] custom background: sampleSize hard-coded to 4
 [ ] messages database upgrade testing
 [ ] massive message sending tests and benchmarks (especially memory leaks)
+[x] refactor validation UI

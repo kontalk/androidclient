@@ -29,7 +29,6 @@
     <drawable name="text_color_red">#ffff0000</drawable>
 
     <!-- other colors -->
-    <color name="last_seen_banner">#fffff1a8</color>
     <color name="highlight_color">#fffffC57</color>
 </resources>
 

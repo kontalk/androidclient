@@ -282,11 +282,18 @@ public class NumberValidator implements Runnable {
         public void onAuthTokenFailed(NumberValidator v, ValidationStatus reason);
     }
 
-    public static String getCountryPrefix(Context context) {
+    public static CharSequence getCountryCode(Context context) {
+        final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        final String regionCode = tm.getSimCountryIso().toUpperCase();
+        int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
+        return cc > 0 ? String.valueOf(cc) : "";
+    }
+
+    public static CharSequence getCountryPrefix(Context context) {
         return getCountryPrefix(context, null);
     }
 
-    public static String getCountryPrefix(Context context, String from) {
+    public static CharSequence getCountryPrefix(Context context, String from) {
         final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         final String regionCode = tm.getSimCountryIso().toUpperCase();
         int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
@@ -324,7 +331,7 @@ public class NumberValidator implements Runnable {
         if (number.startsWith("00"))
             number = '+' + number.substring(2);
         else if (number.charAt(0) != '+') {
-            String prefix = getCountryPrefix(context, myNumber);
+            CharSequence prefix = getCountryPrefix(context, myNumber);
             if (prefix == null)
                 throw new IllegalArgumentException("no country code available");
             number = prefix + number;

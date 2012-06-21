@@ -210,7 +210,7 @@ public class Syncer {
             return;
         }
 
-        String countryCode = NumberValidator.getCountryPrefix(mContext);
+        CharSequence countryCode = NumberValidator.getCountryPrefix(mContext);
         if (countryCode == null) {
             Log.w(TAG, "no SIM available and no saved country code - aborting sync");
             syncResult.stats.numIoExceptions++;

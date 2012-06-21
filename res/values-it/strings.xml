@@ -31,9 +31,9 @@
     <string name="pref_network_settings">Impostazioni di rete</string>
     <string name="pref_network_uri">Indirizzo server manuale</string>
     <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
+    <string name="number_validation_plus">+</string>
     <string name="number_validation_intro1">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
     <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
-    <string name="hint_phone_number">Inserisci il tuo numero</string>
     <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
     <string name="msg_validating_phone">Validazione numero di telefono&#8230;</string>
     <string name="msg_initializing">Inizializzazione&#8230;</string>
@@ -136,7 +136,8 @@
     <string name="notify_text_upload_error">Invio allegato fallito</string>
     <string name="title_invalid_number">Numero non valido</string>
     <string name="err_store_message_failed">Impossibile salvare il messaggio in uscita.</string>
-    <string name="msg_invalid_number">Inserisci un prefisso internazionale valido oppure inserisci una SIM card e disattiva la modalità aereo per rilevarlo automaticamente.</string>
+    <string name="msg_invalid_number">Inserisci un numero di telefono valido.</string>
+    <string name="msg_invalid_cc">Inserisci un prefisso internazionale valido.</string>
     <string name="menu_refresh">Aggiorna</string>
     <string name="menu_invite">Invita utenti</string>
     <string name="title_error">Errore</string>
