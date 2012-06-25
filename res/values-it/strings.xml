@@ -94,6 +94,7 @@
     <string name="download_file">Scarica file</string>
     <string name="download_again">Riscarica file</string>
     <string name="download">Scarica</string>
+    <string name="download_cancel">Annulla download</string>
     <string name="last_seen_label">Visto ultima volta:\u0020</string>
     <string name="myself_label">Io</string>
     <string name="has_draft">Bozza</string>

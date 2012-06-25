@@ -653,19 +653,33 @@ public class ComposeMessageFragment extends ListFragment implements
 	            CharSequence message = MessageUtils
 	                .getFileInfoMessage(getActivity(), msg,
 	                    userPhone != null ? userPhone : userId);
-	            DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // start file download
-                        startDownload(_msg);
-                    }
-                };
 
-                new AlertDialog.Builder(getActivity())
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                     .setTitle(R.string.title_file_info)
                     .setMessage(message)
-                    .setPositiveButton(R.string.download, startDL)
                     .setNegativeButton(android.R.string.cancel, null)
-                    .setCancelable(true).show();
+                    .setCancelable(true);
+
+                if (!DownloadService.isQueued(_msg.getFetchUrl())) {
+                    DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // start file download
+                            startDownload(_msg);
+                        }
+                    };
+                    builder.setPositiveButton(R.string.download, startDL);
+                }
+                else {
+                    DialogInterface.OnClickListener stopDL = new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // cancel file download
+                            stopDownload(_msg);
+                        }
+                    };
+                    builder.setPositiveButton(R.string.download_cancel, stopDL);
+                }
+
+                builder.show();
 	        }
 	    }
 	}
@@ -684,6 +698,16 @@ public class ComposeMessageFragment extends ListFragment implements
 	        Toast.makeText(getActivity(), R.string.err_attachment_corrupted,
 	            Toast.LENGTH_LONG).show();
 	    }
+	}
+
+	private void stopDownload(AbstractMessage<?> msg) {
+        String fetchUrl = msg.getFetchUrl();
+        if (fetchUrl != null) {
+            Intent i = new Intent(getActivity(), DownloadService.class);
+            i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
+            i.setData(Uri.parse(fetchUrl));
+            getActivity().startService(i);
+        }
 	}
 
 	private void openFile(AbstractMessage<?> msg) {
@@ -761,8 +785,9 @@ public class ComposeMessageFragment extends ListFragment implements
 	private static final int MENU_DECRYPT = 3;
 	private static final int MENU_OPEN = 4;
 	private static final int MENU_DOWNLOAD = 5;
-	private static final int MENU_DETAILS = 6;
-	private static final int MENU_DELETE = 7;
+	private static final int MENU_CANCEL_DOWNLOAD = 6;
+	private static final int MENU_DETAILS = 7;
+	private static final int MENU_DELETE = 8;
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
@@ -785,7 +810,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (msg instanceof ImageMessage) {
 			// we are able to view image if either we fetched the image or we
 			// sent that
-			int string;
+			int string, id;
 			// outgoing or already fetched
 			if (msg.getDirection() == Messages.DIRECTION_OUT || msg.isFetched())
 				menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN,
@@ -793,12 +818,19 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			// incoming
 			if (msg.getDirection() == Messages.DIRECTION_IN) {
-				// already fetched
-				if (msg.isFetched())
-					string = R.string.download_again;
-				else
-					string = R.string.download_file;
-				menu.add(CONTEXT_MENU_GROUP_ID, MENU_DOWNLOAD, MENU_DOWNLOAD, string);
+			    if (!DownloadService.isQueued(msg.getFetchUrl())) {
+    				// already fetched
+    				if (msg.isFetched())
+    					string = R.string.download_again;
+    				else
+    					string = R.string.download_file;
+    				id = MENU_DOWNLOAD;
+			    }
+			    else {
+			        string = R.string.download_cancel;
+			        id = MENU_CANCEL_DOWNLOAD;
+			    }
+                menu.add(CONTEXT_MENU_GROUP_ID, id, id, string);
 			}
 		}
 		else if (msg instanceof VCardMessage) {
@@ -876,6 +908,11 @@ public class ComposeMessageFragment extends ListFragment implements
 				startDownload(msg);
 				return true;
 			}
+
+            case MENU_CANCEL_DOWNLOAD: {
+                stopDownload(msg);
+                return true;
+            }
 
 			case MENU_DETAILS: {
 				CharSequence messageDetails = MessageUtils.getMessageDetails(

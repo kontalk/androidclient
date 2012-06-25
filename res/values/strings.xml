@@ -94,6 +94,7 @@
     <string name="download_file">Download file</string>
     <string name="download_again">Download again</string>
     <string name="download">Download</string>
+    <string name="download_cancel">Cancel download</string>
     <string name="last_seen_label">Last seen:\u0020</string>
     <string name="myself_label">Me</string>
     <string name="has_draft">Draft</string>

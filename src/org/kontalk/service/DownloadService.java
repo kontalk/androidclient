@@ -19,10 +19,12 @@
 package org.kontalk.service;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
 
 import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -53,17 +55,43 @@ import android.widget.RemoteViews;
  */
 public class DownloadService extends IntentService implements DownloadListener {
     private static final String TAG = DownloadService.class.getSimpleName();
+    /** A map to avoid duplicate downloads. */
+    private static final Map<String, String> queue = new LinkedHashMap<String, String>();
 
     public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
+    public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
 
+    // data about the download currently being processed
     private Notification mCurrentNotification;
     private long mTotalBytes;
 
     private String messageId;
     private ClientHTTPConnection mDownloadClient;
+    private boolean mCanceled;
 
     public DownloadService() {
         super(DownloadService.class.getSimpleName());
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
+            String url = intent.getData().toString();
+            String msgId = queue.get(url);
+            if (msgId != null) {
+                // interrupt worker if running
+                if (msgId.equals(messageId)) {
+                    mDownloadClient.abort();
+                    mCanceled = true;
+                }
+                // remove from queue - will never be processed
+                else
+                    queue.remove(url);
+            }
+            return START_NOT_STICKY;
+        }
+
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -71,14 +99,21 @@ public class DownloadService extends IntentService implements DownloadListener {
         // unknown action
         if (!ACTION_DOWNLOAD_URL.equals(intent.getAction())) return;
 
+        Uri uri = intent.getData();
+        String url = uri.toString();
+
+        // check if download has already been queued
+        if (queue.get(url) != null) return;
+
+        // notify user about download immediately
+        startForeground(0);
+        mCanceled = false;
+
         if (mDownloadClient == null) {
             EndpointServer server = MessagingPreferences.getEndpointServer(this);
             String token = Authenticator.getDefaultAccountToken(this);
             mDownloadClient = new ClientHTTPConnection(null, this, server, token);
         }
-
-        Uri uri = intent.getData();
-        messageId = intent.getStringExtra(AbstractMessage.MSG_ID);
 
         try {
             // check if external storage is available
@@ -91,15 +126,18 @@ public class DownloadService extends IntentService implements DownloadListener {
             // make sure storage directory is present
             MediaStorage.MEDIA_ROOT.mkdirs();
 
+            messageId = intent.getStringExtra(AbstractMessage.MSG_ID);
+            queue.put(url, messageId);
+
             // download content
-            // TEST for testing in emulator...
-            mDownloadClient.downloadAutofilename(
-                    uri.toString().replaceFirst("localhost", "10.0.2.2"),
-                    MediaStorage.MEDIA_ROOT, this);
-            //mDownloadClient.downloadAutofilename(uri.toString(), MediaStorage.MEDIA_ROOT, this);
+            mDownloadClient.downloadAutofilename(url, MediaStorage.MEDIA_ROOT, this);
         }
         catch (Exception e) {
-            error(uri.toString(), null, e);
+            error(url, null, e);
+        }
+        finally {
+            queue.remove(url);
+            messageId = null;
         }
     }
 
@@ -141,7 +179,6 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void completed(String url, String mime, File destination) {
-        Log.d(TAG, "download complete");
         stopForeground();
 
         Uri uri = Uri.fromFile(destination);
@@ -179,8 +216,9 @@ public class DownloadService extends IntentService implements DownloadListener {
     @Override
     public void error(String url, File destination, Throwable exc) {
         Log.e(TAG, "download error", exc);
-
-        errorNotification(getString(R.string.notify_ticker_download_error),
+        stopForeground();
+        if (!mCanceled)
+            errorNotification(getString(R.string.notify_ticker_download_error),
                 getString(R.string.notify_text_download_error));
     }
 
@@ -206,7 +244,6 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void progress(String url, File destination, long bytes) {
-        //Log.v(TAG, bytes + " bytes received");
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
@@ -218,4 +255,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         Thread.yield();
     }
 
+    public static boolean isQueued(String url) {
+        return queue.containsKey(url);
+    }
 }
