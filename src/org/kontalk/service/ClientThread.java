@@ -64,7 +64,7 @@ public class ClientThread extends Thread {
     private static final int MAX_IDLE_BACKOFF = 10;
 
     private final Context mContext;
-    private final EndpointServer mServer;
+    private EndpointServer mServer;
     private final Map<String, TxListener> mTxListeners;
     private final Map<String, TxListener> mHandlers;
     private ClientListener mClientListener;
@@ -248,6 +248,9 @@ public class ClientThread extends Thread {
                                 MessageCenterService.idleMessageCenter(mContext);
                             }
 
+                            // notify parent we are respawning
+                            mParent.childRespawning(0);
+
                             // exponential backoff :)
                             float time = (float) ((Math.pow(2, ++mRetryCount)) - 1) / 2;
                             Log.d(TAG, "retrying in " + time + " seconds (retry="+mRetryCount+")");
@@ -394,6 +397,11 @@ public class ClientThread extends Thread {
 
     public boolean isConnected() {
         return (mClient != null && mClient.isConnected());
+    }
+
+    /** Sets the server the next time we will connect to. */
+    public void setServer(EndpointServer server) {
+        mServer = server;
     }
 
     /** Shuts down this client thread gracefully. */

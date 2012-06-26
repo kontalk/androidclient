@@ -25,6 +25,7 @@ import java.util.Queue;
 
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
+import org.kontalk.ui.MessagingPreferences;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -98,6 +99,14 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     /** Client thread has terminated. */
     @Override
     public void childTerminated(int reason) {
+    }
+
+    /** Client thread is respawing. */
+    @Override
+    public void childRespawning(int reason) {
+        // change server to a random one
+        if (mClient != null)
+            mClient.setServer(MessagingPreferences.getEndpointServer(mContext));
     }
 
     @Override

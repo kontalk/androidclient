@@ -10,4 +10,7 @@ public interface ParentThread {
 
     /** Child thread has terminated. */
     public void childTerminated(int reason);
+
+    /** Child is going to respawn itself. */
+    public void childRespawning(int reason);
 }
