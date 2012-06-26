@@ -171,6 +171,7 @@ public class MessageListItem extends RelativeLayout {
         mTextView.setText(formattedMessage);
 
         int resId = -1;
+        int statusId = -1;
 
         mLockView.setVisibility((mMessage.wasEncrypted()) ? VISIBLE : GONE);
 
@@ -215,19 +216,24 @@ public class MessageListItem extends RelativeLayout {
                 // use pending icon even for errors
                 case Messages.STATUS_ERROR:
                     resId = R.drawable.ic_msg_pending;
+                    statusId = R.string.msg_status_sending;
                     break;
                 case Messages.STATUS_RECEIVED:
                     resId = R.drawable.ic_msg_delivered;
+                    statusId = R.string.msg_status_delivered;
                     break;
                 // here we use the error icon
                 case Messages.STATUS_NOTACCEPTED:
                     resId = R.drawable.ic_msg_error;
+                    statusId = R.string.msg_status_notaccepted;
                     break;
                 case Messages.STATUS_SENT:
                     resId = R.drawable.ic_msg_sent;
+                    statusId = R.string.msg_status_sent;
                     break;
                 case Messages.STATUS_NOTDELIVERED:
                     resId = R.drawable.ic_msg_notdelivered;
+                    statusId = R.string.msg_status_notdelivered;
                     break;
             }
         }
@@ -235,6 +241,7 @@ public class MessageListItem extends RelativeLayout {
         if (resId >= 0) {
             mStatusIcon.setImageResource(resId);
             mStatusIcon.setVisibility(VISIBLE);
+            mStatusIcon.setContentDescription(getResources().getString(statusId));
         }
         else {
             mStatusIcon.setImageDrawable(null);

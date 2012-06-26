@@ -1,12 +1,12 @@
+[ ] messages database upgrade testing
 [ ] background loading of contact avatars
-[ ] status icon displacement (conv list view)
+[ ] custom background: sampleSize hard-coded to 4
 [ ] duplicated messages - maybe it's because:
     * user sends a message while message center is up but still connecting
     * message will be marked as pending in database but could be also in pendingJobs queue
     * when message center finally connects and authenticates, it process pendingJobs queue *and* pending messages from database
-[ ] make IBinder from MessageCenterService a static class
 [ ] put encryption icon above message status icon
-[ ] custom background: sampleSize hard-coded to 4
-[ ] messages database upgrade testing
+[ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
+[x] status icon displacement (conv list view)
 [x] refactor validation UI

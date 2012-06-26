@@ -176,4 +176,11 @@
     <string name="pref_title_off_custom_background">Using default background</string>
     <string name="pref_title_on_custom_background">Pick a background using the option below</string>
     <string name="err_attachment_corrupted">Unable to download attachment. Message might be corrupted.</string>
+    <!-- message delivery status -->
+    <string name="msg_status_sending">Sending</string>
+    <string name="msg_status_sent">Sent</string>
+    <string name="msg_status_notaccepted">Refused</string>
+    <string name="msg_status_notdelivered">Not delivered</string>
+    <string name="msg_status_delivered">Delivered</string>
+    <string name="msg_status_encrypted">Encrypted</string>
 </resources>

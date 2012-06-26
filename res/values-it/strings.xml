@@ -176,4 +176,11 @@
     <string name="pref_title_off_custom_background">Sarà usato lo sfondo predefinito</string>
     <string name="pref_title_on_custom_background">Scegli uno sfondo usando l\'opzione di seguito</string>
     <string name="err_attachment_corrupted">Impossibile scaricare l\'allegato. Il messaggio potrebbe essere danneggiato.</string>
+    <!-- message delivery status -->
+    <string name="msg_status_sending">Invio in corso</string>
+    <string name="msg_status_sent">Inviato</string>
+    <string name="msg_status_notaccepted">Rifiutato</string>
+    <string name="msg_status_notdelivered">Non consegnato</string>
+    <string name="msg_status_delivered">Consegnato</string>
+    <string name="msg_status_encrypted">Cifrato</string>
 </resources>
