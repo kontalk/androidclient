@@ -1507,7 +1507,7 @@ public class ComposeMessageFragment extends ListFragment implements
 						"draft" + (new Random().nextInt()));
 				values.put(Messages.PEER, userId);
 				values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-				values.put(Messages.CONTENT, "");
+				values.put(Messages.CONTENT, new byte[0]);
 				values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
 				values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 				values.put(Threads.DRAFT, text.toString());
