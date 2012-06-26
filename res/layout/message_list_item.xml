@@ -55,8 +55,8 @@
 
             <ImageView
                 android:id="@+id/status_indicator"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_marginBottom="4dip"
                 android:adjustViewBounds="false"
                 android:visibility="gone" />
@@ -64,8 +64,8 @@
             <ImageView
                 android:id="@+id/lock_icon"
                 android:visibility="gone"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_marginBottom="4dip"
                 android:src="@drawable/ic_msg_crypt" />
 
