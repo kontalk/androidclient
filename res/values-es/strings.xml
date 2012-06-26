@@ -94,6 +94,7 @@
     <string name="download_file">Descargar archivo</string>
     <string name="download_again">Descargue de nuevo</string>
     <string name="download">Descargar</string>
+    <string name="download_cancel">Anular descarga</string>
     <string name="last_seen_label">Ultima vez:\u0020</string>
     <string name="myself_label">Me</string>
     <string name="has_draft">Borrador</string>
@@ -175,5 +176,12 @@
     <string name="pref_title_off_custom_background">Usar fondo predeterminado</string>
     <string name="pref_title_on_custom_background">Elige un fondo con la opción a continuación</string>
     <string name="err_attachment_corrupted">No se puede descargar archivo adjunto. Mensaje podría estar dañado.</string>
-
+    <!-- message delivery status -->
+    <string name="msg_status_sending">Envio en curso</string>
+    <string name="msg_status_sent">Enviado</string>
+    <string name="msg_status_notaccepted">Rechazado</string>
+    <string name="msg_status_notdelivered">No entregado</string>
+    <string name="msg_status_delivered">Entregado</string>
+    <string name="msg_status_error">Error</string>
+    <string name="msg_status_encrypted">Cifrado</string>
 </resources>
