@@ -43,6 +43,7 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -271,8 +272,11 @@ public class ComposeMessage extends FragmentActivity {
 
         if (mime.startsWith("*/") || mime.endsWith("/*")) {
             Uri uri = (Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
-            Log.d(TAG, "looking up mime type for uri " + uri);
+            Log.d(TAG, "looking up mime type for uri " + uri + " (invalid type: " + mime + ")");
             mime = getContentResolver().getType(uri);
+            if (mime == null)
+                mime = MimeTypeMap.getSingleton()
+                    .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()));
             Log.d(TAG, "using detected mime type " + mime);
         }
 
