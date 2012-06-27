@@ -179,4 +179,9 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
         return null;
     }
 
+    @Override
+    public void recycle() {
+        // TODO
+    }
+
 }

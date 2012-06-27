@@ -86,4 +86,9 @@ public class UserPresenceMessage extends AbstractMessage<UserPresenceData> {
         return MIME_TYPE.equalsIgnoreCase(mime);
     }
 
+    @Override
+    public void recycle() {
+        // TODO
+    }
+
 }

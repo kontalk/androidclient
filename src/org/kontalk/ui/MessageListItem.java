@@ -320,7 +320,8 @@ public class MessageListItem extends RelativeLayout {
     }
 
     public final void unbind() {
-        // TODO unbind (contact?)
+        mMessage.recycle();
+        mMessage = null;
     }
 
     public AbstractMessage<?> getMessage() {

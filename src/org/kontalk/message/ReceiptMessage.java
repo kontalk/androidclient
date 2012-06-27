@@ -88,4 +88,9 @@ public final class ReceiptMessage extends AbstractMessage<ReceiptEntryList> {
         return MIME_TYPE.equalsIgnoreCase(mime);
     }
 
+    @Override
+    public void recycle() {
+        // TODO
+    }
+
 }

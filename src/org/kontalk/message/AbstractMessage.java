@@ -407,11 +407,35 @@ public abstract class AbstractMessage<T> {
         // TODO groups??
     }
 
+    /** Clears all local fields for recycle. */
+    protected void clear() {
+        // clear all fields
+        mContext = null;
+        databaseId = 0;
+        id = null;
+        realId = null;
+        sender = null;
+        mime = null;
+        content = null;
+        timestamp = 0;
+        serverTimestamp = null;
+        rawServerTimestamp = null;
+        statusChanged = 0;
+        status = 0;
+        fetched = false;
+        encrypted = false;
+        encryptKey = null;
+        needAck = false;
+    }
+
+    /** Release this message for later use in global pool. */
+    public abstract void recycle();
+
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
         String mime = cursor.getString(COLUMN_MIME);
 
         if (PlainTextMessage.supportsMimeType(mime)) {
-            PlainTextMessage msg = new PlainTextMessage(context);
+            PlainTextMessage msg = PlainTextMessage.obtain(context);
             msg.populateFromCursor(cursor);
             return msg;
         }

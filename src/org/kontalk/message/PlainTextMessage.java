@@ -26,6 +26,7 @@ import org.kontalk.crypto.Coder;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Message;
 
 import com.google.protobuf.ByteString;
 
@@ -38,6 +39,16 @@ import com.google.protobuf.ByteString;
  */
 public class PlainTextMessage extends AbstractMessage<ByteString> {
     //private static final String TAG = PlainTextMessage.class.getSimpleName();
+
+    private static final Object sPoolSync = new Object();
+    private static PlainTextMessage sPool;
+    private static int sPoolSize = 0;
+
+    /** Global pool max size. */
+    private static final int MAX_POOL_SIZE = 10;
+
+    /** Used for pooling. */
+    protected PlainTextMessage next;
 
     public static final String MIME_TYPE = "text/plain";
 
@@ -82,6 +93,36 @@ public class PlainTextMessage extends AbstractMessage<ByteString> {
 
     public static boolean supportsMimeType(String mime) {
         return MIME_TYPE.equalsIgnoreCase(mime);
+    }
+
+    public void recycle() {
+        clear();
+
+        synchronized (sPoolSync) {
+            if (sPoolSize < MAX_POOL_SIZE) {
+                next = sPool;
+                sPool = this;
+                sPoolSize++;
+            }
+        }
+    }
+
+    /**
+     * Return a new Message instance from the global pool. Allows us to
+     * avoid allocating new objects in many cases. Inspired by {@link Message}.
+     */
+    public static PlainTextMessage obtain(Context context) {
+        synchronized (sPoolSync) {
+            if (sPool != null) {
+                PlainTextMessage m = sPool;
+                sPool = m.next;
+                m.next = null;
+                sPoolSize--;
+                m.mContext = context;
+                return m;
+            }
+        }
+        return new PlainTextMessage(context);
     }
 
 }

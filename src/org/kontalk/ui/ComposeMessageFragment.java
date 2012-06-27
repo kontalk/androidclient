@@ -102,6 +102,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView.RecyclerListener;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -200,6 +201,15 @@ public class ComposeMessageFragment extends ListFragment implements
 		    list.setCacheColorHint(Color.TRANSPARENT);
 		    list.setBackgroundDrawable(bg);
 		}
+
+		// setup items recycler
+		list.setRecyclerListener(new RecyclerListener() {
+            public void onMovedToScrapHeap(View view) {
+                if (view instanceof MessageListItem) {
+                    ((MessageListItem) view).unbind();
+                }
+            }
+        });
 
 		mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
 		mTextEntry.addTextChangedListener(new TextWatcher() {

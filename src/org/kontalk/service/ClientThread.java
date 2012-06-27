@@ -327,6 +327,7 @@ public class ClientThread extends Thread {
 
         // plain text message
         if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
+            // TODO convert to global pool
             msg = new PlainTextMessage(mContext, id, timestamp, from, content, encrypted, group);
         }
 
