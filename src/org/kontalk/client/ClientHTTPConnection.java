@@ -76,6 +76,7 @@ public class ClientHTTPConnection {
             final Context context, final MessageSender job, final RequestListener listener)
                 throws IOException {
 
+        HttpResponse response = null;
         try {
             AssetFileDescriptor stat = context.getContentResolver().openAssetFileDescriptor(uri, "r");
             long length = stat.getLength();
@@ -102,7 +103,7 @@ public class ClientHTTPConnection {
 
             // http request!
             currentRequest = prepareMessage(job, listener, mAuthToken, group, mime, toMessage, toLength, encrypted);
-            HttpResponse response = execute(currentRequest);
+            response = execute(currentRequest);
             return FileUploadResponse.parseFrom(response.getEntity().getContent());
         }
         catch (Exception e) {
@@ -110,6 +111,12 @@ public class ClientHTTPConnection {
         }
         finally {
             currentRequest = null;
+            try {
+                response.getEntity().consumeContent();
+            }
+            catch (Exception e) {
+                // ignore
+            }
         }
     }
 
@@ -288,7 +295,10 @@ public class ClientHTTPConnection {
 
         Log.e(TAG, "invalid response: " + code);
         HttpEntity entity = response.getEntity();
-        Log.e(TAG, EntityUtils.toString(entity));
+        if (entity != null) {
+            Log.e(TAG, EntityUtils.toString(entity));
+            entity.consumeContent();
+        }
         listener.error(url, null, new IOException("invalid response: " + code));
     }
 

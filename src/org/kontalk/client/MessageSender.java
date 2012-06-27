@@ -184,8 +184,8 @@ public class MessageSender extends RequestJob {
                 }
             }
 
-            // TODO shall we notify something went wrong?
-            return null;
+            // no response or non-success status
+            throw new IOException("upload failed");
         }
 
     }
