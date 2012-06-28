@@ -450,10 +450,10 @@ public class MessageCenterService extends Service
             ServerInfoResponse res = (ServerInfoResponse) pack;
             for (int i = 0; i < res.getSupportsCount(); i++) {
                 String data = res.getSupports(i);
-                if (data.startsWith("google_c2dm=")) {
-                    mPushEmail = data.substring("google_c2dm=".length());
+                if (data.startsWith("google_gcm=")) {
+                    mPushEmail = data.substring("google_gcm=".length());
                     if (mPushNotifications)
-                        c2dmRegister();
+                        gcmRegister();
                 }
             }
 
@@ -837,14 +837,14 @@ public class MessageCenterService extends Service
         mPushNotifications = enabled;
         if (mPushNotifications) {
             if (mPushRegistrationId == null)
-                c2dmRegister();
+                gcmRegister();
         }
         else {
-            c2dmUnregister();
+            gcmUnregister();
         }
     }
 
-    private void c2dmRegister() {
+    private void gcmRegister() {
         if (mPushEmail != null) {
             // e-mail of sender will be given by serverinfo if any
             Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
@@ -854,7 +854,7 @@ public class MessageCenterService extends Service
         }
     }
 
-    private void c2dmUnregister() {
+    private void gcmUnregister() {
         Intent unregIntent = new Intent("com.google.android.c2dm.intent.UNREGISTER");
         unregIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
         startService(unregIntent);
