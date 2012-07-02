@@ -263,7 +263,11 @@ public class MessagesProvider extends ContentProvider {
             // rename threads_new to threads
             "ALTER TABLE " + TABLE_THREADS + "_new RENAME TO " + TABLE_THREADS,
             // unique message index
-            SCHEMA_MESSAGES_INDEX
+            SCHEMA_MESSAGES_INDEX,
+            // triggers
+            TRIGGER_THREADS_INSERT_COUNT,
+            TRIGGER_THREADS_UPDATE_COUNT,
+            TRIGGER_THREADS_DELETE_COUNT
         };
 
 
