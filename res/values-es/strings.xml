@@ -176,6 +176,9 @@
     <string name="pref_title_off_custom_background">Usar fondo predeterminado</string>
     <string name="pref_title_on_custom_background">Elige un fondo con la opción a continuación</string>
     <string name="err_attachment_corrupted">No se puede descargar archivo adjunto. Mensaje podría estar dañado.</string>
+    <string name="serverlist_updating">Actualizando lista servidores&#8230;</string>
+    <string name="serverlist_update_error">No se puede descargar la lista de servidores. Por favor, inténtelo más tarde.</string>
+    <string name="serverlist_update_nodata">No hay ninguna lista de servidores disponible.</string>
     <!-- message delivery status -->
     <string name="msg_status_sending">Envio en curso</string>
     <string name="msg_status_sent">Enviado</string>

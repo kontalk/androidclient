@@ -119,12 +119,11 @@ public class MessagingPreferences extends PreferenceActivity {
         updateServerList.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Log.w(TAG, "updating server list");
                 final ServerListUpdater updater = new ServerListUpdater(MessagingPreferences.this);
 
                 final ProgressDialog diag = new ProgressDialog(MessagingPreferences.this);
                 diag.setCancelable(true);
-                diag.setMessage("Updating server list...");
+                diag.setMessage(getString(R.string.serverlist_updating));
                 diag.setIndeterminate(true);
                 diag.setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
@@ -140,7 +139,7 @@ public class MessagingPreferences extends PreferenceActivity {
                         MessagingPreferences.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(MessagingPreferences.this, "Unable to download server list. Please retry later.",
+                                Toast.makeText(MessagingPreferences.this, R.string.serverlist_update_error,
                                         Toast.LENGTH_LONG).show();
                             }
                         });
@@ -152,7 +151,7 @@ public class MessagingPreferences extends PreferenceActivity {
                         MessagingPreferences.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(MessagingPreferences.this, "No available server list found.",
+                                Toast.makeText(MessagingPreferences.this, R.string.serverlist_update_nodata,
                                         Toast.LENGTH_LONG).show();
                             }
                         });
