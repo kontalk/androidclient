@@ -1,4 +1,3 @@
-[ ] messages database upgrade testing
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
 [ ] duplicated messages - maybe it's because:
@@ -8,5 +7,6 @@
 [ ] put encryption icon above message status icon
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
+[x] messages database upgrade testing
 [x] status icon displacement (conv list view)
 [x] refactor validation UI
