@@ -317,6 +317,15 @@ public class UsersProvider extends ContentProvider {
         throw new SQLException("manual delete from users table not supported.");
     }
 
+    /** Marks a user as registered. */
+    public static void markRegistered(Context context, String userId) {
+        ContentValues values = new ContentValues(1);
+        values.put(Users.REGISTERED, 1);
+        // TODO Uri.withAppendedPath(Users.CONTENT_URI, msg.getSender(true))
+        context.getContentResolver().update(Users.CONTENT_URI, values,
+            Users.HASH + "=?", new String[] { userId });
+    }
+
     /* Transactions compatibility layer */
 
     @TargetApi(11)

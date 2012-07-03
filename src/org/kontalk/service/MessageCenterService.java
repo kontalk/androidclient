@@ -597,6 +597,15 @@ public class MessageCenterService extends Service
             }
         }
 
+        // mark sender as registered in the users database
+        final String userId = msg.getSender(true);
+        final Context context = getApplicationContext();
+        new Thread(new Runnable() {
+            public void run() {
+                UsersProvider.markRegistered(context, userId);
+            }
+        }).start();
+
         // broadcast message
         broadcastMessage(msg);
 
