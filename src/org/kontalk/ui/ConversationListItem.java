@@ -170,7 +170,7 @@ public class ConversationListItem extends RelativeLayout {
 
         // no matching resource or draft - hide status icon
         if (resId < 0 || mConversation.getDraft() != null) {
-            mErrorIndicator.setVisibility(INVISIBLE);
+            mErrorIndicator.setVisibility(GONE);
         }
         else {
             mErrorIndicator.setVisibility(VISIBLE);
