@@ -146,7 +146,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         }
         final AccountManager am = AccountManager.get(mContext);
         final String password = am.getPassword(account);
-        if (password != null) {
+        if (password != null && password.length() > 0) {
             // exposing sensitive data - Log.v(TAG, "returning configured password: " + password);
             final Bundle result = new Bundle();
             result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
