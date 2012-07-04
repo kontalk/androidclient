@@ -413,7 +413,9 @@ public class MessageCenterService extends Service
     }
 
     @Override
-    public void connected(ClientThread client) {
+    public synchronized void connected(ClientThread client) {
+        // reset received messages accumulator
+        mReceivedJob = null;
         // request serverinfo
         requestServerinfo();
         // update status message
