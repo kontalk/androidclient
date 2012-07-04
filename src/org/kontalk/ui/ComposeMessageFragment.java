@@ -46,6 +46,7 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.DownloadService;
@@ -1340,6 +1341,24 @@ public class ComposeMessageFragment extends ListFragment implements
                             text = getResources().getString(R.string.last_seen_label) +
                                     getResources().getString(R.string.seen_moment_ago_label);
                         }
+                    }
+
+                    // update UsersProvider if necessary
+                    ContentValues values = null;
+                    if (res.hasTimestamp()) {
+                        values = new ContentValues(2);
+                        values.put(Users.LAST_SEEN, res.getTimestamp());
+                    }
+                    if (res.hasStatus()) {
+                        if (values == null)
+                            values = new ContentValues(1);
+                        values.put(Users.STATUS, res.getStatus());
+                    }
+
+                    if (values != null) {
+                        getActivity().getContentResolver().update(
+                            Users.CONTENT_URI, values,
+                            Users.HASH + "=?", new String[] { userId });
                     }
 
                     if (text == null && res.hasTimestamp()) {

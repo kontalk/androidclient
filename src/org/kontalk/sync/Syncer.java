@@ -317,7 +317,7 @@ public class Syncer {
                     return;
                 }
 
-                ContentValues registeredValues = new ContentValues(2);
+                ContentValues registeredValues = new ContentValues(3);
                 registeredValues.put(Users.REGISTERED, 1);
                 for (int i = 0; i < res.getEntryCount(); i++) {
                     UserLookupResponse.Entry entry = res.getEntry(i);
@@ -333,12 +333,17 @@ public class Syncer {
                     else {
                         syncResult.stats.numSkippedEntries++;
                     }
-                    // update registered and status
+                    // update fields
                     try {
                         if (entry.hasStatus())
                             registeredValues.put(Users.STATUS, entry.getStatus());
                         else
                             registeredValues.remove(Users.STATUS);
+                        if (entry.hasTimestamp())
+                            registeredValues.put(Users.LAST_SEEN, entry.getTimestamp());
+                        else
+                            registeredValues.remove(Users.LAST_SEEN);
+
                         usersProvider.update(offlineUri, registeredValues,
                             Users.HASH + " = ?", new String[] { data.hash });
                     }
