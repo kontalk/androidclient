@@ -326,12 +326,17 @@ public class UsersProvider extends ContentProvider {
         throw new SQLException("manual delete from users table not supported.");
     }
 
+    // avoid recreating the same object over and over
+    private static ContentValues registeredValues;
+
     /** Marks a user as registered. */
     public static void markRegistered(Context context, String userId) {
-        ContentValues values = new ContentValues(1);
-        values.put(Users.REGISTERED, 1);
+        if (registeredValues == null) {
+            registeredValues = new ContentValues(1);
+            registeredValues.put(Users.REGISTERED, 1);
+        }
         // TODO Uri.withAppendedPath(Users.CONTENT_URI, msg.getSender(true))
-        context.getContentResolver().update(Users.CONTENT_URI, values,
+        context.getContentResolver().update(Users.CONTENT_URI, registeredValues,
             Users.HASH + "=?", new String[] { userId });
     }
 
