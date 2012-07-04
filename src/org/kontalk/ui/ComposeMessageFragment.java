@@ -148,6 +148,12 @@ public class ComposeMessageFragment extends ListFragment implements
 	private String userPhone;
 
 	private PeerObserver mPeerObserver;
+    private Handler mHandler;
+
+    /** Current banner text. */
+    private String mCurrentBanner;
+    /** Next banner text. */
+    private String mNextBanner;
 
 	private LocalBroadcastManager mLocalBroadcastManager;
     private UserPresenceBroadcastReceiver mPresenceReceiver;
@@ -376,6 +382,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		setHasOptionsMenu(true);
 		mQueryHandler = new MessageListQueryHandler();
+		mHandler = new Handler();
 
 		// list adapter creation is post-poned
 	}
@@ -1263,7 +1270,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 if (text != null) {
                     final String bannerText = text;
                     try {
-                        showLastSeen(bannerText);
+                        setStatusText(bannerText);
                     }
                     catch (Exception e) {
                         // something could happen in the mean time - e.g. fragment destruction
@@ -1328,68 +1335,78 @@ public class ComposeMessageFragment extends ListFragment implements
 	        if (_pack.getEntryCount() > 0) {
 	            UserLookupResponse.Entry res = _pack.getEntry(0);
                 String text = null;
-                // TODO String text2 = null;
                 try {
                     Activity context = getActivity();
-
-                    if (res.hasTimediff()) {
-                        long diff = res.getTimediff();
-                        if (diff == 0) {
-                            text = getResources().getString(R.string.seen_online_label);
+                    if (context != null) {
+                        if (res.hasTimediff()) {
+                            long diff = res.getTimediff();
+                            if (diff == 0) {
+                                text = getResources().getString(R.string.seen_online_label);
+                            }
+                            else if (diff <= 10) {
+                                text = getResources().getString(R.string.last_seen_label) +
+                                        getResources().getString(R.string.seen_moment_ago_label);
+                            }
                         }
-                        else if (diff <= 10) {
-                            text = getResources().getString(R.string.last_seen_label) +
-                                    getResources().getString(R.string.seen_moment_ago_label);
+
+                        String afterText = null;
+
+                        // update UsersProvider if necessary
+                        ContentValues values = null;
+                        if (res.hasTimestamp()) {
+                            values = new ContentValues(2);
+                            values.put(Users.LAST_SEEN, res.getTimestamp());
                         }
-                    }
-
-                    // update UsersProvider if necessary
-                    ContentValues values = null;
-                    if (res.hasTimestamp()) {
-                        values = new ContentValues(2);
-                        values.put(Users.LAST_SEEN, res.getTimestamp());
-                    }
-                    if (res.hasStatus()) {
-                        if (values == null)
-                            values = new ContentValues(1);
-                        values.put(Users.STATUS, res.getStatus());
-                    }
-
-                    if (values != null) {
-                        getActivity().getContentResolver().update(
-                            Users.CONTENT_URI, values,
-                            Users.HASH + "=?", new String[] { userId });
-                    }
-
-                    if (text == null && res.hasTimestamp()) {
-                        long time = res.getTimestamp();
-                        if (time > 0) {
-                            text = getResources().getString(R.string.last_seen_label) +
-                                    MessageUtils.formatRelativeTimeSpan(context, time * 1000);
+                        if (res.hasStatus()) {
+                            if (values == null)
+                                values = new ContentValues(1);
+                            afterText = res.getStatus();
+                            values.put(Users.STATUS, afterText);
                         }
-                    }
 
-                    /* TODO where to display status text??
-                    if (res.hasStatus()) {
-                        text2 = res.getStatus();
-                    }
-                    */
+                        if (values != null) {
+                            context.getContentResolver().update(
+                                Users.CONTENT_URI, values,
+                                Users.HASH + "=?", new String[] { userId });
+                        }
 
-                    if (text != null) {
-                        final String bannerText = text;
-                        // show last seen banner
-                        if (context != null) {
+                        if (text == null && res.hasTimestamp()) {
+                            long time = res.getTimestamp();
+                            if (time > 0) {
+                                text = getResources().getString(R.string.last_seen_label) +
+                                        MessageUtils.formatRelativeTimeSpan(context, time * 1000);
+                            }
+                        }
+
+                        if (text != null) {
+                            mCurrentBanner = text;
+                            // show last seen banner
                             context.runOnUiThread(new Runnable() {
-                                @Override
                                 public void run() {
                                     try {
-                                        showLastSeen(bannerText);
+                                        setStatusText(mCurrentBanner);
                                     }
                                     catch (Exception e) {
                                         // something could happen in the meanwhile e.g. fragment destruction
                                     }
                                 }
                             });
+                            if (afterText != null) {
+                                mNextBanner = afterText;
+                                mHandler.postDelayed(new Runnable() {
+                                    public void run() {
+                                        try {
+                                            String temp = mCurrentBanner;
+                                            mCurrentBanner = mNextBanner;
+                                            mNextBanner = temp;
+                                            setStatusText(mCurrentBanner);
+                                        }
+                                        catch (Exception e) {
+                                            // something could happen in the meanwhile e.g. fragment destruction
+                                        }
+                                    }
+                                }, 5000);
+                            }
                         }
                     }
                 }
@@ -1403,7 +1420,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	    return false;
 	}
 
-	private void showLastSeen(String text) {
+	private void setStatusText(String text) {
         setActivityTitle(null, text, null);
 	}
 
@@ -1681,4 +1698,16 @@ public class ComposeMessageFragment extends ListFragment implements
 		// this seems to be necessary...
 		return false;
 	}
+
+	/** Switches current banner with next banner. */
+    public void switchBanner() {
+        if (mNextBanner != null) {
+            String temp = mCurrentBanner;
+            mCurrentBanner = mNextBanner;
+            mNextBanner = temp;
+            setStatusText(mCurrentBanner);
+            // cancel auto-change
+            mHandler.removeCallbacksAndMessages(null);
+        }
+    }
 }

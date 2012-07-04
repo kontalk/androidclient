@@ -42,6 +42,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
@@ -93,6 +94,16 @@ public class ComposeMessage extends FragmentActivity {
             mTitleText = (TextView) findViewById(android.R.id.title);
             mStatusText = (TextView) findViewById(R.id.status);
             mAvatar = (ImageView) findViewById(R.id.avatar);
+
+            OnClickListener onclick = new OnClickListener() {
+                public void onClick(View v) {
+                    if (mFragment != null) {
+                        mFragment.switchBanner();
+                    }
+                }
+            };
+            mTitleText.setOnClickListener(onclick);
+            mStatusText.setOnClickListener(onclick);
         }
 
         // load the fragment
