@@ -427,7 +427,7 @@ public class MessageCenterService extends Service
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
         // TODO default tx listener
         Log.v(TAG, "tx=" + txId + ", pack=" + pack);
-        // TEST
+        /* TEST
         if (pack instanceof MessageAckResponse) {
             MessageAckResponse res = (MessageAckResponse) pack;
             int c = res.getEntryCount();
@@ -436,6 +436,7 @@ public class MessageCenterService extends Service
                 Log.v(TAG, "ack[msgid=" + e.getMessageId() + ", status=" + e.getStatus().getNumber() + "]");
             }
         }
+        */
         return true;
     }
 
