@@ -2,8 +2,10 @@
 [ ] still problems with uploads: during a gsm call, upload is somewhat "paused"
     and never resumed, unless message center is restarted, triggering a new upload
 [ ] display status text somewhere
+[ ] image sending: user can choose to compress/scale down before sending it
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
+    (actually we should save a sample on our own and load it instead)
 [ ] duplicated messages - maybe it's because:
     * user sends a message while message center is up but still connecting
     * message will be marked as pending in database but could be also in pendingJobs queue

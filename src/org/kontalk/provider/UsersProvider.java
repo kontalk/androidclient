@@ -48,7 +48,7 @@ public class UsersProvider extends ContentProvider {
     private static final String TAG = UsersProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.users";
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -69,6 +69,7 @@ public class UsersProvider extends ContentProvider {
             "lookup_key TEXT," +
             "contact_id INTEGER," +
             "registered INTEGER NOT NULL DEFAULT 0," +
+            "status TEXT," +
             "last_seen INTEGER" +
             ")";
 
@@ -83,6 +84,10 @@ public class UsersProvider extends ContentProvider {
         private static final String[] SCHEMA_V1_TO_V2 = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
             SCHEMA_USERS
+        };
+        // version 3 - add status column
+        private static final String[] SCHEMA_V2_TO_V3 = {
+            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN status TEXT"
         };
 
         private Context mContext;
@@ -109,6 +114,10 @@ public class UsersProvider extends ContentProvider {
                 for (String sql : SCHEMA_V1_TO_V2)
                     db.execSQL(sql);
                 mNew = true;
+            }
+            else if (oldVersion == 2) {
+                for (String sql : SCHEMA_V2_TO_V3)
+                    db.execSQL(sql);
             }
         }
 
@@ -363,6 +372,7 @@ public class UsersProvider extends ContentProvider {
         usersProjectionMap.put(Users.LOOKUP_KEY, Users.LOOKUP_KEY);
         usersProjectionMap.put(Users.CONTACT_ID, Users.CONTACT_ID);
         usersProjectionMap.put(Users.REGISTERED, Users.REGISTERED);
+        usersProjectionMap.put(Users.STATUS, Users.STATUS);
         usersProjectionMap.put(Users.LAST_SEEN, Users.LAST_SEEN);
     }
 

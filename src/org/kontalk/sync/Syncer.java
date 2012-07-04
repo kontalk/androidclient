@@ -317,7 +317,7 @@ public class Syncer {
                     return;
                 }
 
-                ContentValues registeredValues = new ContentValues(1);
+                ContentValues registeredValues = new ContentValues(2);
                 registeredValues.put(Users.REGISTERED, 1);
                 for (int i = 0; i < res.getEntryCount(); i++) {
                     UserLookupResponse.Entry entry = res.getEntry(i);
@@ -328,19 +328,23 @@ public class Syncer {
                         addContact(account,
                                 getDisplayName(provider, data.lookupKey, data.number),
                                 data.number, data.hash, -1, operations, op);
-                        // update registered status
-                        try {
-                            usersProvider.update(offlineUri, registeredValues,
-                                Users.HASH + " = ?", new String[] { data.hash });
-                        }
-                        catch (RemoteException e) {
-                            Log.e(TAG, "error updating users database", e);
-                            // we shall continue here...
-                        }
                         op++;
                     }
                     else {
                         syncResult.stats.numSkippedEntries++;
+                    }
+                    // update registered and status
+                    try {
+                        if (entry.hasStatus())
+                            registeredValues.put(Users.STATUS, entry.getStatus());
+                        else
+                            registeredValues.remove(Users.STATUS);
+                        usersProvider.update(offlineUri, registeredValues,
+                            Users.HASH + " = ?", new String[] { data.hash });
+                    }
+                    catch (RemoteException e) {
+                        Log.e(TAG, "error updating users database", e);
+                        // we shall continue here...
                     }
                 }
 

@@ -38,6 +38,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.AuthenticateResponse;
+import org.kontalk.client.Protocol.MessageAckResponse;
 import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.Protocol.UserInfoUpdateRequest;
 import org.kontalk.client.ReceivedJob;
@@ -426,6 +427,15 @@ public class MessageCenterService extends Service
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
         // TODO default tx listener
         Log.v(TAG, "tx=" + txId + ", pack=" + pack);
+        // TEST
+        if (pack instanceof MessageAckResponse) {
+            MessageAckResponse res = (MessageAckResponse) pack;
+            int c = res.getEntryCount();
+            for (int i = 0; i < c; i++) {
+                MessageAckResponse.Entry e = res.getEntry(i);
+                Log.v(TAG, "ack[msgid=" + e.getMessageId() + ", status=" + e.getStatus().getNumber() + "]");
+            }
+        }
         return true;
     }
 

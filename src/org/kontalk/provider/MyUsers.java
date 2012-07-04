@@ -40,6 +40,7 @@ public class MyUsers {
         public static final String LOOKUP_KEY = "lookup_key";
         public static final String CONTACT_ID = "contact_id";
         public static final String REGISTERED = "registered";
+        public static final String STATUS = "status";
         public static final String LAST_SEEN = "last_seen";
 
         // uri parameter for update: triggers a complete resync
