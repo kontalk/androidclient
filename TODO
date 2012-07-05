@@ -1,5 +1,4 @@
 [ ] empty token O.o
-[ ] returning from contact picker list opens an empty ComposeMessage activity
 [ ] (plural) list -> (singular) list (??)
 [ ] use cached last seen/status if network error
 [ ] HTTP (over SSL) connection support
@@ -12,4 +11,5 @@
 [ ] put encryption icon above message status icon
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
+[x] returning from contact picker list opens an empty ComposeMessage activity
 [x] conversation list always scrolling down onResume

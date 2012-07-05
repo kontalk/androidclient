@@ -224,6 +224,10 @@ public class ComposeMessage extends FragmentActivity {
                     }
                 }
             }
+            else {
+                // no contact chosen or other problems - quit
+                finish();
+            }
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
