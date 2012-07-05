@@ -1,6 +1,7 @@
 [ ] empty token O.o
 [ ] non-blocking contact list refresh
 [ ] contact list refresh locks on network absence/message center not running
+    (maybe we should always do monitored sync)
 [ ] (plural) list -> (singular) list (??)
 [ ] use cached last seen/status if network error
 [ ] HTTP (over SSL) connection support
@@ -10,6 +11,7 @@
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
+[ ] quick voice messages
 [ ] put encryption icon above message status icon
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
