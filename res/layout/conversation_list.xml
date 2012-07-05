@@ -27,7 +27,7 @@
         android:drawSelectorOnTop="false"
         android:scrollbarStyle="insideOverlay"
         android:cacheColorHint="@android:color/white"
-        android:transcriptMode="normal"
+        android:transcriptMode="disabled"
         android:fadingEdgeLength="16dip">
         <!-- Preview: listitem=@layout/conversation_list_item -->
     </ListView>
