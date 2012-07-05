@@ -1,4 +1,6 @@
 [ ] empty token O.o
+[ ] non-blocking contact list refresh
+[ ] contact list refresh locks on network absence/message center not running
 [ ] (plural) list -> (singular) list (??)
 [ ] use cached last seen/status if network error
 [ ] HTTP (over SSL) connection support
