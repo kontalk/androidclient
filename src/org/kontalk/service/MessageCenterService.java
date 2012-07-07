@@ -740,7 +740,7 @@ public class MessageCenterService extends Service
     }
 
     /** Checks for network availability. */
-    private static boolean isNetworkConnectionAvailable(Context context) {
+    public static boolean isNetworkConnectionAvailable(Context context) {
         final ConnectivityManager cm = (ConnectivityManager) context
             .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm.getBackgroundDataSetting()) {

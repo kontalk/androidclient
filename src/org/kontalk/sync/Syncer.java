@@ -234,7 +234,10 @@ public class Syncer {
         }
 
         while (cursor.moveToNext()) {
-            if (mCanceled) throw new OperationCanceledException();
+            if (mCanceled) {
+                cursor.close();
+                throw new OperationCanceledException();
+            }
 
             String hash = cursor.getString(0);
             String number = cursor.getString(1);

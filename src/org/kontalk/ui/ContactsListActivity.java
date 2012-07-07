@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
@@ -34,7 +35,9 @@ import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,7 +51,24 @@ public class ContactsListActivity extends ListActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Kontalk.customUI()) {
+            requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        }
+        else {
+            requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        }
+
         setContentView(R.layout.contacts_list);
+
+        if (Kontalk.customUI()) {
+            getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.contacts_list_title_bar);
+            ((TextView)findViewById(android.R.id.title)).setText(getTitle());
+        }
+        else {
+            setProgressBarIndeterminate(true);
+        }
+
         TextView text = (TextView) findViewById(android.R.id.empty);
         text.setText(Html.fromHtml(getString(R.string.text_contacts_empty)));
 
@@ -71,6 +91,17 @@ public class ContactsListActivity extends ListActivity
     @Override
     protected void onStop() {
         super.onStop();
+        mListAdapter.changeCursor(null);
+        try {
+            // make sure the cursor is really closed
+            mCursor.close();
+        }
+        catch (Exception e) {
+            // ignored
+        }
+
+        // cancel any ongoing sync
+        SyncerUI.cancel();
         // release message center
         MessageCenterService.releaseMessageCenter(this);
     }
@@ -120,25 +151,41 @@ public class ContactsListActivity extends ListActivity
         finish();
     }
 
-    private void startSync() {
-        Runnable action = new Runnable() {
-            public void run() {
-                startQuery();
+    private void _setProgressBarIndeterminateVisibility(boolean visible) {
+        if (Kontalk.customUI()) {
+            ProgressBar bar = (ProgressBar) findViewById(R.id.title_progress);
+            if (visible) {
+                bar.setVisibility(View.VISIBLE);
             }
-        };
+            else {
+                bar.setVisibility(View.GONE);
+            }
+        }
+        else {
+            setProgressBarIndeterminateVisibility(visible);
+        }
+    }
 
-        SyncerUI.execute(this, action, true);
+    private void startSync() {
+        if (MessageCenterService.isNetworkConnectionAvailable(this)) {
+            Runnable action = new Runnable() {
+                public void run() {
+                    startQuery();
+                    _setProgressBarIndeterminateVisibility(false);
+                }
+            };
+
+            _setProgressBarIndeterminateVisibility(true);
+            SyncerUI.execute(this, action, false);
+        }
+        else {
+            // TODO i18n
+            Toast.makeText(this, "Network not available. Please retry later.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void startQuery() {
-        // destroy previous cursor
-        if (mCursor != null) {
-            stopManagingCursor(mCursor);
-            mCursor.close();
-        }
-
         mCursor = Contact.queryContacts(this);
-        startManagingCursor(mCursor);
         mListAdapter.changeCursor(mCursor);
     }
 

@@ -1,7 +1,7 @@
+[ ] contacts list: still cursor leak :S
+[ ] sync: retain old thread and change referenced context when rotated :)
+[ ] sync: invalid country code while in offline mode
 [ ] empty token O.o
-[ ] non-blocking contact list refresh
-[ ] contact list refresh locks on network absence/message center not running
-    (maybe we should always do monitored sync)
 [ ] (plural) list -> (singular) list (??)
 [ ] use cached last seen/status if network error
 [ ] HTTP (over SSL) connection support
@@ -15,5 +15,6 @@
 [ ] put encryption icon above message status icon
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
+[x] non-blocking contact list refresh
 [x] returning from contact picker list opens an empty ComposeMessage activity
 [x] conversation list always scrolling down onResume

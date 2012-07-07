@@ -22,6 +22,7 @@ import android.util.Log;
 
 public abstract class SyncerUI {
     private static final String TAG = SyncerUI.class.getSimpleName();
+    private static AsyncTask<Syncer, Integer, Boolean> currentSyncer;
 
     public static void execute(Activity context, Runnable finish, boolean dialog) {
         if (Authenticator.getDefaultAccount(context) == null) {
@@ -29,16 +30,32 @@ public abstract class SyncerUI {
             return;
         }
 
-        if (Syncer.getInstance() == null) {
-            // start monitored sync
-            Log.v(TAG, "starting monitored sync");
-            new SyncerUI.SyncTask(context, finish, dialog).execute(Syncer.getInstance(context));
+        // another ongoing operation - replace finish runnable
+        if (currentSyncer != null) {
+            if (currentSyncer instanceof SyncTask) {
+                ((SyncTask) currentSyncer).setFinish(finish);
+            }
+            else {
+                ((SyncMonitorTask) currentSyncer).setFinish(finish);
+            }
         }
         else {
-            // monitor existing instance
-            Log.v(TAG, "sync already in progress, monitoring it");
-            new SyncerUI.SyncMonitorTask(context, finish, dialog).execute();
+            if (Syncer.getInstance() == null) {
+                // start monitored sync
+                Log.v(TAG, "starting monitored sync");
+                currentSyncer = new SyncTask(context, finish, dialog).execute(Syncer.getInstance(context));
+            }
+            else {
+                // monitor existing instance
+                Log.v(TAG, "sync already in progress, monitoring it");
+                currentSyncer = new SyncMonitorTask(context, finish, dialog).execute();
+            }
         }
+    }
+
+    public synchronized static void cancel() {
+        if (currentSyncer != null)
+            currentSyncer.cancel(true);
     }
 
     /** Executes a sync asynchronously, monitoring its status. */
@@ -46,7 +63,7 @@ public abstract class SyncerUI {
         private final Activity context;
         private Syncer syncer;
         private Dialog dialog;
-        private final Runnable finish;
+        private Runnable finish;
         private final boolean useDialog;
 
         public SyncTask(Activity context, Runnable finish, boolean useDialog) {
@@ -126,6 +143,12 @@ public abstract class SyncerUI {
             }
         }
 
+        /** This is because of a pre-Froyo bug. */
+        @Override
+        protected void onCancelled() {
+            onCancelled(false);
+        }
+
         @Override
         protected void onCancelled(Boolean result) {
             if (syncer != null)
@@ -134,13 +157,32 @@ public abstract class SyncerUI {
         }
 
         private void finish(Runnable action) {
+            // discard reference
+            currentSyncer = null;
+
             // dismiss status dialog
             if (dialog != null)
                 dialog.dismiss();
-            if (action != null)
+
+            // run in separate try/catch so we are sure that both gets executed
+
+            try {
                 action.run();
-            if (finish != null)
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
                 finish.run();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+
+        public void setFinish(Runnable action) {
+            finish = action;
+            // TODO syncer.onSyncResumed();
         }
     }
 
@@ -148,7 +190,7 @@ public abstract class SyncerUI {
     public static final class SyncMonitorTask extends AsyncTask<Syncer, Integer, Boolean> {
         private final Activity context;
         private Dialog dialog;
-        private final Runnable finish;
+        private Runnable finish;
         private final boolean useDialog;
 
         public SyncMonitorTask(Activity context, Runnable finish, boolean useDialog) {
@@ -196,17 +238,36 @@ public abstract class SyncerUI {
             }
         }
 
+        /** This is because of a pre-Froyo bug. */
+        @Override
+        protected void onCancelled() {
+            onCancelled(false);
+        }
+
         @Override
         protected void onCancelled(Boolean result) {
             finish();
         }
 
         private void finish() {
+            // discard reference
+            currentSyncer = null;
+
             // dismiss status dialog
             if (dialog != null)
                 dialog.dismiss();
-            if (finish != null)
+
+            try {
                 finish.run();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+
+        public void setFinish(Runnable action) {
+            finish = action;
+            // TODO syncer.onSyncResumed();
         }
     }
 
