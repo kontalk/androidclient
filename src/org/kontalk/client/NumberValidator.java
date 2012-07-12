@@ -71,10 +71,10 @@ public class NumberValidator implements Runnable {
     private Thread mThread;
 
     public NumberValidator(Context context, EndpointServer server, String phone, boolean manual) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         mServer = server;
         mPhone = phone;
-        mClient = new ClientConnection(context, mServer);
+        mClient = new ClientConnection(mServer);
         mManual = manual;
     }
 

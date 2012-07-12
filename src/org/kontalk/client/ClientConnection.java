@@ -14,8 +14,6 @@ import org.kontalk.client.Protocol.ValidationRequest;
 import org.kontalk.client.Protocol.ValidationResponse;
 import org.kontalk.util.RandomString;
 
-import android.content.Context;
-
 import com.google.protobuf.MessageLite;
 
 
@@ -25,7 +23,6 @@ import com.google.protobuf.MessageLite;
  */
 public class ClientConnection {
     protected final EndpointServer mServer;
-    protected Context mContext;
     protected Socket mSocket;
 
     protected OutputStream out;
@@ -33,8 +30,7 @@ public class ClientConnection {
 
     protected String mAuthToken;
 
-    public ClientConnection(Context context, EndpointServer server) {
-        mContext = context;
+    public ClientConnection(EndpointServer server) {
         mServer = server;
         mSocket = new Socket();
     }

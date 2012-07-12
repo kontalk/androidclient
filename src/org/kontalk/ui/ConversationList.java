@@ -38,6 +38,7 @@ import android.widget.ListAdapter;
  */
 public class ConversationList extends FragmentActivity {
     //private static final String TAG = ConversationList.class.getSimpleName();
+    private boolean mSyncWasRunning;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,14 +75,22 @@ public class ConversationList extends FragmentActivity {
      * if necessary.
      */
     private void checkBigUpgrade1() {
-        if (!MessagingPreferences.getBigUpgrade1(this)) {
+        Boolean oldSync = (Boolean) getLastNonConfigurationInstance();
+        if (!MessagingPreferences.getBigUpgrade1(this) || (oldSync != null && oldSync.booleanValue())) {
+            mSyncWasRunning = true;
             SyncerUI.execute(this, new Runnable() {
                 public void run() {
+                    mSyncWasRunning = false;
                     ConversationListFragment fragment = getListFragment();
                     fragment.startQuery();
                 }
             }, true);
         }
+    }
+
+    @Override
+    public Object onRetainCustomNonConfigurationInstance() {
+        return mSyncWasRunning;
     }
 
     /** Called when a new intent is sent to the activity (if already started). */

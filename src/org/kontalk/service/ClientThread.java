@@ -152,7 +152,7 @@ public class ClientThread extends Thread {
                 Log.d(TAG, "using server " + mServer.toString());
                 try {
                     if (mClient == null)
-                        mClient = new ClientConnection(mContext, mServer);
+                        mClient = new ClientConnection(mServer);
 
                     // connect
                     mClient.connect();

@@ -71,6 +71,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
     private Button mValidateButton;
     private Button mManualButton;
     private ProgressDialog mProgress;
+    private CharSequence mProgressMessage;
     private NumberValidator mValidator;
 
     private String mAuthtoken;
@@ -79,6 +80,12 @@ public class NumberValidation extends AccountAuthenticatorActivity
     private boolean mManualValidation;
 
     private boolean mFromInternal;
+
+    private static final class RetainData {
+        NumberValidator validator;
+        CharSequence progressMessage;
+        String phoneNumber;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,6 +105,29 @@ public class NumberValidation extends AccountAuthenticatorActivity
         mManualButton = (Button) findViewById(R.id.button_manual);
 
         mCountryCode.setText(NumberValidator.getCountryCode(this));
+
+        // configuration change??
+        RetainData data = (RetainData) getLastNonConfigurationInstance();
+        if (data != null) {
+            mPhoneNumber = data.phoneNumber;
+            mValidator = data.validator;
+            if (mValidator != null)
+                mValidator.setListener(this);
+
+            if (data.progressMessage != null) {
+                setProgressMessage(data.progressMessage, true);
+            }
+        }
+    }
+
+    /** Returning the validator thread. */
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+        RetainData data = new RetainData();
+        data.validator = mValidator;
+        data.phoneNumber = mPhoneNumber;
+        if (mProgress != null) data.progressMessage = mProgressMessage;
+        return data;
     }
 
     @Override
@@ -119,6 +149,13 @@ public class NumberValidation extends AccountAuthenticatorActivity
                 return true;
         }
         return false;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mProgress != null)
+            mProgress.dismiss();
     }
 
     /** Starts the validation activity. */
@@ -230,11 +267,15 @@ public class NumberValidation extends AccountAuthenticatorActivity
     }
 
     public void startProgress() {
+        startProgress(null);
+    }
+
+    private void startProgress(CharSequence message) {
         if (mProgress == null) {
             mProgress = new ProgressDialog(this);
             mProgress.setIndeterminate(true);
             mProgress.setCanceledOnTouchOutside(false);
-            mProgress.setMessage(getText(R.string.msg_validating_phone));
+            setProgressMessage(message != null ? message : getText(R.string.msg_validating_phone));
             mProgress.setOnCancelListener(new OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialog) {
@@ -266,6 +307,21 @@ public class NumberValidation extends AccountAuthenticatorActivity
         if (mValidator != null) {
             mValidator.shutdown();
             mValidator = null;
+        }
+    }
+
+    private void setProgressMessage(CharSequence message) {
+        setProgressMessage(message, false);
+    }
+
+    private void setProgressMessage(CharSequence message, boolean create) {
+        if (mProgress == null && create) {
+            startProgress(message);
+        }
+
+        if (mProgress != null) {
+            mProgressMessage = message;
+            mProgress.setMessage(message);
         }
     }
 
@@ -309,7 +365,8 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
         mProgress.setCancelable(false);
         mProgress.setCanceledOnTouchOutside(false);
-        mProgress.setMessage(getString(R.string.msg_initializing));
+        setProgressMessage(getString(R.string.msg_initializing));
+
         // manual sync
         Runnable endSync = new Runnable() {
             public void run() {
