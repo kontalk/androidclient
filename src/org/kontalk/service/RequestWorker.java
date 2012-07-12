@@ -56,8 +56,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
     private final Context mContext;
 
-    private Boolean mIdle = false;
-    private boolean mInterrupted;
+    private volatile Boolean mIdle = false;
+    private volatile boolean mInterrupted;
 
     /** Reference counter - will be passed to {@link PauseHandler}. */
     private int mRefCount;

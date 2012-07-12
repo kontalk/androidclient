@@ -145,6 +145,7 @@
     <string name="msg_do_refresh">Usa Menu > Aggiorna per aggiornare la lista contatti.</string>
     <string name="msg_sync_progress">Aggiornamento lista contatti in corso&#8230;</string>
     <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
+    <string name="err_sync_nonetwork">Rete non disponibile. Riprova più tardi.</string>
     <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk! Lo trovi su Google Play Store https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.&lt;br/&gt;&lt;br/&gt;Usa &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invita utenti&lt;/b&gt; per inviare un messaggio di invito a qualcuno.</string>
     <string name="text_conversations_empty">Per iniziare a scrivere messaggi usa l\'icona &lt;b&gt;nuovo messaggio&lt;/b&gt; in alto.</string>

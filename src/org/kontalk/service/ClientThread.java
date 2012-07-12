@@ -73,7 +73,7 @@ public class ClientThread extends Thread {
     private String mAuthToken;
     private String mMyUsername;
 
-    private boolean mInterrupted;
+    private volatile boolean mInterrupted;
 
     /** Connection retry count for exponential backoff. */
     private int mRetryCount;

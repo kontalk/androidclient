@@ -46,7 +46,9 @@ import com.google.protobuf.MessageLite;
  */
 public class Syncer {
     /** Singleton instance. */
-    private static Syncer instance;
+    private static volatile Syncer instance;
+    /** Singleton pending? */
+    private static volatile boolean pending;
 
     // using SyncAdapter tag
     private static final String TAG = SyncAdapter.class.getSimpleName();
@@ -66,7 +68,7 @@ public class Syncer {
     /** {@link RawContacts} column for the user id (hashed phone number). */
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
-    private boolean mCanceled;
+    private volatile boolean mCanceled;
     private final Context mContext;
 
     /** Used for binding to the message center to send messages. */
@@ -153,8 +155,17 @@ public class Syncer {
         return instance;
     }
 
+    public static void setPending() {
+        pending = true;
+    }
+
+    public static boolean isPending() {
+        return pending;
+    }
+
     public static void release() {
         instance = null;
+        pending = false;
     }
 
     private Syncer(Context context) {
@@ -163,6 +174,10 @@ public class Syncer {
 
     public void onSyncCanceled() {
         mCanceled = true;
+    }
+
+    public void onSyncResumed() {
+        mCanceled = false;
     }
 
     private static final class RawPhoneNumberEntry {

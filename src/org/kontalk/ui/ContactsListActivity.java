@@ -47,6 +47,14 @@ public class ContactsListActivity extends ListActivity
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
+    private boolean mSyncWasRunning;
+
+    private final Runnable mPostSyncAction = new Runnable() {
+        public void run() {
+            startQuery();
+            _setProgressBarIndeterminateVisibility(false);
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,6 +87,11 @@ public class ContactsListActivity extends ListActivity
         if (!MessagingPreferences.getContactsListVisited(this))
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
+
+        // resume sync if any
+        Boolean oldSync = (Boolean) getLastNonConfigurationInstance();
+        if (oldSync != null && oldSync.booleanValue())
+            startSync(false);
     }
 
     @Override
@@ -100,8 +113,9 @@ public class ContactsListActivity extends ListActivity
             // ignored
         }
 
+        mSyncWasRunning = SyncerUI.isRunning();
         // cancel any ongoing sync
-        SyncerUI.cancel();
+        SyncerUI.cancel(true);
         // release message center
         MessageCenterService.releaseMessageCenter(this);
     }
@@ -120,6 +134,11 @@ public class ContactsListActivity extends ListActivity
     }
 
     @Override
+    public Object onRetainNonConfigurationInstance() {
+        return mSyncWasRunning;
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.contacts_list_menu, menu);
         return true;
@@ -129,7 +148,7 @@ public class ContactsListActivity extends ListActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_refresh:
-                startSync();
+                startSync(true);
                 return true;
 
             case R.id.menu_invite:
@@ -166,21 +185,13 @@ public class ContactsListActivity extends ListActivity
         }
     }
 
-    private void startSync() {
+    private void startSync(boolean errorWarning) {
         if (MessageCenterService.isNetworkConnectionAvailable(this)) {
-            Runnable action = new Runnable() {
-                public void run() {
-                    startQuery();
-                    _setProgressBarIndeterminateVisibility(false);
-                }
-            };
-
             _setProgressBarIndeterminateVisibility(true);
-            SyncerUI.execute(this, action, false);
+            SyncerUI.execute(this, mPostSyncAction, false);
         }
-        else {
-            // TODO i18n
-            Toast.makeText(this, "Network not available. Please retry later.", Toast.LENGTH_LONG).show();
+        else if (errorWarning) {
+            Toast.makeText(this, R.string.err_sync_nonetwork, Toast.LENGTH_LONG).show();
         }
     }
 

@@ -123,5 +123,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // put our sync ahead of other sync operations :)
         extra.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         ContentResolver.requestSync(acc, ContactsContract.AUTHORITY, extra);
+        Syncer.setPending();
     }
 }
