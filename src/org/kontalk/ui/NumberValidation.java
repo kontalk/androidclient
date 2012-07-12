@@ -196,7 +196,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
             String p = mPhone.getText().toString().trim();
             if (p.length() < 3 || !TextUtils.isDigitsOnly(p)) throw new Exception();
             String t = "+" + cc + p;
-            phone = NumberValidator.fixNumber(this, t, t);
+            phone = NumberValidator.fixNumber(this, t, t, cc);
         }
         catch (Exception e) {
             error(R.string.title_invalid_number, R.string.msg_invalid_number);

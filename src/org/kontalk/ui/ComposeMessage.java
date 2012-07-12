@@ -181,7 +181,7 @@ public class ComposeMessage extends FragmentActivity {
                     // a phone number should come here...
                     String number = NumberValidator.fixNumber(this,
                             uri.getSchemeSpecificPart(),
-                            Authenticator.getDefaultAccountName(this));
+                            Authenticator.getDefaultAccountName(this), null);
                     // compute hash and open conversation
                     String userId = MessageUtils.sha1(number);
 

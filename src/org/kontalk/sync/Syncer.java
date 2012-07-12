@@ -264,7 +264,7 @@ public class Syncer {
 
             // fix number
             try {
-                number = NumberValidator.fixNumber(mContext, number, account.name);
+                number = NumberValidator.fixNumber(mContext, number, account.name, null);
             }
             catch (Exception e) {
                 Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);

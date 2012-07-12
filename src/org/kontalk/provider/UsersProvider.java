@@ -277,7 +277,7 @@ public class UsersProvider extends ContentProvider {
                     // fix number
                     try {
                         number = NumberValidator.fixNumber(context, number,
-                                Authenticator.getDefaultAccountName(context));
+                                Authenticator.getDefaultAccountName(context), null);
                     }
                     catch (Exception e) {
                         Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);

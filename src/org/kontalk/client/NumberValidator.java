@@ -290,10 +290,10 @@ public class NumberValidator implements Runnable {
     }
 
     public static CharSequence getCountryPrefix(Context context) {
-        return getCountryPrefix(context, null);
+        return getCountryPrefix(context, null, -1);
     }
 
-    public static CharSequence getCountryPrefix(Context context, String from) {
+    public static CharSequence getCountryPrefix(Context context, String from, int lastResort) {
         final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         final String regionCode = tm.getSimCountryIso().toUpperCase();
         int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
@@ -312,6 +312,10 @@ public class NumberValidator implements Runnable {
             }
         }
 
+        // last resort
+        if (cc <= 0)
+            cc = lastResort;
+
         // try again...
         if (cc > 0) {
             MessagingPreferences.setLastCountryCode(context, cc);
@@ -322,7 +326,7 @@ public class NumberValidator implements Runnable {
         return null;
     }
 
-    public static String fixNumber(Context context, String number, String myNumber)
+    public static String fixNumber(Context context, String number, String myNumber, String lastResort)
             throws IllegalArgumentException {
         // normalize number: strip separators
         number = PhoneNumberUtils.stripSeparators(number.trim());
@@ -331,7 +335,15 @@ public class NumberValidator implements Runnable {
         if (number.startsWith("00"))
             number = '+' + number.substring(2);
         else if (number.charAt(0) != '+') {
-            CharSequence prefix = getCountryPrefix(context, myNumber);
+            int cc;
+            try {
+                cc = Integer.parseInt(lastResort);
+            }
+            catch (Exception e) {
+                cc = -1;
+            }
+
+            CharSequence prefix = getCountryPrefix(context, myNumber, cc);
             if (prefix == null)
                 throw new IllegalArgumentException("no country code available");
             number = prefix + number;
