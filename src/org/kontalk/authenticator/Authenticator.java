@@ -117,6 +117,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public Bundle confirmCredentials(AccountAuthenticatorResponse response,
             Account account, Bundle options) throws NetworkErrorException {
 
+        Log.v(TAG, "confirming credentials");
         // remove account
         AccountManager man = AccountManager.get(mContext);
         man.removeAccount(account, null, null);
