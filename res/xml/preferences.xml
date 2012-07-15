@@ -87,7 +87,7 @@
             android:summary="@string/pref_title_vibrate"
             android:entries="@array/vibrate_labels"
             android:entryValues="@array/vibrate_values"
-            android:defaultValue="never"/>
+            android:defaultValue="always"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintainance"
