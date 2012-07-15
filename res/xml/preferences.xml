@@ -65,7 +65,7 @@
             android:title="@string/pref_background_uri"
             android:summary="@string/pref_title_background_uri"
             android:dependency="pref_custom_background"/>
-        
+
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_notification_settings"
@@ -78,6 +78,7 @@
             android:dependency="pref_enable_notifications"
             android:title="@string/pref_ringtone"
             android:ringtoneType="notification"
+            android:defaultValue="content://settings/system/notification_sound"
             android:showDefault="true"
             android:showSilent="true"/>
         <ListPreference android:key="pref_vibrate"
@@ -95,5 +96,5 @@
             android:summary="@string/pref_title_restart_msgcenter"
             android:title="@string/pref_restart_msgcenter"/>
     </PreferenceCategory>
-    
+
 </PreferenceScreen>

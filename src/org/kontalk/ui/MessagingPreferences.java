@@ -29,6 +29,7 @@ import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -53,7 +54,7 @@ import android.widget.Toast;
 public class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
 
-    private static final int REQUEST_PICK_BACKGROUND = 2;
+    private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
     private static Drawable customBackground;
 
     @Override
@@ -195,6 +196,8 @@ public class MessagingPreferences extends PreferenceActivity {
                     .commit();
             }
         }
+        else
+            super.onActivityResult(requestCode, resultCode, data);
     }
 
     private static void updateServerListLastUpdate(Preference pref, ServerList list) {
