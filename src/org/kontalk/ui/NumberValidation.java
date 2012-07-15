@@ -85,7 +85,22 @@ public class NumberValidation extends AccountAuthenticatorActivity
         NumberValidator validator;
         CharSequence progressMessage;
         String phoneNumber;
+        boolean syncWasRunning;
     }
+
+    private final Runnable mSyncFinish = new Runnable() {
+        public void run() {
+            // if we have been called internally, start ConversationList
+            if (mFromInternal)
+                startActivity(new Intent(getApplicationContext(), ConversationList.class));
+
+            Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
+
+            // end this
+            abortProgress();
+            finish();
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -117,6 +132,9 @@ public class NumberValidation extends AccountAuthenticatorActivity
             if (data.progressMessage != null) {
                 setProgressMessage(data.progressMessage, true);
             }
+            if (data.syncWasRunning) {
+                SyncerUI.execute(this, mSyncFinish, false);
+            }
         }
     }
 
@@ -127,6 +145,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         data.validator = mValidator;
         data.phoneNumber = mPhoneNumber;
         if (mProgress != null) data.progressMessage = mProgressMessage;
+        data.syncWasRunning = SyncerUI.isRunning();
         return data;
     }
 
@@ -368,20 +387,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
         setProgressMessage(getString(R.string.msg_initializing));
 
         // manual sync
-        Runnable endSync = new Runnable() {
-            public void run() {
-                // if we have been called internally, start ConversationList
-                if (mFromInternal)
-                    startActivity(new Intent(getApplicationContext(), ConversationList.class));
-
-                Toast.makeText(NumberValidation.this, R.string.msg_authenticated, Toast.LENGTH_LONG).show();
-
-                // end this
-                abortProgress();
-                finish();
-            }
-        };
-        SyncerUI.execute(this, endSync, false);
+        SyncerUI.execute(this, mSyncFinish, false);
     }
 
     @Override
