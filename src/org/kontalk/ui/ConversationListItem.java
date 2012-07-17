@@ -113,7 +113,6 @@ public class ConversationListItem extends RelativeLayout {
             recipient = context.getString(R.string.peer_unknown);
             mAvatarView.setImageDrawable(sDefaultContactImage);
         }
-        mAvatarView.setVisibility(VISIBLE);
 
         SpannableStringBuilder from = new SpannableStringBuilder(recipient);
         if (conv.getMessageCount() > 1)
