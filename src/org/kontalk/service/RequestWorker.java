@@ -18,6 +18,7 @@
 
 package org.kontalk.service;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,10 +69,10 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     private RequestListenerList mListeners = new RequestListenerList();
     private RequestListenerList mAsyncListeners = new RequestListenerList();
 
-    /** A list of messages currently being sent. Used for concurrency */
-    private List<Long> mSendingMessages = new ArrayList<Long>();
     /** List of asynchronous started jobs. */
     private List<PauseHandler.AsyncRequestJob> mAsyncJobs = new ArrayList<PauseHandler.AsyncRequestJob>();
+    /** A list of messages currently being sent. Used for concurrency */
+    private List<Long> mSendingMessages = new ArrayList<Long>();
 
     private String mPushRegistrationId;
 
@@ -114,7 +115,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         // create handler and empty pending jobs queue
         // this must be done synchronized on the queue
         synchronized (pendingJobs) {
-            mHandler = new PauseHandler(new LinkedList<RequestJob>(pendingJobs), mRefCount);
+            mHandler = new PauseHandler(this,
+                new LinkedList<RequestJob>(pendingJobs), mRefCount);
             pendingJobs.clear();
         }
     }
@@ -171,14 +173,17 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         }
     }
 
-    private final class PauseHandler extends Handler implements IdleHandler {
+    private static final class PauseHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
         private final int IDLE_MSG_TIME = 60000;
         /** Reference counter. */
         private int mRefCount;
+        /** A weak reference to the worker instance. */
+        private WeakReference<RequestWorker> mWorker;
 
-        public PauseHandler(Queue<RequestJob> pending, int refCount) {
+        public PauseHandler(RequestWorker worker, Queue<RequestJob> pending, int refCount) {
             // no need to super(), will use looper from the current thread
+            mWorker = new WeakReference<RequestWorker>(worker);
 
             this.mRefCount = refCount;
 
@@ -207,19 +212,22 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
         @Override
         public void handleMessage(Message msg) {
+            final RequestWorker w = mWorker.get();
+            if (w == null) return;
+
             // something to work out
             if (msg.what == MSG_REQUEST_JOB) {
                 // remove any pending idle messages
                 removeMessages(MSG_IDLE);
 
                 // not running - queue message
-                if (mInterrupted) {
+                if (w.mInterrupted) {
                     Log.i(TAG, "request worker is not running - dropping message");
                     return;
                 }
 
                 // still not connected - discard message
-                if (mClient == null || !mClient.isConnected()) {
+                if (w.mClient == null || !w.mClient.isConnected()) {
                     //Log.v(TAG, "client not ready - discarding message");
                     return;
                 }
@@ -228,7 +236,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 //Log.v(TAG, "JOB: " + job.toString());
 
                 // check now if job has been canceled
-                if (job.isCanceled(mContext)) {
+                if (job.isCanceled(w.mContext)) {
                     Log.d(TAG, "request has been canceled - dropping");
                     return;
                 }
@@ -236,18 +244,18 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 // try to use the custom listener
                 RequestListener listener = job.getListener();
                 if (listener != null)
-                    addListener(listener, job.isAsync());
+                    w.addListener(listener, job.isAsync());
 
                 // synchronize on client pack lock
-                synchronized (mClient.getPackLock()) {
+                synchronized (w.mClient.getPackLock()) {
 
                     try {
                         // FIXME this should be abstracted/delegated some way
                         if (job instanceof MessageSender) {
                             MessageSender mess = (MessageSender) job;
 
-                            Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
-                            if (mSendingMessages.contains(msgId)) {
+                            Long msgId = Long.valueOf(ContentUris.parseId(mess.getMessageUri()));
+                            if (w.mSendingMessages.contains(msgId)) {
                                 /*
                                  * This is a hack to allow a MessageSender to
                                  * be requeued if we are resending it as an
@@ -260,44 +268,44 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             }
                             else {
                                 // add to sending list
-                                mSendingMessages.add(msgId);
+                                w.mSendingMessages.add(msgId);
                             }
                         }
 
                         if (job.isAsync()) {
                             // we should keep the worker alive
                             hold();
-                            AsyncRequestJob tjob = new AsyncRequestJob(job, mClient, mListeners, mContext);
+                            AsyncRequestJob tjob = new AsyncRequestJob(w, job, w.mClient, w.mListeners, w.mContext);
                             // keep a reference to the thread
                             job.setThread(tjob);
-                            mAsyncJobs.add(tjob);
+                            w.mAsyncJobs.add(tjob);
                             tjob.start();
                         }
 
                         else {
                             // start callback
-                            mListeners.starting(mClient, job);
+                            w.mListeners.starting(w.mClient, job);
 
-                            String txId = job.execute(mClient, mListeners, mContext);
+                            String txId = job.execute(w.mClient, w.mListeners, w.mContext);
                             // mark as done!
                             job.done();
 
-                            mListeners.done(mClient, job, txId);
+                            w.mListeners.done(w.mClient, job, txId);
                         }
                     }
                     catch (Exception e) {
-                        if (mInterrupted) {
+                        if (w.mInterrupted) {
                             Log.v(TAG, "worker has been interrupted");
                             return;
                         }
 
                         boolean requeue = true;
                         Log.e(TAG, "request error", e);
-                        requeue = mListeners.error(mClient, job, e);
+                        requeue = w.mListeners.error(w.mClient, job, e);
 
                         if (requeue) {
                             Log.d(TAG, "requeuing job " + job);
-                            push(job, DEFAULT_RETRY_DELAY);
+                            w.push(job, DEFAULT_RETRY_DELAY);
                         }
                     }
                     finally {
@@ -305,13 +313,13 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             // unobserve if necessary
                             if (job instanceof MessageSender) {
                                 MessageSender mess = (MessageSender) job;
-                                Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
-                                mSendingMessages.remove(msgId);
+                                Long msgId = Long.valueOf(ContentUris.parseId(mess.getMessageUri()));
+                                w.mSendingMessages.remove(msgId);
                             }
 
                             // remove our old custom listener
                             if (listener != null)
-                                removeListener(listener, false);
+                                w.removeListener(listener, false);
                         }
                     }
                 }
@@ -320,9 +328,9 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             // idle message
             else if (msg.what == MSG_IDLE) {
                 // we registered push notification - shutdown message center
-                if (mPushRegistrationId != null) {
+                if (w.mPushRegistrationId != null) {
                     Log.d(TAG, "shutting down message center due to inactivity");
-                    MessageCenterService.idleMessageCenter(mContext);
+                    MessageCenterService.idleMessageCenter(w.mContext);
                 }
             }
 
@@ -335,7 +343,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    Looper.myQueue().removeIdleHandler(mHandler);
+                    Looper.myQueue().removeIdleHandler(PauseHandler.this);
                     removeMessages(MSG_IDLE);
                 }
             });
@@ -349,25 +357,27 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                     @Override
                     public void run() {
                         removeMessages(MSG_IDLE);
-                        Looper.myQueue().addIdleHandler(mHandler);
+                        Looper.myQueue().addIdleHandler(PauseHandler.this);
                     }
                 });
             }
         }
 
         /** Executes a {@link RequestJob} asynchronously. */
-        private final class AsyncRequestJob extends Thread {
+        private static final class AsyncRequestJob extends Thread {
             private final RequestJob mJob;
             private final ClientThread mClient;
             private final RequestListener mListener;
             private final Context mContext;
+            private final WeakReference<RequestWorker> mWorker;
 
-            public AsyncRequestJob(RequestJob job, ClientThread client, RequestListener listener, Context context) {
+            public AsyncRequestJob(RequestWorker worker, RequestJob job, ClientThread client, RequestListener listener, Context context) {
                 super();
                 mJob = job;
                 mClient = client;
                 mListener = listener;
                 mContext = context;
+                mWorker = new WeakReference<RequestWorker>(worker);
             }
 
             @Override
@@ -378,10 +388,12 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             @Override
             public final void run() {
                 // FIXME there is some duplicated code here
+                RequestWorker w = mWorker.get();
+                if (w == null) return;
 
                 try {
                     // start callback
-                    mListeners.starting(mClient, mJob);
+                    w.mListeners.starting(mClient, mJob);
 
                     String txId = mJob.execute(mClient, mListener, mContext);
                     // mark as done!
@@ -390,7 +402,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                     mListener.done(mClient, mJob, txId);
                 }
                 catch (Exception e) {
-                    if (mInterrupted) {
+                    if (w.mInterrupted) {
                         Log.v(TAG, "worker has been interrupted");
                         return;
                     }
@@ -401,25 +413,25 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
                     if (requeue) {
                         Log.d(TAG, "requeuing job " + mJob);
-                        push(mJob, DEFAULT_RETRY_DELAY);
+                        w.push(mJob, DEFAULT_RETRY_DELAY);
                     }
                 }
                 finally {
                     // unobserve if necessary
                     if (mJob instanceof MessageSender) {
                         MessageSender mess = (MessageSender) mJob;
-                        Long msgId = new Long(ContentUris.parseId(mess.getMessageUri()));
-                        mSendingMessages.remove(msgId);
+                        Long msgId = Long.valueOf(ContentUris.parseId(mess.getMessageUri()));
+                        w.mSendingMessages.remove(msgId);
                     }
 
                     // remove reference to this thread
-                    mAsyncJobs.remove(this);
-                    release();
+                    w.mAsyncJobs.remove(this);
+                    w.release();
 
                     // remove our old custom listener
                     RequestListener listener = mJob.getListener();
                     if (listener != null)
-                        removeListener(listener, true);
+                        w.removeListener(listener, true);
                 }
             }
         }
