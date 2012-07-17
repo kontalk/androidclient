@@ -1,5 +1,9 @@
+[ ] duplicated messages: found how to reproduce:
+    * begin with server or network down
+    * send a message - gets stored in database and queued on pending jobs queue (?)
+    * start server or restore network
+    * message get sent twice
 [ ] sync: testing needed for country code in offline mode
-[ ] empty token O.o
 [ ] (plural) list -> (singular) list (??)
 [ ] use cached last seen/status if network error
 [ ] HTTP (over SSL) connection support
@@ -14,3 +18,4 @@
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [x] porting to Google Cloud Messaging support library
+[x] empty token O.o (DO NOT INSTALL ON EXTERNAL STORAGE)

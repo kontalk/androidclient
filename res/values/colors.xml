@@ -30,5 +30,8 @@
 
     <!-- other colors -->
     <color name="highlight_color">#fffffC57</color>
+    
+    <!-- compose message list view background -->
+    <color name="compose_message_list_background">#fff5f8fa</color>
 </resources>
 
