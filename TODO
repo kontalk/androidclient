@@ -1,3 +1,4 @@
+[ ] ListView: still issues with fading edge
 [ ] sync: testing needed for country code in offline mode
 [ ] (plural) list -> (singular) list (??)
 [ ] use cached last seen/status if network error

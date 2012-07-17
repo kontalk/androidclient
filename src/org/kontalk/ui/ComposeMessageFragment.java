@@ -150,10 +150,15 @@ public class ComposeMessageFragment extends ListFragment implements
 	private PeerObserver mPeerObserver;
     private Handler mHandler;
 
-    /** Current banner text. */
-    private String mCurrentBanner;
-    /** Next banner text. */
-    private String mNextBanner;
+    /** Current banner text indicator (BANNER_*). */
+    private int mCurrentBanner;
+    /** Status text as displayed in banner. */
+    private String mBannerStatus;
+    /** Last seen text as displayed in banner. */
+    private String mBannerLastSeen;
+
+    private final static int BANNER_STATUS = 1;
+    private final static int BANNER_LAST_SEEN = 2;
 
 	private LocalBroadcastManager mLocalBroadcastManager;
     private UserPresenceBroadcastReceiver mPresenceReceiver;
@@ -1255,22 +1260,25 @@ public class ComposeMessageFragment extends ListFragment implements
             if (MessageCenterService.ACTION_USER_PRESENCE.equals(action)) {
                 int event = intent.getIntExtra("org.kontalk.presence.event", 0);
                 String text = null;
+                int show = 0;
 
                 if (event == UserEvent.EVENT_OFFLINE_VALUE) {
-                    text = getResources().getString(R.string.last_seen_label) +
+                    text = mBannerLastSeen = getResources().getString(R.string.last_seen_label) +
                             getResources().getString(R.string.seen_moment_ago_label);
+                    show = BANNER_LAST_SEEN;
                 }
                 else if (event == UserEvent.EVENT_ONLINE_VALUE) {
-                    text = getResources().getString(R.string.seen_online_label);
+                    text = mBannerLastSeen = getResources().getString(R.string.seen_online_label);
+                    show = BANNER_LAST_SEEN;
                 }
                 else if (event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
-                    // TODO user changed status
+                    text = mBannerStatus = intent.getStringExtra("org.kontalk.presence.status");
+                    show = BANNER_STATUS;
                 }
 
-                if (text != null) {
-                    final String bannerText = text;
+                if (show > 0) {
                     try {
-                        setStatusText(bannerText);
+                        setStatusText(text, show);
                     }
                     catch (Exception e) {
                         // something could happen in the mean time - e.g. fragment destruction
@@ -1379,12 +1387,12 @@ public class ComposeMessageFragment extends ListFragment implements
                         }
 
                         if (text != null) {
-                            mCurrentBanner = text;
+                            mBannerLastSeen = text;
                             // show last seen banner
                             context.runOnUiThread(new Runnable() {
                                 public void run() {
                                     try {
-                                        setStatusText(mCurrentBanner);
+                                        setStatusText(mBannerLastSeen, BANNER_LAST_SEEN);
                                     }
                                     catch (Exception e) {
                                         // something could happen in the meanwhile e.g. fragment destruction
@@ -1392,14 +1400,11 @@ public class ComposeMessageFragment extends ListFragment implements
                                 }
                             });
                             if (afterText != null) {
-                                mNextBanner = afterText;
+                                mBannerStatus = afterText;
                                 mHandler.postDelayed(new Runnable() {
                                     public void run() {
                                         try {
-                                            String temp = mCurrentBanner;
-                                            mCurrentBanner = mNextBanner;
-                                            mNextBanner = temp;
-                                            setStatusText(mCurrentBanner);
+                                            setStatusText(mBannerStatus, BANNER_STATUS);
                                         }
                                         catch (Exception e) {
                                             // something could happen in the meanwhile e.g. fragment destruction
@@ -1420,7 +1425,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	    return false;
 	}
 
-	private void setStatusText(String text) {
+	private void setStatusText(String text, int which) {
+	    mCurrentBanner = which;
         setActivityTitle(null, text, null);
 	}
 
@@ -1700,14 +1706,13 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	/** Switches current banner with next banner. */
-    public void switchBanner() {
-        if (mNextBanner != null) {
-            String temp = mCurrentBanner;
-            mCurrentBanner = mNextBanner;
-            mNextBanner = temp;
-            setStatusText(mCurrentBanner);
-            // cancel auto-change
-            mHandler.removeCallbacksAndMessages(null);
-        }
+    public synchronized void switchBanner() {
+        if (mCurrentBanner == BANNER_LAST_SEEN && mBannerStatus != null)
+            setStatusText(mBannerStatus, BANNER_STATUS);
+        else if (mCurrentBanner == BANNER_STATUS && mBannerLastSeen != null)
+            setStatusText(mBannerLastSeen, BANNER_LAST_SEEN);
+
+        // cancel auto-change
+        mHandler.removeCallbacksAndMessages(null);
     }
 }
