@@ -37,6 +37,7 @@
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <!-- These 2 lines assure that only this application can receive replies from CD2M -->
     <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
@@ -162,18 +163,15 @@
 
         <service android:name=".service.DownloadService" android:label="@string/download_service"/>
 
-        <receiver android:name=".service.C2DMReceiver" android:permission="com.google.android.c2dm.permission.SEND">
-            <!-- Receive the actual message -->
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="org.kontalk" />
-            </intent-filter>
-            <!-- Receive the registration id -->
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <category android:name="org.kontalk" />
-            </intent-filter>
+        <receiver android:name="com.google.android.gcm.GCMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">
+          <intent-filter>
+            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+            <category android:name="org.kontalk" />
+          </intent-filter>
         </receiver>
+
+        <service android:name=".GCMIntentService"/>
 
     </application>
 </manifest>

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
+import org.kontalk.GCMIntentService;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
@@ -40,6 +41,8 @@ import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.AuthenticateResponse;
 import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.Protocol.UserInfoUpdateRequest;
+import org.kontalk.client.Protocol.UserInfoUpdateResponse;
+import org.kontalk.client.Protocol.UserInfoUpdateResponse.UserInfoUpdateStatus;
 import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.ServerinfoJob;
 import org.kontalk.client.TxListener;
@@ -84,9 +87,11 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.google.android.gcm.GCMRegistrar;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
@@ -118,7 +123,7 @@ public class MessageCenterService extends Service
 
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
 
-    public static final String C2DM_REGISTRATION_ID = "org.kontalk.C2DM_REGISTRATION_ID";
+    public static final String GCM_REGISTRATION_ID = "org.kontalk.GCM_REGISTRATION_ID";
 
     private Notification mCurrentNotification;
     private long mTotalBytes;
@@ -128,9 +133,16 @@ public class MessageCenterService extends Service
 
     private Map<String, Byte> mPresenceListeners = new HashMap<String, Byte>();
 
+    /** Push notifications enabled flag. */
     private boolean mPushNotifications;
-    private String mPushEmail;
+    /** Server push sender id. This is static so {@link GCMIntentService} can see it. */
+    private static String mPushSenderId;
+    /** GCM registration id. */
     private String mPushRegistrationId;
+    /** txId used in the UserInfoUpdate request. */
+    protected String mPushRequestTxId;
+    /** {@link RequestJob} for sending push registration id to server. */
+    protected RequestJob mPushRequestJob;
 
     /** Used in case ClientThread is down. */
     private int mRefCount;
@@ -190,7 +202,7 @@ public class MessageCenterService extends Service
 
             // C2DM hash registered!
             if (ACTION_C2DM_REGISTERED.equals(action)) {
-                setPushRegistrationId(intent.getStringExtra(C2DM_REGISTRATION_ID));
+                setPushRegistrationId(intent.getStringExtra(GCM_REGISTRATION_ID));
             }
 
             // start C2DM registration
@@ -394,9 +406,9 @@ public class MessageCenterService extends Service
     }
 
     private void stop() {
-        // unregister push notifications
-        // TEST do not unregister
-        //setPushNotifications(false);
+        // invalidate push sender id
+        GCMRegistrar.onDestroy(this);
+        mPushSenderId = null;
 
         if (mAccountManager != null) {
             mAccountManager.removeOnAccountsUpdatedListener(mAccountsListener);
@@ -424,8 +436,14 @@ public class MessageCenterService extends Service
 
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
-        // TODO default tx listener
-        Log.v(TAG, "tx=" + txId + ", pack=" + pack);
+        if (txId.equals(mPushRequestTxId) && pack instanceof UserInfoUpdateResponse) {
+            UserInfoUpdateResponse res = (UserInfoUpdateResponse) pack;
+            boolean success = (res.getStatus().getNumber() == UserInfoUpdateStatus.STATUS_SUCCESS_VALUE);
+            GCMRegistrar.setRegisteredOnServer(this, (success && mPushRegistrationId != null));
+        }
+        else {
+            Log.v(TAG, "tx=" + txId + ", pack=" + pack);
+        }
         return true;
     }
 
@@ -453,7 +471,7 @@ public class MessageCenterService extends Service
             for (int i = 0; i < res.getSupportsCount(); i++) {
                 String data = res.getSupports(i);
                 if (data.startsWith("google_gcm=")) {
-                    mPushEmail = data.substring("google_gcm=".length());
+                    mPushSenderId = data.substring("google_gcm=".length());
                     if (mPushNotifications)
                         gcmRegister();
                 }
@@ -840,7 +858,7 @@ public class MessageCenterService extends Service
     public static void registerPushNotifications(Context context, String registrationId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_C2DM_REGISTERED);
-        i.putExtra(MessageCenterService.C2DM_REGISTRATION_ID, registrationId);
+        i.putExtra(MessageCenterService.GCM_REGISTRATION_ID, registrationId);
         context.startService(i);
     }
 
@@ -856,21 +874,28 @@ public class MessageCenterService extends Service
     }
 
     private void gcmRegister() {
-        if (mPushEmail != null) {
-            // e-mail of sender will be given by serverinfo if any
-            Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
-            registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
-            registrationIntent.putExtra("sender", mPushEmail);
-            startService(registrationIntent);
+        if (mPushSenderId != null) {
+            GCMRegistrar.checkDevice(this);
+            GCMRegistrar.checkManifest(this);
+
+            // senderId will be given by serverinfo if any
+            mPushRegistrationId = GCMRegistrar.getRegistrationId(this);
+            if (TextUtils.isEmpty(mPushRegistrationId))
+                // start registration
+                GCMRegistrar.register(this, mPushSenderId);
+            else
+                // already registered - send registration id to server
+                setPushRegistrationId(mPushRegistrationId);
         }
     }
 
     private void gcmUnregister() {
-        Intent unregIntent = new Intent("com.google.android.c2dm.intent.UNREGISTER");
-        unregIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
-        startService(unregIntent);
-
-        setPushRegistrationId(null);
+        if (GCMRegistrar.isRegistered(this))
+            // start unregistration
+            GCMRegistrar.unregister(this);
+        else
+            // force unregistration
+            setPushRegistrationId(null);
     }
 
     private void setPushRegistrationId(String regId) {
@@ -879,7 +904,8 @@ public class MessageCenterService extends Service
             mRequestWorker.setPushRegistrationId(regId);
 
         // notify the server about the change
-        pushRequest(new RequestJob() {
+        mPushRequestTxId = null;
+        mPushRequestJob = new RequestJob() {
             @Override
             public String execute(ClientThread client, RequestListener listener, Context context)
                     throws IOException {
@@ -887,7 +913,8 @@ public class MessageCenterService extends Service
                 b.setGoogleRegistrationId(mPushRegistrationId != null ? mPushRegistrationId: "");
                 return client.getConnection().send(b.build());
             }
-        });
+        };
+        pushRequest(mPushRequestJob);
     }
 
     public final class MessageCenterInterface extends Binder {
@@ -949,6 +976,12 @@ public class MessageCenterService extends Service
                 sendMessage(inc);
             }
         }
+
+        // the push request job! :)
+        else if (job == mPushRequestJob) {
+            mPushRequestTxId = txId;
+            client.setTxListener(mPushRequestTxId, MessageCenterService.this);
+        }
     }
 
     @Override
@@ -983,7 +1016,19 @@ public class MessageCenterService extends Service
             }
         }
 
+        // the push request job! :)
+        else if (job == mPushRequestJob) {
+            // mark as not registered on server
+            GCMRegistrar.setRegisteredOnServer(this, false);
+            mPushRequestTxId = null;
+            mPushRequestJob = null;
+        }
+
         return true;
+    }
+
+    public static String getPushSenderId() {
+        return mPushSenderId;
     }
 
 }
