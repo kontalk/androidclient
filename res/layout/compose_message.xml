@@ -38,7 +38,7 @@
         android:fastScrollAlwaysVisible="true"
         android:scrollbarStyle="insideInset"
         android:stackFromBottom="true"
-        android:fadingEdgeLength="16dp"
+        android:fadingEdgeLength="8dp"
         >
         <!-- Preview: listitem=@layout/message_list_item -->
     </ListView>
