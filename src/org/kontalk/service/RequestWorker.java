@@ -51,7 +51,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     private static final int MSG_REQUEST_JOB = 1;
     private static final int MSG_IDLE = 2;
 
-    private static final long DEFAULT_RETRY_DELAY = 10000;
+    private static final int DEFAULT_RETRY_DELAY = 10000;
+    private static final int MAX_RETRY_COUNT = 3;
 
     private PauseHandler mHandler;
 
@@ -241,6 +242,11 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                     return;
                 }
 
+                if (job.getStartCount() >= MAX_RETRY_COUNT) {
+                    Log.d(TAG, "job has reached maximum start times - dropping");
+                    return;
+                }
+
                 // try to use the custom listener
                 RequestListener listener = job.getListener();
                 if (listener != null)
@@ -283,6 +289,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         }
 
                         else {
+                            // begin job
+                            job.begin();
                             // start callback
                             w.mListeners.starting(w.mClient, job);
 
@@ -305,7 +313,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
                         if (requeue) {
                             Log.d(TAG, "requeuing job " + job);
-                            w.push(job, DEFAULT_RETRY_DELAY);
+                            w.push(job, -1);
                         }
                     }
                     finally {
@@ -462,9 +470,11 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 }
             }
 
-            mHandler.sendMessageDelayed(
-                    mHandler.obtainMessage(what, obj),
-                    delayMillis);
+            Message msg = mHandler.obtainMessage(what, obj);
+            if (delayMillis < 0)
+                mHandler.sendMessageAtFrontOfQueue(msg);
+            else
+                mHandler.sendMessageDelayed(msg, delayMillis);
 
             // abort any idle request
             if (mIdle) {

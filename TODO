@@ -17,3 +17,4 @@
 [x] empty token O.o (DO NOT INSTALL ON EXTERNAL STORAGE)
 [x] duplicated outgoing messages
 [x] balloon: let the user choose a balloon set
+[x] ordered delivery of messages (actually of request jobs)

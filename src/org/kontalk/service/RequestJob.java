@@ -36,6 +36,8 @@ public abstract class RequestJob {
     /** Used only if job is asynchronous. */
     protected Thread mThread;
     protected boolean mDone;
+    /** Execution attempt counter. */
+    protected int mCount;
 
     public void setListener(RequestListener listener) {
         mListener = listener;
@@ -82,12 +84,22 @@ public abstract class RequestJob {
         return false;
     }
 
+    /** Marks this job as done, resetting the execution counter. */
     public void done() {
         mDone = true;
+        mCount = 0;
     }
 
     public boolean isDone() {
         return mDone;
+    }
+
+    public void begin() {
+        mCount++;
+    }
+
+    public int getStartCount() {
+        return mCount;
     }
 
 }
