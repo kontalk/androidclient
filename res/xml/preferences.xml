@@ -65,7 +65,12 @@
             android:title="@string/pref_background_uri"
             android:summary="@string/pref_title_background_uri"
             android:dependency="pref_custom_background"/>
-
+        <ListPreference android:key="pref_balloons"
+            android:title="@string/pref_balloons"
+            android:summary="@string/pref_title_balloons"
+            android:entries="@array/balloons_labels"
+            android:entryValues="@array/balloons_values"
+            android:defaultValue="classic"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_notification_settings"

@@ -38,4 +38,14 @@
         <item>@string/message_text_medium</item>
         <item>@string/message_text_large</item>
     </string-array>
+
+    <string-array name="balloons_values">
+        <item>classic</item>
+        <item>iphone</item>
+    </string-array>
+    <string-array name="balloons_labels">
+        <item>@string/balloons_classic</item>
+        <item>@string/balloons_iphone</item>
+    </string-array>
+
 </resources>

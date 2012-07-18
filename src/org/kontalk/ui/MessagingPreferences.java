@@ -25,6 +25,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
@@ -43,6 +44,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -51,11 +53,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 
-public class MessagingPreferences extends PreferenceActivity {
+public final class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
 
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
     private static Drawable customBackground;
+    private static String balloonTheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +112,16 @@ public class MessagingPreferences extends PreferenceActivity {
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("image/*");
                 startActivityForResult(i, REQUEST_PICK_BACKGROUND);
+                return true;
+            }
+        });
+
+        //
+        final Preference balloons = findPreference("pref_balloons");
+        balloons.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                balloonTheme = (String) newValue;
                 return true;
             }
         });
@@ -318,8 +331,24 @@ public class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
+    /** TODO cache value */
     public static String getFontSize(Context context) {
         return getString(context, "pref_font_size", "medium");
+    }
+
+    public static int getBalloonResource(Context context, int direction) {
+        if (balloonTheme == null)
+            balloonTheme = getString(context, "pref_balloons", "classic");
+
+        if ("iphone".equals(balloonTheme))
+            return direction == Messages.DIRECTION_IN ?
+                R.drawable.balloon_iphone_incoming :
+                    R.drawable.balloon_iphone_outgoing;
+
+        // all other cases
+        return direction == Messages.DIRECTION_IN ?
+            R.drawable.balloon_classic_incoming :
+                R.drawable.balloon_classic_outgoing;
     }
 
     public static String getStatusMessage(Context context) {

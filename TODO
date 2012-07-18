@@ -16,3 +16,4 @@
 [x] porting to Google Cloud Messaging support library
 [x] empty token O.o (DO NOT INSTALL ON EXTERNAL STORAGE)
 [x] duplicated outgoing messages
+[x] balloon: let the user choose a balloon set

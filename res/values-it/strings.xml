@@ -187,4 +187,9 @@
     <string name="msg_status_notdelivered">Non consegnato</string>
     <string name="msg_status_delivered">Consegnato</string>
     <string name="msg_status_encrypted">Cifrato</string>
+
+    <string name="pref_balloons">Tema messaggi</string>
+    <string name="pref_title_balloons">Scegli un tema per i messaggi</string>
+    <string name="balloons_classic">Classico</string>
+    <string name="balloons_iphone">iPhone</string>
 </resources>
