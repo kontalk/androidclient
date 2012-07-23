@@ -1,4 +1,4 @@
-[ ] support for VCard exchange
+[ ] compose->menu->attach: choose between media types
 [ ] ListView: still issues with fading edge
 [ ] sync: testing needed for country code in offline mode
 [ ] (plural) list -> (singular) list (??)
@@ -15,3 +15,4 @@
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [ ] separate processes (main/UI, message center, sync adapter)
+[x] support for VCard exchange

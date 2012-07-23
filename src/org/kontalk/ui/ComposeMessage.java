@@ -130,8 +130,29 @@ public class ComposeMessage extends FragmentActivity {
             setTitle(title);
     }
 
+    private static final int ACTION_ITEM_IMAGE = 1;
+    private static final int ACTION_ITEM_CONTACT = 2;
+
     public void titleAttachment(View view) {
-        mFragment.selectAttachment();
+        final QuickAction mQuickAction = new QuickAction(this);
+        mQuickAction.addActionItem(new ActionItem(ACTION_ITEM_IMAGE, null,
+            getResources().getDrawable(R.drawable.ic_launcher_gallery)));
+        mQuickAction.addActionItem(new ActionItem(ACTION_ITEM_CONTACT, null,
+            getResources().getDrawable(R.drawable.ic_launcher_contacts)));
+
+        mQuickAction.setOnActionItemClickListener(new QuickAction.OnActionItemClickListener() {
+            public void onItemClick(QuickAction source, int pos, int actionId) {
+                switch (actionId) {
+                    case ACTION_ITEM_IMAGE:
+                        mFragment.selectImageAttachment();
+                        break;
+                    case ACTION_ITEM_CONTACT:
+                        mFragment.selectContactAttachment();
+                        break;
+                }
+            }
+        });
+        mQuickAction.show(view);
     }
 
     private void processIntent(Bundle savedInstanceState) {

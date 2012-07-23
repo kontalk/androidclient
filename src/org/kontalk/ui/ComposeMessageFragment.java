@@ -86,6 +86,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PatternMatcher;
+import android.provider.ContactsContract.Contacts;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -124,7 +125,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
 	private static final int CONVERSATION_QUERY_TOKEN = 8721;
 
-	private static final int SELECT_ATTACHMENT = 1;
+	private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
+	private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
 
     /** Context menu group ID for this fragment. */
     private static final int CONTEXT_MENU_GROUP_ID = 2;
@@ -645,7 +647,8 @@ public class ComposeMessageFragment extends ListFragment implements
 			return true;
 
 		case R.id.menu_attachment:
-			selectAttachment();
+		    // TODO should be an attachment type chooser
+			selectImageAttachment();
 			return true;
 
 		case R.id.delete_thread:
@@ -741,11 +744,16 @@ public class ComposeMessageFragment extends ListFragment implements
         startActivity(i);
 	}
 
-	public void selectAttachment() {
+	public void selectImageAttachment() {
 		Intent i = new Intent(Intent.ACTION_GET_CONTENT)
 		    .addCategory(Intent.CATEGORY_OPENABLE)
 		    .setType("image/*");
-		startActivityForResult(i, SELECT_ATTACHMENT);
+		startActivityForResult(i, SELECT_ATTACHMENT_OPENABLE);
+	}
+
+	public void selectContactAttachment() {
+        Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+        startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
 	}
 
 	private void deleteThread() {
@@ -997,7 +1005,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == Activity.RESULT_OK) {
-			if (requestCode == SELECT_ATTACHMENT) {
+			if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
 				Uri uri = data.getData();
 				String mime = data.getType();
 				if (uri != null) {
@@ -1011,7 +1019,29 @@ public class ComposeMessageFragment extends ListFragment implements
 					    sendBinaryMessage(uri, mime, true, ImageMessage.class);
 					else if (VCardMessage.supportsMimeType(mime))
 					    sendBinaryMessage(uri, mime, false, VCardMessage.class);
+					else
+			            Toast.makeText(getActivity(), R.string.send_mime_not_supported, Toast.LENGTH_LONG)
+		                    .show();
 				}
+			}
+			else if (requestCode == SELECT_ATTACHMENT_CONTACT) {
+			    Uri uri = data.getData();
+			    if (uri != null) {
+			        // get lookup key
+		            final Cursor c = getActivity().getContentResolver()
+		                .query(uri, new String[] { Contacts.LOOKUP_KEY }, null, null, null);
+		            if (c != null) {
+		                try {
+		                    c.moveToFirst();
+		                    String lookupKey = c.getString(0);
+		                    Uri vcardUri = Uri.withAppendedPath(Contacts.CONTENT_VCARD_URI, lookupKey);
+		                    sendBinaryMessage(vcardUri, VCardMessage.MIME_TYPES[0], false, VCardMessage.class);
+		                }
+		                finally {
+		                    c.close();
+		                }
+		            }
+			    }
 			}
 		}
 	}
