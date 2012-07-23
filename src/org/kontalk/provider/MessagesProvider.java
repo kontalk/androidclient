@@ -96,7 +96,6 @@ public class MessagesProvider extends ContentProvider {
             "status_changed INTEGER," +
             "status INTEGER," +
             "fetch_url TEXT," +
-            "fetched INTEGER NOT NULL DEFAULT 0," +
             "local_uri TEXT," +
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             "encrypt_key TEXT," +
@@ -493,7 +492,6 @@ public class MessagesProvider extends ContentProvider {
         // remove some other column
         values.remove(Messages.REAL_ID);
         values.remove(Messages.FETCH_URL);
-        values.remove(Messages.FETCHED);
         values.remove(Messages.LOCAL_URI);
         values.remove(Messages.PREVIEW_PATH);
         values.remove(Messages.ENCRYPTED);
@@ -1098,7 +1096,6 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.STATUS_CHANGED, Messages.STATUS_CHANGED);
         messagesProjectionMap.put(Messages.STATUS, Messages.STATUS);
         messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
-        messagesProjectionMap.put(Messages.FETCHED, Messages.FETCHED);
         messagesProjectionMap.put(Messages.LOCAL_URI, Messages.LOCAL_URI);
         messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
         messagesProjectionMap.put(Messages.ENCRYPT_KEY, Messages.ENCRYPT_KEY);

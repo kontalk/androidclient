@@ -33,7 +33,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.util.Log;
 
 
@@ -132,13 +131,8 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
          * generated on the fly from local_uri - if possible.
          */
 
-        String _localUri = c.getString(COLUMN_LOCAL_URI);
         String _previewPath = c.getString(COLUMN_PREVIEW_PATH);
         try {
-            // load local uri
-            if (_localUri != null && _localUri.length() > 0)
-                localUri = Uri.parse(_localUri);
-
             // preview path
             if (_previewPath != null && _previewPath.length() > 0) {
                 // load from file - we know it's a file uri

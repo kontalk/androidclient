@@ -80,7 +80,7 @@ public abstract class RequestJob {
     }
 
     /** Returns true if this job needs to be executed in a separate thread. */
-    public boolean isAsync() {
+    public boolean isAsync(Context context) {
         return false;
     }
 

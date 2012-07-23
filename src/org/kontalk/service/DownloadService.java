@@ -209,7 +209,6 @@ public class DownloadService extends IntentService implements DownloadListener {
         // update messages.localUri
         ContentValues values = new ContentValues();
         values.put(Messages.LOCAL_URI, uri.toString());
-        values.put(Messages.FETCHED, true);
         getContentResolver().update(Messages.getUri(messageId), values, null, null);
     }
 

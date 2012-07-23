@@ -528,27 +528,32 @@ public class MessageCenterService extends Service
             // store to file if it's an image message
             byte[] content = msg.getBinaryContent();
 
-            // FIXME this should be abstracted somehow (e.g. MediaMessage supertype)
-            if (msg instanceof ImageMessage) {
-                String filename = ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
-                File file = null;
-                try {
-                    file = MediaStorage.writeInternalMedia(this, filename, content);
+            // message has a fetch url - store preview in cache (if any)
+            // TODO abstract somehow
+            if (msg.getFetchUrl() != null) {
+                if (msg instanceof ImageMessage) {
+                    String filename = AbstractMessage.buildMediaFilename(msg);
+                    File file = null;
+                    try {
+                        file = MediaStorage.writeInternalMedia(this, filename, content);
+                    }
+                    catch (IOException e) {
+                        Log.e(TAG, "unable to write to media storage", e);
+                    }
+                    // update uri
+                    msg.setPreviewFile(file);
                 }
-                catch (IOException e) {
-                    Log.e(TAG, "unable to write to media storage", e);
-                }
-                // update uri
-                msg.setPreviewFile(file);
 
                 // use text content for database table
                 content = msg.getTextContent().getBytes();
             }
-            else if (msg instanceof VCardMessage) {
+
+            // TODO abstract somehow
+            if (msg.getFetchUrl() == null && msg instanceof VCardMessage) {
                 String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
                 File file = null;
                 try {
-                    file = MediaStorage.writeInternalMedia(this, filename, content);
+                    file = MediaStorage.writeMedia(filename, content);
                 }
                 catch (IOException e) {
                     Log.e(TAG, "unable to write to media storage", e);
@@ -570,10 +575,19 @@ public class MessageCenterService extends Service
             values.put(Messages.CONTENT, content);
             values.put(Messages.ENCRYPTED, msg.isEncrypted());
             values.put(Messages.ENCRYPT_KEY, (msg.wasEncrypted()) ? "" : null);
-            values.put(Messages.FETCH_URL, msg.getFetchUrl());
+
+            String fetchUrl = msg.getFetchUrl();
+            if (fetchUrl != null)
+                values.put(Messages.FETCH_URL, fetchUrl);
+
+            Uri localUri = msg.getLocalUri();
+            if (localUri != null)
+                values.put(Messages.LOCAL_URI, localUri.toString());
+
             File previewFile = msg.getPreviewFile();
             if (previewFile != null)
                 values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
+
             values.put(Messages.UNREAD, true);
             values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
             values.put(Messages.TIMESTAMP, msg.getTimestamp());
@@ -928,7 +942,7 @@ public class MessageCenterService extends Service
         // not a plain text message - use progress notification
         if (job instanceof MessageSender) {
             MessageSender msg = (MessageSender) job;
-            if (msg.getSourceUri() != null) {
+            if (msg.isAsync(this)) {
                 try {
                     startForeground(msg.getUserId(), msg.getContentLength(this));
                 }
@@ -966,7 +980,7 @@ public class MessageCenterService extends Service
         if (job instanceof MessageSender) {
             // we are sending a message, check if it's a binary content
             MessageSender msg = (MessageSender) job;
-            if (msg.getSourceUri() != null) {
+            if (msg.isAsync(this)) {
                 // stop any foreground notification
                 stopForeground();
                 // queue an attachment MessageSender (txId is the fileid)
@@ -994,7 +1008,7 @@ public class MessageCenterService extends Service
                 return false;
 
             MessageSender job2 = (MessageSender) job;
-            if (job2.getSourceUri() != null) {
+            if (job2.isAsync(this)) {
                 // create intent for upload error notification
                 // TODO this Intent should bring the user to the actual conversation
                 Intent i = new Intent(this, ConversationList.class);

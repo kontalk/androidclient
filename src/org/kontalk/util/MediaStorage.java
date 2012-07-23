@@ -126,6 +126,15 @@ public abstract class MediaStorage {
         return f;
     }
 
+    public static File writeMedia(String filename, byte[] contents) throws IOException {
+        MEDIA_ROOT.mkdirs();
+        File f = new File(MEDIA_ROOT, filename);
+        FileOutputStream fout = new FileOutputStream(f);
+        fout.write(contents);
+        fout.close();
+        return f;
+    }
+
     public static long getLength(Context context, Uri media) throws IOException {
         AssetFileDescriptor stat = null;
         try {

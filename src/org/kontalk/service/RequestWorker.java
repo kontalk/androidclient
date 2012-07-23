@@ -250,7 +250,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 // try to use the custom listener
                 RequestListener listener = job.getListener();
                 if (listener != null)
-                    w.addListener(listener, job.isAsync());
+                    w.addListener(listener, job.isAsync(w.mContext));
 
                 // synchronize on client pack lock
                 synchronized (w.mClient.getPackLock()) {
@@ -278,7 +278,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             }
                         }
 
-                        if (job.isAsync()) {
+                        if (job.isAsync(w.mContext)) {
                             // we should keep the worker alive
                             hold();
                             AsyncRequestJob tjob = new AsyncRequestJob(w, job, w.mClient, w.mListeners, w.mContext);
@@ -317,7 +317,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                         }
                     }
                     finally {
-                        if (!job.isAsync()) {
+                        if (!job.isAsync(w.mContext)) {
                             // unobserve if necessary
                             if (job instanceof MessageSender) {
                                 MessageSender mess = (MessageSender) job;

@@ -19,11 +19,14 @@
 package org.kontalk.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.kontalk.client.Protocol.FileUploadResponse;
 import org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus;
 import org.kontalk.client.Protocol.MessagePostRequest;
 import org.kontalk.crypto.Coder;
+import org.kontalk.message.PlainTextMessage;
+import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
@@ -34,6 +37,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 
 import com.google.protobuf.ByteString;
 
@@ -43,14 +47,18 @@ import com.google.protobuf.ByteString;
  * @author Daniele Ricci
  */
 public class MessageSender extends RequestJob {
+    private static final String TAG = MessageSender.class.getSimpleName();
+    // TODO retrieve this from serverinfo
+    private static final int MAX_MESSAGE_SIZE = 102400;
 
-    private final byte[] mContent;
+    private byte[] mContent;
+    private long mCachedLength = -1;
     private final String mPeer;
     private final Uri mUri;
     private final String mMime;
     private final Uri mSourceDataUri;
     private final String mEncryptKey;
-    private final boolean mAttachment;
+    private boolean mAttachment;
     private String mFileId;
 
     /** A {@link MessageSender} for raw byte contents. */
@@ -80,13 +88,28 @@ public class MessageSender extends RequestJob {
     }
 
     public long getContentLength(Context context) throws IOException {
-        if (mContent != null)
-            return mContent.length;
-        else {
-            AssetFileDescriptor fd = context.getContentResolver()
-                .openAssetFileDescriptor(mSourceDataUri, "r");
-            return fd.getLength();
+        if (mCachedLength < 0) {
+            if (mContent != null)
+                mCachedLength = mContent.length;
+            else {
+                AssetFileDescriptor fd = null;
+                try {
+                    fd = context.getContentResolver()
+                        .openAssetFileDescriptor(mSourceDataUri, "r");
+                    mCachedLength = fd.getLength();
+                }
+                finally {
+                    try {
+                        fd.close();
+                    }
+                    catch (Exception e) {
+                        // ignored
+                    }
+                }
+            }
         }
+
+        return mCachedLength;
     }
 
     public Uri getSourceUri() {
@@ -118,8 +141,21 @@ public class MessageSender extends RequestJob {
     }
 
     @Override
-    public boolean isAsync() {
-        return (mSourceDataUri != null);
+    public boolean isAsync(Context context) {
+        if (mSourceDataUri != null) {
+            if (PlainTextMessage.supportsMimeType(mMime) || VCardMessage.supportsMimeType(mMime)) {
+                long length;
+                try {
+                    length = getContentLength(context);
+                }
+                catch (Exception e) {
+                    length = -1;
+                }
+                return (length > MAX_MESSAGE_SIZE);
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -137,8 +173,8 @@ public class MessageSender extends RequestJob {
     }
 
     @Override
-    public String execute(ClientThread client, RequestListener listener,
-            Context context) throws IOException {
+    public String execute(ClientThread client, RequestListener listener, Context context)
+            throws IOException {
 
         if (mContent != null) {
             MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
@@ -173,6 +209,41 @@ public class MessageSender extends RequestJob {
         }
 
         else {
+            // if message is plain text, send it as normal text if possible
+            // FIXME abstract
+            if (PlainTextMessage.supportsMimeType(mMime) || VCardMessage.supportsMimeType(mMime)) {
+                // if message is bigger than a reasonable size, send it as attachment
+                // otherwise proceed to normal text sending
+                InputStream in = null;
+                long length = -1;
+                try {
+                    length = getContentLength(context);
+                    if (length >= 0 && length <= MAX_MESSAGE_SIZE) {
+                        in = context.getContentResolver().openInputStream(mSourceDataUri);
+                        // this approach is safe for now because max size is hard-coded
+                        mContent = new byte[(int) length];
+                        in.read(mContent);
+                    }
+                }
+                catch (Exception e) {
+                    Log.w(TAG, "unable to read file contents - sending file as attachment");
+                }
+                finally {
+                    try {
+                        in.close();
+                    }
+                    catch (Exception e) {
+                        // ignored
+                    }
+                }
+
+                // sending file as plain text
+                if (length >= 0 && mContent != null) {
+                    mAttachment = false;
+                    return execute(client, listener, context);
+                }
+            }
+
             ClientHTTPConnection conn = client.getHttpConnection();
             FileUploadResponse res = conn.message(new String[] { mPeer }, mMime, mSourceDataUri, context, this, mListener);
             if (res != null) {

@@ -246,7 +246,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sendTextMessage();
+				sendTextMessage(null, true);
 			}
 		});
 
@@ -304,7 +304,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		}
 
 		public ComposerServiceConnection(String userId, Uri fileUri,
-				String mime, Uri msgUri, String encryptKey) {
+				String mime, Uri msgUri, String encryptKey, boolean media) {
 			job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
             // listener will be set by message center
 		}
@@ -427,7 +427,6 @@ public class ComposeMessageFragment extends ListFragment implements
             values.put(Messages.LENGTH, MediaStorage.getLength(getActivity(), uri));
 			if (previewFile != null)
 				values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
-			values.put(Messages.FETCHED, true);
 			newMsg = getActivity().getContentResolver().insert(
 					Messages.CONTENT_URI, values);
 		}
@@ -453,9 +452,9 @@ public class ComposeMessageFragment extends ListFragment implements
 			}
 
 			// send the message!
-			// FIXME do not encrypt images for now
+			// FIXME do not encrypt binary messages for now
 			ComposerServiceConnection conn = new ComposerServiceConnection(
-					userId, uri, mime, newMsg, null);
+					userId, uri, mime, newMsg, null, media);
 			if (!getActivity().bindService(
 					new Intent(getActivity().getApplicationContext(),
 							MessageCenterService.class), conn,
@@ -574,8 +573,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	/** Sends out the text message in the composing entry. */
-	public void sendTextMessage() {
-		String text = mTextEntry.getText().toString();
+	public void sendTextMessage(String text, boolean fromTextEntry) {
+	    if (fromTextEntry)
+	        text = mTextEntry.getText().toString();
+
 		if (!TextUtils.isEmpty(text)) {
 			/*
 			 * TODO show an animation to warn the user that the message
@@ -585,14 +586,16 @@ public class ComposeMessageFragment extends ListFragment implements
 			// start thread
 			new TextMessageThread(text).start();
 
-            // empty text
-            mTextEntry.setText("");
+			if (fromTextEntry) {
+	            // empty text
+                mTextEntry.setText("");
 
-            // hide softkeyboard
-            InputMethodManager imm = (InputMethodManager) getActivity()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(),
-                    InputMethodManager.HIDE_IMPLICIT_ONLY);
+                // hide softkeyboard
+                InputMethodManager imm = (InputMethodManager) getActivity()
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(),
+                        InputMethodManager.HIDE_IMPLICIT_ONLY);
+			}
 		}
 	}
 
@@ -663,11 +666,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	@Override
 	public void onListItemClick(ListView listView, View view, int position, long id) {
 	    MessageListItem item = (MessageListItem) view;
-	    final AbstractMessage<?> _msg = item.getMessage();
-	    if (_msg instanceof ImageMessage) {
-	        ImageMessage msg = (ImageMessage) _msg;
+	    final AbstractMessage<?> msg = item.getMessage();
+	    if (msg.getFetchUrl() != null || msg.getLocalUri() != null) {
 	        // outgoing message or already fetched
-	        if (msg.getDirection() == Messages.DIRECTION_OUT || msg.isFetched()) {
+	        if (msg.getLocalUri() != null) {
 	            // open file
 	            openFile(msg);
 	        }
@@ -683,11 +685,11 @@ public class ComposeMessageFragment extends ListFragment implements
                     .setNegativeButton(android.R.string.cancel, null)
                     .setCancelable(true);
 
-                if (!DownloadService.isQueued(_msg.getFetchUrl())) {
+                if (!DownloadService.isQueued(msg.getFetchUrl())) {
                     DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // start file download
-                            startDownload(_msg);
+                            startDownload(msg);
                         }
                     };
                     builder.setPositiveButton(R.string.download, startDL);
@@ -696,7 +698,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     DialogInterface.OnClickListener stopDL = new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // cancel file download
-                            stopDownload(_msg);
+                            stopDownload(msg);
                         }
                     };
                     builder.setPositiveButton(R.string.download_cancel, stopDL);
@@ -740,9 +742,9 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	public void selectAttachment() {
-		Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-		i.addCategory(Intent.CATEGORY_OPENABLE);
-		i.setType("image/*");
+		Intent i = new Intent(Intent.ACTION_GET_CONTENT)
+		    .addCategory(Intent.CATEGORY_OPENABLE)
+		    .setType("image/*");
 		startActivityForResult(i, SELECT_ATTACHMENT);
 	}
 
@@ -825,55 +827,41 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (!msg.isEncrypted()) {
 			// sharing media messages has no purpose if media file hasn't been
 			// retrieved yet
-			if (msg instanceof PlainTextMessage ? true
-					: msg.getLocalUri() != null)
+			if (msg instanceof PlainTextMessage ? true : msg.getLocalUri() != null)
 				menu.add(CONTEXT_MENU_GROUP_ID, MENU_SHARE, MENU_SHARE, R.string.share);
 		}
 
-		if (msg instanceof ImageMessage) {
-			// we are able to view image if either we fetched the image or we
-			// sent that
-			int string, id;
-			// outgoing or already fetched
-			if (msg.getDirection() == Messages.DIRECTION_OUT || msg.isFetched())
-				menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN,
-						R.string.view_image);
+		if (msg.getFetchUrl() != null || msg.getLocalUri() != null) {
+		    // message has a local uri - add open file entry
+		    if (msg.getLocalUri() != null) {
+		        int resId;
+		        if (msg instanceof ImageMessage)
+		            resId = R.string.view_image;
+		        else
+		            resId = R.string.open_file;
 
-			// incoming
-			if (msg.getDirection() == Messages.DIRECTION_IN) {
-			    if (!DownloadService.isQueued(msg.getFetchUrl())) {
-    				// already fetched
-    				if (msg.isFetched())
-    					string = R.string.download_again;
-    				else
-    					string = R.string.download_file;
-    				id = MENU_DOWNLOAD;
-			    }
-			    else {
-			        string = R.string.download_cancel;
-			        id = MENU_CANCEL_DOWNLOAD;
-			    }
+                menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN, resId);
+		    }
+
+		    // message has a fetch url - add download control entry
+		    if (msg.getFetchUrl() != null) {
+		        int id, string;
+                if (!DownloadService.isQueued(msg.getFetchUrl())) {
+                    // already fetched
+                    if (msg.getLocalUri() != null)
+                        string = R.string.download_again;
+                    else
+                        string = R.string.download_file;
+                    id = MENU_DOWNLOAD;
+                }
+                else {
+                    string = R.string.download_cancel;
+                    id = MENU_CANCEL_DOWNLOAD;
+                }
                 menu.add(CONTEXT_MENU_GROUP_ID, id, id, string);
-			}
+		    }
 		}
-		else if (msg instanceof VCardMessage) {
-			// TODO handle encrypted vCards
-			int string;
-			// outgoing or already fetched
-			if (msg.isFetched() || msg.getDirection() == Messages.DIRECTION_OUT)
-				menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN,
-						R.string.open_file);
 
-			// incoming
-			if (msg.getDirection() == Messages.DIRECTION_IN) {
-				// already fetched
-				if (msg.isFetched())
-					string = R.string.download_again;
-				else
-					string = R.string.download_file;
-				menu.add(CONTEXT_MENU_GROUP_ID, MENU_DOWNLOAD, MENU_DOWNLOAD, string);
-			}
-		}
 		else {
 			if (msg.isEncrypted())
 				menu.add(CONTEXT_MENU_GROUP_ID, MENU_DECRYPT, MENU_DECRYPT,
@@ -883,8 +871,7 @@ public class ComposeMessageFragment extends ListFragment implements
 						R.string.copy_message_text);
 		}
 
-		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DETAILS, MENU_DETAILS,
-				R.string.menu_message_details);
+		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DETAILS, MENU_DETAILS, R.string.menu_message_details);
 		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE, MENU_DELETE, R.string.delete_message);
 	}
 
@@ -1020,7 +1007,10 @@ public class ComposeMessageFragment extends ListFragment implements
 						Log.v(TAG, "using detected mime type " + mime);
 					}
 
-					sendBinaryMessage(uri, mime, true, ImageMessage.class);
+					if (ImageMessage.supportsMimeType(mime))
+					    sendBinaryMessage(uri, mime, true, ImageMessage.class);
+					else if (VCardMessage.supportsMimeType(mime))
+					    sendBinaryMessage(uri, mime, false, VCardMessage.class);
 				}
 			}
 		}

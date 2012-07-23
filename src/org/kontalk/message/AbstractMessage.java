@@ -71,7 +71,6 @@ public abstract class AbstractMessage<T> {
         Messages.CONTENT,
         Messages.STATUS,
         Messages.FETCH_URL,
-        Messages.FETCHED,
         Messages.LOCAL_URI,
         Messages.PREVIEW_PATH,
         Messages.ENCRYPTED,
@@ -92,12 +91,11 @@ public abstract class AbstractMessage<T> {
     public static final int COLUMN_CONTENT = 9;
     public static final int COLUMN_STATUS = 10;
     public static final int COLUMN_FETCH_URL = 11;
-    public static final int COLUMN_FETCHED = 12;
-    public static final int COLUMN_LOCAL_URI = 13;
-    public static final int COLUMN_PREVIEW_PATH = 14;
-    public static final int COLUMN_ENCRYPTED = 15;
-    public static final int COLUMN_ENCRYPT_KEY = 16;
-    public static final int COLUMN_LENGTH = 17;
+    public static final int COLUMN_LOCAL_URI = 12;
+    public static final int COLUMN_PREVIEW_PATH = 13;
+    public static final int COLUMN_ENCRYPTED = 14;
+    public static final int COLUMN_ENCRYPT_KEY = 15;
+    public static final int COLUMN_LENGTH = 16;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
@@ -119,7 +117,6 @@ public abstract class AbstractMessage<T> {
     protected String rawServerTimestamp;
     protected long statusChanged;
     protected int status;
-    protected boolean fetched;
     protected boolean encrypted;
     /** Of course this is used only for outgoing messages. */
     protected String encryptKey;
@@ -319,6 +316,7 @@ public abstract class AbstractMessage<T> {
         return fetchUrl;
     }
 
+    /*
     public void setFetched(boolean fetched) {
         this.fetched = fetched;
     }
@@ -326,6 +324,7 @@ public abstract class AbstractMessage<T> {
     public boolean isFetched() {
         return this.fetched;
     }
+    */
 
     /** Sets a pointer to the local resource. */
     public void setLocalUri(Uri uri) {
@@ -386,11 +385,14 @@ public abstract class AbstractMessage<T> {
         status = c.getInt(COLUMN_STATUS);
         recipients = new ArrayList<String>();
         fetchUrl = c.getString(COLUMN_FETCH_URL);
-        fetched = (c.getShort(COLUMN_FETCHED) > 0);
         encrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         encryptKey = c.getString(COLUMN_ENCRYPT_KEY);
         setServerTimestamp(c.getString(COLUMN_SERVER_TIMESTAMP));
         length = c.getLong(COLUMN_LENGTH);
+        String _localUri = c.getString(COLUMN_LOCAL_URI);
+        // load local uri
+        if (_localUri != null && _localUri.length() > 0)
+            localUri = Uri.parse(_localUri);
 
         String peer = c.getString(COLUMN_PEER);
         int direction = c.getInt(COLUMN_DIRECTION);
@@ -422,13 +424,12 @@ public abstract class AbstractMessage<T> {
         rawServerTimestamp = null;
         statusChanged = 0;
         status = 0;
-        fetched = false;
         encrypted = false;
         encryptKey = null;
         needAck = false;
     }
 
-    /** Release this message for later use in global pool. */
+    /** Release this message for later use in the global pool. */
     public abstract void recycle();
 
     public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
@@ -461,6 +462,14 @@ public abstract class AbstractMessage<T> {
         handler.startQuery(token, null,
                 ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId),
                 MESSAGE_LIST_PROJECTION, null, null, Messages.DEFAULT_SORT_ORDER);
+    }
+
+    public static String buildMediaFilename(AbstractMessage<?> msg) {
+        if (msg instanceof ImageMessage)
+            return ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
+        else if (msg instanceof VCardMessage)
+            return VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
+        return null;
     }
 
     /** Still unused.

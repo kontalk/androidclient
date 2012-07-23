@@ -80,6 +80,8 @@ public class ClientHTTPConnection {
         try {
             AssetFileDescriptor stat = context.getContentResolver().openAssetFileDescriptor(uri, "r");
             long length = stat.getLength();
+            stat.close();
+
             InputStream in = context.getContentResolver().openInputStream(uri);
 
             InputStream toMessage = null;
