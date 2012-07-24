@@ -56,6 +56,7 @@ import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.service.UserLookupJob;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 
@@ -118,7 +119,7 @@ import com.google.protobuf.MessageLite;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnLongClickListener, RequestListener, TxListener {
+		View.OnLongClickListener, RequestListener, TxListener, IconContextMenuOnClickListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -130,6 +131,12 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Context menu group ID for this fragment. */
     private static final int CONTEXT_MENU_GROUP_ID = 2;
+
+    /* Attachment chooser stuff. */
+    private static final int CONTEXT_MENU_ATTACHMENT = 1;
+    private static final int ATTACHMENT_ACTION_PICTURE = 1;
+    private static final int ATTACHMENT_ACTION_CONTACT = 2;
+    private IconContextMenu attachmentMenu;
 
 	private MessageListQueryHandler mQueryHandler;
 	private MessageListAdapter mListAdapter;
@@ -647,8 +654,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			return true;
 
 		case R.id.menu_attachment:
-		    // TODO should be an attachment type chooser
-			selectImageAttachment();
+		    selectAttachment();
 			return true;
 
 		case R.id.delete_thread:
@@ -744,6 +750,31 @@ public class ComposeMessageFragment extends ListFragment implements
         startActivity(i);
 	}
 
+	/** Listener for attachment type chooser. */
+    @Override
+    public void onClick(int id) {
+        switch (id) {
+            case ATTACHMENT_ACTION_PICTURE:
+                selectImageAttachment();
+                break;
+            case ATTACHMENT_ACTION_CONTACT:
+                selectContactAttachment();
+                break;
+        }
+    }
+
+	/** Starts dialog for attachment selection. */
+	private void selectAttachment() {
+	    if (attachmentMenu == null) {
+	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
+	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
+	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
+	        attachmentMenu.setOnClickListener(this);
+	    }
+	    attachmentMenu.createMenu("Attach").show();
+	}
+
+	/** Starts activity for an image attachment. */
 	public void selectImageAttachment() {
 		Intent i = new Intent(Intent.ACTION_GET_CONTENT)
 		    .addCategory(Intent.CATEGORY_OPENABLE)
@@ -751,6 +782,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		startActivityForResult(i, SELECT_ATTACHMENT_OPENABLE);
 	}
 
+	/** Starts activity for a vCard attachment from a contact. */
 	public void selectContactAttachment() {
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
@@ -1735,4 +1767,5 @@ public class ComposeMessageFragment extends ListFragment implements
         // cancel auto-change
         mHandler.removeCallbacksAndMessages(null);
     }
+
 }

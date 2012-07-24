@@ -192,4 +192,8 @@
     <string name="pref_title_balloons">Scegli un tema per i messaggi</string>
     <string name="balloons_classic">Classico</string>
     <string name="balloons_iphone">iPhone</string>
+
+    <string name="attachment_picture">Immagine</string>
+    <string name="attachment_contact">Contatto</string>
+
 </resources>
