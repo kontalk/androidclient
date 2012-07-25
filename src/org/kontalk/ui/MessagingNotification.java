@@ -152,6 +152,18 @@ public class MessagingNotification {
         no.setLatestEventInfo(context.getApplicationContext(),
                 accumulator.getTitle(), accumulator.getText(), accumulator.getPendingIntent());
         nm.notify(NOTIFICATION_ID_MESSAGES, no);
+
+        // TODO take this from configuration
+        boolean quickReply = true;
+        if (isNew && quickReply) {
+            Intent i = new Intent(context.getApplicationContext(), QuickReplyActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            i.putExtra("org.kontalk.quickreply.FROM", accumulator.getLastMessagePeer());
+            i.putExtra("org.kontalk.quickreply.MESSAGE", accumulator.getLastMessageText());
+            i.putExtra("org.kontalk.quickreply.OPEN_INTENT", accumulator.getLastMessagePendingIntent());
+            context.startActivity(i);
+        }
     }
 
     /**
@@ -253,6 +265,21 @@ public class MessagingNotification {
             else {
                 ni = ComposeMessage.fromConversation(mContext, conversation.id);
             }
+            return PendingIntent.getActivity(mContext, NOTIFICATION_ID_MESSAGES,
+                    ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+
+        public String getLastMessageText() {
+            return conversation.content;
+        }
+
+        public String getLastMessagePeer() {
+            return conversation.peer;
+        }
+
+        public PendingIntent getLastMessagePendingIntent() {
+            // one unread conversation - open ComposeMessage on that peer
+            Intent ni = ComposeMessage.fromConversation(mContext, conversation.id);
             return PendingIntent.getActivity(mContext, NOTIFICATION_ID_MESSAGES,
                     ni, Intent.FLAG_ACTIVITY_NEW_TASK);
         }
