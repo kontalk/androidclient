@@ -47,4 +47,9 @@ public class VCardMessage extends PlainTextMessage {
         return false;
     }
 
+    @Override
+    public void recycle() {
+        // nothing
+    }
+
 }
