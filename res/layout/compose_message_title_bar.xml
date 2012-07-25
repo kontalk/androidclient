@@ -61,6 +61,9 @@
         android:layout_alignTop="@+id/avatar"
         android:layout_toLeftOf="@+id/divider"
         android:layout_toRightOf="@+id/avatar"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:scrollHorizontally="true"
         android:gravity="center_vertical" />
 
     <TextView
@@ -71,6 +74,9 @@
         android:layout_alignBottom="@+id/avatar"
         android:layout_alignLeft="@android:id/title"
         android:layout_alignRight="@+id/divider"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:scrollHorizontally="true"
         android:gravity="center_vertical" />
 
 </RelativeLayout>
