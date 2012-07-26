@@ -49,6 +49,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_DOWNLOADING     = 104;
     public static final int NOTIFICATION_ID_DOWNLOAD_OK     = 105;
     public static final int NOTIFICATION_ID_DOWNLOAD_ERROR  = 106;
+    public static final int NOTIFICATION_ID_QUICK_REPLY     = 107;
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {
@@ -265,7 +266,7 @@ public class MessagingNotification {
                 ni = ComposeMessage.fromConversation(mContext, conversation.id);
             }
             return PendingIntent.getActivity(mContext, NOTIFICATION_ID_MESSAGES,
-                    ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+                    ni, 0);
         }
 
         public String getLastMessageText() {
@@ -279,8 +280,8 @@ public class MessagingNotification {
         public PendingIntent getLastMessagePendingIntent() {
             // one unread conversation - open ComposeMessage on that peer
             Intent ni = ComposeMessage.fromConversation(mContext, conversation.id);
-            return PendingIntent.getActivity(mContext, NOTIFICATION_ID_MESSAGES,
-                    ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+            return PendingIntent.getActivity(mContext, NOTIFICATION_ID_QUICK_REPLY,
+                    ni, 0);
         }
     }
 }
