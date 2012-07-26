@@ -29,6 +29,18 @@
         android:layout_below="@+id/from"
         android:text="Lorem ipsus has suffered great losses. He will be punished for that!" />
 
+    <EditText
+        android:id="@+id/content_editor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/buttonbox"
+        android:layout_alignLeft="@+id/from"
+        android:layout_alignRight="@+id/from"
+        android:layout_below="@+id/from"
+        android:visibility="gone"
+        android:gravity="top|left"
+        android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine" />
+
     <LinearLayout
         android:id="@+id/buttonbox"
         android:layout_width="wrap_content"
@@ -39,12 +51,19 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp" >
 
-        <Button
+        <Button android:id="@+id/reply"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:onClick="reply"
             android:text="Reply" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="close"
+            android:text="Later" />
 
         <Button
             android:layout_width="0dp"

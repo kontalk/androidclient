@@ -328,7 +328,13 @@ public class ComposeMessageFragment extends ListFragment implements
 			MessageCenterInterface binder = (MessageCenterInterface) ibinder;
 			service = binder.getService();
 			service.sendMessage(job);
-			getActivity().unbindService(this);
+            try {
+                getActivity().unbindService(this);
+            }
+            catch (Exception e) {
+                // ignore exception on exit
+            }
+			service = null;
 		}
 	}
 
@@ -358,7 +364,13 @@ public class ComposeMessageFragment extends ListFragment implements
             UserLookupJob job = service.lookupUser(userId);
             job.setListener(ComposeMessageFragment.this);
 
-            getActivity().unbindService(this);
+            try {
+                getActivity().unbindService(this);
+            }
+            catch (Exception e) {
+                // ignore exception on exit
+            }
+            service = null;
         }
     }
 
@@ -387,6 +399,7 @@ public class ComposeMessageFragment extends ListFragment implements
             catch (Exception e) {
                 // ignore exception on exit
             }
+            service = null;
         }
     }
 

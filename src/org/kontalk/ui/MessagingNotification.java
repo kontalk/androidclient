@@ -157,8 +157,7 @@ public class MessagingNotification {
         boolean quickReply = true;
         if (isNew && quickReply) {
             Intent i = new Intent(context.getApplicationContext(), QuickReplyActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            //i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             i.putExtra("org.kontalk.quickreply.FROM", accumulator.getLastMessagePeer());
             i.putExtra("org.kontalk.quickreply.MESSAGE", accumulator.getLastMessageText());
             i.putExtra("org.kontalk.quickreply.OPEN_INTENT", accumulator.getLastMessagePendingIntent());
