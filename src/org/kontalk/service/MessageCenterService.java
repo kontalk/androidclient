@@ -1002,12 +1002,13 @@ public class MessageCenterService extends Service
     public boolean error(ClientThread client, RequestJob job, Throwable exc) {
         // stop any foreground if the job is a message
         if (job instanceof MessageSender) {
-            stopForeground();
+            MessageSender job2 = (MessageSender) job;
+            if (job2.isAsync(this))
+                stopForeground();
 
             if (job.isCanceled(this))
                 return false;
 
-            MessageSender job2 = (MessageSender) job;
             if (job2.isAsync(this)) {
                 // create intent for upload error notification
                 // TODO this Intent should bring the user to the actual conversation

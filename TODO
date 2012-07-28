@@ -1,3 +1,4 @@
+[ ] check if message sending error is handled correctly
 [ ] quick reply
 [ ] ListView: still issues with fading edge
 [ ] sync: testing needed for country code in offline mode
