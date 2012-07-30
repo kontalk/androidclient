@@ -89,7 +89,7 @@ public class ConversationListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         mQueryHandler = new ThreadListQueryHandler(getActivity().getContentResolver());
-        mListAdapter = new ConversationListAdapter(getActivity(), null);
+        mListAdapter = new ConversationListAdapter(getActivity(), null, getListView());
         mListAdapter.setOnContentChangedListener(mContentChangedListener);
 
         ListView list = getListView();

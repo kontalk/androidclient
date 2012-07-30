@@ -80,7 +80,7 @@ public class ContactsListActivity extends ListActivity
         TextView text = (TextView) findViewById(android.R.id.empty);
         text.setText(Html.fromHtml(getString(R.string.text_contacts_empty)));
 
-        mListAdapter = new ContactsListAdapter(this);
+        mListAdapter = new ContactsListAdapter(this, getListView());
         mListAdapter.setOnContentChangedListener(this);
         setListAdapter(mListAdapter);
 

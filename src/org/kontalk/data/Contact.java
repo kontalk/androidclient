@@ -20,7 +20,7 @@ package org.kontalk.data;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.kontalk.provider.MyUsers.Users;
@@ -28,7 +28,6 @@ import org.kontalk.provider.MyUsers.Users;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -85,66 +84,27 @@ public class Contact {
      * Contact cache.
      * @author Daniele Ricci
      */
-    private final static class ContactCache extends HashMap<String, Contact> {
+    private final static class ContactCache extends LinkedHashMap<String, Contact> {
         private static final long serialVersionUID = 2788447346920511692L;
-
-        private final class ContactsObserver extends ContentObserver {
-            private Context mContext;
-            private String mUserId;
-
-            public ContactsObserver(Context context, String userId) {
-                super(null);
-                mContext = context;
-                mUserId = userId;
-            }
-
-            @Override
-            public void onChange(boolean selfChange) {
-                synchronized (ContactCache.this) {
-                    remove(mContext, mUserId);
-                    get(mContext, mUserId);
-                }
-            }
-        }
-
-        private Map<String, ContactsObserver> mObservers;
+        private static final int MAX_ENTRIES = 20;
 
         public ContactCache() {
-            mObservers = new HashMap<String, ContactsObserver>();
+            super(MAX_ENTRIES+1, .75F, true);
         }
 
-        public Contact get(Context context, String userId) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Contact> eldest) {
+            return size() > MAX_ENTRIES;
+        }
+
+        public synchronized Contact get(Context context, String userId) {
             Contact c = get(userId);
             if (c == null) {
                 c = _findByUserId(context, userId);
                 if (c != null) {
-                    // retrieve a previous observer if present
-                    ContactsObserver observer = mObservers.get(userId);
-                    if (observer == null) {
-                        // create a new observer
-                        observer = new ContactsObserver(
-                                context.getApplicationContext(),userId);
-                        mObservers.put(userId, observer);
-                    }
-                    // register for changes
-                    context.getContentResolver()
-                        .registerContentObserver(c.getUri(), false, observer);
-
                     // put the contact in the cache
                     put(userId, c);
                 }
-            }
-
-            return c;
-        }
-
-        public Contact remove(Context context, String userId) {
-            Contact c = remove(userId);
-            if (c != null) {
-                ContactsObserver observer = mObservers.remove(userId);
-                if (observer != null)
-                    context.getContentResolver()
-                        .unregisterContentObserver(observer);
             }
 
             return c;
@@ -203,15 +163,21 @@ public class Contact {
 
     /** Builds a contact from a UsersProvider cursor. */
     public static Contact fromUsersCursor(Context context, Cursor cursor) {
-        final long contactId = cursor.getLong(COLUMN_CONTACT_ID);
-        final String key = cursor.getString(COLUMN_LOOKUP_KEY);
-        final String name = cursor.getString(COLUMN_DISPLAY_NAME);
-        final String number = cursor.getString(COLUMN_NUMBER);
-        final String hash = cursor.getString(COLUMN_HASH);
-        final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
+        // try the cache
+        String hash = cursor.getString(COLUMN_HASH);
+        Contact c = cache.get(hash);
+        if (c == null) {
+            // don't let the cache fetch contact data again - we'll populate it
+            final long contactId = cursor.getLong(COLUMN_CONTACT_ID);
+            final String key = cursor.getString(COLUMN_LOOKUP_KEY);
+            final String name = cursor.getString(COLUMN_DISPLAY_NAME);
+            final String number = cursor.getString(COLUMN_NUMBER);
+            final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
 
-        Contact c = new Contact(contactId, key, name, number, hash);
-        c.mRegistered = registered;
+            c = new Contact(contactId, key, name, number, hash);
+            c.mRegistered = registered;
+            cache.put(hash, c);
+        }
         return c;
     }
 

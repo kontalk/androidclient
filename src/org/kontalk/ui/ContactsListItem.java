@@ -28,6 +28,7 @@ import android.widget.QuickContactBadge;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+
 public class ContactsListItem extends RelativeLayout {
     //private static final String TAG = ConversationListItem.class.getSimpleName();
 
@@ -78,7 +79,15 @@ public class ContactsListItem extends RelativeLayout {
     }
 
     public final void unbind() {
-        // TODO unbind (contact?)
+        mContact = null;
+        /*
+        mAvatarView.setImageDrawable(null);
+        BitmapDrawable d = (BitmapDrawable) mAvatarView.getDrawable();
+        if (d != null) {
+            Bitmap b = d.getBitmap();
+            if (b != null) b.recycle();
+        }
+        */
     }
 
     public Contact getContact() {

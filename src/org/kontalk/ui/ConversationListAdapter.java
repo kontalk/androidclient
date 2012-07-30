@@ -27,7 +27,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView.RecyclerListener;
 import android.widget.CursorAdapter;
+import android.widget.ListView;
 
 
 public class ConversationListAdapter extends CursorAdapter {
@@ -37,9 +39,17 @@ public class ConversationListAdapter extends CursorAdapter {
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
-    public ConversationListAdapter(Context context, Cursor cursor) {
+    public ConversationListAdapter(Context context, Cursor cursor, ListView list) {
         super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
+
+        list.setRecyclerListener(new RecyclerListener() {
+            public void onMovedToScrapHeap(View view) {
+                if (view instanceof MessageListItem) {
+                    ((ConversationListItem) view).unbind();
+                }
+            }
+        });
     }
 
     @Override

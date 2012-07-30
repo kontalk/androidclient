@@ -31,7 +31,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView.RecyclerListener;
 import android.widget.CursorAdapter;
+import android.widget.ListView;
 
 public class MessageListAdapter extends CursorAdapter {
 
@@ -43,10 +45,18 @@ public class MessageListAdapter extends CursorAdapter {
 
     private Contact mContact;
 
-    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight) {
+    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list) {
         super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
         mHighlight = highlight;
+
+        list.setRecyclerListener(new RecyclerListener() {
+            public void onMovedToScrapHeap(View view) {
+                if (view instanceof MessageListItem) {
+                    ((MessageListItem) view).unbind();
+                }
+            }
+        });
     }
 
     @Override

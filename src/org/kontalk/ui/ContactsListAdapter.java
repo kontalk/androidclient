@@ -28,6 +28,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ListView;
+import android.widget.AbsListView.RecyclerListener;
 
 
 public class ContactsListAdapter extends CursorAdapter {
@@ -37,9 +39,17 @@ public class ContactsListAdapter extends CursorAdapter {
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
-    public ContactsListAdapter(Context context) {
+    public ContactsListAdapter(Context context, ListView list) {
         super(context, null, false);
         mFactory = LayoutInflater.from(context);
+
+        list.setRecyclerListener(new RecyclerListener() {
+            public void onMovedToScrapHeap(View view) {
+                if (view instanceof MessageListItem) {
+                    ((ContactsListItem) view).unbind();
+                }
+            }
+        });
     }
 
     @Override
