@@ -1,5 +1,7 @@
 [ ] check if message sending error is handled correctly
 [ ] quick reply
+[ ] convert manual validation to a separated activity
+[ ] manual validation without requesting SMS
 [ ] ListView: still issues with fading edge
 [ ] sync: testing needed for country code in offline mode
 [ ] (plural) list -> (singular) list (??)

@@ -155,7 +155,7 @@ public class MessagingNotification {
         nm.notify(NOTIFICATION_ID_MESSAGES, no);
 
         // TODO take this from configuration
-        boolean quickReply = true;
+        boolean quickReply = false;
         if (isNew && quickReply) {
             Intent i = new Intent(context.getApplicationContext(), QuickReplyActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
