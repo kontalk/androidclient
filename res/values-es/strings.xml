@@ -186,6 +186,5 @@
     <string name="msg_status_notaccepted">Rechazado</string>
     <string name="msg_status_notdelivered">No entregado</string>
     <string name="msg_status_delivered">Entregado</string>
-    <string name="msg_status_error">Error</string>
     <string name="msg_status_encrypted">Cifrado</string>
 </resources>
