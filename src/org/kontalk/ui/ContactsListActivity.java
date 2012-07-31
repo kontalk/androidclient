@@ -75,6 +75,8 @@ public class ContactsListActivity extends ListActivity
         }
         else {
             setProgressBarIndeterminate(true);
+            // HACK this is for crappy honeycomb :)
+            setProgressBarIndeterminateVisibility(false);
         }
 
         TextView text = (TextView) findViewById(android.R.id.empty);
