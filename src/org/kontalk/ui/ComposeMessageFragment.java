@@ -1688,6 +1688,11 @@ public class ComposeMessageFragment extends ListFragment implements
 		unregisterPeerObserver();
 		if (mListAdapter != null)
 			mListAdapter.changeCursor(null);
+
+		// be sure to cancel all queries
+		mQueryHandler.cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
+		mQueryHandler.cancelOperation(CONVERSATION_QUERY_TOKEN);
+
 		// release message center
 		MessageCenterService.releaseMessageCenter(getActivity());
 	}
