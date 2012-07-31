@@ -174,6 +174,7 @@ public class UsersProvider extends ContentProvider {
             String[] selectionArgs, String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
+        String userId = null;
 
         switch (sUriMatcher.match(uri)) {
             case USERS:
@@ -185,8 +186,9 @@ public class UsersProvider extends ContentProvider {
                 qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
                 // TODO append to selection
+                userId = uri.getPathSegments().get(1);
                 selection = Users.HASH + " = ?";
-                selectionArgs = new String[] { uri.getPathSegments().get(1) };
+                selectionArgs = new String[] { userId };
                 break;
 
             default:
@@ -195,9 +197,77 @@ public class UsersProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        if (!c.moveToFirst()) {
+            c.close();
+
+            // insert number into database
+            newRecord(dbHelper.getWritableDatabase(), userId);
+
+            // requery
+            c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        }
+        else {
+            // reset the cursor to before-start
+            c.move(-1);
+        }
 
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
+    }
+
+    /** Reverse-lookup a userId hash to insert a new record to users table. */
+    private void newRecord(SQLiteDatabase db, String matchHash) {
+        // lookup all phone numbers until our hash matches
+        Context context = getContext();
+        final Cursor phones = context.getContentResolver().query(Phone.CONTENT_URI,
+            new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
+            null, null, null);
+
+        try {
+            while (phones.moveToNext()) {
+                String number = phones.getString(0);
+
+                // a phone number with less than 4 digits???
+                if (number.length() < 4)
+                    continue;
+
+                // fix number
+                try {
+                    number = NumberValidator.fixNumber(context, number,
+                            Authenticator.getDefaultAccountName(context), null);
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+                    // skip number
+                    continue;
+                }
+
+                try {
+                    String hash = MessageUtils.sha1(number);
+                    if (hash.equalsIgnoreCase(matchHash)) {
+                        ContentValues values = new ContentValues();
+                        values.put(Users.HASH, matchHash);
+                        values.put(Users.NUMBER, number);
+                        values.put(Users.DISPLAY_NAME, phones.getString(1));
+                        values.put(Users.LOOKUP_KEY, phones.getString(2));
+                        values.put(Users.CONTACT_ID, phones.getLong(3));
+                        db.insert(TABLE_USERS, null, values);
+                        break;
+                    }
+                }
+                catch (NoSuchAlgorithmException e) {
+                    Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
+                }
+                catch (SQLiteConstraintException sqe) {
+                    // skip duplicate number
+                    break;
+                }
+            }
+        }
+        finally {
+            phones.close();
+        }
+
     }
 
     @Override

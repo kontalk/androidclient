@@ -389,7 +389,7 @@ public class Syncer {
                     .appendQueryParameter(Users.COMMIT, "true")
                     .build();
                 try {
-                    usersProvider.update(uri, new ContentValues(), null, null);
+                    usersProvider.update(uri, null, null, null);
                     Log.d(TAG, "users database committed");
                 }
                 catch (RemoteException e) {

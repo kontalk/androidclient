@@ -82,7 +82,7 @@
         <provider android:name=".provider.UsersProvider"
             android:exported="false"
             android:authorities="org.kontalk.users"
-            android:syncable="false"/>
+            android:syncable="true"/>
 
         <!-- Broadcast receivers -->
         <receiver android:name=".service.SystemBootStartup"
