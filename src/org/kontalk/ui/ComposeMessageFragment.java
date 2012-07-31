@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -77,6 +78,7 @@ import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -786,23 +788,31 @@ public class ComposeMessageFragment extends ListFragment implements
             .addCategory(Intent.CATEGORY_OPENABLE)
             .setType("image/*");
 
-        Intent chooser;
+        Intent chooser = null;
         try {
+            // check if camera is available
+            final PackageManager packageManager = getActivity().getPackageManager();
+            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            List<ResolveInfo> list =
+                    packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+            if (list.size() <= 0) throw new UnsupportedOperationException();
+
             mCurrentPhoto = MediaStorage.getTempImage(getActivity());
     	    Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
     	    take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
-    	    // TODO i18n
-       	    chooser = Intent.createChooser(i, "Send picture");
+       	    chooser = Intent.createChooser(i, getString(R.string.chooser_send_picture));
             chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { take });
+        }
+        catch (UnsupportedOperationException ue) {
+            Log.d(TAG, "no camera app or no camera present", ue);
         }
         catch (IOException e) {
             Log.e(TAG, "error creating temp file", e);
-            // TODO i18n
-            Toast.makeText(getActivity(), "External storage not available. Taking picture from camera will not be enabled.",
-                Toast.LENGTH_SHORT).show();
-            chooser = i;
+            Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
+                Toast.LENGTH_LONG).show();
         }
 
+        if (chooser == null) chooser = i;
 	    startActivityForResult(chooser, SELECT_ATTACHMENT_OPENABLE);
 	}
 

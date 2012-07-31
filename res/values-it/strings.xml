@@ -196,4 +196,7 @@
     <string name="attachment_picture">Immagine</string>
     <string name="attachment_contact">Contatto</string>
 
+    <string name="chooser_send_picture">Invia immagine</string>
+    <string name="chooser_error_no_camera">Memoria esterna non disponibile. Non sarà possibile scattare una nuovo foto da spedire.</string>
+
 </resources>
