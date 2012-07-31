@@ -1,5 +1,6 @@
 [ ] check if message sending error is handled correctly
 [ ] quick reply
+[ ] handle external storage presence
 [ ] convert manual validation to a separated activity
 [ ] manual validation without requesting SMS
 [ ] ListView: still issues with fading edge
