@@ -31,6 +31,7 @@ import org.kontalk.message.PlainTextMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 
 import android.content.ContentUris;
@@ -309,10 +310,7 @@ public class ComposeMessage extends FragmentActivity {
         if (mime.startsWith("*/") || mime.endsWith("/*")) {
             Uri uri = (Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
             Log.d(TAG, "looking up mime type for uri " + uri + " (invalid type: " + mime + ")");
-            mime = getContentResolver().getType(uri);
-            if (mime == null)
-                mime = MimeTypeMap.getSingleton()
-                    .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()));
+            mime = MediaStorage.getType(this, uri);
             Log.d(TAG, "using detected mime type " + mime);
         }
 

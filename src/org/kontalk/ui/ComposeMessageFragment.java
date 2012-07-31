@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
@@ -88,6 +89,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PatternMatcher;
 import android.provider.ContactsContract.Contacts;
+import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -157,6 +159,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	private PeerObserver mPeerObserver;
     private Handler mHandler;
+    private File mCurrentPhoto;
 
     /** Current banner text indicator (BANNER_*). */
     private int mCurrentBanner;
@@ -779,10 +782,28 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	/** Starts activity for an image attachment. */
 	public void selectImageAttachment() {
-		Intent i = new Intent(Intent.ACTION_GET_CONTENT)
-		    .addCategory(Intent.CATEGORY_OPENABLE)
-		    .setType("image/*");
-		startActivityForResult(i, SELECT_ATTACHMENT_OPENABLE);
+        Intent i = new Intent(Intent.ACTION_GET_CONTENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("image/*");
+
+        Intent chooser;
+        try {
+            mCurrentPhoto = MediaStorage.getTempImage(getActivity());
+    	    Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    	    take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
+    	    // TODO i18n
+       	    chooser = Intent.createChooser(i, "Send picture");
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { take });
+        }
+        catch (IOException e) {
+            Log.e(TAG, "error creating temp file", e);
+            // TODO i18n
+            Toast.makeText(getActivity(), "External storage not available. Taking picture from camera will not be enabled.",
+                Toast.LENGTH_SHORT).show();
+            chooser = i;
+        }
+
+	    startActivityForResult(chooser, SELECT_ATTACHMENT_OPENABLE);
 	}
 
 	/** Starts activity for a vCard attachment from a contact. */
@@ -1039,14 +1060,33 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == Activity.RESULT_OK) {
-			if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
-				Uri uri = data.getData();
-				String mime = data.getType();
+        if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
+            if (resultCode == Activity.RESULT_OK) {
+			    Uri uri;
+			    String mime = null;
+
+			    // returning from camera
+			    if (data == null) {
+			        uri = Uri.fromFile(mCurrentPhoto);
+			        // notify media scanner
+		            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+		            mediaScanIntent.setData(uri);
+		            getActivity().sendBroadcast(mediaScanIntent);
+		            mCurrentPhoto = null;
+			    }
+			    else {
+			        if (mCurrentPhoto != null) {
+			            mCurrentPhoto.delete();
+			            mCurrentPhoto = null;
+			        }
+			        uri = data.getData();
+			        mime = data.getType();
+			    }
+
 				if (uri != null) {
 					if (mime == null || mime.startsWith("*/")
 							|| mime.endsWith("/*")) {
-						mime = getActivity().getContentResolver().getType(uri);
+					    mime = MediaStorage.getType(getActivity(), uri);
 						Log.v(TAG, "using detected mime type " + mime);
 					}
 
@@ -1059,7 +1099,17 @@ public class ComposeMessageFragment extends ListFragment implements
 		                    .show();
 				}
 			}
-			else if (requestCode == SELECT_ATTACHMENT_CONTACT) {
+            // operation aborted
+            else {
+                // delete photo :)
+                if (mCurrentPhoto != null) {
+                    mCurrentPhoto.delete();
+                    mCurrentPhoto = null;
+                }
+            }
+        }
+		else if (requestCode == SELECT_ATTACHMENT_CONTACT) {
+		    if (resultCode == Activity.RESULT_OK) {
 			    Uri uri = data.getData();
 			    if (uri != null) {
 			        // get lookup key

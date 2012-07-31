@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -30,6 +32,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.webkit.MimeTypeMap;
 
 
 /**
@@ -149,6 +152,27 @@ public abstract class MediaStorage {
                 // ignored
             }
         }
+    }
+
+    /** Creates a temporary JPEG file. */
+    public static File getTempImage(Context context) throws IOException {
+        File path = new File(Environment
+            .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "Kontalk");
+        path.mkdirs();
+        String timeStamp =
+            new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String filename = "image" + timeStamp + "_";
+        return File.createTempFile(filename, ".jpg", path);
+    }
+
+    /** Guesses the MIME type of an {@link Uri}. */
+    public static String getType(Context context, Uri uri) {
+        String mime = context.getContentResolver().getType(uri);
+        if (mime == null)
+            mime = MimeTypeMap.getSingleton()
+                .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()));
+        return mime;
     }
 
 }
