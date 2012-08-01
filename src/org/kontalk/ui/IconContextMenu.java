@@ -116,7 +116,12 @@ public class IconContextMenu implements DialogInterface.OnCancelListener,
     }
 
     private void cleanup() {
-    	//parentActivity.dismissDialog(dialogId);
+        try {
+            parentActivity.dismissDialog(dialogId);
+        }
+        catch (IllegalArgumentException e) {
+            // ignore
+        }
     }
 
     /**
@@ -183,7 +188,7 @@ public class IconContextMenu implements DialogInterface.OnCancelListener,
 					temp.setTextAppearance(context, tv.resourceId);
 				}
 
-	        	temp.setMinHeight(LIST_PREFERED_HEIGHT);
+	        	temp.setMinHeight((int)toPixel(res, LIST_PREFERED_HEIGHT));
 	        	temp.setCompoundDrawablePadding((int)toPixel(res, 14));
 	        	convertView = temp;
 			}
