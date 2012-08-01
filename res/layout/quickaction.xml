@@ -29,7 +29,7 @@
     <HorizontalScrollView
         android:id="@+id/scroll"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dip"
         android:fadingEdgeLength="0dip"
         android:layout_below="@id/header2"
         android:paddingLeft="1dip"
@@ -47,11 +47,13 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:scaleType="fitXY"
                 android:src="@drawable/quickaction_slider_grip_left" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:scaleType="fitXY"
                 android:src="@drawable/quickaction_slider_grip_right" />
                 
         </LinearLayout>

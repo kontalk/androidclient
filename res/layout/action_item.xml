@@ -15,17 +15,18 @@
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
 	android:gravity="center_vertical|center_horizontal"
-	android:paddingTop="0dip"
-	android:paddingBottom="0dip"
-	android:paddingLeft="10dip"
-	android:paddingRight="10dip" 
+	android:paddingTop="6dp"
+	android:paddingBottom="6dp"
+	android:paddingLeft="9dp"
+	android:paddingRight="9dp" 
 	android:clickable="true"
 	android:background="@drawable/quickaction_slider_btn">
 
 	<ImageView
 		android:id="@+id/iv_icon" 
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"/>
+		android:layout_width="32dp"
+		android:layout_height="32dp"
+        android:scaleType="fitCenter"/>
 
 	<TextView 
 		android:id="@+id/tv_title"
