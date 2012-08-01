@@ -18,8 +18,9 @@ public class GCMIntentService extends GCMBaseIntentService {
     private static final String TAG = GCMIntentService.class.getSimpleName();
     private static final String ACTION_CHECK_MESSAGES = "org.kontalk.CHECK_MESSAGES";
 
-    public GCMIntentService() {
-        super(MessageCenterService.getPushSenderId());
+    @Override
+    protected String[] getSenderIds(Context context) {
+        return new String[] { MessageCenterService.getPushSenderId() };
     }
 
     @Override
