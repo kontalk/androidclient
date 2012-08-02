@@ -1,24 +1,27 @@
-[ ] check if message sending error is handled correctly
-[ ] quick reply
 [ ] handle external storage presence
 [ ] convert manual validation to a separated activity
 [ ] manual validation without requesting SMS
 [ ] ListView: still issues with fading edge
 [ ] sync: testing needed for country code in offline mode
-[ ] (plural) list -> (singular) list (??)
-[ ] use cached last seen/status if network error
-[ ] HTTP (over SSL) connection support
 [ ] still problems with uploads: during a gsm call, upload is somewhat "paused"
     and never resumed, unless message center is restarted, triggering a new upload
 [ ] image sending: user can choose to compress/scale down before sending it
-[ ] image messages: honor EXIF data (orientation in particular)
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
 [ ] quick voice messages
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
+
+FUTURE:
+[ ] check if errors are handled correctly, especially if server behaves bad
+[ ] quick reply
+[ ] (plural) list -> (singular) list (??)
+[ ] use cached last seen/status if network error
+[ ] HTTP (over SSL) connection support
+[ ] image messages: honor EXIF data (orientation in particular)
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [ ] separate processes (main/UI, message center, sync adapter)
+[ ] external storage backup
 [x] compose->menu->attach: choose between media types
 [x] support for VCard exchange
