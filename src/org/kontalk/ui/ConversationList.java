@@ -75,7 +75,7 @@ public class ConversationList extends FragmentActivity {
      * if necessary.
      */
     private void checkBigUpgrade1() {
-        Boolean oldSync = (Boolean) getLastNonConfigurationInstance();
+        Boolean oldSync = (Boolean) getLastCustomNonConfigurationInstance();
         if (!MessagingPreferences.getBigUpgrade1(this) || (oldSync != null && oldSync.booleanValue())) {
             mSyncWasRunning = true;
             SyncerUI.execute(this, new Runnable() {

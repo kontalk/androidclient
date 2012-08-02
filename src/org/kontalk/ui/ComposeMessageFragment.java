@@ -1296,7 +1296,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	    Activity parent = getActivity();
 	    if (parent instanceof ComposeMessage)
 	        ((ComposeMessage) parent).setTitle(title, status, contact);
-	    else
+	    else if (title != null)
 	        parent.setTitle(title);
 	}
 
