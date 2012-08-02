@@ -24,6 +24,7 @@ import java.util.HashMap;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 
 import android.annotation.TargetApi;
@@ -198,24 +199,18 @@ public class UsersProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
         if (!c.moveToFirst()) {
-            c.close();
-
-            // insert number into database
-            newRecord(dbHelper.getWritableDatabase(), userId);
-
-            // requery
-            c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-        }
-        else {
             // reset the cursor to before-start
             c.move(-1);
+            // request sync
+            SyncAdapter.requestSync(getContext(), true);
         }
 
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
     }
 
-    /** Reverse-lookup a userId hash to insert a new record to users table. */
+    /** Reverse-lookup a userId hash to insert a new record to users table.
+     * FIXME this method could take a very long time to complete.
     private void newRecord(SQLiteDatabase db, String matchHash) {
         // lookup all phone numbers until our hash matches
         Context context = getContext();
@@ -269,6 +264,7 @@ public class UsersProvider extends ContentProvider {
         }
 
     }
+    */
 
     @Override
     public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
