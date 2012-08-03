@@ -202,7 +202,7 @@ public class UsersProvider extends ContentProvider {
             // reset the cursor to before-start
             c.move(-1);
             // request sync
-            SyncAdapter.requestSync(getContext(), true);
+            SyncAdapter.requestSync(getContext(), false);
         }
 
         c.setNotificationUri(getContext().getContentResolver(), uri);
