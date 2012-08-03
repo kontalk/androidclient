@@ -187,4 +187,16 @@
     <string name="msg_status_notdelivered">No entregado</string>
     <string name="msg_status_delivered">Entregado</string>
     <string name="msg_status_encrypted">Cifrado</string>
+
+    <string name="pref_balloons">Tema mensajes</string>
+    <string name="pref_title_balloons">Elegís un tema para los mensajes</string>
+    <string name="balloons_classic">Clásico</string>
+    <string name="balloons_iphone">iPhone</string>
+
+    <string name="attachment_picture">Imagen</string>
+    <string name="attachment_contact">Contacto</string>
+
+    <string name="chooser_send_picture"> Envío imagen</string>
+    <string name="chooser_error_no_camera">Almacenamiento externo no está disponible. Toma de fotografías desde la cámara no estará habilitado</string>
+
 </resources>
