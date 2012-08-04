@@ -254,3 +254,18 @@ message Pong {
     // utc timestamp
     optional uint64 timestamp = 1;
 }
+
+// re-validation request (new validation code)
+message ValidationCodeRequest {
+    // dummy request
+}
+
+// re-validation response (new validation code)
+message ValidationCodeResponse {
+    enum ValidationCodeStatus {
+        STATUS_SUCCESS = 0;
+        STATUS_ERROR = 1;
+    }
+    required ValidationCodeStatus status = 1;
+    optional string code = 2;
+}
