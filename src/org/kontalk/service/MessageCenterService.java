@@ -407,7 +407,12 @@ public class MessageCenterService extends Service
 
     private void stop() {
         // invalidate push sender id
-        GCMRegistrar.onDestroy(this);
+        try {
+            GCMRegistrar.onDestroy(this);
+        }
+        catch (IllegalArgumentException e) {
+            // ignore "unable to unregister receiver"
+        }
         mPushSenderId = null;
 
         if (mAccountManager != null) {
