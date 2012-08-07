@@ -23,7 +23,7 @@
       <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
   </style>
 
-  <style name="Theme.Light.Subtitle" parent="Theme.Sherlock.Light">
+  <style name="Theme.Light.Subtitle" parent="Theme.Light">
       <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
       <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
   </style>
@@ -35,6 +35,10 @@
     <item name="android:titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse</item>
     <item name="subtitleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse</item>
     <item name="android:subtitleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse</item>
+    <!--
+    <item name="indeterminateProgressStyle">@style/Widget.ProgressBar</item>
+    <item name="android:indeterminateProgressStyle">@style/Widget.ProgressBar</item>
+     -->
   </style>
 
   <style name="Widget.Sherlock.Light.ActionBar.Blue.Bold" parent="Widget.Sherlock.Light.ActionBar.Blue">
@@ -46,6 +50,16 @@
       parent="TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse">
       <item name="android:textStyle">bold</item>
   </style>
+
+  <!--
+  <style name="Widget.ProgressBar" parent="android:Widget.ProgressBar.Inverse">
+    <item name="android:minWidth">24dip</item>
+    <item name="android:maxWidth">24dip</item>
+    <item name="android:minHeight">24dip</item>
+    <item name="android:maxHeight">24dip</item>
+    <item name="android:layout_marginRight">24dip</item>
+  </style>
+   -->
 
   <!-- default light-to-dark theme selector -->
   <style name="Theme.Light2" parent="android:Theme"/>

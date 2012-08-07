@@ -649,35 +649,42 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.call_contact:
-			startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"
-					+ userPhone)));
-			return true;
+    		case R.id.call_contact:
+    			startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"
+    					+ userPhone)));
+    			return true;
 
-		case R.id.view_contact:
-			if (mConversation != null) {
-				Contact contact = mConversation.getContact();
-				if (contact != null)
-					startActivity(new Intent(Intent.ACTION_VIEW,
-							contact.getUri()));
-			}
-			return true;
+    		case R.id.view_contact:
+    			if (mConversation != null) {
+    				Contact contact = mConversation.getContact();
+    				if (contact != null)
+    					startActivity(new Intent(Intent.ACTION_VIEW,
+    							contact.getUri()));
+    			}
+    			return true;
 
-		case R.id.menu_attachment:
-		case R.id.menu_attachment2:
-		    selectAttachment();
-			return true;
+    		case R.id.menu_attachment:
+    		    selectAttachment();
+    			return true;
 
-		case R.id.delete_thread:
-			if (threadId > 0)
-				deleteThread();
+            case R.id.menu_attachment2:
+                ComposeMessage activity = getParentActivity();
+                if (activity != null)
+                    activity.titleAttachment(activity.findViewById(R.id.menu_attachment2));
+                else
+                    selectAttachment();
+                return true;
 
-			return true;
+    		case R.id.delete_thread:
+    			if (threadId > 0)
+    				deleteThread();
 
-		case R.id.goto_conversation_list:
-			startActivity(new Intent(getActivity(), ConversationList.class));
-			getActivity().finish();
-			return true;
+    			return true;
+
+    		case R.id.goto_conversation_list:
+    			startActivity(new Intent(getActivity(), ConversationList.class));
+    			getActivity().finish();
+    			return true;
 		}
 
 		return super.onOptionsItemSelected(item);

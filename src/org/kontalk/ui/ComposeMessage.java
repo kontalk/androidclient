@@ -20,7 +20,6 @@ package org.kontalk.ui;
 
 import java.util.regex.Pattern;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
@@ -36,6 +35,7 @@ import org.kontalk.util.MessageUtils;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -81,6 +81,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
@@ -129,6 +130,18 @@ public class ComposeMessage extends SherlockFragmentActivity {
             }
         });
         mQuickAction.show(view);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                if (mFragment != null)
+                    mFragment.switchBanner();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void processIntent(Bundle savedInstanceState) {
