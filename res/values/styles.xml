@@ -17,53 +17,34 @@
  -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- default light theme selector -->
-  <style name="Theme.Light" parent="android:Theme.Light">
-    <item name="android:windowTitleSize">40dp</item>
-    <item name="android:windowTitleBackgroundStyle">@style/WindowTitleBackground</item>
-    <item name="android:windowTitleStyle">@style/titleTextStyle</item>
+  <!-- default theme selector -->
+  <style name="Theme.Light" parent="Theme.Sherlock.Light">
+      <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
+      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
   </style>
 
-  <style name="WindowTitleBackground">
+  <style name="Theme.Light.Subtitle" parent="Theme.Sherlock.Light">
+      <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
+      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
+  </style>
+
+  <style name="Widget.Sherlock.Light.ActionBar.Blue" parent="Widget.Sherlock.Light.ActionBar.Solid">
+    <item name="background">@drawable/titlebar_bg</item>
     <item name="android:background">@drawable/titlebar_bg</item>
+    <item name="titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse</item>
+    <item name="android:titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse</item>
+    <item name="subtitleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse</item>
+    <item name="android:subtitleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse</item>
   </style>
 
-  <style name="titleTextStyle">
-    <item name="android:textAppearance">@style/TextAppearanceWindowTitle</item>
-    <item name="android:shadowColor">#BB000000</item>
-    <item name="android:shadowRadius">2.75</item>
-    <item name="android:paddingLeft">5sp</item>
+  <style name="Widget.Sherlock.Light.ActionBar.Blue.Bold" parent="Widget.Sherlock.Light.ActionBar.Blue">
+    <item name="titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse.Bold</item>
+    <item name="android:titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse.Bold</item>
   </style>
 
-  <style name="TextAppearanceWindowTitle">
-    <item name="android:textSize">20dp</item>
-    <item name="android:textColor">#FFFFFF</item>
-    <item name="android:textStyle">bold</item>
-  </style>
-
-  <style name="titleTextStyleSmall">
-    <item name="android:textAppearance">@style/TextAppearanceWindowTitleSmall</item>
-    <item name="android:shadowColor">#BB000000</item>
-    <item name="android:shadowRadius">2.75</item>
-    <item name="android:paddingLeft">5sp</item>
-  </style>
-
-  <style name="TextAppearanceWindowTitleSmall">
-    <item name="android:textSize">14dp</item>
-    <item name="android:textColor">#FFFFFF</item>
-    <item name="android:textStyle">bold</item>
-  </style>
-
-  <style name="titleTextStyleMicro">
-    <item name="android:textAppearance">@style/TextAppearanceWindowTitleMicro</item>
-    <item name="android:shadowColor">#BB000000</item>
-    <item name="android:shadowRadius">2.75</item>
-    <item name="android:paddingLeft">5sp</item>
-  </style>
-
-  <style name="TextAppearanceWindowTitleMicro">
-    <item name="android:textSize">12dp</item>
-    <item name="android:textColor">#FFFFFF</item>
+  <style name="TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse.Bold"
+      parent="TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse">
+      <item name="android:textStyle">bold</item>
   </style>
 
   <!-- default light-to-dark theme selector -->

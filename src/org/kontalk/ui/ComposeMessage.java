@@ -34,19 +34,18 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.Window;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -55,7 +54,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ComposeMessage extends FragmentActivity {
+public class ComposeMessage extends SherlockFragmentActivity {
     private static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
@@ -74,37 +73,14 @@ public class ComposeMessage extends FragmentActivity {
     private Intent sendIntent;
 
     private ComposeMessageFragment mFragment;
-    private TextView mTitleText;
-    private TextView mStatusText;
-    private ImageView mAvatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Kontalk.customUI())
-            requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-        else
-            requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
-
-        if (Kontalk.customUI()) {
-            getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.compose_message_title_bar);
-            mTitleText = (TextView) findViewById(android.R.id.title);
-            mStatusText = (TextView) findViewById(R.id.status);
-            mAvatar = (ImageView) findViewById(R.id.avatar);
-
-            OnClickListener onclick = new OnClickListener() {
-                public void onClick(View v) {
-                    if (mFragment != null) {
-                        mFragment.switchBanner();
-                    }
-                }
-            };
-            mTitleText.setOnClickListener(onclick);
-            mStatusText.setOnClickListener(onclick);
-        }
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
@@ -115,19 +91,19 @@ public class ComposeMessage extends FragmentActivity {
 
     /** Sets custom title. Pass null to any of the arguments to skip setting it. */
     public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
-        if (mTitleText != null) {
-            if (title != null)
-                mTitleText.setText(title);
-            if (subtitle != null)
-                mStatusText.setText(subtitle);
+        if (title != null)
+            setTitle(title);
+        if (subtitle != null) {
+            ActionBar bar = getSupportActionBar();
+            bar.setDisplayShowTitleEnabled(true);
+            bar.setSubtitle(subtitle);
+
             if (contact != null) {
                 Drawable avatar = contact.getAvatar(this, null);
                 if (avatar != null)
-                    mAvatar.setImageDrawable(avatar);
+                    bar.setIcon(avatar);
             }
         }
-        else if (title != null)
-            setTitle(title);
     }
 
     private static final int ACTION_ITEM_IMAGE = 1;

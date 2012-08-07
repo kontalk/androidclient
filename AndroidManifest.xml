@@ -135,7 +135,7 @@
         </activity>
 
         <activity android:name=".ui.ComposeMessage"
-            android:theme="@style/Theme.Light"
+            android:theme="@style/Theme.Light.Subtitle"
             android:launchMode="singleTop"
             android:configChanges="orientation|keyboardHidden"
             android:windowSoftInputMode="stateHidden">

@@ -18,16 +18,15 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.util.SyncerUI;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.view.Window;
 import android.widget.ListAdapter;
 
 
@@ -36,21 +35,14 @@ import android.widget.ListAdapter;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ConversationList extends FragmentActivity {
+public class ConversationList extends SherlockFragmentActivity {
     //private static final String TAG = ConversationList.class.getSimpleName();
     private boolean mSyncWasRunning;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (Kontalk.customUI())
-            requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-
         setContentView(R.layout.conversation_list_screen);
-
-        if (Kontalk.customUI())
-            getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.conversation_list_title_bar);
 
         checkBigUpgrade1();
     }
@@ -61,13 +53,6 @@ public class ConversationList extends FragmentActivity {
 
     public void titleSearch(View view) {
         onSearchRequested();
-    }
-
-    public void setTitlebarSearchVisible(boolean visible) {
-        if (Kontalk.customUI()) {
-            findViewById(R.id.separator_search).setVisibility(visible ? View.VISIBLE: View.GONE);
-            findViewById(R.id.title_search).setVisibility(visible ? View.VISIBLE: View.GONE);
-        }
     }
 
     /**

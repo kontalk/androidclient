@@ -18,7 +18,6 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
@@ -27,22 +26,22 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.util.SyncerUI;
 
-import android.app.ListActivity;
+import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.Window;
+
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Html;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class ContactsListActivity extends ListActivity
+public class ContactsListActivity extends SherlockListActivity
         implements ContactsListAdapter.OnContentChangedListener {
 
     private Cursor mCursor;
@@ -52,7 +51,7 @@ public class ContactsListActivity extends ListActivity
     private final Runnable mPostSyncAction = new Runnable() {
         public void run() {
             startQuery();
-            _setProgressBarIndeterminateVisibility(false);
+            setSupportProgressBarIndeterminateVisibility(false);
         }
     };
 
@@ -60,24 +59,12 @@ public class ContactsListActivity extends ListActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Kontalk.customUI()) {
-            requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-        }
-        else {
-            requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        }
-
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list);
 
-        if (Kontalk.customUI()) {
-            getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.contacts_list_title_bar);
-            ((TextView)findViewById(android.R.id.title)).setText(getTitle());
-        }
-        else {
-            setProgressBarIndeterminate(true);
-            // HACK this is for crappy honeycomb :)
-            setProgressBarIndeterminateVisibility(false);
-        }
+        setSupportProgressBarIndeterminate(true);
+        // HACK this is for crappy honeycomb :)
+        setSupportProgressBarIndeterminateVisibility(false);
 
         TextView text = (TextView) findViewById(android.R.id.empty);
         text.setText(Html.fromHtml(getString(R.string.text_contacts_empty)));
@@ -142,7 +129,7 @@ public class ContactsListActivity extends ListActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.contacts_list_menu, menu);
+        getSupportMenuInflater().inflate(R.menu.contacts_list_menu, menu);
         return true;
     }
 
@@ -172,24 +159,9 @@ public class ContactsListActivity extends ListActivity
         finish();
     }
 
-    private void _setProgressBarIndeterminateVisibility(boolean visible) {
-        if (Kontalk.customUI()) {
-            ProgressBar bar = (ProgressBar) findViewById(R.id.title_progress);
-            if (visible) {
-                bar.setVisibility(View.VISIBLE);
-            }
-            else {
-                bar.setVisibility(View.GONE);
-            }
-        }
-        else {
-            setProgressBarIndeterminateVisibility(visible);
-        }
-    }
-
     private void startSync(boolean errorWarning) {
         if (MessageCenterService.isNetworkConnectionAvailable(this)) {
-            _setProgressBarIndeterminateVisibility(true);
+            setSupportProgressBarIndeterminateVisibility(true);
             SyncerUI.execute(this, mPostSyncAction, false);
         }
         else if (errorWarning) {

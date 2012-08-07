@@ -25,6 +25,11 @@ import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.MessageCenterService;
 
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -38,16 +43,12 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.text.Html;
 import android.text.InputType;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -57,7 +58,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class ConversationListFragment extends ListFragment {
+public class ConversationListFragment extends SherlockListFragment {
 
     private static final String TAG = ConversationListFragment.class.getSimpleName();
 
@@ -141,6 +142,10 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.conversation_list_menu, menu);
+        MenuItem item = menu.findItem(R.id.menu_compose2);
+        if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        item = menu.findItem(R.id.menu_search2);
+        if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
     }
 
     @Override
@@ -159,6 +164,7 @@ public class ConversationListFragment extends ListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_compose:
+            case R.id.menu_compose2:
                 chooseContact();
                 return true;
 
@@ -167,6 +173,7 @@ public class ConversationListFragment extends ListFragment {
                 return true;
 
             case R.id.menu_search:
+            case R.id.menu_search2:
                 getActivity().onSearchRequested();
                 return true;
 
@@ -210,7 +217,7 @@ public class ConversationListFragment extends ListFragment {
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
+    public boolean onContextItemSelected(android.view.MenuItem item) {
         // not our context
         if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
             return false;
@@ -445,7 +452,6 @@ public class ConversationListFragment extends ListFragment {
 
     private void updateUI() {
         ConversationList ctx = getParentActivity();
-        ctx.setTitlebarSearchVisible(!mListAdapter.isEmpty());
         if (Kontalk.needInvalidateMenu())
             ctx.supportInvalidateOptionsMenu();
     }

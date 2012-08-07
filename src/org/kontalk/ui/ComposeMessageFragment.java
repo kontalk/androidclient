@@ -92,8 +92,6 @@ import android.os.IBinder;
 import android.os.PatternMatcher;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
@@ -103,9 +101,6 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -114,6 +109,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.protobuf.MessageLite;
 
 
@@ -121,7 +121,7 @@ import com.google.protobuf.MessageLite;
  * The composer fragment.
  * @author Daniele Ricci
  */
-public class ComposeMessageFragment extends ListFragment implements
+public class ComposeMessageFragment extends SherlockListFragment implements
 		View.OnLongClickListener, RequestListener, TxListener, IconContextMenuOnClickListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
@@ -619,6 +619,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.compose_message_menu, menu);
+		MenuItem item = menu.findItem(R.id.menu_attachment2);
+		if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 
 	@Override
@@ -662,6 +664,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			return true;
 
 		case R.id.menu_attachment:
+		case R.id.menu_attachment2:
 		    selectAttachment();
 			return true;
 
@@ -950,7 +953,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
+	public boolean onContextItemSelected(android.view.MenuItem item) {
 	    // not our context
 	    if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
 	        return false;
@@ -1714,8 +1717,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void updateUI() {
         if (Kontalk.needInvalidateMenu()) {
-            FragmentActivity ctx = (FragmentActivity) getActivity();
-            ctx.supportInvalidateOptionsMenu();
+            SherlockFragmentActivity ctx = getSherlockActivity();
+            ctx.invalidateOptionsMenu();
         }
     }
 
