@@ -24,21 +24,25 @@
   </style>
 
   <style name="Theme.Light.Subtitle" parent="Theme.Light">
-      <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
-      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
+      <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Home</item>
+      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Home</item>
   </style>
 
   <style name="Widget.Sherlock.Light.ActionBar.Blue" parent="Widget.Sherlock.Light.ActionBar.Solid">
     <item name="background">@drawable/titlebar_bg</item>
     <item name="android:background">@drawable/titlebar_bg</item>
-    <item name="titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse</item>
-    <item name="android:titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse</item>
-    <item name="subtitleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse</item>
-    <item name="android:subtitleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse</item>
-    <!--
-    <item name="indeterminateProgressStyle">@style/Widget.ProgressBar</item>
-    <item name="android:indeterminateProgressStyle">@style/Widget.ProgressBar</item>
-     -->
+
+    <item name="titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse</item>
+    <item name="android:titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse</item>
+
+    <item name="subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
+    <item name="android:subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
+    
+  </style>
+
+  <style name="Widget.Sherlock.Light.ActionBar.Blue.Home" parent="Widget.Sherlock.Light.ActionBar.Blue">
+    <item name="homeLayout">@layout/actionbar_home</item>
+    <!-- <item name="android:homeLayout">@layout/actionbar_home</item> -->
   </style>
 
   <style name="Widget.Sherlock.Light.ActionBar.Blue.Bold" parent="Widget.Sherlock.Light.ActionBar.Blue">
@@ -50,7 +54,17 @@
       parent="TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse">
       <item name="android:textStyle">bold</item>
   </style>
+  
+  <style name="TextAppearance.Widget.ActionBar.Title.Inverse"
+      parent="TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse">
+      <item name="android:textSize">@dimen/actionbar_title_size</item>
+  </style>
 
+  <style name="TextAppearance.Widget.ActionBar.Subtitle.Inverse"
+      parent="TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse">
+      <item name="android:textSize">@dimen/actionbar_subtitle_size</item>
+  </style>
+  
   <!--
   <style name="Widget.ProgressBar" parent="android:Widget.ProgressBar.Inverse">
     <item name="android:minWidth">24dip</item>

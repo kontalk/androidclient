@@ -94,16 +94,16 @@ public class ComposeMessage extends SherlockFragmentActivity {
     public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
         if (title != null)
             setTitle(title);
+        ActionBar bar = getSupportActionBar();
         if (subtitle != null) {
-            ActionBar bar = getSupportActionBar();
             bar.setDisplayShowTitleEnabled(true);
             bar.setSubtitle(subtitle);
-
-            if (contact != null) {
-                Drawable avatar = contact.getAvatar(this, null);
-                if (avatar != null)
-                    bar.setIcon(avatar);
-            }
+        }
+        if (contact != null) {
+            Drawable avatar = contact.getAvatar(this, null);
+            if (avatar == null)
+                avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
+            bar.setIcon(avatar);
         }
     }
 

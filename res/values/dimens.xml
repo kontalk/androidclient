@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="actionbar_title_size">16dp</dimen>
+    <dimen name="actionbar_subtitle_size">12dp</dimen>
+</resources>
