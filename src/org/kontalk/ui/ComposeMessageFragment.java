@@ -1262,8 +1262,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		// set title if we are autonomous
 		if (mArguments != null) {
 			String title = userName;
-			if (userPhone != null)
-				title += " <" + userPhone + ">";
+			//if (userPhone != null) title += " <" + userPhone + ">";
 			setActivityTitle(title, "", null);
 		}
 

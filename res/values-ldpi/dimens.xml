@@ -2,4 +2,5 @@
 <resources>
     <dimen name="actionbar_title_size">16dp</dimen>
     <dimen name="actionbar_subtitle_size">12dp</dimen>
+    <dimen name="actionbar_height">42dp</dimen>
 </resources>

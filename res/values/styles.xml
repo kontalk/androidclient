@@ -57,12 +57,10 @@
   
   <style name="TextAppearance.Widget.ActionBar.Title.Inverse"
       parent="TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse">
-      <item name="android:textSize">@dimen/actionbar_title_size</item>
   </style>
 
   <style name="TextAppearance.Widget.ActionBar.Subtitle.Inverse"
       parent="TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse">
-      <item name="android:textSize">@dimen/actionbar_subtitle_size</item>
   </style>
   
   <!--
