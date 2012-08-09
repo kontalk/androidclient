@@ -49,7 +49,7 @@ public class UsersProvider extends ContentProvider {
     private static final String TAG = UsersProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.users";
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -90,6 +90,10 @@ public class UsersProvider extends ContentProvider {
         private static final String[] SCHEMA_V2_TO_V3 = {
             "ALTER TABLE " + TABLE_USERS + " ADD COLUMN status TEXT"
         };
+        // version 4 - create users_offline
+        private static final String[] SCHEMA_V3_TO_V4 = {
+            SCHEMA_USERS_OFFLINE
+        };
 
         private Context mContext;
 
@@ -106,6 +110,7 @@ public class UsersProvider extends ContentProvider {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SCHEMA_USERS);
+            db.execSQL(SCHEMA_USERS_OFFLINE);
             mNew = true;
         }
 
@@ -118,6 +123,13 @@ public class UsersProvider extends ContentProvider {
             }
             else if (oldVersion == 2) {
                 for (String sql : SCHEMA_V2_TO_V3)
+                    db.execSQL(sql);
+                // upgrade for version 4 too
+                for (String sql : SCHEMA_V3_TO_V4)
+                    db.execSQL(sql);
+            }
+            else if (oldVersion == 3) {
+                for (String sql : SCHEMA_V3_TO_V4)
                     db.execSQL(sql);
             }
         }
@@ -198,9 +210,7 @@ public class UsersProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-        if (!c.moveToFirst()) {
-            // reset the cursor to before-start
-            c.move(-1);
+        if (c.getCount() == 0) {
             // request sync
             SyncAdapter.requestSync(getContext(), false);
         }
@@ -296,9 +306,9 @@ public class UsersProvider extends ContentProvider {
 
         if (commit) {
             try {
-                // drop online and rename offline to online
-                db.execSQL("DROP TABLE " + TABLE_USERS);
-                db.execSQL("ALTER TABLE " + TABLE_USERS_OFFLINE + " RENAME TO " + TABLE_USERS);
+                // copy contents from offline
+                db.execSQL("DELETE FROM " + TABLE_USERS);
+                db.execSQL("INSERT INTO " + TABLE_USERS + " SELECT * FROM " + TABLE_USERS_OFFLINE);
                 success = setTransactionSuccessful(db);
             }
             catch (SQLException e) {
@@ -314,23 +324,23 @@ public class UsersProvider extends ContentProvider {
         else {
             int count = 0;
 
-            // query for phone numbers
-            final Cursor phones = cr.query(Phone.CONTENT_URI,
-                new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
-                null, null, null);
-
             // delete old users content
             try {
                 db.execSQL("DELETE FROM " + TABLE_USERS_OFFLINE);
             }
             catch (SQLException e) {
-                // table might not exist - create it!
+                // table might not exist - create it! (shouldn't happen since version 4)
                 db.execSQL(DatabaseHelper.SCHEMA_USERS_OFFLINE);
             }
 
             // we are trying to be fast here
             SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
                 " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
+
+            // query for phone numbers
+            final Cursor phones = cr.query(Phone.CONTENT_URI,
+                new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
+                null, null, null);
 
             try {
                 while (phones.moveToNext()) {
