@@ -10,6 +10,7 @@ import org.kontalk.client.ClientConnection;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.Protocol.UserLookupResponse;
 import org.kontalk.client.TxListener;
+import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.MessageCenterService;
@@ -356,7 +357,7 @@ public class Syncer {
                         if (entry.hasStatus())
                             registeredValues.put(Users.STATUS, entry.getStatus());
                         else
-                            registeredValues.remove(Users.STATUS);
+                            registeredValues.putNull(Users.STATUS);
                         if (entry.hasTimestamp())
                             registeredValues.put(Users.LAST_SEEN, entry.getTimestamp());
                         else
@@ -391,6 +392,7 @@ public class Syncer {
                 try {
                     usersProvider.update(uri, null, null, null);
                     Log.d(TAG, "users database committed");
+                    Contact.invalidate();
                 }
                 catch (RemoteException e) {
                     Log.e(TAG, "error committing users database - aborting sync", e);

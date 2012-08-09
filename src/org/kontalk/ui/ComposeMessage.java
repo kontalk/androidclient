@@ -33,20 +33,23 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.MenuItem;
-
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract.QuickContact;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.ImageView;
+import android.widget.QuickContactBadge;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 
 /**
@@ -73,6 +76,9 @@ public class ComposeMessage extends SherlockFragmentActivity {
     private Intent sendIntent;
 
     private ComposeMessageFragment mFragment;
+    private TextView mTitleView;
+    private TextView mSubtitleView;
+    private ImageView mAvatarView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,11 +87,17 @@ public class ComposeMessage extends SherlockFragmentActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        ActionBar bar = getSupportActionBar();
+        bar.setCustomView(R.layout.compose_message_action_view);
+        bar.setDisplayShowHomeEnabled(false);
+        bar.setDisplayShowCustomEnabled(true);
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
+        mTitleView = (TextView) findViewById(android.R.id.title);
+        mSubtitleView = (TextView) findViewById(android.R.id.summary);
+        mAvatarView = (ImageView) findViewById(R.id.avatar);
 
         processIntent(savedInstanceState);
     }
@@ -93,17 +105,14 @@ public class ComposeMessage extends SherlockFragmentActivity {
     /** Sets custom title. Pass null to any of the arguments to skip setting it. */
     public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
         if (title != null)
-            setTitle(title);
-        ActionBar bar = getSupportActionBar();
-        if (subtitle != null) {
-            bar.setDisplayShowTitleEnabled(true);
-            bar.setSubtitle(subtitle);
-        }
+            mTitleView.setText(title);
+        if (subtitle != null)
+            mSubtitleView.setText(subtitle);
         if (contact != null) {
             Drawable avatar = contact.getAvatar(this, null);
             if (avatar == null)
                 avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
-            bar.setIcon(avatar);
+            mAvatarView.setImageDrawable(avatar);
         }
     }
 
@@ -132,16 +141,14 @@ public class ComposeMessage extends SherlockFragmentActivity {
         mQuickAction.show(view);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (mFragment != null)
-                    mFragment.switchBanner();
-                return true;
+    public void onAvatarClick(View view) {
+        if (mFragment != null) {
+            Contact contact = mFragment.getContact();
+            if (contact != null) {
+                QuickContact.showQuickContact(this,
+                    view, contact.getUri(), QuickContact.MODE_SMALL, null);
+            }
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     private void processIntent(Bundle savedInstanceState) {

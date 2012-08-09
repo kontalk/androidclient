@@ -160,18 +160,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private String userPhone;
 
 	private PeerObserver mPeerObserver;
-    private Handler mHandler;
     private File mCurrentPhoto;
-
-    /** Current banner text indicator (BANNER_*). */
-    private int mCurrentBanner;
-    /** Status text as displayed in banner. */
-    private String mBannerStatus;
-    /** Last seen text as displayed in banner. */
-    private String mBannerLastSeen;
-
-    private final static int BANNER_STATUS = 1;
-    private final static int BANNER_LAST_SEEN = 2;
 
 	private LocalBroadcastManager mLocalBroadcastManager;
     private UserPresenceBroadcastReceiver mPresenceReceiver;
@@ -404,7 +393,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		setHasOptionsMenu(true);
 		mQueryHandler = new MessageListQueryHandler();
-		mHandler = new Handler();
 
 		// list adapter creation is post-poned
 	}
@@ -1384,25 +1372,29 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             if (MessageCenterService.ACTION_USER_PRESENCE.equals(action)) {
                 int event = intent.getIntExtra("org.kontalk.presence.event", 0);
                 String text = null;
-                int show = 0;
 
                 if (event == UserEvent.EVENT_OFFLINE_VALUE) {
-                    text = mBannerLastSeen = getResources().getString(R.string.last_seen_label) +
+                    text = getResources().getString(R.string.last_seen_label) +
                             getResources().getString(R.string.seen_moment_ago_label);
-                    show = BANNER_LAST_SEEN;
                 }
                 else if (event == UserEvent.EVENT_ONLINE_VALUE) {
-                    text = mBannerLastSeen = getResources().getString(R.string.seen_online_label);
-                    show = BANNER_LAST_SEEN;
+                    text = getResources().getString(R.string.seen_online_label);
                 }
                 else if (event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
-                    text = mBannerStatus = intent.getStringExtra("org.kontalk.presence.status");
-                    show = BANNER_STATUS;
+                    // update users table
+                    ContentValues values = new ContentValues(1);
+                    values.put(Users.STATUS, intent.getStringExtra("org.kontalk.presence.status"));
+                    context.getContentResolver().update(
+                        Users.CONTENT_URI, values,
+                        Users.HASH + "=?", new String[] { userId });
+                    // time to invalidate cache
+                    // TODO this should be done by cursor notification
+                    Contact.invalidate(userId);
                 }
 
-                if (show > 0) {
+                if (text != null) {
                     try {
-                        setStatusText(text, show);
+                        setStatusText(text);
                     }
                     catch (Exception e) {
                         // something could happen in the mean time - e.g. fragment destruction
@@ -1484,23 +1476,24 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         String afterText = null;
 
                         // update UsersProvider if necessary
-                        ContentValues values = null;
-                        if (res.hasTimestamp()) {
-                            values = new ContentValues(2);
+                        ContentValues values = new ContentValues(2);
+                        if (res.hasTimestamp())
                             values.put(Users.LAST_SEEN, res.getTimestamp());
-                        }
+
                         if (res.hasStatus()) {
-                            if (values == null)
-                                values = new ContentValues(1);
                             afterText = res.getStatus();
                             values.put(Users.STATUS, afterText);
                         }
-
-                        if (values != null) {
-                            context.getContentResolver().update(
-                                Users.CONTENT_URI, values,
-                                Users.HASH + "=?", new String[] { userId });
+                        else {
+                            values.putNull(Users.STATUS);
                         }
+
+                        context.getContentResolver().update(
+                            Users.CONTENT_URI, values,
+                            Users.HASH + "=?", new String[] { userId });
+                        // time to invalidate cache
+                        // TODO this should be done by cursor notification
+                        Contact.invalidate(userId);
 
                         if (text == null && res.hasTimestamp()) {
                             long time = res.getTimestamp();
@@ -1511,31 +1504,18 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         }
 
                         if (text != null) {
-                            mBannerLastSeen = text;
+                            final String banner = text;
                             // show last seen banner
                             context.runOnUiThread(new Runnable() {
                                 public void run() {
                                     try {
-                                        setStatusText(mBannerLastSeen, BANNER_LAST_SEEN);
+                                        setStatusText(banner);
                                     }
                                     catch (Exception e) {
                                         // something could happen in the meanwhile e.g. fragment destruction
                                     }
                                 }
                             });
-                            if (afterText != null) {
-                                mBannerStatus = afterText;
-                                mHandler.postDelayed(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            setStatusText(mBannerStatus, BANNER_STATUS);
-                                        }
-                                        catch (Exception e) {
-                                            // something could happen in the meanwhile e.g. fragment destruction
-                                        }
-                                    }
-                                }, 5000);
-                            }
                         }
                     }
                 }
@@ -1549,8 +1529,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	    return false;
 	}
 
-	private void setStatusText(String text, int which) {
-	    mCurrentBanner = which;
+	private void setStatusText(String text) {
         setActivityTitle(null, text, null);
 	}
 
@@ -1820,6 +1799,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		return mConversation;
 	}
 
+	public Contact getContact() {
+	    return (mConversation != null) ? mConversation.getContact() : null;
+	}
+
 	public long getThreadId() {
 		return threadId;
 	}
@@ -1833,16 +1816,5 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		// this seems to be necessary...
 		return false;
 	}
-
-	/** Switches current banner with next banner. */
-    public synchronized void switchBanner() {
-        if (mCurrentBanner == BANNER_LAST_SEEN && mBannerStatus != null)
-            setStatusText(mBannerStatus, BANNER_STATUS);
-        else if (mCurrentBanner == BANNER_STATUS && mBannerLastSeen != null)
-            setStatusText(mBannerLastSeen, BANNER_LAST_SEEN);
-
-        // cancel auto-change
-        mHandler.removeCallbacksAndMessages(null);
-    }
 
 }

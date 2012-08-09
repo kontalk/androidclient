@@ -55,7 +55,8 @@ public class Contact {
         Users.DISPLAY_NAME,
         Users.NUMBER,
         Users.HASH,
-        Users.REGISTERED
+        Users.REGISTERED,
+        Users.STATUS,
     };
 
     public static final int COLUMN_ID = 0;
@@ -65,6 +66,7 @@ public class Contact {
     public static final int COLUMN_NUMBER = 4;
     public static final int COLUMN_HASH = 5;
     public static final int COLUMN_REGISTERED = 6;
+    public static final int COLUMN_STATUS = 7;
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
@@ -76,6 +78,7 @@ public class Contact {
     private String mLookupKey;
     private Uri mContactUri;
     private boolean mRegistered;
+    private String mStatus;
 
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
@@ -148,6 +151,10 @@ public class Contact {
         return mRegistered;
     }
 
+    public String getStatus() {
+        return mStatus;
+    }
+
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
         if (mAvatar == null) {
             if (mAvatarData == null)
@@ -159,6 +166,14 @@ public class Contact {
             }
         }
         return mAvatar != null ? mAvatar : defaultValue;
+    }
+
+    public static void invalidate(String userId) {
+        cache.remove(userId);
+    }
+
+    public static void invalidate() {
+        cache.clear();
     }
 
     /** Builds a contact from a UsersProvider cursor. */
@@ -173,9 +188,11 @@ public class Contact {
             final String name = cursor.getString(COLUMN_DISPLAY_NAME);
             final String number = cursor.getString(COLUMN_NUMBER);
             final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
+            final String status = cursor.getString(COLUMN_STATUS);
 
             c = new Contact(contactId, key, name, number, hash);
             c.mRegistered = registered;
+            c.mStatus = status;
             cache.put(hash, c);
         }
         return c;
@@ -213,20 +230,23 @@ public class Contact {
                 Users.LOOKUP_KEY,
                 Users.CONTACT_ID,
                 Users.HASH,
-                Users.REGISTERED
+                Users.REGISTERED,
+                Users.STATUS
             }, null, null, null);
 
         if (c.moveToFirst()) {
-            String number = c.getString(0);
-            String name = c.getString(1);
-            String key = c.getString(2);
-            long cid = c.getLong(3);
-            String hash = c.getString(4);
-            boolean registered = (c.getInt(5) != 0);
+            final String number = c.getString(0);
+            final String name = c.getString(1);
+            final String key = c.getString(2);
+            final long cid = c.getLong(3);
+            final String hash = c.getString(4);
+            final boolean registered = (c.getInt(5) != 0);
+            final String status = c.getString(6);
             c.close();
 
             Contact contact = new Contact(cid, key, name, number, hash);
             contact.mRegistered = registered;
+            contact.mStatus = status;
             return contact;
         }
         c.close();

@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
+import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
@@ -309,6 +310,8 @@ public class UsersProvider extends ContentProvider {
                 // copy contents from offline
                 db.execSQL("DELETE FROM " + TABLE_USERS);
                 db.execSQL("INSERT INTO " + TABLE_USERS + " SELECT * FROM " + TABLE_USERS_OFFLINE);
+                // time to invalidate contacts cache
+                Contact.invalidate();
                 success = setTransactionSuccessful(db);
             }
             catch (SQLException e) {

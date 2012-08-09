@@ -24,8 +24,8 @@
   </style>
 
   <style name="Theme.Light.Subtitle" parent="Theme.Light">
-      <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Home</item>
-      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Home</item>
+      <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
+      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
   </style>
 
   <style name="Widget.Sherlock.Light.ActionBar.Blue" parent="Widget.Sherlock.Light.ActionBar.Solid">
@@ -38,11 +38,6 @@
     <item name="subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
     <item name="android:subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
     
-  </style>
-
-  <style name="Widget.Sherlock.Light.ActionBar.Blue.Home" parent="Widget.Sherlock.Light.ActionBar.Blue">
-    <item name="homeLayout">@layout/actionbar_home</item>
-    <!-- <item name="android:homeLayout">@layout/actionbar_home</item> -->
   </style>
 
   <style name="Widget.Sherlock.Light.ActionBar.Blue.Bold" parent="Widget.Sherlock.Light.ActionBar.Blue">
