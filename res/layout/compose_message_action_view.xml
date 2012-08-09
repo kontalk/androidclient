@@ -47,8 +47,7 @@
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
-        android:scrollHorizontally="true"
-        android:text="Daniele Labricciosa Gallese" />
+        android:scrollHorizontally="true" />
 
     <TextView
         android:id="@android:id/summary"
@@ -62,7 +61,6 @@
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
-        android:scrollHorizontally="true"
-        android:text="sto cazzooooooooooooooooooooooo ciaooooooooooooo" />
+        android:scrollHorizontally="true" />
 
 </RelativeLayout>
