@@ -36,9 +36,9 @@
         android:visibility="visible" />
 
     <TextView
-        android:id="@android:id/title"
+        android:id="@+id/title"
         style="@style/TextAppearance.Widget.ActionBar.Title.Inverse"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
@@ -50,7 +50,7 @@
         android:scrollHorizontally="true" />
 
     <TextView
-        android:id="@android:id/summary"
+        android:id="@+id/summary"
         style="@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

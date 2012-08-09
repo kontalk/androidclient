@@ -95,8 +95,8 @@ public class ComposeMessage extends SherlockFragmentActivity {
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
-        mTitleView = (TextView) findViewById(android.R.id.title);
-        mSubtitleView = (TextView) findViewById(android.R.id.summary);
+        mTitleView = (TextView) findViewById(R.id.title);
+        mSubtitleView = (TextView) findViewById(R.id.summary);
         mAvatarView = (ImageView) findViewById(R.id.avatar);
 
         processIntent(savedInstanceState);
