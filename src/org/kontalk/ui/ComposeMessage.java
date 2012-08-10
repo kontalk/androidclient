@@ -44,7 +44,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -116,29 +115,8 @@ public class ComposeMessage extends SherlockFragmentActivity {
         }
     }
 
-    private static final int ACTION_ITEM_IMAGE = 1;
-    private static final int ACTION_ITEM_CONTACT = 2;
-
     public void titleAttachment(View view) {
-        final QuickAction mQuickAction = new QuickAction(this);
-        mQuickAction.addActionItem(new ActionItem(ACTION_ITEM_IMAGE, null,
-            getResources().getDrawable(R.drawable.ic_launcher_gallery)));
-        mQuickAction.addActionItem(new ActionItem(ACTION_ITEM_CONTACT, null,
-            getResources().getDrawable(R.drawable.ic_launcher_contacts)));
-
-        mQuickAction.setOnActionItemClickListener(new QuickAction.OnActionItemClickListener() {
-            public void onItemClick(QuickAction source, int pos, int actionId) {
-                switch (actionId) {
-                    case ACTION_ITEM_IMAGE:
-                        mFragment.selectImageAttachment();
-                        break;
-                    case ACTION_ITEM_CONTACT:
-                        mFragment.selectContactAttachment();
-                        break;
-                }
-            }
-        });
-        mQuickAction.show(view);
+        mFragment.selectAttachment();
     }
 
     public void onAvatarClick(View view) {

@@ -770,7 +770,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     }
 
 	/** Starts dialog for attachment selection. */
-	private void selectAttachment() {
+	public void selectAttachment() {
 	    if (attachmentMenu == null) {
 	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
 	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
@@ -781,7 +781,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	}
 
 	/** Starts activity for an image attachment. */
-	public void selectImageAttachment() {
+	private void selectImageAttachment() {
         Intent i = new Intent(Intent.ACTION_GET_CONTENT)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .setType("image/*");
@@ -815,7 +815,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	}
 
 	/** Starts activity for a vCard attachment from a contact. */
-	public void selectContactAttachment() {
+	private void selectContactAttachment() {
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
 	}
