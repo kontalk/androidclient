@@ -93,6 +93,7 @@ public class UsersProvider extends ContentProvider {
         };
         // version 4 - create users_offline
         private static final String[] SCHEMA_V3_TO_V4 = {
+            "DROP TABLE IF EXISTS " + TABLE_USERS_OFFLINE,
             SCHEMA_USERS_OFFLINE
         };
 
