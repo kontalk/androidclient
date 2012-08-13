@@ -33,6 +33,7 @@
         android:layout_marginLeft="@dimen/avatar_margin"
         android:layout_marginRight="4dp"
         android:onClick="onAvatarClick"
+        android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_contact_picture"
         android:visibility="visible" />
@@ -41,6 +42,7 @@
         android:id="@+id/titlebox"
         android:background="?attr/actionBarItemBackground"
         android:clickable="true"
+        android:focusable="true"
         android:onClick="onTitleboxClick"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
