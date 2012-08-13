@@ -1,3 +1,4 @@
+[ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] handle external storage presence
 [ ] convert manual validation to a separated activity
 [ ] manual validation without requesting SMS
