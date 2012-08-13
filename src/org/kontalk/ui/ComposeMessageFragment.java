@@ -643,12 +643,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     			return true;
 
     		case R.id.view_contact:
-    			if (mConversation != null) {
-    				Contact contact = mConversation.getContact();
-    				if (contact != null)
-    					startActivity(new Intent(Intent.ACTION_VIEW,
-    							contact.getUri()));
-    			}
+    		    viewContact();
     			return true;
 
     		case R.id.menu_attachment:
@@ -766,6 +761,15 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             case ATTACHMENT_ACTION_CONTACT:
                 selectContactAttachment();
                 break;
+        }
+    }
+
+    public void viewContact() {
+        if (mConversation != null) {
+            Contact contact = mConversation.getContact();
+            if (contact != null)
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        contact.getUri()));
         }
     }
 

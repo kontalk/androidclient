@@ -129,6 +129,11 @@ public class ComposeMessage extends SherlockFragmentActivity {
         }
     }
 
+    public void onTitleboxClick(View view) {
+        if (mFragment != null)
+            mFragment.viewContact();
+    }
+
     private void processIntent(Bundle savedInstanceState) {
         Intent intent = null;
         if (savedInstanceState != null) {
