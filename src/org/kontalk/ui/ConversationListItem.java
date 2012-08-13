@@ -128,7 +128,7 @@ public class ConversationListItem extends RelativeLayout {
             from.append(" ");
             from.append(context.getResources().getString(R.string.has_draft));
             from.setSpan(new ForegroundColorSpan(
-                    context.getResources().getColor(R.drawable.text_color_red)),
+                    context.getResources().getColor(R.color.text_color_draft)),
                     lastpos, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
 

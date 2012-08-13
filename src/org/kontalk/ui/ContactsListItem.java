@@ -22,12 +22,7 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.text.Html;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.SpannedString;
 import android.util.AttributeSet;
 import android.widget.QuickContactBadge;
 import android.widget.RelativeLayout;
@@ -83,7 +78,7 @@ public class ContactsListItem extends RelativeLayout {
         String text2 = contact.getStatus();
         if (text2 == null) {
             text2 = contact.getNumber();
-            mText2.setTextColor(Color.LTGRAY);
+            mText2.setTextColor(getResources().getColor(R.color.contacts_list_item_grayed));
         }
         else {
             mText2.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
