@@ -24,6 +24,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.sync.Syncer;
 import org.kontalk.util.SyncerUI;
 
 import com.actionbarsherlock.app.SherlockListActivity;
@@ -47,11 +48,13 @@ public class ContactsListActivity extends SherlockListActivity
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
     private boolean mSyncWasRunning;
+    private MenuItem mSyncButton;
 
     private final Runnable mPostSyncAction = new Runnable() {
         public void run() {
             startQuery();
             setSupportProgressBarIndeterminateVisibility(false);
+            setSyncButtonVisible(true);
         }
     };
 
@@ -81,6 +84,8 @@ public class ContactsListActivity extends SherlockListActivity
         Boolean oldSync = (Boolean) getLastNonConfigurationInstance();
         if (oldSync != null && oldSync.booleanValue())
             startSync(false);
+
+        // TODO retain current sync state to hide the refresh button and start indeterminate progress
     }
 
     @Override
@@ -128,8 +133,10 @@ public class ContactsListActivity extends SherlockListActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public synchronized boolean onCreateOptionsMenu(Menu menu) {
         getSupportMenuInflater().inflate(R.menu.contacts_list_menu, menu);
+        mSyncButton = menu.findItem(R.id.menu_refresh);
+        mSyncButton.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 
@@ -162,11 +169,17 @@ public class ContactsListActivity extends SherlockListActivity
     private void startSync(boolean errorWarning) {
         if (MessageCenterService.isNetworkConnectionAvailable(this)) {
             setSupportProgressBarIndeterminateVisibility(true);
+            setSyncButtonVisible(false);
             SyncerUI.execute(this, mPostSyncAction, false);
         }
         else if (errorWarning) {
             Toast.makeText(this, R.string.err_sync_nonetwork, Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void setSyncButtonVisible(boolean visible) {
+
+        mSyncButton.setVisible(visible);
     }
 
     private void startQuery() {
