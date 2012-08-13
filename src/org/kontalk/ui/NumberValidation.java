@@ -29,7 +29,6 @@ import org.kontalk.service.MessageCenterService;
 import org.kontalk.util.SyncerUI;
 
 import android.accounts.Account;
-import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -46,16 +45,18 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class NumberValidation extends AccountAuthenticatorActivity
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+
+
+public class NumberValidation extends SherlockAccountAuthenticatorActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
 
@@ -151,7 +152,7 @@ public class NumberValidation extends AccountAuthenticatorActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+        MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
         return true;
     }
