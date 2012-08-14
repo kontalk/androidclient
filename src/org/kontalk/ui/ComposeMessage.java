@@ -115,10 +115,6 @@ public class ComposeMessage extends SherlockFragmentActivity {
         }
     }
 
-    public void titleAttachment(View view) {
-        mFragment.selectAttachment();
-    }
-
     public void onAvatarClick(View view) {
         if (mFragment != null) {
             Contact contact = mFragment.getContact();

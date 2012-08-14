@@ -647,18 +647,11 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     			return true;
 
     		case R.id.menu_attachment:
+            case R.id.menu_attachment2:
     		    selectAttachment();
     			return true;
 
-            case R.id.menu_attachment2:
-                ComposeMessage activity = getParentActivity();
-                if (activity != null)
-                    activity.titleAttachment(activity.findViewById(R.id.menu_attachment2));
-                else
-                    selectAttachment();
-                return true;
-
-    		case R.id.delete_thread:
+            case R.id.delete_thread:
     			if (threadId > 0)
     				deleteThread();
 

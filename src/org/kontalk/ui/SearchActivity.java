@@ -21,7 +21,6 @@ package org.kontalk.ui;
 import org.kontalk.R;
 import org.kontalk.data.SearchItem;
 
-import android.app.ListActivity;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.database.Cursor;
@@ -30,12 +29,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
+import com.actionbarsherlock.app.SherlockListActivity;
+
 
 /**
  * A basic search activity for the entire database.
  * @author Daniele Ricci
  */
-public class SearchActivity extends ListActivity {
+public class SearchActivity extends SherlockListActivity {
     private static final String TAG = SearchActivity.class.getSimpleName();
 
     private Cursor mCursor;
