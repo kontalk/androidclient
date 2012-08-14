@@ -18,17 +18,11 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.MessageCenterService;
-
-import com.actionbarsherlock.app.SherlockListFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -57,6 +51,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+
 
 public class ConversationListFragment extends SherlockListFragment {
 
@@ -72,6 +71,9 @@ public class ConversationListFragment extends SherlockListFragment {
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
     private boolean mDualPane;
+
+    private MenuItem mSearchMenu;
+    private MenuItem mDeleteAllMenu;
 
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
         new ConversationListAdapter.OnContentChangedListener() {
@@ -145,19 +147,15 @@ public class ConversationListFragment extends SherlockListFragment {
         MenuItem item = menu.findItem(R.id.menu_compose2);
         if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         item = menu.findItem(R.id.menu_search2);
-        if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-    }
+        if (item != null) {
+            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            mSearchMenu = item;
+        }
+        else {
+            mSearchMenu = menu.findItem(R.id.menu_search);
+        }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
-        MenuItem item;
-        item = menu.findItem(R.id.menu_search);
-        item.setEnabled(visible);
-        item.setVisible(visible);
-        item = menu.findItem(R.id.menu_delete_all);
-        item.setEnabled(visible);
-        item.setVisible(visible);
+        mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
     }
 
     @Override
@@ -451,9 +449,11 @@ public class ConversationListFragment extends SherlockListFragment {
     }
 
     private void updateUI() {
-        ConversationList ctx = getParentActivity();
-        if (Kontalk.needInvalidateMenu())
-            ctx.supportInvalidateOptionsMenu();
+        boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
+        mSearchMenu.setEnabled(visible);
+        mSearchMenu.setVisible(visible);
+        mDeleteAllMenu.setEnabled(visible);
+        mDeleteAllMenu.setVisible(visible);
     }
 
     /**

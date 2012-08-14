@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
@@ -109,7 +108,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -145,6 +143,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private MessageListAdapter mListAdapter;
 	private EditText mTextEntry;
 	private View mSendButton;
+    private MenuItem mDeleteThreadMenu;
+    private MenuItem mViewContactMenu;
+    private MenuItem mCallMenu;
 
 	private boolean mIsKeyboardOpen;
 	private boolean mIsLandscape;
@@ -609,29 +610,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		inflater.inflate(R.menu.compose_message_menu, menu);
 		MenuItem item = menu.findItem(R.id.menu_attachment2);
 		if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-	}
 
-	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
-		boolean contactEnabled = (mConversation != null) ? mConversation
-				.getContact() != null : false;
-		boolean threadEnabled = (threadId > 0);
-		MenuItem i;
-
-		i = menu.findItem(R.id.call_contact);
-		// FIXME what about VoIP?
-		if (!getActivity().getPackageManager().hasSystemFeature(
-				PackageManager.FEATURE_TELEPHONY)) {
-			i.setVisible(false);
-		}
-		else {
-			i.setVisible(true);
-			i.setEnabled(contactEnabled);
-		}
-		i = menu.findItem(R.id.view_contact);
-		i.setEnabled(contactEnabled);
-		i = menu.findItem(R.id.delete_thread);
-		i.setEnabled(threadEnabled);
+		mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
+		mViewContactMenu = menu.findItem(R.id.view_contact);
+		mCallMenu = menu.findItem(R.id.call_contact);
 	}
 
 	@Override
@@ -1698,10 +1680,21 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	}
 
     private void updateUI() {
-        if (Kontalk.needInvalidateMenu()) {
-            SherlockFragmentActivity ctx = getSherlockActivity();
-            ctx.invalidateOptionsMenu();
+        boolean contactEnabled = (mConversation != null) ? mConversation
+            .getContact() != null : false;
+        boolean threadEnabled = (threadId > 0);
+
+        // FIXME what about VoIP?
+        if (!getActivity().getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_TELEPHONY)) {
+            mCallMenu.setVisible(false);
         }
+        else {
+            mCallMenu.setVisible(true);
+            mCallMenu.setEnabled(contactEnabled);
+        }
+        mViewContactMenu.setEnabled(contactEnabled);
+        mDeleteThreadMenu.setEnabled(threadEnabled);
     }
 
 	/** The conversation list query handler. */

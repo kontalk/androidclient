@@ -80,8 +80,4 @@ public class Kontalk extends Application {
             }
         }).start();
     }
-
-    public static boolean needInvalidateMenu() {
-        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB;
-    }
 }
