@@ -148,6 +148,7 @@ public class ContactsListActivity extends SherlockListActivity
             case android.R.id.home:
                 finish();
                 startActivity(new Intent(this, ConversationList.class));
+                return true;
 
             case R.id.menu_refresh:
                 startSync(true);
