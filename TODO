@@ -1,23 +1,23 @@
-[ ] ComposeMessage(Fragment)/menu: keep references to MenuItems instead of triggering invalidateOptionsMenu
+[ ] sync: testing needed for country code in offline mode
+[ ] ListView: still issues with fading edge
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
-[ ] handle external storage presence
-[ ] tablet: drop boxed-style message list
+[ ] ComposeMessage(Fragment)/menu: keep references to MenuItems instead of triggering invalidateOptionsMenu
 [ ] convert manual validation to a separated activity
 [ ] manual validation without requesting SMS
-[ ] ListView: still issues with fading edge
-[ ] sync: testing needed for country code in offline mode
+[ ] tablet: drop boxed-style message list
+[ ] handle external storage presence
 [ ] still problems with uploads: during a gsm call, upload is somewhat "paused"
     and never resumed, unless message center is restarted, triggering a new upload
 [ ] image sending: user can choose to compress/scale down before sending it
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
-[ ] quick voice messages
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
 [x] sync: refresh menu item and indeterminate progress should reflect the current sync state
 [x] contacts list: brighter sync button icon
 
 FUTURE:
+[ ] quick voice messages
 [ ] check if errors are handled correctly, especially if server behaves bad
 [ ] quick reply
 [ ] (plural) list -> (singular) list (??)
