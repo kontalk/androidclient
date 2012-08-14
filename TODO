@@ -1,4 +1,3 @@
-[ ] contacts list: brighter sync button icon
 [ ] ComposeMessage(Fragment)/menu: keep references to MenuItems instead of triggering invalidateOptionsMenu
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] handle external storage presence
@@ -15,6 +14,7 @@
 [ ] quick voice messages
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
 [x] sync: refresh menu item and indeterminate progress should reflect the current sync state
+[x] contacts list: brighter sync button icon
 
 FUTURE:
 [ ] check if errors are handled correctly, especially if server behaves bad
