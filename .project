@@ -3,6 +3,7 @@
 	<name>androidclient</name>
 	<comment></comment>
 	<projects>
+		<project>ActionBarSherlock</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
