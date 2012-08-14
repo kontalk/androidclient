@@ -24,13 +24,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.MessageCenterService;
-import org.kontalk.sync.Syncer;
 import org.kontalk.util.SyncerUI;
-
-import com.actionbarsherlock.app.SherlockListActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -40,6 +34,11 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.Window;
 
 
 public class ContactsListActivity extends SherlockListActivity
@@ -75,6 +74,9 @@ public class ContactsListActivity extends SherlockListActivity
         mListAdapter = new ContactsListAdapter(this, getListView());
         mListAdapter.setOnContentChangedListener(this);
         setListAdapter(mListAdapter);
+
+        if (!getIntent().getBooleanExtra("picker", false))
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (!MessagingPreferences.getContactsListVisited(this))
             Toast.makeText(this, R.string.msg_do_refresh,
@@ -143,6 +145,10 @@ public class ContactsListActivity extends SherlockListActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                startActivity(new Intent(this, ConversationList.class));
+
             case R.id.menu_refresh:
                 startSync(true);
                 return true;
@@ -178,7 +184,6 @@ public class ContactsListActivity extends SherlockListActivity
     }
 
     private void setSyncButtonVisible(boolean visible) {
-
         mSyncButton.setVisible(visible);
     }
 

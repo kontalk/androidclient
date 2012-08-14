@@ -658,8 +658,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     			return true;
 
     		case R.id.goto_conversation_list:
+                getActivity().finish();
     			startActivity(new Intent(getActivity(), ConversationList.class));
-    			getActivity().finish();
     			return true;
 		}
 
@@ -1734,15 +1734,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     								.getText().length() == 0)) {
     					Log.i(TAG, "no data to view - exit");
 
-    					// we have a ComposeMessageActivity - no fragments
-    					if (getParentActivity() != null) {
-    					    getActivity().finish();
-    					}
-    					// using fragments...
-    					else {
-    					    ConversationList activity = (ConversationList) getActivity();
-    					    activity.getListFragment().endConversation(ComposeMessageFragment.this);
-    					}
+    					// close conversation
+    					closeConversation();
     				}
     				else {
     					// see if we have to scroll to a specific message
@@ -1812,6 +1805,18 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public boolean onLongClick(View v) {
 		// this seems to be necessary...
 		return false;
+	}
+
+	public void closeConversation() {
+	    // main activity
+        if (getParentActivity() != null) {
+            getActivity().finish();
+        }
+        // using fragments...
+        else {
+            ConversationList activity = (ConversationList) getActivity();
+            activity.getListFragment().endConversation(ComposeMessageFragment.this);
+        }
 	}
 
 }

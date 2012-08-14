@@ -30,6 +30,7 @@ import android.view.View;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.MenuItem;
 
 
 /**
@@ -47,6 +48,8 @@ public class SearchActivity extends SherlockListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_list);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -72,6 +75,19 @@ public class SearchActivity extends SherlockListActivity {
         i.putExtra(ComposeMessage.EXTRA_MESSAGE, msgId);
         i.putExtra(ComposeMessage.EXTRA_HIGHLIGHT, mQuery);
         startActivity(i);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                startActivity(new Intent(this, ConversationList.class));
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 }
