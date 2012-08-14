@@ -46,14 +46,12 @@ public class ContactsListActivity extends SherlockListActivity
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
-    private boolean mSyncWasRunning;
     private MenuItem mSyncButton;
 
     private final Runnable mPostSyncAction = new Runnable() {
         public void run() {
             startQuery();
-            setSupportProgressBarIndeterminateVisibility(false);
-            setSyncButtonVisible(true);
+            setSyncing(false);
         }
     };
 
@@ -82,12 +80,9 @@ public class ContactsListActivity extends SherlockListActivity
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
 
-        // resume sync if any
-        Boolean oldSync = (Boolean) getLastNonConfigurationInstance();
-        if (oldSync != null && oldSync.booleanValue())
-            startSync(false);
-
-        // TODO retain current sync state to hide the refresh button and start indeterminate progress
+        // retain current sync state to hide the refresh button and start indeterminate progress
+        if (SyncerUI.retainIfRunning(this, mPostSyncAction, false))
+            setSyncing(true);
     }
 
     @Override
@@ -109,7 +104,6 @@ public class ContactsListActivity extends SherlockListActivity
             // ignored
         }
 
-        mSyncWasRunning = SyncerUI.isRunning();
         // cancel any ongoing sync
         SyncerUI.cancel(true);
         // release message center
@@ -130,15 +124,11 @@ public class ContactsListActivity extends SherlockListActivity
     }
 
     @Override
-    public Object onRetainNonConfigurationInstance() {
-        return mSyncWasRunning;
-    }
-
-    @Override
     public synchronized boolean onCreateOptionsMenu(Menu menu) {
         getSupportMenuInflater().inflate(R.menu.contacts_list_menu, menu);
         mSyncButton = menu.findItem(R.id.menu_refresh);
         mSyncButton.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        mSyncButton.setVisible(!SyncerUI.isRunning());
         return true;
     }
 
@@ -175,8 +165,7 @@ public class ContactsListActivity extends SherlockListActivity
 
     private void startSync(boolean errorWarning) {
         if (MessageCenterService.isNetworkConnectionAvailable(this)) {
-            setSupportProgressBarIndeterminateVisibility(true);
-            setSyncButtonVisible(false);
+            setSyncing(true);
             SyncerUI.execute(this, mPostSyncAction, false);
         }
         else if (errorWarning) {
@@ -184,8 +173,10 @@ public class ContactsListActivity extends SherlockListActivity
         }
     }
 
-    private void setSyncButtonVisible(boolean visible) {
-        mSyncButton.setVisible(visible);
+    private void setSyncing(boolean syncing) {
+        if (mSyncButton != null)
+            mSyncButton.setVisible(!syncing);
+        setSupportProgressBarIndeterminateVisibility(syncing);
     }
 
     private void startQuery() {

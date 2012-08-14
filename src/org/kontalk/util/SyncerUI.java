@@ -40,6 +40,22 @@ public abstract class SyncerUI {
         }
     }
 
+    /** Retains an existing sync for monitoring it, if a sync is ever running. */
+    public synchronized static boolean retainIfRunning(Activity context, Runnable finish, boolean dialog) {
+        if (currentSyncer != null) {
+            Log.v(TAG, "syncer already monitoring, retaining it");
+            currentSyncer.retain(context, finish);
+            return true;
+        }
+        else if (Syncer.getInstance() != null || Syncer.isPending()) {
+            Log.v(TAG, "starting sync monitor");
+            currentSyncer = new SyncMonitorTask(context, finish, dialog);
+            currentSyncer.execute();
+            return true;
+        }
+        return false;
+    }
+
     public synchronized static boolean isRunning() {
         return (currentSyncer != null && !currentSyncer.isCancelled());
     }

@@ -20,12 +20,14 @@ import org.kontalk.service.RequestListener;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SyncResult;
 import android.database.Cursor;
@@ -36,6 +38,7 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.protobuf.MessageLite;
@@ -71,9 +74,10 @@ public class Syncer {
 
     private volatile boolean mCanceled;
     private final Context mContext;
+    private LocalBroadcastManager mLocalBroadcastManager;
 
     /** Used for binding to the message center to send messages. */
-    private final class ClientServiceConnection implements ServiceConnection {
+    private final class ClientServiceConnection extends BroadcastReceiver implements ServiceConnection {
         private MessageCenterService service;
         private List<String> hashList;
         private UserLookupResponse response;
@@ -86,12 +90,20 @@ public class Syncer {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             service = null;
+            unregisterReceiver();
         }
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
+            IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_CONNECTED);
+            mLocalBroadcastManager.registerReceiver(this, filter);
+            lookup();
+            mContext.unbindService(this);
+        }
+
+        private void lookup() {
             RequestJob job = service.lookupUsers(hashList);
             job.setListener(new RequestListener() {
                 @Override
@@ -112,6 +124,7 @@ public class Syncer {
                 @Override
                 public boolean error(ClientThread client, RequestJob job, Throwable exc) {
                     lastError = exc;
+                    unregisterReceiver();
                     synchronized (Syncer.this) {
                         Syncer.this.notifyAll();
                     }
@@ -125,6 +138,7 @@ public class Syncer {
                         @Override
                         public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
                             synchronized (Syncer.this) {
+                                unregisterReceiver();
                                 response = (UserLookupResponse) pack;
                                 Syncer.this.notifyAll();
                             }
@@ -134,7 +148,6 @@ public class Syncer {
                     client.setTxListener(txId, listener);
                 }
             });
-            mContext.unbindService(this);
         }
 
         public UserLookupResponse getResponse() {
@@ -143,6 +156,24 @@ public class Syncer {
 
         public Throwable getLastError() {
             return lastError;
+        }
+
+        private void unregisterReceiver() {
+            try {
+                mLocalBroadcastManager.unregisterReceiver(this);
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (MessageCenterService.ACTION_CONNECTED.equals(action) && response == null) {
+                // request user lookup
+                lookup();
+            }
         }
     }
 
@@ -295,6 +326,8 @@ public class Syncer {
         }
 
         else {
+            mLocalBroadcastManager = LocalBroadcastManager.getInstance(mContext);
+
             // bind to message center to make it do the dirty stuff :)
             ClientServiceConnection conn = new ClientServiceConnection(hashList);
             if (!mContext.bindService(

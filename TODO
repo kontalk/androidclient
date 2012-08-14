@@ -1,5 +1,5 @@
 [ ] contacts list: brighter sync button icon
-[ ] sync: refresh menu item and indeterminate progress should reflect the current sync state
+[ ] ComposeMessage(Fragment)/menu: keep references to MenuItems instead of triggering invalidateOptionsMenu
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] handle external storage presence
 [ ] convert manual validation to a separated activity
@@ -14,6 +14,7 @@
     (actually we should save a sample on our own and load it instead)
 [ ] quick voice messages
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
+[x] sync: refresh menu item and indeterminate progress should reflect the current sync state
 
 FUTURE:
 [ ] check if errors are handled correctly, especially if server behaves bad
