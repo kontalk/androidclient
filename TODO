@@ -1,6 +1,7 @@
 [ ] ComposeMessage(Fragment)/menu: keep references to MenuItems instead of triggering invalidateOptionsMenu
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] handle external storage presence
+[ ] tablet: drop boxed-style message list
 [ ] convert manual validation to a separated activity
 [ ] manual validation without requesting SMS
 [ ] ListView: still issues with fading edge
