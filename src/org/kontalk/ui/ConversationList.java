@@ -22,12 +22,12 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.util.SyncerUI;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListAdapter;
+
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 
 /**

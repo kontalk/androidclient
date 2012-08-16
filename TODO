@@ -1,4 +1,3 @@
-[ ] tablet: show home as back button when pushing fragments to the stack
 [ ] sync: testing needed for country code in offline mode
 [ ] ListView: still issues with fading edge
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
@@ -13,6 +12,7 @@
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
+[-] tablet: show home as back button when pushing fragments to the stack
 [x] ComposeMessage(Fragment)/menu: keep references to MenuItems instead of triggering invalidateOptionsMenu
 [x] contacts list: brighter sync button icon
 [x] sync: refresh menu item and indeterminate progress should reflect the current sync state

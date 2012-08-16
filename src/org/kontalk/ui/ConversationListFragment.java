@@ -362,14 +362,7 @@ public class ConversationListFragment extends SherlockListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
-        if (conv != null) {
-            openConversation(conv, position);
-        }
-
-        // new composer
-        else {
-            chooseContact();
-        }
+        openConversation(conv, position);
     }
 
     private void openConversation(Conversation conv, int position) {
