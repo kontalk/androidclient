@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 import org.kontalk.ui.MessagingPreferences;
@@ -35,6 +36,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
+import android.os.PowerManager;
 import android.os.MessageQueue.IdleHandler;
 import android.os.Process;
 import android.util.Log;
@@ -77,6 +79,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
     private String mPushRegistrationId;
 
+    private final PowerManager.WakeLock mWakeLock;
+
     /** Pending jobs queue - will be used on thread start to initialize the messages. */
     static public LinkedList<RequestJob> pendingJobs = new LinkedList<RequestJob>();
 
@@ -85,6 +89,8 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         mContext = context;
         mRefCount = refCount;
         mClient = new ClientThread(context, this, server);
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.class.getSimpleName());
     }
 
     public void addListener(RequestListener listener, boolean async) {
@@ -211,11 +217,21 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             return true;
         }
 
+        /** handleMessage wrapper for acquiring/releasing the wake lock. */
         @Override
         public void handleMessage(Message msg) {
             final RequestWorker w = mWorker.get();
             if (w == null) return;
+            try {
+                w.mWakeLock.acquire();
+                handleMessage2(msg, w);
+            }
+            finally {
+                w.mWakeLock.release();
+            }
+        }
 
+        public void handleMessage2(final Message msg, final RequestWorker w) {
             // something to work out
             if (msg.what == MSG_REQUEST_JOB) {
                 // remove any pending idle messages
@@ -389,16 +405,26 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             }
 
             @Override
-            public String toString() {
+            public final String toString() {
                 return mJob.toString();
             }
 
+            /** run wrapper for acquiring/releasing the wake lock. */
             @Override
             public final void run() {
-                // FIXME there is some duplicated code here
-                RequestWorker w = mWorker.get();
+                final RequestWorker w = mWorker.get();
                 if (w == null) return;
+                try {
+                    w.mWakeLock.acquire();
+                    run(w);
+                }
+                finally {
+                    w.mWakeLock.release();
+                }
+            }
 
+            public final void run(final RequestWorker w) {
+                // FIXME there is some duplicated code here
                 try {
                     // start callback
                     w.mListeners.starting(mClient, mJob);
