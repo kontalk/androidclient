@@ -167,7 +167,7 @@ public class ConversationListFragment extends SherlockListFragment {
                 return true;
 
             case R.id.menu_status:
-                setStatus();
+                StatusActivity.start(getActivity());
                 return true;
 
             case R.id.menu_search:
@@ -180,8 +180,7 @@ public class ConversationListFragment extends SherlockListFragment {
                 return true;
 
             case R.id.menu_settings: {
-                Intent intent = new Intent(getActivity(), MessagingPreferences.class);
-                getActivity().startActivityIfNeeded(intent, -1);
+                MessagingPreferences.start(getActivity());
                 return true;
             }
         }
@@ -264,39 +263,6 @@ public class ConversationListFragment extends SherlockListFragment {
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(getActivity(), ContactsListActivity.class);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
-    }
-
-    private void setStatus() {
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.edittext_dialog, null);
-        final EditText txt = (EditText) view.findViewById(R.id.textinput);
-
-        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == Dialog.BUTTON_POSITIVE) {
-                    String text = txt.getText().toString();
-                    if (text.trim().length() <= 0)
-                        text = text.trim();
-                    MessagingPreferences.setStatusMessage(getActivity(), text);
-
-                    // start the message center to push the status message
-                    MessageCenterService.updateStatus(getActivity());
-                }
-            }
-        };
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder
-            .setTitle(R.string.title_status_message)
-            .setPositiveButton(android.R.string.ok, listener)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setView(view);
-
-        txt.setText(MessagingPreferences.getStatusMessage(getActivity()));
-        txt.setSelection(txt.getText().length());
-        txt.setInputType(InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
-        final Dialog dialog = builder.create();
-        dialog.show();
     }
 
     private void deleteAll() {

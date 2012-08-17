@@ -38,7 +38,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    
+
     <!-- internal permissions -->
     <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
 
@@ -183,11 +183,15 @@
             android:label="@string/contacts_list_title"
             android:theme="@style/Theme.Light"/>
 
+        <activity android:name=".ui.StatusActivity"
+            android:label="@string/status_activity_title"
+            android:theme="@style/Theme.Light"/>
+
         <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
             android:launchMode="singleInstance"
             android:taskAffinity=""
-            android:excludeFromRecents="true"  
+            android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Dialog">
             <!-- this is just for testing
             <intent-filter>

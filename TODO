@@ -1,9 +1,9 @@
-[ ] sync: testing needed for country code in offline mode
+[ ] status: use activity instead of dialog
 [ ] ListView: still issues with fading edge
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] convert manual validation to a separated activity
 [ ] manual validation without requesting SMS
-[ ] tablet: drop boxed-style message list
+[ ] tablet: refactor message list view
 [ ] handle external storage presence
 [ ] still problems with uploads: during a gsm call, upload is somewhat "paused"
     and never resumed, unless message center is restarted, triggering a new upload
@@ -12,6 +12,7 @@
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
+[x] sync: testing needed for country code in offline mode
 [-] tablet: show home as back button when pushing fragments to the stack
 [x] ComposeMessage(Fragment)/menu: keep references to MenuItems instead of triggering invalidateOptionsMenu
 [x] contacts list: brighter sync button icon

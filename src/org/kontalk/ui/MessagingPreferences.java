@@ -395,4 +395,9 @@ public final class MessagingPreferences extends PreferenceActivity {
     public static boolean getBigUpgrade1(Context context) {
         return getBooleanOnce(context, "bigupgrade1");
     }
+
+    public static void start(Activity context) {
+        Intent intent = new Intent(context, MessagingPreferences.class);
+        context.startActivityIfNeeded(intent, -1);
+    }
 }

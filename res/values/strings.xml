@@ -195,8 +195,10 @@
 
     <string name="attachment_picture">Picture</string>
     <string name="attachment_contact">Contact</string>
-    
+
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
+
+    <string name="status_activity_title">Status message</string>
 
 </resources>
