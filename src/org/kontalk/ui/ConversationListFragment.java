@@ -442,11 +442,13 @@ public class ConversationListFragment extends SherlockListFragment {
     }
 
     private void updateUI() {
-        boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
-        mSearchMenu.setEnabled(visible);
-        mSearchMenu.setVisible(visible);
-        mDeleteAllMenu.setEnabled(visible);
-        mDeleteAllMenu.setVisible(visible);
+        if (mSearchMenu != null) {
+            boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
+            mSearchMenu.setEnabled(visible);
+            mSearchMenu.setVisible(visible);
+            mDeleteAllMenu.setEnabled(visible);
+            mDeleteAllMenu.setVisible(visible);
+        }
     }
 
     /**

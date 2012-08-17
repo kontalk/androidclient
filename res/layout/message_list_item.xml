@@ -75,7 +75,7 @@
                 android:paddingBottom="4dip"
                 android:paddingLeft="5dip"
                 android:paddingRight="5dip"
-                android:maxWidth="200dip"
+                android:maxWidth="@dimen/message_text_width"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:autoLink="all"

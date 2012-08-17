@@ -1684,17 +1684,19 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             .getContact() != null : false;
         boolean threadEnabled = (threadId > 0);
 
-        // FIXME what about VoIP?
-        if (!getActivity().getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_TELEPHONY)) {
-            mCallMenu.setVisible(false);
+        if (mCallMenu != null) {
+            // FIXME what about VoIP?
+            if (!getActivity().getPackageManager().hasSystemFeature(
+                    PackageManager.FEATURE_TELEPHONY)) {
+                mCallMenu.setVisible(false);
+            }
+            else {
+                mCallMenu.setVisible(true);
+                mCallMenu.setEnabled(contactEnabled);
+            }
+            mViewContactMenu.setEnabled(contactEnabled);
+            mDeleteThreadMenu.setEnabled(threadEnabled);
         }
-        else {
-            mCallMenu.setVisible(true);
-            mCallMenu.setEnabled(contactEnabled);
-        }
-        mViewContactMenu.setEnabled(contactEnabled);
-        mDeleteThreadMenu.setEnabled(threadEnabled);
     }
 
 	/** The conversation list query handler. */

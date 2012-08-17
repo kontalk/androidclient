@@ -61,10 +61,7 @@ public class MessageListItem extends RelativeLayout {
     private ImageView mLockView;
     private TextView mDateViewIncoming;
     private TextView mDateViewOutgoing;
-    private TextView mDateView;
-    private TextView mNameView;
     private View mBalloonView;
-    private View mBackground;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -102,9 +99,6 @@ public class MessageListItem extends RelativeLayout {
         mBalloonView = findViewById(R.id.balloon_view);
         mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
         mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
-        mDateView = (TextView) findViewById(R.id.date_view);
-        mNameView = (TextView) findViewById(R.id.name_view);
-        mBackground = findViewById(R.id.msg_list_item_background);
 
         if (isInEditMode()) {
             mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
@@ -133,23 +127,13 @@ public class MessageListItem extends RelativeLayout {
 	        /* OUTGOING */
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
-            if (mDateView == null) {
-                setGravity(Gravity.RIGHT);
-                if (mBalloonView != null)
-                    mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-                if (mDateViewIncoming != null) {
-                    mDateViewIncoming.setVisibility(GONE);
-                    mDateViewOutgoing.setVisibility(VISIBLE);
-                    mDateViewOutgoing.setText("28 Nov");
-                }
-            }
-            else {
-                int backId = R.drawable.message_list_item_out_fill;
-                mNameView.setBackgroundResource(backId);
-                mDateView.setBackgroundResource(backId);
-                mBackground.setBackgroundResource(R.drawable.message_list_item_out_border);
-                mNameView.setText("Daniele Ricci");
-                mDateView.setText("11:56");
+            setGravity(Gravity.RIGHT);
+            if (mBalloonView != null)
+                mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
+            if (mDateViewIncoming != null) {
+                mDateViewIncoming.setVisibility(GONE);
+                mDateViewOutgoing.setVisibility(VISIBLE);
+                mDateViewOutgoing.setText("28 Nov");
             }
         }
     }
@@ -180,36 +164,20 @@ public class MessageListItem extends RelativeLayout {
 	            mBalloonView.setBackgroundResource(MessagingPreferences
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
 
-            if (mDateView == null) {
-                setGravity(Gravity.LEFT);
-                //setBackgroundResource(R.drawable.light_blue_background);
-	            mDateViewIncoming.setVisibility(VISIBLE);
-	            mDateViewOutgoing.setVisibility(GONE);
-            }
-            else {
-	            int backId = R.drawable.message_list_item_in_fill;
-	            mNameView.setBackgroundResource(backId);
-	            mDateView.setBackgroundResource(backId);
-	            mBackground.setBackgroundResource(R.drawable.message_list_item_in_border);
-            }
+            setGravity(Gravity.LEFT);
+            //setBackgroundResource(R.drawable.light_blue_background);
+            mDateViewIncoming.setVisibility(VISIBLE);
+            mDateViewOutgoing.setVisibility(GONE);
         }
         else {
             if (mBalloonView != null)
             	mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
 
-            if (mDateView == null) {
-                setGravity(Gravity.RIGHT);
-                //setBackgroundResource(R.drawable.white_background);
-	            mDateViewIncoming.setVisibility(GONE);
-	            mDateViewOutgoing.setVisibility(VISIBLE);
-	        }
-            else {
-	            int backId = R.drawable.message_list_item_out_fill;
-	            mNameView.setBackgroundResource(backId);
-	            mDateView.setBackgroundResource(backId);
-	            mBackground.setBackgroundResource(R.drawable.message_list_item_out_border);
-            }
+            setGravity(Gravity.RIGHT);
+            //setBackgroundResource(R.drawable.white_background);
+            mDateViewIncoming.setVisibility(GONE);
+            mDateViewOutgoing.setVisibility(VISIBLE);
 
             // status icon
             if (mMessage.getSender() == null)
@@ -288,29 +256,12 @@ public class MessageListItem extends RelativeLayout {
             }
         }
 
-        TextView dateView;
-
-        if (mDateView == null)
-        	dateView = (mMessage.getSender() != null) ?
+        final TextView dateView = (mMessage.getSender() != null) ?
                 mDateViewIncoming : mDateViewOutgoing;
-        else
-        	dateView = mDateView;
 
         Date serverTime = mMessage.getServerTimestamp();
         long ts = serverTime != null ? serverTime.getTime() : mMessage.getTimestamp();
         dateView.setText(MessageUtils.formatTimeStampString(getContext(), ts));
-
-        if (mNameView != null) {
-        	String text;
-        	if (mMessage.getDirection() == Messages.DIRECTION_IN) {
-        		text = (contact != null) ? contact.getName() : mMessage.getSender(true);
-        	}
-        	else {
-        		text = getResources().getString(R.string.myself_label);
-        	}
-
-        	mNameView.setText(text);
-        }
 
         if (highlight != null) {
             Matcher m = highlight.matcher(buf.toString());
