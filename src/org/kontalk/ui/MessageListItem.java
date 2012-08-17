@@ -53,6 +53,7 @@ import android.widget.TextView;
  */
 public class MessageListItem extends RelativeLayout {
     //private static final String TAG = MessageListItem.class.getSimpleName();
+    static private Drawable sDefaultContactImage;
 
     private AbstractMessage<?> mMessage;
     private CharSequence formattedMessage;
@@ -62,6 +63,9 @@ public class MessageListItem extends RelativeLayout {
     private TextView mDateViewIncoming;
     private TextView mDateViewOutgoing;
     private View mBalloonView;
+
+    private ImageView mAvatarIncoming;
+    private ImageView mAvatarOutgoing;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -87,6 +91,10 @@ public class MessageListItem extends RelativeLayout {
         super(context, attrs);
         int color = context.getResources().getColor(R.color.highlight_color);
         mHighlightColorSpan = new BackgroundColorSpan(color);
+
+        if (sDefaultContactImage == null) {
+            sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
+        }
     }
 
     @Override
@@ -99,6 +107,8 @@ public class MessageListItem extends RelativeLayout {
         mBalloonView = findViewById(R.id.balloon_view);
         mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
         mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
+        mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
+        mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
 
         if (isInEditMode()) {
             mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
@@ -135,6 +145,11 @@ public class MessageListItem extends RelativeLayout {
                 mDateViewOutgoing.setVisibility(VISIBLE);
                 mDateViewOutgoing.setText("28 Nov");
             }
+            if (mAvatarIncoming != null) {
+                mAvatarIncoming.setVisibility(GONE);
+                mAvatarOutgoing.setVisibility(VISIBLE);
+                mAvatarOutgoing.setImageResource(R.drawable.ic_contact_picture);
+            }
         }
     }
 
@@ -168,6 +183,13 @@ public class MessageListItem extends RelativeLayout {
             //setBackgroundResource(R.drawable.light_blue_background);
             mDateViewIncoming.setVisibility(VISIBLE);
             mDateViewOutgoing.setVisibility(GONE);
+
+            if (mAvatarIncoming != null) {
+                mAvatarOutgoing.setVisibility(GONE);
+                mAvatarIncoming.setVisibility(VISIBLE);
+                mAvatarIncoming.setImageDrawable(contact != null ?
+                    contact.getAvatar(context, sDefaultContactImage) : sDefaultContactImage);
+            }
         }
         else {
             if (mBalloonView != null)
@@ -178,6 +200,13 @@ public class MessageListItem extends RelativeLayout {
             //setBackgroundResource(R.drawable.white_background);
             mDateViewIncoming.setVisibility(GONE);
             mDateViewOutgoing.setVisibility(VISIBLE);
+
+            if (mAvatarOutgoing != null) {
+                mAvatarIncoming.setVisibility(GONE);
+                mAvatarOutgoing.setVisibility(VISIBLE);
+                mAvatarOutgoing.setImageDrawable(contact != null ?
+                    contact.getAvatar(context, sDefaultContactImage) : sDefaultContactImage);
+            }
 
             // status icon
             if (mMessage.getSender() == null)
