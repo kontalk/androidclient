@@ -18,7 +18,6 @@
 
 package org.kontalk.ui;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 
 
@@ -27,7 +26,7 @@ import android.content.Context;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class LockedProgressDialog extends ProgressDialog {
+public class LockedProgressDialog extends NonSearchableProgressDialog {
 
     public LockedProgressDialog(Context ctx) {
         super(ctx);
@@ -35,8 +34,4 @@ public class LockedProgressDialog extends ProgressDialog {
         setCanceledOnTouchOutside(false);
     }
 
-    @Override
-    public boolean onSearchRequested() {
-        return true;
-    }
 }

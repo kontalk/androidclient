@@ -48,6 +48,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
@@ -178,8 +179,16 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     @Override
     protected void onStop() {
         super.onStop();
+        keepScreenOn(false);
         if (mProgress != null)
-            mProgress.dismiss();
+            mProgress.cancel();
+    }
+
+    private void keepScreenOn(boolean active) {
+        if (active)
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     /** Starts the validation activity. */
@@ -280,6 +289,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
      * @param v not used
      */
     public void validatePhone(View v) {
+        keepScreenOn(true);
         // we are starting an automatic validation
         mManualValidation = false;
         startValidation();
@@ -297,13 +307,14 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     private void startProgress(CharSequence message) {
         if (mProgress == null) {
-            mProgress = new ProgressDialog(this);
+            mProgress = new NonSearchableProgressDialog(this);
             mProgress.setIndeterminate(true);
             mProgress.setCanceledOnTouchOutside(false);
             setProgressMessage(message != null ? message : getText(R.string.msg_validating_phone));
             mProgress.setOnCancelListener(new OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialog) {
+                    keepScreenOn(false);
                     Toast.makeText(NumberValidation.this, R.string.msg_validation_canceled, Toast.LENGTH_LONG).show();
                     abort();
                 }
@@ -356,6 +367,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                keepScreenOn(false);
                 Toast.makeText(NumberValidation.this,
                         R.string.err_authentication_failed,
                         Toast.LENGTH_LONG).show();
@@ -415,6 +427,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                keepScreenOn(false);
                 int msgId;
                 if (e instanceof SocketException)
                     msgId = R.string.err_validation_network_error;
@@ -432,6 +445,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                keepScreenOn(false);
                 Toast.makeText(NumberValidation.this, R.string.err_validation_failed, Toast.LENGTH_LONG).show();
                 abort();
             }
