@@ -188,6 +188,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
         mManualButton.setEnabled(enabled);
+        mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
     }
 
