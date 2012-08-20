@@ -120,6 +120,7 @@
     <string name="err_validation_failed">Verifica del numero di telefono fallita.</string>
     <string name="msg_validation_canceled">Validazione annullata. Potresti comunque ricevere un SMS.</string>
     <string name="err_validation_error">Errore durante la validazione. Riprova più tardi.</string>
+    <string name="err_validation_network_error">Impossibile connettersi al server. Riprova più tardi.</string>
     <string name="text_encrypted">(cifrato)</string>
     <string name="peer_unknown">(sconosciuto)</string>
     <string name="msg_draft_saved">Messaggio salvato come bozza.</string>

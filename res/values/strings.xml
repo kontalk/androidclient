@@ -120,6 +120,7 @@
     <string name="err_validation_failed">Phone number verification failed.</string>
     <string name="msg_validation_canceled">Validation canceled. You might receive a SMS anyway.</string>
     <string name="err_validation_error">An error occured during validation. Please try again later.</string>
+    <string name="err_validation_network_error">Unable to connect to server. Please try again later.</string>
     <string name="text_encrypted">(encrypted)</string>
     <string name="peer_unknown">(unknown)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>

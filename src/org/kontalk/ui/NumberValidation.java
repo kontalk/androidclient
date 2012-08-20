@@ -18,6 +18,8 @@
 
 package org.kontalk.ui;
 
+import java.net.SocketException;
+
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
@@ -406,12 +408,17 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onError(NumberValidator v, Throwable e) {
+    public void onError(NumberValidator v, final Throwable e) {
         Log.e(TAG, "validation error.", e);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(NumberValidation.this, R.string.err_validation_error, Toast.LENGTH_LONG).show();
+                int msgId;
+                if (e instanceof SocketException)
+                    msgId = R.string.err_validation_network_error;
+                else
+                    msgId = R.string.err_validation_error;
+                Toast.makeText(NumberValidation.this, msgId, Toast.LENGTH_LONG).show();
                 abort();
             }
         });
