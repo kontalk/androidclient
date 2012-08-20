@@ -156,6 +156,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
+        MenuItem item = menu.findItem(R.id.menu_settings);
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 
