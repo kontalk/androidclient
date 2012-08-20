@@ -33,7 +33,6 @@ import org.kontalk.util.SyncerUI;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -43,13 +42,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -63,11 +60,15 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
 
+    private static final int REQUEST_MANUAL_VALIDATION = 771;
+
     public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
 
     public static final String PARAM_AUTHTOKEN_TYPE = "org.kontalk.authtokenType";
     public static final String PARAM_PHONENUMBER = "org.kontalk.phoneNumber";
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
+
+    public static final String PARAM_AUTHTOKEN = "org.kontalk.authtoken";
 
     private AccountManager mAccountManager;
     private EditText mCountryCode;
@@ -182,6 +183,13 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         keepScreenOn(false);
         if (mProgress != null)
             mProgress.cancel();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
+            finishLogin(data.getStringExtra(PARAM_AUTHTOKEN));
+        }
     }
 
     private void keepScreenOn(boolean active) {
@@ -330,14 +338,18 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         }
     }
 
+    public void abortProgress(boolean enableControls) {
+        abortProgress();
+        enableControls(enableControls);
+    }
+
     public void abort() {
         abort(false);
     }
 
     public void abort(boolean ending) {
         if (!ending) {
-            enableControls(true);
-            abortProgress();
+            abortProgress(true);
         }
 
         if (mValidator != null) {
@@ -400,6 +412,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         // ok, start message center
         MessageCenterService.startMessageCenter(getApplicationContext());
 
+        if (mProgress == null)
+            startProgress();
         mProgress.setCancelable(false);
         mProgress.setCanceledOnTouchOutside(false);
         setProgressMessage(getString(R.string.msg_initializing));
@@ -456,51 +470,11 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public void onValidationRequested(NumberValidator v) {
         if (mManualValidation) {
             Log.d(TAG, "validation has been requested, requesting validation code to user");
-            // close progress dialog
-            abortProgress();
-
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // open validation code input dialog
-                    LayoutInflater inflater = getLayoutInflater();
-                    final View view = inflater.inflate(R.layout.edittext_dialog, null);
-                    final EditText txt = (EditText) view.findViewById(R.id.textinput);
-
-                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (which == Dialog.BUTTON_POSITIVE) {
-                                startProgress();
-                                // send the code
-                                if (mValidator != null) {
-                                    // FIXME just trusting the user isn't safe enough
-                                    mValidator.manualInput(txt.getText());
-                                    mValidator.start();
-                                }
-                            }
-                            else if (which == Dialog.BUTTON_NEGATIVE) {
-                                dialog.cancel();
-                            }
-                        }
-                    };
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(NumberValidation.this);
-                    builder
-                        .setTitle(R.string.title_validation_code)
-                        .setPositiveButton(android.R.string.ok, listener)
-                        .setNegativeButton(android.R.string.cancel, listener)
-                        .setView(view)
-                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                            @Override
-                            public void onCancel(DialogInterface dialog) {
-                                abort();
-                            }
-                        });
-
-                    txt.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    final Dialog dialog = builder.create();
-                    dialog.show();
+                    abortProgress(true);
+                    startActivityForResult(new Intent(NumberValidation.this, CodeValidation.class), REQUEST_MANUAL_VALIDATION);
                 }
             });
         }

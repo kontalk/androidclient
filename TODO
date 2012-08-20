@@ -1,9 +1,10 @@
 [ ] status: use activity instead of dialog
 [ ] ListView: still issues with fading edge
-[ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
+[ ] validation: SMS receive timeout
 [ ] convert manual validation to a separated activity
 [ ] manual validation without requesting SMS
 [ ] tablet: refactor message list view
+[ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] multiserver support
 [ ] handle external storage presence
 [ ] still problems with uploads: during a gsm call, upload is somewhat "paused"
