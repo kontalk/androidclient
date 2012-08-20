@@ -26,7 +26,6 @@ import org.kontalk.service.MessageCenterService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
@@ -38,7 +37,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Html;
-import android.text.InputType;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -46,7 +44,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -144,15 +141,12 @@ public class ConversationListFragment extends SherlockListFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.conversation_list_menu, menu);
-        MenuItem item = menu.findItem(R.id.menu_compose2);
+        MenuItem item = menu.findItem(R.id.menu_compose);
         if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        item = menu.findItem(R.id.menu_search2);
+        item = menu.findItem(R.id.menu_search);
         if (item != null) {
-            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
             mSearchMenu = item;
-        }
-        else {
-            mSearchMenu = menu.findItem(R.id.menu_search);
         }
 
         mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
@@ -162,7 +156,6 @@ public class ConversationListFragment extends SherlockListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_compose:
-            case R.id.menu_compose2:
                 chooseContact();
                 return true;
 
@@ -171,7 +164,6 @@ public class ConversationListFragment extends SherlockListFragment {
                 return true;
 
             case R.id.menu_search:
-            case R.id.menu_search2:
                 getActivity().onSearchRequested();
                 return true;
 
