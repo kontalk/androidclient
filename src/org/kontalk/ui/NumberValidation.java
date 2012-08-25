@@ -40,6 +40,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
@@ -78,6 +79,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
     private NumberValidator mValidator;
+    private Handler mHandler;
 
     private String mAuthtoken;
     private String mAuthtokenType;
@@ -113,6 +115,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         setContentView(R.layout.number_validation);
 
         mAccountManager = AccountManager.get(this);
+        mHandler = new Handler();
 
         final Intent intent = getIntent();
         mPhoneNumber = intent.getStringExtra(PARAM_PHONENUMBER);
@@ -132,7 +135,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             mPhoneNumber = data.phoneNumber;
             mValidator = data.validator;
             if (mValidator != null)
-                mValidator.setListener(this);
+                mValidator.setListener(this, mHandler);
 
             if (data.progressMessage != null) {
                 setProgressMessage(data.progressMessage, true);
@@ -180,6 +183,17 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     @Override
     protected void onStop() {
         super.onStop();
+        keepScreenOn(false);
+        if (mProgress != null) {
+            if (isFinishing())
+                mProgress.cancel();
+            else
+                mProgress.dismiss();
+        }
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
         keepScreenOn(false);
         if (mProgress != null)
             mProgress.cancel();
@@ -276,7 +290,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
         EndpointServer server = MessagingPreferences.getEndpointServer(this);
         mValidator = new NumberValidator(this, server, phone, mManualValidation);
-        mValidator.setListener(this);
+        mValidator.setListener(this, mHandler);
         mValidator.start();
     }
 
@@ -470,13 +484,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public void onValidationRequested(NumberValidator v) {
         if (mManualValidation) {
             Log.d(TAG, "validation has been requested, requesting validation code to user");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    abortProgress(true);
-                    startActivityForResult(new Intent(NumberValidation.this, CodeValidation.class), REQUEST_MANUAL_VALIDATION);
-                }
-            });
+            proceedManual();
         }
         else
             Log.d(TAG, "validation has been requested, waiting for SMS");
@@ -493,6 +501,17 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     @Override
     public void onValidationCodeTimeout(NumberValidator v) {
         Log.d(TAG, "validation SMS still not received, going manual");
+        proceedManual();
     }
 
+    /** Proceeds to the next step in manual validation. */
+    private void proceedManual() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                abortProgress(true);
+                startActivityForResult(new Intent(NumberValidation.this, CodeValidation.class), REQUEST_MANUAL_VALIDATION);
+            }
+        });
+    }
 }

@@ -1,6 +1,5 @@
 [ ] status: use activity instead of dialog
 [ ] ListView: still issues with fading edge
-[ ] validation: SMS receive timeout
 [ ] manual validation without requesting SMS
 [ ] tablet: refactor message list view
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
@@ -13,6 +12,7 @@
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
+[x] validation: SMS receive timeout
 [x] convert manual validation to a separated activity
 [x] sync: testing needed for country code in offline mode
 [-] tablet: show home as back button when pushing fragments to the stack

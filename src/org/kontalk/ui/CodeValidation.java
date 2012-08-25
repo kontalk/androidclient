@@ -32,6 +32,10 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     private Button mButton;
     private NumberValidator mValidator;
 
+    private static final class RetainData {
+        NumberValidator validator;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +50,16 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
 
         mCode = (EditText) findViewById(R.id.validation_code);
         mButton = (Button) findViewById(R.id.send_button);
+
+        // configuration change??
+        RetainData data = (RetainData) getLastNonConfigurationInstance();
+        if (data != null) {
+            mValidator = data.validator;
+            if (mValidator != null) {
+                startProgress();
+                mValidator.setListener(this, null);
+            }
+        }
     }
 
     @Override
@@ -66,10 +80,19 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
         return false;
     }
 
+    /** Returning the validator thread. */
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+        RetainData data = new RetainData();
+        data.validator = mValidator;
+        return data;
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
-        abort();
+        if (isFinishing())
+            abort();
     }
 
     private void keepScreenOn(boolean active) {
@@ -99,7 +122,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
         // send the code
         EndpointServer server = MessagingPreferences.getEndpointServer(this);
         mValidator = new NumberValidator(this, server, null, true);
-        mValidator.setListener(this);
+        mValidator.setListener(this, null);
 
         mValidator.manualInput(code);
         mValidator.start();
@@ -156,6 +179,11 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
 
     @Override
     public void onValidationCodeReceived(NumberValidator v, CharSequence code) {
+        // not used.
+    }
+
+    @Override
+    public void onValidationCodeTimeout(NumberValidator v) {
         // not used.
     }
 

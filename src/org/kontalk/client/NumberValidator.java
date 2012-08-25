@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
@@ -50,6 +51,8 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 public class NumberValidator implements Runnable {
     private static final String TAG = NumberValidator.class.getSimpleName();
 
+    private static final int MAX_SMS_WAIT_TIME = 5000; //30000;
+
     /** Initialization */
     public static final int STEP_INIT = 0;
     /** Validation step (sending phone number and waiting for SMS) */
@@ -63,11 +66,13 @@ public class NumberValidator implements Runnable {
     private final ClientConnection mClient;
     private final boolean mManual;
     private NumberValidatorListener mListener;
-    private int mStep;
+    private volatile int mStep;
     private CharSequence mValidationCode;
     private BroadcastReceiver mSmsReceiver;
-    private String mSmsFrom;
+    private volatile String mSmsFrom;
 
+    private Runnable mTimeout;
+    private Handler mHandler;
     private Thread mThread;
 
     public NumberValidator(Context context, EndpointServer server, String phone, boolean manual) {
@@ -125,6 +130,7 @@ public class NumberValidator implements Runnable {
                                         PhoneNumberUtils.compare(mSmsFrom, sms.getOriginatingAddress())) {
                                     String txt = sms.getMessageBody();
                                     if (txt != null && txt.length() > 0) {
+                                        clearTimeout();
                                         // FIXME take the entire message text for now
                                         mValidationCode = txt;
                                         mStep = STEP_AUTH_TOKEN;
@@ -157,6 +163,11 @@ public class NumberValidator implements Runnable {
                 mClient.reconnect();
                 RegistrationResponse res = mClient.registerWait(mPhone);
                 if (mListener != null) {
+                    // clear previous timeout
+                    clearTimeout();
+                    // set timeout
+                    if (!mManual)
+                        setTimeout();
 
                     if (res.getStatus() == RegistrationStatus.STATUS_CONTINUE) {
 
@@ -229,6 +240,8 @@ public class NumberValidator implements Runnable {
     public synchronized void shutdown() {
         Log.w(TAG, "shutting down");
         try {
+            clearTimeout();
+
             if (mThread != null) {
                 mClient.close();
                 mThread.interrupt();
@@ -258,8 +271,37 @@ public class NumberValidator implements Runnable {
         return mStep;
     }
 
-    public synchronized void setListener(NumberValidatorListener listener) {
+    private void clearTimeout() {
+        if (mTimeout != null && mHandler != null)
+            mHandler.removeCallbacks(mTimeout);
+    }
+
+    private void setTimeout() {
+        if (mHandler != null) {
+            mTimeout = new Runnable() {
+                public void run() {
+                    mTimeout = null;
+                    if (mListener != null)
+                        mListener.onValidationCodeTimeout(NumberValidator.this);
+                    mStep = STEP_INIT;
+                }
+            };
+
+            // set SMS timeout
+            mHandler.postDelayed(mTimeout, MAX_SMS_WAIT_TIME);
+        }
+    }
+
+    public synchronized void setListener(NumberValidatorListener listener, Handler handler) {
+        // clear any timeout set in the previous handler
+        clearTimeout();
         mListener = listener;
+        mHandler = handler;
+        // retaining previous running validation
+        if (mStep == STEP_VALIDATION && mHandler != null) {
+            if (!mManual)
+                setTimeout();
+        }
     }
 
     public abstract interface NumberValidatorListener {
