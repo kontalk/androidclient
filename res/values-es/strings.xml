@@ -162,8 +162,6 @@
     <string name="message_text_large">Grande</string>
     <string name="all_threads">Todos los threads</string>
     <string name="menu_status">Estado</string>
-    <string name="title_validation_code">Código de validación</string>
-    <string name="title_status_message">Mensaje de estado</string>
     <string name="menu_attachment">Adjuntar</string>
     <string name="vcard_message">vCard mensaje</string>
     <string name="open_file">Abrir el archivo</string>
@@ -198,5 +196,7 @@
 
     <string name="chooser_send_picture"> Envío imagen</string>
     <string name="chooser_error_no_camera">Almacenamiento externo no está disponible. Toma de fotografías desde la cámara no estará habilitado</string>
+
+    <string name="status_activity_title">Mensaje de estado</string>
 
 </resources>

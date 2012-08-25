@@ -34,6 +34,7 @@
     <string name="number_validation_plus">+</string>
     <string name="number_validation_intro1">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
     <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
+    <string name="code_validation_intro">Riceverai a breve un SMS al numero che hai inserito. Inserisci qui sotto il codice ricevuto nel messaggio.</string>
     <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
     <string name="msg_validating_phone">Validazione numero di telefono&#8230;</string>
     <string name="msg_initializing">Inizializzazione&#8230;</string>
@@ -140,6 +141,8 @@
     <string name="err_store_message_failed">Impossibile salvare il messaggio in uscita.</string>
     <string name="msg_invalid_number">Inserisci un numero di telefono valido.</string>
     <string name="msg_invalid_cc">Inserisci un prefisso internazionale valido.</string>
+    <string name="title_invalid_code">Codice non valido</string>
+    <string name="msg_invalid_code">Inserisci un codice valido.</string>
     <string name="menu_refresh">Aggiorna</string>
     <string name="menu_invite">Invita utenti</string>
     <string name="title_error">Errore</string>
@@ -163,8 +166,6 @@
     <string name="message_text_large">Grande</string>
     <string name="all_threads">Conversazioni</string>
     <string name="menu_status">Stato</string>
-    <string name="title_validation_code">Codice di verifica</string>
-    <string name="title_status_message">Messaggio di stato</string>
     <string name="menu_attachment">Allega</string>
     <string name="vcard_message">Messaggio vCard</string>
     <string name="open_file">Apri file</string>
@@ -199,5 +200,7 @@
 
     <string name="chooser_send_picture">Invia immagine</string>
     <string name="chooser_error_no_camera">Memoria esterna non disponibile. Non sarà possibile scattare una nuovo foto da spedire.</string>
+
+    <string name="status_activity_title">Messaggio di stato</string>
 
 </resources>
