@@ -51,7 +51,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 public class NumberValidator implements Runnable {
     private static final String TAG = NumberValidator.class.getSimpleName();
 
-    private static final int MAX_SMS_WAIT_TIME = 5000; //30000;
+    private static final int MAX_SMS_WAIT_TIME = 30000;
 
     /** Initialization */
     public static final int STEP_INIT = 0;
