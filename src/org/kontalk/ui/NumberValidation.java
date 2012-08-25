@@ -489,4 +489,10 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         if (mValidator != null)
             mValidator.start();
     }
+
+    @Override
+    public void onValidationCodeTimeout(NumberValidator v) {
+        Log.d(TAG, "validation SMS still not received, going manual");
+    }
+
 }
