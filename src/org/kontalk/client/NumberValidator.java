@@ -275,6 +275,9 @@ public class NumberValidator implements Runnable {
         /** Called when the validation code SMS has been received. */
         public void onValidationCodeReceived(NumberValidator v, CharSequence code);
 
+        /** Called if we are waiting too much time for the SMS. */
+        public void onValidationCodeTimeout(NumberValidator v);
+
         /** Called on receiving of authentication token. */
         public void onAuthTokenReceived(NumberValidator v, CharSequence token);
 

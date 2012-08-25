@@ -279,7 +279,7 @@ public class UsersProvider extends ContentProvider {
     */
 
     @Override
-    public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         boolean isResync = Boolean.parseBoolean(uri.getQueryParameter(Users.RESYNC));
         boolean bootstrap = Boolean.parseBoolean(uri.getQueryParameter(Users.BOOTSTRAP));
         boolean commit = Boolean.parseBoolean(uri.getQueryParameter(Users.COMMIT));
@@ -397,12 +397,12 @@ public class UsersProvider extends ContentProvider {
     }
 
     @Override
-    public synchronized Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(Uri uri, ContentValues values) {
         throw new SQLException("manual insert into users table not supported.");
     }
 
     @Override
-    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(Uri uri, String selection, String[] selectionArgs) {
         throw new SQLException("manual delete from users table not supported.");
     }
 
