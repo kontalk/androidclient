@@ -69,7 +69,10 @@ public class ConversationListFragment extends SherlockListFragment {
     private ConversationListAdapter mListAdapter;
     private boolean mDualPane;
 
+    /** Search menu item (might not exist). */
     private MenuItem mSearchMenu;
+    /** Search menu action bar item. */
+    private MenuItem mSearchMenuAction;
     private MenuItem mDeleteAllMenu;
 
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
@@ -141,14 +144,17 @@ public class ConversationListFragment extends SherlockListFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.conversation_list_menu, menu);
-        MenuItem item = menu.findItem(R.id.menu_compose);
-        if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        item = menu.findItem(R.id.menu_search);
-        if (item != null) {
-            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-            mSearchMenu = item;
-        }
 
+        // compose message
+        MenuItem item = menu.findItem(R.id.menu_compose2);
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+        // search
+        mSearchMenuAction = menu.findItem(R.id.menu_search2);
+        mSearchMenuAction.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+        // search (might not exist)
+        mSearchMenu = menu.findItem(R.id.menu_search);
         mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
     }
 
@@ -156,6 +162,7 @@ public class ConversationListFragment extends SherlockListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_compose:
+            case R.id.menu_compose2:
                 chooseContact();
                 return true;
 
@@ -164,6 +171,7 @@ public class ConversationListFragment extends SherlockListFragment {
                 return true;
 
             case R.id.menu_search:
+            case R.id.menu_search2:
                 getActivity().onSearchRequested();
                 return true;
 
@@ -400,13 +408,15 @@ public class ConversationListFragment extends SherlockListFragment {
     }
 
     private void updateUI() {
+        boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
         if (mSearchMenu != null) {
-            boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
             mSearchMenu.setEnabled(visible);
             mSearchMenu.setVisible(visible);
-            mDeleteAllMenu.setEnabled(visible);
-            mDeleteAllMenu.setVisible(visible);
         }
+        mSearchMenuAction.setEnabled(visible);
+        mSearchMenuAction.setVisible(visible);
+        mDeleteAllMenu.setEnabled(visible);
+        mDeleteAllMenu.setVisible(visible);
     }
 
     /**
