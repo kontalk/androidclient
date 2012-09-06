@@ -61,7 +61,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
 
-    private static final int REQUEST_MANUAL_VALIDATION = 771;
+    public static final int REQUEST_MANUAL_VALIDATION = 771;
+    public static final int REQUEST_VALIDATION_CODE = 772;
 
     public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
 
@@ -317,6 +318,15 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         startValidation();
     }
 
+    /**
+     * Opens manual validation window immediately.
+     * Also used by the view definition as the {@link OnClickListener}.
+     * @param v not used
+     */
+    public void validateCode(View v) {
+        startValidationCode(REQUEST_VALIDATION_CODE);
+    }
+
     /** No search here. */
     @Override
     public boolean onSearchRequested() {
@@ -510,8 +520,14 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             @Override
             public void run() {
                 abortProgress(true);
-                startActivityForResult(new Intent(NumberValidation.this, CodeValidation.class), REQUEST_MANUAL_VALIDATION);
+                startValidationCode(REQUEST_MANUAL_VALIDATION);
             }
         });
+    }
+
+    private void startValidationCode(int requestCode) {
+        Intent i = new Intent(NumberValidation.this, CodeValidation.class);
+        i.putExtra("requestCode", requestCode);
+        startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }
 }

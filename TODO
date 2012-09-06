@@ -1,6 +1,5 @@
 [ ] status: use activity instead of dialog
     [ ] invert order of ok/cancel buttons for API >= 14
-[ ] manual validation without requesting SMS
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
 [ ] tablet: refactor message list view
@@ -13,6 +12,7 @@
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
+[x] manual validation without requesting SMS
 
 
 FUTURE:

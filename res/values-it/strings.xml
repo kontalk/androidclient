@@ -35,6 +35,7 @@
     <string name="number_validation_intro1">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
     <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
     <string name="code_validation_intro">Riceverai a breve un SMS al numero che hai inserito. Inserisci qui sotto il codice ricevuto nel messaggio.</string>
+    <string name="code_validation_intro2">Inserisci un codice di validazione che avevi ricevuto. Notare che un codice di validazione può essere usato una sola volta.</string>
     <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
     <string name="msg_validating_phone">Validazione numero di telefono&#8230;</string>
     <string name="msg_initializing">Inizializzazione&#8230;</string>
@@ -128,6 +129,7 @@
     <string name="send_mime_not_supported">Tipo di file non è supportato.</string>
     <string name="button_validate">Verifica</string>
     <string name="button_manual_validation">Verifica manuale</string>
+    <string name="button_validation_code">Codice di validazione</string>
     <string name="notify_ticker_download_completed">Download completato</string>
     <string name="notify_title_download_completed">Download completato</string>
     <string name="notify_text_download_completed">Download allegato completato</string>

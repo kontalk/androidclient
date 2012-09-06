@@ -35,6 +35,7 @@
             android:paddingLeft="20dip"
             android:paddingRight="20dip"
             android:paddingBottom="10dip"
+            android:id="@+id/code_validation_intro"
             android:text="@string/code_validation_intro" />
 
         <LinearLayout

@@ -80,6 +80,13 @@
             android:onClick="validateManual"
             android:text="@string/button_manual_validation" />
 
+        <Button
+            android:id="@+id/button_validation_code"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:onClick="validateCode"
+            android:text="@string/button_validation_code" />
+
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"

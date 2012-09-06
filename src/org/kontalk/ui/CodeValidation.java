@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.view.MenuItem;
@@ -59,6 +60,12 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
                 startProgress();
                 mValidator.setListener(this, null);
             }
+        }
+
+        int requestCode = getIntent().getIntExtra("requestCode", -1);
+        if (requestCode == NumberValidation.REQUEST_VALIDATION_CODE) {
+            ((TextView) findViewById(R.id.code_validation_intro))
+                .setText(R.string.code_validation_intro2);
         }
     }
 

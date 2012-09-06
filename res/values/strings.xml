@@ -34,7 +34,8 @@
     <string name="number_validation_plus">+</string>
     <string name="number_validation_intro1">Please enter your country code and mobile phone number. A SMS with a validation code will be sent to you. Your phone number will be used once and then discarded.</string>
     <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the validation code you will receive via SMS manually using the button above.</string>
-    <string name="code_validation_intro">You shall receive a SMS to the number you input briefly. Please insert the code you read in it below.</string>
+    <string name="code_validation_intro">You shall receive a SMS to the number you input briefly. Please insert the code you receive below.</string>
+    <string name="code_validation_intro2">Please insert a validation code you previously received. Please note that a validation code can be used only once.</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
     <string name="msg_validating_phone">Validating phone number&#8230;</string>
     <string name="msg_initializing">Initializing&#8230;</string>
@@ -128,6 +129,7 @@
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Validate</string>
     <string name="button_manual_validation">Manual validation</string>
+    <string name="button_validation_code">Input validation code</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>
     <string name="notify_text_download_completed">Attachment download completed</string>
