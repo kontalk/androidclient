@@ -45,7 +45,7 @@ public class Kontalk extends Application {
     public void onCreate() {
         super.onCreate();
 
-        MessageCenterService.startMessageCenter(this);
+        // update notifications from locally unread messages
         MessagingNotification.updateMessagesNotification(this, false);
 
         // manual server address: restart message center
