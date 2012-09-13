@@ -396,4 +396,16 @@ public class NumberValidator implements Runnable {
 
         return number;
     }
+
+    /** Returns the (parsed) number stored in this device SIM card. */
+    public static PhoneNumber getMyNumber(Context context) {
+        try {
+            final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            final String regionCode = tm.getSimCountryIso().toUpperCase();
+            return PhoneNumberUtil.getInstance().parse(tm.getLine1Number(), regionCode);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
 }

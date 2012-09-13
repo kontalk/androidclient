@@ -55,6 +55,7 @@ import android.widget.Toast;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
 public class NumberValidation extends SherlockAccountAuthenticatorActivity
@@ -67,7 +68,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
 
     public static final String PARAM_AUTHTOKEN_TYPE = "org.kontalk.authtokenType";
-    public static final String PARAM_PHONENUMBER = "org.kontalk.phoneNumber";
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     public static final String PARAM_AUTHTOKEN = "org.kontalk.authtoken";
@@ -119,7 +119,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mHandler = new Handler();
 
         final Intent intent = getIntent();
-        mPhoneNumber = intent.getStringExtra(PARAM_PHONENUMBER);
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
@@ -128,7 +127,14 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mValidateButton = (Button) findViewById(R.id.button_validate);
         mManualButton = (Button) findViewById(R.id.button_manual);
 
-        mCountryCode.setText(NumberValidator.getCountryCode(this));
+        PhoneNumber myNum = NumberValidator.getMyNumber(this);
+        if (myNum != null) {
+            mPhone.setText(String.valueOf(myNum.getNationalNumber()));
+            mCountryCode.setText(String.valueOf(myNum.getCountryCode()));
+        }
+        else {
+            mCountryCode.setText(NumberValidator.getCountryCode(this));
+        }
 
         // configuration change??
         RetainData data = (RetainData) getLastNonConfigurationInstance();
