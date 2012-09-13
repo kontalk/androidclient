@@ -242,15 +242,12 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             .show();
     }
 
-    private void startValidation() {
-        enableControls(false);
-
+    private boolean checkInput() {
         // check country code input
         String cc = mCountryCode.getText().toString().trim();
         if (cc.length() < 1) {
             error(R.string.title_invalid_number, R.string.msg_invalid_cc);
-            enableControls(true);
-            return;
+            return false;
         }
 
         // check number input
@@ -263,8 +260,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         }
         catch (Exception e) {
             error(R.string.title_invalid_number, R.string.msg_invalid_number);
-            enableControls(true);
-            return;
+            return false;
         }
         // exposing sensitive data - Log.d(TAG, "checking phone number: \"" + phone + "\"");
 
@@ -285,20 +281,29 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         if (phone == null) {
             Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
                 .show();
-            enableControls(true);
-            return;
+            return false;
         }
 
         mPhoneNumber = phone;
+        return true;
+    }
 
-        // start async request
-        Log.d(TAG, "phone number checked, sending validation request");
-        startProgress();
+    private void startValidation() {
+        enableControls(false);
 
-        EndpointServer server = MessagingPreferences.getEndpointServer(this);
-        mValidator = new NumberValidator(this, server, phone, mManualValidation);
-        mValidator.setListener(this, mHandler);
-        mValidator.start();
+        if (!checkInput()) {
+            enableControls(true);
+        }
+        else {
+            // start async request
+            Log.d(TAG, "phone number checked, sending validation request");
+            startProgress();
+
+            EndpointServer server = MessagingPreferences.getEndpointServer(this);
+            mValidator = new NumberValidator(this, server, mPhoneNumber, mManualValidation);
+            mValidator.setListener(this, mHandler);
+            mValidator.start();
+        }
     }
 
     /**
@@ -330,7 +335,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
      * @param v not used
      */
     public void validateCode(View v) {
-        startValidationCode(REQUEST_VALIDATION_CODE);
+        if (checkInput())
+            startValidationCode(REQUEST_VALIDATION_CODE);
     }
 
     /** No search here. */
