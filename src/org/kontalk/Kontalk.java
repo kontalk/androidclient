@@ -18,15 +18,11 @@
 
 package org.kontalk;
 
-import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.ui.MessagingNotification;
 
 import android.app.Application;
-import android.content.ContentValues;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Process;
 import android.preference.PreferenceManager;
 
 
@@ -62,22 +58,5 @@ public class Kontalk extends Application {
         });
 
         // TODO listen for changes to phone numbers
-
-        /*
-         * should we request a manual sync the first time?
-         * Technically, a sync would be possible only *after* account creation,
-         * so let's just do a UsersProvider.resync here - with bootstrap param
-         */
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-                Uri uri = Users.CONTENT_URI.buildUpon()
-                    .appendQueryParameter(Users.RESYNC, "true")
-                    .appendQueryParameter(Users.BOOTSTRAP, "true")
-                    .build();
-                getContentResolver().update(uri, new ContentValues(), null, null);
-            }
-        }).start();
     }
 }
