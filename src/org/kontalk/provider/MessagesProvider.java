@@ -31,7 +31,6 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
-import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -69,7 +68,8 @@ public class MessagesProvider extends ContentProvider {
     private static final int MESSAGES_ID = 5;
     private static final int MESSAGES_SERVERID = 6;
     private static final int CONVERSATIONS_ID = 7;
-    private static final int FULLTEXT_ID = 8;
+    private static final int CONVERSATIONS_ALL_ID = 8;
+    private static final int FULLTEXT_ID = 9;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -757,6 +757,36 @@ public class MessagesProvider extends ContentProvider {
                 // END :)
             }
 
+            // special case: delete all content
+            case CONVERSATIONS_ALL_ID: {
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                boolean success = false;
+                int num = 0;
+                try {
+                    beginTransaction(db);
+                    // rows count will be conversations
+                    num = db.delete(TABLE_THREADS, null, null);
+                    db.delete(TABLE_MESSAGES, null, null);
+                    // update fulltext
+                    db.delete(TABLE_FULLTEXT, null, null);
+
+                    // set transaction successful
+                    success = setTransactionSuccessful(db);
+                }
+                finally {
+                    endTransaction(db, success);
+                }
+
+                if (num > 0) {
+                    ContentResolver cr = getContext().getContentResolver();
+                    // notify conversations and threads
+                    cr.notifyChange(uri, null);
+                    cr.notifyChange(Threads.CONTENT_URI, null);
+                }
+
+                return num;
+            }
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
@@ -954,16 +984,9 @@ public class MessagesProvider extends ContentProvider {
     }
 
     public static boolean deleteDatabase(Context ctx) {
-        ContentResolver c = ctx.getContentResolver();
-        ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>(2);
-        ContentProviderOperation.Builder b;
-        b = ContentProviderOperation.newDelete(Messages.CONTENT_URI);
-        ops.add(b.build());
-        b = ContentProviderOperation.newDelete(Threads.CONTENT_URI);
-        ops.add(b.build());
-
         try {
-            c.applyBatch(AUTHORITY, ops);
+            ContentResolver c = ctx.getContentResolver();
+            c.delete(Conversations.CONTENT_URI, null, null);
             return true;
         }
         catch (Exception e) {
@@ -1079,6 +1102,7 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES, MESSAGES);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/#", MESSAGES_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_MESSAGES + "/*", MESSAGES_SERVERID);
+        sUriMatcher.addURI(AUTHORITY, "conversations", CONVERSATIONS_ALL_ID);
         sUriMatcher.addURI(AUTHORITY, "conversations/#", CONVERSATIONS_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
 
