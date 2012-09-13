@@ -229,7 +229,6 @@ public class Contact {
                 Users.DISPLAY_NAME,
                 Users.LOOKUP_KEY,
                 Users.CONTACT_ID,
-                Users.HASH,
                 Users.REGISTERED,
                 Users.STATUS
             }, null, null, null);
@@ -239,12 +238,11 @@ public class Contact {
             final String name = c.getString(1);
             final String key = c.getString(2);
             final long cid = c.getLong(3);
-            final String hash = c.getString(4);
-            final boolean registered = (c.getInt(5) != 0);
-            final String status = c.getString(6);
+            final boolean registered = (c.getInt(4) != 0);
+            final String status = c.getString(5);
             c.close();
 
-            Contact contact = new Contact(cid, key, name, number, hash);
+            Contact contact = new Contact(cid, key, name, number, userId);
             contact.mRegistered = registered;
             contact.mStatus = status;
             return contact;
