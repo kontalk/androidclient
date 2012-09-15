@@ -1,5 +1,6 @@
 [ ] status: use activity instead of dialog
     [ ] invert order of ok/cancel buttons for API >= 14
+    [ ] status should be encrypted with own number so only users who know us can view it
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
 [ ] tablet: refactor message list view
