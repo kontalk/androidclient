@@ -18,8 +18,12 @@
 
 package org.kontalk.client;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.kontalk.client.Protocol.RegistrationResponse;
 import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
+import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.Protocol.ValidationResponse;
 import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.ui.MessagingPreferences;
@@ -55,10 +59,12 @@ public class NumberValidator implements Runnable {
 
     /** Initialization */
     public static final int STEP_INIT = 0;
+    /** Serverinfo check */
+    public static final int STEP_CHECK_INFO = 1;
     /** Validation step (sending phone number and waiting for SMS) */
-    public static final int STEP_VALIDATION = 1;
+    public static final int STEP_VALIDATION = 2;
     /** Requesting authentication token */
-    public static final int STEP_AUTH_TOKEN = 2;
+    public static final int STEP_AUTH_TOKEN = 3;
 
     private final Context mContext;
     private final EndpointServer mServer;
@@ -70,6 +76,7 @@ public class NumberValidator implements Runnable {
     private CharSequence mValidationCode;
     private BroadcastReceiver mSmsReceiver;
     private volatile String mSmsFrom;
+    private boolean mAlreadyChecked;
 
     private Runnable mTimeout;
     private Handler mHandler;
@@ -99,6 +106,21 @@ public class NumberValidator implements Runnable {
                     mContext.unregisterReceiver(mSmsReceiver);
                     mSmsReceiver = null;
                 }
+
+                // check that server is authorized to generate auth tokens
+                mStep = STEP_CHECK_INFO;
+                boolean supportsToken = checkServer();
+
+                // server doesn't support authentication token
+                if (!supportsToken) {
+                    if (mListener != null) {
+                        mStep = STEP_INIT;
+                        mListener.onServerCheckFailed(this);
+                        return;
+                    }
+                }
+
+                mAlreadyChecked = true;
 
                 if (!mManual) {
                     // setup the sms receiver
@@ -202,6 +224,17 @@ public class NumberValidator implements Runnable {
 
             // sms received, request authentication token
             else if (mStep == STEP_AUTH_TOKEN) {
+                if (!mAlreadyChecked) {
+                    // server doesn't support authentication token
+                    if (!checkServer()) {
+                        if (mListener != null) {
+                            mStep = STEP_INIT;
+                            mListener.onServerCheckFailed(this);
+                            return;
+                        }
+                    }
+                }
+
                 Log.d(TAG, "requesting authentication token");
 
                 mClient.reconnect();
@@ -292,6 +325,23 @@ public class NumberValidator implements Runnable {
         }
     }
 
+    private boolean checkServer() throws IOException {
+        mClient.reconnect();
+        ServerInfoResponse info = mClient.serverinfoWait();
+        if (info != null) {
+            List<String> list = info.getSupportsList();
+            for (String support : list) {
+                if ("auth_token".equals(support))
+                    return true;
+            }
+            return false;
+        }
+        else {
+            // error - notify listener
+            throw new IOException("unable to request server information");
+        }
+    }
+
     public synchronized void setListener(NumberValidatorListener listener, Handler handler) {
         // clear any timeout set in the previous handler
         clearTimeout();
@@ -307,6 +357,9 @@ public class NumberValidator implements Runnable {
     public abstract interface NumberValidatorListener {
         /** Called if an exception get thrown. */
         public void onError(NumberValidator v, Throwable e);
+
+        /** Called if the server doesn't support registration/auth tokens. */
+        public void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
         public void onValidationRequested(NumberValidator v);

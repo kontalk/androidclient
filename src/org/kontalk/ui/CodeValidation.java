@@ -160,15 +160,24 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     public void onError(NumberValidator v, final Throwable e) {
         Log.e(TAG, "validation error.", e);
         runOnUiThread(new Runnable() {
-            @Override
             public void run() {
-                keepScreenOn(false);
                 int msgId;
                 if (e instanceof SocketException)
                     msgId = R.string.err_validation_network_error;
                 else
                     msgId = R.string.err_validation_error;
                 Toast.makeText(CodeValidation.this, msgId, Toast.LENGTH_LONG).show();
+                abort();
+            }
+        });
+    }
+
+    @Override
+    public void onServerCheckFailed(NumberValidator v) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                // TODO i18n
+                Toast.makeText(CodeValidation.this, "Selected server does not support registration. Please configure another one in Settings screen.", Toast.LENGTH_LONG).show();
                 abort();
             }
         });

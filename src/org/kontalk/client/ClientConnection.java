@@ -6,10 +6,13 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.kontalk.Kontalk;
 import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.Protocol.AuthenticateRequest;
 import org.kontalk.client.Protocol.RegistrationRequest;
 import org.kontalk.client.Protocol.RegistrationResponse;
+import org.kontalk.client.Protocol.ServerInfoRequest;
+import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.Protocol.ValidationRequest;
 import org.kontalk.client.Protocol.ValidationResponse;
 import org.kontalk.util.RandomString;
@@ -43,9 +46,10 @@ public class ClientConnection {
 
     /** Recreates connection based on the parameters given to the constructor. */
     public synchronized void reconnect() throws IOException {
-        if (!isConnected())
+        if (!isConnected()) {
             mSocket = new Socket();
-        connect();
+            connect();
+        }
     }
 
     public void authenticate(String token) throws IOException {
@@ -53,6 +57,20 @@ public class ClientConnection {
         AuthenticateRequest.Builder b = AuthenticateRequest.newBuilder();
         b.setToken(token);
         send(b.build());
+    }
+
+    /** Sends a serverinfo request and waits for response. */
+    public ServerInfoResponse serverinfoWait() throws IOException {
+        ServerInfoRequest.Builder b = ServerInfoRequest.newBuilder();
+        b.setClientProtocol(Kontalk.CLIENT_PROTOCOL);
+        send(b.build());
+
+        // receive and parse data now
+        BoxContainer box = recv();
+        if (box != null && box.getName().equals(ServerInfoResponse.class.getSimpleName()))
+            return ServerInfoResponse.parseFrom(box.getValue());
+
+        return null;
     }
 
     /** Sends a registration request for a username (e.g. a phone number). */

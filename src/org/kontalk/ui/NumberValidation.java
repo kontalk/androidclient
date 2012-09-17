@@ -490,12 +490,23 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
+    public void onServerCheckFailed(NumberValidator v) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // TODO i18n
+                Toast.makeText(NumberValidation.this, "Selected server does not support registration. Please configure another one in Settings screen.", Toast.LENGTH_LONG).show();
+                abort();
+            }
+        });
+    }
+
+    @Override
     public void onValidationFailed(NumberValidator v, RegistrationStatus reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                keepScreenOn(false);
                 Toast.makeText(NumberValidation.this, R.string.err_validation_failed, Toast.LENGTH_LONG).show();
                 abort();
             }
