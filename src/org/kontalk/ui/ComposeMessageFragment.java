@@ -60,6 +60,7 @@ import org.kontalk.sync.Syncer;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.MessageUtils.SmileyImageSpan;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -95,12 +96,10 @@ import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
-import android.text.Html;
 import android.text.Html.ImageGetter;
 import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -173,7 +172,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private UserPresenceBroadcastReceiver mPresenceReceiver;
 
     private Dialog mSmileyDialog;
-
 
 	/** Returns a new fragment instance from a picked contact. */
 	public static ComposeMessageFragment fromUserId(Context context, String userId) {
@@ -588,10 +586,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 	/** Sends out the text message in the composing entry. */
 	public void sendTextMessage(String text, boolean fromTextEntry) {
-	    if (fromTextEntry) {
-	        Editable edit = mTextEntry.getText();
-	        text = MessageUtils.cleanTextMessage(getActivity(), edit);
-	    }
+	    if (fromTextEntry)
+	        text = mTextEntry.getText().toString();
 
 		if (!TextUtils.isEmpty(text)) {
 			/*
@@ -657,26 +653,29 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     		case R.id.menu_smiley:
     		    AdapterView.OnItemClickListener listener = new AdapterView.OnItemClickListener() {
     		        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    		            final int item = (Integer) parent.getItemAtPosition(position);
-
     		            Editable text = mTextEntry.getText();
     		            int startPos = mTextEntry.getSelectionStart();
     		            int endPos = mTextEntry.getSelectionEnd();
+    		            // +1 because of the 1-based array
+    		            position++;
+
+    		            if (startPos < 0) startPos = text.length();
     		            if (endPos < 0) endPos = startPos;
+                        int startMin = Math.min(startPos, endPos);
 
-    		            ImageGetter getter = new ImageGetter() {
-                            public Drawable getDrawable(String source) {
-                                Drawable d = getResources().getDrawable(item);
-                                d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
-                                return d;
-                            }
-                        };
+                        // add unicode emoji
+    		            text.replace(startMin, Math.max(startPos, endPos),
+    		                String.valueOf((char) (0xe000 + position)), 0, 1);
 
-		                text.replace(startPos, endPos, Html.fromHtml("<img src=\"sm_default_" + position + "\">", getter, null));
+    		            // set emoji image span
+    		            SmileyImageSpan span = new SmileyImageSpan(getActivity(), MessageUtils
+                            .getSmileyResourceId(position), SmileyImageSpan.SIZE_EDITABLE);
+                        // resize image
+    		            text.setSpan(span, startMin, startMin + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     		            mSmileyDialog.dismiss();
     		        }
                 };
-    		    mSmileyDialog = MessageUtils.smileysDialog(getActivity(), MessageUtils.SMILEY_DEFAULT, listener);
+    		    mSmileyDialog = MessageUtils.smileysDialog(getActivity(), listener);
     		    mSmileyDialog.show();
     		    return true;
 		}

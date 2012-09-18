@@ -28,12 +28,11 @@ import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.MessageUtils.SmileyImageSpan;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.text.Html;
-import android.text.Html.ImageGetter;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -83,7 +82,6 @@ public class MessageListItem extends RelativeLayout {
     */
 
     private BackgroundColorSpan mHighlightColorSpan;  // set in ctor
-    private ImageGetter mImageGetter; // set in ctor
 
     public MessageListItem(Context context) {
         super(context);
@@ -93,15 +91,6 @@ public class MessageListItem extends RelativeLayout {
         super(context, attrs);
         int color = context.getResources().getColor(R.color.highlight_color);
         mHighlightColorSpan = new BackgroundColorSpan(color);
-        mImageGetter = new ImageGetter() {
-            public Drawable getDrawable(String source) {
-                int item = MessageUtils.getSmileyByName(source);
-                if (item > 0)
-                    return MessageUtils.getSmiley(context, item);
-                else
-                    return null;
-            }
-        };
 
         if (sDefaultContactImage == null) {
             sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
@@ -277,13 +266,14 @@ public class MessageListItem extends RelativeLayout {
 
     private CharSequence formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf;
+        String textContent = mMessage.getTextContent();
 
-        if (!TextUtils.isEmpty(mMessage.getTextContent())) {
+        if (!TextUtils.isEmpty(textContent)) {
             if (mMessage.isEncrypted()) {
                 buf = new SpannableStringBuilder(getResources().getString(R.string.text_encrypted));
             }
             else {
-                buf = new SpannableStringBuilder(Html.fromHtml(mMessage.getTextContent(), mImageGetter, null));
+                buf = MessageUtils.convertSmileys(getContext(), textContent, SmileyImageSpan.SIZE_EDITABLE);
 
                 if (mMessage instanceof ImageMessage) {
                     ImageMessage image = (ImageMessage) mMessage;

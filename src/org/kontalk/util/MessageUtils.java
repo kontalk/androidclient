@@ -32,10 +32,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.text.Editable;
-import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
+import android.text.style.DynamicDrawableSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,177 +48,85 @@ import android.widget.ImageView;
 
 
 public final class MessageUtils {
-    /** Default smiley theme. */
-    public static final int[] SMILEY_DEFAULT = {
-        R.drawable.sm_default_afraid,
-        R.drawable.sm_default_amorous,
-        R.drawable.sm_default_angel,
-        R.drawable.sm_default_angry,
-        R.drawable.sm_default_bathing,
-        R.drawable.sm_default_beer,
-        R.drawable.sm_default_bored,
-        R.drawable.sm_default_boy,
-        R.drawable.sm_default_camera,
-        R.drawable.sm_default_chilli,
-        R.drawable.sm_default_cigarette,
-        R.drawable.sm_default_cinema,
-        R.drawable.sm_default_coffee,
-        R.drawable.sm_default_cold,
-        R.drawable.sm_default_confused,
-        R.drawable.sm_default_console,
-        R.drawable.sm_default_cross,
-        R.drawable.sm_default_crying,
-        R.drawable.sm_default_devil,
-        R.drawable.sm_default_disappointed,
-        R.drawable.sm_default_dont_know,
-        R.drawable.sm_default_drool,
-        R.drawable.sm_default_embarrassed,
-        R.drawable.sm_default_excited,
-        R.drawable.sm_default_excruciating,
-        R.drawable.sm_default_eyeroll,
-        R.drawable.sm_default_girl,
-        R.drawable.sm_default_grumpy,
-        R.drawable.sm_default_happy,
-        R.drawable.sm_default_hot,
-        R.drawable.sm_default_hug_left,
-        R.drawable.sm_default_hug_right,
-        R.drawable.sm_default_hungry,
-        R.drawable.sm_default_in_love,
-        R.drawable.sm_default_internet,
-        R.drawable.sm_default_invincible,
-        R.drawable.sm_default_kiss,
-        R.drawable.sm_default_lamp,
-        R.drawable.sm_default_lying,
-        R.drawable.sm_default_meeting,
-        R.drawable.sm_default_mobile,
-        R.drawable.sm_default_mrgreen,
-        R.drawable.sm_default_musical_note,
-        R.drawable.sm_default_music,
-        R.drawable.sm_default_nerdy,
-        R.drawable.sm_default_neutral,
-        R.drawable.sm_default_party,
-        R.drawable.sm_default_phone,
-        R.drawable.sm_default_pirate,
-        R.drawable.sm_default_pissed_off,
-        R.drawable.sm_default_plate,
-        R.drawable.sm_default_question,
-        R.drawable.sm_default_restroom,
-        R.drawable.sm_default_rose,
-        R.drawable.sm_default_sad,
-        R.drawable.sm_default_search,
-        R.drawable.sm_default_shame,
-        R.drawable.sm_default_shocked,
-        R.drawable.sm_default_shopping,
-        R.drawable.sm_default_shut_mouth,
-        R.drawable.sm_default_sick,
-        R.drawable.sm_default_silent,
-        R.drawable.sm_default_sleeping,
-        R.drawable.sm_default_sleepy,
-        R.drawable.sm_default_star,
-        R.drawable.sm_default_stressed,
-        R.drawable.sm_default_studying,
-        R.drawable.sm_default_suit,
-        R.drawable.sm_default_surfing,
-        R.drawable.sm_default_thinking,
-        R.drawable.sm_default_thunder,
-        R.drawable.sm_default_tongue,
-        R.drawable.sm_default_tv,
-        R.drawable.sm_default_typing,
-        R.drawable.sm_default_uhm_yeah,
-        R.drawable.sm_default_wink,
-        R.drawable.sm_default_working,
-        R.drawable.sm_default_writing
+    private static final int[] emojiMap = new int[] {
+        /* \ue001 */ R.drawable.emoji_boy,
+        /* \ue002 */ R.drawable.emoji_girl,
     };
 
     private MessageUtils() {}
 
-    public static Drawable getSmiley(Context context, int itemId) {
-        Drawable d = context.getResources().getDrawable(SMILEY_DEFAULT[itemId]);
-        d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
-        return d;
+    public static int getSmileyResourceId(int index) {
+        return emojiMap[index - 1];
     }
 
-    public static int getSmileyByName(String name) {
-        try {
-            if (name.startsWith("sm_default_"))
-                return Integer.parseInt(name.substring("sm_default_".length()));
+    public static SpannableStringBuilder convertSmileys(Context context, String text, int size) {
+        SpannableStringBuilder builder = new SpannableStringBuilder(text);
+
+        int len = builder.length();
+        for (int i = 0; i < len; i++) {
+            char c = builder.charAt(i);
+            if ((c >> 12) == 0xe) {
+                int icon = emojiMap[c - 0xe000 - 1];
+                SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
+                builder.setSpan(span, i, i+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
-        catch (Exception e) {
-            // ignored
-        }
-        return -1;
+
+        return builder;
     }
 
-    /*
-    private static final String TAG_IMG_START = "<img src=\"";
-    private static final String TAG_IMG_END = "\">";
-    private static final int TAG_IMG_START_LEN = TAG_IMG_START.length();
-    private static final int TAG_IMG_END_LEN = TAG_IMG_END.length();
-    */
+    public static final class SmileyImageSpan extends DynamicDrawableSpan {
+        public static final int SIZE_EDITABLE = 24;
+        public static final int SIZE_LISTITEM = 18;
 
-    // TODO error handling
-    public static String cleanTextMessage(Context context, Editable edit) {
-        //StringBuilder message = new StringBuilder();
-        String text = Html.toHtml(edit);
-        text = text.replace("<p>", "").replace("</p>", "");
+        private final Context mContext;
+        private final int mResourceId;
+        private final int mSize;
+        private Drawable mDrawable;
 
-        // TODO inline image data
-        /*
-        int sPos = text.indexOf(TAG_IMG_START);
-        int ePos = -TAG_IMG_END_LEN;
-        while (sPos >= 0) {
-            // append the text until now
-            message.append(text.substring(ePos+TAG_IMG_END_LEN, sPos));
+        public SmileyImageSpan(Context context, int resourceId, int size) {
+            super(ALIGN_BOTTOM);
+            mContext = context;
+            mResourceId = resourceId;
+            mSize = size;
+        }
 
-            ePos = text.indexOf(TAG_IMG_END, sPos);
-            if (ePos >= 0) {
-                String sName = text.substring(sPos + TAG_IMG_START_LEN, ePos);
-                int sIndex = getSmileyByName(sName);
-                if (sIndex >= 0) {
-                    try {
-                        final StringBuilder output = new StringBuilder();
-                        InputStream in = context.getResources().openRawResource(SMILEY_DEFAULT[sIndex]);
-                        Base64InputStream b64in = new Base64InputStream(in, Base64.NO_WRAP);
-                        InputStreamReader bin = new InputStreamReader(b64in);
-                        char[] buf = new char[512];
-                        int read = bin.read(buf);
-                        while (read > 0) {
-                            output.append(buf, 0, read);
-                            read = bin.read(buf);
-                        }
-                        bin.close();
+        public Drawable getDrawable() {
+            Drawable drawable = null;
 
-                        // append image data
-
-                    }
-                    catch (IOException e) {
-                        Log.e("MessageUtils", "error decoding smiley", e);
-                    }
+            if (mDrawable != null) {
+                drawable = mDrawable;
+            }
+            else {
+                try {
+                    drawable = mContext.getResources().getDrawable(mResourceId);
+                    int size = getDensityPixel(mContext, mSize);
+                    drawable.setBounds(0, 0, size, size);
+                } catch (Exception e) {
+                    Log.e("sms", "Unable to find resource: " + mResourceId);
                 }
             }
 
-            sPos = text.indexOf(TAG_IMG_START);
+            return drawable;
         }
-        */
-
-        return text;
     }
 
     private static final class ImageAdapter extends BaseAdapter {
         private Context mContext;
-        private int[] mThumbIds;
+        private int[] mTheme;
 
-        public ImageAdapter(Context c, int[] imageList) {
+        public ImageAdapter(Context c, int[] theme) {
             mContext = c;
-            mThumbIds = imageList;
+            mTheme = theme;
         }
 
         public int getCount() {
-            return mThumbIds.length;
+            return mTheme.length;
         }
 
+        /** Actually not used. */
         public Object getItem(int position) {
-            return mThumbIds[position];
+            return mContext.getResources().getDrawable(mTheme[position]);
         }
 
         public long getItemId(int position) {
@@ -230,7 +140,7 @@ public final class MessageUtils {
         // create a new ImageView for each item referenced by the Adapter
         public View getView(int position, View convertView, ViewGroup parent) {
             ImageView imageView;
-            if (convertView == null) {  // if it's not recycled, initialize some attributes
+            if (convertView == null) {
                 imageView = new ImageView(mContext);
                 int size = getDensityPixel(mContext, 24);
                 imageView.setLayoutParams(new GridView.LayoutParams(size, size));
@@ -240,13 +150,13 @@ public final class MessageUtils {
                 imageView = (ImageView) convertView;
             }
 
-            imageView.setImageResource(mThumbIds[position]);
+            imageView.setImageResource(mTheme[position]);
             return imageView;
         }
     }
 
-    public static Dialog smileysDialog(Context context, int[] icons, AdapterView.OnItemClickListener listener) {
-        ImageAdapter adapter = new ImageAdapter(context, icons);
+    public static Dialog smileysDialog(Context context, AdapterView.OnItemClickListener listener) {
+        ImageAdapter adapter = new ImageAdapter(context, emojiMap);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         GridView grid = (GridView) inflater.inflate(R.layout.grid_smileys, null);

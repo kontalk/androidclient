@@ -23,14 +23,13 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.MessageUtils.SmileyImageSpan;
 
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.Html.ImageGetter;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
@@ -54,7 +53,6 @@ public class ConversationListItem extends RelativeLayout {
     private QuickContactBadge mAvatarView;
 
     static private Drawable sDefaultContactImage;
-    private ImageGetter mImageGetter;
 
     public ConversationListItem(Context context) {
         super(context);
@@ -62,16 +60,6 @@ public class ConversationListItem extends RelativeLayout {
 
     public ConversationListItem(final Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        mImageGetter = new ImageGetter() {
-            public Drawable getDrawable(String source) {
-                int item = MessageUtils.getSmileyByName(source);
-                if (item > 0)
-                    return MessageUtils.getSmiley(context, item);
-                else
-                    return null;
-            }
-        };
 
         if (sDefaultContactImage == null) {
             sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
@@ -150,8 +138,7 @@ public class ConversationListItem extends RelativeLayout {
 
         // last message or draft??
         String source = draft != null ? draft : conv.getSubject();
-        SpannableStringBuilder text = new SpannableStringBuilder(Html.fromHtml(source, mImageGetter, null));
-        mSubjectView.setText(text);
+        mSubjectView.setText(MessageUtils.convertSmileys(context, source, SmileyImageSpan.SIZE_LISTITEM));
 
         // error indicator
         int resId = -1;
