@@ -64,6 +64,7 @@ import org.kontalk.util.MessageUtils;
 import android.accounts.Account;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -94,8 +95,12 @@ import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
+import android.text.Html;
+import android.text.Html.ImageGetter;
+import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -103,6 +108,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -165,6 +171,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 	private LocalBroadcastManager mLocalBroadcastManager;
     private UserPresenceBroadcastReceiver mPresenceReceiver;
+
+    private Dialog mSmileyDialog;
 
 
 	/** Returns a new fragment instance from a picked contact. */
@@ -580,8 +588,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 	/** Sends out the text message in the composing entry. */
 	public void sendTextMessage(String text, boolean fromTextEntry) {
-	    if (fromTextEntry)
-	        text = mTextEntry.getText().toString();
+	    if (fromTextEntry) {
+	        Editable edit = mTextEntry.getText();
+	        text = MessageUtils.cleanTextMessage(getActivity(), edit);
+	    }
 
 		if (!TextUtils.isEmpty(text)) {
 			/*
@@ -643,6 +653,32 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 getActivity().finish();
     			startActivity(new Intent(getActivity(), ConversationList.class));
     			return true;
+
+    		case R.id.menu_smiley:
+    		    AdapterView.OnItemClickListener listener = new AdapterView.OnItemClickListener() {
+    		        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    		            final int item = (Integer) parent.getItemAtPosition(position);
+
+    		            Editable text = mTextEntry.getText();
+    		            int startPos = mTextEntry.getSelectionStart();
+    		            int endPos = mTextEntry.getSelectionEnd();
+    		            if (endPos < 0) endPos = startPos;
+
+    		            ImageGetter getter = new ImageGetter() {
+                            public Drawable getDrawable(String source) {
+                                Drawable d = getResources().getDrawable(item);
+                                d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+                                return d;
+                            }
+                        };
+
+		                text.replace(startPos, endPos, Html.fromHtml("<img src=\"sm_default_" + position + "\">", getter, null));
+    		            mSmileyDialog.dismiss();
+    		        }
+                };
+    		    mSmileyDialog = MessageUtils.smileysDialog(getActivity(), MessageUtils.SMILEY_DEFAULT, listener);
+    		    mSmileyDialog.show();
+    		    return true;
 		}
 
 		return super.onOptionsItemSelected(item);

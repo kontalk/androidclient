@@ -31,8 +31,9 @@ import org.kontalk.util.MessageUtils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.Html;
+import android.text.Html.ImageGetter;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -82,15 +83,25 @@ public class MessageListItem extends RelativeLayout {
     */
 
     private BackgroundColorSpan mHighlightColorSpan;  // set in ctor
+    private ImageGetter mImageGetter; // set in ctor
 
     public MessageListItem(Context context) {
         super(context);
     }
 
-    public MessageListItem(Context context, AttributeSet attrs) {
+    public MessageListItem(final Context context, AttributeSet attrs) {
         super(context, attrs);
         int color = context.getResources().getColor(R.color.highlight_color);
         mHighlightColorSpan = new BackgroundColorSpan(color);
+        mImageGetter = new ImageGetter() {
+            public Drawable getDrawable(String source) {
+                int item = MessageUtils.getSmileyByName(source);
+                if (item > 0)
+                    return MessageUtils.getSmiley(context, item);
+                else
+                    return null;
+            }
+        };
 
         if (sDefaultContactImage == null) {
             sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
@@ -254,7 +265,7 @@ public class MessageListItem extends RelativeLayout {
 
         public MaxSizeImageSpan(Context context, Bitmap bitmap) {
             super(context, bitmap);
-            mDrawable = new BitmapDrawable(context.getResources(), bitmap);
+            mDrawable = super.getDrawable();
             mDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
         }
 
@@ -265,14 +276,14 @@ public class MessageListItem extends RelativeLayout {
     }
 
     private CharSequence formatMessage(final Contact contact, final Pattern highlight) {
-        SpannableStringBuilder buf = new SpannableStringBuilder();
+        SpannableStringBuilder buf;
 
         if (!TextUtils.isEmpty(mMessage.getTextContent())) {
             if (mMessage.isEncrypted()) {
-                buf.append(getResources().getString(R.string.text_encrypted));
+                buf = new SpannableStringBuilder(getResources().getString(R.string.text_encrypted));
             }
             else {
-                buf.append(mMessage.getTextContent());
+                buf = new SpannableStringBuilder(Html.fromHtml(mMessage.getTextContent(), mImageGetter, null));
 
                 if (mMessage instanceof ImageMessage) {
                     ImageMessage image = (ImageMessage) mMessage;
@@ -283,6 +294,9 @@ public class MessageListItem extends RelativeLayout {
                     }
                 }
             }
+        }
+        else {
+            buf = new SpannableStringBuilder();
         }
 
         final TextView dateView = (mMessage.getSender() != null) ?

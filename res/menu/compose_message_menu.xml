@@ -24,4 +24,5 @@
     <item android:icon="@drawable/ic_menu_friendslist" android:title="@string/all_threads" android:id="@+id/goto_conversation_list"/>
     
     <item android:icon="@drawable/ic_title_attach" android:title="@string/menu_attachment" android:id="@+id/menu_attachment2"/>
+    <item android:icon="@drawable/sm_default_happy" android:title="Smileys" android:id="@+id/menu_smiley"/>
 </menu>
