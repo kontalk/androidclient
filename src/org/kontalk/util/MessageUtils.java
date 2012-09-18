@@ -51,6 +51,9 @@ public final class MessageUtils {
     private static final int[] emojiMap = new int[] {
         /* \ue001 */ R.drawable.emoji_boy,
         /* \ue002 */ R.drawable.emoji_girl,
+        /* \ue003 */ R.drawable.emoji_kiss,
+        /* \ue004 */ R.drawable.emoji_man,
+        /* \ue005 */ R.drawable.emoji_woman,
     };
 
     private MessageUtils() {}
