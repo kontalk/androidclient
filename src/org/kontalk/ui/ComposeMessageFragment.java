@@ -616,6 +616,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		inflater.inflate(R.menu.compose_message_menu, menu);
 		MenuItem item = menu.findItem(R.id.menu_attachment2);
 		if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        item = menu.findItem(R.id.menu_smiley);
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
 		mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
 		mViewContactMenu = menu.findItem(R.id.view_contact);
