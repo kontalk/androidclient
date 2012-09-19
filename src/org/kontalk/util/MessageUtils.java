@@ -48,41 +48,7 @@ import android.widget.ImageView;
 
 
 public final class MessageUtils {
-    private static final int[] emojiMap = new int[] {
-        /* \ue001 */ R.drawable.emoji_boy,
-        /* \ue002 */ R.drawable.emoji_girl,
-        /* \ue003 */ R.drawable.emoji_kiss,
-        /* \ue004 */ R.drawable.emoji_man,
-        /* \ue005 */ R.drawable.emoji_woman,
-        /* \ue006 */ R.drawable.emoji_shirt,
-        /* \ue007 */ R.drawable.emoji_shoe,
-        /* \ue008 */ R.drawable.emoji_camera,
-        /* \ue009 */ R.drawable.emoji_telephone,
-        /* \ue00A */ R.drawable.emoji_iphone,
-        /* \ue00B */ R.drawable.emoji_fax,
-        /* \ue00C */ R.drawable.emoji_computer,
-        /* \ue00D */ R.drawable.emoji_punch,
-        /* \ue00E */ R.drawable.emoji_thumbsup,
-        /* \ue00F */ R.drawable.emoji_point_up,
-        /* \ue010 */ R.drawable.emoji_fist,
-        /* \ue011 */ R.drawable.emoji_v,
-        /* \ue012 */ R.drawable.emoji_hand,
-        /* \ue013 */ R.drawable.emoji_ski,
-        /* \ue014 */ R.drawable.emoji_golf,
-        /* \ue015 */ R.drawable.emoji_tennis,
-        /* \ue016 */ R.drawable.emoji_baseball,
-        /* \ue017 */ R.drawable.emoji_surfer,
-        /* \ue018 */ R.drawable.emoji_soccer,
-        /* \ue019 */ R.drawable.emoji_fish,
-        /* \ue01A */ R.drawable.emoji_horse,
-        /* \ue01B */ R.drawable.emoji_car,
-    };
-
     private MessageUtils() {}
-
-    public static int getSmileyResourceId(int index) {
-        return emojiMap[index - 1];
-    }
 
     public static SpannableStringBuilder convertSmileys(Context context, String text, int size) {
         SpannableStringBuilder builder = new SpannableStringBuilder(text);
@@ -92,7 +58,7 @@ public final class MessageUtils {
             char c = builder.charAt(i);
             if ((c >> 12) == 0xe) {
                 try {
-                    int icon = emojiMap[c - 0xe000 - 1];
+                    int icon = Emoji.emojiMap[c - 0xe000 - 1];
                     SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
                     builder.setSpan(span, i, i+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
@@ -188,7 +154,7 @@ public final class MessageUtils {
     }
 
     public static Dialog smileysDialog(Context context, AdapterView.OnItemClickListener listener) {
-        ImageAdapter adapter = new ImageAdapter(context, emojiMap);
+        ImageAdapter adapter = new ImageAdapter(context, Emoji.emojiMap);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         GridView grid = (GridView) inflater.inflate(R.layout.grid_smileys, null);

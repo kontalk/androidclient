@@ -58,6 +58,7 @@ import org.kontalk.service.RequestListener;
 import org.kontalk.service.UserLookupJob;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
+import org.kontalk.util.Emoji;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.MessageUtils.SmileyImageSpan;
@@ -96,7 +97,6 @@ import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
-import android.text.Html.ImageGetter;
 import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -670,8 +670,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     		                String.valueOf((char) (0xe000 + position)), 0, 1);
 
     		            // set emoji image span
-    		            SmileyImageSpan span = new SmileyImageSpan(getActivity(), MessageUtils
-                            .getSmileyResourceId(position), SmileyImageSpan.SIZE_EDITABLE);
+    		            SmileyImageSpan span = new SmileyImageSpan(getActivity(),
+    		                Emoji.getSmileyResourceId(position), SmileyImageSpan.SIZE_EDITABLE);
                         // resize image
     		            text.setSpan(span, startMin, startMin + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     		            mSmileyDialog.dismiss();
