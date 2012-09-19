@@ -91,9 +91,14 @@ public final class MessageUtils {
         for (int i = 0; i < len; i++) {
             char c = builder.charAt(i);
             if ((c >> 12) == 0xe) {
-                int icon = emojiMap[c - 0xe000 - 1];
-                SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
-                builder.setSpan(span, i, i+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                try {
+                    int icon = emojiMap[c - 0xe000 - 1];
+                    SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
+                    builder.setSpan(span, i, i+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    // skip code
+                }
             }
         }
 
