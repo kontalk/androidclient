@@ -146,10 +146,11 @@ public final class MessageUtils {
             ImageView imageView;
             if (convertView == null) {
                 imageView = new ImageView(mContext);
-                int size = getDensityPixel(mContext, SmileyImageSpan.SIZE_DIALOG);
+                int size = getDensityPixel(mContext, SmileyImageSpan.SIZE_DIALOG+8);
                 imageView.setLayoutParams(new GridView.LayoutParams(size, size));
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                //imageView.setPadding(4, 4, 4, 4);
+                int padding = getDensityPixel(mContext, 4);
+                imageView.setPadding(padding, padding, padding, padding);
             } else {
                 imageView = (ImageView) convertView;
             }
@@ -168,7 +169,7 @@ public final class MessageUtils {
         grid.setOnItemClickListener(listener);
 
         AlertDialog.Builder b = new AlertDialog.Builder(context);
-        b.setTitle("Select smiley");
+        //b.setTitle("Select smiley");
         b.setView(grid);
         b.setNegativeButton(android.R.string.cancel, null);
 
