@@ -79,6 +79,7 @@ public final class MessageUtils {
     }
 
     public static final class SmileyImageSpan extends DynamicDrawableSpan {
+        public static final int SIZE_DIALOG = 32;
         public static final int SIZE_EDITABLE = 24;
         public static final int SIZE_LISTITEM = 18;
 
@@ -145,7 +146,7 @@ public final class MessageUtils {
             ImageView imageView;
             if (convertView == null) {
                 imageView = new ImageView(mContext);
-                int size = getDensityPixel(mContext, 24);
+                int size = getDensityPixel(mContext, SmileyImageSpan.SIZE_DIALOG);
                 imageView.setLayoutParams(new GridView.LayoutParams(size, size));
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 //imageView.setPadding(4, 4, 4, 4);
