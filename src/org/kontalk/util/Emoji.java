@@ -20,11 +20,22 @@ package org.kontalk.util;
 
 import org.kontalk.R;
 
+import android.content.Context;
+
 
 /** Emoji mappings. */
 public final class Emoji {
-    public static final int[] emojiMap = new int[] {
-        /* \ue001 */ R.drawable.emoji_boy,
+    public static final int[] emojiTheme = new int[] {
+        // TEST a simple group
+        0x1f466,
+        0x1f603,
+    };
+
+    private static final int[] softbankMap = new int[] {
+        /* \ue001 */ 0x1f466,
+    };
+
+    private static final int[] oldSoftbankMap = new int[] {
         /* \ue002 */ R.drawable.emoji_girl,
         /* \ue003 */ R.drawable.emoji_kiss,
         /* \ue004 */ R.drawable.emoji_man,
@@ -111,8 +122,17 @@ public final class Emoji {
         /* \ue055 */ R.drawable.emoji_penguin,
     };
 
-    public static int getSmileyResourceId(int index) {
-        return emojiMap[index - 1];
+    public static boolean isSoftBankEmoji(char c) {
+        return ((c >> 12) == 0xe);
+    }
+
+    public static int getEmojiResource(Context context, int codePoint) {
+        return context.getResources().getIdentifier(String
+            .format("emoji_%x", codePoint), "drawable", context.getPackageName());
+    }
+
+    public static int getSoftbankEmoji(char c) {
+        return softbankMap[c - 0xe000 - 1];
     }
 
 }

@@ -226,18 +226,23 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
 		mTextEntry.addTextChangedListener(new TextWatcher() {
 			@Override
-			public void onTextChanged(CharSequence s, int start, int before,
-					int count) {
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
 			}
 
 			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after) {
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 			}
 
 			@Override
 			public void afterTextChanged(Editable s) {
-				mSendButton.setEnabled(s.length() > 0);
+			    // convert smiley codes
+			    mTextEntry.removeTextChangedListener(this);
+                Spannable newText = MessageUtils.convertSmileys(getActivity(), s, SmileyImageSpan.SIZE_EDITABLE);
+                s.replace(0, s.length(), newText);
+                mTextEntry.addTextChangedListener(this);
+
+                // enable the send button if there is something to send
+                mSendButton.setEnabled(s.length() > 0);
 			}
 		});
 
@@ -658,22 +663,21 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     		            Editable text = mTextEntry.getText();
     		            int startPos = mTextEntry.getSelectionStart();
     		            int endPos = mTextEntry.getSelectionEnd();
-    		            // +1 because of the 1-based array
-    		            position++;
 
     		            if (startPos < 0) startPos = text.length();
     		            if (endPos < 0) endPos = startPos;
                         int startMin = Math.min(startPos, endPos);
 
                         // add unicode emoji
+                        char[] value = Character.toChars((int) id);
     		            text.replace(startMin, Math.max(startPos, endPos),
-    		                String.valueOf((char) (0xe000 + position)), 0, 1);
+    		                String.valueOf(value), 0, value.length);
 
     		            // set emoji image span
     		            SmileyImageSpan span = new SmileyImageSpan(getActivity(),
-    		                Emoji.getSmileyResourceId(position), SmileyImageSpan.SIZE_EDITABLE);
+    		                Emoji.getEmojiResource(getActivity(), (int) id), SmileyImageSpan.SIZE_EDITABLE);
                         // resize image
-    		            text.setSpan(span, startMin, startMin + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    		            text.setSpan(span, startMin, startMin + value.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     		            mSmileyDialog.dismiss();
     		        }
                 };
@@ -1356,6 +1360,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		}
 	}
 
+	/** Called when the {@link Conversation} object has been created. */
 	private void onConversationCreated() {
 		// restore draft (if any and only if user hasn't inserted text)
 		if (mTextEntry.getText().length() == 0) {

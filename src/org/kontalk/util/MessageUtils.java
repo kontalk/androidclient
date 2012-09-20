@@ -50,21 +50,35 @@ import android.widget.ImageView;
 public final class MessageUtils {
     private MessageUtils() {}
 
-    public static SpannableStringBuilder convertSmileys(Context context, String text, int size) {
+    public static SpannableStringBuilder convertSmileys(Context context, CharSequence text, int size) {
         SpannableStringBuilder builder = new SpannableStringBuilder(text);
+        Resources res = context.getResources();
 
         int len = builder.length();
-        for (int i = 0; i < len; i++) {
+        int skip = 1;
+        for (int i = 0; i < len; i += skip) {
+            int unicode = 0;
             char c = builder.charAt(i);
-            if ((c >> 12) == 0xe) {
+            if (Emoji.isSoftBankEmoji(c)) {
                 try {
-                    int icon = Emoji.emojiMap[c - 0xe000 - 1];
-                    SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
-                    builder.setSpan(span, i, i+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    unicode = Emoji.getSoftbankEmoji(c);
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
                     // skip code
                 }
+            }
+
+            if (unicode == 0) {
+                // try unicode emoji
+                unicode = Character.codePointAt(text, i);
+            }
+
+            skip = Character.charCount(unicode);
+            int icon = res.getIdentifier(String.format("emoji_%x", unicode), "drawable", context.getPackageName());
+
+            if (icon > 0) {
+                SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
+                builder.setSpan(span, i, i+skip, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
 
@@ -123,11 +137,12 @@ public final class MessageUtils {
 
         /** Actually not used. */
         public Object getItem(int position) {
-            return mContext.getResources().getDrawable(mTheme[position]);
+            int icon = Emoji.getEmojiResource(mContext, mTheme[position]);
+            return mContext.getResources().getDrawable(icon);
         }
 
         public long getItemId(int position) {
-            return position;
+            return mTheme[position];
         }
 
         public boolean hasStableIds() {
@@ -148,13 +163,14 @@ public final class MessageUtils {
                 imageView = (ImageView) convertView;
             }
 
-            imageView.setImageResource(mTheme[position]);
+            int icon = Emoji.getEmojiResource(mContext, mTheme[position]);
+            imageView.setImageResource(icon);
             return imageView;
         }
     }
 
     public static Dialog smileysDialog(Context context, AdapterView.OnItemClickListener listener) {
-        ImageAdapter adapter = new ImageAdapter(context, Emoji.emojiMap);
+        ImageAdapter adapter = new ImageAdapter(context, Emoji.emojiTheme);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         GridView grid = (GridView) inflater.inflate(R.layout.grid_smileys, null);
