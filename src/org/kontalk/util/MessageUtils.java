@@ -73,10 +73,13 @@ public final class MessageUtils {
                 unicode = Character.codePointAt(text, i);
             }
 
-            skip = Character.charCount(unicode);
             int icon = res.getIdentifier(String.format("emoji_%x", unicode), "drawable", context.getPackageName());
 
             if (icon > 0) {
+                // replace code with UTF-16 notation
+                char[] tb = Character.toChars(unicode);
+                skip = tb.length;
+                builder.replace(i, i, String.valueOf(tb));
                 SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
                 builder.setSpan(span, i, i+skip, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
