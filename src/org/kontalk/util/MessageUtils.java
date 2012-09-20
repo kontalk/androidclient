@@ -57,29 +57,30 @@ public final class MessageUtils {
         int len = builder.length();
         int skip = 1;
         for (int i = 0; i < len; i += skip) {
+            skip = 0;
             int unicode = 0;
             char c = builder.charAt(i);
             if (Emoji.isSoftBankEmoji(c)) {
                 try {
                     unicode = Emoji.getSoftbankEmoji(c);
+                    skip = 1;
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
                     // skip code
                 }
             }
 
-            if (unicode == 0) {
-                // try unicode emoji
-                unicode = Character.codePointAt(text, i);
-            }
+            // softbank encoding not found, try extracting a code point
+            if (unicode == 0)
+                unicode = Character.codePointAt(builder, i);
+            // calculate skip count if not previously set
+            if (skip == 0)
+                skip = Character.charCount(unicode);
 
             int icon = res.getIdentifier(String.format("emoji_%x", unicode), "drawable", context.getPackageName());
 
             if (icon > 0) {
-                // replace code with UTF-16 notation
-                char[] tb = Character.toChars(unicode);
-                skip = tb.length;
-                builder.replace(i, i, String.valueOf(tb));
+                // set emoji span
                 SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
                 builder.setSpan(span, i, i+skip, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
