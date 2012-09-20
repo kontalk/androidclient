@@ -33,6 +33,9 @@ public final class Emoji {
 
     private static final int[] softbankMap = new int[] {
         /* \ue001 */ 0x1f466,
+
+        // TODO we are still far from this point :)
+        /* \ue057 * 0x1f604, */
     };
 
     private static final int[] oldSoftbankMap = new int[] {
