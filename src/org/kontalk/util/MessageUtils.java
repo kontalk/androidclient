@@ -51,9 +51,13 @@ public final class MessageUtils {
 
     public static void convertSmileys(Context context, Spannable text, int size) {
         Resources res = context.getResources();
+        // remove all of our spans first
+        SmileyImageSpan[] oldSpans = text.getSpans(0, text.length(), SmileyImageSpan.class);
+        for (int i = 0; i < oldSpans.length; i++)
+            text.removeSpan(oldSpans[i]);
 
         int len = text.length();
-        int skip = 1;
+        int skip;
         for (int i = 0; i < len; i += skip) {
             skip = 0;
             int unicode = 0;
@@ -75,12 +79,15 @@ public final class MessageUtils {
             if (skip == 0)
                 skip = Character.charCount(unicode);
 
-            int icon = res.getIdentifier(String.format("emoji_%x", unicode), "drawable", context.getPackageName());
+            int icon = 0;
+            // avoid looking up if unicode < 0xFF
+            if (unicode > 0xff)
+                icon = res.getIdentifier(String.format("emoji_%x", unicode), "drawable", context.getPackageName());
 
             if (icon > 0) {
                 // set emoji span
                 SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
-                text.setSpan(span, i, i+skip, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE | Spannable.SPAN_COMPOSING);
+                text.setSpan(span, i, i+skip, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE /* | Spannable.SPAN_COMPOSING*/);
             }
         }
     }
