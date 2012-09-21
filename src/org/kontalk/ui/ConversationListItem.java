@@ -29,6 +29,7 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
@@ -138,7 +139,9 @@ public class ConversationListItem extends RelativeLayout {
 
         // last message or draft??
         String source = draft != null ? draft : conv.getSubject();
-        mSubjectView.setText(MessageUtils.convertSmileys(context, source, SmileyImageSpan.SIZE_LISTITEM));
+        Spannable text = new SpannableString(source);
+        MessageUtils.convertSmileys(context, text, SmileyImageSpan.SIZE_LISTITEM);
+        mSubjectView.setText(text);
 
         // error indicator
         int resId = -1;

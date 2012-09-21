@@ -33,7 +33,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.text.style.DynamicDrawableSpan;
@@ -50,16 +49,15 @@ import android.widget.ImageView;
 public final class MessageUtils {
     private MessageUtils() {}
 
-    public static SpannableStringBuilder convertSmileys(Context context, CharSequence text, int size) {
-        SpannableStringBuilder builder = new SpannableStringBuilder(text);
+    public static void convertSmileys(Context context, Spannable text, int size) {
         Resources res = context.getResources();
 
-        int len = builder.length();
+        int len = text.length();
         int skip = 1;
         for (int i = 0; i < len; i += skip) {
             skip = 0;
             int unicode = 0;
-            char c = builder.charAt(i);
+            char c = text.charAt(i);
             if (Emoji.isSoftBankEmoji(c)) {
                 try {
                     unicode = Emoji.getSoftbankEmoji(c);
@@ -72,7 +70,7 @@ public final class MessageUtils {
 
             // softbank encoding not found, try extracting a code point
             if (unicode == 0)
-                unicode = Character.codePointAt(builder, i);
+                unicode = Character.codePointAt(text, i);
             // calculate skip count if not previously set
             if (skip == 0)
                 skip = Character.charCount(unicode);
@@ -82,11 +80,9 @@ public final class MessageUtils {
             if (icon > 0) {
                 // set emoji span
                 SmileyImageSpan span = new SmileyImageSpan(context, icon, size);
-                builder.setSpan(span, i, i+skip, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                text.setSpan(span, i, i+skip, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE | Spannable.SPAN_COMPOSING);
             }
         }
-
-        return builder;
     }
 
     public static final class SmileyImageSpan extends DynamicDrawableSpan {

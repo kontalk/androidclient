@@ -273,7 +273,7 @@ public class MessageListItem extends RelativeLayout {
                 buf = new SpannableStringBuilder(getResources().getString(R.string.text_encrypted));
             }
             else {
-                buf = MessageUtils.convertSmileys(getContext(), textContent, SmileyImageSpan.SIZE_EDITABLE);
+                buf = new SpannableStringBuilder(textContent);
 
                 if (mMessage instanceof ImageMessage) {
                     ImageMessage image = (ImageMessage) mMessage;
@@ -282,6 +282,9 @@ public class MessageListItem extends RelativeLayout {
                         ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
                         buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }
+                }
+                else {
+                    MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_LISTITEM);
                 }
             }
         }

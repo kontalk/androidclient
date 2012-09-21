@@ -237,8 +237,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			public void afterTextChanged(Editable s) {
 			    // convert smiley codes
 			    mTextEntry.removeTextChangedListener(this);
-                Spannable newText = MessageUtils.convertSmileys(getActivity(), s, SmileyImageSpan.SIZE_EDITABLE);
-                s.replace(0, s.length(), newText);
+                MessageUtils.convertSmileys(getActivity(), s, SmileyImageSpan.SIZE_EDITABLE);
                 mTextEntry.addTextChangedListener(this);
 
                 // enable the send button if there is something to send
