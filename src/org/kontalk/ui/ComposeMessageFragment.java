@@ -1715,6 +1715,13 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		MessageCenterService.releaseMessageCenter(getActivity());
 	}
 
+	@Override
+	public void onDestroy() {
+	    super.onDestroy();
+	    if (mTextEntry != null)
+	        mTextEntry.setText("");
+	}
+
 	public final boolean isFinishing() {
 		return (getActivity() == null || (getActivity() != null && getActivity()
 				.isFinishing())) || isRemoving();
