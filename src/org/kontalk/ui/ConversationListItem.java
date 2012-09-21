@@ -91,14 +91,6 @@ public class ConversationListItem extends RelativeLayout {
         }
     }
 
-    /**
-     * Only used for header binding.
-     */
-    public void bind(String title, String explain) {
-        mFromView.setText(title);
-        mSubjectView.setText(explain);
-    }
-
     public final void bind(Context context, final Conversation conv) {
         mConversation = conv;
         String recipient = null;
