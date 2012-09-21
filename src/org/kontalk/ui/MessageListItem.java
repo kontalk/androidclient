@@ -284,7 +284,7 @@ public class MessageListItem extends RelativeLayout {
                     }
                 }
                 else {
-                    MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_LISTITEM);
+                    MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
                 }
             }
         }
