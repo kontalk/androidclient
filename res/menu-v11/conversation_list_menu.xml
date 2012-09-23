@@ -18,6 +18,8 @@
 
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TODO i18n -->
+    <item android:id="@+id/menu_offline" android:title="Go offline" android:icon="@drawable/ic_menu_stop"/>
     <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
     <item android:id="@+id/menu_delete_all" android:title="@string/menu_delete_all" android:icon="@android:drawable/ic_menu_delete"/>
     <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@android:drawable/ic_menu_preferences"/>

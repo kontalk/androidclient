@@ -396,6 +396,32 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBooleanOnce(context, "bigupgrade1");
     }
 
+    /**
+     * Switches offline mode on or off.
+     * @return offline mode status before the switch
+     */
+    public static boolean switchOfflineMode(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean old = prefs.getBoolean("offline_mode", false);
+        // set flag again!
+        boolean offline = !old;
+        prefs.edit().putBoolean("offline_mode", offline).commit();
+
+        if (offline) {
+            // stop the message center and never start it again
+            MessageCenterService.stopMessageCenter(context);
+        }
+        else {
+            MessageCenterService.startMessageCenter(context);
+        }
+
+        return old;
+    }
+
+    public static boolean getOfflineMode(Context context) {
+        return getBoolean(context, "offline_mode", false);
+    }
+
     public static void start(Activity context) {
         Intent intent = new Intent(context, MessagingPreferences.class);
         context.startActivityIfNeeded(intent, -1);

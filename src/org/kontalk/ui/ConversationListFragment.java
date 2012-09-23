@@ -170,6 +170,10 @@ public class ConversationListFragment extends SherlockListFragment {
                 StatusActivity.start(getActivity());
                 return true;
 
+            case R.id.menu_offline:
+                MessagingPreferences.switchOfflineMode(getActivity());
+                return true;
+
             case R.id.menu_search:
             case R.id.menu_search2:
                 getActivity().onSearchRequested();

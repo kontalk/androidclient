@@ -229,7 +229,7 @@ public class MessageCenterService extends Service
                     mRequestWorker.hold();
 
                 // proceed to start only if network is available
-                execStart = isNetworkConnectionAvailable(this);
+                execStart = isNetworkConnectionAvailable(this) && !isOfflineMode(this);
             }
 
             // release - decrement reference count
@@ -789,8 +789,18 @@ public class MessageCenterService extends Service
         return false;
     }
 
+    private static boolean isOfflineMode(Context context) {
+        return MessagingPreferences.getOfflineMode(context);
+    }
+
     /** Starts the message center. */
     public static void startMessageCenter(final Context context) {
+        // check for offline mode
+        if (isOfflineMode(context)) {
+            Log.d(TAG, "offline mode enable - abort service start");
+            return;
+        }
+
         // check for network state
         if (isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");

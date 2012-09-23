@@ -21,6 +21,8 @@
     <item android:id="@+id/menu_compose" android:title="@string/menu_compose" android:icon="@drawable/ic_menu_compose"/>
     <item android:id="@+id/menu_search" android:title="@string/menu_search" android:icon="@android:drawable/ic_menu_search"/>
     <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
+    <!-- TODO i18n -->
+    <item android:id="@+id/menu_offline" android:title="Go offline" android:icon="@drawable/ic_menu_stop"/>
     <item android:id="@+id/menu_delete_all" android:title="@string/menu_delete_all" android:icon="@android:drawable/ic_menu_delete"/>
     <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@android:drawable/ic_menu_preferences"/>
 
