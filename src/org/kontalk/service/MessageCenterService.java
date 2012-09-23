@@ -648,7 +648,7 @@ public class MessageCenterService extends Service
         // broadcast message
         broadcastMessage(msg);
 
-        if (notify)
+        if (notify && !msg.getSender(true).equalsIgnoreCase(MessagingNotification.getPaused()))
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
 

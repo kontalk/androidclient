@@ -64,8 +64,11 @@ public class MessagingNotification {
         Threads.UNREAD + " <> 0 AND " +
         Threads.DIRECTION + " = " + Messages.DIRECTION_IN;
 
+    /** Pending delayed notification update flag. */
+    private static volatile boolean mPending;
+
     /** Peer to NOT be notified for new messages. */
-    private static String mPaused;
+    private static volatile String mPaused;
 
     /** This class is not instanciable. */
     private MessagingNotification() {}
@@ -74,18 +77,26 @@ public class MessagingNotification {
         mPaused = peer;
     }
 
+    public static String getPaused() {
+        return mPaused;
+    }
+
     /** Starts messages notification updates in another thread. */
     public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
         // notifications are disabled
         if (!MessagingPreferences.getNotificationsEnabled(context))
             return;
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                updateMessagesNotification(context, isNew);
-            }
-        }).start();
+        if (!mPending) {
+            mPending = true;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    updateMessagesNotification(context, isNew);
+                    mPending = false;
+                }
+            }).start();
+        }
     }
 
     /**
@@ -97,6 +108,19 @@ public class MessagingNotification {
         // notifications are disabled
         if (!MessagingPreferences.getNotificationsEnabled(context))
             return;
+
+        // if notifying new messages, wait a little bit
+        // to let all incoming messages come through
+        /*
+        if (isNew) {
+            try {
+                Thread.sleep(500);
+            }
+            catch (InterruptedException e) {
+                // ignored
+            }
+        }
+        */
 
         ContentResolver res = context.getContentResolver();
         NotificationManager nm = (NotificationManager) context
