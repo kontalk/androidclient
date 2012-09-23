@@ -112,6 +112,8 @@ public class MessagingNotification {
         // if notifying new messages, wait a little bit
         // to let all incoming messages come through
         /*
+        FIXME this is useless because message are slow to arrive anyway
+        (time to receive packs, store messages in db, etc. wastes too much time
         if (isNew) {
             try {
                 Thread.sleep(500);

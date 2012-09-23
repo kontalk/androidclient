@@ -4,6 +4,7 @@
 [ ] smileys/emoticons support
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
+[ ] offline mode
 [ ] tablet: refactor message list view
 [ ] multiserver support
     [x] check if server supports auth token generation
