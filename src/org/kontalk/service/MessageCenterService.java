@@ -354,7 +354,7 @@ public class MessageCenterService extends Service
                 Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
                 Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED,
-                null, null);
+                null, Messages._ID);
 
         while (c.moveToNext()) {
             long id = c.getLong(0);
