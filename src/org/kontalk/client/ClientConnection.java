@@ -56,13 +56,14 @@ public class ClientConnection {
         mAuthToken = token;
         AuthenticateRequest.Builder b = AuthenticateRequest.newBuilder();
         b.setToken(token);
+        b.setClientProtocol(Kontalk.CLIENT_PROTOCOL);
         send(b.build());
     }
 
     /** Sends a serverinfo request and waits for response. */
     public ServerInfoResponse serverinfoWait() throws IOException {
         ServerInfoRequest.Builder b = ServerInfoRequest.newBuilder();
-        b.setClientProtocol(Kontalk.CLIENT_PROTOCOL);
+        // deprecated -- b.setClientProtocol(Kontalk.CLIENT_PROTOCOL);
         send(b.build());
 
         // receive and parse data now

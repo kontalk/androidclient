@@ -1,4 +1,4 @@
-// Client protocol definitions - revision 3
+// Client protocol definitions - revision 4
 option java_package = "org.kontalk.client";
 option java_outer_classname = "Protocol";
 option optimize_for = LITE_RUNTIME;
@@ -7,6 +7,8 @@ option optimize_for = LITE_RUNTIME;
 // authentication request
 message AuthenticateRequest {
     required string token = 1;
+    optional uint32 client_protocol = 2;
+    optional string client_version = 3;
 }
 
 // authentication response
@@ -55,6 +57,11 @@ message NewMessage {
     optional string url = 9;
     required bool need_ack = 10;
     optional uint64 length = 11;
+}
+
+// mailbox pack (incoming messages)
+message Mailbox {
+    repeated NewMessage message = 1;
 }
 
 // message acknowledgement request
@@ -164,7 +171,9 @@ message FileUploadResponse {
 
 // server info request
 message ServerInfoRequest {
+    // deprecated (now in AuthenticateRequest)
     optional uint32 client_protocol = 1;
+    // deprecated (now in AuthenticateRequest)
     optional string client_version = 2;
 }
 

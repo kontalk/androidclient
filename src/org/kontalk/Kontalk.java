@@ -35,7 +35,7 @@ public class Kontalk extends Application {
     private static final String TAG = Kontalk.class.getSimpleName();
 
     /** Supported client protocol revision. */
-    public static final int CLIENT_PROTOCOL = 3;
+    public static final int CLIENT_PROTOCOL = 4;
 
     @Override
     public void onCreate() {

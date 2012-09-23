@@ -61,6 +61,14 @@ public final class Protocol {
     // required string token = 1;
     boolean hasToken();
     String getToken();
+    
+    // optional uint32 client_protocol = 2;
+    boolean hasClientProtocol();
+    int getClientProtocol();
+    
+    // optional string client_version = 3;
+    boolean hasClientVersion();
+    String getClientVersion();
   }
   public static final class AuthenticateRequest extends
       com.google.protobuf.GeneratedMessageLite
@@ -113,8 +121,52 @@ public final class Protocol {
       }
     }
     
+    // optional uint32 client_protocol = 2;
+    public static final int CLIENT_PROTOCOL_FIELD_NUMBER = 2;
+    private int clientProtocol_;
+    public boolean hasClientProtocol() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public int getClientProtocol() {
+      return clientProtocol_;
+    }
+    
+    // optional string client_version = 3;
+    public static final int CLIENT_VERSION_FIELD_NUMBER = 3;
+    private java.lang.Object clientVersion_;
+    public boolean hasClientVersion() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public String getClientVersion() {
+      java.lang.Object ref = clientVersion_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          clientVersion_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getClientVersionBytes() {
+      java.lang.Object ref = clientVersion_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        clientVersion_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
     private void initFields() {
       token_ = "";
+      clientProtocol_ = 0;
+      clientVersion_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -135,6 +187,12 @@ public final class Protocol {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getTokenBytes());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeUInt32(2, clientProtocol_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getClientVersionBytes());
+      }
     }
     
     private int memoizedSerializedSize = -1;
@@ -146,6 +204,14 @@ public final class Protocol {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getTokenBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(2, clientProtocol_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getClientVersionBytes());
       }
       memoizedSerializedSize = size;
       return size;
@@ -251,6 +317,10 @@ public final class Protocol {
         super.clear();
         token_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        clientProtocol_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        clientVersion_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       
@@ -288,6 +358,14 @@ public final class Protocol {
           to_bitField0_ |= 0x00000001;
         }
         result.token_ = token_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.clientProtocol_ = clientProtocol_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.clientVersion_ = clientVersion_;
         result.bitField0_ = to_bitField0_;
         return result;
       }
@@ -296,6 +374,12 @@ public final class Protocol {
         if (other == org.kontalk.client.Protocol.AuthenticateRequest.getDefaultInstance()) return this;
         if (other.hasToken()) {
           setToken(other.getToken());
+        }
+        if (other.hasClientProtocol()) {
+          setClientProtocol(other.getClientProtocol());
+        }
+        if (other.hasClientVersion()) {
+          setClientVersion(other.getClientVersion());
         }
         return this;
       }
@@ -328,6 +412,16 @@ public final class Protocol {
             case 10: {
               bitField0_ |= 0x00000001;
               token_ = input.readBytes();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              clientProtocol_ = input.readUInt32();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              clientVersion_ = input.readBytes();
               break;
             }
           }
@@ -369,6 +463,63 @@ public final class Protocol {
       void setToken(com.google.protobuf.ByteString value) {
         bitField0_ |= 0x00000001;
         token_ = value;
+        
+      }
+      
+      // optional uint32 client_protocol = 2;
+      private int clientProtocol_ ;
+      public boolean hasClientProtocol() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public int getClientProtocol() {
+        return clientProtocol_;
+      }
+      public Builder setClientProtocol(int value) {
+        bitField0_ |= 0x00000002;
+        clientProtocol_ = value;
+        
+        return this;
+      }
+      public Builder clearClientProtocol() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        clientProtocol_ = 0;
+        
+        return this;
+      }
+      
+      // optional string client_version = 3;
+      private java.lang.Object clientVersion_ = "";
+      public boolean hasClientVersion() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public String getClientVersion() {
+        java.lang.Object ref = clientVersion_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          clientVersion_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setClientVersion(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        clientVersion_ = value;
+        
+        return this;
+      }
+      public Builder clearClientVersion() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        clientVersion_ = getDefaultInstance().getClientVersion();
+        
+        return this;
+      }
+      void setClientVersion(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000004;
+        clientVersion_ = value;
         
       }
       
@@ -3437,6 +3588,388 @@ public final class Protocol {
     }
     
     // @@protoc_insertion_point(class_scope:NewMessage)
+  }
+  
+  public interface MailboxOrBuilder
+      extends com.google.protobuf.MessageLiteOrBuilder {
+    
+    // repeated .NewMessage message = 1;
+    java.util.List<org.kontalk.client.Protocol.NewMessage> 
+        getMessageList();
+    org.kontalk.client.Protocol.NewMessage getMessage(int index);
+    int getMessageCount();
+  }
+  public static final class Mailbox extends
+      com.google.protobuf.GeneratedMessageLite
+      implements MailboxOrBuilder {
+    // Use Mailbox.newBuilder() to construct.
+    private Mailbox(Builder builder) {
+      super(builder);
+    }
+    private Mailbox(boolean noInit) {}
+    
+    private static final Mailbox defaultInstance;
+    public static Mailbox getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public Mailbox getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    // repeated .NewMessage message = 1;
+    public static final int MESSAGE_FIELD_NUMBER = 1;
+    private java.util.List<org.kontalk.client.Protocol.NewMessage> message_;
+    public java.util.List<org.kontalk.client.Protocol.NewMessage> getMessageList() {
+      return message_;
+    }
+    public java.util.List<? extends org.kontalk.client.Protocol.NewMessageOrBuilder> 
+        getMessageOrBuilderList() {
+      return message_;
+    }
+    public int getMessageCount() {
+      return message_.size();
+    }
+    public org.kontalk.client.Protocol.NewMessage getMessage(int index) {
+      return message_.get(index);
+    }
+    public org.kontalk.client.Protocol.NewMessageOrBuilder getMessageOrBuilder(
+        int index) {
+      return message_.get(index);
+    }
+    
+    private void initFields() {
+      message_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      for (int i = 0; i < getMessageCount(); i++) {
+        if (!getMessage(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < message_.size(); i++) {
+        output.writeMessage(1, message_.get(i));
+      }
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      for (int i = 0; i < message_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, message_.get(i));
+      }
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.kontalk.client.Protocol.Mailbox parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.kontalk.client.Protocol.Mailbox prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageLite.Builder<
+          org.kontalk.client.Protocol.Mailbox, Builder>
+        implements org.kontalk.client.Protocol.MailboxOrBuilder {
+      // Construct using org.kontalk.client.Protocol.Mailbox.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private void maybeForceBuilderInitialization() {
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        message_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public org.kontalk.client.Protocol.Mailbox getDefaultInstanceForType() {
+        return org.kontalk.client.Protocol.Mailbox.getDefaultInstance();
+      }
+      
+      public org.kontalk.client.Protocol.Mailbox build() {
+        org.kontalk.client.Protocol.Mailbox result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.kontalk.client.Protocol.Mailbox buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.kontalk.client.Protocol.Mailbox result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.kontalk.client.Protocol.Mailbox buildPartial() {
+        org.kontalk.client.Protocol.Mailbox result = new org.kontalk.client.Protocol.Mailbox(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          message_ = java.util.Collections.unmodifiableList(message_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.message_ = message_;
+        return result;
+      }
+      
+      public Builder mergeFrom(org.kontalk.client.Protocol.Mailbox other) {
+        if (other == org.kontalk.client.Protocol.Mailbox.getDefaultInstance()) return this;
+        if (!other.message_.isEmpty()) {
+          if (message_.isEmpty()) {
+            message_ = other.message_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureMessageIsMutable();
+            message_.addAll(other.message_);
+          }
+          
+        }
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        for (int i = 0; i < getMessageCount(); i++) {
+          if (!getMessage(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              
+              return this;
+            default: {
+              if (!parseUnknownField(input, extensionRegistry, tag)) {
+                
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              org.kontalk.client.Protocol.NewMessage.Builder subBuilder = org.kontalk.client.Protocol.NewMessage.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addMessage(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // repeated .NewMessage message = 1;
+      private java.util.List<org.kontalk.client.Protocol.NewMessage> message_ =
+        java.util.Collections.emptyList();
+      private void ensureMessageIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          message_ = new java.util.ArrayList<org.kontalk.client.Protocol.NewMessage>(message_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      
+      public java.util.List<org.kontalk.client.Protocol.NewMessage> getMessageList() {
+        return java.util.Collections.unmodifiableList(message_);
+      }
+      public int getMessageCount() {
+        return message_.size();
+      }
+      public org.kontalk.client.Protocol.NewMessage getMessage(int index) {
+        return message_.get(index);
+      }
+      public Builder setMessage(
+          int index, org.kontalk.client.Protocol.NewMessage value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureMessageIsMutable();
+        message_.set(index, value);
+        
+        return this;
+      }
+      public Builder setMessage(
+          int index, org.kontalk.client.Protocol.NewMessage.Builder builderForValue) {
+        ensureMessageIsMutable();
+        message_.set(index, builderForValue.build());
+        
+        return this;
+      }
+      public Builder addMessage(org.kontalk.client.Protocol.NewMessage value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureMessageIsMutable();
+        message_.add(value);
+        
+        return this;
+      }
+      public Builder addMessage(
+          int index, org.kontalk.client.Protocol.NewMessage value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureMessageIsMutable();
+        message_.add(index, value);
+        
+        return this;
+      }
+      public Builder addMessage(
+          org.kontalk.client.Protocol.NewMessage.Builder builderForValue) {
+        ensureMessageIsMutable();
+        message_.add(builderForValue.build());
+        
+        return this;
+      }
+      public Builder addMessage(
+          int index, org.kontalk.client.Protocol.NewMessage.Builder builderForValue) {
+        ensureMessageIsMutable();
+        message_.add(index, builderForValue.build());
+        
+        return this;
+      }
+      public Builder addAllMessage(
+          java.lang.Iterable<? extends org.kontalk.client.Protocol.NewMessage> values) {
+        ensureMessageIsMutable();
+        super.addAll(values, message_);
+        
+        return this;
+      }
+      public Builder clearMessage() {
+        message_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        
+        return this;
+      }
+      public Builder removeMessage(int index) {
+        ensureMessageIsMutable();
+        message_.remove(index);
+        
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:Mailbox)
+    }
+    
+    static {
+      defaultInstance = new Mailbox(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:Mailbox)
   }
   
   public interface MessageAckRequestOrBuilder
