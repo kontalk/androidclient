@@ -59,11 +59,11 @@ public final class MessageUtils {
         int skip;
         for (int i = 0; i < len; i += skip) {
             skip = 0;
-            int unicode = 0;
+            int icon = 0;
             char c = text.charAt(i);
             if (Emoji.isSoftBankEmoji(c)) {
                 try {
-                    unicode = Emoji.getSoftbankEmoji(c);
+                    icon = Emoji.getSoftbankEmojiResource(c);
                     skip = 1;
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
@@ -71,17 +71,17 @@ public final class MessageUtils {
                 }
             }
 
-            // softbank encoding not found, try extracting a code point
-            if (unicode == 0)
-                unicode = Character.codePointAt(text, i);
-            // calculate skip count if not previously set
-            if (skip == 0)
-                skip = Character.charCount(unicode);
+            if (icon == 0) {
+                // softbank encoding not found, try extracting a code point
+                int unicode = Character.codePointAt(text, i);
+                // calculate skip count if not previously set
+                if (skip == 0)
+                    skip = Character.charCount(unicode);
 
-            int icon = 0;
-            // avoid looking up if unicode < 0xFF
-            if (unicode > 0xff)
-                icon = Emoji.getEmojiResource(context, unicode);
+                // avoid looking up if unicode < 0xFF
+                if (unicode > 0xff)
+                    icon = Emoji.getEmojiResource(context, unicode);
+            }
 
             if (icon > 0) {
                 // set emoji span

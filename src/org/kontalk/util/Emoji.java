@@ -32,8 +32,44 @@ public final class Emoji {
     /** Mappings from Unicode to drawables. */
     public static final SparseIntArray emojiTheme = new SparseIntArray(EMOJI_COUNT);
     static {
-        emojiTheme.put(0x1F603, R.drawable.emoji_smiley);
+        // GROUP 1: Smiley (http://punchdrunker.github.com/iOSEmoji/table_html/index.html)
+        emojiTheme.put(0x1F604, R.drawable.emoji_smile);
         emojiTheme.put(0x1F60A, R.drawable.emoji_blush);
+        emojiTheme.put(0x1F603, R.drawable.emoji_smiley);
+        emojiTheme.put(0x263A, R.drawable.emoji_relaxed);
+        emojiTheme.put(0x1F609, R.drawable.emoji_wink);
+        emojiTheme.put(0x1F60D, R.drawable.emoji_heart_eyes);
+        emojiTheme.put(0x1F618, R.drawable.emoji_kissing_heart);
+        emojiTheme.put(0x1F61A, R.drawable.emoji_kissing_face);
+        emojiTheme.put(0x1F633, R.drawable.emoji_flushed);
+        emojiTheme.put(0x1F60C, R.drawable.emoji_satisfied);
+        emojiTheme.put(0x1F601, R.drawable.emoji_grin);
+        emojiTheme.put(0x1F61C, R.drawable.emoji_wink2);
+        emojiTheme.put(0x1F61D, R.drawable.emoji_tongue);
+        emojiTheme.put(0x1F612, R.drawable.emoji_unamused);
+        emojiTheme.put(0x1F60F, R.drawable.emoji_smirk);
+        emojiTheme.put(0x1F613, R.drawable.emoji_sweat);
+        emojiTheme.put(0x1F614, R.drawable.emoji_pensive);
+        emojiTheme.put(0x1F61E, R.drawable.emoji_disappointed);
+        emojiTheme.put(0x1F616, R.drawable.emoji_confounded);
+        emojiTheme.put(0x1F625, R.drawable.emoji_relieved);
+        emojiTheme.put(0x1F630, R.drawable.emoji_cold_sweat);
+        emojiTheme.put(0x1F628, R.drawable.emoji_fearful);
+        emojiTheme.put(0x1F623, R.drawable.emoji_persevere);
+        emojiTheme.put(0x1F622, R.drawable.emoji_cry);
+        emojiTheme.put(0x1F62D, R.drawable.emoji_sob);
+        emojiTheme.put(0x1F602, R.drawable.emoji_joy);
+        emojiTheme.put(0x1F632, R.drawable.emoji_astonished);
+        emojiTheme.put(0x1F631, R.drawable.emoji_scream);
+        emojiTheme.put(0x1F620, R.drawable.emoji_angry);
+        emojiTheme.put(0x1F621, R.drawable.emoji_rage);
+        emojiTheme.put(0x1F62A, R.drawable.emoji_sleepy);
+        emojiTheme.put(0x1F637, R.drawable.emoji_mask);
+        emojiTheme.put(0x1F47F, R.drawable.emoji_imp);
+        emojiTheme.put(0x1F47D, R.drawable.emoji_alien);
+        emojiTheme.put(0x1F49B, R.drawable.emoji_yellow_heart);
+
+        // UNSORTED
         emojiTheme.put(0x1F466, R.drawable.emoji_boy);
         emojiTheme.put(0x1F467, R.drawable.emoji_girl);
         emojiTheme.put(0x1F48B, R.drawable.emoji_kiss);
@@ -68,36 +104,36 @@ public final class Emoji {
 
     /** Mappings from SoftBank encoding to Unicode. */
     private static final int[] softbankMap = new int[] {
-        /* \ue001 */ 0x1F466,
-        /* \ue002 */ 0x1F467,
-        /* \ue003 */ 0x1F48B,
-        /* \ue004 */ 0x1F468,
-        /* \ue005 */ 0x1F469,
-        /* \ue006 */ 0x1F455,
-        /* \ue007 */ 0x1F45F,
-        /* \ue008 */ 0x1F4F7,
-        /* \ue009 */ 0x260E,
-        /* \ue00a */ 0x1F4F1,
-        /* \ue00b */ 0x1F4E0,
-        /* \ue00c */ 0x1F4BB,
-        /* \ue00d */ 0x1F44A,
-        /* \ue00e */ 0x1F44D,
-        /* \ue00f */ 0x261D,
-        /* \ue010 */ 0x270A,
-        /* \ue011 */ 0x270C,
-        /* \ue012 */ 0x270B,
-        /* \ue013 */ 0x1F3BF,
-        /* \ue014 */ 0x26F3,
-        /* \ue015 */ 0x1F3BE,
-        /* \ue016 */ 0x26BE,
-        /* \ue017 */ 0x1F3C4,
-        /* \ue018 */ 0x26BD,
-        /* \ue019 */ 0x1F41F,
-        /* \ue01a */ 0x1F434,
-        /* \ue01b */ 0x1F697,
-        /* \ue01c */ 0x26F5,
-        /* \ue01d */ 0x2708,
-        /* \ue01e */ 0x1F683,
+        /* \ue001 */ R.drawable.emoji_boy,
+        /* \ue002 */ R.drawable.emoji_girl,
+        /* \ue003 */ R.drawable.emoji_kiss,
+        /* \ue004 */ R.drawable.emoji_man,
+        /* \ue005 */ R.drawable.emoji_woman,
+        /* \ue006 */ R.drawable.emoji_shirt,
+        /* \ue007 */ R.drawable.emoji_shoe,
+        /* \ue008 */ R.drawable.emoji_camera,
+        /* \ue009 */ R.drawable.emoji_telephone,
+        /* \ue00a */ R.drawable.emoji_iphone,
+        /* \ue00b */ R.drawable.emoji_fax,
+        /* \ue00c */ R.drawable.emoji_computer,
+        /* \ue00d */ R.drawable.emoji_punch,
+        /* \ue00e */ R.drawable.emoji_thumbsup,
+        /* \ue00f */ R.drawable.emoji_point_up,
+        /* \ue010 */ R.drawable.emoji_fist,
+        /* \ue011 */ R.drawable.emoji_v,
+        /* \ue012 */ R.drawable.emoji_hand,
+        /* \ue013 */ R.drawable.emoji_ski,
+        /* \ue014 */ R.drawable.emoji_golf,
+        /* \ue015 */ R.drawable.emoji_tennis,
+        /* \ue016 */ R.drawable.emoji_baseball,
+        /* \ue017 */ R.drawable.emoji_surfer,
+        /* \ue018 */ R.drawable.emoji_soccer,
+        /* \ue019 */ R.drawable.emoji_fish,
+        /* \ue01a */ R.drawable.emoji_horse,
+        /* \ue01b */ R.drawable.emoji_car,
+        /* \ue01c */ R.drawable.emoji_sailboat,
+        /* \ue01d */ R.drawable.emoji_airplane,
+        /* \ue01e */ R.drawable.emoji_train,
         /* \ue01f */ R.drawable.emoji_train2,
         /* \ue020 */ R.drawable.emoji_question,
         /* \ue021 */ R.drawable.emoji_exclamation,
@@ -153,45 +189,122 @@ public final class Emoji {
         /* \ue053 */ R.drawable.emoji_mouse,
         /* \ue054 */ R.drawable.emoji_whale,
         /* \ue055 */ R.drawable.emoji_penguin,
-        /* \ue056 */ 0x1f60a,
-        /* \ue057 */ 0x1f604,
+        /* \ue056 */ R.drawable.emoji_blush,
+        /* \ue057 */ R.drawable.emoji_smiley,
     };
 
     /** Emoji groups as displayed in UI. */
     public static final int[][] emojiGroups = {
         {
-            0x1F603,
+            0x1F604,
             0x1F60A,
-            0x1F466,
-            0x1F467,
-            0x1F48B,
-            0x1F468,
-            0x1F469,
-            0x1F455,
-            0x1F45F,
-            0x1F4F7,
-            0x260E,
-            0x1F4F1,
-            0x1F4E0,
-            0x1F4BB,
-            0x1F44A,
+            0x1F603,
+            0x263A,
+            0x1F609,
+            0x1F60D,
+            0x1F618,
+            0x1F61A,
+            0x1F633,
+            0x1F60C,
+            0x1F601,
+            0x1F61C,
+            0x1F61D,
+            0x1F612,
+            0x1F60F,
+            0x1F613,
+            0x1F614,
+            0x1F61E,
+            0x1F616,
+            0x1F625,
+            0x1F630,
+            0x1F628,
+            0x1F623,
+            0x1F622,
+            0x1F62D,
+            0x1F602,
+            0x1F632,
+            0x1F631,
+            0x1F620,
+            0x1F621,
+            0x1F62A,
+            0x1F637,
+            0x1F47F,
+            0x1F47D,
+            0x1F49B,
+            0x1F499,
+            0x1F49C,
+            0x1F497,
+            0x1F49A,
+            0x2764,
+            0x1F494,
+            0x1F493,
+            0x1F498,
+            0x2728,
+            0x1F31F,
+            0x1F4A2,
+            0x2755,
+            0x2754,
+            0x1F4A4,
+            0x1F4A8,
+            0x1F4A6,
+            0x1F3B6,
+            0x1F3B5,
+            0x1F525,
+            0x1F4A9,
             0x1F44D,
-            0x261D,
+            0x1F44E,
+            0x1F44C,
+            0x1F44A,
             0x270A,
             0x270C,
+            0x1F44B,
             0x270B,
-            0x1F3BF,
-            0x26F3,
-            0x1F3BE,
-            0x26BE,
-            0x1F3C4,
-            0x26BD,
-            0x1F41F,
-            0x1F434,
-            0x1F697,
-            0x26F5,
-            0x2708,
-            0x1F683,
+            0x1F450,
+            0x1F446,
+            0x1F447,
+            0x1F449,
+            0x1F448,
+            0x1F64C,
+            0x1F64F,
+            0x261D,
+            0x1F44F,
+            0x1F4AA,
+            0x1F6B6,
+            0x1F3C3,
+            0x1F46B,
+            0x1F483,
+            0x1F46F,
+            0x1F646,
+            0x1F645,
+            0x1F481,
+            0x1F647,
+            0x1F48F,
+            0x1F491,
+            0x1F486,
+            0x1F487,
+            0x1F485,
+            0x1F466,
+            0x1F467,
+            0x1F469,
+            0x1F468,
+            0x1F476,
+            0x1F475,
+            0x1F474,
+            0x1F471,
+            0x1F472,
+            0x1F473,
+            0x1F477,
+            0x1F46E,
+            0x1F47C,
+            0x1F478,
+            0x1F482,
+            0x1F480,
+            0x1F463,
+            0x1F48B,
+            0x1F444,
+            0x1F442,
+            0x1F440,
+            0x1F443,
         }
     };
 
@@ -203,7 +316,7 @@ public final class Emoji {
         return emojiTheme.get(codePoint);
     }
 
-    public static int getSoftbankEmoji(char c) {
+    public static int getSoftbankEmojiResource(char c) {
         return softbankMap[c - 0xe000 - 1];
     }
 
