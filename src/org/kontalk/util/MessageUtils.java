@@ -50,7 +50,6 @@ public final class MessageUtils {
     private MessageUtils() {}
 
     public static void convertSmileys(Context context, Spannable text, int size) {
-        Resources res = context.getResources();
         // remove all of our spans first
         SmileyImageSpan[] oldSpans = text.getSpans(0, text.length(), SmileyImageSpan.class);
         for (int i = 0; i < oldSpans.length; i++)
@@ -82,7 +81,7 @@ public final class MessageUtils {
             int icon = 0;
             // avoid looking up if unicode < 0xFF
             if (unicode > 0xff)
-                icon = res.getIdentifier(String.format("emoji_%x", unicode), "drawable", context.getPackageName());
+                icon = Emoji.getEmojiResource(context, unicode);
 
             if (icon > 0) {
                 // set emoji span
@@ -131,25 +130,25 @@ public final class MessageUtils {
 
     private static final class ImageAdapter extends BaseAdapter {
         private Context mContext;
-        private int[] mTheme;
+        private int[][] mTheme;
 
-        public ImageAdapter(Context c, int[] theme) {
+        public ImageAdapter(Context c, int[][] theme) {
             mContext = c;
             mTheme = theme;
         }
 
         public int getCount() {
-            return mTheme.length;
+            return mTheme[0].length;
         }
 
         /** Actually not used. */
         public Object getItem(int position) {
-            int icon = Emoji.getEmojiResource(mContext, mTheme[position]);
+            int icon = Emoji.getEmojiResource(mContext, mTheme[0][position]);
             return mContext.getResources().getDrawable(icon);
         }
 
         public long getItemId(int position) {
-            return mTheme[position];
+            return mTheme[0][position];
         }
 
         public boolean hasStableIds() {
@@ -170,14 +169,14 @@ public final class MessageUtils {
                 imageView = (ImageView) convertView;
             }
 
-            int icon = Emoji.getEmojiResource(mContext, mTheme[position]);
+            int icon = Emoji.getEmojiResource(mContext, mTheme[0][position]);
             imageView.setImageResource(icon);
             return imageView;
         }
     }
 
     public static Dialog smileysDialog(Context context, AdapterView.OnItemClickListener listener) {
-        ImageAdapter adapter = new ImageAdapter(context, Emoji.emojiTheme);
+        ImageAdapter adapter = new ImageAdapter(context, Emoji.emojiGroups);
 
         LayoutInflater inflater = LayoutInflater.from(context);
         GridView grid = (GridView) inflater.inflate(R.layout.grid_smileys, null);

@@ -673,10 +673,11 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     		                String.valueOf(value), 0, value.length);
 
     		            // set emoji image span
+    		            /*
     		            SmileyImageSpan span = new SmileyImageSpan(getActivity(),
     		                Emoji.getEmojiResource(getActivity(), (int) id), SmileyImageSpan.SIZE_EDITABLE);
-                        // resize image
     		            text.setSpan(span, startMin, startMin + value.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    		            */
     		            mSmileyDialog.dismiss();
     		        }
                 };

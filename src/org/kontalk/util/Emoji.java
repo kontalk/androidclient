@@ -21,53 +21,83 @@ package org.kontalk.util;
 import org.kontalk.R;
 
 import android.content.Context;
+import android.util.SparseIntArray;
 
 
 /** Emoji mappings. */
 public final class Emoji {
-    public static final int[] emojiTheme = new int[] {
-        // TEST a simple group
-        0x1f466,
-        0x1f603,
-    };
 
+    private static final int EMOJI_COUNT = 846;
+
+    /** Mappings from Unicode to drawables. */
+    public static final SparseIntArray emojiTheme = new SparseIntArray(EMOJI_COUNT);
+    static {
+        emojiTheme.put(0x1F603, R.drawable.emoji_smiley);
+        emojiTheme.put(0x1F60A, R.drawable.emoji_blush);
+        emojiTheme.put(0x1F466, R.drawable.emoji_boy);
+        emojiTheme.put(0x1F467, R.drawable.emoji_girl);
+        emojiTheme.put(0x1F48B, R.drawable.emoji_kiss);
+        emojiTheme.put(0x1F468, R.drawable.emoji_man);
+        emojiTheme.put(0x1F469, R.drawable.emoji_woman);
+        emojiTheme.put(0x1F455, R.drawable.emoji_shirt);
+        emojiTheme.put(0x1F45F, R.drawable.emoji_shoe);
+        emojiTheme.put(0x1F4F7, R.drawable.emoji_camera);
+        emojiTheme.put(0x260E, R.drawable.emoji_telephone);
+        emojiTheme.put(0x1F4F1, R.drawable.emoji_iphone);
+        emojiTheme.put(0x1F4E0, R.drawable.emoji_fax);
+        emojiTheme.put(0x1F4BB, R.drawable.emoji_computer);
+        emojiTheme.put(0x1F44A, R.drawable.emoji_punch);
+        emojiTheme.put(0x1F44D, R.drawable.emoji_thumbsup);
+        emojiTheme.put(0x261D, R.drawable.emoji_point_up);
+        emojiTheme.put(0x270A, R.drawable.emoji_fist);
+        emojiTheme.put(0x270C, R.drawable.emoji_v);
+        emojiTheme.put(0x270B, R.drawable.emoji_hand);
+        emojiTheme.put(0x1F3BF, R.drawable.emoji_ski);
+        emojiTheme.put(0x26F3, R.drawable.emoji_golf);
+        emojiTheme.put(0x1F3BE, R.drawable.emoji_tennis);
+        emojiTheme.put(0x26BE, R.drawable.emoji_baseball);
+        emojiTheme.put(0x1F3C4, R.drawable.emoji_surfer);
+        emojiTheme.put(0x26BD, R.drawable.emoji_soccer);
+        emojiTheme.put(0x1F41F, R.drawable.emoji_fish);
+        emojiTheme.put(0x1F434, R.drawable.emoji_horse);
+        emojiTheme.put(0x1F697, R.drawable.emoji_car);
+        emojiTheme.put(0x26F5, R.drawable.emoji_sailboat);
+        emojiTheme.put(0x2708, R.drawable.emoji_airplane);
+        emojiTheme.put(0x1F683, R.drawable.emoji_train);
+    }
+
+    /** Mappings from SoftBank encoding to Unicode. */
     private static final int[] softbankMap = new int[] {
-        /* \ue001 */ 0x1f466,
-
-        // TODO we are still far from this point :)
-        /* \ue057 * 0x1f604, */
-    };
-
-    private static final int[] oldSoftbankMap = new int[] {
-        /* \ue002 */ R.drawable.emoji_girl,
-        /* \ue003 */ R.drawable.emoji_kiss,
-        /* \ue004 */ R.drawable.emoji_man,
-        /* \ue005 */ R.drawable.emoji_woman,
-        /* \ue006 */ R.drawable.emoji_shirt,
-        /* \ue007 */ R.drawable.emoji_shoe,
-        /* \ue008 */ R.drawable.emoji_camera,
-        /* \ue009 */ R.drawable.emoji_telephone,
-        /* \ue00a */ R.drawable.emoji_iphone,
-        /* \ue00b */ R.drawable.emoji_fax,
-        /* \ue00c */ R.drawable.emoji_computer,
-        /* \ue00d */ R.drawable.emoji_punch,
-        /* \ue00e */ R.drawable.emoji_thumbsup,
-        /* \ue00f */ R.drawable.emoji_point_up,
-        /* \ue010 */ R.drawable.emoji_fist,
-        /* \ue011 */ R.drawable.emoji_v,
-        /* \ue012 */ R.drawable.emoji_hand,
-        /* \ue013 */ R.drawable.emoji_ski,
-        /* \ue014 */ R.drawable.emoji_golf,
-        /* \ue015 */ R.drawable.emoji_tennis,
-        /* \ue016 */ R.drawable.emoji_baseball,
-        /* \ue017 */ R.drawable.emoji_surfer,
-        /* \ue018 */ R.drawable.emoji_soccer,
-        /* \ue019 */ R.drawable.emoji_fish,
-        /* \ue01a */ R.drawable.emoji_horse,
-        /* \ue01b */ R.drawable.emoji_car,
-        /* \ue01c */ R.drawable.emoji_sailboat,
-        /* \ue01d */ R.drawable.emoji_airplane,
-        /* \ue01e */ R.drawable.emoji_train,
+        /* \ue001 */ 0x1F466,
+        /* \ue002 */ 0x1F467,
+        /* \ue003 */ 0x1F48B,
+        /* \ue004 */ 0x1F468,
+        /* \ue005 */ 0x1F469,
+        /* \ue006 */ 0x1F455,
+        /* \ue007 */ 0x1F45F,
+        /* \ue008 */ 0x1F4F7,
+        /* \ue009 */ 0x260E,
+        /* \ue00a */ 0x1F4F1,
+        /* \ue00b */ 0x1F4E0,
+        /* \ue00c */ 0x1F4BB,
+        /* \ue00d */ 0x1F44A,
+        /* \ue00e */ 0x1F44D,
+        /* \ue00f */ 0x261D,
+        /* \ue010 */ 0x270A,
+        /* \ue011 */ 0x270C,
+        /* \ue012 */ 0x270B,
+        /* \ue013 */ 0x1F3BF,
+        /* \ue014 */ 0x26F3,
+        /* \ue015 */ 0x1F3BE,
+        /* \ue016 */ 0x26BE,
+        /* \ue017 */ 0x1F3C4,
+        /* \ue018 */ 0x26BD,
+        /* \ue019 */ 0x1F41F,
+        /* \ue01a */ 0x1F434,
+        /* \ue01b */ 0x1F697,
+        /* \ue01c */ 0x26F5,
+        /* \ue01d */ 0x2708,
+        /* \ue01e */ 0x1F683,
         /* \ue01f */ R.drawable.emoji_train2,
         /* \ue020 */ R.drawable.emoji_question,
         /* \ue021 */ R.drawable.emoji_exclamation,
@@ -123,6 +153,46 @@ public final class Emoji {
         /* \ue053 */ R.drawable.emoji_mouse,
         /* \ue054 */ R.drawable.emoji_whale,
         /* \ue055 */ R.drawable.emoji_penguin,
+        /* \ue056 */ 0x1f60a,
+        /* \ue057 */ 0x1f604,
+    };
+
+    /** Emoji groups as displayed in UI. */
+    public static final int[][] emojiGroups = {
+        {
+            0x1F603,
+            0x1F60A,
+            0x1F466,
+            0x1F467,
+            0x1F48B,
+            0x1F468,
+            0x1F469,
+            0x1F455,
+            0x1F45F,
+            0x1F4F7,
+            0x260E,
+            0x1F4F1,
+            0x1F4E0,
+            0x1F4BB,
+            0x1F44A,
+            0x1F44D,
+            0x261D,
+            0x270A,
+            0x270C,
+            0x270B,
+            0x1F3BF,
+            0x26F3,
+            0x1F3BE,
+            0x26BE,
+            0x1F3C4,
+            0x26BD,
+            0x1F41F,
+            0x1F434,
+            0x1F697,
+            0x26F5,
+            0x2708,
+            0x1F683,
+        }
     };
 
     public static boolean isSoftBankEmoji(char c) {
@@ -130,8 +200,7 @@ public final class Emoji {
     }
 
     public static int getEmojiResource(Context context, int codePoint) {
-        return context.getResources().getIdentifier(String
-            .format("emoji_%x", codePoint), "drawable", context.getPackageName());
+        return emojiTheme.get(codePoint);
     }
 
     public static int getSoftbankEmoji(char c) {
