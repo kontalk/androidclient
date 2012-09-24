@@ -27,6 +27,7 @@ import android.util.SparseIntArray;
 /** Emoji mappings. */
 public final class Emoji {
 
+    // FIXME this will be adjusted when all emojis will be added
     private static final int EMOJI_COUNT = 846;
 
     /** Mappings from Unicode to drawables. */
@@ -68,13 +69,84 @@ public final class Emoji {
         emojiTheme.put(0x1F47F, R.drawable.emoji_imp);
         emojiTheme.put(0x1F47D, R.drawable.emoji_alien);
         emojiTheme.put(0x1F49B, R.drawable.emoji_yellow_heart);
-
-        // UNSORTED
+        emojiTheme.put(0x1F499, R.drawable.emoji_blue_heart);
+        emojiTheme.put(0x1F49C, R.drawable.emoji_purple_heart);
+        emojiTheme.put(0x1F497, R.drawable.emoji_heartpulse);
+        emojiTheme.put(0x1F49A, R.drawable.emoji_green_heart);
+        emojiTheme.put(0x2764, R.drawable.emoji_heart);
+        emojiTheme.put(0x1F494, R.drawable.emoji_broken_heart);
+        emojiTheme.put(0x1F493, R.drawable.emoji_heartbeat);
+        emojiTheme.put(0x1F498, R.drawable.emoji_cupid);
+        emojiTheme.put(0x2728, R.drawable.emoji_sparkles);
+        emojiTheme.put(0x1F31F, R.drawable.emoji_star2);
+        emojiTheme.put(0x1F4A2, R.drawable.emoji_anger);
+        emojiTheme.put(0x2755, R.drawable.emoji_grey_exclamation);
+        emojiTheme.put(0x2754, R.drawable.emoji_grey_question);
+        emojiTheme.put(0x1F4A4, R.drawable.emoji_zzz);
+        emojiTheme.put(0x1F4A8, R.drawable.emoji_dash);
+        emojiTheme.put(0x1F4A6, R.drawable.emoji_sweat_drops);
+        emojiTheme.put(0x1F3B6, R.drawable.emoji_notes);
+        emojiTheme.put(0x1F3B5, R.drawable.emoji_musical_note);
+        emojiTheme.put(0x1F525, R.drawable.emoji_fire);
+        emojiTheme.put(0x1F4A9, R.drawable.emoji_shit);
+        emojiTheme.put(0x1F44D, R.drawable.emoji_thumbsup);
+        emojiTheme.put(0x1F44E, R.drawable.emoji_thumbsdown);
+        emojiTheme.put(0x1F44C, R.drawable.emoji_ok_hand);
+        emojiTheme.put(0x1F44A, R.drawable.emoji_punch);
+        emojiTheme.put(0x270A, R.drawable.emoji_fist);
+        emojiTheme.put(0x270C, R.drawable.emoji_v);
+        emojiTheme.put(0x1F44B, R.drawable.emoji_wave);
+        emojiTheme.put(0x270B, R.drawable.emoji_hand);
+        emojiTheme.put(0x1F450, R.drawable.emoji_open_hands);
+        emojiTheme.put(0x1F446, R.drawable.emoji_point_up_2);
+        emojiTheme.put(0x1F447, R.drawable.emoji_point_down);
+        emojiTheme.put(0x1F449, R.drawable.emoji_point_right);
+        emojiTheme.put(0x1F448, R.drawable.emoji_point_left);
+        emojiTheme.put(0x1F64C, R.drawable.emoji_raised_hands);
+        emojiTheme.put(0x1F64F, R.drawable.emoji_pray);
+        emojiTheme.put(0x261D, R.drawable.emoji_point_up);
+        emojiTheme.put(0x1F44F, R.drawable.emoji_clap);
+        emojiTheme.put(0x1F4AA, R.drawable.emoji_muscle);
+        emojiTheme.put(0x1F6B6, R.drawable.emoji_walking);
+        emojiTheme.put(0x1F3C3, R.drawable.emoji_running);
+        emojiTheme.put(0x1F46B, R.drawable.emoji_couple);
+        emojiTheme.put(0x1F483, R.drawable.emoji_dancer);
+        emojiTheme.put(0x1F46F, R.drawable.emoji_dancers);
+        emojiTheme.put(0x1F646, R.drawable.emoji_ok_woman);
+        emojiTheme.put(0x1F645, R.drawable.emoji_no_good);
+        emojiTheme.put(0x1F481, R.drawable.emoji_information_desk_person);
+        emojiTheme.put(0x1F647, R.drawable.emoji_bow);
+        emojiTheme.put(0x1F48F, R.drawable.emoji_couplekiss);
+        emojiTheme.put(0x1F491, R.drawable.emoji_couple_with_heart);
+        emojiTheme.put(0x1F486, R.drawable.emoji_massage);
+        emojiTheme.put(0x1F487, R.drawable.emoji_haircut);
+        emojiTheme.put(0x1F485, R.drawable.emoji_nail_care);
         emojiTheme.put(0x1F466, R.drawable.emoji_boy);
         emojiTheme.put(0x1F467, R.drawable.emoji_girl);
-        emojiTheme.put(0x1F48B, R.drawable.emoji_kiss);
-        emojiTheme.put(0x1F468, R.drawable.emoji_man);
         emojiTheme.put(0x1F469, R.drawable.emoji_woman);
+        emojiTheme.put(0x1F468, R.drawable.emoji_man);
+        emojiTheme.put(0x1F476, R.drawable.emoji_baby);
+        emojiTheme.put(0x1F475, R.drawable.emoji_older_woman);
+        emojiTheme.put(0x1F474, R.drawable.emoji_older_man);
+        emojiTheme.put(0x1F471, R.drawable.emoji_person_with_blond_hair);
+        emojiTheme.put(0x1F472, R.drawable.emoji_man_with_gua_pi_mao);
+        emojiTheme.put(0x1F473, R.drawable.emoji_man_with_turban);
+        emojiTheme.put(0x1F477, R.drawable.emoji_construction_worker);
+        emojiTheme.put(0x1F46E, R.drawable.emoji_cop);
+        emojiTheme.put(0x1F47C, R.drawable.emoji_angel);
+        emojiTheme.put(0x1F478, R.drawable.emoji_princess);
+        emojiTheme.put(0x1F482, R.drawable.emoji_guardsman);
+        emojiTheme.put(0x1F480, R.drawable.emoji_skull);
+        emojiTheme.put(0x1F463, R.drawable.emoji_feet);
+        emojiTheme.put(0x1F48B, R.drawable.emoji_kiss);
+        emojiTheme.put(0x1F444, R.drawable.emoji_lips);
+        emojiTheme.put(0x1F442, R.drawable.emoji_ear);
+        emojiTheme.put(0x1F440, R.drawable.emoji_eyes);
+        emojiTheme.put(0x1F443, R.drawable.emoji_nose);
+
+        //emojiTheme.put(0x, R.drawable.emoji_);
+
+        // UNSORTED
         emojiTheme.put(0x1F455, R.drawable.emoji_shirt);
         emojiTheme.put(0x1F45F, R.drawable.emoji_shoe);
         emojiTheme.put(0x1F4F7, R.drawable.emoji_camera);
@@ -82,12 +154,6 @@ public final class Emoji {
         emojiTheme.put(0x1F4F1, R.drawable.emoji_iphone);
         emojiTheme.put(0x1F4E0, R.drawable.emoji_fax);
         emojiTheme.put(0x1F4BB, R.drawable.emoji_computer);
-        emojiTheme.put(0x1F44A, R.drawable.emoji_punch);
-        emojiTheme.put(0x1F44D, R.drawable.emoji_thumbsup);
-        emojiTheme.put(0x261D, R.drawable.emoji_point_up);
-        emojiTheme.put(0x270A, R.drawable.emoji_fist);
-        emojiTheme.put(0x270C, R.drawable.emoji_v);
-        emojiTheme.put(0x270B, R.drawable.emoji_hand);
         emojiTheme.put(0x1F3BF, R.drawable.emoji_ski);
         emojiTheme.put(0x26F3, R.drawable.emoji_golf);
         emojiTheme.put(0x1F3BE, R.drawable.emoji_tennis);
