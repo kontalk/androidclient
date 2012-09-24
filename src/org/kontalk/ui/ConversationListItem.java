@@ -133,6 +133,9 @@ public class ConversationListItem extends RelativeLayout {
         String source = draft != null ? draft : conv.getSubject();
         Spannable text = new SpannableString(source);
         MessageUtils.convertSmileys(context, text, SmileyImageSpan.SIZE_LISTITEM);
+        if (conv.getUnreadCount() > 0)
+            text.setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+
         mSubjectView.setText(text);
 
         // error indicator
