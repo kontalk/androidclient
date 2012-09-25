@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import org.kontalk.Kontalk;
 import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.Protocol.AuthenticateRequest;
 import org.kontalk.client.Protocol.RegistrationRequest;
@@ -56,7 +55,6 @@ public class ClientConnection {
         mAuthToken = token;
         AuthenticateRequest.Builder b = AuthenticateRequest.newBuilder();
         b.setToken(token);
-        b.setClientProtocol(Kontalk.CLIENT_PROTOCOL);
         send(b.build());
     }
 
