@@ -23,6 +23,7 @@ import java.io.InputStream;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
+import org.kontalk.client.Protocol.UserStatusFlags;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
 import org.kontalk.provider.MyMessages.Messages;
@@ -422,9 +423,14 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBoolean(context, "offline_mode", false);
     }
 
+    /** Combines various settings into a group of UserStatus flags. */
     public static int getUserFlags(Context context) {
-        // TODO
-        return 0;
+        int flags = 0;
+        if (getBoolean(context, "pref_hide_presence", false))
+            flags |= UserStatusFlags.FLAG_HIDE_PRESENCE_VALUE;
+
+        // TODO other flags
+        return flags;
     }
 
     public static void start(Activity context) {

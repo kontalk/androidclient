@@ -3,8 +3,8 @@ option java_package = "org.kontalk.client";
 option java_outer_classname = "Protocol";
 option optimize_for = LITE_RUNTIME;
 
-// internal user status
-enum UserFlags {
+// user status flags
+enum UserStatusFlags {
     FLAG_NONE = 0;
     FLAG_HIDE_PRESENCE = 1;
     FLAG_HIDE_TYPING = 2;

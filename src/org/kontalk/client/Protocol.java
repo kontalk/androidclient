@@ -8,7 +8,7 @@ public final class Protocol {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistryLite registry) {
   }
-  public enum UserFlags
+  public enum UserStatusFlags
       implements com.google.protobuf.Internal.EnumLite {
     FLAG_NONE(0, 0),
     FLAG_HIDE_PRESENCE(1, 1),
@@ -22,7 +22,7 @@ public final class Protocol {
     
     public final int getNumber() { return value; }
     
-    public static UserFlags valueOf(int value) {
+    public static UserStatusFlags valueOf(int value) {
       switch (value) {
         case 0: return FLAG_NONE;
         case 1: return FLAG_HIDE_PRESENCE;
@@ -31,25 +31,25 @@ public final class Protocol {
       }
     }
     
-    public static com.google.protobuf.Internal.EnumLiteMap<UserFlags>
+    public static com.google.protobuf.Internal.EnumLiteMap<UserStatusFlags>
         internalGetValueMap() {
       return internalValueMap;
     }
-    private static com.google.protobuf.Internal.EnumLiteMap<UserFlags>
+    private static com.google.protobuf.Internal.EnumLiteMap<UserStatusFlags>
         internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<UserFlags>() {
-            public UserFlags findValueByNumber(int number) {
-              return UserFlags.valueOf(number);
+          new com.google.protobuf.Internal.EnumLiteMap<UserStatusFlags>() {
+            public UserStatusFlags findValueByNumber(int number) {
+              return UserStatusFlags.valueOf(number);
             }
           };
     
     private final int value;
     
-    private UserFlags(int index, int value) {
+    private UserStatusFlags(int index, int value) {
       this.value = value;
     }
     
-    // @@protoc_insertion_point(enum_scope:UserFlags)
+    // @@protoc_insertion_point(enum_scope:UserStatusFlags)
   }
   
   public enum UserEventMask

@@ -441,6 +441,7 @@ public class MessageCenterService extends Service
 
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
+        // deprecated login method
         if (pack instanceof AuthenticateResponse) {
             AuthenticateResponse res = (AuthenticateResponse) pack;
             if (res.getValid()) {
@@ -452,6 +453,7 @@ public class MessageCenterService extends Service
             }
         }
 
+        // login
         else if (pack instanceof LoginResponse) {
             LoginResponse res = (LoginResponse) pack;
             int status = res.getStatus().getNumber();
@@ -465,6 +467,7 @@ public class MessageCenterService extends Service
             }
         }
 
+        // server info
         else if (pack instanceof ServerInfoResponse) {
             ServerInfoResponse res = (ServerInfoResponse) pack;
             for (int i = 0; i < res.getSupportsCount(); i++) {
@@ -477,11 +480,14 @@ public class MessageCenterService extends Service
             }
         }
 
+        // user info update
         else if (pack instanceof UserInfoUpdateResponse && txId.equals(mPushRequestTxId)) {
             UserInfoUpdateResponse res = (UserInfoUpdateResponse) pack;
             boolean success = (res.getStatus().getNumber() == UserInfoUpdateStatus.STATUS_SUCCESS_VALUE);
             GCMRegistrar.setRegisteredOnServer(this, (success && mPushRegistrationId != null));
         }
+
+        // unsolecited packet
         else {
             Log.v(TAG, "tx=" + txId + ", pack=" + pack);
         }

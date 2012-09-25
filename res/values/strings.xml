@@ -84,12 +84,16 @@
     <string name="pref_maintainance">Maintainance</string>
     <string name="contacts_list_title">Choose a contact</string>
     <string name="pref_messaging_settings">Messaging settings</string>
+    <string name="pref_privacy_settings">Privacy settings</string>
     <string name="pref_encrypt">Encrypt messages</string>
     <string name="pref_title_on_encrypt">All messages will be encrypted from now on</string>
     <string name="pref_title_off_encrypt">All messages will be sent in cleartext</string>
     <string name="pref_passphrase">Passphrase</string>
     <string name="pref_prompt_passphrase">Leave empty to use the recipient phone number.</string>
     <string name="pref_title_passphrase">Password will also be used for decryption when necessary</string>
+    <string name="pref_hide_presence">Hide presence</string>
+    <string name="pref_title_on_hide_presence">Users will not see you online</string>
+    <string name="pref_title_off_hide_presence">Users will see you online and when you last connected</string>
     <string name="contact_not_registered">Contact seems not to be registered on Kontalk.</string>
     <string name="error_store_outbox">Unable to store message to outbox.</string>
     <string name="decrypt_message">Decrypt message</string>

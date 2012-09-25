@@ -37,17 +37,25 @@
 
     <PreferenceCategory android:key="pref_messaging_settings"
         android:title="@string/pref_messaging_settings">
-        <CheckBoxPreference android:key="pref_encrypt"
-            android:summaryOff="@string/pref_title_off_encrypt"
-            android:summaryOn="@string/pref_title_on_encrypt"
-            android:title="@string/pref_encrypt"
-            android:defaultValue="true"/>
-        <EditTextPreference android:key="pref_passphrase"
-            android:title="@string/pref_passphrase"
-            android:dialogTitle="@string/pref_passphrase"
-            android:inputType="textPassword"
-            android:summary="@string/pref_title_passphrase"
-            android:dialogMessage="@string/pref_prompt_passphrase"/>
+        <PreferenceScreen android:title="@string/pref_privacy_settings"
+            android:persistent="false">
+            <CheckBoxPreference android:key="pref_encrypt"
+                android:summaryOff="@string/pref_title_off_encrypt"
+                android:summaryOn="@string/pref_title_on_encrypt"
+                android:title="@string/pref_encrypt"
+                android:defaultValue="true"/>
+            <EditTextPreference android:key="pref_passphrase"
+                android:title="@string/pref_passphrase"
+                android:dialogTitle="@string/pref_passphrase"
+                android:inputType="textPassword"
+                android:summary="@string/pref_title_passphrase"
+                android:dialogMessage="@string/pref_prompt_passphrase"/>
+            <CheckBoxPreference android:key="pref_hide_presence"
+                android:summaryOff="@string/pref_title_off_hide_presence"
+                android:summaryOn="@string/pref_title_on_hide_presence"
+                android:title="@string/pref_hide_presence"
+                android:defaultValue="false"/>
+        </PreferenceScreen>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_appearance_settings"
