@@ -39,6 +39,8 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
 import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.AuthenticateResponse;
+import org.kontalk.client.Protocol.LoginResponse;
+import org.kontalk.client.Protocol.LoginResponse.LoginStatus;
 import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.Protocol.UserInfoUpdateRequest;
 import org.kontalk.client.Protocol.UserInfoUpdateResponse;
@@ -282,8 +284,6 @@ public class MessageCenterService extends Service
                         client.setClientListener(this);
                         client.setDefaultTxListener(this);
                         client.setMessageListener(this);
-                        client.setHandler(AuthenticateResponse.class, new AuthenticateListener());
-                        client.setHandler(ServerInfoResponse.class, new ServerinfoListener());
 
                         mRequestWorker.start();
                         // rest will be done in connected()
@@ -441,21 +441,7 @@ public class MessageCenterService extends Service
 
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
-        if (txId.equals(mPushRequestTxId) && pack instanceof UserInfoUpdateResponse) {
-            UserInfoUpdateResponse res = (UserInfoUpdateResponse) pack;
-            boolean success = (res.getStatus().getNumber() == UserInfoUpdateStatus.STATUS_SUCCESS_VALUE);
-            GCMRegistrar.setRegisteredOnServer(this, (success && mPushRegistrationId != null));
-        }
-        else {
-            Log.v(TAG, "tx=" + txId + ", pack=" + pack);
-        }
-        return true;
-    }
-
-    private final class AuthenticateListener implements TxListener {
-        @Override
-        public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
-            // TODO
+        if (pack instanceof AuthenticateResponse) {
             AuthenticateResponse res = (AuthenticateResponse) pack;
             if (res.getValid()) {
                 authenticated();
@@ -464,14 +450,22 @@ public class MessageCenterService extends Service
                 // TODO WTF ??
                 Log.w(TAG, "authentication failed!");
             }
-
-            return true;
         }
-    }
 
-    private final class ServerinfoListener implements TxListener {
-        @Override
-        public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
+        else if (pack instanceof LoginResponse) {
+            LoginResponse res = (LoginResponse) pack;
+            int status = res.getStatus().getNumber();
+            switch (status) {
+                case LoginStatus.STATUS_LOGGED_IN_VALUE:
+                    authenticated();
+                    break;
+                default:
+                    // TODO WTF ??
+                    Log.w(TAG, "authentication failed! (" + status + ")");
+            }
+        }
+
+        else if (pack instanceof ServerInfoResponse) {
             ServerInfoResponse res = (ServerInfoResponse) pack;
             for (int i = 0; i < res.getSupportsCount(); i++) {
                 String data = res.getSupports(i);
@@ -481,9 +475,17 @@ public class MessageCenterService extends Service
                         gcmRegister();
                 }
             }
-
-            return true;
         }
+
+        else if (pack instanceof UserInfoUpdateResponse && txId.equals(mPushRequestTxId)) {
+            UserInfoUpdateResponse res = (UserInfoUpdateResponse) pack;
+            boolean success = (res.getStatus().getNumber() == UserInfoUpdateStatus.STATUS_SUCCESS_VALUE);
+            GCMRegistrar.setRegisteredOnServer(this, (success && mPushRegistrationId != null));
+        }
+        else {
+            Log.v(TAG, "tx=" + txId + ", pack=" + pack);
+        }
+        return true;
     }
 
     /** Called when authentication is successful. */

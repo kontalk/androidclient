@@ -18,6 +18,7 @@
     (actually we should save a sample on our own and load it instead)
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
 [x] manual validation without requesting SMS
+[x] new login procedure
 
 
 FUTURE:

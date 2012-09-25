@@ -6,8 +6,10 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.kontalk.Kontalk;
 import org.kontalk.client.BoxProtocol.BoxContainer;
 import org.kontalk.client.Protocol.AuthenticateRequest;
+import org.kontalk.client.Protocol.LoginRequest;
 import org.kontalk.client.Protocol.RegistrationRequest;
 import org.kontalk.client.Protocol.RegistrationResponse;
 import org.kontalk.client.Protocol.ServerInfoRequest;
@@ -49,6 +51,15 @@ public class ClientConnection {
             mSocket = new Socket();
             connect();
         }
+    }
+
+    public void login(String token, int flags) throws IOException {
+        mAuthToken = token;
+        LoginRequest.Builder b = LoginRequest.newBuilder();
+        b.setToken(token);
+        b.setClientProtocol(Kontalk.CLIENT_PROTOCOL);
+        b.setFlags(flags);
+        send(b.build());
     }
 
     public void authenticate(String token) throws IOException {

@@ -422,8 +422,14 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBoolean(context, "offline_mode", false);
     }
 
+    public static int getUserFlags(Context context) {
+        // TODO
+        return 0;
+    }
+
     public static void start(Activity context) {
         Intent intent = new Intent(context, MessagingPreferences.class);
         context.startActivityIfNeeded(intent, -1);
     }
+
 }

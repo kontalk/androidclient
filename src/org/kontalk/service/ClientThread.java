@@ -159,8 +159,9 @@ public class ClientThread extends Thread {
                     if (mClientListener != null)
                         mClientListener.connected(this);
 
-                    // authenticate
-                    mClient.authenticate(mAuthToken);
+                    // login
+                    int flags = MessagingPreferences.getUserFlags(mContext);
+                    mClient.login(mAuthToken, flags);
 
                     // now start the main loop
                     while (!mInterrupted) {

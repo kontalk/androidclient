@@ -11,13 +11,13 @@ public final class Protocol {
   public enum UserFlags
       implements com.google.protobuf.Internal.EnumLite {
     FLAG_NONE(0, 0),
-    FLAG_HIDDEN(1, 1),
-    FLAG_TYPING(2, 2),
+    FLAG_HIDE_PRESENCE(1, 1),
+    FLAG_HIDE_TYPING(2, 2),
     ;
     
     public static final int FLAG_NONE_VALUE = 0;
-    public static final int FLAG_HIDDEN_VALUE = 1;
-    public static final int FLAG_TYPING_VALUE = 2;
+    public static final int FLAG_HIDE_PRESENCE_VALUE = 1;
+    public static final int FLAG_HIDE_TYPING_VALUE = 2;
     
     
     public final int getNumber() { return value; }
@@ -25,8 +25,8 @@ public final class Protocol {
     public static UserFlags valueOf(int value) {
       switch (value) {
         case 0: return FLAG_NONE;
-        case 1: return FLAG_HIDDEN;
-        case 2: return FLAG_TYPING;
+        case 1: return FLAG_HIDE_PRESENCE;
+        case 2: return FLAG_HIDE_TYPING;
         default: return null;
       }
     }
@@ -1418,7 +1418,7 @@ public final class Protocol {
     // @@protoc_insertion_point(class_scope:ServerInfo)
   }
   
-  public interface LoginOrBuilder
+  public interface LoginRequestOrBuilder
       extends com.google.protobuf.MessageLiteOrBuilder {
     
     // required string token = 1;
@@ -1433,25 +1433,25 @@ public final class Protocol {
     boolean hasClientVersion();
     String getClientVersion();
     
-    // optional .UserFlags flags = 4;
+    // optional uint32 flags = 4;
     boolean hasFlags();
-    org.kontalk.client.Protocol.UserFlags getFlags();
+    int getFlags();
   }
-  public static final class Login extends
+  public static final class LoginRequest extends
       com.google.protobuf.GeneratedMessageLite
-      implements LoginOrBuilder {
-    // Use Login.newBuilder() to construct.
-    private Login(Builder builder) {
+      implements LoginRequestOrBuilder {
+    // Use LoginRequest.newBuilder() to construct.
+    private LoginRequest(Builder builder) {
       super(builder);
     }
-    private Login(boolean noInit) {}
+    private LoginRequest(boolean noInit) {}
     
-    private static final Login defaultInstance;
-    public static Login getDefaultInstance() {
+    private static final LoginRequest defaultInstance;
+    public static LoginRequest getDefaultInstance() {
       return defaultInstance;
     }
     
-    public Login getDefaultInstanceForType() {
+    public LoginRequest getDefaultInstanceForType() {
       return defaultInstance;
     }
     
@@ -1530,13 +1530,13 @@ public final class Protocol {
       }
     }
     
-    // optional .UserFlags flags = 4;
+    // optional uint32 flags = 4;
     public static final int FLAGS_FIELD_NUMBER = 4;
-    private org.kontalk.client.Protocol.UserFlags flags_;
+    private int flags_;
     public boolean hasFlags() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
-    public org.kontalk.client.Protocol.UserFlags getFlags() {
+    public int getFlags() {
       return flags_;
     }
     
@@ -1544,7 +1544,7 @@ public final class Protocol {
       token_ = "";
       clientProtocol_ = 0;
       clientVersion_ = "";
-      flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+      flags_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1572,7 +1572,7 @@ public final class Protocol {
         output.writeBytes(3, getClientVersionBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeEnum(4, flags_.getNumber());
+        output.writeUInt32(4, flags_);
       }
     }
     
@@ -1596,7 +1596,7 @@ public final class Protocol {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(4, flags_.getNumber());
+          .computeUInt32Size(4, flags_);
       }
       memoizedSerializedSize = size;
       return size;
@@ -1609,41 +1609,41 @@ public final class Protocol {
       return super.writeReplace();
     }
     
-    public static org.kontalk.client.Protocol.Login parseFrom(
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static org.kontalk.client.Protocol.Login parseFrom(
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static org.kontalk.client.Protocol.Login parseFrom(byte[] data)
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static org.kontalk.client.Protocol.Login parseFrom(
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static org.kontalk.client.Protocol.Login parseFrom(java.io.InputStream input)
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static org.kontalk.client.Protocol.Login parseFrom(
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
-    public static org.kontalk.client.Protocol.Login parseDelimitedFrom(java.io.InputStream input)
+    public static org.kontalk.client.Protocol.LoginRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       Builder builder = newBuilder();
       if (builder.mergeDelimitedFrom(input)) {
@@ -1652,7 +1652,7 @@ public final class Protocol {
         return null;
       }
     }
-    public static org.kontalk.client.Protocol.Login parseDelimitedFrom(
+    public static org.kontalk.client.Protocol.LoginRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1663,12 +1663,12 @@ public final class Protocol {
         return null;
       }
     }
-    public static org.kontalk.client.Protocol.Login parseFrom(
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static org.kontalk.client.Protocol.Login parseFrom(
+    public static org.kontalk.client.Protocol.LoginRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1678,16 +1678,16 @@ public final class Protocol {
     
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.kontalk.client.Protocol.Login prototype) {
+    public static Builder newBuilder(org.kontalk.client.Protocol.LoginRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageLite.Builder<
-          org.kontalk.client.Protocol.Login, Builder>
-        implements org.kontalk.client.Protocol.LoginOrBuilder {
-      // Construct using org.kontalk.client.Protocol.Login.newBuilder()
+          org.kontalk.client.Protocol.LoginRequest, Builder>
+        implements org.kontalk.client.Protocol.LoginRequestOrBuilder {
+      // Construct using org.kontalk.client.Protocol.LoginRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1706,7 +1706,7 @@ public final class Protocol {
         bitField0_ = (bitField0_ & ~0x00000002);
         clientVersion_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
-        flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+        flags_ = 0;
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
@@ -1715,21 +1715,21 @@ public final class Protocol {
         return create().mergeFrom(buildPartial());
       }
       
-      public org.kontalk.client.Protocol.Login getDefaultInstanceForType() {
-        return org.kontalk.client.Protocol.Login.getDefaultInstance();
+      public org.kontalk.client.Protocol.LoginRequest getDefaultInstanceForType() {
+        return org.kontalk.client.Protocol.LoginRequest.getDefaultInstance();
       }
       
-      public org.kontalk.client.Protocol.Login build() {
-        org.kontalk.client.Protocol.Login result = buildPartial();
+      public org.kontalk.client.Protocol.LoginRequest build() {
+        org.kontalk.client.Protocol.LoginRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
       
-      private org.kontalk.client.Protocol.Login buildParsed()
+      private org.kontalk.client.Protocol.LoginRequest buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
-        org.kontalk.client.Protocol.Login result = buildPartial();
+        org.kontalk.client.Protocol.LoginRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(
             result).asInvalidProtocolBufferException();
@@ -1737,8 +1737,8 @@ public final class Protocol {
         return result;
       }
       
-      public org.kontalk.client.Protocol.Login buildPartial() {
-        org.kontalk.client.Protocol.Login result = new org.kontalk.client.Protocol.Login(this);
+      public org.kontalk.client.Protocol.LoginRequest buildPartial() {
+        org.kontalk.client.Protocol.LoginRequest result = new org.kontalk.client.Protocol.LoginRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1761,8 +1761,8 @@ public final class Protocol {
         return result;
       }
       
-      public Builder mergeFrom(org.kontalk.client.Protocol.Login other) {
-        if (other == org.kontalk.client.Protocol.Login.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.kontalk.client.Protocol.LoginRequest other) {
+        if (other == org.kontalk.client.Protocol.LoginRequest.getDefaultInstance()) return this;
         if (other.hasToken()) {
           setToken(other.getToken());
         }
@@ -1819,12 +1819,8 @@ public final class Protocol {
               break;
             }
             case 32: {
-              int rawValue = input.readEnum();
-              org.kontalk.client.Protocol.UserFlags value = org.kontalk.client.Protocol.UserFlags.valueOf(rawValue);
-              if (value != null) {
-                bitField0_ |= 0x00000008;
-                flags_ = value;
-              }
+              bitField0_ |= 0x00000008;
+              flags_ = input.readUInt32();
               break;
             }
           }
@@ -1926,18 +1922,15 @@ public final class Protocol {
         
       }
       
-      // optional .UserFlags flags = 4;
-      private org.kontalk.client.Protocol.UserFlags flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+      // optional uint32 flags = 4;
+      private int flags_ ;
       public boolean hasFlags() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
-      public org.kontalk.client.Protocol.UserFlags getFlags() {
+      public int getFlags() {
         return flags_;
       }
-      public Builder setFlags(org.kontalk.client.Protocol.UserFlags value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
+      public Builder setFlags(int value) {
         bitField0_ |= 0x00000008;
         flags_ = value;
         
@@ -1945,20 +1938,20 @@ public final class Protocol {
       }
       public Builder clearFlags() {
         bitField0_ = (bitField0_ & ~0x00000008);
-        flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+        flags_ = 0;
         
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:Login)
+      // @@protoc_insertion_point(builder_scope:LoginRequest)
     }
     
     static {
-      defaultInstance = new Login(true);
+      defaultInstance = new LoginRequest(true);
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:Login)
+    // @@protoc_insertion_point(class_scope:LoginRequest)
   }
   
   public interface LoginResponseOrBuilder
@@ -1988,23 +1981,26 @@ public final class Protocol {
     
     public enum LoginStatus
         implements com.google.protobuf.Internal.EnumLite {
-      STATUS_SUCCESS(0, 0),
-      STATUS_PROTOCOL_MISMATCH(1, 1),
-      STATUS_AUTH_FAILED(2, 2),
+      STATUS_LOGGED_IN(0, 0),
+      STATUS_ERROR(1, 1),
+      STATUS_PROTOCOL_MISMATCH(2, 2),
+      STATUS_AUTH_FAILED(3, 3),
       ;
       
-      public static final int STATUS_SUCCESS_VALUE = 0;
-      public static final int STATUS_PROTOCOL_MISMATCH_VALUE = 1;
-      public static final int STATUS_AUTH_FAILED_VALUE = 2;
+      public static final int STATUS_LOGGED_IN_VALUE = 0;
+      public static final int STATUS_ERROR_VALUE = 1;
+      public static final int STATUS_PROTOCOL_MISMATCH_VALUE = 2;
+      public static final int STATUS_AUTH_FAILED_VALUE = 3;
       
       
       public final int getNumber() { return value; }
       
       public static LoginStatus valueOf(int value) {
         switch (value) {
-          case 0: return STATUS_SUCCESS;
-          case 1: return STATUS_PROTOCOL_MISMATCH;
-          case 2: return STATUS_AUTH_FAILED;
+          case 0: return STATUS_LOGGED_IN;
+          case 1: return STATUS_ERROR;
+          case 2: return STATUS_PROTOCOL_MISMATCH;
+          case 3: return STATUS_AUTH_FAILED;
           default: return null;
         }
       }
@@ -2042,7 +2038,7 @@ public final class Protocol {
     }
     
     private void initFields() {
-      status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_SUCCESS;
+      status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_LOGGED_IN;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -2177,7 +2173,7 @@ public final class Protocol {
       
       public Builder clear() {
         super.clear();
-        status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_SUCCESS;
+        status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_LOGGED_IN;
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -2269,7 +2265,7 @@ public final class Protocol {
       private int bitField0_;
       
       // required .LoginResponse.LoginStatus status = 1;
-      private org.kontalk.client.Protocol.LoginResponse.LoginStatus status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_SUCCESS;
+      private org.kontalk.client.Protocol.LoginResponse.LoginStatus status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_LOGGED_IN;
       public boolean hasStatus() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
@@ -2287,7 +2283,7 @@ public final class Protocol {
       }
       public Builder clearStatus() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_SUCCESS;
+        status_ = org.kontalk.client.Protocol.LoginResponse.LoginStatus.STATUS_LOGGED_IN;
         
         return this;
       }
@@ -11717,9 +11713,9 @@ public final class Protocol {
     boolean hasGoogleRegistrationId();
     String getGoogleRegistrationId();
     
-    // optional .UserFlags flags = 3;
+    // optional uint32 flags = 3;
     boolean hasFlags();
-    org.kontalk.client.Protocol.UserFlags getFlags();
+    int getFlags();
   }
   public static final class UserInfoUpdateRequest extends
       com.google.protobuf.GeneratedMessageLite
@@ -11804,20 +11800,20 @@ public final class Protocol {
       }
     }
     
-    // optional .UserFlags flags = 3;
+    // optional uint32 flags = 3;
     public static final int FLAGS_FIELD_NUMBER = 3;
-    private org.kontalk.client.Protocol.UserFlags flags_;
+    private int flags_;
     public boolean hasFlags() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
-    public org.kontalk.client.Protocol.UserFlags getFlags() {
+    public int getFlags() {
       return flags_;
     }
     
     private void initFields() {
       statusMessage_ = "";
       googleRegistrationId_ = "";
-      flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+      flags_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -11838,7 +11834,7 @@ public final class Protocol {
         output.writeBytes(2, getGoogleRegistrationIdBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeEnum(3, flags_.getNumber());
+        output.writeUInt32(3, flags_);
       }
     }
     
@@ -11858,7 +11854,7 @@ public final class Protocol {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(3, flags_.getNumber());
+          .computeUInt32Size(3, flags_);
       }
       memoizedSerializedSize = size;
       return size;
@@ -11966,7 +11962,7 @@ public final class Protocol {
         bitField0_ = (bitField0_ & ~0x00000001);
         googleRegistrationId_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+        flags_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
@@ -12063,12 +12059,8 @@ public final class Protocol {
               break;
             }
             case 24: {
-              int rawValue = input.readEnum();
-              org.kontalk.client.Protocol.UserFlags value = org.kontalk.client.Protocol.UserFlags.valueOf(rawValue);
-              if (value != null) {
-                bitField0_ |= 0x00000004;
-                flags_ = value;
-              }
+              bitField0_ |= 0x00000004;
+              flags_ = input.readUInt32();
               break;
             }
           }
@@ -12149,18 +12141,15 @@ public final class Protocol {
         
       }
       
-      // optional .UserFlags flags = 3;
-      private org.kontalk.client.Protocol.UserFlags flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+      // optional uint32 flags = 3;
+      private int flags_ ;
       public boolean hasFlags() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
-      public org.kontalk.client.Protocol.UserFlags getFlags() {
+      public int getFlags() {
         return flags_;
       }
-      public Builder setFlags(org.kontalk.client.Protocol.UserFlags value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
+      public Builder setFlags(int value) {
         bitField0_ |= 0x00000004;
         flags_ = value;
         
@@ -12168,7 +12157,7 @@ public final class Protocol {
       }
       public Builder clearFlags() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        flags_ = org.kontalk.client.Protocol.UserFlags.FLAG_NONE;
+        flags_ = 0;
         
         return this;
       }

@@ -6,8 +6,8 @@ option optimize_for = LITE_RUNTIME;
 // internal user status
 enum UserFlags {
     FLAG_NONE = 0;
-    FLAG_HIDDEN = 1;
-    FLAG_TYPING = 2;
+    FLAG_HIDE_PRESENCE = 1;
+    FLAG_HIDE_TYPING = 2;
 }
 
 // old handshake login protocol
@@ -35,19 +35,20 @@ message ServerInfo {
 }
 
 // login request - sent by client on connection
-message Login {
+message LoginRequest {
     required string token = 1;
     optional uint32 client_protocol = 2;
     optional string client_version = 3;
-    optional UserFlags flags = 4;
+    optional uint32 flags = 4;
 }
 
 // login response - in reply of Login
 message LoginResponse {
     enum LoginStatus {
-        STATUS_SUCCESS = 0;
-        STATUS_PROTOCOL_MISMATCH = 1;
-        STATUS_AUTH_FAILED = 2;
+        STATUS_LOGGED_IN = 0;
+        STATUS_ERROR = 1;
+        STATUS_PROTOCOL_MISMATCH = 2;
+        STATUS_AUTH_FAILED = 3;
     }
     required LoginStatus status = 1;
 }
@@ -224,7 +225,7 @@ message ServerInfoResponse {
 message UserInfoUpdateRequest {
     optional string status_message = 1;
     optional string google_registration_id = 2;
-    optional UserFlags flags = 3;
+    optional uint32 flags = 3;
 }
 
 // user update response
