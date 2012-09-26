@@ -494,8 +494,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // TODO i18n
-                Toast.makeText(NumberValidation.this, "Selected server does not support registration. Please configure another one in Settings screen.", Toast.LENGTH_LONG).show();
+                Toast.makeText(NumberValidation.this, R.string.err_validation_server_not_supported, Toast.LENGTH_LONG).show();
                 abort();
             }
         });

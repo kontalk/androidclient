@@ -19,10 +19,10 @@
 [x] multiserver support
     [x] check if server supports auth token generation
 [x] offline mode
+[x] privacy settings
 
 
 FUTURE:
-[ ] privacy settings
 [ ] quick voice messages
 [ ] check if errors are handled correctly, especially if server behaves bad
 [ ] quick reply

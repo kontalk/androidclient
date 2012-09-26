@@ -176,8 +176,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     public void onServerCheckFailed(NumberValidator v) {
         runOnUiThread(new Runnable() {
             public void run() {
-                // TODO i18n
-                Toast.makeText(CodeValidation.this, "Selected server does not support registration. Please configure another one in Settings screen.", Toast.LENGTH_LONG).show();
+                Toast.makeText(CodeValidation.this, R.string.err_validation_server_not_supported, Toast.LENGTH_LONG).show();
                 abort();
             }
         });
