@@ -1,14 +1,11 @@
+[ ] smileys/emoticons support
 [ ] status: use activity instead of dialog
     [ ] invert order of ok/cancel buttons for API >= 14
     [ ] status should be encrypted with own number so only users who know us can view it
-[ ] smileys/emoticons support
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
-[ ] paginated message list view
-[ ] offline mode
+[ ] paginated message list view (load only as needed)
 [ ] tablet: refactor message list view
-[ ] multiserver support
-    [x] check if server supports auth token generation
 [ ] handle external storage presence
 [ ] still problems with uploads: during a gsm call, upload is somewhat "paused"
     and never resumed, unless message center is restarted, triggering a new upload
@@ -19,6 +16,9 @@
 [ ] put encryption icon above message status icon (or use an emblem onto status icon)
 [x] manual validation without requesting SMS
 [x] new login procedure
+[x] multiserver support
+    [x] check if server supports auth token generation
+[x] offline mode
 
 
 FUTURE:

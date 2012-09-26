@@ -170,6 +170,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private UserPresenceBroadcastReceiver mPresenceReceiver;
 
     private Dialog mSmileyDialog;
+    private boolean mOfflineModeWarned;
 
 	/** Returns a new fragment instance from a picked contact. */
 	public static ComposeMessageFragment fromUserId(Context context, String userId) {
@@ -415,6 +416,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		try {
 		    // TODO convert to thread (?)
 
+		    offlineModeWarning();
+
 			String msgId = "draft" + (new Random().nextInt());
 			String content = AbstractMessage.getSampleTextContent(klass, mime);
 
@@ -596,6 +599,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			 * TODO show an animation to warn the user that the message
 			 * is being sent (actually stored).
 			 */
+
+		    offlineModeWarning();
 
 			// start thread
 			new TextMessageThread(text).start();
@@ -1859,6 +1864,14 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             ConversationList activity = (ConversationList) getActivity();
             activity.getListFragment().endConversation(ComposeMessageFragment.this);
         }
+	}
+
+	private void offlineModeWarning() {
+	    if (MessagingPreferences.getOfflineMode(getActivity()) && !mOfflineModeWarned) {
+	        mOfflineModeWarned = true;
+	        Toast.makeText(getActivity(), R.string.warning_offline_mode,
+	            Toast.LENGTH_LONG).show();
+	    }
 	}
 
 }

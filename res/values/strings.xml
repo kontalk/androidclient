@@ -28,6 +28,8 @@
     <string name="menu_delete_all">Delete threads</string>
     <string name="menu_search">Search</string>
     <string name="menu_settings">Settings</string>
+    <string name="menu_offline">Go offline</string>
+    <string name="menu_online">Go online</string>
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
@@ -208,5 +210,12 @@
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
 
     <string name="status_activity_title">Status message</string>
+    
+    <string name="title_offline_mode_warning">Offline mode</string>
+    <string name="message_offline_mode_warning">In offline mode Kontalk will not connect to the server until you go back to online mode. You will not be able to send or receive messages and users will see you as offline.</string>
+
+    <string name="warning_offline_mode">Offline mode is active. Messages will be sent when back online.</string>
+    <string name="going_offline">Going offline.</string>
+    <string name="going_online">Going online.</string>
 
 </resources>

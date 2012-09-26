@@ -28,6 +28,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
@@ -74,6 +75,8 @@ public class ConversationListFragment extends SherlockListFragment {
     /** Search menu action bar item. */
     private MenuItem mSearchMenuAction;
     private MenuItem mDeleteAllMenu;
+    /** Offline mode menu item. */
+    private MenuItem mOfflineMenu;
 
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
         new ConversationListAdapter.OnContentChangedListener() {
@@ -156,6 +159,9 @@ public class ConversationListFragment extends SherlockListFragment {
         // search (might not exist)
         mSearchMenu = menu.findItem(R.id.menu_search);
         mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
+
+        // offline mode
+        mOfflineMenu = menu.findItem(R.id.menu_offline);
     }
 
     @Override
@@ -171,7 +177,24 @@ public class ConversationListFragment extends SherlockListFragment {
                 return true;
 
             case R.id.menu_offline:
-                MessagingPreferences.switchOfflineMode(getActivity());
+                final Context ctx = getActivity();
+                final boolean currentMode = MessagingPreferences.getOfflineMode(ctx);
+                if (!currentMode && !MessagingPreferences.getOfflineModeUsed(ctx)) {
+                    // show offline mode warning
+                    new AlertDialog.Builder(ctx)
+                        .setTitle(R.string.title_offline_mode_warning)
+                        .setMessage(R.string.message_offline_mode_warning)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                switchOfflineMode();
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+                }
+                else {
+                    switchOfflineMode();
+                }
                 return true;
 
             case R.id.menu_search:
@@ -309,6 +332,14 @@ public class ConversationListFragment extends SherlockListFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // update offline mode
+        updateOffline();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         mListAdapter.changeCursor(null);
@@ -411,7 +442,8 @@ public class ConversationListFragment extends SherlockListFragment {
                 isRemoving();
     }
 
-    private void updateUI() {
+    /* Updates various UI elements after a database change. */
+    private void onDatabaseChanged() {
         boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
         if (mSearchMenu != null) {
             mSearchMenu.setEnabled(visible);
@@ -421,6 +453,26 @@ public class ConversationListFragment extends SherlockListFragment {
         mSearchMenuAction.setVisible(visible);
         mDeleteAllMenu.setEnabled(visible);
         mDeleteAllMenu.setVisible(visible);
+    }
+
+    /** Updates offline mode menu. */
+    private void updateOffline() {
+        boolean offlineMode = MessagingPreferences.getOfflineMode(getActivity());
+        int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
+            android.R.drawable.ic_menu_close_clear_cancel;
+        int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
+        mOfflineMenu.setIcon(icon);
+        mOfflineMenu.setTitle(title);
+    }
+
+    private void switchOfflineMode() {
+        Context ctx = getActivity();
+        boolean currentMode = MessagingPreferences.getOfflineMode(ctx);
+        MessagingPreferences.switchOfflineMode(ctx);
+        updateOffline();
+        // notify the user about the change
+        int text = (currentMode) ? R.string.going_online : R.string.going_offline;
+        Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -445,7 +497,7 @@ public class ConversationListFragment extends SherlockListFragment {
             switch (token) {
                 case THREAD_LIST_QUERY_TOKEN:
                     mListAdapter.changeCursor(cursor);
-                    updateUI();
+                    onDatabaseChanged();
                     break;
 
                 default:
