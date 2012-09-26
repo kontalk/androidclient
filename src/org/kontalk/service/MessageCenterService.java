@@ -263,7 +263,7 @@ public class MessageCenterService extends Service
                     }
                     else if (ACTION_UPDATE_STATUS.equals(action)) {
                         if (mRequestWorker != null && mRequestWorker.getClient() != null && mRequestWorker.getClient().isConnected())
-                            updateStatusMessage();
+                            updateStatus();
                     }
 
                     // check changing accounts
@@ -386,7 +386,8 @@ public class MessageCenterService extends Service
         c.close();
     }
 
-    private void updateStatusMessage() {
+    /** Sends a {@link UserInfoUpdateRequest} to update our status. */
+    private void updateStatus() {
         pushRequest(new RequestJob() {
             @Override
             public String execute(ClientThread client, RequestListener listener, Context context)
@@ -394,6 +395,7 @@ public class MessageCenterService extends Service
                 String status = MessagingPreferences.getStatusMessage(MessageCenterService.this);
                 UserInfoUpdateRequest.Builder b = UserInfoUpdateRequest.newBuilder();
                 b.setStatusMessage(status != null ? status : "");
+                b.setFlags(MessagingPreferences.getUserFlags(MessageCenterService.this));
                 return client.getConnection().send(b.build());
             }
         });
@@ -433,10 +435,6 @@ public class MessageCenterService extends Service
     public synchronized void connected(ClientThread client) {
         // reset received messages accumulator
         mReceivedJob = null;
-        // request serverinfo
-        requestServerinfo();
-        // update status message
-        updateStatusMessage();
     }
 
     @Override
@@ -496,8 +494,10 @@ public class MessageCenterService extends Service
 
     /** Called when authentication is successful. */
     private void authenticated() {
+        // request serverinfo
+        requestServerinfo();
         // update status message
-        updateStatusMessage();
+        updateStatus();
         // subscribe to presence notifications
         restorePresenceSubscriptions();
         // lookup for messages with error status and try to re-send them

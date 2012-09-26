@@ -37,6 +37,8 @@ public class Kontalk extends Application {
     /** Supported client protocol revision. */
     public static final int CLIENT_PROTOCOL = 4;
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefChangedListener;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -44,18 +46,24 @@ public class Kontalk extends Application {
         // update notifications from locally unread messages
         MessagingNotification.updateMessagesNotification(this, false);
 
-        // manual server address: restart message center
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+        mPrefChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                // manual server address
                 if ("pref_network_uri".equals(key)) {
                     // just restart the message center for now
                     android.util.Log.w(TAG, "network address changed");
                     MessageCenterService.restartMessageCenter(Kontalk.this);
                 }
+
+                // hide presence flag
+                else if ("pref_hide_presence".equals(key)) {
+                    MessageCenterService.updateStatus(Kontalk.this);
+                }
             }
-        });
+        };
+        prefs.registerOnSharedPreferenceChangeListener(mPrefChangedListener);
 
         // TODO listen for changes to phone numbers
     }
