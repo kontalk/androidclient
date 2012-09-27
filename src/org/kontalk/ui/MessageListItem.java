@@ -18,7 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +44,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -60,9 +63,9 @@ public class MessageListItem extends RelativeLayout {
     private TextView mTextView;
     private ImageView mStatusIcon;
     private ImageView mLockView;
-    private TextView mDateViewIncoming;
-    private TextView mDateViewOutgoing;
+    private TextView mDateView;
     private View mBalloonView;
+    private LinearLayout mParentView;
 
     private ImageView mAvatarIncoming;
     private ImageView mAvatarOutgoing;
@@ -105,10 +108,10 @@ public class MessageListItem extends RelativeLayout {
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
         mLockView = (ImageView) findViewById(R.id.lock_icon);
         mBalloonView = findViewById(R.id.balloon_view);
-        mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
-        mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
+        mDateView = (TextView) findViewById(R.id.date_view);
         mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
         mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
+        mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
 
         if (isInEditMode()) {
             mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
@@ -140,10 +143,9 @@ public class MessageListItem extends RelativeLayout {
             setGravity(Gravity.RIGHT);
             if (mBalloonView != null)
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-            if (mDateViewIncoming != null) {
-                mDateViewIncoming.setVisibility(GONE);
-                mDateViewOutgoing.setVisibility(VISIBLE);
-                mDateViewOutgoing.setText("28 Nov");
+            if (mDateView != null) {
+                mDateView.setVisibility(VISIBLE);
+                mDateView.setText("28 Nov");
             }
             if (mAvatarIncoming != null) {
                 mAvatarIncoming.setVisibility(GONE);
@@ -180,9 +182,8 @@ public class MessageListItem extends RelativeLayout {
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
 
             setGravity(Gravity.LEFT);
+            mParentView.setGravity(Gravity.LEFT);
             //setBackgroundResource(R.drawable.light_blue_background);
-            mDateViewIncoming.setVisibility(VISIBLE);
-            mDateViewOutgoing.setVisibility(GONE);
 
             if (mAvatarIncoming != null) {
                 mAvatarOutgoing.setVisibility(GONE);
@@ -197,9 +198,8 @@ public class MessageListItem extends RelativeLayout {
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
 
             setGravity(Gravity.RIGHT);
+            mParentView.setGravity(Gravity.RIGHT);
             //setBackgroundResource(R.drawable.white_background);
-            mDateViewIncoming.setVisibility(GONE);
-            mDateViewOutgoing.setVisibility(VISIBLE);
 
             if (mAvatarOutgoing != null) {
                 mAvatarIncoming.setVisibility(GONE);
@@ -292,12 +292,24 @@ public class MessageListItem extends RelativeLayout {
             buf = new SpannableStringBuilder();
         }
 
-        final TextView dateView = (mMessage.getSender() != null) ?
-                mDateViewIncoming : mDateViewOutgoing;
-
         Date serverTime = mMessage.getServerTimestamp();
         long ts = serverTime != null ? serverTime.getTime() : mMessage.getTimestamp();
-        dateView.setText(MessageUtils.formatTimeStampString(getContext(), ts));
+
+        // if we are in the same day, just prime time, else print date & time
+        boolean fullFormat;
+        Calendar thenCal = new GregorianCalendar();
+        thenCal.setTimeInMillis(ts);
+        Calendar nowCal = new GregorianCalendar();
+        if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
+            && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
+            && thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)) {
+            fullFormat = false;
+        }
+        else {
+            fullFormat = true;
+        }
+
+        mDateView.setText(MessageUtils.formatTimeStampString(getContext(), ts, fullFormat));
 
         if (highlight != null) {
             Matcher m = highlight.matcher(buf.toString());

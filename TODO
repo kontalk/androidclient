@@ -4,7 +4,6 @@
     [ ] status should be encrypted with own number so only users who know us can view it
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
-[ ] MessageListItem: layout issues with date rect
 [ ] paginated message list view (load only as needed)
 [ ] tablet: refactor message list view
 [ ] handle external storage presence
@@ -22,6 +21,7 @@
 [x] offline mode
 [x] privacy settings
 [x] sync: contacts from other sources (eg SIM)
+[x] MessageListItem: layout issues with date rect
 
 
 FUTURE:

@@ -23,7 +23,7 @@
     android:paddingBottom="2dip"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="vertical">
 
     <LinearLayout android:id="@+id/message_view_parent"
         android:paddingLeft="5dip"
@@ -31,21 +31,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="horizontal">
-
-        <!-- FIXME maybe this should be "commonized" or moved? -->
-        <TextView android:id="@+id/date_view_outgoing"
-            android:paddingTop="4dip"
-            android:paddingBottom="4dip"
-            android:paddingLeft="5dip"
-            android:paddingRight="5dip"
-            android:layout_marginRight="6dip"
-            android:layout_marginBottom="2dip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:visibility="gone"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:background="@drawable/date_balloon"/>
 
         <ImageView android:id="@+id/avatar_incoming"
             android:layout_gravity="center_vertical"
@@ -90,7 +75,7 @@
                 android:linksClickable="true"/>
 
         </LinearLayout>
-        
+
         <ImageView android:id="@+id/avatar_outgoing"
             android:layout_gravity="center_vertical"
             android:layout_height="48dp"
@@ -99,19 +84,17 @@
             android:scaleType="fitCenter"
             android:visibility="gone"/>
 
-        <TextView android:id="@+id/date_view_incoming"
-            android:paddingTop="4dip"
-            android:paddingBottom="4dip"
-            android:paddingLeft="5dip"
-            android:paddingRight="5dip"
-            android:layout_marginLeft="6dip"
-            android:layout_marginBottom="2dip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:visibility="gone"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:background="@drawable/date_balloon"/>
-
     </LinearLayout>
+
+    <!-- FIXME right gravity doesn't work -->
+    <TextView android:id="@+id/date_view"
+        android:paddingTop="4dip"
+        android:paddingLeft="5dip"
+        android:paddingRight="5dip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:layout_below="@id/message_view_parent"
+        android:textAppearance="?android:attr/textAppearanceSmall"/>
+
 </org.kontalk.ui.MessageListItem>
