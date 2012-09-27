@@ -391,12 +391,12 @@ public class UsersProvider extends ContentProvider {
                 phones.close();
 
                 // query for SIM contacts
+                // column selection doesn't work because of a bug in Android
                 phones = cr.query(Uri.parse("content://icc/adn/"),
-                    new String[] { "number", "name", BaseColumns._ID },
-                    null, null, null);
+                    null, null, null, null);
 
                 while (phones.moveToNext()) {
-                    String number = phones.getString(0);
+                    String number = phones.getString(phones.getColumnIndex("number"));
 
                     // a phone number with less than 4 digits???
                     if (number.length() < 4)
@@ -415,14 +415,13 @@ public class UsersProvider extends ContentProvider {
 
                     try {
                         String hash = MessageUtils.sha1(number);
-                        Log.v(TAG, "found SIM contact ["+phones.getLong(2)+"] \""+phones.getString(1)+"\" number " + phones.getString(0));
 
                         stm.clearBindings();
                         stm.bindString(1, hash);
                         stm.bindString(2, number);
-                        stm.bindString(3, phones.getString(1));
-                        stm.bindString(4, null);
-                        stm.bindLong(5, phones.getLong(2));
+                        stm.bindString(3, phones.getString(phones.getColumnIndex("name")));
+                        stm.bindNull(4);
+                        stm.bindLong(5, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
                         stm.executeInsert();
                         count++;
                     }
