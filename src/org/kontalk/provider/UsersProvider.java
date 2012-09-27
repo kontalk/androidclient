@@ -42,6 +42,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 
@@ -341,12 +342,14 @@ public class UsersProvider extends ContentProvider {
             SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
                 " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
 
-            // query for phone numbers
-            final Cursor phones = cr.query(Phone.CONTENT_URI,
-                new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
-                null, null, null);
+            Cursor phones = null;
 
             try {
+                // query for phone numbers
+                phones = cr.query(Phone.CONTENT_URI,
+                    new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
+                    null, null, null);
+
                 while (phones.moveToNext()) {
                     String number = phones.getString(0);
 
@@ -385,11 +388,58 @@ public class UsersProvider extends ContentProvider {
                     }
                 }
 
+                phones.close();
+
+                // query for SIM contacts
+                phones = cr.query(Uri.parse("content://icc/adn/"),
+                    new String[] { "number", "name", BaseColumns._ID },
+                    null, null, null);
+
+                while (phones.moveToNext()) {
+                    String number = phones.getString(0);
+
+                    // a phone number with less than 4 digits???
+                    if (number.length() < 4)
+                        continue;
+
+                    // fix number
+                    try {
+                        number = NumberValidator.fixNumber(context, number,
+                                Authenticator.getDefaultAccountName(context), null);
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+                        // skip number
+                        continue;
+                    }
+
+                    try {
+                        String hash = MessageUtils.sha1(number);
+                        Log.v(TAG, "found SIM contact ["+phones.getLong(2)+"] \""+phones.getString(1)+"\" number " + phones.getString(0));
+
+                        stm.clearBindings();
+                        stm.bindString(1, hash);
+                        stm.bindString(2, number);
+                        stm.bindString(3, phones.getString(1));
+                        stm.bindString(4, null);
+                        stm.bindLong(5, phones.getLong(2));
+                        stm.executeInsert();
+                        count++;
+                    }
+                    catch (NoSuchAlgorithmException e) {
+                        Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
+                    }
+                    catch (SQLiteConstraintException sqe) {
+                        // skip duplicate number
+                    }
+                }
+
                 success = setTransactionSuccessful(db);
             }
             finally {
                 endTransaction(db, success);
-                phones.close();
+                if (phones != null)
+                    phones.close();
                 stm.close();
             }
             return count;

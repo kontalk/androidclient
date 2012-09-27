@@ -126,8 +126,12 @@ public class Contact {
 
     /** Returns the {@link Contacts} {@link Uri} identified by this object. */
     public Uri getUri() {
-        if (mContactUri == null)
-            mContactUri = ContactsContract.Contacts.getLookupUri(mContactId, mLookupKey);
+        if (mContactUri == null) {
+            if (mLookupKey != null)
+                mContactUri = ContactsContract.Contacts.getLookupUri(mContactId, mLookupKey);
+            else
+                mContactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, mContactId);
+        }
         return mContactUri;
     }
 

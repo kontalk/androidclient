@@ -4,6 +4,7 @@
     [ ] status should be encrypted with own number so only users who know us can view it
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
+[ ] MessageListItem: layout issues with date rect
 [ ] paginated message list view (load only as needed)
 [ ] tablet: refactor message list view
 [ ] handle external storage presence
@@ -20,6 +21,7 @@
     [x] check if server supports auth token generation
 [x] offline mode
 [x] privacy settings
+[x] sync: contacts from other sources (eg SIM)
 
 
 FUTURE:
@@ -36,5 +38,4 @@ FUTURE:
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [ ] separate processes (main/UI, message center, sync adapter)
 [ ] external storage backup
-[x] compose->menu->attach: choose between media types
-[x] support for VCard exchange
+
