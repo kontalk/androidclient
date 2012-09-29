@@ -1,3 +1,4 @@
+[ ] use a cleartext warning icon instead of encryption icon
 [ ] smileys/emoticons support
 [ ] status: use activity instead of dialog
     [ ] invert order of ok/cancel buttons for API >= 14
@@ -13,7 +14,6 @@
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
-[ ] put encryption icon above message status icon (or use an emblem onto status icon)
 [x] manual validation without requesting SMS
 [x] new login procedure
 [x] multiserver support
