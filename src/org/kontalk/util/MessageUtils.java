@@ -18,6 +18,7 @@
 
 package org.kontalk.util;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -31,11 +32,16 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.text.style.DynamicDrawableSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +53,9 @@ import android.widget.ImageView;
 
 
 public final class MessageUtils {
+    private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
+    private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
+
     private MessageUtils() {}
 
     public static void convertSmileys(Context context, Spannable text, int size) {
@@ -307,7 +316,7 @@ public final class MessageUtils {
     }
 
     public static CharSequence getMessageDetails(Context context, AbstractMessage<?> msg, String decodedPeer) {
-        StringBuilder details = new StringBuilder();
+        SpannableStringBuilder details = new SpannableStringBuilder();
         Resources res = context.getResources();
         int direction = msg.getDirection();
 
@@ -336,8 +345,16 @@ public final class MessageUtils {
         // Encrypted
         details.append('\n');
         details.append(res.getString(R.string.encrypted_label));
-        resId = (msg.wasEncrypted()) ? R.string.yes : R.string.no;
-        details.append(res.getString(resId));
+        if (msg.wasEncrypted()) {
+            details.append(res.getString(R.string.yes));
+        }
+        else {
+            CharSequence noText = res.getString(R.string.no);
+            int startPos = details.length();
+            details.append(noText);
+            details.setSpan(STYLE_BOLD, startPos, details.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            details.setSpan(STYLE_RED, startPos, details.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
 
         // Message length
         details.append('\n');
@@ -404,13 +421,18 @@ public final class MessageUtils {
 
         // TODO Error code/reason
 
-        return details.toString();
+        return details;
     }
 
-    private static void appendTimestamp(Context context, StringBuilder details,
+    private static void appendTimestamp(Context context, Appendable details,
             String label, long time, boolean fullFormat) {
-        details.append(label);
-        details.append(MessageUtils.formatTimeStampString(context, time, fullFormat));
+        try {
+            details.append(label);
+            details.append(MessageUtils.formatTimeStampString(context, time, fullFormat));
+        }
+        catch (IOException e) {
+            // ignored
+        }
     }
 
     /**

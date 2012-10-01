@@ -174,7 +174,7 @@ public class MessageListItem extends RelativeLayout {
         int resId = -1;
         int statusId = -1;
 
-        mLockView.setVisibility((mMessage.wasEncrypted()) ? VISIBLE : GONE);
+        mLockView.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
 
         if (mMessage.getSender() != null) {
             if (mBalloonView != null)

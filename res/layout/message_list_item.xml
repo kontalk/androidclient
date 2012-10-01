@@ -54,7 +54,7 @@
                 android:layout_height="22dp"
                 android:layout_marginBottom="4dip"
                 android:contentDescription="@string/msg_status_encrypted"
-                android:src="@drawable/ic_msg_crypt" />
+                android:src="@drawable/ic_msg_warning" />
 
             <TextView android:id="@+id/text_view"
                 android:paddingTop="4dip"

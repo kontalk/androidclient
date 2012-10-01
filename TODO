@@ -1,4 +1,3 @@
-[ ] use a cleartext warning icon instead of encryption icon
 [ ] smileys/emoticons support
 [ ] status: use activity instead of dialog
     [x] invert order of ok/cancel buttons for API >= 14
@@ -22,6 +21,7 @@
 [x] privacy settings
 [x] sync: contacts from other sources (eg SIM)
 [x] MessageListItem: layout issues with date rect
+[x] use a cleartext warning icon instead of encryption icon
 
 
 FUTURE:
