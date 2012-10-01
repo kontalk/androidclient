@@ -55,7 +55,7 @@ public class MessagesProvider extends ContentProvider {
     private static final String TAG = MessagesProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.messages";
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "messages.db";
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";
@@ -135,6 +135,10 @@ public class MessagesProvider extends ContentProvider {
         private static final String SCHEMA_MESSAGES_INDEX =
             "CREATE UNIQUE INDEX IF NOT EXISTS unique_message ON " + TABLE_MESSAGES +
             " (msg_id, direction)";
+
+        private static final String SCHEMA_MESSAGES_TIMESTAMP_IDX =
+            "CREATE INDEX IF NOT EXISTS timestamp_message ON " + TABLE_MESSAGES +
+            " (timestamp)";
 
         /** Updates the thread messages count. */
         private static final String UPDATE_MESSAGES_COUNT_NEW =
@@ -263,12 +267,17 @@ public class MessagesProvider extends ContentProvider {
             "ALTER TABLE " + TABLE_THREADS + "_new RENAME TO " + TABLE_THREADS,
             // unique message index
             SCHEMA_MESSAGES_INDEX,
+            // timestamp message index (for sorting)
+            SCHEMA_MESSAGES_TIMESTAMP_IDX,
             // triggers
             TRIGGER_THREADS_INSERT_COUNT,
             TRIGGER_THREADS_UPDATE_COUNT,
             TRIGGER_THREADS_DELETE_COUNT
         };
 
+        private static final String[] SCHEMA_V3_TO_V4 = {
+            SCHEMA_MESSAGES_TIMESTAMP_IDX
+        };
 
         protected DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -280,6 +289,7 @@ public class MessagesProvider extends ContentProvider {
             db.execSQL(SCHEMA_THREADS);
             db.execSQL(SCHEMA_FULLTEXT);
             db.execSQL(SCHEMA_MESSAGES_INDEX);
+            db.execSQL(SCHEMA_MESSAGES_TIMESTAMP_IDX);
             db.execSQL(TRIGGER_THREADS_INSERT_COUNT);
             db.execSQL(TRIGGER_THREADS_UPDATE_COUNT);
             db.execSQL(TRIGGER_THREADS_DELETE_COUNT);
@@ -293,6 +303,10 @@ public class MessagesProvider extends ContentProvider {
             if (oldVersion < 3) {
                 for (int i = 0; i < SCHEMA_V2_TO_V3.length; i++)
                     db.execSQL(SCHEMA_V2_TO_V3[i]);
+            }
+            if (oldVersion < 4) {
+                for (int i = 0; i < SCHEMA_V3_TO_V4.length; i++)
+                    db.execSQL(SCHEMA_V3_TO_V4[i]);
             }
         }
     }
