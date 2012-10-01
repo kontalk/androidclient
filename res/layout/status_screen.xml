@@ -38,26 +38,7 @@
         android:maxLength="140"
         android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginBottom="4dp"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:text="@android:string/ok"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="onStatusOk"/>
-        <Button
-            android:text="@android:string/cancel"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="onStatusCancel"/>
-    </LinearLayout>
+    <include layout="@layout/status_ok_cancel"/>
 
     <ListView
         android:id="@android:id/list"
