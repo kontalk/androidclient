@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.actionbarsherlock.app.SherlockListActivity;
@@ -72,8 +73,14 @@ public class StatusActivity extends SherlockListActivity {
         }
     }
 
-    public void onStatusOk(View view) {
-        String text = mStatus.getText().toString();
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        Cursor c = (Cursor) mAdapter.getItem(position);
+        // 0 = _id, 1 = status
+        finish(c.getString(1));
+    }
+
+    private void finish(String text) {
         if (text.trim().length() <= 0)
             text = text.trim();
         MessagingPreferences.setStatusMessage(this, text);
@@ -82,6 +89,11 @@ public class StatusActivity extends SherlockListActivity {
         // start the message center to push the status message
         MessageCenterService.updateStatus(this);
         finish();
+    }
+
+    public void onStatusOk(View view) {
+        String text = mStatus.getText().toString();
+        finish(text);
     }
 
     public void onStatusCancel(View view) {
