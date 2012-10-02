@@ -22,8 +22,8 @@ import java.io.InputStream;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.ServerList;
 import org.kontalk.client.Protocol.UserStatusFlags;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
 import org.kontalk.provider.MyMessages.Messages;
@@ -33,10 +33,14 @@ import org.kontalk.util.MessageUtils;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -49,6 +53,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -435,6 +440,70 @@ public final class MessagingPreferences extends PreferenceActivity {
 
         // TODO other flags
         return flags;
+    }
+
+    /** Recent statuses database helper. */
+    private static final class RecentStatusDbHelper extends SQLiteOpenHelper {
+        private static final String DATABASE_NAME = "status.db";
+        private static final int DATABASE_VERSION = 1;
+
+        private static final String TABLE_STATUS = "status";
+        private static final String SCHEMA_STATUS = "CREATE TABLE " + TABLE_STATUS + " (" +
+            "_id INTEGER PRIMARY KEY," +
+            "status TEXT UNIQUE," +
+            "timestamp INTEGER" +
+            ")";
+
+        public RecentStatusDbHelper(Context context) {
+            super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL(SCHEMA_STATUS);
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            // no upgrade for version 1
+        }
+
+        public Cursor query() {
+            SQLiteDatabase db = getReadableDatabase();
+            return db.query(TABLE_STATUS, new String[] { BaseColumns._ID, "status" },
+                null, null, null, null, "timestamp DESC");
+        }
+
+        public void insert(String status) {
+            SQLiteDatabase db = getWritableDatabase();
+            ContentValues v = new ContentValues(2);
+            v.put("status", status);
+            v.put("timestamp", System.currentTimeMillis());
+            db.replace(TABLE_STATUS, null, v);
+
+            // delete old entries
+            db.delete(TABLE_STATUS, "_id NOT IN (SELECT _id FROM " +
+                TABLE_STATUS + " ORDER BY timestamp DESC LIMIT 10)", null);
+        }
+    }
+
+    private static RecentStatusDbHelper recentStatusDb;
+
+    private static void _recentStatusDbHelper(Context context) {
+        if (recentStatusDb == null)
+            recentStatusDb = new RecentStatusDbHelper(context.getApplicationContext());
+    }
+
+    /** Retrieves the list of recently used status messages. */
+    public static Cursor getRecentStatusMessages(Context context) {
+        _recentStatusDbHelper(context);
+        return recentStatusDb.query();
+    }
+
+    public static void addRecentStatusMessage(Context context, String status) {
+        _recentStatusDbHelper(context);
+        recentStatusDb.insert(status);
+        recentStatusDb.close();
     }
 
     public static void start(Activity context) {

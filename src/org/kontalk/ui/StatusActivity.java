@@ -5,9 +5,12 @@ import org.kontalk.service.MessageCenterService;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
+import android.widget.SimpleCursorAdapter;
 
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -16,6 +19,7 @@ import com.actionbarsherlock.view.MenuItem;
 /** Status message activity. */
 public class StatusActivity extends SherlockListActivity {
     private EditText mStatus;
+    private CursorAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,12 +30,33 @@ public class StatusActivity extends SherlockListActivity {
         // TODO retrieve from server
         mStatus.setText(MessagingPreferences.getStatusMessage(this));
 
+        mAdapter = new SimpleCursorAdapter(this,
+            android.R.layout.simple_list_item_1, null,
+            new String[] { "status" }, new int[] { android.R.id.text1 });
+        setListAdapter(mAdapter);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     public static void start(Activity context) {
         Intent intent = new Intent(context, StatusActivity.class);
         context.startActivityIfNeeded(intent, -1);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // TODO async query
+        Cursor c = MessagingPreferences.getRecentStatusMessages(this);
+        mAdapter.changeCursor(c);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mAdapter != null)
+            mAdapter.changeCursor(null);
     }
 
     @Override
@@ -52,6 +77,7 @@ public class StatusActivity extends SherlockListActivity {
         if (text.trim().length() <= 0)
             text = text.trim();
         MessagingPreferences.setStatusMessage(this, text);
+        MessagingPreferences.addRecentStatusMessage(this, text);
 
         // start the message center to push the status message
         MessageCenterService.updateStatus(this);

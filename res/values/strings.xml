@@ -211,6 +211,8 @@
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
 
     <string name="status_activity_title">Status message</string>
+    <string name="hint_status_entry">Type your status message here</string>
+    <string name="header_recent_status">Recently used status messages</string>
     
     <string name="title_offline_mode_warning">Offline mode</string>
     <string name="message_offline_mode_warning">In offline mode Kontalk will not connect to the server until you go back to online mode. You will not be able to send or receive messages and users will see you as offline.</string>
