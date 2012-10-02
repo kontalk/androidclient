@@ -392,7 +392,7 @@ public class MessageCenterService extends Service
             @Override
             public String execute(ClientThread client, RequestListener listener, Context context)
                     throws IOException {
-                String status = MessagingPreferences.getStatusMessage(MessageCenterService.this);
+                String status = MessagingPreferences.getStatusMessageInternal(MessageCenterService.this);
                 UserInfoUpdateRequest.Builder b = UserInfoUpdateRequest.newBuilder();
                 b.setStatusMessage(status != null ? status : "");
                 b.setFlags(MessagingPreferences.getUserFlags(MessageCenterService.this));

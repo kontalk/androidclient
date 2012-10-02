@@ -17,6 +17,7 @@ import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterService.MessageCenterInterface;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
+import org.kontalk.ui.MessagingPreferences;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -387,8 +388,10 @@ public class Syncer {
                     }
                     // update fields
                     try {
-                        if (entry.hasStatus())
-                            registeredValues.put(Users.STATUS, entry.getStatus());
+                        if (entry.hasStatus()) {
+                            String status = MessagingPreferences.decryptUserdata(mContext, entry.getStatus());
+                            registeredValues.put(Users.STATUS, status);
+                        }
                         else
                             registeredValues.putNull(Users.STATUS);
                         if (entry.hasTimestamp())

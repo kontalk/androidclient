@@ -19,8 +19,10 @@
 package org.kontalk.ui;
 
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol.UserStatusFlags;
 import org.kontalk.client.ServerList;
@@ -31,6 +33,7 @@ import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -55,6 +58,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -62,7 +66,9 @@ import android.widget.Toast;
 public final class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
 
+    private static final String USERDATA_CRYPT_PREFIX = "crypt:";
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
+
     private static Drawable customBackground;
     private static String balloonTheme;
 
@@ -361,11 +367,55 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getString(context, "pref_status_message", null);
     }
 
+    public static String getStatusMessageInternal(Context context) {
+        String status = getStatusMessage(context);
+
+        if (getBoolean(context, "pref_encrypt_userdata", true)) {
+            // retrive own number for encryption key
+            Account acc = Authenticator.getDefaultAccount(context);
+            Coder coder = new Coder(new PassKey(acc.name));
+
+            try {
+                byte[] statusEnc = coder.encrypt(status.getBytes());
+                // encode to Base64 for safe sending
+                return USERDATA_CRYPT_PREFIX + Base64.encodeToString(statusEnc, Base64.NO_WRAP);
+            }
+            catch (GeneralSecurityException e) {
+                // encryption error, will return cleartext status message
+            }
+        }
+
+        return status;
+    }
+
     public static boolean setStatusMessage(Context context, String message) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.edit()
             .putString("pref_status_message", message)
             .commit();
+    }
+
+    public static String decryptUserdata(Context context, String data) {
+        if (data != null && data.startsWith(USERDATA_CRYPT_PREFIX)) {
+            // retrive own number for decryption key
+            Account acc = Authenticator.getDefaultAccount(context);
+            Coder coder = new Coder(new PassKey(acc.name));
+            data = data.substring(USERDATA_CRYPT_PREFIX.length());
+
+            try {
+                byte[] statusEnc = Base64.decode(data, Base64.NO_WRAP);
+                byte[] statusClear = coder.decrypt(statusEnc);
+                return new String(statusClear);
+            }
+            catch (GeneralSecurityException e) {
+                // decryption error, will return status as-is
+                return data;
+            }
+        }
+
+        else {
+            return data;
+        }
     }
 
     public static Drawable getConversationBackground(Context context) {
