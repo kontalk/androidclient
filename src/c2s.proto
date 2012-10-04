@@ -97,6 +97,11 @@ message NewMessage {
     optional uint64 length = 11;
 }
 
+// mailbox - multiple new messages
+message Mailbox {
+    repeated NewMessage message = 1;
+}
+
 // message acknowledgement request
 message MessageAckRequest {
     repeated string message_id = 1;

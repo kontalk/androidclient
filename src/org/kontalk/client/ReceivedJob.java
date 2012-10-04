@@ -40,8 +40,12 @@ public class ReceivedJob extends RequestJob {
 
     private List<String> mMessageList;
 
-    public ReceivedJob(String msgId) {
+    public ReceivedJob() {
         mMessageList = new ArrayList<String>(1);
+    }
+
+    public ReceivedJob(String msgId) {
+        this();
         mMessageList.add(msgId);
     }
 
@@ -69,6 +73,10 @@ public class ReceivedJob extends RequestJob {
         if (!mMessageList.contains(msgId))
             return mMessageList.add(msgId);
         return false;
+    }
+
+    public int size() {
+        return mMessageList.size();
     }
 
 }

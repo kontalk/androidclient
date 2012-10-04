@@ -20,6 +20,7 @@ package org.kontalk.service;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.ClientListener;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.Protocol;
+import org.kontalk.client.Protocol.Mailbox;
 import org.kontalk.client.Protocol.NewMessage;
 import org.kontalk.client.Protocol.Ping;
 import org.kontalk.client.Protocol.Pong;
@@ -72,6 +74,9 @@ public class ClientThread extends Thread {
     private MessageListener mMessageListener;
     private String mAuthToken;
     private String mMyUsername;
+
+    /** Used to cache incoming mailboxes. */
+    private List<AbstractMessage<?>> mMessageList;
 
     private volatile boolean mInterrupted;
 
@@ -205,6 +210,21 @@ public class ClientThread extends Thread {
                                     // parse message into AbstractMessage
                                     AbstractMessage<?> msg = parseNewMessage((NewMessage) pack);
                                     mMessageListener.incoming(msg);
+                                }
+
+                                else if (name.equals(Mailbox.class.getSimpleName())) {
+                                    // parse messages into a list of AbstractMessages
+                                    Mailbox mbox = (Mailbox) pack;
+                                    int c = mbox.getMessageCount();
+                                    if (mMessageList == null)
+                                        mMessageList = new ArrayList<AbstractMessage<?>>(c);
+                                    else
+                                        mMessageList.clear();
+
+                                    for (int i = 0; i < c; i++)
+                                        mMessageList.add(parseNewMessage(mbox.getMessage(i)));
+
+                                    mMessageListener.mailbox(mMessageList);
                                 }
 
                                 else if (name.equals(Ping.class.getSimpleName())) {

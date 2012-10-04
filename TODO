@@ -1,5 +1,4 @@
 [ ] smileys/emoticons support
-[ ] status should be encrypted with own number so only users who know us can view it
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
 [ ] paginated message list view (load only as needed)
@@ -11,17 +10,6 @@
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
-[x] manual validation without requesting SMS
-[x] new login procedure
-[x] multiserver support
-    [x] check if server supports auth token generation
-[x] offline mode
-[x] privacy settings
-[x] sync: contacts from other sources (eg SIM)
-[x] MessageListItem: layout issues with date rect
-[x] use a cleartext warning icon instead of encryption icon
-[x] status: use activity instead of dialog
-    [x] invert order of ok/cancel buttons for API >= 14
 
 
 FUTURE:
@@ -38,4 +26,3 @@ FUTURE:
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [ ] separate processes (main/UI, message center, sync adapter)
 [ ] external storage backup
-

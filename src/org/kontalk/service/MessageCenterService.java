@@ -41,6 +41,7 @@ import org.kontalk.client.Protocol;
 import org.kontalk.client.Protocol.AuthenticateResponse;
 import org.kontalk.client.Protocol.LoginResponse;
 import org.kontalk.client.Protocol.LoginResponse.LoginStatus;
+import org.kontalk.client.Protocol.Mailbox;
 import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.Protocol.UserInfoUpdateRequest;
 import org.kontalk.client.Protocol.UserInfoUpdateResponse;
@@ -509,9 +510,35 @@ public class MessageCenterService extends Service
     }
 
     @Override
+    public void mailbox(List<AbstractMessage<?>> mbox) {
+        ReceivedJob job = new ReceivedJob();
+        String confirmId;
+        int c = mbox.size();
+        for (int i = 0; i < c; i++) {
+            AbstractMessage<?> msg = mbox.get(i);
+            confirmId = incoming(msg, true, (i == (c - 1)));
+            if (confirmId != null) job.add(confirmId);
+        }
+
+        // ack all messages
+        if (job.size() > 0)
+            pushRequest(job);
+    }
+
+    @Override
     public void incoming(AbstractMessage<?> msg) {
+        incoming(msg, false, true);
+    }
+
+    /**
+     * Process an incoming message.
+     * @param msg the message
+     * @param bulk true if we are processing a {@link Mailbox}.
+     * @return message confirmation id
+     */
+    public String incoming(AbstractMessage<?> msg, boolean bulk, boolean allowNotify) {
         String confirmId = null;
-        boolean notify = false;
+        boolean doNotify = false;
 
         // TODO check for null (unsupported) messages to be notified
 
@@ -611,7 +638,7 @@ public class MessageCenterService extends Service
                 msg.setDatabaseId(ContentUris.parseId(newMsg));
 
                 // we will have to notify the user
-                notify = true;
+                doNotify = true;
             }
             catch (SQLiteConstraintException econstr) {
                 // duplicated message, skip it
@@ -656,12 +683,18 @@ public class MessageCenterService extends Service
         // broadcast message
         broadcastMessage(msg);
 
-        if (notify && !msg.getSender(true).equalsIgnoreCase(MessagingNotification.getPaused()))
-            // update notifications (delayed)
-            MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+        if (allowNotify) {
+            if (doNotify && !msg.getSender(true).equalsIgnoreCase(MessagingNotification.getPaused()))
+                // update notifications (delayed)
+                MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+        }
 
-        if (confirmId != null)
-            pushReceived(confirmId);
+        if (!bulk) {
+            if (confirmId != null)
+                pushReceived(confirmId);
+        }
+
+        return confirmId;
     }
 
     /**
