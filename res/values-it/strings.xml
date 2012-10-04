@@ -28,6 +28,8 @@
     <string name="menu_delete_all">Elimina conversazioni</string>
     <string name="menu_search">Cerca</string>
     <string name="menu_settings">Impostazioni</string>
+    <string name="menu_offline">Vai offline</string>
+    <string name="menu_online">Vai online</string>
     <string name="pref_network_settings">Impostazioni di rete</string>
     <string name="pref_network_uri">Indirizzo server manuale</string>
     <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
@@ -84,12 +86,19 @@
     <string name="pref_maintainance">Manutenzione</string>
     <string name="contacts_list_title">Scegli un contatto</string>
     <string name="pref_messaging_settings">Impostazioni messaggi</string>
+    <string name="pref_privacy_settings">Privacy</string>
     <string name="pref_encrypt">Cifra messaggi</string>
     <string name="pref_title_on_encrypt">Tutti i messaggi saranno cifrati da ora in poi</string>
     <string name="pref_title_off_encrypt">Tutti i messaggi saranno inviati in chiaro</string>
     <string name="pref_passphrase">Password</string>
     <string name="pref_prompt_passphrase">Lasciare vuoto per usare il numero di telefono del destinatario.</string>
     <string name="pref_title_passphrase">La password sarà utilizzata anche per la decifratura quando necessario</string>
+    <string name="pref_encrypt_userdata">Cifra dati personali</string>
+    <string name="pref_title_on_encrypt_userdata">Il messaggio di stato sarà visibile solo a chi possiede il tuo numero di telefono</string>
+    <string name="pref_title_off_encrypt_userdata">Il messaggio di stato sarà visibile a tutti</string>
+    <string name="pref_hide_presence">Nascondi presenza</string>
+    <string name="pref_title_on_hide_presence">Gli utenti non ti vedranno online</string>
+    <string name="pref_title_off_hide_presence">Gli utenti potranno sapere quando sei online e l\'ultima volta che ti sei connesso</string>
     <string name="contact_not_registered">Il contatto sembra non essere registrato su Kontalk.</string>
     <string name="error_store_outbox">Impossibile memorizzare il messaggio in uscita.</string>
     <string name="decrypt_message">Decifra messaggio</string>
@@ -98,7 +107,6 @@
     <string name="download">Scarica</string>
     <string name="download_cancel">Annulla download</string>
     <string name="last_seen_label">Visto ultima volta:\u0020</string>
-    <string name="myself_label">Io</string>
     <string name="has_draft">Bozza</string>
     <string name="pref_update_server_list">Aggiorna lista server</string>
     <string name="server_list_last_update">Ultimo aggiornamento: %s</string>
@@ -123,6 +131,7 @@
     <string name="msg_validation_canceled">Validazione annullata. Potresti comunque ricevere un SMS.</string>
     <string name="err_validation_error">Errore durante la validazione. Riprova più tardi.</string>
     <string name="err_validation_network_error">Impossibile connettersi al server. Riprova più tardi.</string>
+    <string name="err_validation_server_not_supported">Il server selezionato non supporta la registrazione. Configurane un altro nelle impostazioni.</string>
     <string name="text_encrypted">(cifrato)</string>
     <string name="peer_unknown">(sconosciuto)</string>
     <string name="msg_draft_saved">Messaggio salvato come bozza.</string>
@@ -204,5 +213,14 @@
     <string name="chooser_error_no_camera">Memoria esterna non disponibile. Non sarà possibile scattare una nuovo foto da spedire.</string>
 
     <string name="status_activity_title">Messaggio di stato</string>
+    <string name="hint_status_entry">Inserisci il tuo messaggio di stato</string>
+    <string name="header_recent_status">Messaggi di status recenti</string>
+    
+    <string name="title_offline_mode_warning">Modalità offline</string>
+    <string name="message_offline_mode_warning">Durante la modalità offline Kontalk non si connetterà al server fino a quando non tornerai online. Non potrai inviare o ricevere messaggi e gli utenti ti vedranno offline.</string>
+
+    <string name="warning_offline_mode">Modalità offline attiva. I messaggi saranno inviati quando tornerai online.</string>
+    <string name="going_offline">Entro in modalità offline.</string>
+    <string name="going_online">Entro in modalità online.</string>
 
 </resources>

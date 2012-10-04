@@ -107,7 +107,6 @@
     <string name="download">Download</string>
     <string name="download_cancel">Cancel download</string>
     <string name="last_seen_label">Last seen:\u0020</string>
-    <string name="myself_label">Me</string>
     <string name="has_draft">Draft</string>
     <string name="pref_update_server_list">Update server list</string>
     <string name="server_list_last_update">Last update: %s</string>

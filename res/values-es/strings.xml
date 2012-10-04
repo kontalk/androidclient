@@ -96,7 +96,6 @@
     <string name="download">Descargar</string>
     <string name="download_cancel">Anular descarga</string>
     <string name="last_seen_label">Ultima vez:\u0020</string>
-    <string name="myself_label">Me</string>
     <string name="has_draft">Borrador</string>
     <string name="pref_update_server_list">Actualización de la lista de servidores</string>
     <string name="server_list_last_update">Ultima actualización: %s</string>

@@ -147,7 +147,7 @@ public final class Emoji {
         //emojiTheme.put(0x, R.drawable.emoji_);
 
         // UNSORTED
-        emojiTheme.put(0x1F455, R.drawable.emoji_shirt);
+        emojiTheme.put(0x1F455, R.drawable.emoji_tshirt);
         emojiTheme.put(0x1F45F, R.drawable.emoji_shoe);
         emojiTheme.put(0x1F4F7, R.drawable.emoji_camera);
         emojiTheme.put(0x260E, R.drawable.emoji_telephone);
@@ -175,7 +175,7 @@ public final class Emoji {
         /* \ue003 */ R.drawable.emoji_kiss,
         /* \ue004 */ R.drawable.emoji_man,
         /* \ue005 */ R.drawable.emoji_woman,
-        /* \ue006 */ R.drawable.emoji_shirt,
+        /* \ue006 */ R.drawable.emoji_tshirt,
         /* \ue007 */ R.drawable.emoji_shoe,
         /* \ue008 */ R.drawable.emoji_camera,
         /* \ue009 */ R.drawable.emoji_telephone,
