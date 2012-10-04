@@ -186,6 +186,7 @@ public class ConversationListFragment extends SherlockListFragment {
                         .setMessage(R.string.message_offline_mode_warning)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
+                                MessagingPreferences.setOfflineModeUsed(ctx);
                                 switchOfflineMode();
                             }
                         })

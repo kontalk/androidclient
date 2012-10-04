@@ -479,7 +479,14 @@ public final class MessagingPreferences extends PreferenceActivity {
     }
 
     public static boolean getOfflineModeUsed(Context context) {
-        return getBooleanOnce(context, "offline_mode_used");
+        return getBoolean(context, "offline_mode_used", false);
+    }
+
+    public static boolean setOfflineModeUsed(Context context) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putBoolean("offline_mode_used", true)
+            .commit();
     }
 
     /** Combines various settings into a group of UserStatus flags. */
