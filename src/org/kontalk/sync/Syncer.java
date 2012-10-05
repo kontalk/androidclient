@@ -389,7 +389,7 @@ public class Syncer {
                     // update fields
                     try {
                         if (entry.hasStatus()) {
-                            String status = MessagingPreferences.decryptUserdata(mContext, entry.getStatus());
+                            String status = MessagingPreferences.decryptUserdata(mContext, entry.getStatus(), data.number);
                             registeredValues.put(Users.STATUS, status);
                         }
                         else

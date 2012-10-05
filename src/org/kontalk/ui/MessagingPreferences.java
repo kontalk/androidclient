@@ -396,10 +396,14 @@ public final class MessagingPreferences extends PreferenceActivity {
     }
 
     public static String decryptUserdata(Context context, String data) {
+        // retrive own number for decryption key
+        Account acc = Authenticator.getDefaultAccount(context);
+        return decryptUserdata(context, data, acc.name);
+    }
+
+    public static String decryptUserdata(Context context, String data, String key) {
         if (data != null && data.startsWith(USERDATA_CRYPT_PREFIX)) {
-            // retrive own number for decryption key
-            Account acc = Authenticator.getDefaultAccount(context);
-            Coder coder = new Coder(new PassKey(acc.name));
+            Coder coder = new Coder(new PassKey(key));
             data = data.substring(USERDATA_CRYPT_PREFIX.length());
 
             try {
