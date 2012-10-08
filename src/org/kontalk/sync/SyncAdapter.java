@@ -65,6 +65,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
+        // do not start if offline
+        if (MessagingPreferences.getOfflineMode(mContext)) {
+            Log.d(TAG, "not requesting sync - offline mode");
+            return;
+        }
+
         if (!force) {
             long lastSync = MessagingPreferences.getLastSyncTimestamp(mContext);
             long diff = (System.currentTimeMillis() - lastSync) / 1000;
@@ -114,6 +120,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Log.d(TAG, "not requesting sync - throttling");
                 return;
             }
+        }
+
+        // do not start if offline
+        if (MessagingPreferences.getOfflineMode(context)) {
+            Log.d(TAG, "not requesting sync - offline mode");
+            return;
         }
 
         Account acc = Authenticator.getDefaultAccount(context);
