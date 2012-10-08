@@ -28,12 +28,16 @@
     <string name="menu_delete_all">Borrar threads</string>
     <string name="menu_search">Búsqueda</string>
     <string name="menu_settings">Configuración</string>
+    <string name="menu_offline">Ir offline</string>
+    <string name="menu_online">Ir online</string>
     <string name="pref_network_settings">Configuración de la red</string>
     <string name="pref_network_uri">Dirección del servidor Manual</string>
     <string name="pref_title_network_uri">Esto anulará la gestión de la lista de servidores automáticos</string>
     <string name="number_validation_plus">+</string>
     <string name="number_validation_intro1">Por favor, ingrese su número de teléfono móvil, incluyendo el prefijo internacional.</string>
     <string name="number_validation_intro2">Si usted no puede recibir mensajes SMS en este dispositivo, inserte otro numero de  teléfono que posee y el código de validación de forma manual mediante el botón que aparece arriba.</string>
+    <string name="code_validation_intro">Pronto recibirás un SMS al número que ha introducido. Ingrese abajo el  código recibido en el mensaje.</string>
+    <string name="code_validation_intro2">Introduzca el código de validación que había recibido. Tenga en cuenta que el código de validación puede ser utilizado sólo una vez.</string>
     <string name="warn_invalid_number">Por favor, ingrese un número de teléfono válido.</string>
     <string name="msg_validating_phone">Validando el número de teléfono&#8230;</string>
     <string name="msg_initializing">Inicialización&#8230;</string>
@@ -82,12 +86,19 @@
     <string name="pref_maintainance">Mantenimiento</string>
     <string name="contacts_list_title">Elija un contacto</string>
     <string name="pref_messaging_settings">Ajustes de mensajes</string>
+    <string name="pref_privacy_settings">Privacidad</string>
     <string name="pref_encrypt">Mensajes encriptados</string>
     <string name="pref_title_on_encrypt">Todos los mensajes serán cifrados a partir de ahora</string>
     <string name="pref_title_off_encrypt">Todos los mensajes serán enviados no cifrados</string>
     <string name="pref_passphrase">Contraseña</string>
     <string name="pref_prompt_passphrase">Dejar en blanco para usar el número de teléfono del destinatario.</string>
     <string name="pref_title_passphrase">Contraseña también se puede utilizar para descifrar si es necesario</string>
+    <string name="pref_encrypt_userdata">Cifrar los datos personales</string>
+    <string name="pref_title_on_encrypt_userdata">El mensaje de estado será visible sólo a aquellos que tienen su número de teléfono</string>
+    <string name="pref_title_off_encrypt_userdata">El mensaje de estado será visible para todos</string>
+    <string name="pref_hide_presence">Ocultar presencia</string>
+    <string name="pref_title_on_hide_presence">Los usuarios no podran verte en linea</string>
+    <string name="pref_title_off_hide_presence">Los usuarios podrán saber cuando estás en línea y la ultima vez que te conectaste</string>
     <string name="contact_not_registered">Contacto no parece estar registrado en Kontalk.</string>
     <string name="error_store_outbox">Inhabilitado en almacenar mensajes en la bandeja de salida.</string>
     <string name="decrypt_message">Descifrar mensajes</string>
@@ -119,12 +130,15 @@
     <string name="err_validation_failed">Verificación de número de teléfono fallada.</string>
     <string name="msg_validation_canceled">Validación cancelada. Usted podría recibir un SMS de todos modos.</string>
     <string name="err_validation_error">Se produjo un error durante la validación. Por favor, inténtelo de nuevo más tarde.</string>
+    <string name="err_validation_network_error">No se puede conectar con el servidor. Por favor, inténtelo de nuevo más tarde.</string>
+    <string name="err_validation_server_not_supported">El servidor seleccionado no permite la autenticación. Configurar otro en la configuración.</string>
     <string name="text_encrypted">(encriptado)</string>
     <string name="peer_unknown">(desconocido)</string>
     <string name="msg_draft_saved">Mensaje guardado como borrador.</string>
     <string name="send_mime_not_supported">Tipo de archivo no suportado.</string>
     <string name="button_validate">Validar</string>
     <string name="button_manual_validation">Manual validation</string>
+    <string name="button_validation_code">Código de validación</string>
     <string name="notify_ticker_download_completed">Descarga completada</string>
     <string name="notify_title_download_completed">Descarga completada</string>
     <string name="notify_text_download_completed">Descarga archivo adjunto completado</string>
@@ -138,6 +152,8 @@
     <string name="err_store_message_failed">No se puede guardar mensaje en la bandeja de salida.</string>
     <string name="msg_invalid_number">Introduzca un número de teléfono válido.</string>
     <string name="msg_invalid_cc">Introduzca un código de país válido.</string>
+    <string name="title_invalid_code">Código no válido</string>
+    <string name="msg_invalid_code">Introduzca un código válido.</string>
     <string name="menu_refresh">Refrescar</string>
     <string name="menu_invite">Invitar usuarios</string>
     <string name="title_error">Error</string>
@@ -184,18 +200,20 @@
     <string name="msg_status_notdelivered">No entregado</string>
     <string name="msg_status_delivered">Entregado</string>
     <string name="msg_status_encrypted">Cifrado</string>
-
     <string name="pref_balloons">Tema mensajes</string>
     <string name="pref_title_balloons">Elegís un tema para los mensajes</string>
     <string name="balloons_classic">Clásico</string>
     <string name="balloons_iphone">iPhone</string>
-
     <string name="attachment_picture">Imagen</string>
     <string name="attachment_contact">Contacto</string>
-
     <string name="chooser_send_picture"> Envío imagen</string>
     <string name="chooser_error_no_camera">Almacenamiento externo no está disponible. Toma de fotografías desde la cámara no estará habilitado</string>
-
     <string name="status_activity_title">Mensaje de estado</string>
-
+    <string name="hint_status_entry">Introduzca su mensaje de estado</string>
+    <string name="header_recent_status">Mensajes recientes de estado</string>
+    <string name="title_offline_mode_warning">Modalidad fuera de línea</string>
+    <string name="message_offline_mode_warning">Durante la modalidad fuera de línea Kontalk no se conectarà al servidor hasta que no vuelvas en línea. Usted no podrá enviar ni recibir mensajes, y los usuarios verán ustedes como fuera de línea.</string>
+    <string name="warning_offline_mode">Modalidad fuera de línea activa. Los mensajes se enviarán cuando volvarà en línea.</string>
+    <string name="going_offline">Entro en modalidad fuera de línea.</string>
+    <string name="going_online">Entro en modalidad en línea.</string>
 </resources>
