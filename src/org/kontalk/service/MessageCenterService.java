@@ -945,17 +945,22 @@ public class MessageCenterService extends Service
 
     private void gcmRegister() {
         if (mPushSenderId != null) {
-            GCMRegistrar.checkDevice(this);
-            GCMRegistrar.checkManifest(this);
+            try {
+                GCMRegistrar.checkDevice(this);
+                //GCMRegistrar.checkManifest(this);
+                // senderId will be given by serverinfo if any
+                mPushRegistrationId = GCMRegistrar.getRegistrationId(this);
+                if (TextUtils.isEmpty(mPushRegistrationId))
+                    // start registration
+                    GCMRegistrar.register(this, mPushSenderId);
+                else
+                    // already registered - send registration id to server
+                    setPushRegistrationId(mPushRegistrationId);
+            }
+            catch (Exception e) {
+                // nothing happens...
+            }
 
-            // senderId will be given by serverinfo if any
-            mPushRegistrationId = GCMRegistrar.getRegistrationId(this);
-            if (TextUtils.isEmpty(mPushRegistrationId))
-                // start registration
-                GCMRegistrar.register(this, mPushSenderId);
-            else
-                // already registered - send registration id to server
-                setPushRegistrationId(mPushRegistrationId);
         }
     }
 
