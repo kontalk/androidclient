@@ -800,7 +800,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
 	        attachmentMenu.setOnClickListener(this);
 	    }
-	    attachmentMenu.createMenu("Attach").show();
+	    attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
 	}
 
 	/** Starts activity for an image attachment. */
