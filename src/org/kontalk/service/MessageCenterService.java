@@ -50,6 +50,7 @@ import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.ServerinfoJob;
 import org.kontalk.client.TxListener;
 import org.kontalk.client.UserPresenceRequestJob;
+import org.kontalk.data.Contact;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.ReceiptEntry;
@@ -557,9 +558,19 @@ public class MessageCenterService extends Service
             b.authority(UsersProvider.AUTHORITY);
             b.path(pres.getSender(true));
             i.setDataAndType(b.build(), "internal/presence");
+
             UserPresenceData data = pres.getContent();
+
+            // get own number for status message decryption
+            String statusMsg = data.statusMessage;
+            if (!TextUtils.isEmpty(data.statusMessage)) {
+                Contact c = Contact.findByUserId(this, msg.getSender(true));
+                if (c != null)
+                    statusMsg = MessagingPreferences.decryptUserdata(this, data.statusMessage, c.getNumber());
+            }
+
             i.putExtra("org.kontalk.presence.event", data.event);
-            i.putExtra("org.kontalk.presence.status", data.statusMessage);
+            i.putExtra("org.kontalk.presence.status", statusMsg);
             lbm.sendBroadcast(i);
         }
 

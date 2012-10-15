@@ -1506,6 +1506,13 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
                         if (res.hasStatus()) {
                             afterText = res.getStatus();
+                            if (!TextUtils.isEmpty(afterText)) {
+                                Contact c = getContact();
+                                if (c != null)
+                                    afterText = MessagingPreferences
+                                        .decryptUserdata(getActivity(), afterText, c.getNumber());
+                            }
+
                             values.put(Users.STATUS, afterText);
                         }
                         else {
