@@ -28,10 +28,10 @@ message AuthenticateResponse {
 message ServerInfo {
     required string version = 1;
     required uint32 client_protocol = 2;
-    required string fingerprint = 4;
-    optional string network = 5;
+    required string fingerprint = 3;
+    optional string network = 4;
     // supported features
-    repeated string supports = 6;
+    repeated string supports = 5;
 }
 
 // login request - sent by client on connection
@@ -51,6 +51,8 @@ message LoginResponse {
         STATUS_AUTH_FAILED = 3;
     }
     required LoginStatus status = 1;
+    // set only if status is STATUS_LOGGED_IN
+    optional string user_id = 2;
 }
 
 
