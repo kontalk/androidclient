@@ -24,6 +24,8 @@
       <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
       <item name="actionBarSize">@dimen/actionbar_height</item>
       <item name="android:actionBarSize">@dimen/actionbar_height</item>
+      <item name="actionButtonStyle">@style/Widget.Sherlock.Light.ActionButton.LowDensity</item>
+      <item name="android:actionButtonStyle">@style/Widget.Sherlock.Light.ActionButton.LowDensity</item>
   </style>
 
   <style name="TextAppearance.Widget.ActionBar.Title.Inverse"
@@ -34,6 +36,10 @@
   <style name="TextAppearance.Widget.ActionBar.Subtitle.Inverse"
       parent="TextAppearance.Sherlock.Widget.ActionBar.Subtitle.Inverse">
       <item name="android:textSize">@dimen/actionbar_subtitle_size</item>
+  </style>
+
+  <style name="Widget.Sherlock.Light.ActionButton.LowDensity" parent="Widget.Sherlock.Light.ActionButton">
+      <item name="android:minWidth">@dimen/actionbar_item_width</item>
   </style>
 
 </resources>

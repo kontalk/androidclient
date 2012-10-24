@@ -12,6 +12,7 @@
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
+[x] actionbar buttons should be square-shaped
 
 
 FUTURE:
