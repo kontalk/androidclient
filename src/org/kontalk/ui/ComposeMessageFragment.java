@@ -96,8 +96,11 @@ import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -1312,7 +1315,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		}
 	}
 
-	public void setActivityTitle(String title, String status, Contact contact) {
+	public void setActivityTitle(CharSequence title, CharSequence status, Contact contact) {
 	    Activity parent = getActivity();
 	    if (parent instanceof ComposeMessage)
 	        ((ComposeMessage) parent).setTitle(title, status, contact);
@@ -1395,11 +1398,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             String action = intent.getAction();
             if (MessageCenterService.ACTION_USER_PRESENCE.equals(action)) {
                 int event = intent.getIntExtra("org.kontalk.presence.event", 0);
-                String text = null;
+                CharSequence text = null;
 
                 if (event == UserEvent.EVENT_OFFLINE_VALUE) {
-                    text = getResources().getString(R.string.last_seen_label) +
-                            getResources().getString(R.string.seen_moment_ago_label);
+                    text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
                 }
                 else if (event == UserEvent.EVENT_ONLINE_VALUE) {
                     text = getResources().getString(R.string.seen_online_label);
@@ -1482,7 +1484,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	        UserLookupResponse _pack = (UserLookupResponse) pack;
 	        if (_pack.getEntryCount() > 0) {
 	            UserLookupResponse.Entry res = _pack.getEntry(0);
-                String text = null;
+                CharSequence text = null;
                 try {
                     Activity context = getActivity();
                     if (context != null) {
@@ -1492,8 +1494,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                 text = getResources().getString(R.string.seen_online_label);
                             }
                             else if (diff <= 10) {
-                                text = getResources().getString(R.string.last_seen_label) +
-                                        getResources().getString(R.string.seen_moment_ago_label);
+                                text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
                             }
                         }
 
@@ -1529,13 +1530,12 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         if (text == null && res.hasTimestamp()) {
                             long time = res.getTimestamp();
                             if (time > 0) {
-                                text = getResources().getString(R.string.last_seen_label) +
-                                        MessageUtils.formatRelativeTimeSpan(context, time * 1000);
+                                text = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, time * 1000));
                             }
                         }
 
                         if (text != null) {
-                            final String banner = text;
+                            final CharSequence banner = text;
                             // show last seen banner
                             context.runOnUiThread(new Runnable() {
                                 public void run() {
@@ -1560,7 +1560,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	    return false;
 	}
 
-	private void setStatusText(String text) {
+	private void setStatusText(CharSequence text) {
         setActivityTitle(null, text, null);
 	}
 
@@ -1879,6 +1879,13 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	        Toast.makeText(getActivity(), R.string.warning_offline_mode,
 	            Toast.LENGTH_LONG).show();
 	    }
+	}
+
+	private CharSequence buildLastSeenText(CharSequence content) {
+        SpannableStringBuilder builder = new SpannableStringBuilder("Y ");
+        builder.append(content);
+        builder.setSpan(new ImageSpan(getActivity(), R.drawable.ic_eyes), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return builder;
 	}
 
 }

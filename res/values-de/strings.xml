@@ -106,7 +106,6 @@
     <string name="download_again">Nochmals herunterladen</string>
     <string name="download">Herunterladen</string>
     <string name="download_cancel">Herunterladen abbrechen</string>
-    <string name="last_seen_label">Zuletzt gesehen:\u0020</string>
     <string name="has_draft">Entwurf</string>
     <string name="pref_update_server_list">Serverliste aktualisieren</string>
     <string name="server_list_last_update">Letzte Aktualisierung: %s</string>
