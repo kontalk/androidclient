@@ -139,11 +139,12 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         // configuration change??
         RetainData data = (RetainData) getLastNonConfigurationInstance();
         if (data != null) {
-            mPhoneNumber = data.phoneNumber;
-            mValidator = data.validator;
-            if (mValidator != null)
-                mValidator.setListener(this, mHandler);
-
+            synchronized (this) {
+                mPhoneNumber = data.phoneNumber;
+                mValidator = data.validator;
+                if (mValidator != null)
+                    mValidator.setListener(this, mHandler);
+            }
             if (data.progressMessage != null) {
                 setProgressMessage(data.progressMessage, true);
             }
@@ -526,8 +527,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public void onValidationCodeReceived(NumberValidator v, CharSequence code) {
         Log.d(TAG, "validation SMS received, restarting validator thread");
         // start again!
-        if (mValidator != null)
-            mValidator.start();
+        v.start();
     }
 
     @Override
