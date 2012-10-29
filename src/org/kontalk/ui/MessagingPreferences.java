@@ -370,7 +370,7 @@ public final class MessagingPreferences extends PreferenceActivity {
     public static String getStatusMessageInternal(Context context) {
         String status = getStatusMessage(context);
 
-        if (getBoolean(context, "pref_encrypt_userdata", true)) {
+        if (status != null && getBoolean(context, "pref_encrypt_userdata", true)) {
             // retrive own number for encryption key
             Account acc = Authenticator.getDefaultAccount(context);
             Coder coder = new Coder(new PassKey(acc.name));
