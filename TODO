@@ -1,5 +1,6 @@
 [ ] going back to portrait from landscape goes back to conversation list (Galaxy Nexus)
 [ ] support for removable phone number prefix
+[ ] timestamp in messages: if dark background is used text is not visible
 [ ] smileys/emoticons support
 [ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
 [ ] ListView: still issues with fading edge
