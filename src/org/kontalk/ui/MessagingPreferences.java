@@ -503,6 +503,11 @@ public final class MessagingPreferences extends PreferenceActivity {
         return flags;
     }
 
+    public static String getDialPrefix(Context context) {
+        String pref = getString(context, "pref_remove_prefix", null);
+        return (pref != null && !TextUtils.isEmpty(pref.trim())) ? pref: null;
+    }
+
     /** Recent statuses database helper. */
     private static final class RecentStatusDbHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "status.db";

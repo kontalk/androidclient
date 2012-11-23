@@ -192,6 +192,10 @@
     <string name="serverlist_updating">Updating server list&#8230;</string>
     <string name="serverlist_update_error">Unable to download server list. Please retry later.</string>
     <string name="serverlist_update_nodata">No available server list found.</string>
+    
+    <string name="pref_remove_prefix">Dial prefix</string>
+    <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
+
     <!-- message delivery status -->
     <string name="msg_status_sending">Sending</string>
     <string name="msg_status_sent">Sent</string>

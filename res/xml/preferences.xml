@@ -61,6 +61,13 @@
                 android:title="@string/pref_hide_presence"
                 android:defaultValue="false"/>
         </PreferenceScreen>
+        <EditTextPreference android:key="pref_remove_prefix"
+            android:dialogTitle="@string/pref_remove_prefix"
+            android:positiveButtonText="@android:string/ok"
+            android:negativeButtonText="@android:string/cancel"
+            android:title="@string/pref_remove_prefix"
+            android:summary="@string/pref_title_remove_prefix"
+            android:singleLine="true" android:inputType="phone"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_appearance_settings"

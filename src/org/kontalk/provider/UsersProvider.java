@@ -26,6 +26,7 @@ import org.kontalk.client.NumberValidator;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.sync.SyncAdapter;
+import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MessageUtils;
 
 import android.annotation.TargetApi;
@@ -343,6 +344,8 @@ public class UsersProvider extends ContentProvider {
                 " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
 
             Cursor phones = null;
+            String dialPrefix = MessagingPreferences.getDialPrefix(context);
+            int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
 
             try {
                 // query for phone numbers
@@ -356,6 +359,10 @@ public class UsersProvider extends ContentProvider {
                     // a phone number with less than 4 digits???
                     if (number.length() < 4)
                         continue;
+
+                    // remove dial prefix first
+                    if (dialPrefix != null && number.startsWith(dialPrefix))
+                        number = number.substring(dialPrefixLen);
 
                     // fix number
                     try {

@@ -19,6 +19,7 @@
 package org.kontalk;
 
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.MessagingNotification;
 
 import android.app.Application;
@@ -60,6 +61,11 @@ public class Kontalk extends Application {
                 // hide presence flag / encrypt user data flag
                 else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
                     MessageCenterService.updateStatus(Kontalk.this);
+                }
+
+                // changing remove prefix
+                else if ("pref_remove_prefix".equals(key)) {
+                    SyncAdapter.requestSync(getApplicationContext(), true);
                 }
             }
         };
