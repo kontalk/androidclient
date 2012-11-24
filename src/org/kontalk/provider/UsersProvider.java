@@ -356,13 +356,13 @@ public class UsersProvider extends ContentProvider {
                 while (phones.moveToNext()) {
                     String number = phones.getString(0);
 
-                    // a phone number with less than 4 digits???
-                    if (number.length() < 4)
-                        continue;
-
                     // remove dial prefix first
                     if (dialPrefix != null && number.startsWith(dialPrefix))
                         number = number.substring(dialPrefixLen);
+
+                    // a phone number with less than 4 digits???
+                    if (number.length() < 4)
+                        continue;
 
                     // fix number
                     try {
