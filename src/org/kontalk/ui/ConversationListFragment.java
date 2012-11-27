@@ -162,6 +162,10 @@ public class ConversationListFragment extends SherlockListFragment {
 
         // offline mode
         mOfflineMenu = menu.findItem(R.id.menu_offline);
+
+        // trigger manually
+        onDatabaseChanged();
+        updateOffline();
     }
 
     @Override
@@ -450,20 +454,25 @@ public class ConversationListFragment extends SherlockListFragment {
             mSearchMenu.setEnabled(visible);
             mSearchMenu.setVisible(visible);
         }
-        mSearchMenuAction.setEnabled(visible);
-        mSearchMenuAction.setVisible(visible);
-        mDeleteAllMenu.setEnabled(visible);
-        mDeleteAllMenu.setVisible(visible);
+        // if it's null it hasn't gone through onCreateOptionsMenu() yet
+        if (mSearchMenuAction != null) {
+            mSearchMenuAction.setEnabled(visible);
+            mSearchMenuAction.setVisible(visible);
+            mDeleteAllMenu.setEnabled(visible);
+            mDeleteAllMenu.setVisible(visible);
+        }
     }
 
     /** Updates offline mode menu. */
     private void updateOffline() {
-        boolean offlineMode = MessagingPreferences.getOfflineMode(getActivity());
-        int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
-            android.R.drawable.ic_menu_close_clear_cancel;
-        int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
-        mOfflineMenu.setIcon(icon);
-        mOfflineMenu.setTitle(title);
+        if (mOfflineMenu != null) {
+            boolean offlineMode = MessagingPreferences.getOfflineMode(getActivity());
+            int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
+                android.R.drawable.ic_menu_close_clear_cancel;
+            int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
+            mOfflineMenu.setIcon(icon);
+            mOfflineMenu.setTitle(title);
+        }
     }
 
     private void switchOfflineMode() {
