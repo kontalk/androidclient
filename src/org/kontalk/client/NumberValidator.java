@@ -102,10 +102,7 @@ public class NumberValidator implements Runnable {
             // begin!
             if (mStep == STEP_INIT) {
                 // unregister previous receiver
-                if (mSmsReceiver != null) {
-                    mContext.unregisterReceiver(mSmsReceiver);
-                    mSmsReceiver = null;
-                }
+                cancelBroadcastReceiver();
 
                 // check that server is authorized to generate auth tokens
                 mStep = STEP_CHECK_INFO;
@@ -281,10 +278,7 @@ public class NumberValidator implements Runnable {
                 mThread.join();
                 mThread = null;
             }
-            if (mSmsReceiver != null) {
-                mContext.unregisterReceiver(mSmsReceiver);
-                mSmsReceiver = null;
-            }
+            cancelBroadcastReceiver();
         }
         catch (Exception e) {
             // ignored
@@ -302,6 +296,13 @@ public class NumberValidator implements Runnable {
 
     public int getStep() {
         return mStep;
+    }
+
+    public void cancelBroadcastReceiver() {
+        if (mSmsReceiver != null) {
+            mContext.unregisterReceiver(mSmsReceiver);
+            mSmsReceiver = null;
+        }
     }
 
     private void clearTimeout() {

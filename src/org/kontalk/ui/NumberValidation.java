@@ -541,6 +541,10 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                // abort sms broadcast receiver
+                if (mValidator != null)
+                    mValidator.cancelBroadcastReceiver();
+
                 abortProgress(true);
                 startValidationCode(REQUEST_MANUAL_VALIDATION);
             }
