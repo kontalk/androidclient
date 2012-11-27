@@ -18,9 +18,9 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.kontalk"
-      android:versionCode="18"
-      android:versionName="2.2.2">
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="16"/>
+      android:versionCode="19"
+      android:versionName="2.2.3">
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="17"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
