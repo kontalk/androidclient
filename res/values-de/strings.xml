@@ -192,6 +192,10 @@
     <string name="serverlist_updating">Aktualisiere Serverliste&#8230;</string>
     <string name="serverlist_update_error">Serverliste kann nicht heruntergeladen werden. Bitte versuchen Sie es später noch einmal.</string>
     <string name="serverlist_update_nodata">Keine verfügbare Serverliste gefunden.</string>
+
+    <string name="pref_remove_prefix">Wählpräfix</string>
+    <string name="pref_title_remove_prefix">Wählpräfix in Kontalk entfernen um Nummer korrekt erkennen zu können</string>
+
     <!-- message delivery status -->
     <string name="msg_status_sending">Sende</string>
     <string name="msg_status_sent">Gesendet</string>
