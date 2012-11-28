@@ -192,6 +192,10 @@
     <string name="serverlist_updating">Actualizando lista servidores&#8230;</string>
     <string name="serverlist_update_error">No se puede descargar la lista de servidores. Por favor, inténtelo más tarde.</string>
     <string name="serverlist_update_nodata">No hay ninguna lista de servidores disponible.</string>
+    
+    <string name="pref_remove_prefix">Prefijo de composición</string>
+    <string name="pref_title_remove_prefix">Borrar un prefijo en Kontalk para las correspondencia entre números de teléfono</string>
+
     <!-- message delivery status -->
     <string name="msg_status_sending">Envio en curso</string>
     <string name="msg_status_sent">Enviado</string>
