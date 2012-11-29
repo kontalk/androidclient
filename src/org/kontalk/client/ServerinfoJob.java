@@ -21,7 +21,6 @@ package org.kontalk.client;
 import java.io.IOException;
 
 import org.kontalk.Kontalk;
-import org.kontalk.client.Protocol.ServerInfoRequest;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
@@ -36,12 +35,14 @@ import android.content.Context;
 public class ServerinfoJob extends RequestJob {
 
     @Override
-    public String execute(ClientThread client, RequestListener listener,
-            Context context) throws IOException {
+    public String execute(ClientThread client, RequestListener listener, Context context) throws IOException {
+        /* TODO
         ServerInfoRequest.Builder b = ServerInfoRequest.newBuilder();
         b.setClientProtocol(Kontalk.CLIENT_PROTOCOL);
         // TODO set other version fields :)
         return client.getConnection().send(b.build());
+        */
+        return null;
     }
 
 }

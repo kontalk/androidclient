@@ -61,7 +61,7 @@ public abstract class RequestJob {
 
     /**
      * Implement this to do the actual task the child should execute.
-     * @return the transaction id (if any, can be null)
+     * @return a string identifier for the job.
      */
     public abstract String execute(ClientThread client, RequestListener listener, Context context) throws IOException;
 

@@ -19,6 +19,7 @@
 package org.kontalk.message;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -289,8 +290,9 @@ public abstract class AbstractMessage<T> {
      * Returns a rapid text representation of the message.
      * The returned value is useful for notification tickers.
      * @return text representation of this message
+     * @throws UnsupportedEncodingException
      */
-    public abstract String getTextContent();
+    public abstract String getTextContent() throws UnsupportedEncodingException;
 
     /**
      * Binary contents of this message.

@@ -6,8 +6,6 @@ import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
-import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -188,7 +186,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onValidationFailed(NumberValidator v, RegistrationStatus reason) {
+    public void onValidationFailed(NumberValidator v, int reason) {
         // not used.
     }
 
@@ -219,7 +217,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onAuthTokenFailed(NumberValidator v, ValidationStatus reason) {
+    public void onAuthTokenFailed(NumberValidator v, int reason) {
         Log.e(TAG, "authentication token request failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override

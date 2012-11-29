@@ -19,11 +19,9 @@
 package org.kontalk.service;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,7 +30,6 @@ import java.util.Properties;
 import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.Protocol;
 import org.kontalk.client.ServerList;
 import org.kontalk.ui.MessagingPreferences;
 
@@ -92,6 +89,8 @@ public class ServerListUpdater extends Thread {
         }
 
         try {
+            // TODO
+            /*
             mConnection = new ClientHTTPConnection(null, mContext, random, null);
             Protocol.ServerList data = mConnection.serverList();
             if (data != null) {
@@ -108,6 +107,8 @@ public class ServerListUpdater extends Thread {
 
             // restart message center
             MessageCenterService.restartMessageCenter(mContext.getApplicationContext());
+            */
+            throw new IOException();
         }
         catch (IOException e) {
             if (mListener != null)
@@ -154,6 +155,7 @@ public class ServerListUpdater extends Thread {
         }
     }
 
+    /*
     private static ServerList parseList(Protocol.ServerList pack) {
         Date date = new Date(pack.getTimestamp() * 1000);
         ServerList list = new ServerList(date);
@@ -164,11 +166,15 @@ public class ServerListUpdater extends Thread {
 
         return list;
     }
+    */
 
     private static ServerList parseCachedList(Context context) throws IOException {
+        /*
         InputStream in = new FileInputStream(getCachedListFile(context));
         Protocol.ServerList pack = Protocol.ServerList.parseFrom(in);
         return parseList(pack);
+        */
+        throw new FileNotFoundException();
     }
 
     /** Returns (and loads if necessary) the current server list. */

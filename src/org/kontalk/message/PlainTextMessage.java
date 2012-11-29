@@ -18,6 +18,7 @@
 
 package org.kontalk.message;
 
+import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
@@ -28,8 +29,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Message;
 
-import com.google.protobuf.ByteString;
-
 
 /**
  * A plain text message.
@@ -37,7 +36,7 @@ import com.google.protobuf.ByteString;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class PlainTextMessage extends AbstractMessage<ByteString> {
+public class PlainTextMessage extends AbstractMessage<byte[]> {
     //private static final String TAG = PlainTextMessage.class.getSimpleName();
 
     private static final Object sPoolSync = new Object();
@@ -61,32 +60,33 @@ public class PlainTextMessage extends AbstractMessage<ByteString> {
     }
 
     public PlainTextMessage(Context context, String id, String timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
-        super(context, id, timestamp, sender, MIME_TYPE, ByteString.copyFrom(content), encrypted, group);
+        super(context, id, timestamp, sender, MIME_TYPE, content, encrypted, group);
     }
 
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
-        content = ByteString.copyFrom(c.getBlob(COLUMN_CONTENT));
+        content = c.getBlob(COLUMN_CONTENT);
     }
 
     @Override
-    public String getTextContent() {
+    public String getTextContent() throws UnsupportedEncodingException {
         if (encrypted)
             return mContext.getResources().getString(R.string.text_encrypted);
-        return content.toStringUtf8();
+        return new String(content, "UTF-8");
     }
 
     @Override
     public byte[] getBinaryContent() {
-        return content.toByteArray();
+        return content;
     }
 
     @Override
     public void decrypt(Coder coder) throws GeneralSecurityException {
         if (isEncrypted()) {
-            byte[] buf = coder.decrypt(content.toByteArray());
-            content = ByteString.copyFrom(buf);
+            byte[] buf = coder.decrypt(content);
+            content = new byte[buf.length];
+            System.arraycopy(buf, 0, content, 0, buf.length);
             encrypted = false;
         }
     }

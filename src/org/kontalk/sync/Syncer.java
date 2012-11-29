@@ -6,10 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.kontalk.R;
-import org.kontalk.client.ClientConnection;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.client.Protocol.UserLookupResponse;
-import org.kontalk.client.TxListener;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.ClientThread;
@@ -41,8 +38,6 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-
-import com.google.protobuf.MessageLite;
 
 
 /**
@@ -81,7 +76,7 @@ public class Syncer {
     private final class ClientServiceConnection extends BroadcastReceiver implements ServiceConnection {
         private MessageCenterService service;
         private List<String> hashList;
-        private UserLookupResponse response;
+        private Object response;
         private Throwable lastError;
 
         public ClientServiceConnection(List<String> hashList) {
@@ -135,6 +130,7 @@ public class Syncer {
                 @Override
                 public void done(ClientThread client, RequestJob job, String txId) {
                     // listen for response :)
+                    /*
                     TxListener listener = new TxListener() {
                         @Override
                         public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
@@ -147,11 +143,12 @@ public class Syncer {
                         }
                     };
                     client.setTxListener(txId, listener);
+                    */
                 }
             });
         }
 
-        public UserLookupResponse getResponse() {
+        public Object getResponse() {
             return response;
         }
 
@@ -353,7 +350,7 @@ public class Syncer {
             // last chance to quit
             if (mCanceled) throw new OperationCanceledException();
 
-            UserLookupResponse res = conn.getResponse();
+            Object res = conn.getResponse();
             if (res != null) {
                 ArrayList<ContentProviderOperation> operations =
                     new ArrayList<ContentProviderOperation>();
@@ -372,6 +369,7 @@ public class Syncer {
 
                 ContentValues registeredValues = new ContentValues(3);
                 registeredValues.put(Users.REGISTERED, 1);
+                /*
                 for (int i = 0; i < res.getEntryCount(); i++) {
                     UserLookupResponse.Entry entry = res.getEntry(i);
                     String userId = entry.getUserId().toString();
@@ -407,6 +405,7 @@ public class Syncer {
                         // we shall continue here...
                     }
                 }
+                */
 
                 try {
                     provider.applyBatch(operations);

@@ -21,8 +21,6 @@ package org.kontalk.service;
 import java.io.IOException;
 import java.util.List;
 
-import org.kontalk.client.Protocol.UserLookupRequest;
-
 import android.content.Context;
 
 
@@ -44,12 +42,8 @@ public class UserLookupJob extends RequestJob {
 
     @Override
     public String execute(ClientThread client, RequestListener listener, Context context) throws IOException {
-        UserLookupRequest.Builder b = UserLookupRequest.newBuilder();
-        if (mUsers != null)
-            b.addAllUserId(mUsers);
-        else
-            b.addUserId(mUser);
-        return client.getConnection().send(b.build());
+        // TODO
+        return null;
     }
 
 }

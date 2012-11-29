@@ -24,7 +24,6 @@ import java.security.GeneralSecurityException;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
-import org.kontalk.client.Protocol.UserStatusFlags;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
@@ -496,8 +495,10 @@ public final class MessagingPreferences extends PreferenceActivity {
     /** Combines various settings into a group of UserStatus flags. */
     public static int getUserFlags(Context context) {
         int flags = 0;
+        /*
         if (getBoolean(context, "pref_hide_presence", false))
             flags |= UserStatusFlags.FLAG_HIDE_PRESENCE_VALUE;
+         */
 
         // TODO other flags
         return flags;

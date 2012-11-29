@@ -22,6 +22,7 @@ import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -30,12 +31,7 @@ import java.util.regex.Pattern;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.ClientConnection;
 import org.kontalk.client.MessageSender;
-import org.kontalk.client.Protocol.UserEventMask;
-import org.kontalk.client.Protocol.UserLookupResponse;
-import org.kontalk.client.Protocol.UserPresence.UserEvent;
-import org.kontalk.client.TxListener;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -118,7 +114,6 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.google.protobuf.MessageLite;
 
 
 /**
@@ -126,7 +121,7 @@ import com.google.protobuf.MessageLite;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends SherlockListFragment implements
-		View.OnLongClickListener, RequestListener, TxListener, IconContextMenuOnClickListener {
+		View.OnLongClickListener, RequestListener, IconContextMenuOnClickListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -355,8 +350,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
+            /*
             if (!lookupOnly)
                 service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE);
+             */
 
             UserLookupJob job = service.lookupUser(userId);
             job.setListener(ComposeMessageFragment.this);
@@ -986,21 +983,35 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		switch (item.getItemId()) {
 			case MENU_SHARE: {
-				Intent i;
+				Intent i = null;
 				if (msg instanceof PlainTextMessage)
-					i = ComposeMessage.sendTextMessage(msg.getTextContent());
+                    try {
+                        i = ComposeMessage.sendTextMessage(msg.getTextContent());
+                    }
+                    catch (UnsupportedEncodingException e) {
+                        // TODO handle this
+                    }
+                else
+					i = ComposeMessage.sendMediaMessage(msg.getLocalUri(), msg.getMime());
+
+				if (i != null)
+				    startActivity(i);
 				else
-					i = ComposeMessage.sendMediaMessage(msg.getLocalUri(),
-							msg.getMime());
-				startActivity(i);
+				    // TODO ehm...
+				    Log.w(TAG, "error sharing message");
 
 				return true;
 			}
 
 			case MENU_COPY_TEXT: {
-				ClipboardManager cpm = (ClipboardManager) getActivity()
-						.getSystemService(Context.CLIPBOARD_SERVICE);
-				cpm.setText(msg.getTextContent());
+			    try {
+    				ClipboardManager cpm = (ClipboardManager) getActivity()
+    						.getSystemService(Context.CLIPBOARD_SERVICE);
+    				cpm.setText(msg.getTextContent());
+			    }
+			    catch (UnsupportedEncodingException e) {
+			        // TODO handle this
+			    }
 
 				Toast.makeText(getActivity(), R.string.message_text_copied,
 						Toast.LENGTH_SHORT).show();
@@ -1400,6 +1411,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 int event = intent.getIntExtra("org.kontalk.presence.event", 0);
                 CharSequence text = null;
 
+                /*
                 if (event == UserEvent.EVENT_OFFLINE_VALUE) {
                     text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
                 }
@@ -1426,6 +1438,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         // something could happen in the mean time - e.g. fragment destruction
                     }
                 }
+                */
             }
 
             else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
@@ -1478,6 +1491,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	    }
 	}
 
+	/*
 	@Override
 	public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
 	    if (pack instanceof UserLookupResponse) {
@@ -1559,6 +1573,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 	    return false;
 	}
+	*/
 
 	private void setStatusText(CharSequence text) {
         setActivityTitle(null, text, null);
@@ -1581,7 +1596,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
     @Override
     public void done(ClientThread client, RequestJob job, String txId) {
-        client.setTxListener(txId, this);
+        // TODO client.setTxListener(txId, this);
     }
 
     @Override

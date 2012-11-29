@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -266,7 +267,14 @@ public class MessageListItem extends RelativeLayout {
 
     private CharSequence formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf;
-        String textContent = mMessage.getTextContent();
+        String textContent;
+        try {
+            textContent = mMessage.getTextContent();
+        }
+        catch (UnsupportedEncodingException e) {
+            // TODO handle this
+            textContent = mMessage.getBinaryContent().toString();
+        }
 
         if (!TextUtils.isEmpty(textContent)) {
             if (mMessage.isEncrypted()) {

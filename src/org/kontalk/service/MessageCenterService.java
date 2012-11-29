@@ -23,41 +23,28 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
+import org.jivesoftware.smack.Connection;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.filter.MessageTypeFilter;
+import org.jivesoftware.smack.packet.Message.Type;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
 import org.kontalk.GCMIntentService;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.ClientConnection;
 import org.kontalk.client.ClientListener;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.MessageSender;
-import org.kontalk.client.Protocol;
-import org.kontalk.client.Protocol.AuthenticateResponse;
-import org.kontalk.client.Protocol.LoginResponse;
-import org.kontalk.client.Protocol.LoginResponse.LoginStatus;
-import org.kontalk.client.Protocol.Mailbox;
-import org.kontalk.client.Protocol.ServerInfoResponse;
-import org.kontalk.client.Protocol.UserInfoUpdateRequest;
-import org.kontalk.client.Protocol.UserInfoUpdateResponse;
-import org.kontalk.client.Protocol.UserInfoUpdateResponse.UserInfoUpdateStatus;
-import org.kontalk.client.ReceivedJob;
 import org.kontalk.client.ServerinfoJob;
-import org.kontalk.client.TxListener;
 import org.kontalk.client.UserPresenceRequestJob;
-import org.kontalk.data.Contact;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
-import org.kontalk.message.ReceiptEntry;
-import org.kontalk.message.ReceiptEntry.ReceiptEntryList;
-import org.kontalk.message.ReceiptMessage;
-import org.kontalk.message.UserPresenceData;
-import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
@@ -96,8 +83,6 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.google.android.gcm.GCMRegistrar;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.MessageLite;
 
 
 /**
@@ -108,7 +93,7 @@ import com.google.protobuf.MessageLite;
  * @version 1.0
  */
 public class MessageCenterService extends Service
-        implements MessageListener, TxListener, RequestListener, ClientListener {
+        implements PacketListener, RequestListener, ClientListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
@@ -150,9 +135,6 @@ public class MessageCenterService extends Service
 
     /** Used in case ClientThread is down. */
     private int mRefCount;
-
-    /** Private received job instance for message confirmation queueing. */
-    private ReceivedJob mReceivedJob;
 
     private AccountManager mAccountManager;
     private final OnAccountsUpdateListener mAccountsListener = new OnAccountsUpdateListener() {
@@ -265,7 +247,7 @@ public class MessageCenterService extends Service
                     }
                     else if (ACTION_UPDATE_STATUS.equals(action)) {
                         if (mRequestWorker != null && mRequestWorker.getClient() != null && mRequestWorker.getClient().isConnected())
-                            updateStatus();
+                            sendPresence();
                     }
 
                     // check changing accounts
@@ -284,8 +266,6 @@ public class MessageCenterService extends Service
 
                         ClientThread client = mRequestWorker.getClient();
                         client.setClientListener(this);
-                        client.setDefaultTxListener(this);
-                        client.setMessageListener(this);
 
                         mRequestWorker.start();
                         // rest will be done in connected()
@@ -388,17 +368,19 @@ public class MessageCenterService extends Service
         c.close();
     }
 
-    /** Sends a {@link UserInfoUpdateRequest} to update our status. */
-    private void updateStatus() {
+    /** Sends a presence stanza to update our status. */
+    private void sendPresence() {
         pushRequest(new RequestJob() {
             @Override
             public String execute(ClientThread client, RequestListener listener, Context context)
                     throws IOException {
                 String status = MessagingPreferences.getStatusMessageInternal(MessageCenterService.this);
-                UserInfoUpdateRequest.Builder b = UserInfoUpdateRequest.newBuilder();
-                b.setStatusMessage(status != null ? status : "");
-                b.setFlags(MessagingPreferences.getUserFlags(MessageCenterService.this));
-                return client.getConnection().send(b.build());
+                Presence p = new Presence(Presence.Type.available);
+                if (status != null)
+                    p.setStatus(status);
+
+                client.getConnection().sendPacket(p);
+                return null;
             }
         });
     }
@@ -433,12 +415,51 @@ public class MessageCenterService extends Service
         stop();
     }
 
+    /**
+     * Connection has been created by {@link ClientThread}.
+     * In this method we setup all listeners, watchers, callbacks, etc.
+     */
     @Override
-    public synchronized void connected(ClientThread client) {
-        // reset received messages accumulator
-        mReceivedJob = null;
+    public void created(ClientThread client) {
+        Connection conn = client.getConnection();
+
+        /**
+         * Message listener: this is for incoming chat messages. They will be
+         * handled by MessagesProvider and will be accounted for notifications.
+         */
+        conn.addPacketListener(this, new MessageTypeFilter(Type.chat));
+
+        // TODO other listeners
     }
 
+    @Override
+    public void connected(ClientThread client) {
+    }
+
+    /** Called when authentication is successful. */
+    @Override
+    public void authenticated(ClientThread client) {
+        // request serverinfo
+        requestServerinfo();
+        // update presence
+        sendPresence();
+        // subscribe to presence notifications
+        restorePresenceSubscriptions();
+        // lookup for messages with error status and try to re-send them
+        requeuePendingMessages();
+        // receipts will be sent while consuming
+
+        // broadcast connected event
+        mLocalBroadcastManager.sendBroadcast(new Intent(ACTION_CONNECTED));
+    }
+
+
+    @Override
+    public void processPacket(Packet packet) {
+        // TODO
+    }
+
+    /*
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
         // deprecated login method
@@ -493,51 +514,26 @@ public class MessageCenterService extends Service
         }
         return true;
     }
+    */
 
-    /** Called when authentication is successful. */
-    private void authenticated() {
-        // request serverinfo
-        requestServerinfo();
-        // update status message
-        updateStatus();
-        // subscribe to presence notifications
-        restorePresenceSubscriptions();
-        // lookup for messages with error status and try to re-send them
-        requeuePendingMessages();
-        // receipts will be sent while consuming
-
-        // broadcast connected event
-        mLocalBroadcastManager.sendBroadcast(new Intent(ACTION_CONNECTED));
-    }
-
-    @Override
     public void mailbox(List<AbstractMessage<?>> mbox) {
-        ReceivedJob job = new ReceivedJob();
-        String confirmId;
         int c = mbox.size();
         for (int i = 0; i < c; i++) {
             AbstractMessage<?> msg = mbox.get(i);
-            confirmId = incoming(msg, true, (i == (c - 1)));
-            if (confirmId != null) job.add(confirmId);
+            incoming(msg, (i == (c - 1)));
         }
-
-        // ack all messages
-        if (job.size() > 0)
-            pushRequest(job);
     }
 
-    @Override
     public void incoming(AbstractMessage<?> msg) {
-        incoming(msg, false, true);
+        incoming(msg, true);
     }
 
     /**
      * Process an incoming message.
      * @param msg the message
-     * @param bulk true if we are processing a {@link Mailbox}.
      * @return message confirmation id
      */
-    public String incoming(AbstractMessage<?> msg, boolean bulk, boolean allowNotify) {
+    public String incoming(AbstractMessage<?> msg, boolean allowNotify) {
         String confirmId = null;
         boolean doNotify = false;
 
@@ -547,6 +543,7 @@ public class MessageCenterService extends Service
         if (msg.isNeedAck())
             confirmId = msg.getRealId();
 
+        /*
         if (msg instanceof UserPresenceMessage) {
             UserPresenceMessage pres = (UserPresenceMessage) msg;
 
@@ -576,6 +573,8 @@ public class MessageCenterService extends Service
 
         // do not store receipts...
         else if (!(msg instanceof ReceiptMessage)) {
+         */
+
             // store to file if it's an image message
             byte[] content = msg.getBinaryContent();
 
@@ -596,7 +595,7 @@ public class MessageCenterService extends Service
                 }
 
                 // use text content for database table
-                content = msg.getTextContent().getBytes();
+                content = msg.getBinaryContent();
             }
 
             // TODO abstract somehow
@@ -614,7 +613,7 @@ public class MessageCenterService extends Service
                 	msg.setLocalUri(Uri.fromFile(file));
 
                 // use text content for database table
-                content = msg.getTextContent().getBytes();
+                content = msg.getBinaryContent();
             }
 
             // save to local storage
@@ -654,9 +653,12 @@ public class MessageCenterService extends Service
             catch (SQLiteConstraintException econstr) {
                 // duplicated message, skip it
             }
-        }
+
+        // }
 
         // we have a receipt, update the corresponding message
+        /*
+        TODO receipts
         else {
             ReceiptMessage msg2 = (ReceiptMessage) msg;
             ReceiptEntryList rlist = msg2.getContent();
@@ -681,6 +683,7 @@ public class MessageCenterService extends Service
                         -1, ts.getTime());
             }
         }
+        */
 
         // mark sender as registered in the users database
         final String userId = msg.getSender(true);
@@ -700,27 +703,7 @@ public class MessageCenterService extends Service
                 MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
         }
 
-        if (!bulk) {
-            if (confirmId != null)
-                pushReceived(confirmId);
-        }
-
         return confirmId;
-    }
-
-    /**
-     * Holds a received command for a while to let the message center process
-     * multiple incoming messages.
-     */
-    private synchronized void pushReceived(String msgId) {
-        if (mReceivedJob == null || mReceivedJob.isDone()) {
-            mReceivedJob = new ReceivedJob(msgId);
-            // delay message so we give time to the next message
-            pushRequest(mReceivedJob, 500);
-        }
-        else {
-            mReceivedJob.add(msgId);
-        }
     }
 
     private synchronized void pushRequest(final RequestJob job) {
@@ -731,7 +714,7 @@ public class MessageCenterService extends Service
         if (mRequestWorker != null && (mRequestWorker.isRunning() || mRequestWorker.isAlive()))
             mRequestWorker.push(job, delayMillis);
         else {
-            if (job instanceof ReceivedJob || job instanceof MessageSender) {
+            if (job instanceof MessageSender) {
                 Log.d(TAG, "not queueing message job");
             }
             else {
@@ -991,6 +974,7 @@ public class MessageCenterService extends Service
 
         // notify the server about the change
         mPushRequestTxId = null;
+        /* TODO send push registration id to server
         mPushRequestJob = new RequestJob() {
             @Override
             public String execute(ClientThread client, RequestListener listener, Context context)
@@ -1001,6 +985,7 @@ public class MessageCenterService extends Service
             }
         };
         pushRequest(mPushRequestJob);
+        */
     }
 
     public final class MessageCenterInterface extends Binder {
@@ -1049,6 +1034,7 @@ public class MessageCenterService extends Service
 
     @Override
     public void done(ClientThread client, RequestJob job, String txId) {
+        /* TODO
         if (job instanceof MessageSender) {
             // we are sending a message, check if it's a binary content
             MessageSender msg = (MessageSender) job;
@@ -1068,6 +1054,7 @@ public class MessageCenterService extends Service
             mPushRequestTxId = txId;
             client.setTxListener(mPushRequestTxId, MessageCenterService.this);
         }
+        */
     }
 
     @Override

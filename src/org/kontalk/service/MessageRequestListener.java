@@ -18,12 +18,14 @@
 
 package org.kontalk.service;
 
-import org.kontalk.client.ClientConnection;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smackx.packet.DeliveryReceipt;
+import org.jivesoftware.smackx.provider.DeliveryReceiptProvider;
 import org.kontalk.client.MessageSender;
-import org.kontalk.client.Protocol.MessagePostResponse;
-import org.kontalk.client.Protocol.MessagePostResponse.MessageSent;
-import org.kontalk.client.Protocol.MessagePostResponse.MessageSent.MessageSentStatus;
-import org.kontalk.client.TxListener;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 
@@ -33,8 +35,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
-
-import com.google.protobuf.MessageLite;
 
 
 /**
@@ -60,10 +60,42 @@ public class MessageRequestListener implements RequestListener {
     public void done(ClientThread client, RequestJob job, String txId) {
         // store the message request
         final MessageSender job2 = (MessageSender) job;
-        TxListener listener = new TxListener() {
+        PacketListener listener = new PacketListener() {
             @Override
-            public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
+            public void processPacket(Packet packet) {
+                Log.v(TAG, "got response for message packet " + packet.getPacketID());
                 Uri uri = job2.getMessageUri();
+
+                // TODO this should be static
+                ProviderManager.getInstance().addExtensionProvider("received", DeliveryReceipt.NAMESPACE, new DeliveryReceiptProvider());
+
+                PacketExtension ext = packet.getExtension(DeliveryReceipt.NAMESPACE);
+                Log.v(TAG, "got extension: " + ext);
+                DeliveryReceipt receipt = (DeliveryReceipt) packet.getExtension(DeliveryReceipt.NAMESPACE);
+                Log.v(TAG, "got receipt: " + receipt);
+                if (receipt != null) {
+                    // message delivered
+                    if ("received".equals(receipt.getElementName())) {
+                        String msgId = receipt.getId();
+                        Log.v(TAG, "delivery receipt for message " + msgId);
+                        if (!TextUtils.isEmpty(msgId)) {
+                            /*
+                             *
+                             * FIXME this should use changeMessageStatus, but it
+                             * won't work because of the newly messageId included
+                             * in values, which is not handled by changeMessageStatus
+                             */
+                            ContentValues values = new ContentValues(2);
+                            values.put(Messages.MESSAGE_ID, msgId);
+                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                            mContentResolver.update(uri, values, selectionOutgoing, null);
+                        }
+                    }
+                }
+
+                // TODO handle message receipts
+                /*
                 MessagePostResponse list = (MessagePostResponse) pack;
 
                 for (int i = 0; i < list.getEntryCount(); i++) {
@@ -74,10 +106,11 @@ public class MessageRequestListener implements RequestListener {
                         if (res.hasMessageId()) {
                             String msgId = res.getMessageId();
                             if (!TextUtils.isEmpty(msgId)) {
-                                /* FIXME this should use changeMessageStatus, but it
+                                 *
+                                 * FIXME this should use changeMessageStatus, but it
                                  * won't work because of the newly messageId included
                                  * in values, which is not handled by changeMessageStatus
-                                 */
+                                 *
                                 ContentValues values = new ContentValues(2);
                                 values.put(Messages.MESSAGE_ID, msgId);
                                 values.put(Messages.STATUS, Messages.STATUS_SENT);
@@ -94,13 +127,12 @@ public class MessageRequestListener implements RequestListener {
                         Log.w(TAG, "message not accepted by server and updated (" + res.getStatus() + ")");
                     }
                 }
-
-                return false;
+                */
             }
         };
 
         // set listener for message sent response
-        client.setTxListener(txId, listener);
+        client.getConnection().addPacketListener(listener, new PacketIDFilter(txId));
     }
 
     @Override

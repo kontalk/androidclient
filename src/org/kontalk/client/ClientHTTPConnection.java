@@ -22,7 +22,6 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.kontalk.client.Protocol.FileUploadResponse;
 import org.kontalk.crypto.Coder;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.DownloadListener;
@@ -72,6 +71,7 @@ public class ClientHTTPConnection {
             currentRequest.abort();
     }
 
+    /*
     public FileUploadResponse message(final String[] group, final String mime, final Uri uri,
             final Context context, final MessageSender job, final RequestListener listener)
                 throws IOException {
@@ -139,6 +139,7 @@ public class ClientHTTPConnection {
                 response.getEntity().consumeContent();
         }
     }
+    */
 
     private IOException innerException(String detail, Throwable cause) {
         IOException ie = new IOException(detail);

@@ -25,8 +25,6 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
-import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.util.SyncerUI;
 
@@ -411,7 +409,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onAuthTokenFailed(NumberValidator v, ValidationStatus reason) {
+    public void onAuthTokenFailed(NumberValidator v, int reason) {
         Log.e(TAG, "authentication token request failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override
@@ -502,7 +500,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onValidationFailed(NumberValidator v, RegistrationStatus reason) {
+    public void onValidationFailed(NumberValidator v, int reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override

@@ -20,7 +20,6 @@ package org.kontalk.client;
 
 import java.io.IOException;
 
-import org.kontalk.client.Protocol.UserPresenceSubscribeRequest;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
@@ -39,10 +38,13 @@ public class UserPresenceRequestJob extends RequestJob {
     @Override
     public String execute(ClientThread client, RequestListener listener, Context context)
             throws IOException {
+        /* TODO
         UserPresenceSubscribeRequest.Builder b = UserPresenceSubscribeRequest.newBuilder();
         b.setUserId(mUserId);
         b.setEvents(mEvents);
         return client.getConnection().send(b.build());
+        */
+        return null;
     }
 
     public String getUserId() {

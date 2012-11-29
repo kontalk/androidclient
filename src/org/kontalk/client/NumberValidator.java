@@ -20,12 +20,9 @@ package org.kontalk.client;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
-import org.kontalk.client.Protocol.RegistrationResponse;
-import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
-import org.kontalk.client.Protocol.ServerInfoResponse;
-import org.kontalk.client.Protocol.ValidationResponse;
-import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
+import org.jivesoftware.smack.Connection;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.content.BroadcastReceiver;
@@ -69,7 +66,7 @@ public class NumberValidator implements Runnable {
     private final Context mContext;
     private final EndpointServer mServer;
     private final String mPhone;
-    private final ClientConnection mClient;
+    private final Connection mClient;
     private final boolean mManual;
     private NumberValidatorListener mListener;
     private volatile int mStep;
@@ -86,7 +83,7 @@ public class NumberValidator implements Runnable {
         mContext = context.getApplicationContext();
         mServer = server;
         mPhone = phone;
-        mClient = new ClientConnection(mServer);
+        mClient = new KontalkConnection(mServer);
         mManual = manual;
     }
 
@@ -179,6 +176,7 @@ public class NumberValidator implements Runnable {
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
+                /*
                 mClient.reconnect();
                 RegistrationResponse res = mClient.registerWait(mPhone);
                 if (mListener != null) {
@@ -215,6 +213,7 @@ public class NumberValidator implements Runnable {
                         return;
                     }
                 }
+                */
 
                 // validation succeded! Waiting for the sms...
             }
@@ -234,6 +233,7 @@ public class NumberValidator implements Runnable {
 
                 Log.d(TAG, "requesting authentication token");
 
+                /*
                 mClient.reconnect();
                 ValidationResponse res = mClient.validateWait(mValidationCode.toString());
                 if (mListener != null) {
@@ -251,6 +251,7 @@ public class NumberValidator implements Runnable {
                         return;
                     }
                 }
+                */
             }
         }
         catch (Throwable e) {
@@ -260,7 +261,7 @@ public class NumberValidator implements Runnable {
             mStep = STEP_INIT;
         }
         finally {
-            mClient.close();
+            mClient.disconnect();
         }
     }
 
@@ -273,7 +274,7 @@ public class NumberValidator implements Runnable {
             clearTimeout();
 
             if (mThread != null) {
-                mClient.close();
+                mClient.disconnect();
                 mThread.interrupt();
                 mThread.join();
                 mThread = null;
@@ -327,6 +328,7 @@ public class NumberValidator implements Runnable {
     }
 
     private boolean checkServer() throws IOException {
+        /*
         mClient.reconnect();
         ServerInfoResponse info = mClient.serverinfoWait();
         if (info != null) {
@@ -341,6 +343,9 @@ public class NumberValidator implements Runnable {
             // error - notify listener
             throw new IOException("unable to request server information");
         }
+        */
+        // TODO
+        throw new IOException("unable to request server information");
     }
 
     public synchronized void setListener(NumberValidatorListener listener, Handler handler) {
@@ -366,7 +371,7 @@ public class NumberValidator implements Runnable {
         public void onValidationRequested(NumberValidator v);
 
         /** Called if phone number validation failed. */
-        public void onValidationFailed(NumberValidator v, RegistrationStatus reason);
+        public void onValidationFailed(NumberValidator v, int reason);
 
         /** Called when the validation code SMS has been received. */
         public void onValidationCodeReceived(NumberValidator v, CharSequence code);
@@ -378,7 +383,7 @@ public class NumberValidator implements Runnable {
         public void onAuthTokenReceived(NumberValidator v, CharSequence token);
 
         /** Called if validation code has not been verified. */
-        public void onAuthTokenFailed(NumberValidator v, ValidationStatus reason);
+        public void onAuthTokenFailed(NumberValidator v, int reason);
     }
 
     public static CharSequence getCountryCode(Context context) {
@@ -394,7 +399,7 @@ public class NumberValidator implements Runnable {
 
     public static CharSequence getCountryPrefix(Context context, String from, int lastResort) {
         final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        final String regionCode = tm.getSimCountryIso().toUpperCase();
+        final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
         int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
         if (cc <= 0) {
             cc = MessagingPreferences.getLastCountryCode(context);

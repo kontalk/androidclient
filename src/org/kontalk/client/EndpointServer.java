@@ -27,13 +27,14 @@ package org.kontalk.client;
  */
 public class EndpointServer {
     /** Default Kontalk client port. */
-    public static final int DEFAULT_PORT = 6126;
+    public static final int DEFAULT_PORT = 5222;
     /** Default Kontalk HTTP port. */
     public static final int DEFAULT_HTTP_PORT = 6128;
 
     private String mHost;
     private int mPort;
     private int mHttpPort;
+    private String mNetwork;
 
     private String mUrl;
 
@@ -68,6 +69,11 @@ public class EndpointServer {
 
     public int getPort() {
         return mPort;
+    }
+
+    public String getNetwork() {
+        // TODO
+        return "kontalk.net";
     }
 
     public String getHttpUrl() {

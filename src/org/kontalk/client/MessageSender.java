@@ -19,27 +19,19 @@
 package org.kontalk.client;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import org.kontalk.client.Protocol.FileUploadResponse;
-import org.kontalk.client.Protocol.FileUploadResponse.FileUploadStatus;
-import org.kontalk.client.Protocol.MessagePostRequest;
-import org.kontalk.crypto.Coder;
+import org.jivesoftware.smack.packet.Message;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
-import org.kontalk.ui.MessagingPreferences;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
-
-import com.google.protobuf.ByteString;
 
 
 /**
@@ -177,6 +169,18 @@ public class MessageSender extends RequestJob {
             throws IOException {
 
         if (mContent != null) {
+            Message m = new Message(mPeer + "@" + client.getNetwork(), Message.Type.chat);
+
+            // this will generate the packet id
+            String txId = m.getPacketID();
+
+            m.setBody(new String(mContent, "UTF-8"));
+
+            // send and return id
+            client.getConnection().sendPacket(m);
+            return txId;
+
+            /* TODO text message
             MessagePostRequest.Builder b = MessagePostRequest.newBuilder();
             b.addRecipient(mPeer);
             b.setMime(mMime);
@@ -206,9 +210,12 @@ public class MessageSender extends RequestJob {
 
             b.setContent(ByteString.copyFrom(toMessage));
             return client.getConnection().send(b.build());
+            */
         }
 
         else {
+            /*
+             * TODO attachments
             // if message is plain text, send it as normal text if possible
             // FIXME abstract
             if (PlainTextMessage.supportsMimeType(mMime) || VCardMessage.supportsMimeType(mMime)) {
@@ -257,6 +264,8 @@ public class MessageSender extends RequestJob {
 
             // no response or non-success status
             throw new IOException("upload failed");
+            */
+            return null;
         }
 
     }
