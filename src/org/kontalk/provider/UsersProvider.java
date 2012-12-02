@@ -355,6 +355,8 @@ public class UsersProvider extends ContentProvider {
 
                 while (phones.moveToNext()) {
                     String number = phones.getString(0);
+                    if (number == null) // ehm...
+                        continue;
 
                     // remove dial prefix first
                     if (dialPrefix != null && number.startsWith(dialPrefix))
@@ -404,6 +406,12 @@ public class UsersProvider extends ContentProvider {
 
                 while (phones.moveToNext()) {
                     String number = phones.getString(phones.getColumnIndex("number"));
+                    if (number == null) // ehm...
+                        continue;
+
+                    // remove dial prefix first
+                    if (dialPrefix != null && number.startsWith(dialPrefix))
+                        number = number.substring(dialPrefixLen);
 
                     // a phone number with less than 4 digits???
                     if (number.length() < 4)
