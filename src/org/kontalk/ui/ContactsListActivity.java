@@ -23,7 +23,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.MessageCenterServiceLegacy;
 import org.kontalk.util.SyncerUI;
 
 import android.content.Intent;
@@ -89,7 +89,7 @@ public class ContactsListActivity extends SherlockListActivity
     protected void onStart() {
         super.onStart();
         // hold message center
-        MessageCenterService.holdMessageCenter(this);
+        MessageCenterServiceLegacy.holdMessageCenter(this);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ContactsListActivity extends SherlockListActivity
         // cancel any ongoing sync
         SyncerUI.cancel(true);
         // release message center
-        MessageCenterService.releaseMessageCenter(this);
+        MessageCenterServiceLegacy.releaseMessageCenter(this);
     }
 
     @Override
@@ -164,7 +164,7 @@ public class ContactsListActivity extends SherlockListActivity
     }
 
     private void startSync(boolean errorWarning) {
-        if (MessageCenterService.isNetworkConnectionAvailable(this)) {
+        if (MessageCenterServiceLegacy.isNetworkConnectionAvailable(this)) {
             setSyncing(true);
             SyncerUI.execute(this, mPostSyncAction, false);
         }

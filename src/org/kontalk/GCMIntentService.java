@@ -1,6 +1,6 @@
 package org.kontalk;
 
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.MessageCenterServiceLegacy;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,19 +20,19 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     @Override
     protected String[] getSenderIds(Context context) {
-        return new String[] { MessageCenterService.getPushSenderId() };
+        return new String[] { MessageCenterServiceLegacy.getPushSenderId() };
     }
 
     @Override
     protected void onRegistered(Context context, String registrationId) {
         Log.i(TAG, "registered to GCM - " + registrationId);
-        MessageCenterService.registerPushNotifications(context, registrationId);
+        MessageCenterServiceLegacy.registerPushNotifications(context, registrationId);
     }
 
     @Override
     protected void onUnregistered(Context context, String registrationId) {
         Log.i(TAG, "unregistered from GCM");
-        MessageCenterService.registerPushNotifications(context, null);
+        MessageCenterServiceLegacy.registerPushNotifications(context, null);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
         // new messages - start message center
         if (ACTION_CHECK_MESSAGES.equals(dataAction))
-            MessageCenterService.startMessageCenter(context.getApplicationContext());
+            MessageCenterServiceLegacy.startMessageCenter(context.getApplicationContext());
     }
 
 }

@@ -11,10 +11,10 @@ import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.MessageCenterService;
-import org.kontalk.service.MessageCenterService.MessageCenterInterface;
+import org.kontalk.service.MessageCenterServiceLegacy;
+import org.kontalk.service.MessageCenterServiceLegacy.MessageCenterInterface;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
-import org.kontalk.ui.MessagingPreferences;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -74,7 +74,7 @@ public class Syncer {
 
     /** Used for binding to the message center to send messages. */
     private final class ClientServiceConnection extends BroadcastReceiver implements ServiceConnection {
-        private MessageCenterService service;
+        private MessageCenterServiceLegacy service;
         private List<String> hashList;
         private Object response;
         private Throwable lastError;
@@ -93,7 +93,7 @@ public class Syncer {
         public void onServiceConnected(ComponentName name, IBinder ibinder) {
             MessageCenterInterface binder = (MessageCenterInterface) ibinder;
             service = binder.getService();
-            IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_CONNECTED);
+            IntentFilter filter = new IntentFilter(MessageCenterServiceLegacy.ACTION_CONNECTED);
             mLocalBroadcastManager.registerReceiver(this, filter);
             lookup();
             mContext.unbindService(this);
@@ -168,7 +168,7 @@ public class Syncer {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (MessageCenterService.ACTION_CONNECTED.equals(action) && response == null) {
+            if (MessageCenterServiceLegacy.ACTION_CONNECTED.equals(action) && response == null) {
                 // request user lookup
                 lookup();
             }

@@ -8,8 +8,8 @@ import org.kontalk.client.MessageSender;
 import org.kontalk.data.Contact;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.service.MessageCenterService;
-import org.kontalk.service.MessageCenterService.MessageCenterInterface;
+import org.kontalk.service.MessageCenterServiceLegacy;
+import org.kontalk.service.MessageCenterServiceLegacy.MessageCenterInterface;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -121,7 +121,7 @@ public class QuickReplyActivity extends Activity {
     /** Used for binding to the message center to send messages. */
     private final class ComposerServiceConnection implements ServiceConnection {
         public final MessageSender job;
-        private MessageCenterService service;
+        private MessageCenterServiceLegacy service;
 
         public ComposerServiceConnection(String userId, byte[] text,
                 String mime, Uri msgUri, String encryptKey) {
@@ -205,7 +205,7 @@ public class QuickReplyActivity extends Activity {
                             userId, mText.getBytes(), PlainTextMessage.MIME_TYPE,
                             newMsg, key);
                     if (!bindService(
-                            new Intent(getApplicationContext(), MessageCenterService.class),
+                            new Intent(getApplicationContext(), MessageCenterServiceLegacy.class),
                             mConn, Context.BIND_AUTO_CREATE)) {
                         // cannot bind :(
                         throw new IllegalArgumentException("unable to bind to service");

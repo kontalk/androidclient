@@ -28,7 +28,7 @@ import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.MessageCenterServiceLegacy;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
 
@@ -83,9 +83,9 @@ public final class MessagingPreferences extends PreferenceActivity {
             public boolean onPreferenceClick(Preference preference) {
                 CheckBoxPreference pref = (CheckBoxPreference) preference;
                 if (pref.isChecked())
-                    MessageCenterService.enablePushNotifications(getApplicationContext());
+                    MessageCenterServiceLegacy.enablePushNotifications(getApplicationContext());
                 else
-                    MessageCenterService.disablePushNotifications(getApplicationContext());
+                    MessageCenterServiceLegacy.disablePushNotifications(getApplicationContext());
 
                 return true;
             }
@@ -97,7 +97,7 @@ public final class MessagingPreferences extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Log.w(TAG, "manual message center restart requested");
-                MessageCenterService.restartMessageCenter(getApplicationContext());
+                MessageCenterServiceLegacy.restartMessageCenter(getApplicationContext());
                 Toast.makeText(MessagingPreferences.this, R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -190,7 +190,7 @@ public final class MessagingPreferences extends PreferenceActivity {
                             public void run() {
                                 updateServerListLastUpdate(updateServerList, list);
                                 // restart message center
-                                MessageCenterService.restartMessageCenter(getApplicationContext());
+                                MessageCenterServiceLegacy.restartMessageCenter(getApplicationContext());
                             }
                         });
                     }
@@ -468,10 +468,10 @@ public final class MessagingPreferences extends PreferenceActivity {
 
         if (offline) {
             // stop the message center and never start it again
-            MessageCenterService.stopMessageCenter(context);
+            MessageCenterServiceLegacy.stopMessageCenter(context);
         }
         else {
-            MessageCenterService.startMessageCenter(context);
+            MessageCenterServiceLegacy.startMessageCenter(context);
         }
 
         return old;

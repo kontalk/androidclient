@@ -43,12 +43,12 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.ClientThread;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
-import org.kontalk.service.MessageCenterService.MessageCenterInterface;
+import org.kontalk.service.MessageCenterServiceLegacy;
+import org.kontalk.service.MessageCenterServiceLegacy.MessageCenterInterface;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.service.UserLookupJob;
@@ -296,7 +296,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	/** Used for binding to the message center to send messages. */
 	private class ComposerServiceConnection implements ServiceConnection {
 		public final MessageSender job;
-		private MessageCenterService service;
+		private MessageCenterServiceLegacy service;
 
 		public ComposerServiceConnection(String userId, byte[] text,
 				String mime, Uri msgUri, String encryptKey) {
@@ -334,7 +334,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private class PresenceServiceConnection implements ServiceConnection {
         private final String userId;
         private final boolean lookupOnly;
-        private MessageCenterService service;
+        private MessageCenterServiceLegacy service;
 
         public PresenceServiceConnection(String userId, boolean lookupOnly) {
             this.userId = userId;
@@ -371,7 +371,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     /** Used for binding to the message center to unlisten for user presence. */
     private class PresenceServiceDisconnection implements ServiceConnection {
         public final String userId;
-        private MessageCenterService service;
+        private MessageCenterServiceLegacy service;
 
         public PresenceServiceDisconnection(String userId) {
             this.userId = userId;
@@ -1407,7 +1407,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (MessageCenterService.ACTION_USER_PRESENCE.equals(action)) {
+            if (MessageCenterServiceLegacy.ACTION_USER_PRESENCE.equals(action)) {
                 int event = intent.getIntExtra("org.kontalk.presence.event", 0);
                 CharSequence text = null;
 
@@ -1441,7 +1441,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 */
             }
 
-            else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+            else if (MessageCenterServiceLegacy.ACTION_CONNECTED.equals(action)) {
                 // request user lookup
                 PresenceServiceConnection conn = new PresenceServiceConnection(userId, true);
                 getActivity().bindService(
@@ -1464,13 +1464,13 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
     	    try {
     	        // filter for user presence
-                IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_USER_PRESENCE, "internal/presence");
+                IntentFilter filter = new IntentFilter(MessageCenterServiceLegacy.ACTION_USER_PRESENCE, "internal/presence");
                 filter.addDataScheme("user");
                 filter.addDataAuthority(UsersProvider.AUTHORITY, null);
                 filter.addDataPath("/" + userId, PatternMatcher.PATTERN_PREFIX);
                 mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
                 // filter for message center reconnection
-                filter = new IntentFilter(MessageCenterService.ACTION_CONNECTED);
+                filter = new IntentFilter(MessageCenterServiceLegacy.ACTION_CONNECTED);
                 mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
     	    }
             catch (MalformedMimeTypeException e) {
@@ -1656,7 +1656,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public void onStart() {
 	    super.onStart();
         // hold message center
-        MessageCenterService.holdMessageCenter(getActivity());
+	    MessageCenterServiceLegacy.holdMessageCenter(getActivity());
 	}
 
 	@Override
@@ -1738,7 +1738,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		mQueryHandler.cancelOperation(CONVERSATION_QUERY_TOKEN);
 
 		// release message center
-		MessageCenterService.releaseMessageCenter(getActivity());
+		MessageCenterServiceLegacy.releaseMessageCenter(getActivity());
 	}
 
 	@Override

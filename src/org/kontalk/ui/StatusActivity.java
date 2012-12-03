@@ -1,7 +1,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.MessageCenterServiceLegacy;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -87,7 +87,7 @@ public class StatusActivity extends SherlockListActivity {
         MessagingPreferences.addRecentStatusMessage(this, text);
 
         // start the message center to push the status message
-        MessageCenterService.updateStatus(this);
+        MessageCenterServiceLegacy.updateStatus(this);
         finish();
     }
 

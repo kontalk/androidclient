@@ -354,7 +354,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                 // we registered push notification - shutdown message center
                 if (w.mPushRegistrationId != null) {
                     Log.d(TAG, "shutting down message center due to inactivity");
-                    MessageCenterService.idleMessageCenter(w.mContext);
+                    MessageCenterServiceLegacy.idleMessageCenter(w.mContext);
                 }
             }
 
@@ -504,7 +504,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
             // abort any idle request
             if (mIdle) {
-                MessageCenterService.startMessageCenter(mContext);
+                MessageCenterServiceLegacy.startMessageCenter(mContext);
                 mIdle = false;
             }
         }
@@ -548,7 +548,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                     public boolean queueIdle() {
                         synchronized (mIdle) {
                             if (mIdle)
-                                MessageCenterService
+                                MessageCenterServiceLegacy
                                     .stopMessageCenter(mContext);
                         }
                         return false;

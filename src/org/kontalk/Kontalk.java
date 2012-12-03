@@ -18,7 +18,7 @@
 
 package org.kontalk;
 
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.MessageCenterServiceLegacy;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.MessagingNotification;
 
@@ -55,12 +55,12 @@ public class Kontalk extends Application {
                 if ("pref_network_uri".equals(key)) {
                     // just restart the message center for now
                     android.util.Log.w(TAG, "network address changed");
-                    MessageCenterService.restartMessageCenter(Kontalk.this);
+                    MessageCenterServiceLegacy.restartMessageCenter(Kontalk.this);
                 }
 
                 // hide presence flag / encrypt user data flag
                 else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
-                    MessageCenterService.updateStatus(Kontalk.this);
+                    MessageCenterServiceLegacy.updateStatus(Kontalk.this);
                 }
 
                 // changing remove prefix

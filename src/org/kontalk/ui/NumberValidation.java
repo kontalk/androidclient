@@ -25,7 +25,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.MessageCenterServiceLegacy;
 import org.kontalk.util.SyncerUI;
 
 import android.accounts.Account;
@@ -445,7 +445,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         setResult(RESULT_OK, intent);
 
         // ok, start message center
-        MessageCenterService.startMessageCenter(getApplicationContext());
+        MessageCenterServiceLegacy.startMessageCenter(getApplicationContext());
 
         if (mProgress == null)
             startProgress();

@@ -86,7 +86,7 @@
             android:authorities="org.kontalk.users"
             android:syncable="true"/>
 
-        <!-- Broadcast receivers -->
+        <!-- Broadcast receivers
         <receiver android:name=".service.SystemBootStartup"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
@@ -107,12 +107,26 @@
             <category android:name="org.kontalk" />
           </intent-filter>
         </receiver>
+         -->
 
         <!-- Other -->
         <meta-data android:name="android.app.default_searchable"
             android:value=".ui.SearchActivity" />
 
         <!-- Activities -->
+        <activity android:name="ServiceTest"
+            android:configChanges="orientation|keyboardHidden"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Light">
+            <!-- 
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+             -->
+        </activity>
+
         <activity android:name=".ui.ConversationList"
             android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop"

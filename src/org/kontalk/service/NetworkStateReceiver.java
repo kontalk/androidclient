@@ -84,11 +84,11 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 
         if (serviceAction == ACTION_START)
             // start the message center
-            MessageCenterService.startMessageCenter(context);
+            MessageCenterServiceLegacy.startMessageCenter(context);
 
         else if (serviceAction == ACTION_STOP)
             // stop the message center
-            MessageCenterService.stopMessageCenter(context);
+            MessageCenterServiceLegacy.stopMessageCenter(context);
     }
 
 }

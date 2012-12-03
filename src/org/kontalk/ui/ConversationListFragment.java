@@ -332,7 +332,7 @@ public class ConversationListFragment extends SherlockListFragment {
         super.onStart();
 
         // hold message center
-        MessageCenterService.holdMessageCenter(getActivity());
+        MessageCenterService.hold(getActivity());
         startQuery();
     }
 
@@ -349,7 +349,7 @@ public class ConversationListFragment extends SherlockListFragment {
         super.onStop();
         mListAdapter.changeCursor(null);
         // release message center
-        MessageCenterService.releaseMessageCenter(getActivity());
+        MessageCenterService.release(getActivity());
     }
 
     @Override
