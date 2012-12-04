@@ -5,8 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.RosterPacket;
 import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
+import org.kontalk.client.ProbePresence;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.service.ClientThread;
@@ -15,6 +21,7 @@ import org.kontalk.service.MessageCenterServiceLegacy;
 import org.kontalk.service.MessageCenterServiceLegacy.MessageCenterInterface;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
+import org.kontalk.ui.MessagingPreferences;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -52,7 +59,8 @@ public class Syncer {
 
     // using SyncAdapter tag
     private static final String TAG = SyncAdapter.class.getSimpleName();
-    private static final int MAX_WAIT_TIME = 60000;
+    private static final int MAX_READY_WAIT_TIME = 60000;
+    private static final int MAX_PROBE_WAIT_TIME = 30000;
 
     /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
@@ -71,6 +79,52 @@ public class Syncer {
     private volatile boolean mCanceled;
     private final Context mContext;
     private LocalBroadcastManager mLocalBroadcastManager;
+
+    private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
+        public final static class PresenceItem {
+            public String from;
+            public String status;
+            public Presence.Mode show;
+        }
+        private final List<PresenceItem> response;
+        private final Object notifyTo;
+        private boolean notifiedReady;
+
+        public PresenceBroadcastReceiver(Object notifyTo) {
+            response = new ArrayList<PresenceItem>();
+            this.notifyTo = notifyTo;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+                PresenceItem p = new PresenceItem();
+                p.from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                p.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                p.show = (Presence.Mode) intent.getSerializableExtra(MessageCenterService.EXTRA_SHOW);
+                response.add(p);
+                synchronized (notifyTo) {
+                    if (!notifiedReady) {
+                        notifiedReady = true;
+                        notifyTo.notifyAll();
+                    }
+                }
+            }
+
+            else if (MessageCenterService.ACTION_AUTHENTICATED.equals(action)) {
+                synchronized (notifyTo) {
+                    notifiedReady = true;
+                    notifyTo.notifyAll();
+                }
+            }
+        }
+
+        public List<PresenceItem> getResponse() {
+            return response;
+        }
+    }
 
     /** Used for binding to the message center to send messages. */
     private final class ClientServiceConnection extends BroadcastReceiver implements ServiceConnection {
@@ -326,30 +380,44 @@ public class Syncer {
         else {
             mLocalBroadcastManager = LocalBroadcastManager.getInstance(mContext);
 
-            // bind to message center to make it do the dirty stuff :)
-            ClientServiceConnection conn = new ClientServiceConnection(hashList);
-            if (!mContext.bindService(
-                    new Intent(mContext, MessageCenterService.class), conn,
-                    Context.BIND_AUTO_CREATE)) {
-                // cannot bind :(
-                Log.e(TAG, "unable to bind to message center!");
-                syncResult.stats.numIoExceptions++;
-            }
+            // register presence broadcast receiver
+            BroadcastReceiver receiver = new PresenceBroadcastReceiver(this);
+            IntentFilter f = new IntentFilter();
+            f.addAction(MessageCenterService.ACTION_PRESENCE);
+            f.addAction(MessageCenterService.ACTION_AUTHENTICATED);
+            mLocalBroadcastManager.registerReceiver(receiver, f);
 
-            // wait for the service connection to complete its job
+            sendRoster(hashList);
+            //presenceProbe(hashList);
+
+            // wait for the service to complete its job
             synchronized (this) {
+                // wait for connection
                 try {
-                    wait(MAX_WAIT_TIME);
+                    wait(MAX_READY_WAIT_TIME);
                 }
                 catch (InterruptedException e) {
                     // simulate canceled operation
-                    throw new OperationCanceledException();
+                    mCanceled = true;
                 }
+                Log.v(TAG, "connected, waiting for presence probes");
+                // wait for presence probes
+                try {
+                    wait(MAX_PROBE_WAIT_TIME);
+                }
+                catch (InterruptedException e) {
+                    // simulate canceled operation
+                    mCanceled = true;
+                }
+                Log.v(TAG, "done waiting, checking results");
             }
+
+            mLocalBroadcastManager.unregisterReceiver(receiver);
 
             // last chance to quit
             if (mCanceled) throw new OperationCanceledException();
 
+            /*
             Object res = conn.getResponse();
             if (res != null) {
                 ArrayList<ContentProviderOperation> operations =
@@ -369,7 +437,6 @@ public class Syncer {
 
                 ContentValues registeredValues = new ContentValues(3);
                 registeredValues.put(Users.REGISTERED, 1);
-                /*
                 for (int i = 0; i < res.getEntryCount(); i++) {
                     UserLookupResponse.Entry entry = res.getEntry(i);
                     String userId = entry.getUserId().toString();
@@ -405,7 +472,6 @@ public class Syncer {
                         // we shall continue here...
                     }
                 }
-                */
 
                 try {
                     provider.applyBatch(operations);
@@ -448,11 +514,44 @@ public class Syncer {
 
                 syncResult.stats.numIoExceptions++;
             }
+            */
         }
     }
 
     public static boolean isError(SyncResult syncResult) {
         return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
+    }
+
+    private void sendRoster(List<String> list) {
+        // FIXME this might not be the server we are connected to right now
+        EndpointServer server = MessagingPreferences.getEndpointServer(mContext);
+
+        int c = list.size();
+        RosterPacket iq = new RosterPacket();
+        iq.setType(IQ.Type.GET);
+        for (int i = 0; i < c; i++)
+            iq.addRosterItem(new RosterPacket.Item(list.get(i) + "@" + server.getNetwork(), null));
+
+        Intent i = new Intent(mContext, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PACKET);
+        i.putExtra(MessageCenterService.EXTRA_PACKET, iq.toXML());
+        mContext.startService(i);
+    }
+
+    private void presenceProbe(List<String> list) {
+        // FIXME this might not be the server we are connected to right now
+        EndpointServer server = MessagingPreferences.getEndpointServer(mContext);
+
+        String[] stanzas = new String[list.size()];
+
+        int c = list.size();
+        for (int i = 0; i < c; i++)
+            stanzas[i] = ProbePresence.quickXML(Packet.nextID(), list.get(i) + "@" + server.getNetwork());
+
+        Intent i = new Intent(mContext, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PACKET);
+        i.putExtra(MessageCenterService.EXTRA_PACKET_GROUP, stanzas);
+        mContext.startService(i);
     }
 
     private String getDisplayName(ContentProviderClient client, String lookupKey, String defaultValue) {

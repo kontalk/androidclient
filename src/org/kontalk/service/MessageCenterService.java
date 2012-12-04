@@ -3,9 +3,18 @@ package org.kontalk.service;
 import java.lang.ref.WeakReference;
 
 import org.jivesoftware.smack.Connection;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.provider.ProviderManager;
 import org.kontalk.BuildConfig;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.RawPacket;
+import org.kontalk.client.StanzaGroupExtension;
+import org.kontalk.client.StanzaGroupExtensionProvider;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingPreferences;
 
@@ -34,7 +43,7 @@ import android.util.Log;
  * @author Daniele Ricci
  * @version 2.0
  */
-public class MessageCenterService extends Service implements ConnectionHelperListener {
+public class MessageCenterService extends Service implements ConnectionHelperListener, PacketListener {
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
@@ -48,8 +57,31 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_RESTART = "org.kontalk.action.RESTART";
     public static final String ACTION_MESSAGE = "org.kontalk.action.MESSAGE";
 
+    /** Broadcasted when we are connected to the server. */
+    public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
+    /** Broadcasted when we are authenticated to the server. */
+    public static final String ACTION_AUTHENTICATED = "org.kontalk.action.AUTHENTICATED";
+
+    /**
+     * Broadcasted when a presence stanza is received.
+     * Send this intent to broadcast presence.
+     */
+    public static final String ACTION_PRESENCE = "org.kontalk.action.PRESENCE";
+
+    // common parameters
     public static final String EXTRA_SERVER = "org.kontalk.server";
+
+    // use with org.kontalk.action.PACKET
     public static final String EXTRA_PACKET = "org.kontalk.packet";
+    public static final String EXTRA_PACKET_GROUP = "org.kontalk.packet.group";
+
+    // use with org.kontalk.action.PRESENCE
+    public static final String EXTRA_FROM = "org.kontalk.stanza.from";
+    public static final String EXTRA_TO = "org.kontalk.stanza.to";
+    public static final String EXTRA_STATUS = "org.kontalk.presence.status";
+    public static final String EXTRA_SHOW = "org.kontalk.presence.show";
+    public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
+    public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
 
     /** A simple packet to be sent. */
     private static final int MSG_PACKET = 1;
@@ -120,7 +152,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             switch (msg.what) {
                 // send raw packet
                 case MSG_PACKET:
-                    conn.sendPacket((Packet) msg.obj);
+                    try {
+                        String[] data = (String[]) msg.obj;
+                        for (String pack : data)
+                            conn.sendPacket(new RawPacket(pack));
+                    }
+                    catch (ClassCastException e) {
+                        conn.sendPacket(new RawPacket((String) msg.obj));
+                    }
                     return true;
 
                 // send message
@@ -207,6 +246,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onCreate() {
+        configure(ProviderManager.getInstance());
+
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         HandlerThread thread = new HandlerThread(TAG, Process.THREAD_PRIORITY_BACKGROUND);
@@ -214,6 +255,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         mLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(this, mLooper);
+    }
+
+    private void configure(ProviderManager pm) {
+        pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtensionProvider());
     }
 
     @Override
@@ -246,7 +291,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String action = intent.getAction();
 
             if (ACTION_PACKET.equals(action)) {
-                msg = mServiceHandler.obtainMessage(MSG_PACKET, intent.getParcelableExtra(EXTRA_PACKET));
+                Object data;
+                String[] group = intent.getStringArrayExtra(EXTRA_PACKET_GROUP);
+                if (group != null)
+                    data = group;
+                else
+                    data = intent.getStringExtra(EXTRA_PACKET);
+
+                msg = mServiceHandler.obtainMessage(MSG_PACKET, data);
             }
 
             else if (ACTION_HOLD.equals(action)) {
@@ -318,21 +370,54 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void reconnectionSuccessful() {
+        broadcast(ACTION_CONNECTED);
     }
 
     @Override
     public void created() {
         Log.v(TAG, "connection created.");
+        Connection conn = mConnector.getConnection();
+        PacketFilter filter = new PacketTypeFilter(Presence.class);
+        conn.addPacketListener(this, filter);
     }
 
     @Override
     public void connected() {
         Log.v(TAG, "connected!");
+        broadcast(ACTION_CONNECTED);
     }
 
     @Override
     public void authenticated() {
         Log.v(TAG, "authenticated!");
+        broadcast(ACTION_AUTHENTICATED);
+    }
+
+    private void broadcast(String action) {
+        mLocalBroadcastManager.sendBroadcast(new Intent(ACTION_AUTHENTICATED));
+    }
+
+    @Override
+    public void processPacket(Packet packet) {
+        Log.v(TAG, "packet received: " + packet.getClass().getName());
+        if (packet instanceof Presence) {
+            Presence p = (Presence) packet;
+            Intent i = new Intent(ACTION_PRESENCE);
+            i.putExtra(EXTRA_FROM, p.getFrom());
+            i.putExtra(EXTRA_TO, p.getTo());
+            i.putExtra(EXTRA_STATUS, p.getStatus());
+            i.putExtra(EXTRA_SHOW, p.getMode());
+
+            PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
+            if (ext != null && ext instanceof StanzaGroupExtension) {
+                StanzaGroupExtension g = (StanzaGroupExtension) ext;
+                i.putExtra(EXTRA_GROUP_ID, g.getId());
+                i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
+            }
+
+            Log.v(TAG, "broadcasting presence: " + i);
+            mLocalBroadcastManager.sendBroadcast(i);
+        }
     }
 
     /** Checks for network availability. */
