@@ -85,6 +85,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // use with org.kontalk.action.PACKET
     public static final String EXTRA_PACKET = "org.kontalk.packet";
     public static final String EXTRA_PACKET_GROUP = "org.kontalk.packet.group";
+    public static final String EXTRA_STAMP = "org.kontalk.packet.delay";
 
     // use with org.kontalk.action.PRESENCE
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
@@ -185,7 +186,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Bundle data = (Bundle) msg.obj;
                     org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
                     m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
-                    m.setTo(data.getString("org.kontalk.message.to"));
+                    String to = data.getString("org.kontalk.message.to");
+                    if (to == null) {
+                        to = data.getString("org.kontalk.message.toUser");
+                        to += '@' + service.mServer.getNetwork();
+                    }
+                    if (to != null) m.setTo(to);
+
                     m.setBody(data.getString("org.kontalk.message.body"));
                     conn.sendPacket(m);
                     return true;
@@ -553,6 +560,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             i.putExtra(EXTRA_STATUS, p.getStatus());
             i.putExtra(EXTRA_SHOW, p.getMode());
             i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+            // TODO i.putExtra(EXTRA_STAMP, date);
 
             PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
             if (ext != null && ext instanceof StanzaGroupExtension) {

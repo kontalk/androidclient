@@ -1,45 +1,33 @@
 package org.kontalk.sync;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.R;
-import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.client.ProbePresence;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.service.ClientThread;
 import org.kontalk.service.MessageCenterService;
-import org.kontalk.service.MessageCenterServiceLegacy;
-import org.kontalk.service.MessageCenterServiceLegacy.MessageCenterInterface;
-import org.kontalk.service.RequestJob;
-import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
-import org.w3c.dom.Text;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
@@ -82,10 +70,11 @@ public class Syncer {
     private final Context mContext;
     private LocalBroadcastManager mLocalBroadcastManager;
 
-    public final static class PresenceItem {
+    private final static class PresenceItem {
         public String from;
         public String status;
         public Presence.Mode show;
+        public Date timestamp;
     }
 
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
@@ -111,6 +100,7 @@ public class Syncer {
                 p.from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                 p.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
                 p.show = (Presence.Mode) intent.getSerializableExtra(MessageCenterService.EXTRA_SHOW);
+                p.timestamp = (Date) intent.getSerializableExtra(MessageCenterService.EXTRA_STAMP);
 
                 // see if bare JID is already present in list
                 boolean add = true;
@@ -158,109 +148,6 @@ public class Syncer {
 
         public List<PresenceItem> getResponse() {
             return (rosterCount >= 0) ? response : null;
-        }
-    }
-
-    /** Used for binding to the message center to send messages. */
-    private final class ClientServiceConnection extends BroadcastReceiver implements ServiceConnection {
-        private MessageCenterServiceLegacy service;
-        private List<String> hashList;
-        private Object response;
-        private Throwable lastError;
-
-        public ClientServiceConnection(List<String> hashList) {
-            this.hashList = hashList;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            service = null;
-            unregisterReceiver();
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder ibinder) {
-            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
-            service = binder.getService();
-            IntentFilter filter = new IntentFilter(MessageCenterServiceLegacy.ACTION_CONNECTED);
-            mLocalBroadcastManager.registerReceiver(this, filter);
-            lookup();
-            mContext.unbindService(this);
-        }
-
-        private void lookup() {
-            RequestJob job = service.lookupUsers(hashList);
-            job.setListener(new RequestListener() {
-                @Override
-                public void starting(ClientThread client, RequestJob job) {
-                    // not used
-                }
-
-                @Override
-                public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
-                    // not used
-                }
-
-                @Override
-                public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
-                    // not used
-                }
-
-                @Override
-                public boolean error(ClientThread client, RequestJob job, Throwable exc) {
-                    lastError = exc;
-                    unregisterReceiver();
-                    synchronized (Syncer.this) {
-                        Syncer.this.notifyAll();
-                    }
-                    return false;
-                }
-
-                @Override
-                public void done(ClientThread client, RequestJob job, String txId) {
-                    // listen for response :)
-                    /*
-                    TxListener listener = new TxListener() {
-                        @Override
-                        public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
-                            synchronized (Syncer.this) {
-                                unregisterReceiver();
-                                response = (UserLookupResponse) pack;
-                                Syncer.this.notifyAll();
-                            }
-                            return false;
-                        }
-                    };
-                    client.setTxListener(txId, listener);
-                    */
-                }
-            });
-        }
-
-        public Object getResponse() {
-            return response;
-        }
-
-        public Throwable getLastError() {
-            return lastError;
-        }
-
-        private void unregisterReceiver() {
-            try {
-                mLocalBroadcastManager.unregisterReceiver(this);
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (MessageCenterServiceLegacy.ACTION_CONNECTED.equals(action) && response == null) {
-                // request user lookup
-                lookup();
-            }
         }
     }
 
@@ -485,13 +372,11 @@ public class Syncer {
                         }
                         else
                             registeredValues.putNull(Users.STATUS);
-                        /*
-                        TODO take from delay extension
-                        if (entry.hasTimestamp())
-                            registeredValues.put(Users.LAST_SEEN, entry.getTimestamp());
+
+                        if (entry.timestamp != null)
+                            registeredValues.put(Users.LAST_SEEN, entry.timestamp.getTime());
                         else
                             registeredValues.remove(Users.LAST_SEEN);
-                         */
 
                         usersProvider.update(offlineUri, registeredValues,
                             Users.HASH + " = ?", new String[] { userId });

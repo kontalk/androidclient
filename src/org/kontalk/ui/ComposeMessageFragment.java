@@ -474,7 +474,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 					userId, uri, mime, newMsg, null, media);
 			if (!getActivity().bindService(
 					new Intent(getActivity().getApplicationContext(),
-							MessageCenterService.class), conn,
+							MessageCenterServiceLegacy.class), conn,
 					Context.BIND_AUTO_CREATE)) {
 				// cannot bind :(
 				// mMessageSenderListener.error(conn.job, new
@@ -560,17 +560,26 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                     }
 
                     // send the message!
+                    Intent i = new Intent(getActivity().getApplicationContext(), MessageCenterService.class);
+                    i.setAction(MessageCenterService.ACTION_MESSAGE);
+                    i.setType(PlainTextMessage.MIME_TYPE);
+                    i.putExtra("org.kontalk.message.toUser", userId);
+                    i.putExtra("org.kontalk.message.body", mText);
+                    getActivity().startService(i);
+
+                    /*
                     ComposerServiceConnection conn = new ComposerServiceConnection(
                             userId, mText.getBytes(), PlainTextMessage.MIME_TYPE,
                             newMsg, key);
                     if (!getActivity().bindService(
                             new Intent(getActivity().getApplicationContext(),
-                                    MessageCenterService.class), conn,
+                                    MessageCenterServiceLegacy.class), conn,
                             Context.BIND_AUTO_CREATE)) {
                         // cannot bind :(
                         // mMessageSenderListener.error(conn.job, new
                         // IllegalArgumentException("unable to bind to service"));
                     }
+                    */
                 }
                 else {
                     getActivity().runOnUiThread(new Runnable() {
@@ -1446,7 +1455,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 PresenceServiceConnection conn = new PresenceServiceConnection(userId, true);
                 getActivity().bindService(
                         new Intent(getActivity().getApplicationContext(),
-                                MessageCenterService.class), conn,
+                                MessageCenterServiceLegacy.class), conn,
                         Context.BIND_AUTO_CREATE);
             }
         }
@@ -1457,7 +1466,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     	    PresenceServiceConnection conn = new PresenceServiceConnection(userId, false);
             getActivity().bindService(
                     new Intent(getActivity().getApplicationContext(),
-                            MessageCenterService.class), conn,
+                            MessageCenterServiceLegacy.class), conn,
                     Context.BIND_AUTO_CREATE);
 
             mPresenceReceiver = new UserPresenceBroadcastReceiver();
@@ -1484,7 +1493,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             PresenceServiceDisconnection conn = new PresenceServiceDisconnection(userId);
             getActivity().bindService(
                     new Intent(getActivity().getApplicationContext(),
-                            MessageCenterService.class), conn,
+                            MessageCenterServiceLegacy.class), conn,
                     Context.BIND_AUTO_CREATE);
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
 	        mPresenceReceiver = null;
