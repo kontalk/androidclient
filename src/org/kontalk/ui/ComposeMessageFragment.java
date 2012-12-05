@@ -563,8 +563,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                     Intent i = new Intent(getActivity().getApplicationContext(), MessageCenterService.class);
                     i.setAction(MessageCenterService.ACTION_MESSAGE);
                     i.setType(PlainTextMessage.MIME_TYPE);
+                    i.putExtra("org.kontalk.message.uri", newMsg);
                     i.putExtra("org.kontalk.message.toUser", userId);
                     i.putExtra("org.kontalk.message.body", mText);
+                    // TODO encryption key
                     getActivity().startService(i);
 
                     /*

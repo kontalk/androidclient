@@ -366,6 +366,10 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getString(context, "pref_status_message", null);
     }
 
+    /**
+     * Retrieves the status message for internal use (e.g. encrypting it if
+     * requested).
+     */
     public static String getStatusMessageInternal(Context context) {
         String status = getStatusMessage(context);
 

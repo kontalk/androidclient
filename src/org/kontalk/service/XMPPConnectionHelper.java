@@ -125,7 +125,7 @@ public class XMPPConnectionHelper {
                         if (mListener != null)
                             mListener.reconnectingIn((int) time);
 
-                        Thread.sleep(500); //(long) (time * 1000));
+                        Thread.sleep((long) (time * 1000));
                         // this is to avoid the exponential backoff counter to be reset
                         continue;
                     }

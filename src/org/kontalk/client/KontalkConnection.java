@@ -11,9 +11,16 @@ public class KontalkConnection extends XMPPConnection {
         super(new ConnectionConfiguration(server.getHost(), server.getPort()));
 
         mServer = server;
-        config.setSASLAuthenticationEnabled(true);
-        config.setReconnectionAllowed(true);
+        // network name
         config.setServiceName(server.getNetwork());
+        // disable reconnection
+        config.setReconnectionAllowed(false);
+        // enable SASL
+        config.setSASLAuthenticationEnabled(true);
+        // we don't need the roster
+        config.setRosterLoadedAtLogin(false);
+        // we will send a custom presence
+        config.setSendPresence(false);
     }
 
 }

@@ -2,33 +2,43 @@ package org.kontalk.service;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.filter.IQTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.kontalk.BuildConfig;
+import org.kontalk.client.ReceivedServerReceipt;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.RawPacket;
+import org.kontalk.client.SentServerReceipt;
+import org.kontalk.client.ServerReceipt;
+import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.StanzaGroupExtensionProvider;
+import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.app.Service;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -123,6 +133,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Main looper. */
     private Looper mLooper;
 
+    /** Messages waiting for server receipt. */
+    private Map<String, Uri> mWaitingReceipt = new HashMap<String, Uri>();
+
     private static final class ServiceHandler extends Handler implements IdleHandler {
         /** A weak reference to the message center instance. */
         WeakReference<MessageCenterService> s;
@@ -181,9 +194,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     return true;
                 }
 
-                // send message
+                // send plain text message
                 case MSG_MESSAGE: {
                     Bundle data = (Bundle) msg.obj;
+
+                    // check if message is already pending
+                    Uri uri = data.getParcelable("org.kontalk.message.uri");
+                    if (uri != null && service.mWaitingReceipt.containsValue(uri)) {
+                        Log.v(TAG, "message already queued and waiting - dropping");
+                    }
+
+                    // TODO encryption
                     org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
                     m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
                     String to = data.getString("org.kontalk.message.to");
@@ -193,8 +214,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                     if (to != null) m.setTo(to);
 
+                    if (uri != null) {
+                        String id = m.getPacketID();
+                        service.mWaitingReceipt.put(id, uri);
+                    }
+
                     m.setBody(data.getString("org.kontalk.message.body"));
+                    m.addExtension(new ServerReceiptRequest());
                     conn.sendPacket(m);
+
                     return true;
                 }
 
@@ -302,6 +330,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void configure(ProviderManager pm) {
         pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtensionProvider());
+        pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
+        pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
     }
 
     @Override
@@ -388,7 +418,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * WARNING this method blocks! Be sure to call it from a separate thread.
      */
     private void createConnection() {
-        if (mConnector == null) {
+        if (mConnector == null || !mConnector.isConnected()) {
             // fallback: get server from preferences
             if (mServer == null)
                 mServer = MessagingPreferences.getEndpointServer(this);
@@ -431,6 +461,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         filter = new PacketTypeFilter(RosterPacket.class);
         conn.addPacketListener(new RosterListener(), filter);
+
+        filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
+        conn.addPacketListener(new MessageListener(), filter);
     }
 
     @Override
@@ -442,11 +475,73 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void authenticated() {
         Log.v(TAG, "authenticated!");
+
+        // send presence
+        sendPresence();
+        // resend failed and pending messages
+        resendPendingMessages();
+        // receipts will be sent while consuming
+
         broadcast(ACTION_AUTHENTICATED);
     }
 
     private void broadcast(String action) {
         mLocalBroadcastManager.sendBroadcast(new Intent(ACTION_AUTHENTICATED));
+    }
+
+    /** Sends our presence. */
+    private void sendPresence() {
+        String status = MessagingPreferences.getStatusMessageInternal(this);
+        Presence p = new Presence(Presence.Type.available);
+        if (status != null)
+            p.setStatus(status);
+
+        mConnector.getConnection().sendPacket(p);
+    }
+
+    private void resendPendingMessages() {
+        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
+            new String[] {
+                Messages._ID,
+                Messages.PEER,
+                Messages.CONTENT,
+                Messages.MIME,
+                Messages.LOCAL_URI,
+                Messages.ENCRYPT_KEY
+            },
+            Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
+            Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
+            Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
+            Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED,
+            null, Messages._ID);
+
+        while (c.moveToNext()) {
+            long id = c.getLong(0);
+            String userId = c.getString(1);
+            byte[] text = c.getBlob(2);
+            String mime = c.getString(3);
+            String _fileUri = c.getString(4);
+            String key = c.getString(5);
+            Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
+
+            Bundle b = new Bundle();
+            b.putParcelable("org.kontalk.message.uri", ContentUris.withAppendedId(Messages.CONTENT_URI, id));
+
+            // check if the message contains some large file to be sent
+            if (_fileUri != null) {
+                // TODO support for binary messages
+            }
+            // we have a simple boring plain text message :(
+            else {
+                b.putString("org.kontalk.message.toUser", userId);
+                b.putString("org.kontalk.message.body", new String(text));
+            }
+
+            Log.d(TAG, "resending failed message " + id);
+            mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_MESSAGE, b));
+        }
+
+        c.close();
     }
 
     /** Checks for network availability. */
@@ -571,6 +666,73 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             Log.v(TAG, "broadcasting presence: " + i);
             mLocalBroadcastManager.sendBroadcast(i);
+        }
+    }
+
+    private final class MessageListener implements PacketListener {
+        private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+
+        @Override
+        public void processPacket(Packet packet) {
+            org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
+            PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
+
+            // delivery receipt
+            if (_ext != null) {
+                ServerReceipt ext = (ServerReceipt) _ext;
+
+                synchronized (mWaitingReceipt) {
+
+                    String id = m.getPacketID();
+                    Uri uri = mWaitingReceipt.get(id);
+                    ContentResolver cr = getContentResolver();
+
+                    if (ext instanceof ReceivedServerReceipt) {
+                        // message has been delivered: check if we have previously stored the server id
+                        if (uri != null) {
+                            ContentValues values = new ContentValues(3);
+                            values.put(Messages.MESSAGE_ID, ext.getId());
+                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                            // TODO this should set timestamp too
+                            cr.update(uri, values, selectionOutgoing, null);
+
+                            mWaitingReceipt.remove(id);
+                        }
+                    }
+                    else if (ext instanceof SentServerReceipt) {
+                    }
+
+                }
+            }
+
+            // incoming message
+            else {
+                // TODO normal message
+            }
+
+            /* TODO
+            Intent i = new Intent(ACTION_MESSAGE);
+            i.putExtra(EXTRA_FROM, p.getFrom());
+            i.putExtra(EXTRA_TO, p.getTo());
+            i.putExtra(EXTRA_TYPE, p.getType().toString());
+            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+
+            Collection<RosterPacket.Item> items = p.getRosterItems();
+            String[] list = new String[items.size()];
+
+            int index = 0;
+            for (Iterator<RosterPacket.Item> iter = items.iterator(); iter.hasNext(); ) {
+                RosterPacket.Item item = iter.next();
+                list[index] = item.getUser();
+                index++;
+            }
+
+            i.putExtra(EXTRA_JIDLIST, list);
+
+            Log.v(TAG, "broadcasting roster: " + i);
+            mLocalBroadcastManager.sendBroadcast(i);
+            */
         }
     }
 
