@@ -401,7 +401,7 @@ public final class MessagingPreferences extends PreferenceActivity {
     }
 
     public static String decryptUserdata(Context context, String data, String key) {
-        if (data != null && data.startsWith(USERDATA_CRYPT_PREFIX)) {
+        if (data != null && data.startsWith(USERDATA_CRYPT_PREFIX) && key != null) {
             Coder coder = new Coder(new PassKey(key));
             data = data.substring(USERDATA_CRYPT_PREFIX.length());
 

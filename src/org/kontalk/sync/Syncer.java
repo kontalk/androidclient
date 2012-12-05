@@ -9,6 +9,7 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
@@ -22,6 +23,7 @@ import org.kontalk.service.MessageCenterServiceLegacy.MessageCenterInterface;
 import org.kontalk.service.RequestJob;
 import org.kontalk.service.RequestListener;
 import org.kontalk.ui.MessagingPreferences;
+import org.w3c.dom.Text;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -44,6 +46,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -59,8 +62,7 @@ public class Syncer {
 
     // using SyncAdapter tag
     private static final String TAG = SyncAdapter.class.getSimpleName();
-    private static final int MAX_READY_WAIT_TIME = 60000;
-    private static final int MAX_PROBE_WAIT_TIME = 30000;
+    private static final int MAX_WAIT_TIME = 60000;
 
     /** {@link Data} column for the display name. */
     public static final String DATA_COLUMN_DISPLAY_NAME = Data.DATA1;
@@ -80,23 +82,28 @@ public class Syncer {
     private final Context mContext;
     private LocalBroadcastManager mLocalBroadcastManager;
 
+    public final static class PresenceItem {
+        public String from;
+        public String status;
+        public Presence.Mode show;
+    }
+
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
-        public final static class PresenceItem {
-            public String from;
-            public String status;
-            public Presence.Mode show;
-        }
         private final List<PresenceItem> response;
         private final Object notifyTo;
-        private boolean notifiedReady;
+        private final String iq;
+        private int presenceCount = -1;
+        private int rosterCount = -1;
 
-        public PresenceBroadcastReceiver(Object notifyTo) {
+        public PresenceBroadcastReceiver(String iq, Object notifyTo) {
             response = new ArrayList<PresenceItem>();
             this.notifyTo = notifyTo;
+            this.iq = iq;
         }
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.v(TAG, "broadcast received " + intent);
             String action = intent.getAction();
 
             if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
@@ -104,25 +111,53 @@ public class Syncer {
                 p.from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                 p.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
                 p.show = (Presence.Mode) intent.getSerializableExtra(MessageCenterService.EXTRA_SHOW);
-                response.add(p);
-                synchronized (notifyTo) {
-                    if (!notifiedReady) {
-                        notifiedReady = true;
+
+                // see if bare JID is already present in list
+                boolean add = true;
+                String compare = StringUtils.parseBareAddress(p.from);
+                for (PresenceItem item : response) {
+                    if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                        add = false;
+                        break;
+                    }
+                }
+
+                if (add) {
+                    response.add(p);
+                    if (presenceCount < 0)
+                        presenceCount = 1;
+                    else
+                        presenceCount++;
+                }
+
+                // done with presence data
+                Log.v(TAG, "presence count " + presenceCount + ", roster with " + rosterCount + " elements");
+                if (rosterCount >= 0 && presenceCount >= rosterCount) {
+                    synchronized (notifyTo) {
                         notifyTo.notifyAll();
                     }
                 }
             }
 
-            else if (MessageCenterService.ACTION_AUTHENTICATED.equals(action)) {
-                synchronized (notifyTo) {
-                    notifiedReady = true;
-                    notifyTo.notifyAll();
+            // roster result received
+            else if (MessageCenterService.ACTION_ROSTER.equals(action)) {
+                String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                if (iq.equals(id)) {
+                    String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
+                    rosterCount = list.length;
+
+                    // all presence data already received (WHATT???)
+                    Log.v(TAG, "roster with " + rosterCount + " elements, presence count " + presenceCount);
+                    if (presenceCount >= 0 && rosterCount >= presenceCount)
+                        synchronized (notifyTo) {
+                            notifyTo.notifyAll();
+                        }
                 }
             }
         }
 
         public List<PresenceItem> getResponse() {
-            return response;
+            return (rosterCount >= 0) ? response : null;
         }
     }
 
@@ -381,35 +416,25 @@ public class Syncer {
             mLocalBroadcastManager = LocalBroadcastManager.getInstance(mContext);
 
             // register presence broadcast receiver
-            BroadcastReceiver receiver = new PresenceBroadcastReceiver(this);
+            String iq = Packet.nextID();
+            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
-            f.addAction(MessageCenterService.ACTION_AUTHENTICATED);
+            f.addAction(MessageCenterService.ACTION_ROSTER);
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
-            sendRoster(hashList);
-            //presenceProbe(hashList);
+            sendRoster(iq, hashList);
 
             // wait for the service to complete its job
             synchronized (this) {
                 // wait for connection
                 try {
-                    wait(MAX_READY_WAIT_TIME);
+                    wait(MAX_WAIT_TIME);
                 }
                 catch (InterruptedException e) {
                     // simulate canceled operation
                     mCanceled = true;
                 }
-                Log.v(TAG, "connected, waiting for presence probes");
-                // wait for presence probes
-                try {
-                    wait(MAX_PROBE_WAIT_TIME);
-                }
-                catch (InterruptedException e) {
-                    // simulate canceled operation
-                    mCanceled = true;
-                }
-                Log.v(TAG, "done waiting, checking results");
             }
 
             mLocalBroadcastManager.unregisterReceiver(receiver);
@@ -417,8 +442,7 @@ public class Syncer {
             // last chance to quit
             if (mCanceled) throw new OperationCanceledException();
 
-            /*
-            Object res = conn.getResponse();
+            List<PresenceItem> res = receiver.getResponse();
             if (res != null) {
                 ArrayList<ContentProviderOperation> operations =
                     new ArrayList<ContentProviderOperation>();
@@ -437,9 +461,10 @@ public class Syncer {
 
                 ContentValues registeredValues = new ContentValues(3);
                 registeredValues.put(Users.REGISTERED, 1);
-                for (int i = 0; i < res.getEntryCount(); i++) {
-                    UserLookupResponse.Entry entry = res.getEntry(i);
-                    String userId = entry.getUserId().toString();
+                for (int i = 0; i < res.size(); i++) {
+                    PresenceItem entry = res.get(i);
+                    String userId = StringUtils.parseName(entry.from);
+
                     final RawPhoneNumberEntry data = lookupNumbers.get(userId);
                     if (data != null) {
                         // add contact
@@ -451,21 +476,25 @@ public class Syncer {
                     else {
                         syncResult.stats.numSkippedEntries++;
                     }
+
                     // update fields
                     try {
-                        if (entry.hasStatus()) {
-                            String status = MessagingPreferences.decryptUserdata(mContext, entry.getStatus(), data.number);
+                        if (!TextUtils.isEmpty(entry.status)) {
+                            String status = MessagingPreferences.decryptUserdata(mContext, entry.status, data != null ? data.number : null);
                             registeredValues.put(Users.STATUS, status);
                         }
                         else
                             registeredValues.putNull(Users.STATUS);
+                        /*
+                        TODO take from delay extension
                         if (entry.hasTimestamp())
                             registeredValues.put(Users.LAST_SEEN, entry.getTimestamp());
                         else
                             registeredValues.remove(Users.LAST_SEEN);
+                         */
 
                         usersProvider.update(offlineUri, registeredValues,
-                            Users.HASH + " = ?", new String[] { data.hash });
+                            Users.HASH + " = ?", new String[] { userId });
                     }
                     catch (RemoteException e) {
                         Log.e(TAG, "error updating users database", e);
@@ -504,17 +533,17 @@ public class Syncer {
 
             // timeout or error
             else {
+                /* TODO
                 Throwable exc = conn.getLastError();
                 if (exc != null) {
                     Log.e(TAG, "network error - aborting sync", exc);
                 }
-                else {
+                else {*/
                     Log.w(TAG, "connection timeout - aborting sync");
-                }
+                //}
 
                 syncResult.stats.numIoExceptions++;
             }
-            */
         }
     }
 
@@ -522,35 +551,11 @@ public class Syncer {
         return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
     }
 
-    private void sendRoster(List<String> list) {
-        // FIXME this might not be the server we are connected to right now
-        EndpointServer server = MessagingPreferences.getEndpointServer(mContext);
-
-        int c = list.size();
-        RosterPacket iq = new RosterPacket();
-        iq.setType(IQ.Type.GET);
-        for (int i = 0; i < c; i++)
-            iq.addRosterItem(new RosterPacket.Item(list.get(i) + "@" + server.getNetwork(), null));
-
+    private void sendRoster(String id, List<String> list) {
         Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PACKET);
-        i.putExtra(MessageCenterService.EXTRA_PACKET, iq.toXML());
-        mContext.startService(i);
-    }
-
-    private void presenceProbe(List<String> list) {
-        // FIXME this might not be the server we are connected to right now
-        EndpointServer server = MessagingPreferences.getEndpointServer(mContext);
-
-        String[] stanzas = new String[list.size()];
-
-        int c = list.size();
-        for (int i = 0; i < c; i++)
-            stanzas[i] = ProbePresence.quickXML(Packet.nextID(), list.get(i) + "@" + server.getNetwork());
-
-        Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PACKET);
-        i.putExtra(MessageCenterService.EXTRA_PACKET_GROUP, stanzas);
+        i.setAction(MessageCenterService.ACTION_ROSTER);
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
+        i.putExtra(MessageCenterService.EXTRA_USERLIST, list.toArray(new String[0]));
         mContext.startService(i);
     }
 
