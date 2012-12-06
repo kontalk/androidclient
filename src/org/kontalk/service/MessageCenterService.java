@@ -2,6 +2,7 @@ package org.kontalk.service;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -688,19 +689,49 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     ContentResolver cr = getContentResolver();
 
                     if (ext instanceof ReceivedServerReceipt) {
+                        long changed;
+                        Date date = ((ReceivedServerReceipt)ext).getTimestamp();
+                        if (date != null)
+                            changed = date.getTime();
+                        else
+                            changed = System.currentTimeMillis();
+
                         // message has been delivered: check if we have previously stored the server id
                         if (uri != null) {
                             ContentValues values = new ContentValues(3);
                             values.put(Messages.MESSAGE_ID, ext.getId());
                             values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                            // TODO this should set timestamp too
+                            values.put(Messages.STATUS_CHANGED, changed);
                             cr.update(uri, values, selectionOutgoing, null);
 
                             mWaitingReceipt.remove(id);
                         }
+                        else {
+                            Uri msg = Messages.getUri(ext.getId());
+                            ContentValues values = new ContentValues(2);
+                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                            values.put(Messages.STATUS_CHANGED, changed);
+                            cr.update(msg, values, selectionOutgoing, null);
+                        }
                     }
+
                     else if (ext instanceof SentServerReceipt) {
+                        if (uri != null) {
+                            ContentValues values = new ContentValues(3);
+                            values.put(Messages.MESSAGE_ID, ext.getId());
+                            values.put(Messages.STATUS, Messages.STATUS_SENT);
+                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                            cr.update(uri, values, selectionOutgoing, null);
+
+                            mWaitingReceipt.remove(id);
+                        }
+                        else {
+                            Uri msg = Messages.getUri(ext.getId());
+                            ContentValues values = new ContentValues(2);
+                            values.put(Messages.STATUS, Messages.STATUS_SENT);
+                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                            cr.update(msg, values, selectionOutgoing, null);
+                        }
                     }
 
                 }
