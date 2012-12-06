@@ -1,5 +1,6 @@
 package org.kontalk.service;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Date;
@@ -16,6 +17,7 @@ import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.BuildConfig;
 import org.kontalk.client.ReceivedServerReceipt;
 import org.kontalk.client.EndpointServer;
@@ -25,10 +27,13 @@ import org.kontalk.client.ServerReceipt;
 import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.StanzaGroupExtensionProvider;
+import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
+import org.kontalk.util.RandomString;
 
 import android.app.Service;
 import android.content.ContentResolver;
@@ -37,6 +42,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -679,15 +685,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
 
             // delivery receipt
-            if (_ext != null) {
+            if (_ext != null && !ServerReceiptRequest.ELEMENT_NAME.equals(_ext.getElementName())) {
                 ServerReceipt ext = (ServerReceipt) _ext;
-
                 synchronized (mWaitingReceipt) {
-
                     String id = m.getPacketID();
                     Uri uri = mWaitingReceipt.get(id);
                     ContentResolver cr = getContentResolver();
 
+                    // TODO compress this code
                     if (ext instanceof ReceivedServerReceipt) {
                         long changed;
                         Date date = ((ReceivedServerReceipt)ext).getTimestamp();
@@ -739,7 +744,41 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // incoming message
             else {
-                // TODO normal message
+                String msgId = null;
+                if (_ext != null) {
+                    // TODO ServerReceiptRequest req = (ServerReceiptRequest) _ext;
+                }
+
+                if (msgId == null)
+                    msgId = "incoming" + RandomString.generate(6);
+
+                String from = m.getFrom();
+                String sender = StringUtils.parseName(from);
+                byte[] content = m.getBody().getBytes();
+
+                // save to local storage
+                ContentValues values = new ContentValues();
+                values.put(Messages.MESSAGE_ID, msgId);
+                values.put(Messages.PEER, sender);
+                values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
+                values.put(Messages.CONTENT, content);
+                values.put(Messages.ENCRYPTED, false);
+                values.putNull(Messages.ENCRYPT_KEY);
+                values.put(Messages.UNREAD, true);
+                values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+                // TODO consider delay extension
+                values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+                values.put(Messages.LENGTH, content.length);
+                try {
+                    getContentResolver().insert(Messages.CONTENT_URI, values);
+                }
+                catch (SQLiteConstraintException econstr) {
+                    // duplicated message, skip it
+                }
+
+                if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
+                    // update notifications (delayed)
+                    MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
             }
 
             /* TODO

@@ -530,7 +530,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                values.put(Messages.ENCRYPT_KEY, key);
+                // TODO values.put(Messages.ENCRYPT_KEY, key);
                 values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);
