@@ -266,7 +266,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             mStep = STEP_INIT;
         }
         finally {
-            mConnector.getConnection().disconnect();
+            //mConnector.getConnection().disconnect();
         }
     }
 
@@ -332,13 +332,15 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
     }
 
-    private boolean checkServer() throws IOException {
+    private boolean checkServer() {
         // start connection in limited mode
         mConnector.setListener(this);
         mConnector.connect();
 
         // request discovery#info
         mConnector.getConnection().sendPacket(new DiscoverInfo());
+
+        return true;
 
         /*
         mClient.reconnect();
@@ -357,7 +359,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
         */
         // TODO
-        throw new IOException("unable to request server information");
+        //throw new IOException("unable to request server information");
     }
 
     public synchronized void setListener(NumberValidatorListener listener, Handler handler) {
