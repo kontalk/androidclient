@@ -23,6 +23,11 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jivesoftware.smack.Connection;
+import org.jivesoftware.smackx.packet.DiscoverInfo;
+import org.kontalk.message.PlainTextMessage;
+import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.XMPPConnectionHelper;
+import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.content.BroadcastReceiver;
@@ -49,7 +54,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class NumberValidator implements Runnable {
+public class NumberValidator implements Runnable, ConnectionHelperListener {
     private static final String TAG = NumberValidator.class.getSimpleName();
 
     private static final int MAX_SMS_WAIT_TIME = 30000;
@@ -66,7 +71,7 @@ public class NumberValidator implements Runnable {
     private final Context mContext;
     private final EndpointServer mServer;
     private final String mPhone;
-    private final Connection mClient;
+    private final XMPPConnectionHelper mConnector;
     private final boolean mManual;
     private NumberValidatorListener mListener;
     private volatile int mStep;
@@ -83,7 +88,7 @@ public class NumberValidator implements Runnable {
         mContext = context.getApplicationContext();
         mServer = server;
         mPhone = phone;
-        mClient = new KontalkConnection(mServer);
+        mConnector = new XMPPConnectionHelper(context, mServer, true);
         mManual = manual;
     }
 
@@ -261,7 +266,7 @@ public class NumberValidator implements Runnable {
             mStep = STEP_INIT;
         }
         finally {
-            mClient.disconnect();
+            mConnector.getConnection().disconnect();
         }
     }
 
@@ -274,7 +279,7 @@ public class NumberValidator implements Runnable {
             clearTimeout();
 
             if (mThread != null) {
-                mClient.disconnect();
+                mConnector.getConnection().disconnect();
                 mThread.interrupt();
                 mThread.join();
                 mThread = null;
@@ -328,6 +333,13 @@ public class NumberValidator implements Runnable {
     }
 
     private boolean checkServer() throws IOException {
+        // start connection in limited mode
+        mConnector.setListener(this);
+        mConnector.connect();
+
+        // request discovery#info
+        mConnector.getConnection().sendPacket(new DiscoverInfo());
+
         /*
         mClient.reconnect();
         ServerInfoResponse info = mClient.serverinfoWait();
@@ -466,5 +478,53 @@ public class NumberValidator implements Runnable {
         catch (Exception e) {
             return null;
         }
+    }
+
+    @Override
+    public void connectionClosed() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void connectionClosedOnError(Exception arg0) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void reconnectingIn(int arg0) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void reconnectionFailed(Exception arg0) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void reconnectionSuccessful() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void created() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void connected() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void authenticated() {
+        // TODO Auto-generated method stub
+
     }
 }

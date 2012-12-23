@@ -18,7 +18,7 @@
 
 package org.kontalk.util;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 
 import android.content.Context;
 import android.util.SparseIntArray;

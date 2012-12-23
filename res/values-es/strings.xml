@@ -17,7 +17,7 @@
  -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Kontalk</string>
+    <string name="app_name">Kontalk XMPP</string>
     <string name="service_name">Centro Mensajes</string>
     <string name="authenticator_name">Servicio Autenticación</string>
     <string name="sync_service_name">Sinc Contactos</string>
@@ -192,7 +192,7 @@
     <string name="serverlist_updating">Actualizando lista servidores&#8230;</string>
     <string name="serverlist_update_error">No se puede descargar la lista de servidores. Por favor, inténtelo más tarde.</string>
     <string name="serverlist_update_nodata">No hay ninguna lista de servidores disponible.</string>
-    
+
     <string name="pref_remove_prefix">Prefijo de composición</string>
     <string name="pref_title_remove_prefix">Borrar un prefijo en Kontalk para las correspondencia entre números de teléfono</string>
 

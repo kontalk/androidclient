@@ -1,6 +1,6 @@
 package org.kontalk.util;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.sync.Syncer;

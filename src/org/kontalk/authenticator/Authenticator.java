@@ -18,7 +18,7 @@
 
 package org.kontalk.authenticator;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.ui.NumberValidation;
 
 import android.accounts.AbstractAccountAuthenticator;

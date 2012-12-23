@@ -2,7 +2,7 @@ package org.kontalk.message;
 
 import java.util.List;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 
 import android.content.Context;
 

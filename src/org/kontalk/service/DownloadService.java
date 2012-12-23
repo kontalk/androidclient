@@ -26,7 +26,7 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;

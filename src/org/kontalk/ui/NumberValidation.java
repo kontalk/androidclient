@@ -20,7 +20,7 @@ package org.kontalk.ui;
 
 import java.net.SocketException;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;

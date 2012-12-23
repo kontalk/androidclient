@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;

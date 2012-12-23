@@ -20,7 +20,7 @@ package org.kontalk.ui;
 
 import java.util.regex.Pattern;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.data.Contact;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;

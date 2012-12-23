@@ -3,7 +3,7 @@ package org.kontalk.ui;
 import java.io.IOException;
 import java.util.Random;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.client.MessageSender;
 import org.kontalk.data.Contact;
 import org.kontalk.message.PlainTextMessage;

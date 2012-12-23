@@ -1,6 +1,7 @@
 package org.kontalk;
 
 
+
 /**
  * isLoggable-aware wrapper around {@link android.util.Log}.
  * @author Daniele Ricci

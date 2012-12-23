@@ -17,7 +17,7 @@
  -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Kontalk</string>
+    <string name="app_name">Kontalk XMPP</string>
     <string name="service_name">Message Center</string>
     <string name="authenticator_name">Authentication Service</string>
     <string name="sync_service_name">Sync Contacts</string>
@@ -192,7 +192,7 @@
     <string name="serverlist_updating">Updating server list&#8230;</string>
     <string name="serverlist_update_error">Unable to download server list. Please retry later.</string>
     <string name="serverlist_update_nodata">No available server list found.</string>
-    
+
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
 
@@ -218,7 +218,7 @@
     <string name="status_activity_title">Status message</string>
     <string name="hint_status_entry">Type your status message here</string>
     <string name="header_recent_status">Recently used status messages</string>
-    
+
     <string name="title_offline_mode_warning">Offline mode</string>
     <string name="message_offline_mode_warning">In offline mode Kontalk will not connect to the server until you go back to online mode. You will not be able to send or receive messages and users will see you as offline.</string>
 

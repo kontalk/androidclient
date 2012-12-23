@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.crypto.Coder;
 import org.kontalk.util.MediaStorage;
 

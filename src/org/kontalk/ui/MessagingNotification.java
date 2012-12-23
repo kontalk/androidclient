@@ -18,7 +18,7 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;

@@ -18,7 +18,7 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.data.SearchItem;
 
 import android.app.SearchManager;

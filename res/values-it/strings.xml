@@ -17,7 +17,7 @@
  -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Kontalk</string>
+    <string name="app_name">Kontalk XMPP</string>
     <string name="service_name">Centro Messaggi</string>
     <string name="authenticator_name">Servizio Autenticazione</string>
     <string name="sync_service_name">Sincronizzazione Contatti</string>
@@ -218,7 +218,7 @@
     <string name="status_activity_title">Messaggio di stato</string>
     <string name="hint_status_entry">Inserisci il tuo messaggio di stato</string>
     <string name="header_recent_status">Messaggi di status recenti</string>
-    
+
     <string name="title_offline_mode_warning">Modalità offline</string>
     <string name="message_offline_mode_warning">Durante la modalità offline Kontalk non si connetterà al server fino a quando non tornerai online. Non potrai inviare o ricevere messaggi e gli utenti ti vedranno offline.</string>
 

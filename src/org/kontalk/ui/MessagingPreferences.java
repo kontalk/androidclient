@@ -21,7 +21,7 @@ package org.kontalk.ui;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;

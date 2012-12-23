@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.MessageSender;
 import org.kontalk.crypto.Coder;

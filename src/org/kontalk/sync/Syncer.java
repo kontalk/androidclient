@@ -9,7 +9,7 @@ import java.util.Map;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;

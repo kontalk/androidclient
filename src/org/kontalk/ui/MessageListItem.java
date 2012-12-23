@@ -25,7 +25,7 @@ import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.data.Contact;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;

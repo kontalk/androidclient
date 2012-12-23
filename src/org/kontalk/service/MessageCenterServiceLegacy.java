@@ -36,7 +36,7 @@ import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.kontalk.GCMIntentService;
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientListener;
 import org.kontalk.client.EndpointServer;

@@ -1,6 +1,5 @@
 package org.kontalk.service;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Date;
@@ -19,16 +18,15 @@ import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.BuildConfig;
-import org.kontalk.client.ReceivedServerReceipt;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.RawPacket;
+import org.kontalk.client.ReceivedServerReceipt;
 import org.kontalk.client.SentServerReceipt;
 import org.kontalk.client.ServerReceipt;
 import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.StanzaGroupExtensionProvider;
 import org.kontalk.message.PlainTextMessage;
-import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingNotification;
@@ -430,7 +428,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (mServer == null)
                 mServer = MessagingPreferences.getEndpointServer(this);
 
-            mConnector = new XMPPConnectionHelper(this, mServer);
+            mConnector = new XMPPConnectionHelper(this, mServer, false);
             mConnector.setListener(this);
             mConnector.connect();
         }

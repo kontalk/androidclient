@@ -59,19 +59,39 @@ public class XMPPConnectionHelper {
     /** HTTP connection to server. */
     protected ClientHTTPConnection mHttpConn;
 
-    public XMPPConnectionHelper(Context context, EndpointServer server) {
+    /** Limited connection flag. */
+    protected boolean mLimited;
+
+    /** Retry enabled flag. */
+    protected boolean mRetryEnabled = true;
+
+    /**
+     * Creates a new instance.
+     * @param context
+     * @param server server to connect to.
+     * @param limited if true connection will be carried out even when there is
+     * no token; connection will be available for unauthenticated operations
+     * only (e.g. registration).
+     */
+    public XMPPConnectionHelper(Context context, EndpointServer server, boolean limited) {
         mContext = context;
         mServer = server;
+        mLimited = limited;
     }
 
     public void setListener(ConnectionHelperListener listener) {
         mListener = listener;
     }
 
+    public void setRetryEnabled(boolean enabled) {
+        mRetryEnabled = enabled;
+    }
+
     public void connect() {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
-        if (mAuthToken == null) {
+        if (mAuthToken == null && !mLimited) {
             Log.w(TAG, "invalid token - exiting");
+            MessageCenterService.stop(mContext);
             return;
         }
 
@@ -93,7 +113,8 @@ public class XMPPConnectionHelper {
                 }
 
                 // login
-                mConn.login("dummy", mAuthToken);
+                if (mAuthToken != null)
+                    mConn.login("dummy", mAuthToken);
 
                 if (mListener != null)
                     mListener.authenticated();
@@ -109,28 +130,34 @@ public class XMPPConnectionHelper {
                 // uncontrolled interrupt - handle errors
                 if (!mInterrupted) {
                     Log.e(TAG, "connection error", ie);
-                    try {
-                        // max reconnections - idle message center
-                        if (mRetryCount >= MAX_IDLE_BACKOFF) {
-                            Log.d(TAG, "maximum number of reconnections - stopping message center");
-                            MessageCenterService.stop(mContext);
-                            // no need to continue
+                    if (mRetryEnabled) {
+                        try {
+                            // max reconnections - idle message center
+                            if (mRetryCount >= MAX_IDLE_BACKOFF) {
+                                Log.d(TAG, "maximum number of reconnections - stopping message center");
+                                MessageCenterService.stop(mContext);
+                                // no need to continue
+                                break;
+                            }
+
+                            // exponential backoff :)
+                            float time = (float) ((Math.pow(2, ++mRetryCount)) - 1) / 2;
+                            Log.d(TAG, "retrying in " + time + " seconds (retry="+mRetryCount+")");
+                            // notify listener we are reconnecting
+                            if (mListener != null)
+                                mListener.reconnectingIn((int) time);
+
+                            Thread.sleep((long) (time * 1000));
+                            // this is to avoid the exponential backoff counter to be reset
+                            continue;
+                        }
+                        catch (InterruptedException intexc) {
+                            // interrupted - exit
                             break;
                         }
-
-                        // exponential backoff :)
-                        float time = (float) ((Math.pow(2, ++mRetryCount)) - 1) / 2;
-                        Log.d(TAG, "retrying in " + time + " seconds (retry="+mRetryCount+")");
-                        // notify listener we are reconnecting
-                        if (mListener != null)
-                            mListener.reconnectingIn((int) time);
-
-                        Thread.sleep((long) (time * 1000));
-                        // this is to avoid the exponential backoff counter to be reset
-                        continue;
                     }
-                    catch (InterruptedException intexc) {
-                        // interrupted - exit
+                    else {
+                        // retry disabled - exit
                         break;
                     }
                 }

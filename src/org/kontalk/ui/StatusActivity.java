@@ -1,6 +1,6 @@
 package org.kontalk.ui;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.service.MessageCenterServiceLegacy;
 
 import android.app.Activity;

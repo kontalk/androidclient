@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.message.PlainTextMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;

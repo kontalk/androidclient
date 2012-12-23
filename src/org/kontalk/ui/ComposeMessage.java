@@ -20,7 +20,7 @@ package org.kontalk.ui;
 
 import java.util.regex.Pattern;
 
-import org.kontalk.R;
+import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.data.Contact;
