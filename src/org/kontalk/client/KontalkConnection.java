@@ -2,6 +2,9 @@ package org.kontalk.client;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.packet.Presence;
+
+import android.util.Log;
 
 public class KontalkConnection extends XMPPConnection {
 
@@ -21,6 +24,18 @@ public class KontalkConnection extends XMPPConnection {
         config.setRosterLoadedAtLogin(false);
         // we will send a custom presence
         config.setSendPresence(false);
+    }
+
+    @Override
+    public void disconnect() {
+        Log.v("KontalkConnection", "disconnecting (no presence)");
+        super.disconnect();
+    }
+
+    @Override
+    public synchronized void disconnect(Presence presence) {
+        Log.v("KontalkConnection", "disconnecting ("+presence+")");
+        super.disconnect(presence);
     }
 
 }

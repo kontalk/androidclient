@@ -18,14 +18,20 @@
 
 package org.kontalk.client;
 
-import java.io.IOException;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Locale;
 
 import org.jivesoftware.smack.Connection;
-import org.jivesoftware.smackx.packet.DiscoverInfo;
-import org.kontalk.message.PlainTextMessage;
-import org.kontalk.service.MessageCenterService;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Registration;
+import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smackx.Form;
+import org.jivesoftware.smackx.FormField;
+import org.jivesoftware.smackx.packet.DataForm;
+import org.jivesoftware.smackx.provider.DataFormProvider;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingPreferences;
@@ -61,12 +67,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     /** Initialization */
     public static final int STEP_INIT = 0;
-    /** Serverinfo check */
-    public static final int STEP_CHECK_INFO = 1;
     /** Validation step (sending phone number and waiting for SMS) */
-    public static final int STEP_VALIDATION = 2;
+    public static final int STEP_VALIDATION = 1;
     /** Requesting authentication token */
-    public static final int STEP_AUTH_TOKEN = 3;
+    public static final int STEP_AUTH_TOKEN = 2;
 
     private final Context mContext;
     private final EndpointServer mServer;
@@ -78,7 +82,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private CharSequence mValidationCode;
     private BroadcastReceiver mSmsReceiver;
     private volatile String mSmsFrom;
-    private boolean mAlreadyChecked;
 
     private Runnable mTimeout;
     private Handler mHandler;
@@ -90,6 +93,13 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mPhone = phone;
         mConnector = new XMPPConnectionHelper(context, mServer, true);
         mManual = manual;
+
+        configure(ProviderManager.getInstance());
+    }
+
+    private void configure(ProviderManager pm) {
+        pm.addIQProvider("query", "jabber:iq:register", new RegistrationFormProvider());
+        pm.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
     }
 
     public synchronized void start() {
@@ -106,6 +116,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 // unregister previous receiver
                 cancelBroadcastReceiver();
 
+                /*
                 // check that server is authorized to generate auth tokens
                 mStep = STEP_CHECK_INFO;
                 boolean supportsToken = checkServer();
@@ -118,8 +129,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         return;
                     }
                 }
-
-                mAlreadyChecked = true;
+                */
 
                 if (!mManual) {
                     // setup the sms receiver
@@ -181,82 +191,90 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
-                /*
-                mClient.reconnect();
-                RegistrationResponse res = mClient.registerWait(mPhone);
-                if (mListener != null) {
-                    // clear previous timeout
-                    clearTimeout();
-                    // set timeout
-                    if (!mManual)
-                        setTimeout();
+                initConnection();
+                Packet form = createRegistrationForm();
 
-                    if (res.getStatus() == RegistrationStatus.STATUS_CONTINUE) {
+                // setup listener for form response
+                Connection conn = mConnector.getConnection();
+                conn.addPacketListener(new PacketListener() {
+                    public void processPacket(Packet packet) {
+                        IQ iq = (IQ) packet;
+                        if (iq.getType() == IQ.Type.RESULT) {
+                            DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
+                            if (response != null) {
+                                // ok! message will be sent
+                                Iterator<FormField> iter = response.getFields();
+                                while (iter.hasNext()) {
+                                    FormField field = iter.next();
+                                    if (field.getVariable().equals("from")) {
+                                        mSmsFrom = field.getValues().next();
+                                        Log.d(TAG, "using sms sender id: " + mSmsFrom);
+                                        mListener.onValidationRequested(NumberValidator.this);
+                                        synchronized (mSmsReceiver) {
+                                            mSmsReceiver.notifyAll();
+                                        }
 
-                        if (!mManual) {
-                            if (res.hasSmsFrom()) {
-                                mSmsFrom = res.getSmsFrom();
-                                Log.d(TAG, "using sms sender id: " + mSmsFrom);
-                                mListener.onValidationRequested(this);
-                                synchronized (mSmsReceiver) {
-                                    mSmsReceiver.notifyAll();
+                                        // prevent error handling
+                                        return;
+                                    }
                                 }
                             }
-                            else {
-                                // no sms from identification?
-                                throw new IllegalArgumentException("no sms from id");
-                            }
                         }
-                        else {
-                            mListener.onValidationRequested(this);
-                        }
-                    }
-                    else {
+
                         // validation failed :(
-                        mListener.onValidationFailed(this, res.getStatus());
+                        // TODO check for service-unavailable errors (meaning
+                        // we must call onServerCheckFailed()
+                        mListener.onValidationFailed(NumberValidator.this, -1);
                         mStep = STEP_INIT;
                         return;
                     }
-                }
-                */
+                }, new PacketIDFilter(form.getPacketID()));
 
-                // validation succeded! Waiting for the sms...
+                // send registration form
+                conn.sendPacket(form);
             }
 
             // sms received, request authentication token
             else if (mStep == STEP_AUTH_TOKEN) {
-                if (!mAlreadyChecked) {
-                    // server doesn't support authentication token
-                    if (!checkServer()) {
-                        if (mListener != null) {
-                            mStep = STEP_INIT;
-                            mListener.onServerCheckFailed(this);
-                            return;
-                        }
-                    }
-                }
-
                 Log.d(TAG, "requesting authentication token");
 
-                /*
-                mClient.reconnect();
-                ValidationResponse res = mClient.validateWait(mValidationCode.toString());
-                if (mListener != null) {
-                    if (res.getStatus() == ValidationStatus.STATUS_SUCCESS) {
-                        if (res.hasToken()) {
-                            String token = res.getToken();
-                            if (!TextUtils.isEmpty(token))
-                                mListener.onAuthTokenReceived(this, token);
+                initConnection();
+                Packet form = createValidationForm();
+
+                Connection conn = mConnector.getConnection();
+                conn.addPacketListener(new PacketListener() {
+                    public void processPacket(Packet packet) {
+                        IQ iq = (IQ) packet;
+                        if (iq.getType() == IQ.Type.RESULT) {
+                            DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
+                            if (response != null) {
+                                // ok! message will be sent
+                                Iterator<FormField> iter = response.getFields();
+                                while (iter.hasNext()) {
+                                    FormField field = iter.next();
+                                    if (field.getVariable().equals("token")) {
+                                        String token = field.getValues().next();
+                                        if (!TextUtils.isEmpty(token))
+                                            mListener.onAuthTokenReceived(NumberValidator.this, token);
+
+                                        // prevent error handling
+                                        return;
+                                    }
+                                }
+                            }
                         }
-                    }
-                    else {
-                        // authentication failed :(
-                        mListener.onAuthTokenFailed(this, res.getStatus());
+
+                        // validation failed :(
+                        // TODO check for service-unavailable errors (meaning
+                        // we must call onServerCheckFailed()
+                        mListener.onAuthTokenFailed(NumberValidator.this, -1);
                         mStep = STEP_INIT;
                         return;
                     }
-                }
-                */
+                }, new PacketIDFilter(form.getPacketID()));
+
+                // send registration form
+                conn.sendPacket(form);
             }
         }
         catch (Throwable e) {
@@ -264,9 +282,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 mListener.onError(this, e);
 
             mStep = STEP_INIT;
-        }
-        finally {
-            //mConnector.getConnection().disconnect();
         }
     }
 
@@ -332,34 +347,53 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
     }
 
-    private boolean checkServer() {
-        // start connection in limited mode
-        mConnector.setListener(this);
-        mConnector.connect();
-
-        // request discovery#info
-        mConnector.getConnection().sendPacket(new DiscoverInfo());
-
-        return true;
-
-        /*
-        mClient.reconnect();
-        ServerInfoResponse info = mClient.serverinfoWait();
-        if (info != null) {
-            List<String> list = info.getSupportsList();
-            for (String support : list) {
-                if ("auth_token".equals(support))
-                    return true;
-            }
-            return false;
+    private void initConnection() {
+        if (!mConnector.isConnected()) {
+            mConnector.setListener(this);
+            mConnector.connect();
         }
-        else {
-            // error - notify listener
-            throw new IOException("unable to request server information");
-        }
-        */
-        // TODO
-        //throw new IOException("unable to request server information");
+    }
+
+    private Packet createRegistrationForm() {
+        Registration iq = new Registration();
+        iq.setType(IQ.Type.SET);
+        iq.setTo(mConnector.getConnection().getServiceName());
+        Form form = new Form(Form.TYPE_SUBMIT);
+
+        FormField type = new FormField("FORM_TYPE");
+        type.setType(FormField.TYPE_HIDDEN);
+        type.addValue("jabber:iq:register");
+        form.addField(type);
+
+        FormField phone = new FormField("phone");
+        phone.setLabel("Phone number");
+        phone.setType(FormField.TYPE_TEXT_SINGLE);
+        phone.addValue(mPhone);
+        form.addField(phone);
+
+        iq.addExtension(form.getDataFormToSend());
+        return iq;
+    }
+
+    private Packet createValidationForm() {
+        Registration iq = new Registration();
+        iq.setType(IQ.Type.SET);
+        iq.setTo(mConnector.getConnection().getServiceName());
+        Form form = new Form(Form.TYPE_SUBMIT);
+
+        FormField type = new FormField("FORM_TYPE");
+        type.setType(FormField.TYPE_HIDDEN);
+        type.addValue("http://kontalk.org/protocol/register#code");
+        form.addField(type);
+
+        FormField phone = new FormField("code");
+        phone.setLabel("Validation code");
+        phone.setType(FormField.TYPE_TEXT_SINGLE);
+        phone.addValue(mValidationCode.toString());
+        form.addField(phone);
+
+        iq.addExtension(form.getDataFormToSend());
+        return iq;
     }
 
     public synchronized void setListener(NumberValidatorListener listener, Handler handler) {
@@ -402,7 +436,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     public static CharSequence getCountryCode(Context context) {
         final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        final String regionCode = tm.getSimCountryIso().toUpperCase();
+        final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
         int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
         return cc > 0 ? String.valueOf(cc) : "";
     }
@@ -474,7 +508,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static PhoneNumber getMyNumber(Context context) {
         try {
             final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            final String regionCode = tm.getSimCountryIso().toUpperCase();
+            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
             return PhoneNumberUtil.getInstance().parse(tm.getLine1Number(), regionCode);
         }
         catch (Exception e) {
