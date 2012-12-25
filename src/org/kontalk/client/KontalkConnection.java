@@ -1,6 +1,7 @@
 package org.kontalk.client;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Presence;
 
@@ -22,6 +23,10 @@ public class KontalkConnection extends XMPPConnection {
         config.setSASLAuthenticationEnabled(true);
         // we don't need the roster
         config.setRosterLoadedAtLogin(false);
+        // enable compression
+        config.setCompressionEnabled(true);
+        // enable encryption
+        config.setSecurityMode(SecurityMode.enabled);
         // we will send a custom presence
         config.setSendPresence(false);
     }
