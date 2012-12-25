@@ -87,6 +87,31 @@ public class XMPPConnectionHelper {
         mRetryEnabled = enabled;
     }
 
+    public void connectSync() throws XMPPException {
+        Log.d(TAG, "using server " + mServer.toString());
+
+        if (mConn == null || mServerDirty)
+            mConn = new KontalkConnection(mServer);
+
+        if (mListener != null)
+            mListener.created();
+
+        // connect
+        mConn.connect();
+
+        if (mListener != null) {
+            mConn.addConnectionListener(mListener);
+            mListener.connected();
+        }
+
+        // login
+        if (mAuthToken != null)
+            mConn.login("dummy", mAuthToken);
+
+        if (mListener != null)
+            mListener.authenticated();
+    }
+
     public void connect() {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         if (mAuthToken == null && !mLimited) {
@@ -96,28 +121,8 @@ public class XMPPConnectionHelper {
         }
 
         while (!mInterrupted) {
-            Log.d(TAG, "using server " + mServer.toString());
             try {
-                if (mConn == null || mServerDirty)
-                    mConn = new KontalkConnection(mServer);
-
-                if (mListener != null)
-                    mListener.created();
-
-                // connect
-                mConn.connect();
-
-                if (mListener != null) {
-                    mConn.addConnectionListener(mListener);
-                    mListener.connected();
-                }
-
-                // login
-                if (mAuthToken != null)
-                    mConn.login("dummy", mAuthToken);
-
-                if (mListener != null)
-                    mListener.authenticated();
+                connectSync();
 
                 // this should be the right moment
                 mRetryCount = 0;

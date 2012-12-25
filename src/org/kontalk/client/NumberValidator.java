@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
@@ -91,8 +92,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mContext = context.getApplicationContext();
         mServer = server;
         mPhone = phone;
-        mConnector = new XMPPConnectionHelper(context, mServer, true);
         mManual = manual;
+
+        mConnector = new XMPPConnectionHelper(context, mServer, true);
+        mConnector.setRetryEnabled(false);
 
         configure(ProviderManager.getInstance());
     }
@@ -347,10 +350,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
     }
 
-    private void initConnection() {
+    private void initConnection() throws XMPPException {
         if (!mConnector.isConnected()) {
             mConnector.setListener(this);
-            mConnector.connect();
+            mConnector.connectSync();
         }
     }
 
