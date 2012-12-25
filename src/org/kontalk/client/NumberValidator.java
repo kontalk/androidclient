@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.SmackAndroid;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
@@ -97,6 +98,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mConnector = new XMPPConnectionHelper(context, mServer, true);
         mConnector.setRetryEnabled(false);
 
+        SmackAndroid.init(context.getApplicationContext());
         configure(ProviderManager.getInstance());
     }
 

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.SmackAndroid;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Packet;
@@ -322,6 +323,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onCreate() {
+        SmackAndroid.init(getApplicationContext());
         configure(ProviderManager.getInstance());
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
