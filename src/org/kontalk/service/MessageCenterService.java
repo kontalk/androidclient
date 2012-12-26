@@ -175,6 +175,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (service.mConnector != null)
                         service.mConnector.shutdown();
 
+                    // restart queue!
+                    removeCallbacksAndMessages(null);
+
                     // reconnect immediately!
                     service.createConnection();
                     consumed = true;
