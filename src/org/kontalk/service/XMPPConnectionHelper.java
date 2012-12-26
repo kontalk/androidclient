@@ -87,14 +87,22 @@ public class XMPPConnectionHelper {
         mRetryEnabled = enabled;
     }
 
-    public void connectSync() throws XMPPException {
+    public void connectOnce() throws XMPPException {
         Log.d(TAG, "using server " + mServer.toString());
 
-        if (mConn == null || mServerDirty)
-            mConn = new KontalkConnection(mServer);
+        if (mServerDirty) {
+            if (mConn != null) {
+                mConn.disconnect();
+                mConn = null;
+            }
+        }
 
-        if (mListener != null)
-            mListener.created();
+        // recreate connection if closed
+        if (mConn == null || !mConn.isConnected()) {
+            mConn = new KontalkConnection(mServer);
+            if (mListener != null)
+                mListener.created();
+        }
 
         // connect
         mConn.connect();
@@ -122,7 +130,7 @@ public class XMPPConnectionHelper {
 
         while (!mInterrupted) {
             try {
-                connectSync();
+                connectOnce();
 
                 // this should be the right moment
                 mRetryCount = 0;
@@ -162,7 +170,9 @@ public class XMPPConnectionHelper {
                         }
                     }
                     else {
-                        // retry disabled - exit
+                        // retry disabled - notify and exit
+                        if (mListener != null)
+                            mListener.connectionClosedOnError(ie);
                         break;
                     }
                 }

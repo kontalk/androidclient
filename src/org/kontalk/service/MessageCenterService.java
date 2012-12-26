@@ -169,9 +169,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             MessageCenterService service = s.get();
             if (service != null) {
                 Log.v(TAG, "processing message " + msg);
-                service.createConnection();
 
-                consumed = handleMessage(service, msg);
+                // service restart
+                if (msg.what == MSG_RESTART) {
+                    if (service.mConnector != null)
+                        service.mConnector.shutdown();
+
+                    // reconnect immediately!
+                    service.createConnection();
+                    consumed = true;
+                }
+                else {
+                    // be sure connection is valid
+                    service.createConnection();
+                    // handle message
+                    consumed = handleMessage(service, msg);
+                }
             }
             else {
                 Log.v(TAG, "service has vanished - aborting");
@@ -397,7 +410,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_RESTART.equals(action)) {
-                // TODO
+                msg = mServiceHandler.obtainMessage(MSG_RESTART);
             }
 
             else if (ACTION_MESSAGE.equals(action)) {
@@ -424,7 +437,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Create connection to server if needed.
      * WARNING this method blocks! Be sure to call it from a separate thread.
      */
-    private void createConnection() {
+    private synchronized void createConnection() {
         if (mConnector == null || !mConnector.isConnected()) {
             // fallback: get server from preferences
             if (mServer == null)
@@ -438,22 +451,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void connectionClosed() {
+        Log.v(TAG, "connection closed");
     }
 
     @Override
     public void connectionClosedOnError(Exception error) {
+        Log.w(TAG, "connection closed with error", error);
+        mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_RESTART));
     }
 
     @Override
     public void reconnectingIn(int seconds) {
+        Log.v(TAG, "reconnecting in " + seconds + " seconds");
     }
 
     @Override
     public void reconnectionFailed(Exception error) {
+        Log.w(TAG, "reconnection failed", error);
     }
 
     @Override
     public void reconnectionSuccessful() {
+        Log.v(TAG, "reconnected!");
         broadcast(ACTION_CONNECTED);
     }
 
@@ -594,6 +613,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.stopService(new Intent(context, MessageCenterService.class));
     }
 
+    public static void restart(Context context) {
+        Log.d(TAG, "restarting message center");
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_RESTART);
+        // include server uri if server needs to be started
+        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        i.putExtra(EXTRA_SERVER, server.toString());
+        context.startService(i);
+    }
+
     /**
      * Tells the message center we are holding on to it, preventing shutdown for
      * inactivity.
@@ -624,6 +653,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** Listener for roster iq stanzas. */
     private final class RosterListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
@@ -651,6 +681,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    /** Listener for presence stanzas. */
     private final class PresenceListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
@@ -664,6 +695,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
             // TODO i.putExtra(EXTRA_STAMP, date);
 
+            // non-standard stanza group extension
             PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
             if (ext != null && ext instanceof StanzaGroupExtension) {
                 StanzaGroupExtension g = (StanzaGroupExtension) ext;
@@ -676,6 +708,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    /** Listener for message stanzas. */
     private final class MessageListener implements PacketListener {
         private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
 

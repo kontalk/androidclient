@@ -21,16 +21,17 @@ package org.kontalk.ui;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
-import org.kontalk.xmpp.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PassKey;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.MessageCenterServiceLegacy;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.xmpp.R;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -97,7 +98,7 @@ public final class MessagingPreferences extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Log.w(TAG, "manual message center restart requested");
-                MessageCenterServiceLegacy.restartMessageCenter(getApplicationContext());
+                MessageCenterService.restart(getApplicationContext());
                 Toast.makeText(MessagingPreferences.this, R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
                 return true;
             }
