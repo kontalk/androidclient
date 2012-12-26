@@ -115,6 +115,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_USERLIST = "org.kontalk.roster.userList";
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
 
+    /** Quit immediately and close all connections. */
+    private static final int MSG_QUIT = 0;
     /** A simple packet to be sent. */
     private static final int MSG_PACKET = 1;
     /** A packet XML string to be sent. */
@@ -172,8 +174,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (service != null) {
                 Log.v(TAG, "processing message " + msg);
 
+                // shutdown immediate
+                if (msg.what == MSG_QUIT) {
+                    if (service.mConnector != null)
+                        service.mConnector.shutdown();
+
+                    // quit the looper
+                    getLooper().quit();
+                    consumed = true;
+                }
+
                 // service restart
-                if (msg.what == MSG_RESTART) {
+                else if (msg.what == MSG_RESTART) {
                     if (service.mConnector != null)
                         service.mConnector.shutdown();
 
@@ -381,11 +393,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onDestroy() {
-        // quit looper
-        mLooper.quit();
-        // disconnect
-        if (mConnector != null)
-            mConnector.shutdown();
+        // send quit message to handler
+        mServiceHandler.sendEmptyMessage(MSG_QUIT);
     }
 
     private void handleIntent(Intent intent) {
@@ -469,7 +478,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void connectionClosedOnError(Exception error) {
         Log.w(TAG, "connection closed with error", error);
-        mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_RESTART));
+        mServiceHandler.sendEmptyMessage(MSG_RESTART);
     }
 
     @Override
