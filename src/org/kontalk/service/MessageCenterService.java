@@ -117,16 +117,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** A simple packet to be sent. */
     private static final int MSG_PACKET = 1;
+    /** A packet XML string to be sent. */
+    private static final int MSG_PACKET_XML = 2;
     /** Forced restart. */
-    private static final int MSG_RESTART = 2;
+    private static final int MSG_RESTART = 3;
     /** Idle signal. */
-    private static final int MSG_IDLE = 3;
+    private static final int MSG_IDLE = 4;
     /** Ping signal (dummy message just to iterate the handler). */
-    private static final int MSG_PING = 4;
+    private static final int MSG_PING = 5;
     /** Outgoing message. */
-    private static final int MSG_MESSAGE = 5;
+    private static final int MSG_MESSAGE = 6;
     /** Roster match request. */
-    private static final int MSG_ROSTER = 6;
+    private static final int MSG_ROSTER = 7;
 
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
@@ -203,8 +205,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Connection conn = service.mConnector.getConnection();
 
             switch (msg.what) {
-                // send raw packet
+                // send raw packet (Packet object)
                 case MSG_PACKET: {
+                    conn.sendPacket((Packet) msg.obj);
+                    return true;
+                }
+
+                // send raw packet (XML string)
+                case MSG_PACKET_XML: {
                     try {
                         String[] data = (String[]) msg.obj;
                         for (String pack : data)
@@ -355,6 +363,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtensionProvider());
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
+        pm.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
     }
 
     @Override
@@ -394,7 +403,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 else
                     data = intent.getStringExtra(EXTRA_PACKET);
 
-                msg = mServiceHandler.obtainMessage(MSG_PACKET, data);
+                msg = mServiceHandler.obtainMessage(MSG_PACKET_XML, data);
             }
 
             else if (ACTION_HOLD.equals(action)) {
@@ -782,7 +791,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else {
                 String msgId = null;
                 if (_ext != null) {
-                    // TODO ServerReceiptRequest req = (ServerReceiptRequest) _ext;
+                    ServerReceiptRequest req = (ServerReceiptRequest) _ext;
+                    // send ack :)
+                    ReceivedServerReceipt receipt = new ReceivedServerReceipt(req.getId());
+                    org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
+                        org.jivesoftware.smack.packet.Message.Type.chat);
+                    ack.addExtension(receipt);
+                    mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_PACKET, ack));
                 }
 
                 if (msgId == null)
