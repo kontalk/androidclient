@@ -25,9 +25,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Packet;
@@ -158,6 +161,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private String mPresenceId;
 	/** Last most available stanza. */
 	private PresenceData mMostAvailable;
+	/** Available resources. */
+	private Set<String> mAvailableResources = new HashSet<String>();
 
 	private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -1357,7 +1362,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 public void onReceive(Context context, Intent intent) {
                     String action = intent.getAction();
 
+                    // TODO this has to be rewritten... (result of late night work :)
+
                     if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                         String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
                         // we have a presence group
                         if (mPresenceId != null && mPresenceId.equals(groupId)) {
@@ -1386,6 +1394,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                             if (take) {
                                 // available stanza - null stamp
                                 if (available) {
+                                    mAvailableResources.add(from);
                                     mMostAvailable.stamp = null;
                                 }
                                 // unavailable stanza - update stamp
@@ -1418,18 +1427,21 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         }
 
                         // be careful considering only presence stanzas without stanza group extension
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                         if (groupId == null && from.length() >= AbstractMessage.USERID_LENGTH &&
                             from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
                             // our presence!!!
 
                             String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
                             if (Presence.Type.available.toString().equals(type)) {
+                                mAvailableResources.add(from);
                                 setStatusText(getString(R.string.seen_online_label));
                             }
                             else {
-                                // TODO unavailable
-                                setStatusText(type != null ? type : "(null)");
+                                mAvailableResources.remove(from);
+                                if (mAvailableResources.size() == 0) {
+                                    // TODO unavailable
+                                    setStatusText("unavailable");
+                                }
                             }
                         }
 
