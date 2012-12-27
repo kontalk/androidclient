@@ -457,6 +457,12 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     protected void finishLogin(String token) {
         Log.v(TAG, "finishing login");
+
+        if (mProgress == null)
+            startProgress();
+        mProgress.setCancelable(false);
+        setProgressMessage(getString(R.string.msg_initializing));
+
         final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
         mAuthtoken = token;
 
@@ -479,12 +485,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
         // ok, start message center
         MessageCenterService.start(getApplicationContext());
-
-        if (mProgress == null)
-            startProgress();
-        mProgress.setCancelable(false);
-        mProgress.setCanceledOnTouchOutside(false);
-        setProgressMessage(getString(R.string.msg_initializing));
 
         // manual sync starter
         delayedSync();
