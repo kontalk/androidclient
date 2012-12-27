@@ -50,7 +50,7 @@ import android.util.Log;
 
 public class UsersProvider extends ContentProvider {
     private static final String TAG = UsersProvider.class.getSimpleName();
-    public static final String AUTHORITY = "org.kontalk.users";
+    public static final String AUTHORITY = "org.kontalk.xmpp.users";
 
     private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "users.db";

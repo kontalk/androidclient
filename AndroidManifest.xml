@@ -42,9 +42,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <!-- internal permissions -->
-    <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    <permission android:name="org.kontalk.xmpp.permission.C2D_MESSAGE" android:protectionLevel="signature" />
 
-    <uses-permission android:name="org.kontalk.permission.C2D_MESSAGE" />
+    <uses-permission android:name="org.kontalk.xmpp.permission.C2D_MESSAGE" />
 
     <!-- do not make telephony and touchscreen mandatory -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
@@ -78,12 +78,12 @@
         <!-- Content providers -->
         <provider android:name="org.kontalk.provider.MessagesProvider"
             android:exported="false"
-            android:authorities="org.kontalk.messages"
+            android:authorities="org.kontalk.xmpp.messages"
             android:syncable="false"/>
 
         <provider android:name="org.kontalk.provider.UsersProvider"
             android:exported="false"
-            android:authorities="org.kontalk.users"
+            android:authorities="org.kontalk.xmpp.users"
             android:syncable="true"/>
 
         <!-- Broadcast receivers

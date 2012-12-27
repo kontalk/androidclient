@@ -53,7 +53,7 @@ import android.util.Log;
 public class MessagesProvider extends ContentProvider {
 
     private static final String TAG = MessagesProvider.class.getSimpleName();
-    public static final String AUTHORITY = "org.kontalk.messages";
+    public static final String AUTHORITY = "org.kontalk.xmpp.messages";
 
     private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "messages.db";

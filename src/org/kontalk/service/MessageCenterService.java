@@ -18,7 +18,6 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.BuildConfig;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.RawPacket;
 import org.kontalk.client.ReceivedServerReceipt;
@@ -33,6 +32,7 @@ import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.RandomString;
+import org.kontalk.xmpp.BuildConfig;
 
 import android.app.Service;
 import android.content.ContentResolver;

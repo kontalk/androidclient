@@ -43,7 +43,7 @@ import android.widget.Toast;
 public class Authenticator extends AbstractAccountAuthenticator {
     private static final String TAG = Authenticator.class.getSimpleName();
 
-    public static final String ACCOUNT_TYPE = "org.kontalk.account";
+    public static final String ACCOUNT_TYPE = "org.kontalk.xmpp.account";
     public static final String AUTHTOKEN_TYPE = "org.kontalk.token";
 
     private final Context mContext;
