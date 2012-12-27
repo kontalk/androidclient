@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.MessageListItem
+<org.kontalk.xmpp.ui.MessageListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/msg_list_item"
     android:paddingTop="2dip"
@@ -97,4 +97,4 @@
         android:layout_below="@id/message_view_parent"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
 
-</org.kontalk.ui.MessageListItem>
+</org.kontalk.xmpp.ui.MessageListItem>

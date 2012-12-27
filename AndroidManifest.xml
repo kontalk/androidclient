@@ -50,12 +50,12 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
 
-    <application android:icon="@drawable/icon" android:label="@string/app_name" android:name="org.kontalk.Kontalk" android:allowBackup="false">
+    <application android:icon="@drawable/icon" android:label="@string/app_name" android:name="org.kontalk.xmpp.Kontalk" android:allowBackup="false">
 
         <!-- Services -->
-        <service android:name="org.kontalk.service.MessageCenterService"
+        <service android:name="org.kontalk.xmpp.service.MessageCenterService"
             android:label="@string/service_name"/>
-        <service android:name="org.kontalk.authenticator.AccountAuthenticatorService"
+        <service android:name="org.kontalk.xmpp.authenticator.AccountAuthenticatorService"
                 android:process=":auth" android:label="@string/authenticator_name">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
@@ -63,7 +63,7 @@
             <meta-data android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator"/>
         </service>
-        <service android:name="org.kontalk.sync.ContactsSyncAdapterService"
+        <service android:name="org.kontalk.xmpp.sync.ContactsSyncAdapterService"
                 android:label="@string/sync_service_name">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
@@ -71,20 +71,18 @@
             <meta-data android:name="android.content.SyncAdapter" android:resource="@xml/sync_contacts"/>
             <meta-data android:name="android.provider.CONTACTS_STRUCTURE" android:resource="@xml/contacts"/>
         </service>
-        <service android:name="org.kontalk.service.DownloadService"
+        <service android:name="org.kontalk.xmpp.service.DownloadService"
             android:label="@string/download_service"/>
-        <service android:name="org.kontalk.GCMIntentService"/>
+        <service android:name="org.kontalk.xmpp.GCMIntentService"/>
 
         <!-- Content providers -->
-        <provider android:name="org.kontalk.provider.MessagesProvider"
+        <provider android:name="org.kontalk.xmpp.provider.MessagesProvider"
             android:exported="false"
-            android:authorities="org.kontalk.xmpp.messages"
-            android:syncable="false"/>
+            android:authorities="org.kontalk.xmpp.messages"/>
 
-        <provider android:name="org.kontalk.provider.UsersProvider"
+        <provider android:name="org.kontalk.xmpp.provider.UsersProvider"
             android:exported="false"
-            android:authorities="org.kontalk.xmpp.users"
-            android:syncable="true"/>
+            android:authorities="org.kontalk.xmpp.users"/>
 
         <!-- Broadcast receivers
         <receiver android:name=".service.SystemBootStartup"
@@ -104,7 +102,7 @@
           <intent-filter>
             <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-            <category android:name="org.kontalk" />
+            <category android:name="org.kontalk.xmpp" />
           </intent-filter>
         </receiver>
          -->
@@ -114,7 +112,7 @@
             android:value=".ui.SearchActivity" />
 
         <!-- Activities -->
-        <activity android:name="org.kontalk.ui.ConversationList"
+        <activity android:name="org.kontalk.xmpp.ui.ConversationList"
             android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Light">
@@ -125,7 +123,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="org.kontalk.ui.SearchActivity"
+        <activity android:name="org.kontalk.xmpp.ui.SearchActivity"
             android:label="@string/app_name"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@style/Theme.Light">
@@ -137,7 +135,7 @@
                 android:resource="@xml/searchable" />
         </activity>
 
-        <activity android:name="org.kontalk.ui.ComposeMessage"
+        <activity android:name="org.kontalk.xmpp.ui.ComposeMessage"
             android:theme="@style/Theme.Light.Subtitle"
             android:launchMode="singleTop"
             android:configChanges="orientation|keyboardHidden"
@@ -145,7 +143,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.item/org.kontalk.user"
+                <data android:mimeType="vnd.android.cursor.item/org.kontalk.xmpp.user"
                     android:host="com.android.contacts"/>
             </intent-filter>
             <intent-filter>
@@ -176,24 +174,24 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="org.kontalk.ui.MessagingPreferences" android:theme="@style/Theme.Light2"/>
-        <activity android:name="org.kontalk.ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
+        <activity android:name="org.kontalk.xmpp.ui.MessagingPreferences" android:theme="@style/Theme.Light2"/>
+        <activity android:name="org.kontalk.xmpp.ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
 
-        <activity android:name="org.kontalk.ui.NumberValidation"
+        <activity android:name="org.kontalk.xmpp.ui.NumberValidation"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.ui.CodeValidation"
+        <activity android:name="org.kontalk.xmpp.ui.CodeValidation"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.ui.ContactsListActivity"
+        <activity android:name="org.kontalk.xmpp.ui.ContactsListActivity"
             android:label="@string/contacts_list_title"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.ui.StatusActivity"
+        <activity android:name="org.kontalk.xmpp.ui.StatusActivity"
             android:label="@string/status_activity_title"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.ui.QuickReplyActivity"
+        <activity android:name="org.kontalk.xmpp.ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
             android:launchMode="singleInstance"
             android:taskAffinity=""
