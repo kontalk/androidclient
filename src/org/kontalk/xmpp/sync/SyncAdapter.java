@@ -72,12 +72,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             final long startTime = System.currentTimeMillis();
             boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 
-            // already in progress
-            if (isActive(mContext)) {
-                Log.d(TAG, "sync already in progress");
-                return;
-            }
-
             // do not start if offline
             if (MessagingPreferences.getOfflineMode(mContext)) {
                 Log.d(TAG, "not requesting sync - offline mode");
