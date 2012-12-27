@@ -1366,6 +1366,33 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
                     }
 
+                    /*
+                     * We must be careful here. Presence stanzas are also
+                     * received during sync, su we might get an unavailable
+                     * presence stanza here too.
+                     * One way to prevent this is avoiding presence with stanza
+                     * group extension: a presence broadcast from a client
+                     * doesn't come with that!
+                     */
+                    else if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        if (from.length() >= AbstractMessage.USERID_LENGTH &&
+                            from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
+                            // our presence!!!
+
+                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                            if (Presence.Type.available.toString().equals(type)) {
+                                setStatusText(getString(R.string.seen_online_label));
+                            }
+                            else {
+                                // TODO unavailable
+                                setStatusText(type != null ? type : "(null)");
+                            }
+                        }
+
+                    }
+
+
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
                         // TODO send probe and subscription request
                     }
