@@ -21,6 +21,7 @@ package org.kontalk.xmpp.util;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.message.AbstractMessage;
@@ -444,8 +445,27 @@ public final class MessageUtils {
         if (bytes < unit) return bytes + " B";
         int exp = (int) (Math.log(bytes) / Math.log(unit));
         String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "i" : "");
-        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+        return String.format(Locale.US, "%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
+    /** Converts a Kontalk user id to a JID. */
+    public static String toJID(String userId, String network) {
+        StringBuilder jid = new StringBuilder();
+
+        // this is for avoiding a useless call to subSequence
+        int l = userId.length();
+        if (l > AbstractMessage.USERID_LENGTH)
+            jid.append(userId.subSequence(0, AbstractMessage.USERID_LENGTH));
+        else
+            jid.append(userId);
+
+        jid.append('@');
+        jid.append(network);
+
+        if (l > AbstractMessage.USERID_LENGTH)
+            jid.append(userId.subSequence(AbstractMessage.USERID_LENGTH, l));
+
+        return jid.toString();
+    }
 
 }

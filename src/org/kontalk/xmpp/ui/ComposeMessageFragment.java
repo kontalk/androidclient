@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
-import org.kontalk.xmpp.client.MessageSender;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
@@ -40,18 +40,14 @@ import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MessagesProvider;
-import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
 import org.kontalk.xmpp.service.ClientThread;
 import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
-import org.kontalk.xmpp.service.MessageCenterServiceLegacy;
 import org.kontalk.xmpp.service.RequestJob;
 import org.kontalk.xmpp.service.RequestListener;
-import org.kontalk.xmpp.service.UserLookupJob;
-import org.kontalk.xmpp.service.MessageCenterServiceLegacy.MessageCenterInterface;
 import org.kontalk.xmpp.sync.Syncer;
 import org.kontalk.xmpp.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.xmpp.util.MediaStorage;
@@ -64,7 +60,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -72,8 +67,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentFilter.MalformedMimeTypeException;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -85,8 +78,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.PatternMatcher;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
@@ -165,7 +156,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private File mCurrentPhoto;
 
 	private LocalBroadcastManager mLocalBroadcastManager;
-    private UserPresenceBroadcastReceiver mPresenceReceiver;
+    private BroadcastReceiver mPresenceReceiver;
 
     private Dialog mSmileyDialog;
     private boolean mOfflineModeWarned;
@@ -290,113 +281,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		}
 	};
 
-	/** Used by the service binder to receive responses from the request worker. */
-	//private MessageRequestListener mMessageSenderListener;
-
-	/** Used for binding to the message center to send messages. */
-	private class ComposerServiceConnection implements ServiceConnection {
-		public final MessageSender job;
-		private MessageCenterServiceLegacy service;
-
-		public ComposerServiceConnection(String userId, byte[] text,
-				String mime, Uri msgUri, String encryptKey) {
-			job = new MessageSender(userId, text, mime, msgUri, encryptKey, false);
-			// listener will be set by message center
-		}
-
-		public ComposerServiceConnection(String userId, Uri fileUri,
-				String mime, Uri msgUri, String encryptKey, boolean media) {
-			job = new MessageSender(userId, fileUri, mime, msgUri, encryptKey);
-            // listener will be set by message center
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			service = null;
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder ibinder) {
-			MessageCenterInterface binder = (MessageCenterInterface) ibinder;
-			service = binder.getService();
-			service.sendMessage(job);
-            try {
-                getActivity().unbindService(this);
-            }
-            catch (Exception e) {
-                // ignore exception on exit
-            }
-			service = null;
-		}
-	}
-
-    /** Used for binding to the message center to listen for user presence. */
-    private class PresenceServiceConnection implements ServiceConnection {
-        private final String userId;
-        private final boolean lookupOnly;
-        private MessageCenterServiceLegacy service;
-
-        public PresenceServiceConnection(String userId, boolean lookupOnly) {
-            this.userId = userId;
-            this.lookupOnly = lookupOnly;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            service = null;
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder ibinder) {
-            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
-            service = binder.getService();
-            /*
-            if (!lookupOnly)
-                service.subscribePresence(this.userId, UserEventMask.USER_EVENT_MASK_ALL_VALUE);
-             */
-
-            UserLookupJob job = service.lookupUser(userId);
-            job.setListener(ComposeMessageFragment.this);
-
-            try {
-                getActivity().unbindService(this);
-            }
-            catch (Exception e) {
-                // ignore exception on exit
-            }
-            service = null;
-        }
-    }
-
-    /** Used for binding to the message center to unlisten for user presence. */
-    private class PresenceServiceDisconnection implements ServiceConnection {
-        public final String userId;
-        private MessageCenterServiceLegacy service;
-
-        public PresenceServiceDisconnection(String userId) {
-            this.userId = userId;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            service = null;
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder ibinder) {
-            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
-            service = binder.getService();
-            service.unsubscribePresence(this.userId);
-            try {
-                getActivity().unbindService(this);
-            }
-            catch (Exception e) {
-                // ignore exception on exit
-            }
-            service = null;
-        }
-    }
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -468,18 +352,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 				c.close();
 			}
 
-			// send the message!
+			// TODO send the message!
 			// FIXME do not encrypt binary messages for now
-			ComposerServiceConnection conn = new ComposerServiceConnection(
-					userId, uri, mime, newMsg, null, media);
-			if (!getActivity().bindService(
-					new Intent(getActivity().getApplicationContext(),
-							MessageCenterServiceLegacy.class), conn,
-					Context.BIND_AUTO_CREATE)) {
-				// cannot bind :(
-				// mMessageSenderListener.error(conn.job, new
-				// IllegalArgumentException("unable to bind to message center"));
-			}
 		}
 		else {
 			getActivity().runOnUiThread(new Runnable() {
@@ -1414,6 +1288,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		updateUI();
 	}
 
+    /*
 	private final class UserPresenceBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -1422,7 +1297,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 int event = intent.getIntExtra("org.kontalk.presence.event", 0);
                 CharSequence text = null;
 
-                /*
                 if (event == UserEvent.EVENT_OFFLINE_VALUE) {
                     text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
                 }
@@ -1449,7 +1323,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         // something could happen in the mean time - e.g. fragment destruction
                     }
                 }
-                */
             }
 
             else if (MessageCenterServiceLegacy.ACTION_CONNECTED.equals(action)) {
@@ -1462,44 +1335,45 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             }
         }
 	}
+    */
 
 	private void subscribePresence() {
         if (mPresenceReceiver == null) {
-    	    PresenceServiceConnection conn = new PresenceServiceConnection(userId, false);
-            getActivity().bindService(
-                    new Intent(getActivity().getApplicationContext(),
-                            MessageCenterServiceLegacy.class), conn,
-                    Context.BIND_AUTO_CREATE);
+            mPresenceReceiver = new BroadcastReceiver() {
+                public void onReceive(Context context, Intent intent) {
+                    // TODO handle presence broadcast intent
+                    Log.v(TAG, "broadcast: " + intent);
+                }
+            };
 
-            mPresenceReceiver = new UserPresenceBroadcastReceiver();
+	        // listen for user presence and connection
+	        IntentFilter filter = new IntentFilter();
+	        filter.addAction(MessageCenterService.ACTION_PRESENCE);
+	        filter.addAction(MessageCenterService.ACTION_CONNECTED);
 
-    	    try {
-    	        // filter for user presence
-                IntentFilter filter = new IntentFilter(MessageCenterServiceLegacy.ACTION_USER_PRESENCE, "internal/presence");
-                filter.addDataScheme("user");
-                filter.addDataAuthority(UsersProvider.AUTHORITY, null);
-                filter.addDataPath("/" + userId, PatternMatcher.PATTERN_PREFIX);
-                mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
-                // filter for message center reconnection
-                filter = new IntentFilter(MessageCenterServiceLegacy.ACTION_CONNECTED);
-                mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
-    	    }
-            catch (MalformedMimeTypeException e) {
-                Log.e(TAG, "malformed mime type", e);
-            }
+            mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
+
+            // send subscription request
+            Intent i = new Intent(getActivity(), MessageCenterService.class);
+            i.setAction(MessageCenterService.ACTION_PRESENCE);
+            i.putExtra(MessageCenterService.EXTRA_TO, userId);
+            i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
+            getActivity().startService(i);
 	    }
 	}
 
 	private void unsubcribePresence() {
         if (mPresenceReceiver != null) {
-            PresenceServiceDisconnection conn = new PresenceServiceDisconnection(userId);
-            getActivity().bindService(
-                    new Intent(getActivity().getApplicationContext(),
-                            MessageCenterServiceLegacy.class), conn,
-                    Context.BIND_AUTO_CREATE);
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
 	        mPresenceReceiver = null;
 	    }
+
+        // send unsubscription request
+        Intent i = new Intent(getActivity(), MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TO, userId);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, "unsubscribe");
+        getActivity().startService(i);
 	}
 
 	/*
@@ -1667,7 +1541,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public void onStart() {
 	    super.onStart();
         // hold message center
-	    MessageCenterServiceLegacy.holdMessageCenter(getActivity());
+	    MessageCenterService.hold(getActivity());
 	}
 
 	@Override
@@ -1749,7 +1623,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		mQueryHandler.cancelOperation(CONVERSATION_QUERY_TOKEN);
 
 		// release message center
-		MessageCenterServiceLegacy.releaseMessageCenter(getActivity());
+		MessageCenterService.release(getActivity());
 	}
 
 	@Override
@@ -1785,6 +1659,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     }
 
 	/** The conversation list query handler. */
+    // TODO convert to static class and use a weak reference to the context
 	private final class MessageListQueryHandler extends AsyncQueryHandler {
 		public MessageListQueryHandler() {
 			super(getActivity().getApplicationContext().getContentResolver());

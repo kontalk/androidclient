@@ -32,6 +32,7 @@ import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.MessagingPreferences;
+import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
 
 import android.app.Service;
@@ -131,6 +132,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final int MSG_MESSAGE = 6;
     /** Roster match request. */
     private static final int MSG_ROSTER = 7;
+    /** Presence packet. */
+    private static final int MSG_PRESENCE = 8;
 
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
@@ -281,6 +284,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         iq.addRosterItem(new RosterPacket.Item(list[i] + "@" + service.mServer.getNetwork(), null));
 
                     conn.sendPacket(iq);
+                    return true;
+                }
+
+                // presence packet
+                case MSG_PRESENCE: {
+                    Bundle data = (Bundle) msg.obj;
+                    String type = data.getString(EXTRA_TYPE);
+                    String show = data.getString(EXTRA_SHOW);
+                    Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
+
+                    String to = data.getString(EXTRA_TO);
+                    // convert to jid
+                    if (!to.contains("@"))
+                        to = MessageUtils.toJID(to, service.mServer.getNetwork());
+
+                    p.setPacketID(data.getString(EXTRA_PACKET_ID));
+                    p.setTo(to);
+                    p.setStatus(data.getString(EXTRA_STATUS));
+                    if (show != null)
+                        p.setMode(Presence.Mode.valueOf(show));
+
+                    conn.sendPacket(p);
                     return true;
                 }
 
@@ -440,6 +465,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_ROSTER.equals(action)) {
                 msg = mServiceHandler.obtainMessage(MSG_ROSTER, intent.getExtras());
+            }
+
+            else if (ACTION_PRESENCE.equals(action)) {
+                msg = mServiceHandler.obtainMessage(MSG_PRESENCE, intent.getExtras());
             }
 
             // no command means normal service start
@@ -709,11 +738,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.v(TAG, "packet received: " + packet.getClass().getName());
             Presence p = (Presence) packet;
             Intent i = new Intent(ACTION_PRESENCE);
+            i.putExtra(EXTRA_TYPE, p.getType().toString());
+            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
             i.putExtra(EXTRA_FROM, p.getFrom());
             i.putExtra(EXTRA_TO, p.getTo());
             i.putExtra(EXTRA_STATUS, p.getStatus());
             i.putExtra(EXTRA_SHOW, p.getMode());
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
             // TODO i.putExtra(EXTRA_STAMP, date);
 
             // non-standard stanza group extension
