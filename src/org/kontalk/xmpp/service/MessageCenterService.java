@@ -18,6 +18,7 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.client.EndpointServer;
@@ -304,20 +305,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Bundle data = (Bundle) msg.obj;
                     String type = data.getString(EXTRA_TYPE);
                     String show = data.getString(EXTRA_SHOW);
-                    Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
 
+                    String id = data.getString(EXTRA_PACKET_ID);
                     String to = data.getString(EXTRA_TO);
                     // convert to jid
                     if (!to.contains("@"))
                         to = MessageUtils.toJID(to, service.mServer.getNetwork());
 
-                    p.setPacketID(data.getString(EXTRA_PACKET_ID));
-                    p.setTo(to);
-                    p.setStatus(data.getString(EXTRA_STATUS));
-                    if (show != null)
-                        p.setMode(Presence.Mode.valueOf(show));
+                    Packet pack;
+                    if ("probe".equals(type)) {
+                        /*
+                         * Smack doesn't support probe stanzas so we have to
+                         * create it manually.
+                         */
+                        String probe = String.format("<presence type=\"probe\" to=\"%s\" id=\"%s\"/>", to, id);
+                        pack = new RawPacket(probe);
+                    }
+                    else {
+                        Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
+                        p.setPacketID(id);
+                        p.setTo(to);
+                        p.setStatus(data.getString(EXTRA_STATUS));
+                        if (show != null)
+                            p.setMode(Presence.Mode.valueOf(show));
+                        pack = p;
+                    }
 
-                    conn.sendPacket(p);
+                    conn.sendPacket(pack);
                     return true;
                 }
 
@@ -805,37 +819,54 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class PresenceListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
-            Presence p = (Presence) packet;
-            Intent i = new Intent(ACTION_PRESENCE);
-            i.putExtra(EXTRA_TYPE, p.getType().toString());
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+            try {
+                Log.v(TAG, "presence: " + packet);
+                Presence p = (Presence) packet;
+                Intent i = new Intent(ACTION_PRESENCE);
+                i.putExtra(EXTRA_TYPE, p.getType().toString());
+                i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-            String from = p.getFrom();
-            String network = StringUtils.parseServer(from);
-            // our network - convert to userId
-            if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                StringBuilder b = new StringBuilder();
-                b.append(StringUtils.parseName(from));
-                b.append(StringUtils.parseResource(from));
-                from = b.toString();
+                String from = p.getFrom();
+                String network = StringUtils.parseServer(from);
+                // our network - convert to userId
+                if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                    StringBuilder b = new StringBuilder();
+                    b.append(StringUtils.parseName(from));
+                    b.append(StringUtils.parseResource(from));
+                    from = b.toString();
+                }
+
+                i.putExtra(EXTRA_FROM, from);
+                i.putExtra(EXTRA_TO, p.getTo());
+                i.putExtra(EXTRA_STATUS, p.getStatus());
+                Presence.Mode mode = p.getMode();
+                i.putExtra(EXTRA_SHOW, mode != null ? mode.toString() : Presence.Mode.available.toString());
+
+                // getExtension doesn't work here
+                Iterator<PacketExtension> iter = p.getExtensions().iterator();
+                while (iter.hasNext()) {
+                    PacketExtension _ext = iter.next();
+                    if (_ext instanceof DelayInformation) {
+                        DelayInformation delay = (DelayInformation) _ext;
+                        i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
+                        break;
+                    }
+                }
+
+                // non-standard stanza group extension
+                PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
+                if (ext != null && ext instanceof StanzaGroupExtension) {
+                    StanzaGroupExtension g = (StanzaGroupExtension) ext;
+                    i.putExtra(EXTRA_GROUP_ID, g.getId());
+                    i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
+                }
+
+                Log.v(TAG, "broadcasting presence: " + i);
+                mLocalBroadcastManager.sendBroadcast(i);
             }
-
-            i.putExtra(EXTRA_FROM, from);
-            i.putExtra(EXTRA_TO, p.getTo());
-            i.putExtra(EXTRA_STATUS, p.getStatus());
-            i.putExtra(EXTRA_SHOW, p.getMode());
-            // TODO i.putExtra(EXTRA_STAMP, date);
-
-            // non-standard stanza group extension
-            PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
-            if (ext != null && ext instanceof StanzaGroupExtension) {
-                StanzaGroupExtension g = (StanzaGroupExtension) ext;
-                i.putExtra(EXTRA_GROUP_ID, g.getId());
-                i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
+            catch (Exception e) {
+                Log.e(TAG, "error parsing presence", e);
             }
-
-            Log.v(TAG, "broadcasting presence: " + i);
-            mLocalBroadcastManager.sendBroadcast(i);
         }
     }
 

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -153,8 +154,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private String userName;
 	private String userPhone;
 
-	/** Last activity iq packet id. */
-	private String mLastActivityId;
+	/** Presence probe packet id. */
+	private String mPresenceId;
+	/** Last most available stanza. */
+	private PresenceData mMostAvailable;
 
 	private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -164,6 +167,13 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
     private Dialog mSmileyDialog;
     private boolean mOfflineModeWarned;
+
+    private static final class PresenceData {
+        public boolean available;
+        public String status;
+        public String mode;
+        public Date stamp;
+    }
 
 	/** Returns a new fragment instance from a picked contact. */
 	public static ComposeMessageFragment fromUserId(Context context, String userId) {
@@ -1347,36 +1357,69 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 public void onReceive(Context context, Intent intent) {
                     String action = intent.getAction();
 
-                    if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mLastActivityId)) {
-                            // our last activity!!!
+                    if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+                        String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
+                        // we have a presence group
+                        if (mPresenceId != null && mPresenceId.equals(groupId)) {
+                            if (mMostAvailable == null)
+                                mMostAvailable = new PresenceData();
 
-                            long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, 0);
-                            if (seconds <= 0) {
-                                setStatusText(getString(R.string.seen_online_label));
-                            }
-                            else if (seconds <= 10) {
-                                setStatusText(getString(R.string.seen_moment_ago_label));
+                            boolean take = false;
+
+                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                            boolean available = (type == null || Presence.Type.available.toString().equals(type));
+                            long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+
+                            if (available) {
+                                // available stanza - take it and stop here
+                                take = true;
+                                // this way this if won't be considered any more
+                                mPresenceId = null;
                             }
                             else {
-                                setStatusText(seconds + " seconds");
+                                // take if most recent
+                                long old = mMostAvailable.stamp != null ? mMostAvailable.stamp.getTime() : -1;
+                                if (stamp >= old)
+                                    take = true;
+                            }
+
+                            if (take) {
+                                // available stanza - null stamp
+                                if (available) {
+                                    mMostAvailable.stamp = null;
+                                }
+                                // unavailable stanza - update stamp
+                                else {
+                                    if (mMostAvailable.stamp == null)
+                                        mMostAvailable.stamp = new Date(stamp);
+                                    else
+                                        mMostAvailable.stamp.setTime(stamp);
+                                }
+
+                                mMostAvailable.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                                mMostAvailable.mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
+                                mMostAvailable.available = available;
+                            }
+
+                            int count = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
+                            if (count <= 1 || mPresenceId == null) {
+                                // TODO we got all presence stanzas
+                                Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
+                                    ", status=" + mMostAvailable.status + ")");
+
+                                /*
+                                 * TODO if we receive a presence unavailable stanza
+                                 * we shall consider it only if there is no other
+                                 * available resource. So we shall keep a reference
+                                 * to all available resources and sync them
+                                 * whenever a presence stanza is received.
+                                 */
                             }
                         }
 
-                    }
-
-                    /*
-                     * We must be careful here. Presence stanzas are also
-                     * received during sync, su we might get an unavailable
-                     * presence stanza here too.
-                     * One way to prevent this is avoiding presence with stanza
-                     * group extension: a presence broadcast from a client
-                     * doesn't come with that!
-                     */
-                    else if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+                        // be careful considering only presence stanzas without stanza group extension
                         String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        if (from.length() >= AbstractMessage.USERID_LENGTH &&
+                        if (groupId == null && from.length() >= AbstractMessage.USERID_LENGTH &&
                             from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
                             // our presence!!!
 
@@ -1401,7 +1444,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 	        // listen for user presence and connection
 	        IntentFilter filter = new IntentFilter();
-	        filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
+	        filter.addAction(MessageCenterService.ACTION_PRESENCE);
 	        filter.addAction(MessageCenterService.ACTION_CONNECTED);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
@@ -1413,12 +1456,13 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
             getActivity().startService(i);
 
-            // send last activity iq
-            mLastActivityId = Packet.nextID();
+            // send presence probe
+            mPresenceId = Packet.nextID();
             i = new Intent(getActivity(), MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
+            i.setAction(MessageCenterService.ACTION_PRESENCE);
             i.putExtra(MessageCenterService.EXTRA_TO, userId);
-            i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mLastActivityId);
+            i.putExtra(MessageCenterService.EXTRA_TYPE, "probe");
+            i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mPresenceId);
             getActivity().startService(i);
 	    }
 	}
