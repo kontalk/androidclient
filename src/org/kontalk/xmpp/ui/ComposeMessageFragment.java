@@ -29,7 +29,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.crypto.Coder;
@@ -151,6 +152,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private String userId;
 	private String userName;
 	private String userPhone;
+
+	/** Last activity iq packet id. */
+	private String mLastActivityId;
 
 	private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -1341,14 +1345,36 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         if (mPresenceReceiver == null) {
             mPresenceReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
-                    // TODO handle presence broadcast intent
-                    Log.v(TAG, "broadcast: " + intent);
+                    String action = intent.getAction();
+
+                    if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
+                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        if (id != null && id.equals(mLastActivityId)) {
+                            // our last activity!!!
+
+                            long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, 0);
+                            if (seconds <= 0) {
+                                setStatusText(getString(R.string.seen_online_label));
+                            }
+                            else if (seconds <= 10) {
+                                setStatusText(getString(R.string.seen_moment_ago_label));
+                            }
+                            else {
+                                setStatusText(seconds + " seconds");
+                            }
+                        }
+
+                    }
+
+                    else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+                        // TODO send probe and subscription request
+                    }
                 }
             };
 
 	        // listen for user presence and connection
 	        IntentFilter filter = new IntentFilter();
-	        filter.addAction(MessageCenterService.ACTION_PRESENCE);
+	        filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
 	        filter.addAction(MessageCenterService.ACTION_CONNECTED);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
@@ -1358,6 +1384,14 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             i.setAction(MessageCenterService.ACTION_PRESENCE);
             i.putExtra(MessageCenterService.EXTRA_TO, userId);
             i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
+            getActivity().startService(i);
+
+            // send last activity iq
+            mLastActivityId = Packet.nextID();
+            i = new Intent(getActivity(), MessageCenterService.class);
+            i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
+            i.putExtra(MessageCenterService.EXTRA_TO, userId);
+            i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mLastActivityId);
             getActivity().startService(i);
 	    }
 	}

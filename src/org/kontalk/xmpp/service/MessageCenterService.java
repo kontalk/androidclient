@@ -18,6 +18,7 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.RawPacket;
@@ -94,6 +95,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_PRESENCE = "org.kontalk.action.PRESENCE";
 
+    /**
+     * Broadcasted when a last activity iq is received.
+     * Send this intent to request a last activity.
+     */
+    public static final String ACTION_LAST_ACTIVITY = "org.kontalk.action.LAST_ACTIVITY";
+
     // common parameters
     public static final String EXTRA_SERVER = "org.kontalk.server";
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
@@ -116,6 +123,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_USERLIST = "org.kontalk.roster.userList";
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
 
+    // use with org.kontalk.action.LAST_ACTIVITY
+    public static final String EXTRA_SECONDS = "org.kontalk.last.seconds";
+
     /** Quit immediately and close all connections. */
     private static final int MSG_QUIT = 0;
     /** A simple packet to be sent. */
@@ -134,6 +144,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final int MSG_ROSTER = 7;
     /** Presence packet. */
     private static final int MSG_PRESENCE = 8;
+    /** Last activity iq. */
+    private static final int MSG_LAST_ACTIVITY = 9;
 
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
@@ -309,6 +321,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     return true;
                 }
 
+                // last activity iq
+                case MSG_LAST_ACTIVITY: {
+                    Bundle data = (Bundle) msg.obj;
+                    LastActivity p = new LastActivity();
+
+                    String to = data.getString(EXTRA_TO);
+                    // convert to jid
+                    if (!to.contains("@"))
+                        to = MessageUtils.toJID(to, service.mServer.getNetwork());
+
+                    p.setPacketID(data.getString(EXTRA_PACKET_ID));
+                    p.setTo(to);
+
+                    conn.sendPacket(p);
+                    return true;
+                }
+
                 // idle message
                 case MSG_IDLE: {
                     // we registered push notification - shutdown message center
@@ -471,6 +500,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 msg = mServiceHandler.obtainMessage(MSG_PRESENCE, intent.getExtras());
             }
 
+            else if (ACTION_LAST_ACTIVITY.equals(action)) {
+                msg = mServiceHandler.obtainMessage(MSG_LAST_ACTIVITY, intent.getExtras());
+            }
+
             // no command means normal service start
             if (msg == null && execStart)
                 msg = mServiceHandler.obtainMessage(MSG_PING);
@@ -540,6 +573,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
         conn.addPacketListener(new MessageListener(), filter);
+
+        filter = new PacketTypeFilter(LastActivity.class);
+        conn.addPacketListener(new LastActivityListener(), filter);
     }
 
     @Override
@@ -703,6 +739,41 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** Listener for last activity iq. */
+    private final class LastActivityListener implements PacketListener {
+        @Override
+        public void processPacket(Packet packet) {
+            LastActivity p = (LastActivity) packet;
+            Intent i = new Intent(ACTION_LAST_ACTIVITY);
+            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+
+            String from = p.getFrom();
+            String network = StringUtils.parseServer(from);
+            // our network - convert to userId
+            if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                StringBuilder b = new StringBuilder();
+                b.append(StringUtils.parseName(from));
+                b.append(StringUtils.parseResource(from));
+                from = b.toString();
+            }
+
+            i.putExtra(EXTRA_FROM, from);
+            i.putExtra(EXTRA_TO, p.getTo());
+            i.putExtra(EXTRA_SECONDS, p.lastActivity);
+
+            // non-standard stanza group extension
+            PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
+            if (ext != null && ext instanceof StanzaGroupExtension) {
+                StanzaGroupExtension g = (StanzaGroupExtension) ext;
+                i.putExtra(EXTRA_GROUP_ID, g.getId());
+                i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
+            }
+
+            Log.v(TAG, "broadcasting presence: " + i);
+            mLocalBroadcastManager.sendBroadcast(i);
+        }
+    }
+
     /** Listener for roster iq stanzas. */
     private final class RosterListener implements PacketListener {
         @Override
@@ -726,7 +797,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             i.putExtra(EXTRA_JIDLIST, list);
 
-            Log.v(TAG, "broadcasting roster: " + i);
             mLocalBroadcastManager.sendBroadcast(i);
         }
     }
@@ -735,12 +805,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class PresenceListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
-            Log.v(TAG, "packet received: " + packet.getClass().getName());
             Presence p = (Presence) packet;
             Intent i = new Intent(ACTION_PRESENCE);
             i.putExtra(EXTRA_TYPE, p.getType().toString());
             i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-            i.putExtra(EXTRA_FROM, p.getFrom());
+
+            String from = p.getFrom();
+            String network = StringUtils.parseServer(from);
+            // our network - convert to userId
+            if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                StringBuilder b = new StringBuilder();
+                b.append(StringUtils.parseName(from));
+                b.append(StringUtils.parseResource(from));
+                from = b.toString();
+            }
+
+            i.putExtra(EXTRA_FROM, from);
             i.putExtra(EXTRA_TO, p.getTo());
             i.putExtra(EXTRA_STATUS, p.getStatus());
             i.putExtra(EXTRA_SHOW, p.getMode());

@@ -1,18 +1,20 @@
 package org.kontalk.xmpp.client;
 
-import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.AndroidConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 
 import android.util.Log;
+
 
 public class KontalkConnection extends XMPPConnection {
 
     protected EndpointServer mServer;
 
-    public KontalkConnection(EndpointServer server) {
-        super(new ConnectionConfiguration(server.getHost(), server.getPort()));
+    public KontalkConnection(EndpointServer server) throws XMPPException {
+        super(new AndroidConnectionConfiguration(server.getHost(), server.getPort()));
 
         mServer = server;
         // network name
