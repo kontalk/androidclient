@@ -22,6 +22,7 @@ import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.client.EndpointServer;
+import org.kontalk.xmpp.client.MessageEncrypted;
 import org.kontalk.xmpp.client.RawPacket;
 import org.kontalk.xmpp.client.ReceivedServerReceipt;
 import org.kontalk.xmpp.client.SentServerReceipt;
@@ -29,6 +30,7 @@ import org.kontalk.xmpp.client.ServerReceipt;
 import org.kontalk.xmpp.client.ServerReceiptRequest;
 import org.kontalk.xmpp.client.StanzaGroupExtension;
 import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
+import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
@@ -58,6 +60,7 @@ import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.Process;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Base64;
 import android.util.Log;
 
 
@@ -263,7 +266,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         Log.v(TAG, "message already queued and waiting - dropping");
                     }
 
-                    // TODO encryption
                     org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
                     m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
                     String to = data.getString("org.kontalk.message.to");
@@ -278,7 +280,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         service.mWaitingReceipt.put(id, uri);
                     }
 
-                    m.setBody(data.getString("org.kontalk.message.body"));
+                    String body = data.getString("org.kontalk.message.body");
+                    String key = data.getString("org.kontalk.message.encryptKey");
+
+                    // encrypt message
+                    if (key != null) {
+                        byte[] toMessage = null;
+                        Coder coder = null;
+                        try {
+                            coder = MessagingPreferences.getEncryptCoder(key);
+                            if (coder != null)
+                                toMessage = coder.encrypt(body.getBytes());
+                        }
+                        catch (Exception e) {
+                            // TODO notify/ask user this message will be sent cleartext
+                            coder = null;
+                        }
+
+                        if (toMessage != null) {
+                            body = Base64.encodeToString(toMessage, Base64.NO_WRAP);
+                            m.addExtension(new MessageEncrypted());
+                        }
+                    }
+
+                    m.setBody(body);
                     m.addExtension(new ServerReceiptRequest());
                     conn.sendPacket(m);
 
@@ -961,6 +986,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 String sender = StringUtils.parseName(from);
                 byte[] content = m.getBody().getBytes();
 
+                // TODO message decryption
+
                 // save to local storage
                 ContentValues values = new ContentValues();
                 values.put(Messages.MESSAGE_ID, msgId);
@@ -985,29 +1012,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // update notifications (delayed)
                     MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
             }
-
-            /* TODO
-            Intent i = new Intent(ACTION_MESSAGE);
-            i.putExtra(EXTRA_FROM, p.getFrom());
-            i.putExtra(EXTRA_TO, p.getTo());
-            i.putExtra(EXTRA_TYPE, p.getType().toString());
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-            Collection<RosterPacket.Item> items = p.getRosterItems();
-            String[] list = new String[items.size()];
-
-            int index = 0;
-            for (Iterator<RosterPacket.Item> iter = items.iterator(); iter.hasNext(); ) {
-                RosterPacket.Item item = iter.next();
-                list[index] = item.getUser();
-                index++;
-            }
-
-            i.putExtra(EXTRA_JIDLIST, list);
-
-            Log.v(TAG, "broadcasting roster: " + i);
-            mLocalBroadcastManager.sendBroadcast(i);
-            */
         }
     }
 

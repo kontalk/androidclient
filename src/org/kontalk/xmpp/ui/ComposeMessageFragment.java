@@ -418,7 +418,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                // TODO values.put(Messages.ENCRYPT_KEY, key);
+                values.put(Messages.ENCRYPT_KEY, key);
                 values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);
@@ -454,22 +454,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                     i.putExtra("org.kontalk.message.uri", newMsg);
                     i.putExtra("org.kontalk.message.toUser", userId);
                     i.putExtra("org.kontalk.message.body", mText);
-                    // TODO encryption key
+                    i.putExtra("org.kontalk.message.encryptKey", key);
                     getActivity().startService(i);
-
-                    /*
-                    ComposerServiceConnection conn = new ComposerServiceConnection(
-                            userId, mText.getBytes(), PlainTextMessage.MIME_TYPE,
-                            newMsg, key);
-                    if (!getActivity().bindService(
-                            new Intent(getActivity().getApplicationContext(),
-                                    MessageCenterServiceLegacy.class), conn,
-                            Context.BIND_AUTO_CREATE)) {
-                        // cannot bind :(
-                        // mMessageSenderListener.error(conn.job, new
-                        // IllegalArgumentException("unable to bind to service"));
-                    }
-                    */
                 }
                 else {
                     getActivity().runOnUiThread(new Runnable() {
