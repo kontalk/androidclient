@@ -570,7 +570,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mConnector == null || !mConnector.isConnected()) {
             // retrieve account name
             Account acc = Authenticator.getDefaultAccount(this);
-            mMyUsername = acc.name;
+            mMyUsername = (acc != null) ? acc.name : null;
 
             // fallback: get server from preferences
             if (mServer == null)
