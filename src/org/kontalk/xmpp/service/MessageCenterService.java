@@ -21,6 +21,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
+import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.MessageEncrypted;
 import org.kontalk.xmpp.client.RawPacket;
@@ -39,6 +40,7 @@ import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
 
+import android.accounts.Account;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -162,6 +164,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private ServiceHandler mServiceHandler;
     /** Main looper. */
     private Looper mLooper;
+    /** My username (account name). */
+    private String mMyUsername;
 
     /** Messages waiting for server receipt. */
     private Map<String, Uri> mWaitingReceipt = new HashMap<String, Uri>();
@@ -564,6 +568,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     private synchronized void createConnection() {
         if (mConnector == null || !mConnector.isConnected()) {
+            // retrieve account name
+            Account acc = Authenticator.getDefaultAccount(this);
+            mMyUsername = acc.name;
+
             // fallback: get server from preferences
             if (mServer == null)
                 mServer = MessagingPreferences.getEndpointServer(this);
@@ -985,8 +993,31 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 String from = m.getFrom();
                 String sender = StringUtils.parseName(from);
                 byte[] content = m.getBody().getBytes();
+                long length = content.length;
 
-                // TODO message decryption
+                // message decryption
+                boolean wasEncrypted = (m.getExtension(MessageEncrypted.ELEMENT_NAME, MessageEncrypted.NAMESPACE) != null);
+                boolean isEncrypted = wasEncrypted;
+                if (isEncrypted) {
+                    // decrypt message
+                    Coder coder = MessagingPreferences.getDecryptCoder(MessageCenterService.this, mMyUsername);
+                    try {
+                        // decode base64
+                        content = Base64.decode(content, Base64.DEFAULT);
+                        // length of raw encrypted message
+                        length = content.length;
+                        // decrypt
+                        content = coder.decrypt(content);
+                        length = content.length;
+                        isEncrypted = false;
+                    }
+                    catch (Exception exc) {
+                        // pass over the message even if encrypted
+                        // UI will warn the user about that and wait
+                        // for user decisions
+                        Log.e(TAG, "decryption failed", exc);
+                    }
+                }
 
                 // save to local storage
                 ContentValues values = new ContentValues();
@@ -994,13 +1025,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 values.put(Messages.PEER, sender);
                 values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
                 values.put(Messages.CONTENT, content);
-                values.put(Messages.ENCRYPTED, false);
-                values.putNull(Messages.ENCRYPT_KEY);
+                values.put(Messages.ENCRYPTED, isEncrypted);
+                values.put(Messages.ENCRYPT_KEY, wasEncrypted ? "" : null);
                 values.put(Messages.UNREAD, true);
                 values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
                 // TODO consider delay extension
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-                values.put(Messages.LENGTH, content.length);
+                values.put(Messages.LENGTH, length);
                 try {
                     getContentResolver().insert(Messages.CONTENT_URI, values);
                 }
