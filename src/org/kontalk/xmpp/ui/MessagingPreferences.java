@@ -75,6 +75,14 @@ public final class MessagingPreferences extends PreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // no account - redirect to bootstrap preferences
+        if (Authenticator.getDefaultAccount(this) == null) {
+            startActivity(new Intent(this, BootstrapPreferences.class));
+            finish();
+            return;
+        }
+
         addPreferencesFromResource(R.xml.preferences);
 
         // push notifications checkbox

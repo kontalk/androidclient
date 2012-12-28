@@ -180,7 +180,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <!-- TODO remove this -->
         <activity android:name=".ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
 
         <activity android:name=".ui.NumberValidation"
