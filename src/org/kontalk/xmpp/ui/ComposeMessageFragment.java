@@ -47,11 +47,8 @@ import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
-import org.kontalk.xmpp.service.ClientThread;
 import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
-import org.kontalk.xmpp.service.RequestJob;
-import org.kontalk.xmpp.service.RequestListener;
 import org.kontalk.xmpp.sync.Syncer;
 import org.kontalk.xmpp.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.xmpp.util.MediaStorage;
@@ -116,7 +113,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends SherlockListFragment implements
-		View.OnLongClickListener, RequestListener, IconContextMenuOnClickListener {
+		View.OnLongClickListener, IconContextMenuOnClickListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -1609,32 +1606,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private void setStatusText(CharSequence text) {
         setActivityTitle(null, text, null);
 	}
-
-	@Override
-	public void starting(ClientThread client, RequestJob job) {
-	    // not used
-	}
-
-    @Override
-    public void uploadProgress(ClientThread client, RequestJob job, long bytes) {
-        // not used
-    }
-
-    @Override
-    public void downloadProgress(ClientThread client, RequestJob job, long bytes) {
-        // not used
-    }
-
-    @Override
-    public void done(ClientThread client, RequestJob job, String txId) {
-        // TODO client.setTxListener(txId, this);
-    }
-
-    @Override
-    public boolean error(ClientThread client, RequestJob job, Throwable exc) {
-        // TODO
-        return false;
-    }
 
 	private synchronized void registerPeerObserver() {
 		if (mPeerObserver == null) {
