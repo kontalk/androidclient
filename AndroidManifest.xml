@@ -53,9 +53,9 @@
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:name="org.kontalk.xmpp.Kontalk" android:allowBackup="false">
 
         <!-- Services -->
-        <service android:name="org.kontalk.xmpp.service.MessageCenterService"
+        <service android:name=".service.MessageCenterService"
             android:label="@string/service_name"/>
-        <service android:name="org.kontalk.xmpp.authenticator.AccountAuthenticatorService"
+        <service android:name=".authenticator.AccountAuthenticatorService"
                 android:process=":auth" android:label="@string/authenticator_name">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
@@ -63,7 +63,7 @@
             <meta-data android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator"/>
         </service>
-        <service android:name="org.kontalk.xmpp.sync.ContactsSyncAdapterService"
+        <service android:name=".sync.ContactsSyncAdapterService"
                 android:label="@string/sync_service_name">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
@@ -71,16 +71,16 @@
             <meta-data android:name="android.content.SyncAdapter" android:resource="@xml/sync_contacts"/>
             <meta-data android:name="android.provider.CONTACTS_STRUCTURE" android:resource="@xml/contacts"/>
         </service>
-        <service android:name="org.kontalk.xmpp.service.DownloadService"
+        <service android:name=".service.DownloadService"
             android:label="@string/download_service"/>
-        <service android:name="org.kontalk.xmpp.GCMIntentService"/>
+        <service android:name=".GCMIntentService"/>
 
         <!-- Content providers -->
-        <provider android:name="org.kontalk.xmpp.provider.MessagesProvider"
+        <provider android:name=".provider.MessagesProvider"
             android:exported="false"
             android:authorities="org.kontalk.xmpp.messages"/>
 
-        <provider android:name="org.kontalk.xmpp.provider.UsersProvider"
+        <provider android:name=".provider.UsersProvider"
             android:exported="false"
             android:authorities="org.kontalk.xmpp.users"/>
 
@@ -112,7 +112,7 @@
             android:value=".ui.SearchActivity" />
 
         <!-- Activities -->
-        <activity android:name="org.kontalk.xmpp.ui.ConversationList"
+        <activity android:name=".ui.ConversationList"
             android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Light">
@@ -123,7 +123,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="org.kontalk.xmpp.ui.SearchActivity"
+        <activity android:name=".ui.SearchActivity"
             android:label="@string/app_name"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@style/Theme.Light">
@@ -135,7 +135,7 @@
                 android:resource="@xml/searchable" />
         </activity>
 
-        <activity android:name="org.kontalk.xmpp.ui.ComposeMessage"
+        <activity android:name=".ui.ComposeMessage"
             android:theme="@style/Theme.Light.Subtitle"
             android:launchMode="singleTop"
             android:configChanges="orientation|keyboardHidden"
@@ -174,35 +174,42 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="org.kontalk.xmpp.ui.MessagingPreferences" android:theme="@style/Theme.Light2"/>
-        <activity android:name="org.kontalk.xmpp.ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
+        <activity android:name=".ui.MessagingPreferences" android:theme="@style/Theme.Light2">
+            <intent-filter>
+                <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <!-- TODO remove this -->
+        <activity android:name=".ui.BootstrapPreferences" android:theme="@style/Theme.Light2"/>
 
-        <activity android:name="org.kontalk.xmpp.ui.NumberValidation"
+        <activity android:name=".ui.NumberValidation"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.xmpp.ui.CodeValidation"
+        <activity android:name=".ui.CodeValidation"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.xmpp.ui.ContactsListActivity"
+        <activity android:name=".ui.ContactsListActivity"
             android:label="@string/contacts_list_title"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.xmpp.ui.StatusActivity"
+        <activity android:name=".ui.StatusActivity"
             android:label="@string/status_activity_title"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name="org.kontalk.xmpp.ui.QuickReplyActivity"
+        <!--
+        <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
             android:launchMode="singleInstance"
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Dialog">
-            <!-- this is just for testing
+            // this is just for testing
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
-            -->
         </activity>
+         -->
 
     </application>
 </manifest>
