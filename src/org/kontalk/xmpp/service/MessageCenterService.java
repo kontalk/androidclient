@@ -117,6 +117,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
     public static final String EXTRA_STATUS = "org.kontalk.presence.status";
     public static final String EXTRA_SHOW = "org.kontalk.presence.show";
+    public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
     public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
     public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
 
@@ -304,7 +305,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 case MSG_PRESENCE: {
                     Bundle data = (Bundle) msg.obj;
                     String type = data.getString(EXTRA_TYPE);
-                    String show = data.getString(EXTRA_SHOW);
 
                     String id = data.getString(EXTRA_PACKET_ID);
                     String to = data.getString(EXTRA_TO);
@@ -322,9 +322,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         pack = new RawPacket(probe);
                     }
                     else {
+                        String show = data.getString(EXTRA_SHOW);
                         Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
                         p.setPacketID(id);
                         p.setTo(to);
+                        if (data.containsKey(EXTRA_PRIORITY))
+                            p.setPriority(data.getInt(EXTRA_PRIORITY, 0));
                         p.setStatus(data.getString(EXTRA_STATUS));
                         if (show != null)
                             p.setMode(Presence.Mode.valueOf(show));
@@ -841,6 +844,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(EXTRA_STATUS, p.getStatus());
                 Presence.Mode mode = p.getMode();
                 i.putExtra(EXTRA_SHOW, mode != null ? mode.toString() : Presence.Mode.available.toString());
+                i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
                 // getExtension doesn't work here
                 Iterator<PacketExtension> iter = p.getExtensions().iterator();

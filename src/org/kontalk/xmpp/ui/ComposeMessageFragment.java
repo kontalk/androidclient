@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -174,9 +173,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private boolean mOfflineModeWarned;
 
     private static final class PresenceData {
-        public boolean available;
         public String status;
-        public String mode;
+        public int priority;
         public Date stamp;
     }
 
@@ -1362,11 +1360,46 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 public void onReceive(Context context, Intent intent) {
                     String action = intent.getAction();
 
-                    // TODO this has to be rewritten... (result of late night work :)
-
                     if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        CharSequence statusText = null;
+
                         String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+
+                        // we are receiving a presence from our peer, upgrade available resources
+                        if ((from.length() == AbstractMessage.USERID_LENGTH || from.length() == AbstractMessage.USERID_LENGTH_RESOURCE) &&
+                                from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
+                            // our presence!!!
+
+                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                            if (Presence.Type.available.toString().equals(type)) {
+                                mAvailableResources.add(from);
+                                setStatusText(getString(R.string.seen_online_label));
+
+                                // abort presence probe if non-group stanza
+                                if (groupId == null) mPresenceId = null;
+                            }
+                            else if (Presence.Type.unavailable.toString().equals(type)) {
+                                mAvailableResources.remove(from);
+                                /*
+                                 * All available resources have gone. If we are
+                                 * not waiting for presence probe response, mark
+                                 * the user as offline immediately and use the
+                                 * timestamp provided with the stanza.
+                                 */
+                                if (mAvailableResources.size() == 0 && mPresenceId == null) {
+                                    // user offline
+                                    long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                                    if (stamp >= 0) {
+                                        statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, stamp));
+                                    }
+                                    else {
+                                        statusText = buildLastSeenText(getString(R.string.seen_moment_ago_label));
+                                    }
+                                }
+                            }
+                        }
+
                         // we have a presence group
                         if (mPresenceId != null && mPresenceId.equals(groupId)) {
                             if (mMostAvailable == null)
@@ -1377,12 +1410,12 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                             String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
                             boolean available = (type == null || Presence.Type.available.toString().equals(type));
                             long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                            int priority = intent.getIntExtra(MessageCenterService.EXTRA_PRIORITY, 0);
 
                             if (available) {
-                                // available stanza - take it and stop here
-                                take = true;
-                                // this way this if won't be considered any more
-                                mPresenceId = null;
+                                // take if higher priority
+                                if (priority >= mMostAvailable.priority)
+                                    take = true;
                             }
                             else {
                                 // take if most recent
@@ -1406,15 +1439,17 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                 }
 
                                 mMostAvailable.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                                mMostAvailable.mode = intent.getStringExtra(MessageCenterService.EXTRA_SHOW);
-                                mMostAvailable.available = available;
+                                mMostAvailable.priority = priority;
                             }
 
                             int count = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
                             if (count <= 1 || mPresenceId == null) {
-                                // TODO we got all presence stanzas
+                                // we got all presence stanzas
                                 Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
                                     ", status=" + mMostAvailable.status + ")");
+
+                                // stop receiving presence probes
+                                mPresenceId = null;
 
                                 /*
                                  * TODO if we receive a presence unavailable stanza
@@ -1423,33 +1458,22 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                  * to all available resources and sync them
                                  * whenever a presence stanza is received.
                                  */
-                            }
-                        }
-
-                        // be careful considering only presence stanzas without stanza group extension
-                        if (groupId == null && from.length() >= AbstractMessage.USERID_LENGTH &&
-                            from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
-                            // our presence!!!
-
-                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                            if (Presence.Type.available.toString().equals(type)) {
-                                mAvailableResources.add(from);
-                                setStatusText(getString(R.string.seen_online_label));
-                            }
-                            else {
-                                mAvailableResources.remove(from);
                                 if (mAvailableResources.size() == 0) {
-                                    // TODO unavailable
-                                    setStatusText("unavailable");
+                                    if (mMostAvailable.stamp != null) {
+                                        statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context,
+                                            mMostAvailable.stamp.getTime()));
+                                    }
                                 }
                             }
                         }
 
+                        if (statusText != null)
+                            setStatusText(statusText);
                     }
 
-
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                        // TODO send probe and subscription request
+                        // send probe and subscription request
+                        presenceProbe();
                     }
                 }
             };
@@ -1461,22 +1485,27 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
-            // send subscription request
-            Intent i = new Intent(getActivity(), MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, userId);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
-            getActivity().startService(i);
-
             // send presence probe
-            mPresenceId = Packet.nextID();
-            i = new Intent(getActivity(), MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, userId);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, "probe");
-            i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mPresenceId);
-            getActivity().startService(i);
+            presenceProbe();
 	    }
+	}
+
+	private void presenceProbe() {
+        // send subscription request
+        Intent i = new Intent(getActivity(), MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TO, userId);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
+        getActivity().startService(i);
+
+        // send presence probe
+        mPresenceId = Packet.nextID();
+        i = new Intent(getActivity(), MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TO, userId);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, "probe");
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mPresenceId);
+        getActivity().startService(i);
 	}
 
 	private void unsubcribePresence() {
