@@ -139,7 +139,7 @@ public class XMPPConnectionHelper {
                 break;
             }
 
-            catch (XMPPException ie) {
+            catch (Exception ie) {
                 // uncontrolled interrupt - handle errors
                 if (!mInterrupted) {
                     Log.e(TAG, "connection error", ie);
