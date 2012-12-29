@@ -1,13 +1,11 @@
 package org.kontalk.xmpp.sync;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.client.NumberValidator;
@@ -70,8 +68,7 @@ public class Syncer {
     private final static class PresenceItem {
         public String from;
         public String status;
-        public Presence.Mode show;
-        public Date timestamp;
+        public long timestamp;
     }
 
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
@@ -96,8 +93,7 @@ public class Syncer {
                 PresenceItem p = new PresenceItem();
                 p.from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                 p.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                p.show = (Presence.Mode) intent.getSerializableExtra(MessageCenterService.EXTRA_SHOW);
-                p.timestamp = (Date) intent.getSerializableExtra(MessageCenterService.EXTRA_STAMP);
+                p.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
 
                 // see if bare JID is already present in list
                 boolean add = true;
@@ -347,10 +343,10 @@ public class Syncer {
                         else
                             registeredValues.putNull(Users.STATUS);
 
-                        if (entry.timestamp != null)
-                            registeredValues.put(Users.LAST_SEEN, entry.timestamp.getTime());
+                        if (entry.timestamp >= 0)
+                            registeredValues.put(Users.LAST_SEEN, entry.timestamp);
                         else
-                            registeredValues.remove(Users.LAST_SEEN);
+                            registeredValues.putNull(Users.LAST_SEEN);
 
                         usersProvider.update(offlineUri, registeredValues,
                             Users.HASH + " = ?", new String[] { userId });
@@ -362,7 +358,8 @@ public class Syncer {
                 }
 
                 try {
-                    provider.applyBatch(operations);
+                    if (operations.size() > 0)
+                        provider.applyBatch(operations);
                     syncResult.stats.numInserts += op;
                     syncResult.stats.numEntries += op;
                 }

@@ -119,7 +119,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.PRESENCE
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
+    public static final String EXTRA_FROM_USERID = "org.kontalk.stanza.from.userId";
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
+    public static final String EXTRA_TO_USERID = "org.kontalk.stanza.to.userId";
     public static final String EXTRA_STATUS = "org.kontalk.presence.status";
     public static final String EXTRA_SHOW = "org.kontalk.presence.show";
     public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
@@ -336,10 +338,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     String type = data.getString(EXTRA_TYPE);
 
                     String id = data.getString(EXTRA_PACKET_ID);
-                    String to = data.getString(EXTRA_TO);
-                    // convert to jid
-                    if (!to.contains("@"))
-                        to = MessageUtils.toJID(to, service.mServer.getNetwork());
+
+                    String to;
+                    String toUserid = data.getString(EXTRA_TO_USERID);
+                    if (toUserid != null)
+                        to = MessageUtils.toJID(toUserid, service.mServer.getNetwork());
+                    else
+                        to = data.getString(EXTRA_TO);
 
                     Packet pack;
                     if ("probe".equals(type)) {
@@ -372,10 +377,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Bundle data = (Bundle) msg.obj;
                     LastActivity p = new LastActivity();
 
-                    String to = data.getString(EXTRA_TO);
-                    // convert to jid
-                    if (!to.contains("@"))
-                        to = MessageUtils.toJID(to, service.mServer.getNetwork());
+                    String to;
+                    String toUserid = data.getString(EXTRA_TO_USERID);
+                    if (toUserid != null)
+                        to = MessageUtils.toJID(toUserid, service.mServer.getNetwork());
+                    else
+                        to = data.getString(EXTRA_TO);
 
                     p.setPacketID(data.getString(EXTRA_PACKET_ID));
                     p.setTo(to);
@@ -804,7 +811,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 StringBuilder b = new StringBuilder();
                 b.append(StringUtils.parseName(from));
                 b.append(StringUtils.parseResource(from));
-                from = b.toString();
+                i.putExtra(EXTRA_FROM_USERID, b.toString());
             }
 
             i.putExtra(EXTRA_FROM, from);
@@ -859,7 +866,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Log.v(TAG, "presence: " + packet);
                 Presence p = (Presence) packet;
                 Intent i = new Intent(ACTION_PRESENCE);
-                i.putExtra(EXTRA_TYPE, p.getType().toString());
+                Presence.Type type = p.getType();
+                i.putExtra(EXTRA_TYPE, type != null ? type.toString() : Presence.Type.available.toString());
                 i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
                 String from = p.getFrom();
@@ -869,7 +877,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     StringBuilder b = new StringBuilder();
                     b.append(StringUtils.parseName(from));
                     b.append(StringUtils.parseResource(from));
-                    from = b.toString();
+                    i.putExtra(EXTRA_FROM_USERID, b.toString());
                 }
 
                 i.putExtra(EXTRA_FROM, from);

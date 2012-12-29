@@ -1347,11 +1347,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         CharSequence statusText = null;
 
                         String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
 
                         // we are receiving a presence from our peer, upgrade available resources
-                        if ((from.length() == AbstractMessage.USERID_LENGTH || from.length() == AbstractMessage.USERID_LENGTH_RESOURCE) &&
-                                from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
+                        if (from != null && from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
                             // our presence!!!
 
                             String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
@@ -1477,7 +1476,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         // send subscription request
         Intent i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, userId);
+        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
         i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
         getActivity().startService(i);
 
@@ -1485,7 +1484,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         mPresenceId = Packet.nextID();
         i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, userId);
+        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
         i.putExtra(MessageCenterService.EXTRA_TYPE, "probe");
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mPresenceId);
         getActivity().startService(i);
@@ -1500,7 +1499,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         // send unsubscription request
         Intent i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, userId);
+        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
         i.putExtra(MessageCenterService.EXTRA_TYPE, "unsubscribe");
         getActivity().startService(i);
 	}

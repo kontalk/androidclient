@@ -468,4 +468,22 @@ public final class MessageUtils {
         return jid.toString();
     }
 
+    public static boolean compareUserId(String a, String b, boolean full) throws IllegalArgumentException {
+        int aLen = a.length();
+        int bLen = b.length();
+        // validate :)
+        if ((aLen != AbstractMessage.USERID_LENGTH && aLen != AbstractMessage.USERID_LENGTH_RESOURCE) ||
+                (bLen != AbstractMessage.USERID_LENGTH && bLen != AbstractMessage.USERID_LENGTH_RESOURCE) ||
+                a.contains("@") || b.contains("@"))
+            throw new IllegalArgumentException("either one or both parameters are not valid user id.");
+
+        if (full)
+            // full comparison - just equals
+            return a.equalsIgnoreCase(b);
+        else
+            // user id comparison
+            return a.substring(0, AbstractMessage.USERID_LENGTH)
+                .equalsIgnoreCase(b.substring(0, AbstractMessage.USERID_LENGTH));
+    }
+
 }
