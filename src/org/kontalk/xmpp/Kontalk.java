@@ -69,6 +69,10 @@ public class Kontalk extends Application {
         mPrefChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                // no account - abort
+                if (Authenticator.getDefaultAccount(Kontalk.this) == null)
+                    return;
+
                 // manual server address
                 if ("pref_network_uri".equals(key)) {
                     // just restart the message center for now
@@ -78,7 +82,7 @@ public class Kontalk extends Application {
 
                 // hide presence flag / encrypt user data flag
                 else if ("pref_hide_presence".equals(key) || "pref_encrypt_userdata".equals(key)) {
-                    MessageCenterServiceLegacy.updateStatus(Kontalk.this);
+                    MessageCenterService.updateStatus(Kontalk.this);
                 }
 
                 // changing remove prefix
