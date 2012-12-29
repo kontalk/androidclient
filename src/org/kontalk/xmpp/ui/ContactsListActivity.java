@@ -92,7 +92,6 @@ public class ContactsListActivity extends SherlockListActivity
         mBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         // retain current sync state to hide the refresh button and start indeterminate progress
-        // TODO retainNonLast.... is not actually implemented
         if (SyncAdapter.isActive(this)) {
             setSyncing(true);
             registerSyncFinishReceiver();
