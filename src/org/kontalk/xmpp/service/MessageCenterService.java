@@ -90,10 +90,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Request roster match. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
 
-    /** Broadcasted when we are connected to the server. */
+    /**
+     * Broadcasted when we are connected and authenticated to the server.
+     * Send this intent to receive the same as a broadcast if connected. */
     public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
-    /** Broadcasted when we are authenticated to the server. */
-    public static final String ACTION_AUTHENTICATED = "org.kontalk.action.AUTHENTICATED";
 
     /**
      * Broadcasted when a presence stanza is received.
@@ -537,6 +537,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mServiceHandler.idle();
             }
 
+            else if (ACTION_CONNECTED.equals(action)) {
+                if (mConnector != null && mConnector.isConnected())
+                    broadcast(ACTION_CONNECTED);
+            }
+
             else if (ACTION_RESTART.equals(action)) {
                 msg = mServiceHandler.obtainMessage(MSG_RESTART);
             }
@@ -612,8 +617,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void reconnectionSuccessful() {
-        Log.v(TAG, "reconnected!");
-        broadcast(ACTION_CONNECTED);
+        // not used
     }
 
     @Override
@@ -637,8 +641,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void connected() {
-        Log.v(TAG, "connected!");
-        broadcast(ACTION_CONNECTED);
+        // not used.
     }
 
     @Override
@@ -649,13 +652,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPresence();
         // resend failed and pending messages
         resendPendingMessages();
-        // receipts will be sent while consuming
+        // receipts will be sent while consuming incoming messages
 
-        broadcast(ACTION_AUTHENTICATED);
+        broadcast(ACTION_CONNECTED);
     }
 
     private void broadcast(String action) {
-        mLocalBroadcastManager.sendBroadcast(new Intent(ACTION_AUTHENTICATED));
+        mLocalBroadcastManager.sendBroadcast(new Intent(action));
     }
 
     /** Sends our presence. */

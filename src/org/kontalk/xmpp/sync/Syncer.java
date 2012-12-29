@@ -1,5 +1,6 @@
 package org.kontalk.xmpp.sync;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,15 +75,17 @@ public class Syncer {
     // FIXME this class should handle most recent/avaiable presence stanzas
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
         private final List<PresenceItem> response;
-        private final Object notifyTo;
+        private final WeakReference<Syncer> notifyTo;
         private final String iq;
+        private final List<String> hashList;
         private int presenceCount = -1;
         private int rosterCount = -1;
 
-        public PresenceBroadcastReceiver(String iq, Object notifyTo) {
+        public PresenceBroadcastReceiver(String iq, List<String> hashList, Syncer notifyTo) {
             response = new ArrayList<PresenceItem>();
-            this.notifyTo = notifyTo;
+            this.notifyTo = new WeakReference<Syncer>(notifyTo);
             this.iq = iq;
+            this.hashList = hashList;
         }
 
         @Override
@@ -117,9 +120,11 @@ public class Syncer {
                 // done with presence data
                 Log.v(TAG, "presence count " + presenceCount + ", roster with " + rosterCount + " elements");
                 if (rosterCount >= 0 && presenceCount >= rosterCount) {
-                    synchronized (notifyTo) {
-                        notifyTo.notifyAll();
-                    }
+                    Syncer w = notifyTo.get();
+                    if (w != null)
+                        synchronized (w) {
+                            w.notifyAll();
+                        }
                 }
             }
 
@@ -132,11 +137,27 @@ public class Syncer {
 
                     // all presence data already received (WHATT???)
                     Log.v(TAG, "roster with " + rosterCount + " elements, presence count " + presenceCount);
-                    if (rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount))
-                        synchronized (notifyTo) {
-                            notifyTo.notifyAll();
-                        }
+                    if (rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount)) {
+                        Syncer w = notifyTo.get();
+                        if (w != null)
+                            synchronized (w) {
+                                w.notifyAll();
+                            }
+                    }
                 }
+            }
+
+            // connected! Retry...
+            else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+                /*
+                 * TODO there might be concurrency problem here. If we send the
+                 * roster intent and in the meanwhile message center was already
+                 * connecting, we risk sending it twice: one with the pending
+                 * intent and one here.
+                 */
+                Syncer w = notifyTo.get();
+                if (w != null)
+                    w.sendRoster(iq, hashList);
             }
         }
 
@@ -275,13 +296,17 @@ public class Syncer {
 
             // register presence broadcast receiver
             String iq = Packet.nextID();
-            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, this);
+            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, hashList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER);
+            f.addAction(MessageCenterService.ACTION_CONNECTED);
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
-            sendRoster(iq, hashList);
+            // request current connection status
+            Intent intent = new Intent(mContext, MessageCenterService.class);
+            intent.setAction(MessageCenterService.ACTION_CONNECTED);
+            mContext.startService(intent);
 
             // wait for the service to complete its job
             synchronized (this) {
