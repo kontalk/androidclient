@@ -131,7 +131,7 @@ public class Syncer {
 
                     // all presence data already received (WHATT???)
                     Log.v(TAG, "roster with " + rosterCount + " elements, presence count " + presenceCount);
-                    if (presenceCount >= 0 && rosterCount >= presenceCount)
+                    if (rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount))
                         synchronized (notifyTo) {
                             notifyTo.notifyAll();
                         }
