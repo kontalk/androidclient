@@ -71,6 +71,7 @@ public class Syncer {
         public long timestamp;
     }
 
+    // FIXME this class should handle most recent/avaiable presence stanzas
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
         private final List<PresenceItem> response;
         private final Object notifyTo;
@@ -338,6 +339,7 @@ public class Syncer {
                     try {
                         if (!TextUtils.isEmpty(entry.status)) {
                             String status = MessagingPreferences.decryptUserdata(mContext, entry.status, data != null ? data.number : null);
+                            Log.v(TAG, data.number + ": " + status);
                             registeredValues.put(Users.STATUS, status);
                         }
                         else
