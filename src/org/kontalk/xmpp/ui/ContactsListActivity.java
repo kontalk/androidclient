@@ -93,8 +93,10 @@ public class ContactsListActivity extends SherlockListActivity
 
         // retain current sync state to hide the refresh button and start indeterminate progress
         // TODO retainNonLast.... is not actually implemented
-        if (SyncAdapter.isActive(this))
+        if (SyncAdapter.isActive(this)) {
             setSyncing(true);
+            registerSyncFinishReceiver();
+        }
     }
 
     @Override
@@ -183,7 +185,7 @@ public class ContactsListActivity extends SherlockListActivity
         if (MessageCenterService.isNetworkConnectionAvailable(this)) {
             if (SyncAdapter.requestSync(this, true)) {
                 setSyncing(true);
-                registerSyncFinishReceiver(null);
+                registerSyncFinishReceiver();
             }
         }
         else if (errorWarning) {
@@ -191,10 +193,7 @@ public class ContactsListActivity extends SherlockListActivity
         }
     }
 
-    private void registerSyncFinishReceiver(RunnableBroadcastReceiver oldReceiver) {
-        if (oldReceiver != null)
-            mBroadcastManager.unregisterReceiver(oldReceiver);
-
+    private void registerSyncFinishReceiver() {
         // register sync monitor
         if (mSyncMonitor == null) {
             mSyncMonitor = new RunnableBroadcastReceiver(mPostSyncAction, mHandler);
