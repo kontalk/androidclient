@@ -18,13 +18,29 @@
 
 package org.kontalk.xmpp;
 
+import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.provider.MessagesProvider;
+import org.kontalk.xmpp.service.DownloadService;
+import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.service.MessageCenterServiceLegacy;
+import org.kontalk.xmpp.service.NetworkStateReceiver;
+import org.kontalk.xmpp.service.SystemBootStartup;
 import org.kontalk.xmpp.sync.SyncAdapter;
+import org.kontalk.xmpp.ui.ComposeMessage;
 import org.kontalk.xmpp.ui.MessagingNotification;
+import org.kontalk.xmpp.ui.SearchActivity;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.OnAccountsUpdateListener;
 import android.app.Application;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 
 /**
@@ -38,11 +54,13 @@ public class Kontalk extends Application {
     /** Supported client protocol revision. */
     public static final int CLIENT_PROTOCOL = 4;
 
+    private Handler mHandler;
     private SharedPreferences.OnSharedPreferenceChangeListener mPrefChangedListener;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mHandler = new Handler();
 
         // update notifications from locally unread messages
         MessagingNotification.updateMessagesNotification(this, false);
@@ -72,5 +90,51 @@ public class Kontalk extends Application {
         prefs.registerOnSharedPreferenceChangeListener(mPrefChangedListener);
 
         // TODO listen for changes to phone numbers
+
+        // register account change listener
+        Account account = Authenticator.getDefaultAccount(this);
+        if (account != null) {
+            final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
+                @Override
+                public void onAccountsUpdated(Account[] accounts) {
+                    Account my = null;
+                    for (int i = 0; i < accounts.length; i++) {
+                        if (accounts[i].type.equals(Authenticator.ACCOUNT_TYPE)) {
+                            my = accounts[i];
+                            break;
+                        }
+                    }
+
+                    // account removed!!! Shutdown everything.
+                    if (my == null) {
+                        Log.w(TAG, "my account has been removed, shutting down");
+                        // delete all messages
+                        MessagesProvider.deleteDatabase(Kontalk.this);
+                        MessageCenterService.stop(Kontalk.this);
+                    }
+                }
+            };
+            AccountManager.get(this).addOnAccountsUpdatedListener(listener, mHandler, true);
+        }
+
+        // enable/disable components
+        setServicesEnabled(this, account != null);
+    }
+
+    /** Enable/disable application components when account is added or removed. */
+    public static void setServicesEnabled(Context context, boolean enabled) {
+        PackageManager pm = context.getPackageManager();
+        enableService(context, pm, ComposeMessage.class, enabled);
+        enableService(context, pm, SearchActivity.class, enabled);
+        enableService(context, pm, MessageCenterService.class, enabled);
+        enableService(context, pm, DownloadService.class, enabled);
+        enableService(context, pm, SystemBootStartup.class, enabled);
+        enableService(context, pm, NetworkStateReceiver.class, enabled);
+    }
+
+    private static void enableService(Context context, PackageManager pm, Class<?> klass, boolean enabled) {
+        pm.setComponentEnabledSetting(new ComponentName(context, klass),
+            enabled ? PackageManager.COMPONENT_ENABLED_STATE_DEFAULT : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
     }
 }

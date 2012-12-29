@@ -20,12 +20,12 @@ package org.kontalk.xmpp.ui;
 
 import java.net.SocketException;
 
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.sync.SyncAdapter;
 
 import android.accounts.Account;
@@ -483,8 +483,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
 
-        // ok, start message center
-        MessageCenterService.start(getApplicationContext());
+        // ok enable services
+        Kontalk.setServicesEnabled(this, true);
 
         // manual sync starter
         delayedSync();
