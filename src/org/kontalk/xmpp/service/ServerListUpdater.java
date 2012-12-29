@@ -49,7 +49,7 @@ public class ServerListUpdater extends Thread {
 
     public static final int SUPPORTED_LIST_VERSION = 1;
 
-    private static ServerList mCurrentList;
+    private static ServerList sCurrentList;
 
     private final Context mContext;
     private UpdaterListener mListener;
@@ -101,9 +101,9 @@ public class ServerListUpdater extends Thread {
             }
 
             // parse cached list :)
-            mCurrentList = parseList(data);
+            sCurrentList = parseList(data);
             if (mListener != null)
-                mListener.updated(mCurrentList);
+                mListener.updated(sCurrentList);
 
             // restart message center
             MessageCenterService.restartMessageCenter(mContext.getApplicationContext());
@@ -179,22 +179,22 @@ public class ServerListUpdater extends Thread {
 
     /** Returns (and loads if necessary) the current server list. */
     public static ServerList getCurrentList(Context context) {
-        if (mCurrentList != null)
-            return mCurrentList;
+        if (sCurrentList != null)
+            return sCurrentList;
 
         try {
-            mCurrentList = parseCachedList(context);
+            sCurrentList = parseCachedList(context);
         }
         catch (IOException e) {
             try {
-                mCurrentList = parseBuiltinList(context);
+                sCurrentList = parseBuiltinList(context);
             }
             catch (IOException be) {
                 Log.w(TAG, "unable to load builtin server list", be);
             }
         }
 
-        return mCurrentList;
+        return sCurrentList;
     }
 
     public interface UpdaterListener {

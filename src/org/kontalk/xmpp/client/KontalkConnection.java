@@ -1,6 +1,5 @@
 package org.kontalk.xmpp.client;
 
-import org.jivesoftware.smack.AndroidConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
