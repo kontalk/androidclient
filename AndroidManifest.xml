@@ -84,7 +84,7 @@
             android:exported="false"
             android:authorities="org.kontalk.xmpp.users"/>
 
-        <!-- Broadcast receivers
+        <!-- Broadcast receivers -->
         <receiver android:name=".service.SystemBootStartup"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
@@ -105,7 +105,6 @@
             <category android:name="org.kontalk.xmpp" />
           </intent-filter>
         </receiver>
-         -->
 
         <!-- Other -->
         <meta-data android:name="android.app.default_searchable"

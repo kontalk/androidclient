@@ -42,12 +42,11 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         final String action = intent.getAction();
         int serviceAction = 0;
 
-        // background data setting has changed
-        if (ConnectivityManager.ACTION_BACKGROUND_DATA_SETTING_CHANGED
-                .equals(action)) {
+        final ConnectivityManager cm = (ConnectivityManager) context
+            .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            final ConnectivityManager cm = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        // background data setting has changed
+        if (ConnectivityManager.ACTION_BACKGROUND_DATA_SETTING_CHANGED.equals(action)) {
 
             // if background data gets deactivated, just stop the service now
             if (!cm.getBackgroundDataSetting()) {
@@ -61,34 +60,30 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         }
 
         // connectivity status has changed
-        else if (ConnectivityManager.CONNECTIVITY_ACTION
-                .equals(action)) {
+        else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
             // TODO handle FAILOVER_CONNECTION
 
-            final NetworkInfo info = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+            final NetworkInfo info = cm.getActiveNetworkInfo();
             if (info != null) {
                 Log.w(TAG, "network state changed!");
                 switch (info.getState()) {
                     case CONNECTED:
                         serviceAction = ACTION_START;
                         break;
-                    case DISCONNECTED:
-                    case DISCONNECTING:
-                    case UNKNOWN:
+                    default:
                         serviceAction = ACTION_STOP;
                         break;
-                    // do nothing in other cases
                 }
             }
         }
 
         if (serviceAction == ACTION_START)
             // start the message center
-            MessageCenterServiceLegacy.startMessageCenter(context);
+            MessageCenterService.start(context);
 
         else if (serviceAction == ACTION_STOP)
             // stop the message center
-            MessageCenterServiceLegacy.stopMessageCenter(context);
+            MessageCenterService.stop(context);
     }
 
 }
