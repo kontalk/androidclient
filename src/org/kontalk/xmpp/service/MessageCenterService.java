@@ -796,6 +796,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** Broadcasts our presence to the server. */
+    public static void updateStatus(final Context context) {
+        // FIXME this is what sendPresence already does
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_PRESENCE);
+        i.putExtra(EXTRA_STATUS, MessagingPreferences.getStatusMessageInternal(context));
+        context.startService(i);
+    }
+
     /** Listener for last activity iq. */
     private final class LastActivityListener implements PacketListener {
         @Override

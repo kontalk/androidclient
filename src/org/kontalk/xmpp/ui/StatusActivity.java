@@ -1,7 +1,7 @@
 package org.kontalk.xmpp.ui;
 
 import org.kontalk.xmpp.R;
-import org.kontalk.xmpp.service.MessageCenterServiceLegacy;
+import org.kontalk.xmpp.service.MessageCenterService;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -28,7 +28,7 @@ public class StatusActivity extends SherlockListActivity {
         setContentView(R.layout.status_screen);
 
         mStatus = (EditText) findViewById(android.R.id.input);
-        // TODO retrieve from server
+        // TODO retrieve current status from server
         mStatus.setText(MessagingPreferences.getStatusMessage(this));
 
         mAdapter = new SimpleCursorAdapter(this,
@@ -87,7 +87,7 @@ public class StatusActivity extends SherlockListActivity {
         MessagingPreferences.addRecentStatusMessage(this, text);
 
         // start the message center to push the status message
-        MessageCenterServiceLegacy.updateStatus(this);
+        MessageCenterService.updateStatus(this);
         finish();
     }
 
