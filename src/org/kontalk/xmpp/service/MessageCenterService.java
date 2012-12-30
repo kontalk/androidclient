@@ -270,6 +270,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Uri uri = data.getParcelable("org.kontalk.message.uri");
                     if (uri != null && service.mWaitingReceipt.containsValue(uri)) {
                         Log.v(TAG, "message already queued and waiting - dropping");
+                        return true;
                     }
 
                     org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
@@ -707,6 +708,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else {
                 b.putString("org.kontalk.message.toUser", userId);
                 b.putString("org.kontalk.message.body", new String(text));
+                b.putString("org.kontalk.message.encryptKey", key);
             }
 
             Log.d(TAG, "resending failed message " + id);
