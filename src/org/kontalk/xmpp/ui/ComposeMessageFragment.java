@@ -987,17 +987,24 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
             if (resultCode == Activity.RESULT_OK) {
-			    Uri uri;
+			    Uri uri = null;
 			    String mime = null;
 
 			    // returning from camera
 			    if (data == null) {
-			        uri = Uri.fromFile(mCurrentPhoto);
-			        // notify media scanner
-		            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-		            mediaScanIntent.setData(uri);
-		            getActivity().sendBroadcast(mediaScanIntent);
-		            mCurrentPhoto = null;
+			        /*
+			         * FIXME picture taking should be done differently.
+			         * Use a MediaStore-based uri and use a requestCode just
+			         * for taking pictures.
+			         */
+			        if (mCurrentPhoto != null) {
+    			        uri = Uri.fromFile(mCurrentPhoto);
+    			        // notify media scanner
+    		            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+    		            mediaScanIntent.setData(uri);
+    		            getActivity().sendBroadcast(mediaScanIntent);
+    		            mCurrentPhoto = null;
+			        }
 			    }
 			    else {
 			        if (mCurrentPhoto != null) {
