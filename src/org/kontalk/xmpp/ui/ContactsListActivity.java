@@ -56,10 +56,16 @@ public class ContactsListActivity extends SherlockListActivity
 
     private RunnableBroadcastReceiver mSyncMonitor;
     private Handler mHandler;
-    private final Runnable mPostSyncAction = new Runnable() {
-        public void run() {
-            startQuery();
-            setSyncing(false);
+    private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
+            new RunnableBroadcastReceiver.ActionRunnable() {
+        public void run(String action) {
+            if (SyncAdapter.ACTION_SYNC_START.equals(action)) {
+                setSyncing(true);
+            }
+            else if (SyncAdapter.ACTION_SYNC_FINISH.equals(action)) {
+                startQuery();
+                setSyncing(false);
+            }
         }
     };
 
@@ -92,9 +98,9 @@ public class ContactsListActivity extends SherlockListActivity
         mBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         // retain current sync state to hide the refresh button and start indeterminate progress
+        registerSyncReceiver();
         if (SyncAdapter.isActive(this)) {
             setSyncing(true);
-            registerSyncFinishReceiver();
         }
     }
 
@@ -182,21 +188,22 @@ public class ContactsListActivity extends SherlockListActivity
 
     private void startSync(boolean errorWarning) {
         if (MessageCenterService.isNetworkConnectionAvailable(this)) {
-            if (SyncAdapter.requestSync(this, true)) {
+            if (SyncAdapter.requestSync(this, true))
                 setSyncing(true);
-                registerSyncFinishReceiver();
-            }
         }
         else if (errorWarning) {
             Toast.makeText(this, R.string.err_sync_nonetwork, Toast.LENGTH_LONG).show();
         }
     }
 
-    private void registerSyncFinishReceiver() {
+    private void registerSyncReceiver() {
         // register sync monitor
         if (mSyncMonitor == null) {
             mSyncMonitor = new RunnableBroadcastReceiver(mPostSyncAction, mHandler);
-            mBroadcastManager.registerReceiver(mSyncMonitor, new IntentFilter(SyncAdapter.ACTION_SYNC_FINISH));
+            IntentFilter filter = new IntentFilter
+                            (SyncAdapter.ACTION_SYNC_FINISH);
+            filter.addAction(SyncAdapter.ACTION_SYNC_START);
+            mBroadcastManager.registerReceiver(mSyncMonitor, filter);
         }
     }
 
