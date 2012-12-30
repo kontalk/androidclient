@@ -97,7 +97,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     protected void onStop() {
         super.onStop();
         if (isFinishing())
-            abort();
+            abort(true);
     }
 
     private void keepScreenOn(boolean active) {
@@ -144,9 +144,11 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
         keepScreenOn(true);
     }
 
-    private void abort() {
-        setSupportProgressBarIndeterminateVisibility(false);
-        enableControls(true);
+    private void abort(boolean ending) {
+        if (!ending) {
+            setSupportProgressBarIndeterminateVisibility(false);
+            enableControls(true);
+        }
         keepScreenOn(false);
         if (mValidator != null) {
             mValidator.shutdown();
@@ -165,7 +167,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
                 else
                     msgId = R.string.err_validation_error;
                 Toast.makeText(CodeValidation.this, msgId, Toast.LENGTH_LONG).show();
-                abort();
+                abort(false);
             }
         });
     }
@@ -175,7 +177,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             public void run() {
                 Toast.makeText(CodeValidation.this, R.string.err_validation_server_not_supported, Toast.LENGTH_LONG).show();
-                abort();
+                abort(false);
             }
         });
     }
@@ -207,7 +209,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                abort();
+                abort(true);
                 Intent i = new Intent();
                 i.putExtra(NumberValidation.PARAM_AUTHTOKEN, token);
                 setResult(RESULT_OK, i);
@@ -226,7 +228,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
                 Toast.makeText(CodeValidation.this,
                         R.string.err_authentication_failed,
                         Toast.LENGTH_LONG).show();
-                abort();
+                abort(false);
             }
         });
     }
