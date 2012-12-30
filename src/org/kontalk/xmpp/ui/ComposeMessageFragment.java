@@ -366,8 +366,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 				c.close();
 			}
 
-			// TODO send the message!
+			// send message!
 			// FIXME do not encrypt binary messages for now
+			MessageCenterService.sendBinaryMessage(getActivity(),
+			    userId, mime, uri, ContentUris.parseId(newMsg));
 		}
 		else {
 			getActivity().runOnUiThread(new Runnable() {
@@ -440,15 +442,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         c.close();
                     }
 
-                    // send the message!
-                    Intent i = new Intent(getActivity().getApplicationContext(), MessageCenterService.class);
-                    i.setAction(MessageCenterService.ACTION_MESSAGE);
-                    i.putExtra("org.kontalk.message.msgId", ContentUris.parseId(newMsg));
-                    i.putExtra("org.kontalk.message.mime", PlainTextMessage.MIME_TYPE);
-                    i.putExtra("org.kontalk.message.toUser", userId);
-                    i.putExtra("org.kontalk.message.body", mText);
-                    i.putExtra("org.kontalk.message.encryptKey", key);
-                    getActivity().startService(i);
+                    // send message!
+                    MessageCenterService.sendTextMessage(getActivity(),
+                        userId, mText, key, ContentUris.parseId(newMsg));
                 }
                 else {
                     getActivity().runOnUiThread(new Runnable() {

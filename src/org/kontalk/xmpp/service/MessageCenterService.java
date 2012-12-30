@@ -237,156 +237,34 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         private boolean handleMessage(MessageCenterService service, Message msg) {
-            Connection conn = service.mConnector.getConnection();
-
             switch (msg.what) {
                 // send raw packet (Packet object)
                 case MSG_PACKET: {
-                    conn.sendPacket((Packet) msg.obj);
-                    return true;
+                    return handlePacket(service, (Packet) msg.obj);
                 }
 
                 // send raw packet (XML string)
                 case MSG_PACKET_XML: {
-                    try {
-                        String[] data = (String[]) msg.obj;
-                        for (String pack : data)
-                            conn.sendPacket(new RawPacket(pack));
-                    }
-                    catch (ClassCastException e) {
-                        conn.sendPacket(new RawPacket((String) msg.obj));
-                    }
-                    return true;
+                    return handlePacketXML(service, msg.obj);
                 }
 
                 // send plain text message
                 case MSG_MESSAGE: {
-                    Bundle data = (Bundle) msg.obj;
-
-                    // check if message is already pending
-                    long msgId = data.getLong("org.kontalk.message.msgId");
-                    if (service.mWaitingReceipt.containsValue(msgId)) {
-                        Log.v(TAG, "message already queued and waiting - dropping");
-                        return true;
-                    }
-
-                    org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
-                    m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
-                    String to = data.getString("org.kontalk.message.to");
-                    if (to == null) {
-                        to = data.getString("org.kontalk.message.toUser");
-                        to += '@' + service.mServer.getNetwork();
-                    }
-                    if (to != null) m.setTo(to);
-
-                    if (msgId > 0) {
-                        String id = m.getPacketID();
-                        service.mWaitingReceipt.put(id, msgId);
-                    }
-
-                    String body = data.getString("org.kontalk.message.body");
-                    String key = data.getString("org.kontalk.message.encryptKey");
-
-                    // encrypt message
-                    if (key != null) {
-                        byte[] toMessage = null;
-                        Coder coder = null;
-                        try {
-                            coder = MessagingPreferences.getEncryptCoder(key);
-                            if (coder != null)
-                                toMessage = coder.encrypt(body.getBytes());
-                        }
-                        catch (Exception e) {
-                            // should we notify the user this message will be sent cleartext?
-                            coder = null;
-                        }
-
-                        if (toMessage != null) {
-                            body = Base64.encodeToString(toMessage, Base64.NO_WRAP);
-                            m.addExtension(new MessageEncrypted());
-                        }
-                    }
-
-                    m.setBody(body);
-                    m.addExtension(new ServerReceiptRequest());
-                    conn.sendPacket(m);
-
-                    return true;
+                    return handleMessage(service, (Bundle) msg.obj);
                 }
 
                 case MSG_ROSTER: {
-                    Bundle data = (Bundle) msg.obj;
-                    String id = data.getString(EXTRA_PACKET_ID);
-                    String[] list = data.getStringArray(EXTRA_USERLIST);
-                    int c = list.length;
-                    RosterPacket iq = new RosterPacket();
-                    iq.setPacketID(id);
-                    // iq default type is get
-
-                    for (int i = 0; i < c; i++)
-                        iq.addRosterItem(new RosterPacket.Item(list[i] + "@" + service.mServer.getNetwork(), null));
-
-                    conn.sendPacket(iq);
-                    return true;
+                    return handleRoster(service, (Bundle) msg.obj);
                 }
 
                 // presence packet
                 case MSG_PRESENCE: {
-                    Bundle data = (Bundle) msg.obj;
-                    String type = data.getString(EXTRA_TYPE);
-
-                    String id = data.getString(EXTRA_PACKET_ID);
-
-                    String to;
-                    String toUserid = data.getString(EXTRA_TO_USERID);
-                    if (toUserid != null)
-                        to = MessageUtils.toJID(toUserid, service.mServer.getNetwork());
-                    else
-                        to = data.getString(EXTRA_TO);
-
-                    Packet pack;
-                    if ("probe".equals(type)) {
-                        /*
-                         * Smack doesn't support probe stanzas so we have to
-                         * create it manually.
-                         */
-                        String probe = String.format("<presence type=\"probe\" to=\"%s\" id=\"%s\"/>", to, id);
-                        pack = new RawPacket(probe);
-                    }
-                    else {
-                        String show = data.getString(EXTRA_SHOW);
-                        Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
-                        p.setPacketID(id);
-                        p.setTo(to);
-                        if (data.containsKey(EXTRA_PRIORITY))
-                            p.setPriority(data.getInt(EXTRA_PRIORITY, 0));
-                        p.setStatus(data.getString(EXTRA_STATUS));
-                        if (show != null)
-                            p.setMode(Presence.Mode.valueOf(show));
-                        pack = p;
-                    }
-
-                    conn.sendPacket(pack);
-                    return true;
+                    return handlePresence(service, (Bundle) msg.obj);
                 }
 
                 // last activity iq
                 case MSG_LAST_ACTIVITY: {
-                    Bundle data = (Bundle) msg.obj;
-                    LastActivity p = new LastActivity();
-
-                    String to;
-                    String toUserid = data.getString(EXTRA_TO_USERID);
-                    if (toUserid != null)
-                        to = MessageUtils.toJID(toUserid, service.mServer.getNetwork());
-                    else
-                        to = data.getString(EXTRA_TO);
-
-                    p.setPacketID(data.getString(EXTRA_PACKET_ID));
-                    p.setTo(to);
-
-                    conn.sendPacket(p);
-                    return true;
+                    return handleLastActivity(service, (Bundle) msg.obj);
                 }
 
                 // idle message
@@ -404,6 +282,173 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             return false;
+        }
+
+        /**
+         * Handles bare packets.
+         * @message MSG_PACKET
+         */
+        private boolean handlePacket(MessageCenterService service, Packet packet) {
+            service.mConnector.getConnection().sendPacket(packet);
+            return true;
+        }
+
+        /**
+         * Handles XML string packets.
+         * @message MSG_PACKET_XML
+         */
+        private boolean handlePacketXML(MessageCenterService service, Object packet) {
+            Connection conn = service.mConnector.getConnection();
+            try {
+                String[] data = (String[]) packet;
+                for (String pack : data)
+                    conn.sendPacket(new RawPacket(pack));
+            }
+            catch (ClassCastException e) {
+                conn.sendPacket(new RawPacket((String) packet));
+            }
+            return true;
+        }
+
+        /**
+         * Handles roster requests.
+         * @message MSG_ROSTER
+         */
+        private boolean handleRoster(MessageCenterService service, Bundle data) {
+            String id = data.getString(EXTRA_PACKET_ID);
+            String[] list = data.getStringArray(EXTRA_USERLIST);
+            int c = list.length;
+            RosterPacket iq = new RosterPacket();
+            iq.setPacketID(id);
+            // iq default type is get
+
+            for (int i = 0; i < c; i++)
+                iq.addRosterItem(new RosterPacket.Item(list[i] + "@" + service.mServer.getNetwork(), null));
+
+            service.mConnector.getConnection().sendPacket(iq);
+            return true;
+        }
+
+        /**
+         * Handles outgoing presence.
+         * @message MSG_PRESENCE
+         */
+        private boolean handlePresence(MessageCenterService service, Bundle data) {
+            String type = data.getString(EXTRA_TYPE);
+
+            String id = data.getString(EXTRA_PACKET_ID);
+
+            String to;
+            String toUserid = data.getString(EXTRA_TO_USERID);
+            if (toUserid != null)
+                to = MessageUtils.toJID(toUserid, service.mServer.getNetwork());
+            else
+                to = data.getString(EXTRA_TO);
+
+            Packet pack;
+            if ("probe".equals(type)) {
+                /*
+                 * Smack doesn't support probe stanzas so we have to
+                 * create it manually.
+                 */
+                String probe = String.format("<presence type=\"probe\" to=\"%s\" id=\"%s\"/>", to, id);
+                pack = new RawPacket(probe);
+            }
+            else {
+                String show = data.getString(EXTRA_SHOW);
+                Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
+                p.setPacketID(id);
+                p.setTo(to);
+                if (data.containsKey(EXTRA_PRIORITY))
+                    p.setPriority(data.getInt(EXTRA_PRIORITY, 0));
+                p.setStatus(data.getString(EXTRA_STATUS));
+                if (show != null)
+                    p.setMode(Presence.Mode.valueOf(show));
+                pack = p;
+            }
+
+            service.mConnector.getConnection().sendPacket(pack);
+            return true;
+
+        }
+
+        /**
+         * Handles last activity requests.
+         * @message MSG_LAST_ACTIVITY
+         */
+        private boolean handleLastActivity(MessageCenterService service, Bundle data) {
+            LastActivity p = new LastActivity();
+
+            String to;
+            String toUserid = data.getString(EXTRA_TO_USERID);
+            if (toUserid != null)
+                to = MessageUtils.toJID(toUserid, service.mServer.getNetwork());
+            else
+                to = data.getString(EXTRA_TO);
+
+            p.setPacketID(data.getString(EXTRA_PACKET_ID));
+            p.setTo(to);
+
+            service.mConnector.getConnection().sendPacket(p);
+            return true;
+        }
+
+        /**
+         * Handles outgoing messages.
+         * @message MSG_MESSAGE
+         */
+        private boolean handleMessage(MessageCenterService service, Bundle data) {
+            Connection conn = service.mConnector.getConnection();
+
+            // check if message is already pending
+            long msgId = data.getLong("org.kontalk.message.msgId");
+            if (service.mWaitingReceipt.containsValue(msgId)) {
+                Log.v(TAG, "message already queued and waiting - dropping");
+                return true;
+            }
+
+            org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
+            m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
+            String to = data.getString("org.kontalk.message.to");
+            if (to == null) {
+                to = data.getString("org.kontalk.message.toUser");
+                to += '@' + service.mServer.getNetwork();
+            }
+            if (to != null) m.setTo(to);
+
+            if (msgId > 0) {
+                String id = m.getPacketID();
+                service.mWaitingReceipt.put(id, msgId);
+            }
+
+            String body = data.getString("org.kontalk.message.body");
+            String key = data.getString("org.kontalk.message.encryptKey");
+
+            // encrypt message
+            if (key != null) {
+                byte[] toMessage = null;
+                Coder coder = null;
+                try {
+                    coder = MessagingPreferences.getEncryptCoder(key);
+                    if (coder != null)
+                        toMessage = coder.encrypt(body.getBytes());
+                }
+                catch (Exception e) {
+                    // should we notify the user this message will be sent cleartext?
+                    coder = null;
+                }
+
+                if (toMessage != null) {
+                    body = Base64.encodeToString(toMessage, Base64.NO_WRAP);
+                    m.addExtension(new MessageEncrypted());
+                }
+            }
+
+            m.setBody(body);
+            m.addExtension(new ServerReceiptRequest());
+            conn.sendPacket(m);
+
+            return true;
         }
 
         @Override
@@ -809,6 +854,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
         i.putExtra(EXTRA_STATUS, MessagingPreferences.getStatusMessageInternal(context));
+        context.startService(i);
+    }
+
+    /** Sends a text message. */
+    public static void sendTextMessage(final Context context, String userId, String text, String encryptKey, long msgId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.mime", PlainTextMessage.MIME_TYPE);
+        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.body", text);
+        i.putExtra("org.kontalk.message.encryptKey", encryptKey);
+        context.startService(i);
+    }
+
+    /** Sends a binary message. */
+    public static void sendBinaryMessage(final Context context, String userId, String mime, Uri localUri, long msgId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.mime", mime);
+        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.media.uri", localUri.toString());
         context.startService(i);
     }
 
