@@ -169,8 +169,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** My username (account name). */
     private String mMyUsername;
 
-    /** Messages waiting for server receipt. */
-    private Map<String, Uri> mWaitingReceipt = new HashMap<String, Uri>();
+    /** Messages waiting for server receipt (packetId: internalStorageId). */
+    private Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
 
     private static final class ServiceHandler extends Handler implements IdleHandler {
         /** A weak reference to the message center instance. */
@@ -186,11 +186,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             super(looper);
             s = new WeakReference<MessageCenterService>(service);
 
-            // TODO this.mRefCount = refCount;
-
             // set idle handler
-            if (this.mRefCount <= 0)
-                Looper.myQueue().addIdleHandler(this);
+            Looper.myQueue().addIdleHandler(this);
         }
 
         @Override
@@ -267,8 +264,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Bundle data = (Bundle) msg.obj;
 
                     // check if message is already pending
-                    Uri uri = data.getParcelable("org.kontalk.message.uri");
-                    if (uri != null && service.mWaitingReceipt.containsValue(uri)) {
+                    long msgId = data.getLong("org.kontalk.message.msgId");
+                    if (service.mWaitingReceipt.containsValue(msgId)) {
                         Log.v(TAG, "message already queued and waiting - dropping");
                         return true;
                     }
@@ -282,9 +279,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                     if (to != null) m.setTo(to);
 
-                    if (uri != null) {
+                    if (msgId > 0) {
                         String id = m.getPacketID();
-                        service.mWaitingReceipt.put(id, uri);
+                        service.mWaitingReceipt.put(id, msgId);
                     }
 
                     String body = data.getString("org.kontalk.message.body");
@@ -300,7 +297,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 toMessage = coder.encrypt(body.getBytes());
                         }
                         catch (Exception e) {
-                            // TODO notify/ask user this message will be sent cleartext
+                            // should we notify the user this message will be sent cleartext?
                             coder = null;
                         }
 
@@ -693,25 +690,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String userId = c.getString(1);
             byte[] text = c.getBlob(2);
             String mime = c.getString(3);
-            String _fileUri = c.getString(4);
+            String fileUri = c.getString(4);
             String key = c.getString(5);
-            Uri uri = ContentUris.withAppendedId(Messages.CONTENT_URI, id);
 
             Bundle b = new Bundle();
-            b.putParcelable("org.kontalk.message.uri", ContentUris.withAppendedId(Messages.CONTENT_URI, id));
+            b.putLong("org.kontalk.message.msgId", id);
+            b.putString("org.kontalk.message.mime", mime);
+            b.putString("org.kontalk.message.toUser", userId);
+            b.putString("org.kontalk.message.encryptKey", key);
 
             // check if the message contains some large file to be sent
-            if (_fileUri != null) {
-                // TODO support for binary messages
+            if (fileUri != null) {
+                b.putString("org.kontalk.message.media.uri", fileUri);
             }
             // we have a simple boring plain text message :(
             else {
-                b.putString("org.kontalk.message.toUser", userId);
                 b.putString("org.kontalk.message.body", new String(text));
-                b.putString("org.kontalk.message.encryptKey", key);
             }
 
-            Log.d(TAG, "resending failed message " + id);
+            Log.v(TAG, "resending pending message " + id);
             mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_MESSAGE, b));
         }
 
@@ -943,7 +940,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 ServerReceipt ext = (ServerReceipt) _ext;
                 synchronized (mWaitingReceipt) {
                     String id = m.getPacketID();
-                    Uri uri = mWaitingReceipt.get(id);
+                    Long _msgId = mWaitingReceipt.get(id);
+                    long msgId = (_msgId != null) ? _msgId : 0;
                     ContentResolver cr = getContentResolver();
 
                     // TODO compress this code
@@ -956,12 +954,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             changed = System.currentTimeMillis();
 
                         // message has been delivered: check if we have previously stored the server id
-                        if (uri != null) {
+                        if (msgId > 0) {
                             ContentValues values = new ContentValues(3);
                             values.put(Messages.MESSAGE_ID, ext.getId());
                             values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
                             values.put(Messages.STATUS_CHANGED, changed);
-                            cr.update(uri, values, selectionOutgoing, null);
+                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                                values, selectionOutgoing, null);
 
                             mWaitingReceipt.remove(id);
                         }
@@ -975,12 +974,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
 
                     else if (ext instanceof SentServerReceipt) {
-                        if (uri != null) {
+                        if (msgId > 0) {
                             ContentValues values = new ContentValues(3);
                             values.put(Messages.MESSAGE_ID, ext.getId());
                             values.put(Messages.STATUS, Messages.STATUS_SENT);
                             values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                            cr.update(uri, values, selectionOutgoing, null);
+                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                                values, selectionOutgoing, null);
 
                             mWaitingReceipt.remove(id);
                         }

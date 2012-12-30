@@ -435,8 +435,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                             startQuery(true, false);
                         }
                         else {
-                            Log.v(TAG,
-                                    "no data - cannot start query for this composer");
+                            Log.v(TAG, "no data - cannot start query for this composer");
                         }
                         c.close();
                     }
@@ -444,8 +443,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                     // send the message!
                     Intent i = new Intent(getActivity().getApplicationContext(), MessageCenterService.class);
                     i.setAction(MessageCenterService.ACTION_MESSAGE);
-                    i.setType(PlainTextMessage.MIME_TYPE);
-                    i.putExtra("org.kontalk.message.uri", newMsg);
+                    i.putExtra("org.kontalk.message.msgId", ContentUris.parseId(newMsg));
+                    i.putExtra("org.kontalk.message.mime", PlainTextMessage.MIME_TYPE);
                     i.putExtra("org.kontalk.message.toUser", userId);
                     i.putExtra("org.kontalk.message.body", mText);
                     i.putExtra("org.kontalk.message.encryptKey", key);
