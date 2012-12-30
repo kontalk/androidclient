@@ -31,8 +31,8 @@ public class MyUsers {
         public static final Uri CONTENT_URI = Uri.parse("content://"
                 + UsersProvider.AUTHORITY + "/users");
 
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.user";
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.user";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.xmpp.user";
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.xmpp.user";
 
         public static final String HASH = "hash";
         public static final String NUMBER = "number";

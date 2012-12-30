@@ -62,8 +62,8 @@ public final class MyMessages {
             public static final String _ID = "rowid";
         }
 
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.message";
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.message";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.xmpp.message";
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.xmpp.message";
 
         public static final String THREAD_ID = "thread_id";
         public static final String MESSAGE_ID = "msg_id";
