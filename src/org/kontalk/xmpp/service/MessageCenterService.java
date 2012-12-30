@@ -503,11 +503,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void handleIntent(Intent intent) {
-        boolean execStart = false;
+        boolean canSendMessage = false;
 
         if (intent != null) {
             Message msg = null;
             String action = intent.getAction();
+
+            // proceed to start only if network is available
+            canSendMessage = isNetworkConnectionAvailable(this) && !isOfflineMode(this);
 
             if (ACTION_PACKET.equals(action)) {
                 Object data;
@@ -522,9 +525,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_HOLD.equals(action)) {
                 mServiceHandler.hold();
-
-                // proceed to start only if network is available
-                execStart = isNetworkConnectionAvailable(this) && !isOfflineMode(this);
             }
 
             else if (ACTION_RELEASE.equals(action)) {
@@ -541,27 +541,32 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_RESTART.equals(action)) {
-                msg = mServiceHandler.obtainMessage(MSG_RESTART);
+                if (canSendMessage)
+                    msg = mServiceHandler.obtainMessage(MSG_RESTART);
             }
 
             else if (ACTION_MESSAGE.equals(action)) {
-                msg = mServiceHandler.obtainMessage(MSG_MESSAGE, intent.getExtras());
+                if (canSendMessage)
+                    msg = mServiceHandler.obtainMessage(MSG_MESSAGE, intent.getExtras());
             }
 
             else if (ACTION_ROSTER.equals(action)) {
-                msg = mServiceHandler.obtainMessage(MSG_ROSTER, intent.getExtras());
+                if (canSendMessage)
+                    msg = mServiceHandler.obtainMessage(MSG_ROSTER, intent.getExtras());
             }
 
             else if (ACTION_PRESENCE.equals(action)) {
-                msg = mServiceHandler.obtainMessage(MSG_PRESENCE, intent.getExtras());
+                if (canSendMessage)
+                    msg = mServiceHandler.obtainMessage(MSG_PRESENCE, intent.getExtras());
             }
 
             else if (ACTION_LAST_ACTIVITY.equals(action)) {
-                msg = mServiceHandler.obtainMessage(MSG_LAST_ACTIVITY, intent.getExtras());
+                if (canSendMessage)
+                    msg = mServiceHandler.obtainMessage(MSG_LAST_ACTIVITY, intent.getExtras());
             }
 
             // no command means normal service start
-            if (msg == null && execStart)
+            if (msg == null && canSendMessage)
                 msg = mServiceHandler.obtainMessage(MSG_PING);
 
             if (msg != null)

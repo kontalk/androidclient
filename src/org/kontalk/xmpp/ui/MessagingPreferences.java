@@ -199,7 +199,7 @@ public final class MessagingPreferences extends PreferenceActivity {
                             public void run() {
                                 updateServerListLastUpdate(updateServerList, list);
                                 // restart message center
-                                MessageCenterServiceLegacy.restartMessageCenter(getApplicationContext());
+                                MessageCenterService.restart(getApplicationContext());
                             }
                         });
                     }
@@ -481,10 +481,10 @@ public final class MessagingPreferences extends PreferenceActivity {
 
         if (offline) {
             // stop the message center and never start it again
-            MessageCenterServiceLegacy.stopMessageCenter(context);
+            MessageCenterService.stop(context);
         }
         else {
-            MessageCenterServiceLegacy.startMessageCenter(context);
+            MessageCenterService.start(context);
         }
 
         return old;
