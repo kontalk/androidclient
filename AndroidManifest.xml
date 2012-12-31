@@ -56,7 +56,7 @@
         <service android:name=".service.MessageCenterService"
             android:label="@string/service_name"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
-                android:process=":auth" android:label="@string/authenticator_name">
+                android:label="@string/authenticator_name">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
@@ -78,13 +78,11 @@
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
             android:exported="false"
-            android:authorities="org.kontalk.messages"
-            android:syncable="false"/>
+            android:authorities="org.kontalk.messages"/>
 
         <provider android:name=".provider.UsersProvider"
             android:exported="false"
-            android:authorities="org.kontalk.users"
-            android:syncable="true"/>
+            android:authorities="org.kontalk.users"/>
 
         <!-- Broadcast receivers -->
         <receiver android:name=".service.SystemBootStartup"
@@ -197,18 +195,19 @@
             android:label="@string/status_activity_title"
             android:theme="@style/Theme.Light"/>
 
+        <!--
         <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
             android:launchMode="singleInstance"
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Dialog">
-            <!-- this is just for testing
+            // this is just for testing
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
-            -->
         </activity>
+         -->
 
     </application>
 </manifest>
