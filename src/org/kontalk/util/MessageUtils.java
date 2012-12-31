@@ -101,7 +101,7 @@ public final class MessageUtils {
     }
 
     public static final class SmileyImageSpan extends DynamicDrawableSpan {
-        public static final int SIZE_DIALOG = 32;
+        public static final int SIZE_DIALOG = 40;
         public static final int SIZE_EDITABLE = 24;
         public static final int SIZE_LISTITEM = 18;
 
