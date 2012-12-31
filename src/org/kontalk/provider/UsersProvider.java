@@ -401,12 +401,15 @@ public class UsersProvider extends ContentProvider {
 
                 // query for SIM contacts
                 // column selection doesn't work because of a bug in Android
+                // TODO this is a bit unclear...
                 phones = cr.query(Uri.parse("content://icc/adn/"),
                     null, null, null, null);
 
                 while (phones.moveToNext()) {
+                    String name = phones.getString(phones.getColumnIndex("name"));
                     String number = phones.getString(phones.getColumnIndex("number"));
-                    if (number == null) // ehm...
+                    // buggy firmware - skip entry
+                    if (name == null || number == null)
                         continue;
 
                     // remove dial prefix first
@@ -434,7 +437,7 @@ public class UsersProvider extends ContentProvider {
                         stm.clearBindings();
                         stm.bindString(1, hash);
                         stm.bindString(2, number);
-                        stm.bindString(3, phones.getString(phones.getColumnIndex("name")));
+                        stm.bindString(3, name);
                         stm.bindNull(4);
                         stm.bindLong(5, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
                         stm.executeInsert();
