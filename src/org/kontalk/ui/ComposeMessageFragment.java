@@ -291,7 +291,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private final MessageListAdapter.OnContentChangedListener mContentChangedListener = new MessageListAdapter.OnContentChangedListener() {
 		public void onContentChanged(MessageListAdapter adapter) {
 			if (isVisible())
-				startQuery(true);
+				startQuery(true, false);
 		}
 	};
 
@@ -463,7 +463,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 				if (c.moveToFirst()) {
 					threadId = c.getLong(0);
 					mConversation = null;
-					startQuery(true);
+					startQuery(true, false);
 				}
 				else {
 					Log.v(TAG, "no data - cannot start query for this composer");
@@ -546,14 +546,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         if (c.moveToFirst()) {
                             threadId = c.getLong(0);
                             mConversation = null;
-                            // re-run query on UI thread - actually will be run
-                            // on another thread, this is just for setProgressBarIndeterminate
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    startQuery(true);
-                                }
-                            });
+                            // we can run it here because progress=false
+                            startQuery(true, false);
                         }
                         else {
                             Log.v(TAG,
@@ -1047,9 +1041,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		return super.onContextItemSelected(item);
 	}
 
-	private void startQuery(boolean reloadConversation) {
+	private void startQuery(boolean reloadConversation, boolean progress) {
 		try {
-			getActivity().setProgressBarIndeterminateVisibility(true);
+            if (progress)
+			    getActivity().setProgressBarIndeterminateVisibility(true);
 
 			AbstractMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
 					threadId);
@@ -1096,17 +1091,24 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_ATTACHMENT_OPENABLE) {
             if (resultCode == Activity.RESULT_OK) {
-			    Uri uri;
+			    Uri uri = null;
 			    String mime = null;
 
 			    // returning from camera
 			    if (data == null) {
-			        uri = Uri.fromFile(mCurrentPhoto);
-			        // notify media scanner
-		            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-		            mediaScanIntent.setData(uri);
-		            getActivity().sendBroadcast(mediaScanIntent);
-		            mCurrentPhoto = null;
+                    /*
+                     * FIXME picture taking should be done differently.
+                     * Use a MediaStore-based uri and use a requestCode just
+                     * for taking pictures.
+                     */
+                    if (mCurrentPhoto != null) {
+    			        uri = Uri.fromFile(mCurrentPhoto);
+    			        // notify media scanner
+    		            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+    		            mediaScanIntent.setData(uri);
+    		            getActivity().sendBroadcast(mediaScanIntent);
+    		            mCurrentPhoto = null;
+                    }
 			    }
 			    else {
 			        if (mCurrentPhoto != null) {
@@ -1329,7 +1331,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 				: null;
 	}
 
-	private void processStart() {
+	private void processStart(boolean resuming) {
 		ComposeMessage activity = getParentActivity();
 		// opening for contact picker - do nothing
 		if (threadId < 0 && activity != null
@@ -1354,7 +1356,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		}
 
 		if (threadId > 0) {
-			startQuery((mConversation == null));
+			startQuery((mConversation == null), resuming);
 		}
 		else {
 			// HACK this is for crappy honeycomb :)
@@ -1628,7 +1630,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			}
 
 			// fire cursor update
-			processStart();
+			processStart(false);
 		}
 
 		@Override
@@ -1656,7 +1658,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		// cursor was previously destroyed -- reload everything
 		// mConversation = null;
-		processStart();
+		processStart(true);
 		if (userId != null) {
             // set notifications on pause
             MessagingNotification.setPaused(userId);
