@@ -410,6 +410,10 @@ public class UsersProvider extends ContentProvider {
                     if (name == null || number == null)
                         continue;
 
+                    // remove dial prefix first
+                    if (dialPrefix != null && number.startsWith(dialPrefix))
+                        number = number.substring(dialPrefixLen);
+
                     // a phone number with less than 4 digits???
                     if (number.length() < 4)
                         continue;
