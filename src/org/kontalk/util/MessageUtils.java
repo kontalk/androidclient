@@ -172,8 +172,8 @@ public final class MessageUtils {
                 int size = getDensityPixel(mContext, SmileyImageSpan.SIZE_DIALOG/*+8*/);
                 imageView.setLayoutParams(new GridView.LayoutParams(size, size));
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                //int padding = getDensityPixel(mContext, 4);
-                //imageView.setPadding(padding, padding, padding, padding);
+                int padding = getDensityPixel(mContext, 4);
+                imageView.setPadding(padding, padding, padding, padding);
             } else {
                 imageView = (ImageView) convertView;
             }
