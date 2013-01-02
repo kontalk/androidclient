@@ -27,9 +27,8 @@ import org.kontalk.message.AbstractMessage;
 import org.kontalk.message.ImageMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.ui.QuickAction;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -43,7 +42,6 @@ import android.text.style.DynamicDrawableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -184,20 +182,12 @@ public final class MessageUtils {
         }
     }
 
-    public static Dialog smileysDialog(Context context, AdapterView.OnItemClickListener listener) {
+    public static QuickAction smileysPopup(Context context, AdapterView.OnItemClickListener listener) {
+        QuickAction act = new QuickAction(context, R.layout.popup_smileys);
+
         ImageAdapter adapter = new ImageAdapter(context, Emoji.emojiGroups);
-
-        LayoutInflater inflater = LayoutInflater.from(context);
-        GridView grid = (GridView) inflater.inflate(R.layout.grid_smileys, null);
-        grid.setAdapter(adapter);
-        grid.setOnItemClickListener(listener);
-
-        AlertDialog.Builder b = new AlertDialog.Builder(context);
-        //b.setTitle("Select smiley");
-        b.setView(grid);
-        b.setNegativeButton(android.R.string.cancel, null);
-
-        return b.create();
+        act.setGridAdapter(adapter, listener);
+        return act;
     }
 
     private static int getDensityPixel(Context context, float dp) {
