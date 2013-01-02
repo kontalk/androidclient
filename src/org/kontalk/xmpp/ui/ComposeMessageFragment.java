@@ -58,7 +58,6 @@ import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
 import android.accounts.Account;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -166,7 +165,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private LocalBroadcastManager mLocalBroadcastManager;
     private BroadcastReceiver mPresenceReceiver;
 
-    private Dialog mSmileyDialog;
+    private QuickAction mSmileyPopup;
     private boolean mOfflineModeWarned;
 
     private static final class PresenceData {
@@ -549,17 +548,15 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     		            text.replace(startMin, Math.max(startPos, endPos),
     		                String.valueOf(value), 0, value.length);
 
-    		            // set emoji image span
-    		            /*
-    		            SmileyImageSpan span = new SmileyImageSpan(getActivity(),
-    		                Emoji.getEmojiResource(getActivity(), (int) id), SmileyImageSpan.SIZE_EDITABLE);
-    		            text.setSpan(span, startMin, startMin + value.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    		            */
-    		            mSmileyDialog.dismiss();
+    		            // textview change listener will do the rest
+
+    		            // dismiss smileys popup
+    		            mSmileyPopup.dismiss();
     		        }
                 };
-    		    mSmileyDialog = MessageUtils.smileysDialog(getActivity(), listener);
-    		    mSmileyDialog.show();
+                if (mSmileyPopup == null)
+                    mSmileyPopup = MessageUtils.smileysPopup(getActivity(), listener);
+                mSmileyPopup.show(getActivity().findViewById(R.id.menu_smiley));
     		    return true;
 		}
 
