@@ -42,6 +42,7 @@ import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -172,8 +173,8 @@ public class MessageListItem extends RelativeLayout {
         mTextView.setTextAppearance(context, sizeId);
         mTextView.setText(formattedMessage);
 
-        int resId = -1;
-        int statusId = -1;
+        int resId = 0;
+        int statusId = 0;
 
         mLockView.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
 
@@ -238,7 +239,7 @@ public class MessageListItem extends RelativeLayout {
             }
         }
 
-        if (resId >= 0) {
+        if (resId > 0) {
             mStatusIcon.setImageResource(resId);
             mStatusIcon.setVisibility(VISIBLE);
             mStatusIcon.setContentDescription(getResources().getString(statusId));
@@ -248,6 +249,18 @@ public class MessageListItem extends RelativeLayout {
             mStatusIcon.setVisibility(GONE);
         }
 
+        // we are using a custom bg, place the background and invert text color
+        if (MessagingPreferences.getConversationBackground(getContext()) != null) {
+            mDateView.setBackgroundResource(R.drawable.datebox);
+            mDateView.setTextAppearance(getContext(), android.R.style.TextAppearance_Small_Inverse);
+        }
+        else {
+            mDateView.setBackgroundResource(0);
+            mDateView.setTextAppearance(getContext(), android.R.style.TextAppearance_Small);
+        }
+
+        // enforce text size
+        mDateView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimensionPixelSize(R.dimen.dateview_text_size));
     }
 
     private final class MaxSizeImageSpan extends ImageSpan {

@@ -70,13 +70,12 @@
         </LinearLayout>
 
         <TextView android:id="@+id/date_view"
-            android:paddingTop="4dip"
+            android:layout_marginTop="2dp"
+            android:paddingTop="2dip"
             android:paddingLeft="5dip"
             android:paddingRight="5dip"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="11sp"
-            android:textAppearance="?android:attr/textAppearanceSmall"/>
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 </org.kontalk.xmpp.ui.MessageListItem>
