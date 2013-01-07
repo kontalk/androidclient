@@ -12,6 +12,7 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackAndroid;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
@@ -24,6 +25,7 @@ import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.MessageEncrypted;
+import org.kontalk.xmpp.client.Ping;
 import org.kontalk.xmpp.client.RawPacket;
 import org.kontalk.xmpp.client.ReceivedServerReceipt;
 import org.kontalk.xmpp.client.SentServerReceipt;
@@ -522,6 +524,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void configure(ProviderManager pm) {
+        pm.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
         pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtensionProvider());
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
@@ -673,6 +676,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         Connection conn = mConnector.getConnection();
         PacketFilter filter;
+
+        filter = new PacketTypeFilter(Ping.class);
+        conn.addPacketListener(new PingListener(), filter);
 
         filter = new PacketTypeFilter(Presence.class);
         conn.addPacketListener(new PresenceListener(), filter);
@@ -878,6 +884,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
         context.startService(i);
+    }
+
+    private final class PingListener implements PacketListener {
+        @Override
+        public void processPacket(Packet packet) {
+            IQ response = IQ.createResultIQ((IQ) packet);
+            mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_PACKET, response));
+        }
     }
 
     /** Listener for last activity iq. */
