@@ -317,7 +317,12 @@ public class MessageListItem extends RelativeLayout {
                 buf.setSpan(mHighlightColorSpan, m.start(), m.end(), 0);
         }
 
-        return buf;
+        /*
+         * workaround for bugs:
+         * http://code.google.com/p/android/issues/detail?id=17343
+         * http://code.google.com/p/android/issues/detail?id=22493
+         */
+        return buf.append("\u2060");
     }
 
     public final void unbind() {
