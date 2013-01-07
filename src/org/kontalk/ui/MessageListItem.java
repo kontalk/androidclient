@@ -321,8 +321,12 @@ public class MessageListItem extends RelativeLayout {
          * workaround for bugs:
          * http://code.google.com/p/android/issues/detail?id=17343
          * http://code.google.com/p/android/issues/detail?id=22493
+         * applies only to ICS
          */
-        return buf.append("\u2060");
+        if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH ||
+                android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+            buf.append("\u2060");
+        return buf;
     }
 
     public final void unbind() {
