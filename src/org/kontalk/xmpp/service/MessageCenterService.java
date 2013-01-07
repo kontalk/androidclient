@@ -1061,11 +1061,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
 
                     else if (ext instanceof SentServerReceipt) {
+                        long now = System.currentTimeMillis();
+
                         if (msgId > 0) {
                             ContentValues values = new ContentValues(3);
                             values.put(Messages.MESSAGE_ID, ext.getId());
                             values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                            values.put(Messages.STATUS_CHANGED, now);
+                            values.put(Messages.SERVER_TIMESTAMP, now);
                             cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
                                 values, selectionOutgoing, null);
 
@@ -1075,7 +1078,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             Uri msg = Messages.getUri(ext.getId());
                             ContentValues values = new ContentValues(2);
                             values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                            values.put(Messages.STATUS_CHANGED, now);
+                            values.put(Messages.SERVER_TIMESTAMP, now);
                             cr.update(msg, values, selectionOutgoing, null);
                         }
                     }
@@ -1128,6 +1132,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                 }
 
+                long now = System.currentTimeMillis();
+
+                // delayed deliver extension
+                PacketExtension _delay = m.getExtension("delay", "urn:xmpp.delay");
+                long serverTimestamp = 0;
+                if (_delay != null && _delay instanceof DelayInformation) {
+                    serverTimestamp = ((DelayInformation) _delay).getStamp().getTime();
+                }
+                else
+                    serverTimestamp = now;
+
                 // save to local storage
                 ContentValues values = new ContentValues();
                 values.put(Messages.MESSAGE_ID, msgId);
@@ -1138,8 +1153,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 values.put(Messages.ENCRYPT_KEY, wasEncrypted ? "" : null);
                 values.put(Messages.UNREAD, true);
                 values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
-                // TODO consider delay extension
-                values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+
+                values.put(Messages.SERVER_TIMESTAMP, serverTimestamp);
+                values.put(Messages.TIMESTAMP, now);
                 values.put(Messages.LENGTH, length);
                 try {
                     getContentResolver().insert(Messages.CONTENT_URI, values);

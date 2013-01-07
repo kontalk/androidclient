@@ -20,7 +20,6 @@ package org.kontalk.xmpp.ui;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -313,8 +312,8 @@ public class MessageListItem extends RelativeLayout {
             buf = new SpannableStringBuilder();
         }
 
-        Date serverTime = mMessage.getServerTimestamp();
-        long ts = serverTime != null ? serverTime.getTime() : mMessage.getTimestamp();
+        long serverTime = mMessage.getServerTimestamp();
+        long ts = serverTime > 0 ? serverTime : mMessage.getTimestamp();
 
         // if we are in the same day, just prime time, else print date & time
         boolean fullFormat;

@@ -364,7 +364,7 @@ public final class MessageUtils {
                     res.getString(R.string.received_label), msg.getTimestamp(), true);
             details.append('\n');
             appendTimestamp(context, details,
-                    res.getString(R.string.sent_label), msg.getServerTimestamp().getTime(), true);
+                    res.getString(R.string.sent_label), msg.getServerTimestamp(), true);
         }
         // outgoing messages
         else {

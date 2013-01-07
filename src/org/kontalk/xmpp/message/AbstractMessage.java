@@ -21,12 +21,8 @@ package org.kontalk.xmpp.message;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
@@ -39,7 +35,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
-import android.util.Log;
 
 
 /**
@@ -50,11 +45,6 @@ import android.util.Log;
  */
 public abstract class AbstractMessage<T> {
     private static final String TAG = AbstractMessage.class.getSimpleName();
-    private static final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    static {
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-    }
 
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
@@ -114,8 +104,7 @@ public abstract class AbstractMessage<T> {
     protected String mime;
     protected T content;
     protected long timestamp;
-    protected Date serverTimestamp;
-    protected String rawServerTimestamp;
+    protected long serverTimestamp;
     protected long statusChanged;
     protected int status;
     protected boolean encrypted;
@@ -146,12 +135,12 @@ public abstract class AbstractMessage<T> {
     /** Message length (original file length for media messages). */
     protected long length;
 
-    public AbstractMessage(Context context, String id, String timestamp, String sender, String mime, T content, boolean encrypted, List<String> group) {
+    public AbstractMessage(Context context, String id, long timestamp, String sender, String mime, T content, boolean encrypted, List<String> group) {
         this(context, id, timestamp, sender, mime, content, encrypted);
         this.group = group;
     }
 
-    public AbstractMessage(Context context, String id, String timestamp, String sender, String mime, T content, boolean encrypted) {
+    public AbstractMessage(Context context, String id, long timestamp, String sender, String mime, T content, boolean encrypted) {
         this.mContext = context;
 
         this.id = id;
@@ -161,7 +150,7 @@ public abstract class AbstractMessage<T> {
         this.recipients = new ArrayList<String>();
         // will be updated if necessary
         this.timestamp = System.currentTimeMillis();
-        setServerTimestamp(timestamp);
+        this.serverTimestamp = timestamp;
 
         if (encrypted) {
             this.encrypted = encrypted;
@@ -235,25 +224,8 @@ public abstract class AbstractMessage<T> {
         this.statusChanged = statusChanged;
     }
 
-    public Date getServerTimestamp() {
+    public long getServerTimestamp() {
         return serverTimestamp;
-    }
-
-    private void setServerTimestamp(String timestamp) {
-        // save it for future reference
-        rawServerTimestamp = timestamp;
-        try {
-            if (timestamp != null)
-                serverTimestamp = dateFormat.parse(timestamp);
-        }
-        catch (ParseException e) {
-            Log.e(TAG, "error parsing server timestamp - setting to now", e);
-            serverTimestamp = new Date();
-        }
-    }
-
-    public String getRawServerTimestamp() {
-        return rawServerTimestamp;
     }
 
     public int getStatus() {
@@ -389,7 +361,7 @@ public abstract class AbstractMessage<T> {
         fetchUrl = c.getString(COLUMN_FETCH_URL);
         encrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         encryptKey = c.getString(COLUMN_ENCRYPT_KEY);
-        setServerTimestamp(c.getString(COLUMN_SERVER_TIMESTAMP));
+        serverTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
         length = c.getLong(COLUMN_LENGTH);
         String _localUri = c.getString(COLUMN_LOCAL_URI);
         // load local uri
@@ -422,8 +394,7 @@ public abstract class AbstractMessage<T> {
         mime = null;
         content = null;
         timestamp = 0;
-        serverTimestamp = null;
-        rawServerTimestamp = null;
+        serverTimestamp = 0;
         statusChanged = 0;
         status = 0;
         encrypted = false;

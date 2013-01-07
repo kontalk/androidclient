@@ -52,14 +52,14 @@ public class PlainTextMessage extends AbstractMessage<byte[]> {
     public static final String MIME_TYPE = "text/plain";
 
     protected PlainTextMessage(Context context) {
-        super(context, null, null, null, null, null, false);
+        super(context, null, 0, null, null, null, false);
     }
 
-    public PlainTextMessage(Context context, String id, String timestamp, String sender, byte[] content, boolean encrypted) {
+    public PlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
         this(context, id, timestamp, sender, content, encrypted, null);
     }
 
-    public PlainTextMessage(Context context, String id, String timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
+    public PlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
         super(context, id, timestamp, sender, MIME_TYPE, content, encrypted, group);
     }
 

@@ -641,7 +641,7 @@ public class MessageCenterServiceLegacy extends Service
             values.put(Messages.UNREAD, true);
             values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
             values.put(Messages.TIMESTAMP, msg.getTimestamp());
-            values.put(Messages.SERVER_TIMESTAMP, msg.getRawServerTimestamp());
+            values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
             values.put(Messages.LENGTH, msg.getLength());
             try {
                 Uri newMsg = getContentResolver().insert(Messages.CONTENT_URI, values);
