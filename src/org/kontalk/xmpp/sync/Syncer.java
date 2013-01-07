@@ -362,11 +362,12 @@ public class Syncer {
 
                     // update fields
                     try {
-                        if (!TextUtils.isEmpty(entry.status)) {
-                            String status = MessagingPreferences.decryptUserdata(mContext, entry.status, data != null ? data.number : null);
-                            Log.v(TAG, data.number + ": " + status);
+                        String status = null;
+                        if (!TextUtils.isEmpty(entry.status))
+                            status = MessagingPreferences.decryptUserdata(mContext, entry.status, data != null ? data.number : null);
+
+                        if (!TextUtils.isEmpty(status))
                             registeredValues.put(Users.STATUS, status);
-                        }
                         else
                             registeredValues.putNull(Users.STATUS);
 
