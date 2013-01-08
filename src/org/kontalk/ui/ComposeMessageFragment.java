@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -78,7 +77,6 @@ import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -805,21 +803,13 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
         Intent chooser = null;
         try {
-            // check if camera is available
-            final PackageManager packageManager = getActivity().getPackageManager();
-            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            List<ResolveInfo> list =
-                    packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-            if (list.size() <= 0) throw new UnsupportedOperationException();
-
-            mCurrentPhoto = MediaStorage.getTempImage(getActivity());
-    	    Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-    	    take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
-       	    chooser = Intent.createChooser(i, getString(R.string.chooser_send_picture));
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { take });
-        }
-        catch (UnsupportedOperationException ue) {
-            Log.d(TAG, "no camera app or no camera present", ue);
+            if (MessageUtils.isIntentAvailable(getActivity(), MediaStore.ACTION_IMAGE_CAPTURE)) {
+                mCurrentPhoto = MediaStorage.getTempImage(getActivity());
+        	    Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        	    take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
+           	    chooser = Intent.createChooser(i, getString(R.string.chooser_send_picture));
+                chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { take });
+            }
         }
         catch (IOException e) {
             Log.e(TAG, "error creating temp file", e);
@@ -1093,13 +1083,17 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 			    // returning from camera
 			    if (data == null) {
-                    /*
-                     * FIXME picture taking should be done differently.
-                     * Use a MediaStore-based uri and use a requestCode just
-                     * for taking pictures.
-                     */
                     if (mCurrentPhoto != null) {
-    			        uri = Uri.fromFile(mCurrentPhoto);
+                        // move file to camera path
+                        try {
+                            mCurrentPhoto = MediaStorage.moveTempImage(getActivity(), mCurrentPhoto);
+
+        			        uri = Uri.fromFile(mCurrentPhoto);
+                        }
+                        catch (Exception e) {
+                            Toast.makeText(getActivity(), "Unable to retrieve picture from latest shot.",
+                                Toast.LENGTH_LONG).show();
+                        }
     			        // notify media scanner
     		            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
     		            mediaScanIntent.setData(uri);
@@ -1180,16 +1174,20 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		super.onSaveInstanceState(out);
 		out.putParcelable(Uri.class.getName(),
 				ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+		if (mCurrentPhoto != null)
+		    out.putString(MediaStore.ACTION_IMAGE_CAPTURE, mCurrentPhoto.toString());
 	}
 
 	private void processArguments(Bundle savedInstanceState) {
 		Bundle args = null;
 		if (savedInstanceState != null) {
 			Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
+			String currentPhoto = savedInstanceState.getString(MediaStore.ACTION_IMAGE_CAPTURE);
 			// threadId = ContentUris.parseId(uri);
 			args = new Bundle();
 			args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
 			args.putParcelable("data", uri);
+			args.putString(MediaStore.ACTION_IMAGE_CAPTURE, currentPhoto);
 		}
 		else {
 			args = myArguments();
@@ -1197,6 +1195,11 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		if (args != null && args.size() > 0) {
 			final String action = args.getString("action");
+
+			// restore current photo
+			String currentPhoto = args.getString(MediaStore.ACTION_IMAGE_CAPTURE);
+			if (currentPhoto != null)
+			    mCurrentPhoto = new File(currentPhoto);
 
 			// view intent
 			if (Intent.ACTION_VIEW.equals(action)) {

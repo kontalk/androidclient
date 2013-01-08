@@ -19,11 +19,14 @@
 package org.kontalk.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -138,6 +141,16 @@ public abstract class MediaStorage {
         return f;
     }
 
+    /** Moves a temp image to the camera pictures directory. */
+    public static File moveTempImage(Context context, File file) throws IOException {
+        File path = new File(Environment.getExternalStoragePublicDirectory
+            (Environment.DIRECTORY_DCIM), "Kontalk");
+        path.mkdirs();
+        File dest = new File(path, file.getName());
+        moveFile(file, dest);
+        return dest;
+    }
+
     public static long getLength(Context context, Uri media) throws IOException {
         AssetFileDescriptor stat = null;
         try {
@@ -154,15 +167,41 @@ public abstract class MediaStorage {
         }
     }
 
+    private static void moveFile(File src, File dst) throws IOException {
+        try {
+            copyFile(src, dst);
+        }
+        finally {
+            src.delete();
+        }
+    }
+
+    private static void copyFile(File src, File dst) throws IOException
+    {
+        FileChannel inChannel = new FileInputStream(src).getChannel();
+        FileChannel outChannel = new FileOutputStream(dst).getChannel();
+        try
+        {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        }
+        finally
+        {
+            if (inChannel != null)
+                inChannel.close();
+            if (outChannel != null)
+                outChannel.close();
+        }
+    }
+
     /** Creates a temporary JPEG file. */
     public static File getTempImage(Context context) throws IOException {
-        File path = new File(Environment
-            .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "Kontalk");
-        path.mkdirs();
+        if (!isExternalStorageAvailable())
+            throw new IOException("external storage not available");
+
+        File path = context.getExternalFilesDir(null);
         String timeStamp =
-            new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String filename = "image" + timeStamp + "_";
+            new SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(new Date());
+        String filename = "image" + timeStamp;
         return File.createTempFile(filename, ".jpg", path);
     }
 
