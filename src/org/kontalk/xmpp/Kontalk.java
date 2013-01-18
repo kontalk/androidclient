@@ -22,7 +22,6 @@ import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
-import org.kontalk.xmpp.service.MessageCenterServiceLegacy;
 import org.kontalk.xmpp.service.NetworkStateReceiver;
 import org.kontalk.xmpp.service.SystemBootStartup;
 import org.kontalk.xmpp.sync.SyncAdapter;
@@ -77,7 +76,7 @@ public class Kontalk extends Application {
                 if ("pref_network_uri".equals(key)) {
                     // just restart the message center for now
                     android.util.Log.w(TAG, "network address changed");
-                    MessageCenterServiceLegacy.restartMessageCenter(Kontalk.this);
+                    MessageCenterService.restart(Kontalk.this);
                 }
 
                 // hide presence flag / encrypt user data flag

@@ -498,7 +498,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             synchronized (mIdle) {
                                 Context ctx = s.get();
                                 if (ctx != null && mIdle)
-                                    MessageCenterService.stop(s.get());
+                                    MessageCenterService.stop(ctx);
                             }
                             return false;
                         }
