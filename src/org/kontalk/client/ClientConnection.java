@@ -138,7 +138,11 @@ public class ClientConnection {
         try {
             mSocket.shutdownInput();
             mSocket.shutdownOutput();
-            mSocket.close();
+            /*
+             * do not call {@link Socket#close}. This a synchronized method so
+             * it might block.
+             */
+            //mSocket.close();
         }
         catch (Exception e) {
             // ignore exceptions
