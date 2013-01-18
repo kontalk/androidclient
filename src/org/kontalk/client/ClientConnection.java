@@ -39,14 +39,14 @@ public class ClientConnection {
         mSocket = new Socket();
     }
 
-    public void connect() throws IOException {
+    public synchronized void connect() throws IOException {
         mSocket.connect(new InetSocketAddress(mServer.getHost(), mServer.getPort()));
         out = mSocket.getOutputStream();
         in = mSocket.getInputStream();
     }
 
     /** Recreates connection based on the parameters given to the constructor. */
-    public void reconnect() throws IOException {
+    public synchronized void reconnect() throws IOException {
         if (!isConnected()) {
             mSocket = new Socket();
             connect();
@@ -134,7 +134,7 @@ public class ClientConnection {
         return BoxContainer.parseDelimitedFrom(in);
     }
 
-    public void close() {
+    public synchronized void close() {
         try {
             mSocket.shutdownInput();
             mSocket.shutdownOutput();

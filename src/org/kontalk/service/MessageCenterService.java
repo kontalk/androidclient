@@ -306,7 +306,7 @@ public class MessageCenterService extends Service
      * Shuts down the request worker.
      * @return true if the thread has been stopped, false if it wasn't running.
      */
-    private boolean shutdownRequestWorker() {
+    private synchronized boolean shutdownRequestWorker() {
         // Be sure to clear the pending jobs queue.
         // Since we are stopping the message center, any pending request would
         // be lost anyway.
