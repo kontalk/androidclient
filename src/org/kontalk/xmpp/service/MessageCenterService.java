@@ -157,6 +157,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final int MSG_PRESENCE = 8;
     /** Last activity iq. */
     private static final int MSG_LAST_ACTIVITY = 9;
+    /** Response iq. */
+    private static final int MSG_IQ_RESPONSE = 10;
 
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
@@ -183,6 +185,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private int mRefCount;
         /** Idle flag. */
         private volatile Boolean mIdle = false;
+        /** Packet idle flag. */
+        private boolean mLastPacketIdle;
 
         public ServiceHandler(MessageCenterService service, Looper looper) {
             super(looper);
@@ -239,6 +243,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         private boolean handleMessage(MessageCenterService service, Message msg) {
+            // reset idle packet status
+            mLastPacketIdle = false;
+
             switch (msg.what) {
                 // send raw packet (Packet object)
                 case MSG_PACKET: {
@@ -267,6 +274,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // last activity iq
                 case MSG_LAST_ACTIVITY: {
                     return handleLastActivity(service, (Bundle) msg.obj);
+                }
+
+                case MSG_IQ_RESPONSE: {
+                    return handleIQResponse(service, (IQ) msg.obj);
                 }
 
                 // idle message
@@ -309,6 +320,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             catch (ClassCastException e) {
                 conn.sendPacket(new RawPacket((String) packet));
             }
+            return true;
+        }
+
+        private boolean handleIQResponse(MessageCenterService service, IQ packet) {
+            Connection conn = service.mConnector.getConnection();
+
+            // ping packets are considered outside idle
+            if (packet instanceof Ping)
+                mLastPacketIdle = true;
+
+            conn.sendPacket(IQ.createResultIQ(packet));
             return true;
         }
 
@@ -456,7 +478,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         @Override
         public boolean queueIdle() {
             // remove the idle message anyway
-            removeMessages(MSG_IDLE);
+            if (!mLastPacketIdle)
+                removeMessages(MSG_IDLE);
 
             if (mRefCount <= 0 && getLooper().getThread().isAlive())
                 sendMessageDelayed(obtainMessage(MSG_IDLE), IDLE_MSG_TIME);
@@ -495,6 +518,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
                         @Override
                         public boolean queueIdle() {
+                            Log.v(TAG, "idle has triggered, stopping message center");
                             synchronized (mIdle) {
                                 Context ctx = s.get();
                                 if (ctx != null && mIdle)
@@ -889,8 +913,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class PingListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
-            IQ response = IQ.createResultIQ((IQ) packet);
-            mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_PACKET, response));
+            mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_IQ_RESPONSE, packet));
         }
     }
 
