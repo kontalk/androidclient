@@ -75,6 +75,9 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                         break;
                 }
             }
+            // no network info available
+            else
+                serviceAction = ACTION_STOP;
         }
 
         if (serviceAction == ACTION_START)
