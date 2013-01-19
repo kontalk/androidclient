@@ -72,9 +72,9 @@ public class Syncer {
         public long timestamp;
     }
 
-    // FIXME this class should handle most recent/avaiable presence stanzas
+    // FIXME this class should handle most recent/available presence stanzas
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
-        private final List<PresenceItem> response;
+        private List<PresenceItem> response;
         private final WeakReference<Syncer> notifyTo;
         private final String iq;
         private final List<String> hashList;
@@ -82,7 +82,6 @@ public class Syncer {
         private int rosterCount = -1;
 
         public PresenceBroadcastReceiver(String iq, List<String> hashList, Syncer notifyTo) {
-            response = new ArrayList<PresenceItem>();
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
             this.iq = iq;
             this.hashList = hashList;
@@ -94,27 +93,22 @@ public class Syncer {
             String action = intent.getAction();
 
             if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-                PresenceItem p = new PresenceItem();
-                p.from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                p.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                p.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-
-                // see if bare JID is already present in list
-                boolean add = true;
-                String compare = StringUtils.parseBareAddress(p.from);
+                String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                // see if bare JID is present in roster response
+                String compare = StringUtils.parseBareAddress(jid);
                 for (PresenceItem item : response) {
                     if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
-                        add = false;
+                        item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                        item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+
+                        // increment presence count
+                        if (presenceCount < 0)
+                            presenceCount = 1;
+                        else
+                            presenceCount++;
+
                         break;
                     }
-                }
-
-                if (add) {
-                    response.add(p);
-                    if (presenceCount < 0)
-                        presenceCount = 1;
-                    else
-                        presenceCount++;
                 }
 
                 // done with presence data
@@ -134,6 +128,13 @@ public class Syncer {
                 if (iq.equals(id)) {
                     String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
                     rosterCount = list.length;
+                    // prepare list to be filled in with presence data
+                    response = new ArrayList<PresenceItem>(rosterCount);
+                    for (String jid : list) {
+                        PresenceItem p = new PresenceItem();
+                        p.from = jid;
+                        response.add(p);
+                    }
 
                     // all presence data already received (WHATT???)
                     Log.v(TAG, "roster with " + rosterCount + " elements, presence count " + presenceCount);
