@@ -572,7 +572,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void onDestroy() {
         Log.d(TAG, "destroying message center");
         if (mConnector != null)
-            mConnector.shutdown();
+            mConnector.interrupt();
         // send quit message to handler
         mServiceHandler.sendEmptyMessage(MSG_QUIT);
     }
