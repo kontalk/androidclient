@@ -72,14 +72,13 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                     case CONNECTED:
                         serviceAction = ACTION_START;
                         break;
-                    case DISCONNECTED:
-                    case DISCONNECTING:
-                    case UNKNOWN:
+                    default:
                         serviceAction = ACTION_STOP;
                         break;
-                    // do nothing in other cases
                 }
             }
+            else
+                serviceAction = ACTION_STOP;
         }
 
         if (serviceAction == ACTION_START)
