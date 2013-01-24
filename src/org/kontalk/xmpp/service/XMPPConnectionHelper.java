@@ -65,6 +65,9 @@ public class XMPPConnectionHelper {
     /** Retry enabled flag. */
     protected boolean mRetryEnabled = true;
 
+    /** Connecting flag. */
+    protected volatile boolean mConnecting;
+
     /**
      * Creates a new instance.
      * @param context
@@ -105,7 +108,9 @@ public class XMPPConnectionHelper {
         }
 
         // connect
+        mConnecting = true;
         mConn.connect();
+        mConnecting = false;
 
         if (mListener != null) {
             mConn.addConnectionListener(mListener);
@@ -118,6 +123,12 @@ public class XMPPConnectionHelper {
 
         if (mListener != null)
             mListener.authenticated();
+    }
+
+    public void reconnect() {
+        mInterrupted = false;
+        mRetryCount = 0;
+        connect();
     }
 
     public void connect() {
@@ -203,6 +214,10 @@ public class XMPPConnectionHelper {
 
     public boolean isConnected() {
         return (mConn != null && mConn.isConnected());
+    }
+
+    public boolean isConnecting() {
+        return mConnecting;
     }
 
     /** Shortcut for {@link EndpointServer#getNetwork()}. */

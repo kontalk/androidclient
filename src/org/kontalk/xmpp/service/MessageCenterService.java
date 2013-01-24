@@ -110,6 +110,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_LAST_ACTIVITY = "org.kontalk.action.LAST_ACTIVITY";
 
     // common parameters
+    /** connect to custom server -- TODO not used yet */
     public static final String EXTRA_SERVER = "org.kontalk.server";
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
@@ -168,8 +169,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private XMPPConnectionHelper mConnector;
     /** Main handler. */
     private ServiceHandler mServiceHandler;
-    /** Main looper. */
-    private Looper mLooper;
     /** My username (account name). */
     private String mMyUsername;
 
@@ -197,7 +196,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         public void interrupt() {
-            getLooper().getThread().interrupt();
+            MessageCenterService service = s.get();
+            // interrupt only if connecting
+            if (service != null && service.mConnector != null && service.mConnector.isConnecting())
+                getLooper().getThread().interrupt();
         }
 
         @Override
@@ -224,16 +226,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (service.mConnector != null)
                         service.mConnector.shutdown();
 
-                    // restart queue!
+                    // clear queue
                     removeCallbacksAndMessages(null);
 
-                    // reconnect immediately!
-                    service.createConnection();
+                    // reconnect immediately
+                    service.createConnection(true);
                     consumed = true;
                 }
                 else {
                     // be sure connection is valid
-                    service.createConnection();
+                    service.createConnection(false);
                     // handle message
                     consumed = handleMessage(service, msg);
                 }
@@ -549,8 +551,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         HandlerThread thread = new HandlerThread(TAG, Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
 
-        mLooper = thread.getLooper();
-        mServiceHandler = new ServiceHandler(this, mLooper);
+        mServiceHandler = new ServiceHandler(this, thread.getLooper());
     }
 
     private void configure(ProviderManager pm) {
@@ -577,16 +578,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void onDestroy() {
         Log.d(TAG, "destroying message center");
+        // interrupt I/O
+        mServiceHandler.interrupt();
+        // interrupt connector
         if (mConnector != null)
             mConnector.interrupt();
-        // interrupt the service handler
-        mServiceHandler.interrupt();
         // send quit message to handler
         mServiceHandler.sendEmptyMessage(MSG_QUIT);
     }
 
     private void handleIntent(Intent intent) {
         boolean canSendMessage = false;
+        boolean firstPrio = false;
 
         if (intent != null) {
             Message msg = null;
@@ -623,10 +626,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     broadcast(ACTION_CONNECTED);
             }
 
+            // restart - absolute priority
             else if (ACTION_RESTART.equals(action)) {
                 if (canSendMessage) {
+                    // interrupt I/O
                     mServiceHandler.interrupt();
                     msg = mServiceHandler.obtainMessage(MSG_RESTART);
+                    firstPrio = true;
                 }
             }
 
@@ -654,8 +660,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (msg == null && canSendMessage)
                 msg = mServiceHandler.obtainMessage(MSG_PING);
 
-            if (msg != null)
-                mServiceHandler.sendMessage(msg);
+            if (msg != null) {
+                if (firstPrio)
+                    mServiceHandler.sendMessageAtFrontOfQueue(msg);
+                else
+                    mServiceHandler.sendMessage(msg);
+            }
         }
         else {
             Log.v(TAG, "restarting after service crash");
@@ -666,19 +676,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Create connection to server if needed.
      * WARNING this method blocks! Be sure to call it from a separate thread.
      */
-    private synchronized void createConnection() {
+    private synchronized void createConnection(boolean reset) {
         if (mConnector == null || !mConnector.isConnected()) {
             // retrieve account name
             Account acc = Authenticator.getDefaultAccount(this);
             mMyUsername = (acc != null) ? acc.name : null;
 
-            // fallback: get server from preferences
-            if (mServer == null)
-                mServer = MessagingPreferences.getEndpointServer(this);
+            // get server from preferences
+            mServer = MessagingPreferences.getEndpointServer(this);
 
-            mConnector = new XMPPConnectionHelper(this, mServer, false);
+            // recreate connection only if needed
+            if (mConnector == null)
+                mConnector = new XMPPConnectionHelper(this, mServer, false);
+            else
+                mConnector.setServer(mServer);
+
             mConnector.setListener(this);
-            mConnector.connect();
+            if (reset)
+                mConnector.reconnect();
+            else
+                mConnector.connect();
         }
     }
 
@@ -690,7 +707,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void connectionClosedOnError(Exception error) {
         Log.w(TAG, "connection closed with error", error);
-        mServiceHandler.sendEmptyMessage(MSG_RESTART);
+        mServiceHandler.sendMessageAtFrontOfQueue(mServiceHandler.obtainMessage(MSG_RESTART));
     }
 
     @Override
