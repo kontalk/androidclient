@@ -11,6 +11,7 @@ import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackAndroid;
 import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
@@ -20,12 +21,16 @@ import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
+import org.jivesoftware.smackx.packet.DiscoverInfo;
+import org.jivesoftware.smackx.packet.DiscoverItems;
 import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
+import org.kontalk.xmpp.GCMIntentService;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.MessageEncrypted;
 import org.kontalk.xmpp.client.Ping;
+import org.kontalk.xmpp.client.PushRegistration;
 import org.kontalk.xmpp.client.RawPacket;
 import org.kontalk.xmpp.client.ReceivedServerReceipt;
 import org.kontalk.xmpp.client.SentServerReceipt;
@@ -64,8 +69,11 @@ import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.Process;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+
+import com.google.android.gcm.GCMRegistrar;
 
 
 /**
@@ -88,6 +96,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
     public static final String ACTION_RESTART = "org.kontalk.action.RESTART";
     public static final String ACTION_MESSAGE = "org.kontalk.action.MESSAGE";
+    public static final String ACTION_PUSH_START = "org.kontalk.push.START";
+    public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
+    public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
 
     /** Request roster match. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
@@ -130,6 +141,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
     public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
     public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
+    public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
 
     // use with org.kontalk.action.ROSTER
     public static final String EXTRA_USERLIST = "org.kontalk.roster.userList";
@@ -137,6 +149,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.LAST_ACTIVITY
     public static final String EXTRA_SECONDS = "org.kontalk.last.seconds";
+
+    // other
+    public static final String GCM_REGISTRATION_ID = "org.kontalk.GCM_REGISTRATION_ID";
 
     /** Quit immediately and close all connections. */
     private static final int MSG_QUIT = 0;
@@ -160,6 +175,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final int MSG_LAST_ACTIVITY = 9;
     /** Response iq. */
     private static final int MSG_IQ_RESPONSE = 10;
+
+    /** Push notifications enabled flag. */
+    private boolean mPushNotifications;
+    /** Server push sender id. This is static so {@link GCMIntentService} can see it. */
+    private static String mPushSenderId;
+    /** GCM registration id. */
+    private String mPushRegistrationId;
 
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
@@ -291,13 +313,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // idle message
                 case MSG_IDLE: {
                     // we registered push notification - shutdown message center
-                    /* TODO
                     if (service.mPushRegistrationId != null) {
                         Log.d(TAG, "shutting down message center due to inactivity");
-                        MessageCenterServiceLegacy.idleMessageCenter(w.mContext);
+                        MessageCenterService.idle(service);
                     }
-                    */
-                    MessageCenterService.idle(service);
                     return true;
                 }
             }
@@ -396,6 +415,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 p.setStatus(data.getString(EXTRA_STATUS));
                 if (show != null)
                     p.setMode(Presence.Mode.valueOf(show));
+
+                String regId = data.getString(EXTRA_PUSH_REGID);
+                if (!TextUtils.isEmpty(regId))
+                    p.addExtension(new PushRegistration(regId));
+
                 pack = p;
             }
 
@@ -621,6 +645,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mServiceHandler.idle();
             }
 
+            else if (ACTION_PUSH_START.equals(action)) {
+                setPushNotifications(true);
+            }
+
+            else if (ACTION_PUSH_STOP.equals(action)) {
+                setPushNotifications(false);
+            }
+
+            else if (ACTION_PUSH_REGISTERED.equals(action)) {
+                setPushRegistrationId(intent.getStringExtra(GCM_REGISTRATION_ID));
+            }
+
             else if (ACTION_CONNECTED.equals(action)) {
                 if (mConnector != null && mConnector.isConnected())
                     broadcast(ACTION_CONNECTED);
@@ -678,6 +714,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     private synchronized void createConnection(boolean reset) {
         if (mConnector == null || !mConnector.isConnected()) {
+            // reset push notification variable
+            mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
+            // reset waiting messages
+            mWaitingReceipt.clear();
+
             // retrieve account name
             Account acc = Authenticator.getDefaultAccount(this);
             mMyUsername = (acc != null) ? acc.name : null;
@@ -756,6 +797,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void authenticated() {
         Log.v(TAG, "authenticated!");
 
+        // discovery
+        discovery();
         // send presence
         sendPresence();
         // resend failed and pending messages
@@ -769,12 +812,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mLocalBroadcastManager.sendBroadcast(new Intent(action));
     }
 
-    /** Sends our presence. */
+    /** Discovers info and items. */
+    private void discovery() {
+        DiscoverInfo info = new DiscoverInfo();
+        info.setTo(mServer.getNetwork());
+
+        Connection conn = mConnector.getConnection();
+        PacketFilter filter = new PacketIDFilter(info.getPacketID());
+        conn.addPacketListener(new DiscoverInfoListener(), filter);
+        conn.sendPacket(info);
+    }
+
+    /** Sends our initial presence. */
     private void sendPresence() {
         String status = MessagingPreferences.getStatusMessageInternal(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
             p.setStatus(status);
+
+        if (mPushNotifications) {
+            String pushRegId = GCMRegistrar.getRegistrationId(this);
+            if (!TextUtils.isEmpty(pushRegId))
+                p.addExtension(new PushRegistration(pushRegId));
+        }
 
         mConnector.getConnection().sendPacket(p);
     }
@@ -908,12 +968,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    /** Broadcasts our presence to the server. */
     public static void updateStatus(final Context context) {
+        updateStatus(context, GCMRegistrar.getRegistrationId(context));
+    }
+
+    /** Broadcasts our presence to the server. */
+    public static void updateStatus(final Context context, String pushRegistrationId) {
         // FIXME this is what sendPresence already does
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
         i.putExtra(EXTRA_STATUS, MessagingPreferences.getStatusMessageInternal(context));
+        i.putExtra(EXTRA_PUSH_REGID, pushRegistrationId);
         context.startService(i);
     }
 
@@ -940,10 +1005,137 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** Starts the push notifications registration process. */
+    public static void enablePushNotifications(Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_PUSH_START);
+        context.startService(i);
+    }
+
+    /** Starts the push notifications unregistration process. */
+    public static void disablePushNotifications(Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_PUSH_STOP);
+        context.startService(i);
+    }
+
+    /** Caches the given registration Id for use with push notifications. */
+    public static void registerPushNotifications(Context context, String registrationId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_PUSH_REGISTERED);
+        i.putExtra(GCM_REGISTRATION_ID, registrationId);
+        context.startService(i);
+    }
+
+    public void setPushNotifications(boolean enabled) {
+        mPushNotifications = enabled;
+        if (mPushNotifications) {
+            if (mPushRegistrationId == null)
+                gcmRegister();
+        }
+        else {
+            gcmUnregister();
+        }
+    }
+
+    private void gcmRegister() {
+        if (mPushSenderId != null) {
+            try {
+                GCMRegistrar.checkDevice(this);
+                //GCMRegistrar.checkManifest(this);
+                // senderId will be given by serverinfo if any
+                mPushRegistrationId = GCMRegistrar.getRegistrationId(this);
+                if (TextUtils.isEmpty(mPushRegistrationId))
+                    // start registration
+                    GCMRegistrar.register(this, mPushSenderId);
+                else
+                    // already registered - send registration id to server
+                    setPushRegistrationId(mPushRegistrationId);
+            }
+            catch (Exception e) {
+                // nothing happens...
+            }
+
+        }
+    }
+
+    private void gcmUnregister() {
+        if (GCMRegistrar.isRegistered(this))
+            // start unregistration
+            GCMRegistrar.unregister(this);
+        else
+            // force unregistration
+            setPushRegistrationId(null);
+    }
+
+    private void setPushRegistrationId(String regId) {
+        mPushRegistrationId = regId;
+
+        // notify the server about the change
+        updateStatus(this, mPushRegistrationId);
+        GCMRegistrar.setRegisteredOnServer(this, mPushRegistrationId != null);
+    }
+
+    public static String getPushSenderId() {
+        return mPushSenderId;
+    }
+
     private final class PingListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
             mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_IQ_RESPONSE, packet));
+        }
+    }
+
+    private final class DiscoverInfoListener implements PacketListener {
+        @Override
+        public void processPacket(Packet packet) {
+            Connection conn = mConnector.getConnection();
+
+            // we don't need this listener anymore
+            conn.removePacketListener(this);
+
+            DiscoverInfo query = (DiscoverInfo) packet;
+            Iterator<DiscoverInfo.Feature> features = query.getFeatures();
+            while (features.hasNext()) {
+                DiscoverInfo.Feature feat = features.next();
+                if (PushRegistration.NAMESPACE.equals(feat.getVar())) {
+
+                    // push notifications are enabled on this server
+                    // request items to check if gcm is supported and obtain the server id
+                    DiscoverItems items = new DiscoverItems();
+                    items.setNode(PushRegistration.NAMESPACE);
+                    items.setTo(mServer.getNetwork());
+
+                    PacketFilter filter = new PacketIDFilter(items.getPacketID());
+                    conn.addPacketListener(new PushDiscoverItemsListener(), filter);
+
+                    conn.sendPacket(items);
+                }
+            }
+        }
+    }
+
+    private final class PushDiscoverItemsListener implements PacketListener {
+        @Override
+        public void processPacket(Packet packet) {
+            Connection conn = mConnector.getConnection();
+
+            // we don't need this listener anymore
+            conn.removePacketListener(this);
+
+            DiscoverItems query = (DiscoverItems) packet;
+            Iterator<DiscoverItems.Item> items = query.getItems();
+            while (items.hasNext()) {
+                DiscoverItems.Item item = items.next();
+                String jid = item.getEntityID();
+                // google push notifications
+                if (("gcm.push." + mServer.getNetwork()).equals(jid)) {
+                    mPushSenderId = item.getNode();
+                    if (mPushNotifications)
+                        gcmRegister();
+                }
+            }
         }
     }
 

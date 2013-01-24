@@ -29,7 +29,6 @@ import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.crypto.PassKey;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.MessageCenterService;
-import org.kontalk.xmpp.service.MessageCenterServiceLegacy;
 import org.kontalk.xmpp.service.ServerListUpdater;
 import org.kontalk.xmpp.util.MessageUtils;
 
@@ -92,9 +91,9 @@ public final class MessagingPreferences extends PreferenceActivity {
             public boolean onPreferenceClick(Preference preference) {
                 CheckBoxPreference pref = (CheckBoxPreference) preference;
                 if (pref.isChecked())
-                    MessageCenterServiceLegacy.enablePushNotifications(getApplicationContext());
+                    MessageCenterService.enablePushNotifications(getApplicationContext());
                 else
-                    MessageCenterServiceLegacy.disablePushNotifications(getApplicationContext());
+                    MessageCenterService.disablePushNotifications(getApplicationContext());
 
                 return true;
             }
