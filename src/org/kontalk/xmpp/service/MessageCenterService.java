@@ -196,6 +196,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Looper.myQueue().addIdleHandler(this);
         }
 
+        public void interrupt() {
+            getLooper().getThread().interrupt();
+        }
+
         @Override
         public void handleMessage(Message msg) {
             boolean consumed = false;
@@ -208,6 +212,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (service.mConnector != null)
                         service.mConnector.shutdown();
 
+                    // interrupt
+                    interrupt();
                     // quit the looper
                     getLooper().quit();
                     consumed = true;
@@ -573,6 +579,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "destroying message center");
         if (mConnector != null)
             mConnector.interrupt();
+        // interrupt the service handler
+        mServiceHandler.interrupt();
         // send quit message to handler
         mServiceHandler.sendEmptyMessage(MSG_QUIT);
     }
@@ -616,8 +624,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_RESTART.equals(action)) {
-                if (canSendMessage)
+                if (canSendMessage) {
+                    mServiceHandler.interrupt();
                     msg = mServiceHandler.obtainMessage(MSG_RESTART);
+                }
             }
 
             else if (ACTION_MESSAGE.equals(action)) {
