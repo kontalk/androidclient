@@ -254,7 +254,7 @@ public class ClientThread extends Thread {
                     }
                 }
 
-                catch (IOException ie) {
+                catch (Exception ie) {
                     // just disconnect here...
                     mClient.close();
                     mClient = null;
