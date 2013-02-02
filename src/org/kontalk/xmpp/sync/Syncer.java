@@ -155,6 +155,12 @@ public class Syncer {
                  * roster intent and in the meanwhile message center was already
                  * connecting, we risk sending it twice: one with the pending
                  * intent and one here.
+                 *
+                 * In order to cope with that, we would need another broadcast
+                 * receiver only for CONNECTED/DISCONNECTED in order to keep
+                 * track of message center connections/disconnections. That way
+                 * we can distinguish a fresh connect with a race condition
+                 * case.
                  */
                 Syncer w = notifyTo.get();
                 if (w != null)
