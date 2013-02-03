@@ -213,7 +213,7 @@ public class XMPPConnectionHelper {
     }
 
     public boolean isConnected() {
-        return (mConn != null && mConn.isConnected());
+        return (mConn != null && mConn.isAuthenticated());
     }
 
     public boolean isConnecting() {

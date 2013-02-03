@@ -96,6 +96,7 @@ public class Syncer {
                 String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                 // see if bare JID is present in roster response
                 String compare = StringUtils.parseBareAddress(jid);
+                // TODO response was null once because presences got here before roster response
                 for (PresenceItem item : response) {
                     if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
                         item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
