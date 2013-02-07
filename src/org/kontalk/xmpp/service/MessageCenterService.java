@@ -1338,7 +1338,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (_ext != null) {
                     ServerReceiptRequest req = (ServerReceiptRequest) _ext;
                     // send ack :)
-                    ReceivedServerReceipt receipt = new ReceivedServerReceipt(req.getId());
+                    msgId = req.getId();
+                    ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
                     org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
                         org.jivesoftware.smack.packet.Message.Type.chat);
                     ack.addExtension(receipt);
