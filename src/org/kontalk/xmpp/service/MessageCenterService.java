@@ -748,7 +748,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void connectionClosedOnError(Exception error) {
         Log.w(TAG, "connection closed with error", error);
-        mServiceHandler.sendMessageAtFrontOfQueue(mServiceHandler.obtainMessage(MSG_RESTART));
+        if (mConnector != null && !mConnector.isConnecting())
+            mServiceHandler.sendMessageAtFrontOfQueue(mServiceHandler.obtainMessage(MSG_RESTART));
     }
 
     @Override
