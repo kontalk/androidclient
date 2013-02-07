@@ -93,33 +93,35 @@ public class Syncer {
             String action = intent.getAction();
 
             if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-                String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                // see if bare JID is present in roster response
-                String compare = StringUtils.parseBareAddress(jid);
-                // TODO response was null once because presences got here before roster response
-                for (PresenceItem item : response) {
-                    if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
-                        item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                        item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                // consider only presences received *after* roster response
+                if (response != null) {
+                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    // see if bare JID is present in roster response
+                    String compare = StringUtils.parseBareAddress(jid);
+                    for (PresenceItem item : response) {
+                        if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                            item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
 
-                        // increment presence count
-                        if (presenceCount < 0)
-                            presenceCount = 1;
-                        else
-                            presenceCount++;
+                            // increment presence count
+                            if (presenceCount < 0)
+                                presenceCount = 1;
+                            else
+                                presenceCount++;
 
-                        break;
-                    }
-                }
-
-                // done with presence data
-                Log.v(TAG, "presence count " + presenceCount + ", roster with " + rosterCount + " elements");
-                if (rosterCount >= 0 && presenceCount >= rosterCount) {
-                    Syncer w = notifyTo.get();
-                    if (w != null)
-                        synchronized (w) {
-                            w.notifyAll();
+                            break;
                         }
+                    }
+
+                    // done with presence data
+                    Log.v(TAG, "presence count " + presenceCount + ", roster with " + rosterCount + " elements");
+                    if (rosterCount >= 0 && presenceCount >= rosterCount) {
+                        Syncer w = notifyTo.get();
+                        if (w != null)
+                            synchronized (w) {
+                                w.notifyAll();
+                            }
+                    }
                 }
             }
 
