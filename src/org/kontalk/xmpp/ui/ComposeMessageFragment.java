@@ -1244,6 +1244,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		}
 
 		if (threadId > 0) {
+		    /*
+		     * FIXME when mConversation == null is false, this prevents us from
+		     * reloading the conversion, thus markAsRead() will never be called.
+		     */
 			startQuery((mConversation == null), resuming);
 		}
 		else {
@@ -1365,13 +1369,20 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                  */
                                 /*
                                  * FIXME this part has a serious bug.
-                                 * If client receives a certain set of presence
-                                 * stanzas (e.g. while syncer is running) which
-                                 * will empty mAvailableResources, thus taking
-                                 * the latest stanza (this one) as reference for
-                                 * last presence indication.
-                                 * Infact, the most important presence is always
-                                 * the most available or the most recent one.
+                                 * Client might receive a certain set of
+                                 * presence stanzas (e.g. while syncer is
+                                 * running) which will empty mAvailableResources,
+                                 * thus taking the latest stanza (this one) as
+                                 * reference for last presence indication.
+                                 * In fact, the most important presence is
+                                 * always the most available or the most recent
+                                 * one.
+                                 * Anyway, this method is not reliable either
+                                 * because of presence information not being
+                                 * accounted for from the beginning. Therefore,
+                                 * we don't know when a presence informs us
+                                 * about a user being unavailable in that moment
+                                 * or because a probe has been requested.
                                  */
                                 if (mAvailableResources.size() == 0 && mPresenceId == null) {
                                     // user offline
@@ -1413,7 +1424,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                             if (take) {
                                 // available stanza - null stamp
                                 if (available) {
-                                    mAvailableResources.add(from);
                                     mMostAvailable.stamp = null;
                                 }
                                 // unavailable stanza - update stamp
