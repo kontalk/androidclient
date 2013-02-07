@@ -34,7 +34,8 @@ public class EndpointServer {
     private String mHost;
     private int mPort;
     private int mHttpPort;
-    private String mNetwork;
+    // TODO take from parameters :)
+    private String mNetwork = "kontalk.net";
 
     private String mUrl;
 
@@ -72,8 +73,7 @@ public class EndpointServer {
     }
 
     public String getNetwork() {
-        // TODO
-        return "kontalk.net";
+        return mNetwork;
     }
 
     public String getHttpUrl() {

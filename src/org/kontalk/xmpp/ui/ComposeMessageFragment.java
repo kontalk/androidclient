@@ -1363,6 +1363,16 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                  * the user as offline immediately and use the
                                  * timestamp provided with the stanza.
                                  */
+                                /*
+                                 * FIXME this part has a serious bug.
+                                 * If client receives a certain set of presence
+                                 * stanzas (e.g. while syncer is running) which
+                                 * will empty mAvailableResources, thus taking
+                                 * the latest stanza (this one) as reference for
+                                 * last presence indication.
+                                 * Infact, the most important presence is always
+                                 * the most available or the most recent one.
+                                 */
                                 if (mAvailableResources.size() == 0 && mPresenceId == null) {
                                     // user offline
                                     long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);

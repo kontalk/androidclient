@@ -25,9 +25,6 @@ import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Registration;
 import org.jivesoftware.smack.provider.IQProvider;
 import org.jivesoftware.smack.util.PacketParserUtils;
-import org.jivesoftware.smackx.provider.DataFormProvider;
-import org.jivesoftware.smackx.pubsub.packet.PubSub;
-import org.jivesoftware.smackx.pubsub.packet.PubSubNamespace;
 import org.xmlpull.v1.XmlPullParser;
 
 /**

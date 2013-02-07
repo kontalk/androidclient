@@ -89,7 +89,6 @@ public class Syncer {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.v(TAG, "broadcast received " + intent);
             String action = intent.getAction();
 
             if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
