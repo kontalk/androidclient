@@ -34,13 +34,17 @@ public class EndpointServer {
     private String mHost;
     private int mPort;
     private int mHttpPort;
-    // TODO take from parameters :)
-    private String mNetwork = "kontalk.net";
+    private String mNetwork;
 
     private String mUrl;
 
     public EndpointServer(String host) {
-        this(host, DEFAULT_PORT, DEFAULT_HTTP_PORT);
+        this(null, host, DEFAULT_PORT, DEFAULT_HTTP_PORT);
+        if (host.contains("|")) {
+            String[] parsed = host.split("\\|");
+            mNetwork = parsed[0];
+            host = parsed[1];
+        }
         if (host.contains("/")) {
             String[] parsed = host.split("/");
             host = parsed[0];
@@ -53,15 +57,16 @@ public class EndpointServer {
         }
     }
 
-    public EndpointServer(String host, int port, int httpPort) {
-        this.mHost = host;
-        this.mPort = port;
-        this.mHttpPort = httpPort;
+    public EndpointServer(String network, String host, int port, int httpPort) {
+        mNetwork = network;
+        mHost = host;
+        mPort = port;
+        mHttpPort = httpPort;
     }
 
     @Override
     public String toString() {
-        return mHost + ":" + mPort;
+        return mNetwork + "/" + mHost + ":" + mPort;
     }
 
     public String getHost() {
