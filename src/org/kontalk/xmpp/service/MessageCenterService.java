@@ -259,7 +259,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // be sure connection is valid
                     service.createConnection(false);
                     // handle message
-                    consumed = handleMessage(service, msg);
+                    try {
+                        consumed = handleMessage(service, msg);
+                    }
+                    catch (Exception e) {
+                        Log.e(TAG, "connection error - scheduling reconnect", e);
+                    }
                 }
             }
             else {
