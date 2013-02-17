@@ -43,15 +43,15 @@ public class EndpointServer {
         if (host.contains("|")) {
             String[] parsed = host.split("\\|");
             mNetwork = parsed[0];
-            host = parsed[1];
+            mHost = parsed[1];
         }
-        if (host.contains("/")) {
-            String[] parsed = host.split("/");
-            host = parsed[0];
+        if (mHost.contains("/")) {
+            String[] parsed = mHost.split("/");
+            mHost = parsed[0];
             mHttpPort = Integer.parseInt(parsed[1]);
         }
-        if (host.contains(":")) {
-            String[] parsed = host.split(":");
+        if (mHost.contains(":")) {
+            String[] parsed = mHost.split(":");
             mHost = parsed[0];
             mPort = Integer.parseInt(parsed[1]);
         }
