@@ -516,6 +516,10 @@ public final class MessagingPreferences extends PreferenceActivity {
         return flags;
     }
 
+    public static boolean getSendTyping(Context context) {
+        return getBoolean(context, "pref_send_typing", true);
+    }
+
     public static String getDialPrefix(Context context) {
         String pref = getString(context, "pref_remove_prefix", null);
         return (pref != null && !TextUtils.isEmpty(pref.trim())) ? pref: null;

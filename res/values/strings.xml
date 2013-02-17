@@ -96,6 +96,7 @@
     <string name="pref_encrypt_userdata">Encrypt personal data</string>
     <string name="pref_title_on_encrypt_userdata">Status message will be visible only to users having your phone number</string>
     <string name="pref_title_off_encrypt_userdata">Status message will be visible to anyone</string>
+    <string name="pref_send_typing">Send typing notification</string>
     <string name="pref_hide_presence">Hide presence</string>
     <string name="pref_title_on_hide_presence">Users will not see you online</string>
     <string name="pref_title_off_hide_presence">Users will see you online and when you last connected</string>

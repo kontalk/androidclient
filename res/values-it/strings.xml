@@ -96,6 +96,7 @@
     <string name="pref_encrypt_userdata">Cifra dati personali</string>
     <string name="pref_title_on_encrypt_userdata">Il messaggio di stato sarà visibile solo a chi possiede il tuo numero di telefono</string>
     <string name="pref_title_off_encrypt_userdata">Il messaggio di stato sarà visibile a tutti</string>
+    <string name="pref_send_typing">Invia notifiche di digitazione</string>
     <string name="pref_hide_presence">Nascondi presenza</string>
     <string name="pref_title_on_hide_presence">Gli utenti non ti vedranno online</string>
     <string name="pref_title_off_hide_presence">Gli utenti potranno sapere quando sei online e l\'ultima volta che ti sei connesso</string>

@@ -55,6 +55,9 @@
                 android:summaryOn="@string/pref_title_on_encrypt_userdata"
                 android:title="@string/pref_encrypt_userdata"
                 android:defaultValue="true"/>
+            <CheckBoxPreference android:key="pref_send_typing"
+                android:title="@string/pref_send_typing"
+                android:defaultValue="true"/>
             <CheckBoxPreference android:key="pref_hide_presence"
                 android:summaryOff="@string/pref_title_off_hide_presence"
                 android:summaryOn="@string/pref_title_on_hide_presence"

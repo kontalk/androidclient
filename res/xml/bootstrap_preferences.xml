@@ -19,7 +19,7 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:key="pref_key_network_settings" android:title="@string/pref_network_settings">
-        <!-- 
+        <!--
         <Preference
             android:key="pref_update_server_list"
             android:title="@string/pref_update_server_list"/>
@@ -58,6 +58,9 @@
                 android:summaryOff="@string/pref_title_off_encrypt_userdata"
                 android:summaryOn="@string/pref_title_on_encrypt_userdata"
                 android:title="@string/pref_encrypt_userdata"
+                android:defaultValue="true"/>
+            <CheckBoxPreference android:key="pref_send_typing"
+                android:title="@string/pref_send_typing"
                 android:defaultValue="true"/>
             <CheckBoxPreference android:key="pref_hide_presence"
                 android:summaryOff="@string/pref_title_off_hide_presence"

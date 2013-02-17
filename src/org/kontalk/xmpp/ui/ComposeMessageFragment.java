@@ -252,10 +252,12 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		});
 		mChatStateListener = new TextWatcher() {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // send typing notification if necessary
-                if (!mComposeSent) {
-                    MessageCenterService.sendChatState(getActivity(), userId, ChatState.composing);
-                    mComposeSent = true;
+                if (MessagingPreferences.getSendTyping(getActivity())) {
+                    // send typing notification if necessary
+                    if (!mComposeSent) {
+                        MessageCenterService.sendChatState(getActivity(), userId, ChatState.composing);
+                        mComposeSent = true;
+                    }
                 }
             }
 
@@ -1781,9 +1783,11 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 					Toast.LENGTH_LONG).show();
 		}
 
-		// send inactive state notification
-		MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
-		mComposeSent = false;
+		if (MessagingPreferences.getSendTyping(getActivity())) {
+    		// send inactive state notification
+    		MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
+    		mComposeSent = false;
+		}
         // unsubcribe presence notifications
         unsubcribePresence();
 	}
