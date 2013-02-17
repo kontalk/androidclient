@@ -22,9 +22,7 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smackx.packet.DeliveryReceipt;
-import org.jivesoftware.smackx.provider.DeliveryReceiptProvider;
+import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.kontalk.xmpp.client.MessageSender;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
@@ -65,9 +63,6 @@ public class MessageRequestListener implements RequestListener {
             public void processPacket(Packet packet) {
                 Log.v(TAG, "got response for message packet " + packet.getPacketID());
                 Uri uri = job2.getMessageUri();
-
-                // TODO this should be static
-                ProviderManager.getInstance().addExtensionProvider("received", DeliveryReceipt.NAMESPACE, new DeliveryReceiptProvider());
 
                 PacketExtension ext = packet.getExtension(DeliveryReceipt.NAMESPACE);
                 Log.v(TAG, "got extension: " + ext);
