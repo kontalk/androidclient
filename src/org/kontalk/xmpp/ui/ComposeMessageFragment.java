@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.ChatState;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.crypto.Coder;
@@ -167,6 +168,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
     private QuickAction mSmileyPopup;
     private boolean mOfflineModeWarned;
+    private boolean mComposeSent;
+    private boolean mIsTyping;
+    private CharSequence mCurrentStatus;
+    private TextWatcher mChatStateListener;
 
     private static final class PresenceData {
         public String status;
@@ -245,13 +250,32 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 mSendButton.setEnabled(s.length() > 0);
 			}
 		});
+		mChatStateListener = new TextWatcher() {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // send typing notification if necessary
+                if (!mComposeSent) {
+                    MessageCenterService.sendChatState(getActivity(), userId, ChatState.composing);
+                    mComposeSent = true;
+                }
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
 
 		mSendButton = getView().findViewById(R.id.send_button);
 		mSendButton.setEnabled(mTextEntry.length() > 0);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+                // send message
 				sendTextMessage(null, true);
+                // reset compose sent flag
+                mComposeSent = false;
 			}
 		});
 
@@ -1262,14 +1286,20 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 	/** Called when the {@link Conversation} object has been created. */
 	private void onConversationCreated() {
+        mTextEntry.removeTextChangedListener(mChatStateListener);
+
 		// restore draft (if any and only if user hasn't inserted text)
 		if (mTextEntry.getText().length() == 0) {
 			String draft = mConversation.getDraft();
 			if (draft != null) {
 				mTextEntry.setText(draft);
+
+				// move cursor to end
 				mTextEntry.setSelection(mTextEntry.getText().length());
 			}
 		}
+
+        mTextEntry.addTextChangedListener(mChatStateListener);
 
 		if (mConversation.getThreadId() > 0) {
 			// mark all messages as read
@@ -1354,7 +1384,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                             String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
                             if (Presence.Type.available.toString().equals(type)) {
                                 mAvailableResources.add(from);
-                                setStatusText(getString(R.string.seen_online_label));
+                                mCurrentStatus = getString(R.string.seen_online_label);
+                                if (!mIsTyping)
+                                    setStatusText(mCurrentStatus);
 
                                 // abort presence probe if non-group stanza
                                 if (groupId == null) mPresenceId = null;
@@ -1463,21 +1495,45 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                             }
                         }
 
-                        if (statusText != null)
-                            setStatusText(statusText);
+                        if (statusText != null) {
+                            mCurrentStatus = statusText;
+                            if (!mIsTyping)
+                                setStatusText(statusText);
+                        }
                     }
 
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+                        // reset compose sent flag
+                        mComposeSent = false;
+
                         // send probe and subscription request
                         presenceProbe();
+                    }
+
+                    else if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
+                        String chatState = intent.getStringExtra("org.kontalk.message.chatState");
+
+                        // we are receiving a composing notification from our peer
+                        if (from != null && from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
+                            if (chatState != null && ChatState.composing.toString().equals(chatState)) {
+                                mIsTyping = true;
+                                setStatusText(getString(R.string.seen_typing_label));
+                            }
+                            else {
+                                mIsTyping = false;
+                                setStatusText(mCurrentStatus != null ? mCurrentStatus : "");
+                            }
+                        }
                     }
                 }
             };
 
-	        // listen for user presence and connection
+	        // listen for user presence, connection and incoming messages
 	        IntentFilter filter = new IntentFilter();
 	        filter.addAction(MessageCenterService.ACTION_PRESENCE);
 	        filter.addAction(MessageCenterService.ACTION_CONNECTED);
+	        filter.addAction(MessageCenterService.ACTION_MESSAGE);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 

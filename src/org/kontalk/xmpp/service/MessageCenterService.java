@@ -20,6 +20,8 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.ChatState;
+import org.jivesoftware.smackx.packet.ChatStateExtension;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.DiscoverInfo;
 import org.jivesoftware.smackx.packet.DiscoverItems;
@@ -220,7 +222,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         public void interrupt() {
             MessageCenterService service = s.get();
             // interrupt only if connecting
-            if (service != null && service.mConnector != null && service.mConnector.isConnecting())
+            if (service != null && service.mConnector != null && service.mConnector.isConnecting(true))
                 getLooper().getThread().interrupt();
         }
 
@@ -485,6 +487,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String body = data.getString("org.kontalk.message.body");
             String key = data.getString("org.kontalk.message.encryptKey");
 
+            ChatState chatState;
+            try {
+                chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
+            }
+            catch (Exception e) {
+                chatState = null;
+            }
+
             // encrypt message
             if (key != null) {
                 byte[] toMessage = null;
@@ -506,7 +516,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             m.setBody(body);
-            m.addExtension(new ServerReceiptRequest());
+            // standalone message: no receipt
+            if (!data.getBoolean("org.kontalk.message.standalone", false))
+                m.addExtension(new ServerReceiptRequest());
+            m.addExtension(new ChatStateExtension(chatState));
             conn.sendPacket(m);
 
             return true;
@@ -753,7 +766,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void connectionClosedOnError(Exception error) {
         Log.w(TAG, "connection closed with error", error);
-        if (mConnector != null && !mConnector.isConnecting())
+        if (mConnector != null && !mConnector.isConnecting(false))
             mServiceHandler.sendMessageAtFrontOfQueue(mServiceHandler.obtainMessage(MSG_RESTART));
     }
 
@@ -988,6 +1001,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** Sends a chat state message. */
+    public static void sendChatState(final Context context, String userId, ChatState state) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.chatState", state.toString());
+        i.putExtra("org.kontalk.message.standalone", true);
+        context.startService(i);
+    }
+
     /** Sends a text message. */
     public static void sendTextMessage(final Context context, String userId, String text, String encryptKey, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
@@ -997,6 +1020,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encryptKey", encryptKey);
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.toString());
         context.startService(i);
     }
 
@@ -1271,6 +1295,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         @Override
         public void processPacket(Packet packet) {
             org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
+
+            Intent i = new Intent(ACTION_MESSAGE);
+            String from = m.getFrom();
+            String network = StringUtils.parseServer(from);
+            // our network - convert to userId
+            if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                StringBuilder b = new StringBuilder();
+                b.append(StringUtils.parseName(from));
+                b.append(StringUtils.parseResource(from));
+                i.putExtra(EXTRA_FROM_USERID, b.toString());
+            }
+
+            // check if there is a composing notification
+            PacketExtension _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
+            ChatStateExtension chatstate = null;
+            if (_chatstate != null) {
+                chatstate = (ChatStateExtension) _chatstate;
+                i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
+
+            }
+
+            i.putExtra(EXTRA_FROM, from);
+            i.putExtra(EXTRA_TO, m.getTo());
+            mLocalBroadcastManager.sendBroadcast(i);
+
+            // composing notifications with body are not legal, return
+            if (chatstate != null && chatstate.getElementName().equals(ChatState.composing.toString()))
+                return;
+
             PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
 
             // delivery receipt
@@ -1355,7 +1408,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (msgId == null)
                     msgId = "incoming" + RandomString.generate(6);
 
-                String from = m.getFrom();
                 String sender = StringUtils.parseName(from);
                 byte[] content = m.getBody().getBytes();
                 long length = content.length;

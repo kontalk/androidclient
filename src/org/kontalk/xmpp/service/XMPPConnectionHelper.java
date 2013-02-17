@@ -68,6 +68,9 @@ public class XMPPConnectionHelper {
     /** Connecting flag. */
     protected volatile boolean mConnecting;
 
+    /** Running flag (that is, inside connect() method). */
+    protected volatile boolean mRunning;
+
     /**
      * Creates a new instance.
      * @param context
@@ -139,6 +142,7 @@ public class XMPPConnectionHelper {
             return;
         }
 
+        mRunning = true;
         while (!mInterrupted) {
             try {
                 connectOnce();
@@ -191,6 +195,7 @@ public class XMPPConnectionHelper {
 
             mRetryCount = 0;
         }
+        mRunning = false;
     }
 
     public Connection getConnection() {
@@ -216,8 +221,8 @@ public class XMPPConnectionHelper {
         return (mConn != null && mConn.isAuthenticated());
     }
 
-    public boolean isConnecting() {
-        return mConnecting;
+    public boolean isConnecting(boolean alsoRunning) {
+        return mConnecting && (alsoRunning ? mRunning : true);
     }
 
     /** Shortcut for {@link EndpointServer#getNetwork()}. */
