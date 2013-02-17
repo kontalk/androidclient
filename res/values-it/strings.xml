@@ -182,7 +182,7 @@
     <string name="msg_msgcenter_restarted">Centro messaggi riavviato.</string>
     <string name="downloading_attachment">Download in corso&#8230;</string>
     <string name="seen_moment_ago_label">un momento fa</string>
-    <string name="seen_online_label">Utente online</string>
+    <string name="seen_online_label">online</string>
     <string name="pref_custom_background">Sfondo personalizzato</string>
     <string name="pref_background_uri">Sfondo</string>
     <string name="pref_title_background_uri">Imposta uno sfondo personalizzato nelle conversazioni</string>

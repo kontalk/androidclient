@@ -182,7 +182,7 @@
     <string name="msg_msgcenter_restarted">Centro de mensajes reiniciado.</string>
     <string name="downloading_attachment">Descargar archivo adjunto&#8230;</string>
     <string name="seen_moment_ago_label">hace un momento</string>
-    <string name="seen_online_label">El usuario está en línea</string>
+    <string name="seen_online_label">en línea</string>
     <string name="pref_custom_background">Fondo personalizado</string>
     <string name="pref_background_uri">Fondo</string>
     <string name="pref_title_background_uri">Configurar imagen personalizada de fondo</string>

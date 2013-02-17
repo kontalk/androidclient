@@ -182,7 +182,7 @@
     <string name="msg_msgcenter_restarted">Nachrichtenzentrale neu gestartet.</string>
     <string name="downloading_attachment">Lade Anhang herunter&#8230;</string>
     <string name="seen_moment_ago_label">vor Kurzem</string>
-    <string name="seen_online_label">Nutzer ist online</string>
+    <string name="seen_online_label">online</string>
     <string name="pref_custom_background">Eigener Hintergrund</string>
     <string name="pref_background_uri">Hintergrund</string>
     <string name="pref_title_background_uri">Eigenes Hintergrundbild für Gespräche setzen</string>
