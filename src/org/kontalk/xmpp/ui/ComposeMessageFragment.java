@@ -272,10 +272,12 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+			    mTextEntry.removeTextChangedListener(mChatStateListener);
                 // send message
 				sendTextMessage(null, true);
                 // reset compose sent flag
                 mComposeSent = false;
+                mTextEntry.addTextChangedListener(mChatStateListener);
 			}
 		});
 
