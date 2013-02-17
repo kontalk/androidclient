@@ -519,7 +519,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // standalone message: no receipt
             if (!data.getBoolean("org.kontalk.message.standalone", false))
                 m.addExtension(new ServerReceiptRequest());
-            m.addExtension(new ChatStateExtension(chatState));
+            if (chatState != null)
+                m.addExtension(new ChatStateExtension(chatState));
             conn.sendPacket(m);
 
             return true;
