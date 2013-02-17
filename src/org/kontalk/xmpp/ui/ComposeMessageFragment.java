@@ -1781,6 +1781,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 					Toast.LENGTH_LONG).show();
 		}
 
+		// send inactive state notification
+		MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
+		mComposeSent = false;
         // unsubcribe presence notifications
         unsubcribePresence();
 	}
