@@ -254,7 +254,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (MessagingPreferences.getSendTyping(getActivity())) {
                     // send typing notification if necessary
-                    if (!mComposeSent) {
+                    if (!mComposeSent && mAvailableResources.size() > 0) {
                         MessageCenterService.sendChatState(getActivity(), userId, ChatState.composing);
                         mComposeSent = true;
                     }
@@ -1421,6 +1421,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                  * or because a probe has been requested.
                                  */
                                 if (mAvailableResources.size() == 0 && mPresenceId == null) {
+                                    // an offline user can't be typing
+                                    mIsTyping = false;
+
                                     // user offline
                                     long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
                                     if (stamp >= 0) {
@@ -1785,7 +1788,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		if (MessagingPreferences.getSendTyping(getActivity())) {
     		// send inactive state notification
-    		MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
+		    if (mAvailableResources.size() > 0)
+		        MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
     		mComposeSent = false;
 		}
         // unsubcribe presence notifications
@@ -1810,8 +1814,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	@Override
 	public void onDestroy() {
 	    super.onDestroy();
-	    if (mTextEntry != null)
+	    if (mTextEntry != null) {
+	        mTextEntry.removeTextChangedListener(mChatStateListener);
 	        mTextEntry.setText("");
+	    }
 	}
 
 	public final boolean isFinishing() {
