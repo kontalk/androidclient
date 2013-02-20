@@ -222,8 +222,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         public void interrupt() {
             MessageCenterService service = s.get();
             // interrupt only if connecting
-            if (service != null && service.mConnector != null && service.mConnector.isConnecting(true))
+            if (service != null && service.mConnector != null && service.mConnector.isConnecting(true)) {
                 getLooper().getThread().interrupt();
+                service.mConnector.getConnection().disconnect();
+            }
         }
 
         @Override

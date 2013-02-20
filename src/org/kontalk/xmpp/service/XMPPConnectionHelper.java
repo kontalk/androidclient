@@ -158,6 +158,16 @@ public class XMPPConnectionHelper {
                 // uncontrolled interrupt - handle errors
                 if (!mInterrupted) {
                     Log.e(TAG, "connection error", ie);
+                    // forcibly close connection, no matter what
+                    try {
+                        mConn.disconnect();
+                    }
+                    catch (Exception e) {
+                        // ignored
+                    }
+                    // EXTERMINATE!!
+                    mConn = null;
+
                     if (mRetryEnabled) {
                         try {
                             // max reconnections - idle message center
