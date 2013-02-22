@@ -29,6 +29,7 @@ import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.GCMIntentService;
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.client.AckServerReceipt;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.MessageEncrypted;
 import org.kontalk.xmpp.client.Ping;
@@ -1365,6 +1366,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             values.put(Messages.STATUS_CHANGED, changed);
                             cr.update(msg, values, selectionOutgoing, null);
                         }
+
+                        // send ack
+                        String ackId = ext.getId();
+                        AckServerReceipt receipt = new AckServerReceipt(ackId);
+                        org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
+                            org.jivesoftware.smack.packet.Message.Type.chat);
+                        ack.addExtension(receipt);
+                        mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_PACKET, ack));
                     }
 
                     else if (ext instanceof SentServerReceipt) {
