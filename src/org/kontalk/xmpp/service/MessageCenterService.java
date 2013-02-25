@@ -22,6 +22,7 @@ import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.ChatState;
 import org.jivesoftware.smackx.packet.ChatStateExtension;
+import org.jivesoftware.smackx.packet.DelayInfo;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.DiscoverInfo;
 import org.jivesoftware.smackx.packet.DiscoverItems;
@@ -1456,11 +1457,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 long now = System.currentTimeMillis();
 
                 // delayed deliver extension
-                PacketExtension _delay = m.getExtension("delay", "urn:xmpp.delay");
-                long serverTimestamp = 0;
-                if (_delay != null && _delay instanceof DelayInformation) {
-                    serverTimestamp = ((DelayInformation) _delay).getStamp().getTime();
+                PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
+                if (_delay == null)
+                    _delay = m.getExtension("x", "jabber:x:delay");
+
+                Date stamp = null;
+                if (_delay != null) {
+                    if (_delay instanceof DelayInformation) {
+                        stamp = ((DelayInformation) _delay).getStamp();
+                    }
+                    else if (_delay instanceof DelayInfo) {
+                        stamp = ((DelayInfo) _delay).getStamp();
+                    }
                 }
+
+                long serverTimestamp = 0;
+                if (stamp != null)
+                    serverTimestamp = stamp.getTime();
                 else
                     serverTimestamp = now;
 
