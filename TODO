@@ -12,32 +12,10 @@
 [ ] background loading of contact avatars
 [ ] custom background: sampleSize hard-coded to 4
     (actually we should save a sample on our own and load it instead)
-
-[x] support for removable phone number prefix
-[x] actionbar buttons should be square-shaped
-[x] Last seen message is not visible on medium screen (Galaxy Nexus)
 [-] something is happening with emoji (crash report by Fabio - hacked firmware?)
-[x] validation:
-java.lang.RuntimeException: Error receiving broadcast Intent { act=android.provider.Telephony.SMS_RECEIVED (has extras) } in org.kontalk.client.NumberValidator$1@40817d60
-at android.app.LoadedApk$ReceiverDispatcher$Args.run(LoadedApk.java:765)
-at android.os.Handler.handleCallback(Handler.java:587)
-at android.os.Handler.dispatchMessage(Handler.java:92)
-at android.os.Looper.loop(Looper.java:150)
-at android.app.ActivityThread.main(ActivityThread.java:4389)
-at java.lang.reflect.Method.invokeNative(Native Method)
-at java.lang.reflect.Method.invoke(Method.java:507)
-at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:849)
-at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:607)
-at dalvik.system.NativeStart.main(Native Method)
-Caused by: java.lang.IllegalArgumentException: already started
-at org.kontalk.client.NumberValidator.start(NumberValidator.java:94)
-at org.kontalk.ui.NumberValidation.onValidationCodeReceived(NumberValidation.java:530)
-at org.kontalk.client.NumberValidator$1.onReceive(NumberValidator.java:176)
-at android.app.LoadedApk$ReceiverDispatcher$Args.run(LoadedApk.java:748)
-... 9 more
-
 
 FUTURE:
+[ ] BOSH support
 [ ] quick voice messages
 [ ] check if errors are handled correctly, especially if server behaves bad
 [ ] quick reply
@@ -49,8 +27,7 @@ FUTURE:
 [ ] make IBinder from MessageCenterService a static class
 [ ] massive message sending tests and benchmarks (especially memory leaks)
 [ ] external storage backup
+[ ] XML/XSLT message user backup/restore
 
 PLANS:
-[ ] porting to XMPP
-[ ] HTTP (over SSL) connection support
 [ ] separate processes (main/UI, message center, sync adapter)
