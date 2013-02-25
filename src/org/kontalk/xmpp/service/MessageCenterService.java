@@ -636,13 +636,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void handleIntent(Intent intent) {
         boolean canSendMessage = false;
         boolean firstPrio = false;
+        boolean offlineMode = isOfflineMode(this);
+
+        // stop immediately
+        if (offlineMode)
+            stopSelf();
 
         if (intent != null) {
             Message msg = null;
             String action = intent.getAction();
 
             // proceed to start only if network is available
-            canSendMessage = isNetworkConnectionAvailable(this) && !isOfflineMode(this);
+            canSendMessage = isNetworkConnectionAvailable(this) && !offlineMode;
 
             if (ACTION_PACKET.equals(action)) {
                 Object data;
