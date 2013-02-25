@@ -1272,11 +1272,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		}
 
 		if (threadId > 0) {
-		    /*
-		     * FIXME when mConversation == null is false, this prevents us from
-		     * reloading the conversion, thus markAsRead() will never be called.
-		     */
-			startQuery((mConversation == null), resuming);
+		    // always reload conversation
+			startQuery(true, resuming);
 		}
 		else {
 			// HACK this is for crappy honeycomb :)
@@ -1305,7 +1302,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
         mTextEntry.addTextChangedListener(mChatStateListener);
 
-		if (mConversation.getThreadId() > 0) {
+		if (mConversation.getThreadId() > 0 && mConversation.getUnreadCount() > 0) {
 			// mark all messages as read
 			mConversation.markAsRead();
 		}
