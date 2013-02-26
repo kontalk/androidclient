@@ -1,10 +1,12 @@
 package org.kontalk.xmpp.service;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.jivesoftware.smack.Connection;
@@ -42,6 +44,7 @@ import org.kontalk.xmpp.client.ServerReceipt;
 import org.kontalk.xmpp.client.ServerReceiptRequest;
 import org.kontalk.xmpp.client.StanzaGroupExtension;
 import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
+import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
@@ -197,6 +200,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private ServiceHandler mServiceHandler;
     /** My username (account name). */
     private String mMyUsername;
+
+    /** Supported upload services. */
+    private List<String> mUploadServices;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
     private Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
@@ -1140,7 +1146,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             while (features.hasNext()) {
                 DiscoverInfo.Feature feat = features.next();
                 if (PushRegistration.NAMESPACE.equals(feat.getVar())) {
-
                     // push notifications are enabled on this server
                     // request items to check if gcm is supported and obtain the server id
                     DiscoverItems items = new DiscoverItems();
@@ -1152,6 +1157,44 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     conn.sendPacket(items);
                 }
+
+                else if (UploadExtension.NAMESPACE.equals(feat.getVar())) {
+                    // media upload is available on this server
+                    // request items to check what services are available
+                    DiscoverItems items = new DiscoverItems();
+                    items.setNode(UploadExtension.NAMESPACE);
+                    items.setTo(mServer.getNetwork());
+
+                    PacketFilter filter = new PacketIDFilter(items.getPacketID());
+                    conn.addPacketListener(new UploadDiscoverItemsListener(), filter);
+
+                    conn.sendPacket(items);
+                }
+            }
+        }
+    }
+
+    private final class UploadDiscoverItemsListener implements PacketListener {
+        @Override
+        public void processPacket(Packet packet) {
+            Connection conn = mConnector.getConnection();
+
+            // we don't need this listener anymore
+            conn.removePacketListener(this);
+
+            if (mUploadServices == null)
+                mUploadServices = new ArrayList<String>();
+            else
+                mUploadServices.clear();
+
+            // store available services
+            DiscoverItems query = (DiscoverItems) packet;
+            Iterator<DiscoverItems.Item> items = query.getItems();
+            while (items.hasNext()) {
+                DiscoverItems.Item item = items.next();
+                String jid = item.getEntityID();
+                if ((mServer.getNetwork()).equals(jid))
+                    mUploadServices.add(item.getNode());
             }
         }
     }
