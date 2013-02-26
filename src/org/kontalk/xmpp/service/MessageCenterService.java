@@ -480,58 +480,69 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 return true;
             }
 
-            org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
-            m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
-            String to = data.getString("org.kontalk.message.to");
-            if (to == null) {
-                to = data.getString("org.kontalk.message.toUser");
-                to += '@' + service.mServer.getNetwork();
-            }
-            if (to != null) m.setTo(to);
+            String _mediaUri = data.getString("org.kontalk.message.media.uri");
+            if (_mediaUri != null) {
+                // media message - start upload service
+                Uri mediaUri = Uri.parse(_mediaUri);
 
-            if (msgId > 0) {
-                String id = m.getPacketID();
-                service.mWaitingReceipt.put(id, msgId);
+                // TODO start upload intent service
             }
 
-            String body = data.getString("org.kontalk.message.body");
-            String key = data.getString("org.kontalk.message.encryptKey");
+            else {
+                // message stanza
+                org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
+                m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
+                String to = data.getString("org.kontalk.message.to");
+                if (to == null) {
+                    to = data.getString("org.kontalk.message.toUser");
+                    to += '@' + service.mServer.getNetwork();
+                }
+                if (to != null) m.setTo(to);
 
-            ChatState chatState;
-            try {
-                chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
-            }
-            catch (Exception e) {
-                chatState = null;
-            }
+                if (msgId > 0) {
+                    String id = m.getPacketID();
+                    service.mWaitingReceipt.put(id, msgId);
+                }
 
-            // encrypt message
-            if (key != null) {
-                byte[] toMessage = null;
-                Coder coder = null;
+                String body = data.getString("org.kontalk.message.body");
+                String key = data.getString("org.kontalk.message.encryptKey");
+
+                ChatState chatState;
                 try {
-                    coder = MessagingPreferences.getEncryptCoder(key);
-                    if (coder != null)
-                        toMessage = coder.encrypt(body.getBytes());
+                    chatState = ChatState.valueOf(data.getString("org.kontalk.message.chatState"));
                 }
                 catch (Exception e) {
-                    // should we notify the user this message will be sent cleartext?
-                    coder = null;
+                    chatState = null;
                 }
 
-                if (toMessage != null) {
-                    body = Base64.encodeToString(toMessage, Base64.NO_WRAP);
-                    m.addExtension(new MessageEncrypted());
+                // encrypt message
+                if (key != null) {
+                    byte[] toMessage = null;
+                    Coder coder = null;
+                    try {
+                        coder = MessagingPreferences.getEncryptCoder(key);
+                        if (coder != null)
+                            toMessage = coder.encrypt(body.getBytes());
+                    }
+                    catch (Exception e) {
+                        // should we notify the user this message will be sent cleartext?
+                        coder = null;
+                    }
+
+                    if (toMessage != null) {
+                        body = Base64.encodeToString(toMessage, Base64.NO_WRAP);
+                        m.addExtension(new MessageEncrypted());
+                    }
                 }
+
+                m.setBody(body);
+                // standalone message: no receipt
+                if (!data.getBoolean("org.kontalk.message.standalone", false))
+                    m.addExtension(new ServerReceiptRequest());
+                if (chatState != null)
+                    m.addExtension(new ChatStateExtension(chatState));
+                conn.sendPacket(m);
             }
-
-            m.setBody(body);
-            // standalone message: no receipt
-            if (!data.getBoolean("org.kontalk.message.standalone", false))
-                m.addExtension(new ServerReceiptRequest());
-            if (chatState != null)
-                m.addExtension(new ChatStateExtension(chatState));
-            conn.sendPacket(m);
 
             return true;
         }
@@ -1048,6 +1059,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.toString());
         context.startService(i);
     }
 
