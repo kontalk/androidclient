@@ -1360,202 +1360,224 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         @Override
         public void processPacket(Packet packet) {
             org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
+            if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
+                Intent i = new Intent(ACTION_MESSAGE);
+                String from = m.getFrom();
+                String network = StringUtils.parseServer(from);
+                // our network - convert to userId
+                if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                    StringBuilder b = new StringBuilder();
+                    b.append(StringUtils.parseName(from));
+                    b.append(StringUtils.parseResource(from));
+                    i.putExtra(EXTRA_FROM_USERID, b.toString());
+                }
 
-            Intent i = new Intent(ACTION_MESSAGE);
-            String from = m.getFrom();
-            String network = StringUtils.parseServer(from);
-            // our network - convert to userId
-            if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                StringBuilder b = new StringBuilder();
-                b.append(StringUtils.parseName(from));
-                b.append(StringUtils.parseResource(from));
-                i.putExtra(EXTRA_FROM_USERID, b.toString());
-            }
+                // check if there is a composing notification
+                PacketExtension _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
+                ChatStateExtension chatstate = null;
+                if (_chatstate != null) {
+                    chatstate = (ChatStateExtension) _chatstate;
+                    i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
 
-            // check if there is a composing notification
-            PacketExtension _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
-            ChatStateExtension chatstate = null;
-            if (_chatstate != null) {
-                chatstate = (ChatStateExtension) _chatstate;
-                i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
+                }
 
-            }
+                i.putExtra(EXTRA_FROM, from);
+                i.putExtra(EXTRA_TO, m.getTo());
+                mLocalBroadcastManager.sendBroadcast(i);
 
-            i.putExtra(EXTRA_FROM, from);
-            i.putExtra(EXTRA_TO, m.getTo());
-            mLocalBroadcastManager.sendBroadcast(i);
+                // composing notifications with body are not legal, return
+                if (chatstate != null && chatstate.getElementName().equals(ChatState.composing.toString()))
+                    return;
 
-            // composing notifications with body are not legal, return
-            if (chatstate != null && chatstate.getElementName().equals(ChatState.composing.toString()))
-                return;
+                PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
 
-            PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
+                // delivery receipt
+                if (_ext != null && !ServerReceiptRequest.ELEMENT_NAME.equals(_ext.getElementName())) {
+                    ServerReceipt ext = (ServerReceipt) _ext;
+                    synchronized (mWaitingReceipt) {
+                        String id = m.getPacketID();
+                        Long _msgId = mWaitingReceipt.get(id);
+                        long msgId = (_msgId != null) ? _msgId : 0;
+                        ContentResolver cr = getContentResolver();
 
-            // delivery receipt
-            if (_ext != null && !ServerReceiptRequest.ELEMENT_NAME.equals(_ext.getElementName())) {
-                ServerReceipt ext = (ServerReceipt) _ext;
-                synchronized (mWaitingReceipt) {
-                    String id = m.getPacketID();
-                    Long _msgId = mWaitingReceipt.get(id);
-                    long msgId = (_msgId != null) ? _msgId : 0;
-                    ContentResolver cr = getContentResolver();
+                        // TODO compress this code
+                        if (ext instanceof ReceivedServerReceipt) {
+                            long changed;
+                            Date date = ((ReceivedServerReceipt)ext).getTimestamp();
+                            if (date != null)
+                                changed = date.getTime();
+                            else
+                                changed = System.currentTimeMillis();
 
-                    // TODO compress this code
-                    if (ext instanceof ReceivedServerReceipt) {
-                        long changed;
-                        Date date = ((ReceivedServerReceipt)ext).getTimestamp();
-                        if (date != null)
-                            changed = date.getTime();
-                        else
-                            changed = System.currentTimeMillis();
+                            // message has been delivered: check if we have previously stored the server id
+                            if (msgId > 0) {
+                                ContentValues values = new ContentValues(3);
+                                values.put(Messages.MESSAGE_ID, ext.getId());
+                                values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                                values.put(Messages.STATUS_CHANGED, changed);
+                                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                                    values, selectionOutgoing, null);
 
-                        // message has been delivered: check if we have previously stored the server id
-                        if (msgId > 0) {
-                            ContentValues values = new ContentValues(3);
-                            values.put(Messages.MESSAGE_ID, ext.getId());
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, changed);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionOutgoing, null);
+                                mWaitingReceipt.remove(id);
+                            }
+                            else {
+                                Uri msg = Messages.getUri(ext.getId());
+                                ContentValues values = new ContentValues(2);
+                                values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                                values.put(Messages.STATUS_CHANGED, changed);
+                                cr.update(msg, values, selectionOutgoing, null);
+                            }
 
-                            mWaitingReceipt.remove(id);
+                            // send ack
+                            String ackId = ext.getId();
+                            AckServerReceipt receipt = new AckServerReceipt(ackId);
+                            org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
+                                org.jivesoftware.smack.packet.Message.Type.chat);
+                            ack.addExtension(receipt);
+                            mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_PACKET, ack));
                         }
-                        else {
-                            Uri msg = Messages.getUri(ext.getId());
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, changed);
-                            cr.update(msg, values, selectionOutgoing, null);
+
+                        else if (ext instanceof SentServerReceipt) {
+                            long now = System.currentTimeMillis();
+
+                            if (msgId > 0) {
+                                ContentValues values = new ContentValues(3);
+                                values.put(Messages.MESSAGE_ID, ext.getId());
+                                values.put(Messages.STATUS, Messages.STATUS_SENT);
+                                values.put(Messages.STATUS_CHANGED, now);
+                                values.put(Messages.SERVER_TIMESTAMP, now);
+                                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                                    values, selectionOutgoing, null);
+
+                                mWaitingReceipt.remove(id);
+                            }
+                            else {
+                                Uri msg = Messages.getUri(ext.getId());
+                                ContentValues values = new ContentValues(2);
+                                values.put(Messages.STATUS, Messages.STATUS_SENT);
+                                values.put(Messages.STATUS_CHANGED, now);
+                                values.put(Messages.SERVER_TIMESTAMP, now);
+                                cr.update(msg, values, selectionOutgoing, null);
+                            }
                         }
 
-                        // send ack
-                        String ackId = ext.getId();
-                        AckServerReceipt receipt = new AckServerReceipt(ackId);
+                    }
+                }
+
+                // incoming message
+                else {
+                    String msgId = null;
+                    if (_ext != null) {
+                        ServerReceiptRequest req = (ServerReceiptRequest) _ext;
+                        // send ack :)
+                        msgId = req.getId();
+                        ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
                         org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
                             org.jivesoftware.smack.packet.Message.Type.chat);
                         ack.addExtension(receipt);
                         mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_PACKET, ack));
                     }
 
-                    else if (ext instanceof SentServerReceipt) {
-                        long now = System.currentTimeMillis();
+                    if (msgId == null)
+                        msgId = "incoming" + RandomString.generate(6);
 
-                        if (msgId > 0) {
-                            ContentValues values = new ContentValues(3);
-                            values.put(Messages.MESSAGE_ID, ext.getId());
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, now);
-                            values.put(Messages.SERVER_TIMESTAMP, now);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionOutgoing, null);
+                    String sender = StringUtils.parseName(from);
+                    byte[] content = m.getBody().getBytes();
+                    long length = content.length;
 
-                            mWaitingReceipt.remove(id);
+                    // message decryption
+                    boolean wasEncrypted = (m.getExtension(MessageEncrypted.ELEMENT_NAME, MessageEncrypted.NAMESPACE) != null);
+                    boolean isEncrypted = wasEncrypted;
+                    if (isEncrypted) {
+                        // decrypt message
+                        Coder coder = MessagingPreferences.getDecryptCoder(MessageCenterService.this, mMyUsername);
+                        try {
+                            // decode base64
+                            content = Base64.decode(content, Base64.DEFAULT);
+                            // length of raw encrypted message
+                            length = content.length;
+                            // decrypt
+                            content = coder.decrypt(content);
+                            length = content.length;
+                            isEncrypted = false;
                         }
-                        else {
-                            Uri msg = Messages.getUri(ext.getId());
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, now);
-                            values.put(Messages.SERVER_TIMESTAMP, now);
-                            cr.update(msg, values, selectionOutgoing, null);
+                        catch (Exception exc) {
+                            // pass over the message even if encrypted
+                            // UI will warn the user about that and wait
+                            // for user decisions
+                            Log.e(TAG, "decryption failed", exc);
                         }
                     }
 
+                    long now = System.currentTimeMillis();
+
+                    // delayed deliver extension
+                    PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
+                    if (_delay == null)
+                        _delay = m.getExtension("x", "jabber:x:delay");
+
+                    Date stamp = null;
+                    if (_delay != null) {
+                        if (_delay instanceof DelayInformation) {
+                            stamp = ((DelayInformation) _delay).getStamp();
+                        }
+                        else if (_delay instanceof DelayInfo) {
+                            stamp = ((DelayInfo) _delay).getStamp();
+                        }
+                    }
+
+                    long serverTimestamp = 0;
+                    if (stamp != null)
+                        serverTimestamp = stamp.getTime();
+                    else
+                        serverTimestamp = now;
+
+                    // save to local storage
+                    ContentValues values = new ContentValues();
+                    values.put(Messages.MESSAGE_ID, msgId);
+                    values.put(Messages.PEER, sender);
+                    values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
+                    values.put(Messages.CONTENT, content);
+                    values.put(Messages.ENCRYPTED, isEncrypted);
+                    values.put(Messages.ENCRYPT_KEY, wasEncrypted ? "" : null);
+                    values.put(Messages.UNREAD, true);
+                    values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+
+                    values.put(Messages.SERVER_TIMESTAMP, serverTimestamp);
+                    values.put(Messages.TIMESTAMP, now);
+                    values.put(Messages.LENGTH, length);
+                    try {
+                        getContentResolver().insert(Messages.CONTENT_URI, values);
+                    }
+                    catch (SQLiteConstraintException econstr) {
+                        // duplicated message, skip it
+                    }
+
+                    if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
+                        // update notifications (delayed)
+                        MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
                 }
             }
 
-            // incoming message
-            else {
-                String msgId = null;
-                if (_ext != null) {
-                    ServerReceiptRequest req = (ServerReceiptRequest) _ext;
-                    // send ack :)
-                    msgId = req.getId();
-                    ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
-                    org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
-                        org.jivesoftware.smack.packet.Message.Type.chat);
-                    ack.addExtension(receipt);
-                    mServiceHandler.sendMessage(mServiceHandler.obtainMessage(MSG_PACKET, ack));
-                }
+            // error message
+            else if (m.getType() == org.jivesoftware.smack.packet.Message.Type.error) {
+                synchronized (mWaitingReceipt) {
+                    String id = m.getPacketID();
+                    Long _msgId = mWaitingReceipt.get(id);
+                    long msgId = (_msgId != null) ? _msgId : 0;
+                    ContentResolver cr = getContentResolver();
 
-                if (msgId == null)
-                    msgId = "incoming" + RandomString.generate(6);
+                    // message has been rejected: mark as error
+                    if (msgId > 0) {
+                        ContentValues values = new ContentValues(3);
+                        values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
+                        values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                        cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                            values, selectionOutgoing, null);
 
-                String sender = StringUtils.parseName(from);
-                byte[] content = m.getBody().getBytes();
-                long length = content.length;
-
-                // message decryption
-                boolean wasEncrypted = (m.getExtension(MessageEncrypted.ELEMENT_NAME, MessageEncrypted.NAMESPACE) != null);
-                boolean isEncrypted = wasEncrypted;
-                if (isEncrypted) {
-                    // decrypt message
-                    Coder coder = MessagingPreferences.getDecryptCoder(MessageCenterService.this, mMyUsername);
-                    try {
-                        // decode base64
-                        content = Base64.decode(content, Base64.DEFAULT);
-                        // length of raw encrypted message
-                        length = content.length;
-                        // decrypt
-                        content = coder.decrypt(content);
-                        length = content.length;
-                        isEncrypted = false;
-                    }
-                    catch (Exception exc) {
-                        // pass over the message even if encrypted
-                        // UI will warn the user about that and wait
-                        // for user decisions
-                        Log.e(TAG, "decryption failed", exc);
+                        mWaitingReceipt.remove(id);
                     }
                 }
-
-                long now = System.currentTimeMillis();
-
-                // delayed deliver extension
-                PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
-                if (_delay == null)
-                    _delay = m.getExtension("x", "jabber:x:delay");
-
-                Date stamp = null;
-                if (_delay != null) {
-                    if (_delay instanceof DelayInformation) {
-                        stamp = ((DelayInformation) _delay).getStamp();
-                    }
-                    else if (_delay instanceof DelayInfo) {
-                        stamp = ((DelayInfo) _delay).getStamp();
-                    }
-                }
-
-                long serverTimestamp = 0;
-                if (stamp != null)
-                    serverTimestamp = stamp.getTime();
-                else
-                    serverTimestamp = now;
-
-                // save to local storage
-                ContentValues values = new ContentValues();
-                values.put(Messages.MESSAGE_ID, msgId);
-                values.put(Messages.PEER, sender);
-                values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-                values.put(Messages.CONTENT, content);
-                values.put(Messages.ENCRYPTED, isEncrypted);
-                values.put(Messages.ENCRYPT_KEY, wasEncrypted ? "" : null);
-                values.put(Messages.UNREAD, true);
-                values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
-
-                values.put(Messages.SERVER_TIMESTAMP, serverTimestamp);
-                values.put(Messages.TIMESTAMP, now);
-                values.put(Messages.LENGTH, length);
-                try {
-                    getContentResolver().insert(Messages.CONTENT_URI, values);
-                }
-                catch (SQLiteConstraintException econstr) {
-                    // duplicated message, skip it
-                }
-
-                if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
-                    // update notifications (delayed)
-                    MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
             }
         }
     }
