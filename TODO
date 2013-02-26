@@ -1,8 +1,4 @@
-[ ] going back to portrait from landscape goes back to conversation list (Galaxy Nexus)
-[ ] timestamp in messages: if dark background is used text is not visible
-[ ] smileys/emoticons support
-[ ] ActionBarSherlock: need to use the platform-specific indeterminate progress
-[ ] ListView: still issues with fading edge
+[ ] ListView: still issues with fading edge with pre-Honeycomb
 [ ] paginated message list view (load only as needed)
 [ ] tablet: refactor message list view
 [ ] handle external storage presence
@@ -19,6 +15,7 @@ FUTURE:
 [ ] quick voice messages
 [ ] check if errors are handled correctly, especially if server behaves bad
 [ ] quick reply
+[ ] autosync contacts data (thread started on first application load, singleton cache)
 [ ] store older messages in external storage / load on demand
 [ ] (plural) list -> (singular) list (??)
 [ ] use cached last seen/status if network error
