@@ -71,82 +71,6 @@ public class ClientHTTPConnection {
             currentRequest.abort();
     }
 
-    /*
-    public FileUploadResponse message(final String[] group, final String mime, final Uri uri,
-            final Context context, final MessageSender job, final RequestListener listener)
-                throws IOException {
-
-        HttpResponse response = null;
-        try {
-            AssetFileDescriptor stat = context.getContentResolver().openAssetFileDescriptor(uri, "r");
-            long length = stat.getLength();
-            stat.close();
-
-            InputStream in = context.getContentResolver().openInputStream(uri);
-
-            InputStream toMessage = null;
-            long toLength = 0;
-            Coder coder = null;
-            boolean encrypted = false;
-            // check if we have to encrypt the message
-            if (job.getEncryptKey() != null) {
-                coder = MessagingPreferences.getEncryptCoder(job.getEncryptKey());
-                if (coder != null) {
-                    toMessage = coder.wrapInputStream(in);
-                    toLength = Coder.getEncryptedLength(length);
-                    encrypted = true;
-                }
-            }
-
-            if (coder == null) {
-                toMessage = in;
-                toLength = length;
-            }
-
-            // http request!
-            currentRequest = prepareMessage(job, listener, mAuthToken, group, mime, toMessage, toLength, encrypted);
-            response = execute(currentRequest);
-            return FileUploadResponse.parseFrom(response.getEntity().getContent());
-        }
-        catch (Exception e) {
-            throw innerException("post message error", e);
-        }
-        finally {
-            currentRequest = null;
-            try {
-                response.getEntity().consumeContent();
-            }
-            catch (Exception e) {
-                // ignore
-            }
-        }
-    }
-
-    public Protocol.ServerList serverList() throws IOException {
-        HttpResponse response = null;
-        try {
-            // http request!
-            currentRequest = prepareServerListRequest();
-            response = execute(currentRequest);
-            return Protocol.ServerList.parseFrom(response.getEntity().getContent());
-        }
-        catch (Exception e) {
-            throw innerException("serverlist download error", e);
-        }
-        finally {
-            currentRequest = null;
-            if (response != null && response.getEntity() != null)
-                response.getEntity().consumeContent();
-        }
-    }
-    */
-
-    private IOException innerException(String detail, Throwable cause) {
-        IOException ie = new IOException(detail);
-        ie.initCause(cause);
-        return ie;
-    }
-
     /**
      * A generic endpoint request method for the messaging server.
      * @param path request path
@@ -206,36 +130,6 @@ public class ClientHTTPConnection {
                     HEADER_VALUE_AUTHORIZATION + token);
 
         return req;
-    }
-
-    /**
-     * A message posting method.
-     * @param listener the uploading listener
-     * @param token the autentication token
-     * @param group the recipients
-     * @param mime message mime type
-     * @param data data to be sent
-     * @param length length of data
-     * @return the request object
-     * @throws IOException
-     */
-    private HttpRequestBase prepareMessage(
-            MessageSender job, RequestListener listener,
-            String token, String[] group, String mime,
-            InputStream data, long length, boolean encrypted)
-            throws IOException {
-
-        HttpPost req = (HttpPost) prepare("/upload", null, token, mime, null, true);
-        req.setEntity(new ProgressInputStreamEntity(data, length, mClient, job, listener));
-
-        if (encrypted)
-            req.addHeader(HEADER_MESSAGE_FLAGS, "encrypted");
-
-        return req;
-    }
-
-    private HttpRequestBase prepareServerListRequest() throws IOException {
-        return prepare("/serverlist", null, null, null, null, false);
     }
 
     /**

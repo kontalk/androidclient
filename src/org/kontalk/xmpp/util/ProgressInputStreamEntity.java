@@ -24,44 +24,44 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.http.entity.InputStreamEntity;
-import org.kontalk.xmpp.service.ClientThread;
-import org.kontalk.xmpp.service.RequestJob;
-import org.kontalk.xmpp.service.RequestListener;
+import org.kontalk.xmpp.service.ProgressListener;
+import org.kontalk.xmpp.upload.UploadConnection;
+
+import android.os.Bundle;
 
 
 public class ProgressInputStreamEntity extends InputStreamEntity {
-    protected final ClientThread mClient;
-    protected final RequestJob mJob;
-    protected final RequestListener mListener;
+    protected final UploadConnection mConn;
+    protected final Bundle mData;
+    protected final ProgressListener mListener;
 
     public ProgressInputStreamEntity(InputStream instream, long length,
-            final ClientThread client, final RequestJob job,
-            final RequestListener listener) {
+            final UploadConnection conn, final Bundle data,
+            final ProgressListener listener) {
         super(instream, length);
-        mClient = client;
-        mJob = job;
+        mConn = conn;
+        mData = data;
         mListener = listener;
     }
 
     @Override
     public void writeTo(final OutputStream outstream) throws IOException {
-        super.writeTo(new CountingOutputStream(outstream, mClient, mJob, mListener));
+        super.writeTo(new CountingOutputStream(outstream, mConn, mData, mListener));
     }
 
     private static final class CountingOutputStream extends FilterOutputStream {
 
-        private final ClientThread client;
-        private final RequestJob job;
-        private final RequestListener listener;
+        private final UploadConnection conn;
+        private final Bundle data;
+        private final ProgressListener listener;
         private long transferred;
 
-        public CountingOutputStream(final OutputStream out,
-                final ClientThread client, final RequestJob job,
-                final RequestListener listener) {
+        public CountingOutputStream(OutputStream out, UploadConnection conn,
+            Bundle data, ProgressListener listener) {
             super(out);
             this.listener = listener;
-            this.client = client;
-            this.job = job;
+            this.conn = conn;
+            this.data = data;
             this.transferred = 0;
         }
 
@@ -85,7 +85,7 @@ public class ProgressInputStreamEntity extends InputStreamEntity {
 
         private void publishProgress(long add) {
             this.transferred += add;
-            this.listener.uploadProgress(client, job, this.transferred);
+            this.listener.progress(conn, data, this.transferred);
         }
     }
 
