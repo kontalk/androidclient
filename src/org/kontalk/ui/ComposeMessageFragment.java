@@ -1356,7 +1356,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		}
 
 		if (threadId > 0) {
-			startQuery((mConversation == null), resuming);
+			startQuery(true, resuming);
 		}
 		else {
 			// HACK this is for crappy honeycomb :)
@@ -1379,7 +1379,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			}
 		}
 
-		if (mConversation.getThreadId() > 0) {
+		if (mConversation.getThreadId() > 0 && mConversation.getUnreadCount() > 0) {
 			// mark all messages as read
 			mConversation.markAsRead();
 		}
