@@ -101,14 +101,18 @@ import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockListFragment;
@@ -243,13 +247,25 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 mSendButton.setEnabled(s.length() > 0);
 			}
 		});
+        mTextEntry.setOnEditorActionListener(new OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    submitSend();
+                    return true;
+                }
+                return false;
+            }
+        });
 
 		mSendButton = getView().findViewById(R.id.send_button);
 		mSendButton.setEnabled(mTextEntry.length() > 0);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sendTextMessage(null, true);
+			    submitSend();
 			}
 		});
 
@@ -277,6 +293,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 	public void reload() {
 		processArguments(null);
+	}
+
+	private void submitSend() {
+        sendTextMessage(null, true);
 	}
 
 	@Override
