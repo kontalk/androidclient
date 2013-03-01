@@ -92,14 +92,18 @@ import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockListFragment;
@@ -250,6 +254,18 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 mSendButton.setEnabled(s.length() > 0);
 			}
 		});
+		mTextEntry.setOnEditorActionListener(new OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    submitSend();
+                    return true;
+                }
+                return false;
+            }
+        });
 		mChatStateListener = new TextWatcher() {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (MessagingPreferences.getSendTyping(getActivity())) {
@@ -274,12 +290,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-			    mTextEntry.removeTextChangedListener(mChatStateListener);
-                // send message
-				sendTextMessage(null, true);
-                // reset compose sent flag
-                mComposeSent = false;
-                mTextEntry.addTextChangedListener(mChatStateListener);
+			    submitSend();
 			}
 		});
 
@@ -331,6 +342,15 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		// list adapter creation is post-poned
 	}
+
+    private void submitSend() {
+        mTextEntry.removeTextChangedListener(mChatStateListener);
+        // send message
+        sendTextMessage(null, true);
+        // reset compose sent flag
+        mComposeSent = false;
+        mTextEntry.addTextChangedListener(mChatStateListener);
+    }
 
 	/** Sends out a binary message. */
 	public void sendBinaryMessage(Uri uri, String mime, boolean media,
