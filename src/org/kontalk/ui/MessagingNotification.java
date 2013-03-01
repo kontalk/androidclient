@@ -33,6 +33,7 @@ import android.database.Cursor;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
@@ -159,26 +160,32 @@ public class MessagingNotification {
         }
         c.close();
 
-        Notification no = new Notification(R.drawable.icon_stat, accumulator.getTicker(), accumulator.getTimestamp());
+        //Notification no = new Notification(R.drawable.icon_stat, accumulator.getTicker(), accumulator.getTimestamp());
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
+        builder.setTicker(accumulator.getTicker());
+        builder.setNumber(accumulator.unreadCount);
+        builder.setSmallIcon(R.drawable.icon_stat);
+        builder.setContentTitle(accumulator.getTitle());
+        builder.setContentText(accumulator.getText());
+        builder.setContentIntent(accumulator.getPendingIntent());
+
         if (isNew) {
-            no.defaults |= Notification.DEFAULT_LIGHTS;
+            int defaults = Notification.DEFAULT_LIGHTS;
 
             String ringtone = MessagingPreferences.getNotificationRingtone(context);
             if (ringtone != null && ringtone.length() > 0)
-                no.sound = Uri.parse(ringtone);
+                builder.setSound(Uri.parse(ringtone));
 
             String vibrate = MessagingPreferences.getNotificationVibrate(context);
             if ("always".equals(vibrate) || ("silent_only".equals(vibrate) &&
                     ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
                         .getRingerMode() != AudioManager.RINGER_MODE_NORMAL))
-                no.defaults |= Notification.DEFAULT_VIBRATE;
+                defaults |= Notification.DEFAULT_VIBRATE;
 
-            no.flags |= Notification.FLAG_SHOW_LIGHTS;
+            builder.setDefaults(defaults);
         }
 
-        no.setLatestEventInfo(context.getApplicationContext(),
-                accumulator.getTitle(), accumulator.getText(), accumulator.getPendingIntent());
-        nm.notify(NOTIFICATION_ID_MESSAGES, no);
+        nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
 
         // TODO take this from configuration
         boolean quickReply = false;
