@@ -24,7 +24,6 @@ import org.kontalk.xmpp.util.ProgressInputStreamEntity;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
-import android.os.Bundle;
 
 
 /**
@@ -62,7 +61,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
     }
 
     @Override
-    public String upload(Uri uri, String mime, String key, ProgressListener listener, Bundle messageData)
+    public String upload(Uri uri, String mime, String key, ProgressListener listener)
             throws IOException {
 
         HttpResponse response = null;
@@ -94,7 +93,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             }
 
             // http request!
-            currentRequest = prepareMessage(messageData, listener, mAuthToken,
+            currentRequest = prepareMessage(listener, mAuthToken,
                 mime, toMessage, toLength, encrypted);
             response = execute(currentRequest);
             return EntityUtils.toString(response.getEntity());
@@ -187,12 +186,12 @@ public class KontalkBoxUploadConnection implements UploadConnection {
      * @return the request object
      * @throws IOException
      */
-    private HttpRequestBase prepareMessage(Bundle messageData, ProgressListener listener,
+    private HttpRequestBase prepareMessage(ProgressListener listener,
         String token, String mime, InputStream data, long length, boolean encrypted)
             throws IOException {
 
         HttpPost req = (HttpPost) prepare("/upload", null, token, mime, null, true);
-        req.setEntity(new ProgressInputStreamEntity(data, length, this, messageData, listener));
+        req.setEntity(new ProgressInputStreamEntity(data, length, this, listener));
 
         if (encrypted)
             req.addHeader(HEADER_MESSAGE_FLAGS, "encrypted");

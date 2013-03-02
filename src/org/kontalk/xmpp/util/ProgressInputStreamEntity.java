@@ -32,36 +32,31 @@ import android.os.Bundle;
 
 public class ProgressInputStreamEntity extends InputStreamEntity {
     protected final UploadConnection mConn;
-    protected final Bundle mData;
     protected final ProgressListener mListener;
 
     public ProgressInputStreamEntity(InputStream instream, long length,
-            final UploadConnection conn, final Bundle data,
-            final ProgressListener listener) {
+            final UploadConnection conn, final ProgressListener listener) {
         super(instream, length);
         mConn = conn;
-        mData = data;
         mListener = listener;
     }
 
     @Override
     public void writeTo(final OutputStream outstream) throws IOException {
-        super.writeTo(new CountingOutputStream(outstream, mConn, mData, mListener));
+        super.writeTo(new CountingOutputStream(outstream, mConn, mListener));
     }
 
     private static final class CountingOutputStream extends FilterOutputStream {
 
         private final UploadConnection conn;
-        private final Bundle data;
         private final ProgressListener listener;
         private long transferred;
 
         public CountingOutputStream(OutputStream out, UploadConnection conn,
-            Bundle data, ProgressListener listener) {
+            ProgressListener listener) {
             super(out);
             this.listener = listener;
             this.conn = conn;
-            this.data = data;
             this.transferred = 0;
         }
 
@@ -85,7 +80,7 @@ public class ProgressInputStreamEntity extends InputStreamEntity {
 
         private void publishProgress(long add) {
             this.transferred += add;
-            this.listener.progress(conn, data, this.transferred);
+            this.listener.progress(conn, this.transferred);
         }
     }
 

@@ -45,6 +45,7 @@ import org.kontalk.xmpp.client.ServerReceiptRequest;
 import org.kontalk.xmpp.client.StanzaGroupExtension;
 import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
 import org.kontalk.xmpp.client.UploadExtension;
+import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
@@ -202,7 +203,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private String mMyUsername;
 
     /** Supported upload services. */
-    private List<String> mUploadServices;
+    private Map<String, String> mUploadServices;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
     private Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
@@ -486,6 +487,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Uri mediaUri = Uri.parse(_mediaUri);
 
                 // TODO start upload intent service
+                Intent i = new Intent(service, UploadService.class);
+                i.setData(mediaUri);
+                // take the first available upload service :)
+                // TODO i.putExtra(UploadService.EXTRA_POST_URL, service.mUploadServices);
+                i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
             }
 
             else {
@@ -1157,6 +1163,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Iterator<DiscoverInfo.Feature> features = query.getFeatures();
             while (features.hasNext()) {
                 DiscoverInfo.Feature feat = features.next();
+
+                /*
+                 * TODO do not request info about push if disabled by user.
+                 * Of course if user enables push notification we should
+                 * reissue this discovery again.
+                 */
                 if (PushRegistration.NAMESPACE.equals(feat.getVar())) {
                     // push notifications are enabled on this server
                     // request items to check if gcm is supported and obtain the server id
@@ -1170,6 +1182,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     conn.sendPacket(items);
                 }
 
+                /*
+                 * TODO upload info should be requested only when needed and
+                 * cached. This discovery should of course be issued before any
+                 * media message gets requeued.
+                 * Actually, delay any message from being requeued if at least
+                 * 1 media message is present; do the discovery first.
+                 */
                 else if (UploadExtension.NAMESPACE.equals(feat.getVar())) {
                     // media upload is available on this server
                     // request items to check what services are available
@@ -1195,7 +1214,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             conn.removePacketListener(this);
 
             if (mUploadServices == null)
-                mUploadServices = new ArrayList<String>();
+                mUploadServices = new HashMap<String, String>();
             else
                 mUploadServices.clear();
 
@@ -1205,9 +1224,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             while (items.hasNext()) {
                 DiscoverItems.Item item = items.next();
                 String jid = item.getEntityID();
-                if ((mServer.getNetwork()).equals(jid))
-                    mUploadServices.add(item.getNode());
+                if ((mServer.getNetwork()).equals(jid)) {
+                    mUploadServices.put(item.getNode(), null);
+
+                    // request upload url
+                    UploadInfo iq = new UploadInfo(item.getNode());
+                    iq.setType(IQ.Type.GET);
+                    iq.setTo(mServer.getNetwork());
+
+                    conn.addPacketListener(new UploadInfoListener(), new PacketIDFilter(iq.getPacketID()));
+                    conn.sendPacket(iq);
+                }
             }
+        }
+    }
+
+    private final class UploadInfoListener implements PacketListener {
+        @Override
+        public void processPacket(Packet packet) {
+            // TODO
         }
     }
 

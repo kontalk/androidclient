@@ -34,6 +34,6 @@ public interface ProgressListener {
      * Useful for checking the upload progress.
      * @param bytes how many bytes have been uploaded so far
      */
-    public void progress(UploadConnection conn, Bundle data, long bytes);
+    public void progress(UploadConnection conn, long bytes);
 
 }
