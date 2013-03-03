@@ -35,6 +35,7 @@ import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.AckServerReceipt;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.MessageEncrypted;
+import org.kontalk.xmpp.client.OutOfBandData;
 import org.kontalk.xmpp.client.Ping;
 import org.kontalk.xmpp.client.PushRegistration;
 import org.kontalk.xmpp.client.RawPacket;
@@ -481,6 +482,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 return true;
             }
 
+            String mime = data.getString("org.kontalk.message.mime");
             String _mediaUri = data.getString("org.kontalk.message.media.uri");
             if (_mediaUri != null) {
                 // media message - start upload service
@@ -492,8 +494,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.setAction(UploadService.ACTION_UPLOAD);
                 // take the first available upload service :)
                 // TODO i.putExtra(UploadService.EXTRA_POST_URL, service.mUploadServices);
-                i.putExtra(UploadService.EXTRA_POST_URL, "http://10.0.2.2/kontalk/upload");
+                i.putExtra(UploadService.EXTRA_POST_URL, "http://10.0.2.2/kontalk/upload.php");
                 i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
+
+                i.putExtra(UploadService.EXTRA_MIME, mime);
+
+                // TODO should support JIDs too
+                String toUser = data.getString("org.kontalk.message.toUser");
+                i.putExtra(UploadService.EXTRA_USER_ID, toUser);
                 service.startService(i);
             }
 
@@ -515,6 +523,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 String body = data.getString("org.kontalk.message.body");
                 String key = data.getString("org.kontalk.message.encryptKey");
+                String fetchUrl = data.getString("org.kontalk.message.fetch.url");
 
                 ChatState chatState;
                 try {
@@ -543,6 +552,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         m.addExtension(new MessageEncrypted());
                     }
                 }
+
+                // add download url if present
+                if (fetchUrl != null)
+                    m.addExtension(new OutOfBandData(fetchUrl, mime));
 
                 m.setBody(body);
                 // standalone message: no receipt
@@ -1068,6 +1081,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.toString());
+        context.startService(i);
+    }
+
+    public static void sendUploadedMedia(final Context context, String userId, String mime, String fetchUrl, long msgId) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_MESSAGE);
+        i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.mime", mime);
+        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.toString());
         context.startService(i);
     }

@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.ui.ConversationList;
 import org.kontalk.xmpp.upload.KontalkBoxUploadConnection;
 import org.kontalk.xmpp.upload.UploadConnection;
@@ -60,6 +61,10 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_MESSAGE_ID = "org.kontalk.upload.MESSAGE_ID";
     /** URL to post to. Use with ACTION_UPLOAD. */
     public static final String EXTRA_POST_URL = "org.kontalk.upload.POST_URL";
+    /** User id to send to. */
+    public static final String EXTRA_USER_ID = "org.kontalk.upload.USER_ID";
+    /** Media MIME type. */
+    public static final String EXTRA_MIME = "org.kontalk.upload.MIME";
     // Intent data is the local file Uri
 
     // data about the upload currently being processed
@@ -108,6 +113,10 @@ public class UploadService extends IntentService implements ProgressListener {
         long msgId = intent.getLongExtra(EXTRA_MESSAGE_ID, 0);
         // url to post to
         String url = intent.getStringExtra(EXTRA_POST_URL);
+        // user to send message to
+        String userId = intent.getStringExtra(EXTRA_USER_ID);
+        // media mime type
+        String mime = intent.getStringExtra(EXTRA_MIME);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -115,11 +124,13 @@ public class UploadService extends IntentService implements ProgressListener {
         try {
             // notify user about upload immediately
             long length = MediaStorage.getLength(this, file);
+            Log.v(TAG, "file size is " + length + " bytes");
             startForeground(length);
             mCanceled = false;
 
             if (mConn == null) {
                 String token = Authenticator.getDefaultAccountToken(this);
+                // TODO used class here should be decided by the caller
                 mConn = new KontalkBoxUploadConnection(this, url, token);
             }
 
@@ -127,9 +138,17 @@ public class UploadService extends IntentService implements ProgressListener {
             queue.put(filename, mMessageId);
 
             // upload content
-            mConn.upload(file, "application/octet-stream" /* TODO */, null, this);
+            String mediaUrl = mConn.upload(file, "application/octet-stream" /* TODO */, null, this);
+            Log.d(TAG, "uploaded with media URL: " + mediaUrl);
+
+            // update message fetch_url
+            MessagesProvider.uploaded(this, msgId, mediaUrl);
+
+            // send message with fetch url to server
+            MessageCenterService.sendUploadedMedia(this, userId, mime, mediaUrl, msgId);
 
             // end operations
+            queue.remove(filename);
             completed();
         }
         catch (Exception e) {
@@ -210,6 +229,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public void progress(UploadConnection conn, long bytes) {
+        Log.v(TAG, "bytes = " + bytes);
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);

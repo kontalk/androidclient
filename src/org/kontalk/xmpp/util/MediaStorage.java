@@ -142,7 +142,7 @@ public abstract class MediaStorage {
         AssetFileDescriptor stat = null;
         try {
             stat = context.getContentResolver().openAssetFileDescriptor(media, "r");
-            return stat.getDeclaredLength();
+            return stat.getLength();
         }
         finally {
             try {

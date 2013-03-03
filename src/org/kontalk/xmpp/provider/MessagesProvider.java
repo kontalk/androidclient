@@ -1178,6 +1178,13 @@ public class MessagesProvider extends ContentProvider {
         return 0;
     }
 
+    public static void uploaded(Context context, long msgId, String fetchUrl) {
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.FETCH_URL, fetchUrl);
+        context.getContentResolver().update(Messages.CONTENT_URI, values,
+                Messages._ID + " = " + msgId, null);
+    }
+
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_THREADS, THREADS);
