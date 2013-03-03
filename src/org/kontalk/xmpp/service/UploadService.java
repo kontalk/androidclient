@@ -27,10 +27,10 @@ import java.util.Map;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
-import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.ui.ConversationList;
 import org.kontalk.xmpp.upload.KontalkBoxUploadConnection;
 import org.kontalk.xmpp.upload.UploadConnection;
+import org.kontalk.xmpp.util.MediaStorage;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -112,20 +112,21 @@ public class UploadService extends IntentService implements ProgressListener {
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
 
-        // notify user about download immediately
-        startForeground(0);
-        mCanceled = false;
-
-        if (mConn == null) {
-            String token = Authenticator.getDefaultAccountToken(this);
-            mConn = new KontalkBoxUploadConnection(this, url, token);
-        }
-
         try {
+            // notify user about upload immediately
+            long length = MediaStorage.getLength(this, file);
+            startForeground(length);
+            mCanceled = false;
+
+            if (mConn == null) {
+                String token = Authenticator.getDefaultAccountToken(this);
+                mConn = new KontalkBoxUploadConnection(this, url, token);
+            }
+
             mMessageId = msgId;
             queue.put(filename, mMessageId);
 
-            // download content
+            // upload content
             mConn.upload(file, "application/octet-stream" /* TODO */, null, this);
 
             // end operations
@@ -150,7 +151,7 @@ public class UploadService extends IntentService implements ProgressListener {
                 NOTIFICATION_ID_UPLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         mCurrentNotification = new Notification(R.drawable.icon_stat,
-                getString(R.string.downloading_attachment), System.currentTimeMillis());
+                getString(R.string.sending_message), System.currentTimeMillis());
         mCurrentNotification.contentIntent = pi;
         mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
 
@@ -160,7 +161,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
     private void foregroundNotification(int progress) {
         mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setTextViewText(R.id.title, getString(R.string.downloading_attachment));
+        mCurrentNotification.contentView.setTextViewText(R.id.title, getString(R.string.sending_message));
         mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
         mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
     }
@@ -180,15 +181,15 @@ public class UploadService extends IntentService implements ProgressListener {
     }
 
     public void error(String url, File destination, Throwable exc) {
-        Log.e(TAG, "download error", exc);
+        Log.e(TAG, "upload error", exc);
         stopForeground();
         if (!mCanceled)
-            errorNotification(getString(R.string.notify_ticker_download_error),
-                getString(R.string.notify_text_download_error));
+            errorNotification(getString(R.string.notify_ticker_upload_error),
+                getString(R.string.notify_text_upload_error));
     }
 
     private void errorNotification(String ticker, String text) {
-        // create intent for download error notification
+        // create intent for upload error notification
         Intent i = new Intent(this, ConversationList.class);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -198,7 +199,7 @@ public class UploadService extends IntentService implements ProgressListener {
                 ticker,
                 System.currentTimeMillis());
         no.setLatestEventInfo(getApplicationContext(),
-                getString(R.string.notify_title_download_error),
+                getString(R.string.notify_title_upload_error),
                 text, pi);
         no.flags |= Notification.FLAG_AUTO_CANCEL;
 

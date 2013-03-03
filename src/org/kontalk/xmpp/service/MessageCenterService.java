@@ -489,9 +489,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // TODO start upload intent service
                 Intent i = new Intent(service, UploadService.class);
                 i.setData(mediaUri);
+                i.setAction(UploadService.ACTION_UPLOAD);
                 // take the first available upload service :)
                 // TODO i.putExtra(UploadService.EXTRA_POST_URL, service.mUploadServices);
+                i.putExtra(UploadService.EXTRA_POST_URL, "http://10.0.2.2/kontalk/upload");
                 i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
+                service.startService(i);
             }
 
             else {
