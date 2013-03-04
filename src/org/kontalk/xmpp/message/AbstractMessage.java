@@ -99,7 +99,6 @@ public abstract class AbstractMessage<T> {
     protected Context mContext;
     protected long databaseId;
     protected String id;
-    protected String realId;
     protected String sender;
     protected String mime;
     protected T content;
@@ -110,8 +109,6 @@ public abstract class AbstractMessage<T> {
     protected boolean encrypted;
     /** Of course this is used only for outgoing messages. */
     protected String encryptKey;
-    /** For internal use. True if the message need to be acknowledged. */
-    protected boolean needAck;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -165,14 +162,6 @@ public abstract class AbstractMessage<T> {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getRealId() {
-        return (realId != null) ? realId : id;
-    }
-
-    public void setRealId(String realId) {
-        this.realId = realId;
     }
 
     public String getSender(boolean generic) {
@@ -318,14 +307,6 @@ public abstract class AbstractMessage<T> {
         return previewFile;
     }
 
-    public void setNeedAck(boolean needAck) {
-        this.needAck = needAck;
-    }
-
-    public boolean isNeedAck() {
-        return needAck;
-    }
-
     public boolean isEncrypted() {
         return encrypted;
     }
@@ -352,7 +333,7 @@ public abstract class AbstractMessage<T> {
         // be sure to stick to our projection array
         databaseId = c.getLong(COLUMN_ID);
         id = c.getString(COLUMN_MESSAGE_ID);
-        realId = c.getString(COLUMN_REAL_ID);
+        //realId = c.getString(COLUMN_REAL_ID);
         mime = c.getString(COLUMN_MIME);
         timestamp = c.getLong(COLUMN_TIMESTAMP);
         statusChanged = c.getLong(COLUMN_STATUS_CHANGED);
@@ -389,7 +370,6 @@ public abstract class AbstractMessage<T> {
         mContext = null;
         databaseId = 0;
         id = null;
-        realId = null;
         sender = null;
         mime = null;
         content = null;
@@ -399,7 +379,6 @@ public abstract class AbstractMessage<T> {
         status = 0;
         encrypted = false;
         encryptKey = null;
-        needAck = false;
     }
 
     /** Release this message for later use in the global pool. */

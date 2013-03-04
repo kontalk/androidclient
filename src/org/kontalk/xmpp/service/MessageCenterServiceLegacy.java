@@ -540,8 +540,10 @@ public class MessageCenterServiceLegacy extends Service
         // TODO check for null (unsupported) messages to be notified
 
         // check if the message needs to be confirmed
+        /*
         if (msg.isNeedAck())
             confirmId = msg.getRealId();
+            */
 
         /*
         if (msg instanceof UserPresenceMessage) {
@@ -619,7 +621,7 @@ public class MessageCenterServiceLegacy extends Service
             // save to local storage
             ContentValues values = new ContentValues();
             values.put(Messages.MESSAGE_ID, msg.getId());
-            values.put(Messages.REAL_ID, msg.getRealId());
+            //values.put(Messages.REAL_ID, msg.getRealId());
             values.put(Messages.PEER, msg.getSender(true));
             values.put(Messages.MIME, msg.getMime());
             values.put(Messages.CONTENT, content);

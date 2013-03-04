@@ -1,5 +1,7 @@
 package org.kontalk.xmpp.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Date;
@@ -46,12 +48,15 @@ import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
 import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
+import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.MessagingPreferences;
+import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
 
@@ -952,6 +957,93 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
+    /** Process an incoming message. */
+    private void incoming(AbstractMessage<?> msg) {
+        String sender = msg.getSender(true);
+
+        // save to local storage
+        ContentValues values = new ContentValues();
+        values.put(Messages.MESSAGE_ID, msg.getId());
+        values.put(Messages.PEER, sender);
+        values.put(Messages.MIME, msg.getMime());
+
+        // store to file if it's an image message
+        byte[] content = msg.getBinaryContent();
+
+        // message has a fetch url - store preview in cache (if any)
+        // TODO abstract somehow
+        if (msg.getFetchUrl() != null) {
+            /*
+            if (msg instanceof ImageMessage) {
+                String filename = AbstractMessage.buildMediaFilename(msg);
+                File file = null;
+                try {
+                    file = MediaStorage.writeInternalMedia(this, filename, content);
+                }
+                catch (IOException e) {
+                    Log.e(TAG, "unable to write to media storage", e);
+                }
+                // update uri
+                msg.setPreviewFile(file);
+            }
+            */
+
+            // use text content for database table
+            try {
+                content = msg.getTextContent().getBytes();
+            }
+            catch (Exception e) {
+                // TODO i18n
+                content = "(error)".getBytes();
+            }
+        }
+
+        // TODO abstract somehow
+        if (msg.getFetchUrl() == null && msg instanceof VCardMessage) {
+            String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
+            File file = null;
+            try {
+                file = MediaStorage.writeMedia(filename, content);
+            }
+            catch (IOException e) {
+                Log.e(TAG, "unable to write to media storage", e);
+            }
+            // update uri
+            if (file != null)
+                msg.setLocalUri(Uri.fromFile(file));
+
+            // use text content for database table
+            try {
+                content = msg.getTextContent().getBytes();
+            }
+            catch (Exception e) {
+                // TODO i18n
+                content = "(error)".getBytes();
+            }
+        }
+
+        values.put(Messages.CONTENT, content);
+        values.put(Messages.ENCRYPTED, msg.isEncrypted());
+        values.put(Messages.ENCRYPT_KEY, msg.wasEncrypted() ? "" : null);
+        values.put(Messages.FETCH_URL, msg.getFetchUrl());
+        values.put(Messages.UNREAD, true);
+        values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+
+        values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
+        values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+        values.put(Messages.LENGTH, msg.getLength());
+        try {
+            getContentResolver().insert(Messages.CONTENT_URI, values);
+        }
+        catch (SQLiteConstraintException econstr) {
+            // duplicated message, skip it
+        }
+
+        if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
+            // update notifications (delayed)
+            MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+    }
+
     /** Checks for network availability. */
     public static boolean isNetworkConnectionAvailable(Context context) {
         final ConnectivityManager cm = (ConnectivityManager) context
@@ -1571,8 +1663,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         }
                     }
 
-                    long now = System.currentTimeMillis();
-
                     // delayed deliver extension
                     PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
                     if (_delay == null)
@@ -1592,7 +1682,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (stamp != null)
                         serverTimestamp = stamp.getTime();
                     else
-                        serverTimestamp = now;
+                        serverTimestamp = System.currentTimeMillis();
 
                     // out of band data
                     String fetchUrl = null;
@@ -1601,33 +1691,45 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         OutOfBandData media = (OutOfBandData) _media;
                         mime = media.getMime();
                         fetchUrl = media.getUrl();
+                        length = -1;
                     }
 
-                    // save to local storage
-                    ContentValues values = new ContentValues();
-                    values.put(Messages.MESSAGE_ID, msgId);
-                    values.put(Messages.PEER, sender);
-                    values.put(Messages.MIME, TextUtils.isEmpty(mime) ? PlainTextMessage.MIME_TYPE : mime);
-                    values.put(Messages.CONTENT, content);
-                    values.put(Messages.ENCRYPTED, isEncrypted);
-                    values.put(Messages.ENCRYPT_KEY, wasEncrypted ? "" : null);
-                    values.put(Messages.FETCH_URL, fetchUrl);
-                    values.put(Messages.UNREAD, true);
-                    values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
+                    AbstractMessage<?> msg = null;
 
-                    values.put(Messages.SERVER_TIMESTAMP, serverTimestamp);
-                    values.put(Messages.TIMESTAMP, now);
-                    values.put(Messages.LENGTH, length);
-                    try {
-                        getContentResolver().insert(Messages.CONTENT_URI, values);
-                    }
-                    catch (SQLiteConstraintException econstr) {
-                        // duplicated message, skip it
+                    // plain text message
+                    if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
+                        // TODO convert to global pool
+                        msg = new PlainTextMessage(MessageCenterService.this, msgId, serverTimestamp, sender, content, isEncrypted);
                     }
 
-                    if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
-                        // update notifications (delayed)
-                        MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+                    // image message
+                    else if (ImageMessage.supportsMimeType(mime)) {
+                        // extra argument: mime (first parameter)
+                        msg = new ImageMessage(MessageCenterService.this, mime, msgId, serverTimestamp, sender, content, isEncrypted);
+                    }
+
+                    // vcard message
+                    else if (VCardMessage.supportsMimeType(mime)) {
+                        msg = new VCardMessage(MessageCenterService.this, msgId, serverTimestamp, sender, content, isEncrypted);
+                    }
+
+                    // TODO else other mime types
+
+                    if (msg != null) {
+                        // set length
+                        msg.setLength(length);
+
+                        // remember encryption! :)
+                        if (wasEncrypted)
+                            msg.setWasEncrypted(true);
+
+                        // set the fetch url (if any)
+                        if (fetchUrl != null)
+                            msg.setFetchUrl(fetchUrl);
+
+                        incoming(msg);
+                    }
+
                 }
             }
 
