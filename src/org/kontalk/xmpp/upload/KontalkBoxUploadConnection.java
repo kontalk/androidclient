@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -96,6 +98,9 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             currentRequest = prepareMessage(listener, mAuthToken,
                 mime, toMessage, toLength, encrypted);
             response = execute(currentRequest);
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
+                throw new HttpException(response.getStatusLine().getReasonPhrase());
+
             return EntityUtils.toString(response.getEntity());
         }
         catch (Exception e) {

@@ -46,6 +46,7 @@ import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
 import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
@@ -494,7 +495,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // TODO i.putExtra(UploadService.EXTRA_POST_URL, service.mUploadServices);
                 i.putExtra(UploadService.EXTRA_POST_URL, "http://10.0.2.2/kontalk/upload.php");
                 i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
-
                 i.putExtra(UploadService.EXTRA_MIME, mime);
 
                 // TODO should support JIDs too
@@ -644,6 +644,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
         pm.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
+        pm.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
     }
 
     @Override
@@ -1445,8 +1446,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(EXTRA_TO, m.getTo());
                 mLocalBroadcastManager.sendBroadcast(i);
 
-                // composing notifications with body are not legal, return
-                if (chatstate != null && chatstate.getElementName().equals(ChatState.composing.toString()))
+                // non-active notifications are not to be processed as messages
+                if (chatstate != null && !chatstate.getElementName().equals(ChatState.active.toString()))
                     return;
 
                 PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
@@ -1489,8 +1490,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             }
 
                             // send ack
-                            String ackId = ext.getId();
-                            AckServerReceipt receipt = new AckServerReceipt(ackId);
+                            AckServerReceipt receipt = new AckServerReceipt(id);
                             org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
                                 org.jivesoftware.smack.packet.Message.Type.chat);
                             ack.addExtension(receipt);
@@ -1541,14 +1541,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (msgId == null)
                         msgId = "incoming" + RandomString.generate(6);
 
+                    String mime = null;
                     String sender = StringUtils.parseName(from);
-                    byte[] content = m.getBody().getBytes();
+                    String body = m.getBody();
+                    byte[] content = body != null ? body.getBytes() : new byte[0];
                     long length = content.length;
 
                     // message decryption
                     boolean wasEncrypted = (m.getExtension(MessageEncrypted.ELEMENT_NAME, MessageEncrypted.NAMESPACE) != null);
                     boolean isEncrypted = wasEncrypted;
-                    if (isEncrypted) {
+                    if (isEncrypted && content != null) {
                         // decrypt message
                         Coder coder = MessagingPreferences.getDecryptCoder(MessageCenterService.this, mMyUsername);
                         try {
@@ -1592,14 +1594,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     else
                         serverTimestamp = now;
 
+                    // out of band data
+                    String fetchUrl = null;
+                    PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+                    if (_media != null && _media instanceof OutOfBandData) {
+                        OutOfBandData media = (OutOfBandData) _media;
+                        mime = media.getMime();
+                        fetchUrl = media.getUrl();
+                    }
+
                     // save to local storage
                     ContentValues values = new ContentValues();
                     values.put(Messages.MESSAGE_ID, msgId);
                     values.put(Messages.PEER, sender);
-                    values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
+                    values.put(Messages.MIME, TextUtils.isEmpty(mime) ? PlainTextMessage.MIME_TYPE : mime);
                     values.put(Messages.CONTENT, content);
                     values.put(Messages.ENCRYPTED, isEncrypted);
                     values.put(Messages.ENCRYPT_KEY, wasEncrypted ? "" : null);
+                    values.put(Messages.FETCH_URL, fetchUrl);
                     values.put(Messages.UNREAD, true);
                     values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
 

@@ -1,6 +1,8 @@
 package org.kontalk.xmpp.client;
 
 import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.provider.PacketExtensionProvider;
+import org.xmlpull.v1.XmlPullParser;
 
 
 /**
@@ -34,6 +36,14 @@ public class OutOfBandData implements PacketExtension {
         return NAMESPACE;
     }
 
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public String getMime() {
+        return mMime;
+    }
+
     @Override
     public String toXML() {
         /*
@@ -52,6 +62,44 @@ public class OutOfBandData implements PacketExtension {
             .append(mUrl)
             .append(String.format("</url></%s>", ELEMENT_NAME));
         return xml.toString();
+    }
+
+    public static final class Provider implements PacketExtensionProvider {
+
+        @Override
+        public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
+            String url = null, mime = null;
+            boolean in_url = false, done = false;
+
+            while (!done)
+            {
+                int eventType = parser.next();
+
+                if (eventType == XmlPullParser.START_TAG)
+                {
+                    if ("url".equals(parser.getName())) {
+                        in_url = true;
+                        mime = parser.getAttributeValue(null, "type");
+                    }
+
+                }
+                else if (eventType == XmlPullParser.END_TAG)
+                {
+                    if ("url".equals(parser.getName())) {
+                        done = true;
+                    }
+                }
+                else if (eventType == XmlPullParser.TEXT && in_url) {
+                    url = parser.getText();
+                }
+            }
+
+            if (url != null)
+                return new OutOfBandData(url, mime);
+            else
+                return null;
+        }
+
     }
 
 }

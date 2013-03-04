@@ -858,7 +858,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		    }
 
 		    // message has a fetch url - add download control entry
-		    if (msg.getFetchUrl() != null) {
+		    if (msg.getDirection() == Messages.DIRECTION_IN && msg.getFetchUrl() != null) {
 		        int id, string;
                 if (!DownloadService.isQueued(msg.getFetchUrl())) {
                     // already fetched

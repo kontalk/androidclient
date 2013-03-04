@@ -148,14 +148,13 @@ public class UploadService extends IntentService implements ProgressListener {
             MessageCenterService.sendUploadedMedia(this, userId, mime, mediaUrl, msgId);
 
             // end operations
-            queue.remove(filename);
             completed();
         }
         catch (Exception e) {
             error(url, null, e);
         }
         finally {
-            queue.remove(url);
+            queue.remove(filename);
             mMessageId = 0;
         }
     }
