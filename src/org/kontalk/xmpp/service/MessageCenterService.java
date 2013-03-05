@@ -645,6 +645,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void configure(ProviderManager pm) {
         pm.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
+        pm.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
         pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtensionProvider());
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
@@ -1360,7 +1361,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class UploadInfoListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
-            // TODO
+            Log.v(TAG, "upload info: " + packet);
+            UploadInfo info = (UploadInfo) packet;
+            String node = info.getNode();
+            Log.v(TAG, "upload info received, node = " + node + ", uri = " + info.getUri());
+            mUploadServices.put(node, info.getUri());
         }
     }
 
