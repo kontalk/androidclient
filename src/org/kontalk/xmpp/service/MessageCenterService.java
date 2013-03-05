@@ -680,7 +680,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void handleIntent(Intent intent) {
-        boolean canSendMessage = false;
         boolean firstPrio = false;
         boolean offlineMode = isOfflineMode(this);
 
@@ -693,7 +692,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String action = intent.getAction();
 
             // proceed to start only if network is available
-            canSendMessage = isNetworkConnectionAvailable(this) && !offlineMode;
+            boolean canSendMessage = isNetworkConnectionAvailable(this) && !offlineMode;
+            boolean isConnected = mConnector != null && mConnector.isConnected();
 
             if (ACTION_PACKET.equals(action)) {
                 Object data;
@@ -731,7 +731,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_CONNECTED.equals(action)) {
-                if (mConnector != null && mConnector.isConnected())
+                if (isConnected)
                     broadcast(ACTION_CONNECTED);
             }
 
@@ -746,22 +746,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_MESSAGE.equals(action)) {
-                if (canSendMessage)
+                if (canSendMessage && isConnected)
                     msg = mServiceHandler.obtainMessage(MSG_MESSAGE, intent.getExtras());
             }
 
             else if (ACTION_ROSTER.equals(action)) {
-                if (canSendMessage)
+                if (canSendMessage && isConnected)
                     msg = mServiceHandler.obtainMessage(MSG_ROSTER, intent.getExtras());
             }
 
             else if (ACTION_PRESENCE.equals(action)) {
-                if (canSendMessage)
+                if (canSendMessage && isConnected)
                     msg = mServiceHandler.obtainMessage(MSG_PRESENCE, intent.getExtras());
             }
 
             else if (ACTION_LAST_ACTIVITY.equals(action)) {
-                if (canSendMessage)
+                if (canSendMessage && isConnected)
                     msg = mServiceHandler.obtainMessage(MSG_LAST_ACTIVITY, intent.getExtras());
             }
 
