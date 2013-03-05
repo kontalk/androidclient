@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
@@ -875,7 +876,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // send presence
         sendPresence();
         // resend failed and pending messages
-        resendPendingMessages();
+        resendPendingMessages(false);
         // receipts will be sent while consuming incoming messages
 
         broadcast(ACTION_CONNECTED);
@@ -912,7 +913,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mConnector.getConnection().sendPacket(p);
     }
 
-    private void resendPendingMessages() {
+    private void resendPendingMessages(boolean retrying) {
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,
@@ -920,6 +921,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.CONTENT,
                 Messages.MIME,
                 Messages.LOCAL_URI,
+                Messages.FETCH_URL,
                 Messages.ENCRYPT_KEY
             },
             Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
@@ -934,16 +936,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             byte[] text = c.getBlob(2);
             String mime = c.getString(3);
             String fileUri = c.getString(4);
-            String key = c.getString(5);
+            String fetchUrl = c.getString(5);
+            String key = c.getString(6);
+
+            // media message encountered and no upload service available - delay message
+            if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
+                Log.w(TAG, "no upload info received yet, delaying outgoing messages");
+                break;
+            }
 
             Bundle b = new Bundle();
+
             b.putLong("org.kontalk.message.msgId", id);
             b.putString("org.kontalk.message.mime", mime);
             b.putString("org.kontalk.message.toUser", userId);
             b.putString("org.kontalk.message.encryptKey", key);
 
+            // message has already been uploaded - just send media
+            if (fetchUrl != null) {
+                b.putString("org.kontalk.message.fetch.url", fetchUrl);
+            }
             // check if the message contains some large file to be sent
-            if (fileUri != null) {
+            else if (fileUri != null) {
                 b.putString("org.kontalk.message.media.uri", fileUri);
             }
             // we have a simple boring plain text message :(
@@ -1043,6 +1057,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+    }
+
+    /** Returns the first available upload service. */
+    private String getUploadService() {
+        if (mUploadServices != null && mUploadServices.size() > 0) {
+            Set<String> keys = mUploadServices.keySet();
+            for (String key : keys) {
+                if (mUploadServices.get(key) != null)
+                    return key;
+            }
+        }
+
+        return null;
     }
 
     /** Checks for network availability. */
@@ -1361,11 +1388,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class UploadInfoListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
-            Log.v(TAG, "upload info: " + packet);
+            Connection conn = mConnector.getConnection();
+
+            // we don't need this listener anymore
+            conn.removePacketListener(this);
+
             UploadInfo info = (UploadInfo) packet;
             String node = info.getNode();
-            Log.v(TAG, "upload info received, node = " + node + ", uri = " + info.getUri());
             mUploadServices.put(node, info.getUri());
+            Log.v(TAG, "upload info received, node = " + node + ", uri = " + info.getUri());
+
+            // resend pending messages
+            resendPendingMessages(true);
         }
     }
 
