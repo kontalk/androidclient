@@ -77,6 +77,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private EditText mPhone;
     private Button mValidateButton;
     private Button mManualButton;
+    private Button mInsertCode;
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
     private NumberValidator mValidator;
@@ -126,6 +127,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
         mManualButton = (Button) findViewById(R.id.button_manual);
+        mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {
@@ -231,6 +233,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
         mManualButton.setEnabled(enabled);
+        mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
     }
