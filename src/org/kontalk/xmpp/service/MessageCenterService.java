@@ -54,6 +54,7 @@ import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
+import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.MessagingPreferences;
@@ -1053,6 +1054,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         catch (SQLiteConstraintException econstr) {
             // duplicated message, skip it
         }
+
+        // mark sender as registered in the users database
+        final String userId = msg.getSender(true);
+        final Context context = getApplicationContext();
+        new Thread(new Runnable() {
+            public void run() {
+                UsersProvider.markRegistered(context, userId);
+            }
+        }).start();
 
         if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
             // update notifications (delayed)

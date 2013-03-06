@@ -32,6 +32,7 @@ import org.kontalk.xmpp.util.MessageUtils;
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
@@ -463,7 +464,12 @@ public class UsersProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        throw new SQLException("manual insert into users table not supported.");
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
+        long id = db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, values);
+        if (id >= 0)
+            return ContentUris.withAppendedId(Users.CONTENT_URI, id);
+        return null;
     }
 
     @Override

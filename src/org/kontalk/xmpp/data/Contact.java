@@ -27,6 +27,7 @@ import org.kontalk.xmpp.provider.MyUsers.Users;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -36,6 +37,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
 
@@ -100,13 +102,42 @@ public class Contact {
             return size() > MAX_ENTRIES;
         }
 
-        public synchronized Contact get(Context context, String userId) {
+        public synchronized Contact get(Context context, String userId, String numberHint) {
             Contact c = get(userId);
             if (c == null) {
                 c = _findByUserId(context, userId);
                 if (c != null) {
                     // put the contact in the cache
                     put(userId, c);
+                }
+                // try system contacts lookup
+                else if (numberHint != null) {
+                    Log.v(TAG, "contact not found, trying with system contacts (" + numberHint + ")");
+                    ContentResolver resolver = context.getContentResolver();
+                    Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(numberHint));
+                    Cursor cur = resolver.query(uri, new String[] {
+                                PhoneLookup.DISPLAY_NAME,
+                                PhoneLookup.LOOKUP_KEY,
+                                PhoneLookup._ID,
+                            }, null, null, null);
+                    if (cur.moveToFirst()) {
+                        String name = cur.getString(0);
+                        String lookupKey = cur.getString(1);
+                        long cid = cur.getLong(2);
+
+                        c = new Contact(cid, lookupKey, name, numberHint, userId);
+                        put(userId, c);
+
+                        // insert result into users database immediately
+                        ContentValues values = new ContentValues(5);
+                        values.put(Users.HASH, userId);
+                        values.put(Users.NUMBER, numberHint);
+                        values.put(Users.DISPLAY_NAME, name);
+                        values.put(Users.LOOKUP_KEY, lookupKey);
+                        values.put(Users.CONTACT_ID, cid);
+                        resolver.insert(Users.CONTENT_URI, values);
+                    }
+                    cur.close();
                 }
             }
 
@@ -222,7 +253,11 @@ public class Contact {
     }
 
     public static Contact findByUserId(Context context, String userId) {
-        return cache.get(context, userId);
+        return findByUserId(context, userId, null);
+    }
+
+    public static Contact findByUserId(Context context, String userId, String numberHint) {
+        return cache.get(context, userId, numberHint);
     }
 
     private static Contact _findByUserId(Context context, String userId) {

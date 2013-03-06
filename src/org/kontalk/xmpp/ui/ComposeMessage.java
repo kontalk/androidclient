@@ -184,6 +184,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
                     args = new Bundle();
                     args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
                     args.putParcelable("data", Threads.getUri(userId));
+                    args.putString("number", number);
                 }
                 catch (Exception e) {
                     Log.e(TAG, "invalid intent", e);

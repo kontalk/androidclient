@@ -1196,7 +1196,15 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 				if (mConversation == null) {
 					mConversation = Conversation.createNew(getActivity());
+                    mConversation.setNumberHint(args.getString("number"));
 					mConversation.setRecipient(userId);
+				}
+				// this way avoid doing the users database query twice
+				else {
+				    if (mConversation.getContact() == null) {
+    				    mConversation.setNumberHint(args.getString("number"));
+    				    mConversation.setRecipient(userId);
+				    }
 				}
 
 				threadId = mConversation.getThreadId();

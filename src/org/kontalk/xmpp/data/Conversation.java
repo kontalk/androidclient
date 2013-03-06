@@ -67,6 +67,7 @@ public class Conversation {
     private int mUnreadCount;
     private int mStatus;
     private String mDraft;
+    private String mNumberHint;
 
     private Conversation(Context context) {
         mContext = context;
@@ -123,7 +124,7 @@ public class Conversation {
     }
 
     private void loadContact() {
-        mContact = Contact.findByUserId(mContext, mRecipient);
+        mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
     }
 
     public Contact getContact() {
@@ -176,6 +177,18 @@ public class Conversation {
         return mDraft;
     }
 
+    public String getNumberHint() {
+        return mNumberHint;
+    }
+
+    /**
+     * Sets a phone number hint that will be used if there is no match in the
+     * users database.
+     */
+    public void setNumberHint(String numberHint) {
+        mNumberHint = numberHint;
+    }
+
     public static void startQuery(AsyncQueryHandler handler, int token) {
         // cancel previous operations
         handler.cancelOperation(token);
@@ -214,4 +227,5 @@ public class Conversation {
             }).start();
         }
     }
+
 }
