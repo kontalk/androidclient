@@ -20,8 +20,6 @@ package org.kontalk.xmpp.data;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.kontalk.xmpp.provider.MyUsers.Users;
 
@@ -39,6 +37,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.RawContacts;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 
 
@@ -89,17 +88,11 @@ public class Contact {
      * Contact cache.
      * @author Daniele Ricci
      */
-    private final static class ContactCache extends LinkedHashMap<String, Contact> {
-        private static final long serialVersionUID = 2788447346920511692L;
+    private final static class ContactCache extends LruCache<String, Contact> {
         private static final int MAX_ENTRIES = 20;
 
         public ContactCache() {
-            super(MAX_ENTRIES+1, .75F, true);
-        }
-
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Contact> eldest) {
-            return size() > MAX_ENTRIES;
+            super(MAX_ENTRIES);
         }
 
         public synchronized Contact get(Context context, String userId, String numberHint) {
@@ -208,7 +201,7 @@ public class Contact {
     }
 
     public static void invalidate() {
-        cache.clear();
+        cache.evictAll();
     }
 
     /** Builds a contact from a UsersProvider cursor. */
