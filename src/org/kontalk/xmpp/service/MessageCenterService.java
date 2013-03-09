@@ -372,7 +372,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
         if (mConnection != null) {
             mConnection.removeConnectionListener(this);
-            mConnection.disconnect();
+            // this is because of NetworkOnMainThreadException
+            new DisconnectThread(mConnection).start();
+            mConnection = null;
+        }
+    }
+
+    private static final class DisconnectThread extends Thread {
+        private final Connection mConn;
+        public DisconnectThread(Connection conn) {
+            mConn = conn;
+        }
+
+        @Override
+        public void run() {
+            try {
+                mConn.disconnect();
+            }
+            catch (Exception e) {
+                // ignored
+            }
         }
     }
 
