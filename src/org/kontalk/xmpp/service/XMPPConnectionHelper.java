@@ -34,7 +34,7 @@ import android.util.Log;
  * XMPP connection helper.
  * @author Daniele Ricci
  */
-public class XMPPConnectionHelper {
+public class XMPPConnectionHelper extends Thread {
     private static final String TAG = XMPPConnectionHelper.class.getSimpleName();
 
     /** Max connection retry count if idle. */
@@ -44,8 +44,6 @@ public class XMPPConnectionHelper {
     private EndpointServer mServer;
     private boolean mServerDirty;
     private String mAuthToken;
-
-    private volatile boolean mInterrupted;
 
     /** Connection retry count for exponential backoff. */
     private int mRetryCount;
@@ -68,9 +66,6 @@ public class XMPPConnectionHelper {
     /** Connecting flag. */
     protected volatile boolean mConnecting;
 
-    /** Running flag (that is, inside connect() method). */
-    protected volatile boolean mRunning;
-
     /**
      * Creates a new instance.
      * @param context
@@ -80,6 +75,7 @@ public class XMPPConnectionHelper {
      * only (e.g. registration).
      */
     public XMPPConnectionHelper(Context context, EndpointServer server, boolean limited) {
+        super("XMPPConnector");
         mContext = context;
         mServer = server;
         mLimited = limited;
@@ -91,6 +87,16 @@ public class XMPPConnectionHelper {
 
     public void setRetryEnabled(boolean enabled) {
         mRetryEnabled = enabled;
+    }
+
+    @Override
+    public synchronized void start() {
+        mConnecting = true;
+        super.start();
+    }
+
+    public void run() {
+        connect();
     }
 
     public void connectOnce() throws XMPPException {
@@ -111,9 +117,7 @@ public class XMPPConnectionHelper {
         }
 
         // connect
-        mConnecting = true;
         mConn.connect();
-        mConnecting = false;
 
         if (mListener != null) {
             mConn.addConnectionListener(mListener);
@@ -128,22 +132,17 @@ public class XMPPConnectionHelper {
             mListener.authenticated();
     }
 
-    public void reconnect() {
-        mInterrupted = false;
-        mRetryCount = 0;
-        connect();
-    }
-
     public void connect() {
         mAuthToken = Authenticator.getDefaultAccountToken(mContext);
         if (mAuthToken == null && !mLimited) {
             Log.w(TAG, "invalid token - exiting");
-            MessageCenterService.stop(mContext);
+            // unrecoverable error
+            if (mListener != null)
+                mListener.aborted(null);
             return;
         }
 
-        mRunning = true;
-        while (!mInterrupted) {
+        while (mConnecting) {
             try {
                 connectOnce();
 
@@ -156,7 +155,7 @@ public class XMPPConnectionHelper {
 
             catch (Exception ie) {
                 // uncontrolled interrupt - handle errors
-                if (!mInterrupted) {
+                if (mConnecting) {
                     Log.e(TAG, "connection error", ie);
                     // forcibly close connection, no matter what
                     try {
@@ -173,7 +172,8 @@ public class XMPPConnectionHelper {
                             // max reconnections - idle message center
                             if (mRetryCount >= MAX_IDLE_BACKOFF) {
                                 Log.d(TAG, "maximum number of reconnections - stopping message center");
-                                MessageCenterService.stop(mContext);
+                                if (mListener != null)
+                                    mListener.aborted(ie);
                                 // no need to continue
                                 break;
                             }
@@ -191,6 +191,7 @@ public class XMPPConnectionHelper {
                         }
                         catch (InterruptedException intexc) {
                             // interrupted - exit
+                            Log.e(TAG, "- interrupted.");
                             break;
                         }
                     }
@@ -205,7 +206,7 @@ public class XMPPConnectionHelper {
 
             mRetryCount = 0;
         }
-        mRunning = false;
+        mConnecting = false;
     }
 
     public Connection getConnection() {
@@ -219,20 +220,12 @@ public class XMPPConnectionHelper {
         return mHttpConn;
     }
 
-    public void interrupt() {
-        mInterrupted = true;
-    }
-
-    public boolean isInterrupted() {
-        return mInterrupted;
-    }
-
     public boolean isConnected() {
         return (mConn != null && mConn.isAuthenticated());
     }
 
-    public boolean isConnecting(boolean alsoRunning) {
-        return mConnecting && (alsoRunning ? mRunning : true);
+    public boolean isConnecting() {
+        return mConnecting;
     }
 
     /** Shortcut for {@link EndpointServer#getNetwork()}. */
@@ -248,6 +241,7 @@ public class XMPPConnectionHelper {
 
     /** Shuts down this client thread gracefully. */
     public void shutdown() {
+        mConnecting = false;
         interrupt();
 
         if (mConn != null)
@@ -259,5 +253,7 @@ public class XMPPConnectionHelper {
         public void created();
         public void connected();
         public void authenticated();
+
+        public void aborted(Exception e);
     }
 }
