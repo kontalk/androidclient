@@ -367,7 +367,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         if (mHelper != null) {
             mHelper.setListener(null);
-            mHelper.shutdown();
+            // this is because of NetworkOnMainThreadException
+            new AbortThread(mHelper).start();
             mHelper = null;
         }
         if (mConnection != null) {
@@ -375,6 +376,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // this is because of NetworkOnMainThreadException
             new DisconnectThread(mConnection).start();
             mConnection = null;
+        }
+    }
+
+    private static final class AbortThread extends Thread {
+        private final XMPPConnectionHelper mHelper;
+        public AbortThread(XMPPConnectionHelper helper) {
+            mHelper = helper;
+        }
+
+        @Override
+        public void run() {
+            try {
+                mHelper.shutdown();
+            }
+            catch (Exception e) {
+                // ignored
+            }
         }
     }
 
@@ -545,11 +563,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
-            // no command means normal service start, connect if not connected
-            if (canConnect) {
-                if (doConnect)
-                    createConnection();
+            else {
+                // no command means normal service start, connect if not connected
+                doConnect = true;
             }
+
+            if (canConnect && doConnect)
+                createConnection();
         }
         else {
             Log.v(TAG, "restarting after service crash");
@@ -561,7 +581,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * WARNING this method blocks! Be sure to call it from a separate thread.
      */
     private synchronized void createConnection() {
-        if (mConnection == null || !mConnection.isAuthenticated()) {
+        if (mConnection == null || (!mConnection.isAuthenticated() && mHelper == null)) {
             // reset push notification variable
             mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
             // reset waiting messages
