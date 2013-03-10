@@ -109,7 +109,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
     public static final String ACTION_RELEASE = "org.kontalk.action.RELEASE";
-    public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
     public static final String ACTION_RESTART = "org.kontalk.action.RESTART";
     public static final String ACTION_MESSAGE = "org.kontalk.action.MESSAGE";
     public static final String ACTION_PUSH_START = "org.kontalk.push.START";
@@ -207,17 +206,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private WeakReference<MessageCenterService> s;
         /** Reference counter. */
         private int mRefCount;
-        /** Idle flag. */
-        private volatile Boolean mIdle = false;
-        /** Packet idle flag. */
-        private volatile boolean mLastPacketIdle;
 
         public IdleConnectionHandler(MessageCenterService service, Looper looper) {
             super(looper);
             s = new WeakReference<MessageCenterService>(service);
 
-            // set idle handler
+            // set idle handler for the first idle message
             Looper.myQueue().addIdleHandler(this);
+        }
+
+        /**
+         * Queue idle callback. This gets called just one time to issue the
+         * first idle message.
+         */
+        @Override
+        public boolean queueIdle() {
+            reset();
+            return false;
         }
 
         @Override
@@ -234,29 +239,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private boolean handleMessage(MessageCenterService service, Message msg) {
             if (msg.what == MSG_IDLE) {
                 // we registered push notification - shutdown message center
-                //if (service.mPushRegistrationId != null) {
+                if (service.mPushRegistrationId != null) {
                     Log.d(TAG, "shutting down message center due to inactivity");
-                    MessageCenterService.idle(service);
-                //}
+                    service.stopSelf();
+                }
                 return true;
             }
 
             return false;
         }
 
-        @Override
-        public boolean queueIdle() {
-            MessageCenterService service = s.get();
-            if (service != null) {
-                // remove the idle message anyway
-                if (!mLastPacketIdle)
-                    removeMessages(MSG_IDLE);
+        /** Resets the idle timer. */
+        public void reset() {
+            removeMessages(MSG_IDLE);
 
-                if (mRefCount <= 0 && getLooper().getThread().isAlive())
-                    sendMessageDelayed(obtainMessage(MSG_IDLE), IDLE_MSG_TIME);
-            }
-
-            return true;
+            if (mRefCount <= 0 && getLooper().getThread().isAlive())
+                sendMessageDelayed(obtainMessage(MSG_IDLE), IDLE_MSG_TIME);
         }
 
         public void hold() {
@@ -282,27 +280,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
 
-        /** Schedules the handler to exit as soon as possible. */
-        public void idle() {
-            mIdle = true;
-            post(new Runnable() {
-                public void run() {
-                    Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
-                        @Override
-                        public boolean queueIdle() {
-                            Log.v(TAG, "idle has triggered, stopping message center");
-                            synchronized (mIdle) {
-                                Context ctx = s.get();
-                                if (ctx != null && mIdle)
-                                    MessageCenterService.stop(ctx);
-                            }
-                            return false;
-                        }
-                    });
-                }
-            });
-        }
-
         public void quit() {
             Looper.myQueue().removeIdleHandler(IdleConnectionHandler.this);
             getLooper().quit();
@@ -324,7 +301,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendPacket(Packet packet) {
-        mIdleHandler.mLastPacketIdle = false;
+        sendPacket(packet, true);
+    }
+
+    /**
+     * Sends a packet to the connection if found.
+     * @param bumpIdle true if the idle handler must be notified of this event
+     */
+    private void sendPacket(Packet packet, boolean bumpIdle) {
+        // reset idler if requested
+        if (bumpIdle) mIdleHandler.reset();
+
         if (mConnection != null && mConnection.isConnected())
             mConnection.sendPacket(packet);
     }
@@ -452,10 +439,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_RELEASE.equals(action)) {
                 mIdleHandler.release();
-            }
-
-            else if (ACTION_IDLE.equals(action)) {
-                mIdleHandler.idle();
             }
 
             else if (ACTION_PUSH_START.equals(action)) {
@@ -1047,13 +1030,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    /** Tells the message center we are idle, taking necessary actions. */
-    public static void idle(final Context context) {
-        Intent i = new Intent(context, MessageCenterService.class);
-        i.setAction(ACTION_IDLE);
-        context.startService(i);
-    }
-
     public static void updateStatus(final Context context) {
         updateStatus(context, GCMRegistrar.getRegistrationId(context));
     }
@@ -1192,9 +1168,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class PingListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
-            sendPacket(IQ.createResultIQ((IQ) packet));
-            if (packet instanceof Ping)
-                mIdleHandler.mLastPacketIdle = true;
+            sendPacket(IQ.createResultIQ((IQ) packet), false);
         }
     }
 

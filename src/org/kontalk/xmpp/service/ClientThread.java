@@ -126,7 +126,7 @@ public class ClientThread extends Thread {
                         // max reconnections - idle message center
                         if (mRetryCount >= MAX_IDLE_BACKOFF) {
                             Log.d(TAG, "maximum number of reconnections - idling message center");
-                            MessageCenterService.idle(mContext);
+                            //MessageCenterService.idle(mContext);
                         }
 
                         mRetryCount++;
