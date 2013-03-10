@@ -86,9 +86,6 @@ public class ClientThread extends Thread {
     /** Connection is re-created on demand if necessary. */
     private ClientConnection mClient;
 
-    /** HTTP connection to server. */
-    protected ClientHTTPConnection mHttpConn;
-
     /** Parent thread to be notified. */
     private final ParentThread mParent;
 
@@ -401,9 +398,7 @@ public class ClientThread extends Thread {
     }
 
     public ClientHTTPConnection getHttpConnection() {
-        if (mHttpConn == null)
-            mHttpConn = new ClientHTTPConnection(this, mContext, mServer, mAuthToken);
-        return mHttpConn;
+        return new ClientHTTPConnection(this, mContext, mServer, mAuthToken);
     }
 
     @Override
