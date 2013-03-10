@@ -27,7 +27,6 @@ import java.util.List;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
-import org.kontalk.xmpp.service.ClientThread;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
@@ -321,7 +320,6 @@ public abstract class AbstractMessage<T> {
         encryptKey = "";
     }
 
-    /** Reserved for the {@link ClientThread}. */
     public void setWasEncrypted(boolean encrypted) {
         this.encryptKey = encrypted ? "" : null;
     }

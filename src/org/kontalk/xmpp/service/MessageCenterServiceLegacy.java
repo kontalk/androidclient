@@ -23,10 +23,7 @@ import static org.kontalk.xmpp.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_E
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CancellationException;
 
 import org.jivesoftware.smack.Connection;
@@ -41,18 +38,14 @@ import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.ClientListener;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.MessageSender;
-import org.kontalk.xmpp.client.ServerinfoJob;
-import org.kontalk.xmpp.client.UserPresenceRequestJob;
 import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MessagesProvider;
-import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
-import org.kontalk.xmpp.sync.SyncAdapter;
+import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.ui.ComposeMessage;
-import org.kontalk.xmpp.ui.ComposeMessageFragment;
 import org.kontalk.xmpp.ui.ConversationList;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.MessagingPreferences;
@@ -119,8 +112,6 @@ public class MessageCenterServiceLegacy extends Service
 
     private RequestWorker mRequestWorker;
     private Account mAccount;
-
-    private Map<String, Byte> mPresenceListeners = new HashMap<String, Byte>();
 
     /** Push notifications enabled flag. */
     private boolean mPushNotifications;
@@ -302,22 +293,6 @@ public class MessageCenterServiceLegacy extends Service
         return false;
     }
 
-    private void requestServerinfo() {
-        pushRequest(new ServerinfoJob());
-    }
-
-    /**
-     * Requests subscription to presence notification, looking into the map of
-     * listeners.
-     */
-    private void restorePresenceSubscriptions() {
-        Set<String> keys = mPresenceListeners.keySet();
-        for (String userId : keys) {
-            Byte _eventMask = mPresenceListeners.get(userId);
-            pushRequest(new UserPresenceRequestJob(userId, _eventMask.intValue()));
-        }
-    }
-
     /**
      * Searches for messages with error or pending status and pushes them
      * through the request queue to re-send them.
@@ -439,12 +414,8 @@ public class MessageCenterServiceLegacy extends Service
     /** Called when authentication is successful. */
     @Override
     public void authenticated(ClientThread client) {
-        // request serverinfo
-        requestServerinfo();
         // update presence
         sendPresence();
-        // subscribe to presence notifications
-        restorePresenceSubscriptions();
         // lookup for messages with error status and try to re-send them
         requeuePendingMessages();
         // receipts will be sent while consuming
@@ -736,16 +707,6 @@ public class MessageCenterServiceLegacy extends Service
         pushRequest(job);
     }
 
-    public void subscribePresence(String userId, int events) {
-        mPresenceListeners.put(userId, Byte.valueOf((byte) events));
-        pushRequest(new UserPresenceRequestJob(userId, events));
-    }
-
-    public void unsubscribePresence(String userId) {
-        mPresenceListeners.remove(userId);
-        pushRequest(new UserPresenceRequestJob(userId, 0));
-    }
-
     public void startForeground(String userId, long totalBytes) {
         mTotalBytes = totalBytes;
 
@@ -788,20 +749,6 @@ public class MessageCenterServiceLegacy extends Service
         stopForeground(true);
         mCurrentNotification = null;
         mTotalBytes = 0;
-    }
-
-    /** Used by the {@link SyncAdapter}. */
-    public UserLookupJob lookupUsers(List<String> hashList) {
-        UserLookupJob job = new UserLookupJob(hashList);
-        pushRequest(job);
-        return job;
-    }
-
-    /** Used by the {@link ComposeMessageFragment}. */
-    public UserLookupJob lookupUser(String userId) {
-        UserLookupJob job = new UserLookupJob(userId);
-        pushRequest(job);
-        return job;
     }
 
     private void broadcastMessage(AbstractMessage<?> message) {
