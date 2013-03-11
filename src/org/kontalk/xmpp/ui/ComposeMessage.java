@@ -135,7 +135,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
         Intent intent = null;
         if (savedInstanceState != null) {
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
-            intent = new Intent(ACTION_VIEW_CONVERSATION, uri);
+            intent = new Intent(ACTION_VIEW_USERID, uri);
         }
         else {
             intent = getIntent();
@@ -345,9 +345,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
     @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        out.putParcelable(Uri.class.getName(),
-                ContentUris.withAppendedId(Conversations.CONTENT_URI,
-                        mFragment.getThreadId()));
+        out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
     }
 
     public Intent getSendIntent() {
