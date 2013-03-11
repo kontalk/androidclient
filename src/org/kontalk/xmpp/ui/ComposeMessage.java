@@ -18,6 +18,7 @@
 
 package org.kontalk.xmpp.ui;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.kontalk.xmpp.R;
@@ -159,7 +160,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
             }
 
             // send external content
-            else if (Intent.ACTION_SEND.equals(action)) {
+            else if (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                 sendIntent = intent;
                 String mime = intent.getType();
 
@@ -282,6 +283,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
 
     private void processSendIntent() {
         String mime = sendIntent.getType();
+        boolean multi = Intent.ACTION_SEND_MULTIPLE.equals(sendIntent.getAction());
 
         if (mime.startsWith("*/") || mime.endsWith("/*")) {
             Uri uri = (Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -297,12 +299,24 @@ public class ComposeMessage extends SherlockFragmentActivity {
 
         else if (ImageMessage.supportsMimeType(mime)) {
             // send image immediately
-            mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, true, ImageMessage.class);
+            if (multi) {
+                ArrayList<Uri> contents = sendIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                for (Uri uri : contents)
+                    mFragment.sendBinaryMessage(uri, mime, true, ImageMessage.class);
+            }
+            else
+                mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, true, ImageMessage.class);
         }
 
         else if (VCardMessage.supportsMimeType(mime)) {
-        	// send vcard immediately
-        	mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, false, VCardMessage.class);
+            // send vcard immediately
+            if (multi) {
+                ArrayList<Uri> contents = sendIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                for (Uri uri : contents)
+                    mFragment.sendBinaryMessage(uri, mime, true, VCardMessage.class);
+            }
+            else
+                mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, false, VCardMessage.class);
         }
 
         else {
