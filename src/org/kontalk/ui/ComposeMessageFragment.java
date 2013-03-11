@@ -1192,8 +1192,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	@Override
 	public void onSaveInstanceState(Bundle out) {
 		super.onSaveInstanceState(out);
-		out.putParcelable(Uri.class.getName(),
-				ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+		out.putParcelable(Uri.class.getName(), Threads.getUri(userId));
 		if (mCurrentPhoto != null)
 		    out.putString(MediaStore.ACTION_IMAGE_CAPTURE, mCurrentPhoto.toString());
 	}
@@ -1205,7 +1204,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			String currentPhoto = savedInstanceState.getString(MediaStore.ACTION_IMAGE_CAPTURE);
 			// threadId = ContentUris.parseId(uri);
 			args = new Bundle();
-			args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
+			args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
 			args.putParcelable("data", uri);
 			args.putString(MediaStore.ACTION_IMAGE_CAPTURE, currentPhoto);
 		}
@@ -1872,6 +1871,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public long getThreadId() {
 		return threadId;
 	}
+
+	public String getUserId() {
+        return userId;
+    }
 
 	public void setTextEntry(CharSequence text) {
 		mTextEntry.setText(text);
