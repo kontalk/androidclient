@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
@@ -72,8 +75,10 @@ public class RequestWorker extends HandlerThread implements ParentThread {
     private RequestListenerList mListeners = new RequestListenerList();
     private RequestListenerList mAsyncListeners = new RequestListenerList();
 
+    /** Executor service for multiple asynchronous jobs. */
+    private ExecutorService mAsyncService = Executors.newSingleThreadExecutor();
     /** List of asynchronous started jobs. */
-    private List<PauseHandler.AsyncRequestJob> mAsyncJobs = new ArrayList<PauseHandler.AsyncRequestJob>();
+    private List<Future<?>> mAsyncJobs = new ArrayList<Future<?>>();
     /** A list of messages currently being sent. Used for concurrency */
     private List<Long> mSendingMessages = new ArrayList<Long>();
 
@@ -298,10 +303,10 @@ public class RequestWorker extends HandlerThread implements ParentThread {
                             // we should keep the worker alive
                             hold();
                             AsyncRequestJob tjob = new AsyncRequestJob(w, job, w.mClient, w.mListeners, w.mContext);
-                            // keep a reference to the thread
-                            job.setThread(tjob);
-                            w.mAsyncJobs.add(tjob);
-                            tjob.start();
+                            Future<?> future = w.mAsyncService.submit(tjob);
+                            // keep a reference to the future
+                            job.setFuture(future);
+                            w.mAsyncJobs.add(future);
                         }
 
                         else {
@@ -388,7 +393,7 @@ public class RequestWorker extends HandlerThread implements ParentThread {
         }
 
         /** Executes a {@link RequestJob} asynchronously. */
-        private static final class AsyncRequestJob extends Thread {
+        private static final class AsyncRequestJob implements Runnable {
             private final RequestJob mJob;
             private final ClientThread mClient;
             private final RequestListener mListener;
@@ -396,7 +401,6 @@ public class RequestWorker extends HandlerThread implements ParentThread {
             private final WeakReference<RequestWorker> mWorker;
 
             public AsyncRequestJob(RequestWorker worker, RequestJob job, ClientThread client, RequestListener listener, Context context) {
-                super();
                 mJob = job;
                 mClient = client;
                 mListener = listener;
@@ -521,9 +525,11 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
         // stop async jobs
         synchronized (mAsyncJobs) {
-            for (PauseHandler.AsyncRequestJob tjob : mAsyncJobs) {
+            // shutdown jobs
+            mAsyncService.shutdownNow();
+            for (Future<?> tjob : mAsyncJobs) {
                 Log.v(TAG, "terminating async job " + tjob.toString());
-                tjob.interrupt();
+                tjob.cancel(true);
             }
             mAsyncJobs.clear();
         }

@@ -19,6 +19,7 @@
 package org.kontalk.service;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 import android.content.Context;
 import android.util.Log;
@@ -34,7 +35,7 @@ public abstract class RequestJob {
     protected RequestListener mListener;
     protected boolean mCancel;
     /** Used only if job is asynchronous. */
-    protected Thread mThread;
+    protected Future<?> mFuture;
     protected boolean mDone;
     /** Execution attempt counter. */
     protected int mCount;
@@ -47,16 +48,16 @@ public abstract class RequestJob {
         return mListener;
     }
 
-    public Thread getThread() {
-        return mThread;
+    public Future<?> getFuture() {
+        return mFuture;
     }
 
     /**
-     * Keeps a reference to the thread executing this job.
+     * Keeps a reference to the future executing this job.
      * Only for asynchronous jobs.
      */
-    public void setThread(Thread thread) {
-        mThread = thread;
+    public void setFuture(Future<?> future) {
+        mFuture = future;
     }
 
     /**
