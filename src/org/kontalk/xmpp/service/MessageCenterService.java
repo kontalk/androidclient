@@ -1049,7 +1049,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.toUser", userId);
-        i.putExtra("org.kontalk.message.chatState", state.toString());
+        i.putExtra("org.kontalk.message.chatState", state.name());
         i.putExtra("org.kontalk.message.standalone", true);
         context.startService(i);
     }
@@ -1063,7 +1063,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encryptKey", encryptKey);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.toString());
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
 
@@ -1075,7 +1075,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.toString());
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
 
@@ -1086,7 +1086,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
-        i.putExtra("org.kontalk.message.chatState", ChatState.active.toString());
+        i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
 
@@ -1336,6 +1336,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Intent i = new Intent(ACTION_ROSTER);
             i.putExtra(EXTRA_FROM, p.getFrom());
             i.putExtra(EXTRA_TO, p.getTo());
+            // here we are not using() because Type is a class, not an enum
             i.putExtra(EXTRA_TYPE, p.getType().toString());
             i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
@@ -1364,7 +1365,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Presence p = (Presence) packet;
                 Intent i = new Intent(ACTION_PRESENCE);
                 Presence.Type type = p.getType();
-                i.putExtra(EXTRA_TYPE, type != null ? type.toString() : Presence.Type.available.toString());
+                i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
                 i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
                 String from = p.getFrom();
@@ -1381,7 +1382,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(EXTRA_TO, p.getTo());
                 i.putExtra(EXTRA_STATUS, p.getStatus());
                 Presence.Mode mode = p.getMode();
-                i.putExtra(EXTRA_SHOW, mode != null ? mode.toString() : Presence.Mode.available.toString());
+                i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
                 i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
                 // getExtension doesn't work here
@@ -1445,7 +1446,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mLocalBroadcastManager.sendBroadcast(i);
 
                 // non-active notifications are not to be processed as messages
-                if (chatstate != null && !chatstate.getElementName().equals(ChatState.active.toString()))
+                if (chatstate != null && !chatstate.getElementName().equals(ChatState.active.name()))
                     return;
 
                 PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
