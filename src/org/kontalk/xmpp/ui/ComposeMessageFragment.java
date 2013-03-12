@@ -1403,7 +1403,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
                         // we handle only (un)available presence stanzas
                         String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                        if (Presence.Type.available.name().equals(type) && Presence.Type.unavailable.name().equals(type)) {
+                        if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
 
                             CharSequence statusText = null;
 
