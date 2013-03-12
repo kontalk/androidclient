@@ -1400,136 +1400,140 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                     String action = intent.getAction();
 
                     if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
-                        CharSequence statusText = null;
 
-                        String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
+                        // we handle only (un)available presence stanzas
+                        String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                        if (Presence.Type.available.name().equals(type) && Presence.Type.unavailable.name().equals(type)) {
 
-                        // we are receiving a presence from our peer, upgrade available resources
-                        if (from != null && from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
-                            // our presence!!!
+                            CharSequence statusText = null;
 
-                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                            if (Presence.Type.available.toString().equals(type)) {
-                                mAvailableResources.add(from);
-                                mCurrentStatus = getString(R.string.seen_online_label);
-                                if (!mIsTyping)
-                                    setStatusText(mCurrentStatus);
+                            String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
+                            String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
 
-                                // abort presence probe if non-group stanza
-                                if (groupId == null) mPresenceId = null;
-                            }
-                            else if (Presence.Type.unavailable.toString().equals(type)) {
-                                mAvailableResources.remove(from);
-                                /*
-                                 * All available resources have gone. If we are
-                                 * not waiting for presence probe response, mark
-                                 * the user as offline immediately and use the
-                                 * timestamp provided with the stanza.
-                                 */
-                                /*
-                                 * FIXME this part has a serious bug.
-                                 * Client might receive a certain set of
-                                 * presence stanzas (e.g. while syncer is
-                                 * running) which will empty mAvailableResources,
-                                 * thus taking the latest stanza (this one) as
-                                 * reference for last presence indication.
-                                 * In fact, the most important presence is
-                                 * always the most available or the most recent
-                                 * one.
-                                 * Anyway, this method is not reliable either
-                                 * because of presence information not being
-                                 * accounted for from the beginning. Therefore,
-                                 * we don't know when a presence informs us
-                                 * about a user being unavailable in that moment
-                                 * or because a probe has been requested.
-                                 */
-                                if (mAvailableResources.size() == 0 && mPresenceId == null) {
-                                    // an offline user can't be typing
-                                    mIsTyping = false;
+                            // we are receiving a presence from our peer, upgrade available resources
+                            if (from != null && from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
+                                // our presence!!!
 
-                                    // user offline
-                                    long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                    if (stamp >= 0) {
-                                        statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, stamp));
-                                    }
-                                    else {
-                                        statusText = buildLastSeenText(getString(R.string.seen_moment_ago_label));
+                                if (Presence.Type.available.toString().equals(type)) {
+                                    mAvailableResources.add(from);
+                                    mCurrentStatus = getString(R.string.seen_online_label);
+                                    if (!mIsTyping)
+                                        setStatusText(mCurrentStatus);
+
+                                    // abort presence probe if non-group stanza
+                                    if (groupId == null) mPresenceId = null;
+                                }
+                                else if (Presence.Type.unavailable.toString().equals(type)) {
+                                    mAvailableResources.remove(from);
+                                    /*
+                                     * All available resources have gone. If we are
+                                     * not waiting for presence probe response, mark
+                                     * the user as offline immediately and use the
+                                     * timestamp provided with the stanza.
+                                     */
+                                    /*
+                                     * FIXME this part has a serious bug.
+                                     * Client might receive a certain set of
+                                     * presence stanzas (e.g. while syncer is
+                                     * running) which will empty mAvailableResources,
+                                     * thus taking the latest stanza (this one) as
+                                     * reference for last presence indication.
+                                     * In fact, the most important presence is
+                                     * always the most available or the most recent
+                                     * one.
+                                     * Anyway, this method is not reliable either
+                                     * because of presence information not being
+                                     * accounted for from the beginning. Therefore,
+                                     * we don't know when a presence informs us
+                                     * about a user being unavailable in that moment
+                                     * or because a probe has been requested.
+                                     */
+                                    if (mAvailableResources.size() == 0 && mPresenceId == null) {
+                                        // an offline user can't be typing
+                                        mIsTyping = false;
+
+                                        // user offline
+                                        long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                                        if (stamp >= 0) {
+                                            statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, stamp));
+                                        }
+                                        else {
+                                            statusText = buildLastSeenText(getString(R.string.seen_moment_ago_label));
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        // we have a presence group
-                        if (mPresenceId != null && mPresenceId.equals(groupId)) {
-                            if (mMostAvailable == null)
-                                mMostAvailable = new PresenceData();
+                            // we have a presence group
+                            if (mPresenceId != null && mPresenceId.equals(groupId)) {
+                                if (mMostAvailable == null)
+                                    mMostAvailable = new PresenceData();
 
-                            boolean take = false;
+                                boolean take = false;
 
-                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                            boolean available = (type == null || Presence.Type.available.toString().equals(type));
-                            long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                            int priority = intent.getIntExtra(MessageCenterService.EXTRA_PRIORITY, 0);
+                                boolean available = (type == null || Presence.Type.available.toString().equals(type));
+                                long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                                int priority = intent.getIntExtra(MessageCenterService.EXTRA_PRIORITY, 0);
 
-                            if (available) {
-                                // take if higher priority
-                                if (priority >= mMostAvailable.priority)
-                                    take = true;
-                            }
-                            else {
-                                // take if most recent
-                                long old = mMostAvailable.stamp != null ? mMostAvailable.stamp.getTime() : -1;
-                                if (stamp >= old)
-                                    take = true;
-                            }
-
-                            if (take) {
-                                // available stanza - null stamp
                                 if (available) {
-                                    mMostAvailable.stamp = null;
+                                    // take if higher priority
+                                    if (priority >= mMostAvailable.priority)
+                                        take = true;
                                 }
-                                // unavailable stanza - update stamp
                                 else {
-                                    if (mMostAvailable.stamp == null)
-                                        mMostAvailable.stamp = new Date(stamp);
-                                    else
-                                        mMostAvailable.stamp.setTime(stamp);
+                                    // take if most recent
+                                    long old = mMostAvailable.stamp != null ? mMostAvailable.stamp.getTime() : -1;
+                                    if (stamp >= old)
+                                        take = true;
                                 }
 
-                                mMostAvailable.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                                mMostAvailable.priority = priority;
-                            }
+                                if (take) {
+                                    // available stanza - null stamp
+                                    if (available) {
+                                        mMostAvailable.stamp = null;
+                                    }
+                                    // unavailable stanza - update stamp
+                                    else {
+                                        if (mMostAvailable.stamp == null)
+                                            mMostAvailable.stamp = new Date(stamp);
+                                        else
+                                            mMostAvailable.stamp.setTime(stamp);
+                                    }
 
-                            int count = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
-                            if (count <= 1 || mPresenceId == null) {
-                                // we got all presence stanzas
-                                Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
-                                    ", status=" + mMostAvailable.status + ")");
+                                    mMostAvailable.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                                    mMostAvailable.priority = priority;
+                                }
 
-                                // stop receiving presence probes
-                                mPresenceId = null;
+                                int count = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
+                                if (count <= 1 || mPresenceId == null) {
+                                    // we got all presence stanzas
+                                    Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
+                                        ", status=" + mMostAvailable.status + ")");
 
-                                /*
-                                 * TODO if we receive a presence unavailable stanza
-                                 * we shall consider it only if there is no other
-                                 * available resource. So we shall keep a reference
-                                 * to all available resources and sync them
-                                 * whenever a presence stanza is received.
-                                 */
-                                if (mAvailableResources.size() == 0) {
-                                    if (mMostAvailable.stamp != null) {
-                                        statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context,
-                                            mMostAvailable.stamp.getTime()));
+                                    // stop receiving presence probes
+                                    mPresenceId = null;
+
+                                    /*
+                                     * TODO if we receive a presence unavailable stanza
+                                     * we shall consider it only if there is no other
+                                     * available resource. So we shall keep a reference
+                                     * to all available resources and sync them
+                                     * whenever a presence stanza is received.
+                                     */
+                                    if (mAvailableResources.size() == 0) {
+                                        if (mMostAvailable.stamp != null) {
+                                            statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context,
+                                                mMostAvailable.stamp.getTime()));
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        if (statusText != null) {
-                            mCurrentStatus = statusText;
-                            if (!mIsTyping)
-                                setStatusText(statusText);
+                            if (statusText != null) {
+                                mCurrentStatus = statusText;
+                                if (!mIsTyping)
+                                    setStatusText(statusText);
+                            }
                         }
                     }
 
