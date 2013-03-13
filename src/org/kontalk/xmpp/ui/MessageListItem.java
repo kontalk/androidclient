@@ -116,10 +116,9 @@ public class MessageListItem extends RelativeLayout {
 
         if (isInEditMode()) {
             mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
+            mTextView.setText("TEST");
             //mTextView.setText(":-)");
             /* INCOMING
-            if (mStatusIcon != null)
-            	mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             if (mDateView == null) {
                 if (mBalloonView != null)
                     mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
@@ -139,6 +138,11 @@ public class MessageListItem extends RelativeLayout {
             }
             */
 	        /* OUTGOING */
+            if (mStatusIcon != null) {
+                mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
+                mStatusIcon.setVisibility(VISIBLE);
+            }
+            mLockView.setVisibility(VISIBLE);
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             setGravity(Gravity.RIGHT);
@@ -146,7 +150,7 @@ public class MessageListItem extends RelativeLayout {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
             if (mDateView != null) {
                 mDateView.setVisibility(VISIBLE);
-                mDateView.setText("28 Nov");
+                mDateView.setText("00:00");
             }
             if (mAvatarIncoming != null) {
                 mAvatarIncoming.setVisibility(GONE);
