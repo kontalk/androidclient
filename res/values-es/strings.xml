@@ -74,6 +74,7 @@
     <string name="sent_label">Enviado:\u0020</string>
     <string name="received_label">Recibido:\u0020</string>
     <string name="error_label">Error:\u0020</string>
+    <string name="sending_label">Envio en curso:\u0020</string>
     <string name="refused_label">No aceptado:\u0020</string>
     <string name="notdelivered_label">No entregado:\u0020</string>
     <string name="delivered_label">Entregado:\u0020</string>
