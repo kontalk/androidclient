@@ -382,8 +382,11 @@ public final class MessageUtils {
                     resId = R.string.error_label;
                     timestamp = msg.getStatusChanged();
                     break;
-                case Messages.STATUS_SENT:
                 case Messages.STATUS_SENDING:
+                    resId = R.string.sending_label;
+                    timestamp = msg.getTimestamp();
+                    break;
+                case Messages.STATUS_SENT:
                 case Messages.STATUS_RECEIVED:
                 case Messages.STATUS_NOTDELIVERED:
                     resId = R.string.sent_label;

@@ -74,6 +74,7 @@
     <string name="sent_label">Enviado:\u0020</string>
     <string name="received_label">Recibido:\u0020</string>
     <string name="error_label">Error:\u0020</string>
+    <string name="sending_label">Envio en curso:\u0020</string>
     <string name="refused_label">No aceptado:\u0020</string>
     <string name="notdelivered_label">No entregado:\u0020</string>
     <string name="delivered_label">Entregado:\u0020</string>
@@ -192,7 +193,7 @@
     <string name="serverlist_updating">Actualizando lista servidores&#8230;</string>
     <string name="serverlist_update_error">No se puede descargar la lista de servidores. Por favor, inténtelo más tarde.</string>
     <string name="serverlist_update_nodata">No hay ninguna lista de servidores disponible.</string>
-    
+
     <string name="pref_remove_prefix">Prefijo de composición</string>
     <string name="pref_title_remove_prefix">Borrar un prefijo en Kontalk para las correspondencia entre números de teléfono</string>
 

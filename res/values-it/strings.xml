@@ -74,6 +74,7 @@
     <string name="sent_label">Inviato:\u0020</string>
     <string name="received_label">Ricevuto:\u0020</string>
     <string name="error_label">Errore:\u0020</string>
+    <string name="sending_label">Invio in corso:\u0020</string>
     <string name="refused_label">Non accettato:\u0020</string>
     <string name="notdelivered_label">Non consegnato:\u0020</string>
     <string name="delivered_label">Consegnato:\u0020</string>
@@ -218,7 +219,7 @@
     <string name="status_activity_title">Messaggio di stato</string>
     <string name="hint_status_entry">Inserisci il tuo messaggio di stato</string>
     <string name="header_recent_status">Messaggi di status recenti</string>
-    
+
     <string name="title_offline_mode_warning">Modalità offline</string>
     <string name="message_offline_mode_warning">Durante la modalità offline Kontalk non si connetterà al server fino a quando non tornerai online. Non potrai inviare o ricevere messaggi e gli utenti ti vedranno offline.</string>
 

@@ -74,6 +74,7 @@
     <string name="sent_label">Sent:\u0020</string>
     <string name="received_label">Received:\u0020</string>
     <string name="error_label">Error:\u0020</string>
+    <string name="sending_label">Sending:\u0020</string>
     <string name="refused_label">Not accepted:\u0020</string>
     <string name="notdelivered_label">Not delivered:\u0020</string>
     <string name="delivered_label">Delivered:\u0020</string>
@@ -192,7 +193,7 @@
     <string name="serverlist_updating">Updating server list&#8230;</string>
     <string name="serverlist_update_error">Unable to download server list. Please retry later.</string>
     <string name="serverlist_update_nodata">No available server list found.</string>
-    
+
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
 
@@ -218,7 +219,7 @@
     <string name="status_activity_title">Status message</string>
     <string name="hint_status_entry">Type your status message here</string>
     <string name="header_recent_status">Recently used status messages</string>
-    
+
     <string name="title_offline_mode_warning">Offline mode</string>
     <string name="message_offline_mode_warning">In offline mode Kontalk will not connect to the server until you go back to online mode. You will not be able to send or receive messages and users will see you as offline.</string>
 
