@@ -1331,7 +1331,12 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		if (mConversation.getThreadId() > 0 && mConversation.getUnreadCount() > 0) {
 			// mark all messages as read
-			mConversation.markAsRead();
+			// this is now done in ComposeMessage activity if found
+		    ComposeMessage parent = getParentActivity();
+		    if (parent != null)
+		        parent.markAsRead(mConversation);
+		    else
+		        mConversation.markAsRead();
 		}
 		else {
 			// new conversation -- observe peer Uri

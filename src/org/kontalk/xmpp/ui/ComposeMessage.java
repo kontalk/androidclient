@@ -352,5 +352,64 @@ public class ComposeMessage extends SherlockFragmentActivity {
         return sendIntent;
     }
 
+    /* Pause/resume/focus workaround for markAsRead() */
+
+    private boolean mPaused, mLostFocus, mDirty;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPaused = false;
+
+        // didn't lost focus, will mark thread as read
+        if (!mLostFocus)
+            mDirty = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mPaused = true;
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        // we're paused, check if we lost focus
+        if (mPaused) {
+            mLostFocus = !hasFocus;
+        }
+
+        // we're not paused, check if we previously lost focus
+        else {
+            if (hasFocus) {
+                if (mLostFocus) {
+                    if (mFragment != null) {
+                        Conversation conv = mFragment.getConversation();
+                        if (conv != null) {
+                            mDirty = false;
+                            if (conv.getThreadId() > 0 && conv.getUnreadCount() > 0)
+                                conv.markAsRead();
+                        }
+                    }
+                }
+            }
+            mLostFocus = false;
+        }
+    }
+
+    /**
+     * Called from {@link ComposeMessageFragment} when deciding if we should
+     * markAsRead().
+     */
+    public void markAsRead(Conversation conv) {
+        if (mDirty) {
+            mDirty = false;
+            if (conv != null && conv.getThreadId() > 0 && conv.getUnreadCount() > 0)
+                conv.markAsRead();
+        }
+    }
+
 }
 
