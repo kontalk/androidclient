@@ -401,52 +401,70 @@ public class UsersProvider extends ContentProvider {
                 // query for SIM contacts
                 // column selection doesn't work because of a bug in Android
                 // TODO this is a bit unclear...
-                phones = cr.query(Uri.parse("content://icc/adn/"),
-                    null, null, null, null);
+                try {
+                    phones = cr.query(Uri.parse("content://icc/adn/"),
+                        null, null, null, null);
+                }
+                catch (Exception e) {
+                    /*
+                    On some phones:
+                    java.lang.NullPointerException
+                        at android.os.Parcel.readException(Parcel.java:1431)
+                        at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:185)
+                        at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:137)
+                        at android.content.ContentProviderProxy.query(ContentProviderNative.java:366)
+                        at android.content.ContentResolver.query(ContentResolver.java:372)
+                        at android.content.ContentResolver.query(ContentResolver.java:315)
+                     */
+                    Log.w(TAG, "unable to retrieve SIM contacts", e);
+                    phones = null;
+                }
 
-                while (phones.moveToNext()) {
-                    String name = phones.getString(phones.getColumnIndex("name"));
-                    String number = phones.getString(phones.getColumnIndex("number"));
-                    // buggy firmware - skip entry
-                    if (name == null || number == null)
-                        continue;
+                if (phones != null) {
+                    while (phones.moveToNext()) {
+                        String name = phones.getString(phones.getColumnIndex("name"));
+                        String number = phones.getString(phones.getColumnIndex("number"));
+                        // buggy firmware - skip entry
+                        if (name == null || number == null)
+                            continue;
 
-                    // remove dial prefix first
-                    if (dialPrefix != null && number.startsWith(dialPrefix))
-                        number = number.substring(dialPrefixLen);
+                        // remove dial prefix first
+                        if (dialPrefix != null && number.startsWith(dialPrefix))
+                            number = number.substring(dialPrefixLen);
 
-                    // a phone number with less than 4 digits???
-                    if (number.length() < 4)
-                        continue;
+                        // a phone number with less than 4 digits???
+                        if (number.length() < 4)
+                            continue;
 
-                    // fix number
-                    try {
-                        number = NumberValidator.fixNumber(context, number,
-                                Authenticator.getDefaultAccountName(context), null);
-                    }
-                    catch (Exception e) {
-                        Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
-                        // skip number
-                        continue;
-                    }
+                        // fix number
+                        try {
+                            number = NumberValidator.fixNumber(context, number,
+                                    Authenticator.getDefaultAccountName(context), null);
+                        }
+                        catch (Exception e) {
+                            Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+                            // skip number
+                            continue;
+                        }
 
-                    try {
-                        String hash = MessageUtils.sha1(number);
+                        try {
+                            String hash = MessageUtils.sha1(number);
 
-                        stm.clearBindings();
-                        stm.bindString(1, hash);
-                        stm.bindString(2, number);
-                        stm.bindString(3, name);
-                        stm.bindNull(4);
-                        stm.bindLong(5, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
-                        stm.executeInsert();
-                        count++;
-                    }
-                    catch (NoSuchAlgorithmException e) {
-                        Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
-                    }
-                    catch (SQLiteConstraintException sqe) {
-                        // skip duplicate number
+                            stm.clearBindings();
+                            stm.bindString(1, hash);
+                            stm.bindString(2, number);
+                            stm.bindString(3, name);
+                            stm.bindNull(4);
+                            stm.bindLong(5, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
+                            stm.executeInsert();
+                            count++;
+                        }
+                        catch (NoSuchAlgorithmException e) {
+                            Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
+                        }
+                        catch (SQLiteConstraintException sqe) {
+                            // skip duplicate number
+                        }
                     }
                 }
 
