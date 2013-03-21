@@ -354,6 +354,10 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     private void startProgress(CharSequence message) {
+        // TODO just to be safe, registration will be refactored in 3.0
+        if (isFinishing())
+            return;
+
         if (mProgress == null) {
             mProgress = new NonSearchableProgressDialog(this);
             mProgress.setIndeterminate(true);
