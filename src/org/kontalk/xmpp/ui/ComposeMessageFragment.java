@@ -1330,13 +1330,12 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         mTextEntry.addTextChangedListener(mChatStateListener);
 
 		if (mConversation.getThreadId() > 0 && mConversation.getUnreadCount() > 0) {
-			// mark all messages as read
-			// this is now done in ComposeMessage activity if found
-		    ComposeMessage parent = getParentActivity();
-		    if (parent != null)
-		        parent.markAsRead(mConversation);
-		    else
-		        mConversation.markAsRead();
+		    /*
+		     * FIXME this has the usual issue about resuming while screen is
+		     * still locked, having focus and so on...
+		     * See issue #28.
+		     */
+	        mConversation.markAsRead();
 		}
 		else {
 			// new conversation -- observe peer Uri
