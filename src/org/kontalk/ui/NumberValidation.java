@@ -509,12 +509,17 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onValidationFailed(NumberValidator v, RegistrationStatus reason) {
+    public void onValidationFailed(NumberValidator v, final RegistrationStatus reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(NumberValidation.this, R.string.err_validation_failed, Toast.LENGTH_LONG).show();
+                int msg;
+                if (reason != null && reason.ordinal() == RegistrationStatus.STATUS_THROTTLING.ordinal())
+                    msg = R.string.err_validation_retry_later;
+                else
+                    msg = R.string.err_validation_failed;
+                Toast.makeText(NumberValidation.this, msg, Toast.LENGTH_LONG).show();
                 abort();
             }
         });

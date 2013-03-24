@@ -153,6 +153,7 @@ message RegistrationResponse {
         // registration requires more steps to complete
         STATUS_CONTINUE = 2;
         STATUS_INVALID_USERNAME = 3;
+        STATUS_THROTTLING = 4;
     }
     required RegistrationStatus status = 1;
     // used only in single-step authentication
