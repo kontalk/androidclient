@@ -144,6 +144,19 @@ public final class Emoji {
         emojiTheme.put(0x1F440, R.drawable.emoji_eyes);
         emojiTheme.put(0x1F443, R.drawable.emoji_nose);
 
+        // GROUP 2: Flower (http://punchdrunker.github.com/iOSEmoji/table_html/flower.html)
+        emojiTheme.put(0x2600, R.drawable.emoji_sunny);
+        emojiTheme.put(0x2614, R.drawable.emoji_umbrella);
+        emojiTheme.put(0x2601, R.drawable.emoji_cloud);
+        emojiTheme.put(0x26C4, R.drawable.emoji_snowman);
+        emojiTheme.put(0x1F319, R.drawable.emoji_moon);
+        emojiTheme.put(0x26A1, R.drawable.emoji_zap);
+        emojiTheme.put(0x1F300, R.drawable.emoji_cyclone);
+        emojiTheme.put(0x1F30A, R.drawable.emoji_ocean);
+        emojiTheme.put(0x1F431, R.drawable.emoji_cat);
+        emojiTheme.put(0x1F436, R.drawable.emoji_dog);
+        emojiTheme.put(0x1F42D, R.drawable.emoji_mouse);
+
         //emojiTheme.put(0x, R.drawable.emoji_);
 
         // UNSORTED
@@ -371,7 +384,22 @@ public final class Emoji {
             0x1F442,
             0x1F440,
             0x1F443,
-        }
+        /*
+        },
+        {
+        */
+            0x2600,
+            0x2614,
+            0x2601,
+            0x26C4,
+            0x1F319,
+            0x26A1,
+            0x1F300,
+            0x1F30A,
+            0x1F431,
+            0x1F436,
+            0x1F42D,
+        },
     };
 
     public static boolean isSoftBankEmoji(char c) {
