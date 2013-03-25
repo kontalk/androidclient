@@ -291,10 +291,6 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBoolean(context, "pref_encrypt", true);
     }
 
-    public static String getDefaultPassphrase(Context context) {
-        return getString(context, "pref_passphrase", null);
-    }
-
     /** Returns a {@link Coder} instance for encrypting contents. */
     public static Coder getEncryptCoder(String passphrase) {
         return new Coder(new PassKey(passphrase));
@@ -302,10 +298,7 @@ public final class MessagingPreferences extends PreferenceActivity {
 
     /** Returns a {@link Coder} instance for decrypting contents. */
     public static Coder getDecryptCoder(Context context, String myNumber) {
-        String key = getDefaultPassphrase(context);
-        if (key == null || key.length() == 0)
-            key = myNumber;
-        return new Coder(new PassKey(key));
+        return new Coder(new PassKey(myNumber));
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {

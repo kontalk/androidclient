@@ -176,10 +176,8 @@ public class QuickReplyActivity extends Activity {
                 // get encryption key if needed
                 String key = null;
                 if (MessagingPreferences.getEncryptionEnabled(ctx)) {
-                    key = MessagingPreferences.getDefaultPassphrase(ctx);
-                    // no global passphrase defined -- use recipient phone number
-                    if (key == null || key.length() == 0)
-                        key = Contact.numberByUserId(ctx, userId);
+                    // use recipient phone number
+                    key = Contact.numberByUserId(ctx, userId);
                 }
 
                 byte[] bytes = mText.getBytes();
