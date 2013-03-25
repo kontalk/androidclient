@@ -177,6 +177,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static String mPushSenderId;
     /** GCM registration id. */
     private String mPushRegistrationId;
+    /** Flag marking a currently ongoing GCM registration cycle (unregister/register) */
+    private boolean mPushRegistrationCycle;
 
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
@@ -450,7 +452,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_PUSH_REGISTERED.equals(action)) {
-                setPushRegistrationId(intent.getStringExtra(GCM_REGISTRATION_ID));
+                String regId = intent.getStringExtra(GCM_REGISTRATION_ID);
+                // registration cycle under way
+                if (regId == null && mPushRegistrationCycle) {
+                    mPushRegistrationCycle = false;
+                    gcmRegister();
+                }
+                else
+                    setPushRegistrationId(regId);
             }
 
             else if (ACTION_CONNECTED.equals(action)) {
@@ -1286,8 +1295,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // google push notifications
                 if (("gcm.push." + mServer.getNetwork()).equals(jid)) {
                     mPushSenderId = item.getNode();
-                    if (mPushNotifications)
-                        gcmRegister();
+
+                    if (mPushNotifications) {
+                        String oldSender = MessagingPreferences.getPushSenderId(MessageCenterService.this);
+
+                        // store the new sender id
+                        MessagingPreferences.setPushSenderId(MessageCenterService.this, mPushSenderId);
+
+                        // begin a registration cycle if senderId is different
+                        if (oldSender != null && !oldSender.equals(mPushSenderId)) {
+                            GCMRegistrar.unregister(MessageCenterService.this);
+                            // unregister will see this as an attempt to register again
+                            mPushRegistrationCycle = true;
+                        }
+                        else {
+                            // begin registration immediately
+                            gcmRegister();
+                        }
+                    }
                 }
             }
         }
