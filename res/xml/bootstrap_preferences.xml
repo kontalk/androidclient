@@ -19,7 +19,7 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:key="pref_key_network_settings" android:title="@string/pref_network_settings">
-        <!-- 
+        <!--
         <Preference
             android:key="pref_update_server_list"
             android:title="@string/pref_update_server_list"/>
@@ -48,12 +48,6 @@
                 android:summaryOn="@string/pref_title_on_encrypt"
                 android:title="@string/pref_encrypt"
                 android:defaultValue="true"/>
-            <EditTextPreference android:key="pref_passphrase"
-                android:title="@string/pref_passphrase"
-                android:dialogTitle="@string/pref_passphrase"
-                android:inputType="textPassword"
-                android:summary="@string/pref_title_passphrase"
-                android:dialogMessage="@string/pref_prompt_passphrase"/>
             <CheckBoxPreference android:key="pref_encrypt_userdata"
                 android:summaryOff="@string/pref_title_off_encrypt_userdata"
                 android:summaryOn="@string/pref_title_on_encrypt_userdata"

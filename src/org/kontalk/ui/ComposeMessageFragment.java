@@ -525,10 +525,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 // get encryption key if needed
                 String key = null;
                 if (MessagingPreferences.getEncryptionEnabled(getActivity())) {
-                    key = MessagingPreferences.getDefaultPassphrase(getActivity());
-                    // no global passphrase defined -- use recipient phone number
-                    if (key == null || key.length() == 0)
-                        key = Contact.numberByUserId(getActivity(), userId);
+                    // use recipient phone number
+                    key = Contact.numberByUserId(getActivity(), userId);
                 }
 
                 /* TODO maybe this hack could work...?
