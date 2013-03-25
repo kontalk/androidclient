@@ -516,6 +516,17 @@ public final class MessagingPreferences extends PreferenceActivity {
         return (pref != null && !TextUtils.isEmpty(pref.trim())) ? pref: null;
     }
 
+    public static String getPushSenderId(Context context) {
+        return getString(context, "pref_push_sender", null);
+    }
+
+    public static boolean setPushSenderId(Context context, String senderId) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putString("pref_push_sender", senderId)
+            .commit();
+    }
+
     /** Recent statuses database helper. */
     private static final class RecentStatusDbHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "status.db";

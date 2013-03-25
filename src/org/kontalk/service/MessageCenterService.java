@@ -147,6 +147,8 @@ public class MessageCenterService extends Service
     protected String mPushRequestTxId;
     /** {@link RequestJob} for sending push registration id to server. */
     protected RequestJob mPushRequestJob;
+    /** Flag marking a currently ongoing GCM registration cycle (unregister/register) */
+    private boolean mPushRegistrationCycle;
 
     /** Used in case ClientThread is down. */
     private int mRefCount;
@@ -206,7 +208,14 @@ public class MessageCenterService extends Service
 
             // C2DM hash registered!
             if (ACTION_C2DM_REGISTERED.equals(action)) {
-                setPushRegistrationId(intent.getStringExtra(GCM_REGISTRATION_ID));
+                String regId = intent.getStringExtra(GCM_REGISTRATION_ID);
+                // registration cycle under way
+                if (regId == null && mPushRegistrationCycle) {
+                    mPushRegistrationCycle = false;
+                    gcmRegister();
+                }
+                else
+                    setPushRegistrationId(regId);
             }
 
             // start C2DM registration
@@ -474,8 +483,23 @@ public class MessageCenterService extends Service
                 String data = res.getSupports(i);
                 if (data.startsWith("google_gcm=")) {
                     mPushSenderId = data.substring("google_gcm=".length());
-                    if (mPushNotifications)
-                        gcmRegister();
+                    if (mPushNotifications) {
+                        String oldSender = MessagingPreferences.getPushSenderId(MessageCenterService.this);
+
+                        // store the new sender id
+                        MessagingPreferences.setPushSenderId(MessageCenterService.this, mPushSenderId);
+
+                        // begin a registration cycle if senderId is different
+                        if (oldSender != null && !oldSender.equals(mPushSenderId)) {
+                            GCMRegistrar.unregister(MessageCenterService.this);
+                            // unregister will see this as an attempt to register again
+                            mPushRegistrationCycle = true;
+                        }
+                        else {
+                            // begin registration immediately
+                            gcmRegister();
+                        }
+                    }
                 }
             }
         }
