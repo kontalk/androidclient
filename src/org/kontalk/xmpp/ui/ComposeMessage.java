@@ -40,7 +40,6 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract.QuickContact;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -117,13 +116,8 @@ public class ComposeMessage extends SherlockFragmentActivity {
     }
 
     public void onAvatarClick(View view) {
-        if (mFragment != null) {
-            Contact contact = mFragment.getContact();
-            if (contact != null) {
-                QuickContact.showQuickContact(this,
-                    view, contact.getUri(), QuickContact.MODE_SMALL, null);
-            }
-        }
+        finish();
+        startActivity(new Intent(this, ConversationList.class));
     }
 
     public void onTitleboxClick(View view) {
