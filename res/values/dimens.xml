@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="avatar_margin">4dp</dimen>
     <dimen name="message_text_width">240dp</dimen>
 </resources>
