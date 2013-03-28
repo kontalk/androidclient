@@ -20,8 +20,12 @@ package org.kontalk.xmpp.ui;
 
 import org.kontalk.xmpp.R;
 
+import android.annotation.TargetApi;
+import android.app.ActionBar;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.view.MenuItem;
 
 
 /**
@@ -35,6 +39,28 @@ public class BootstrapPreferences extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.bootstrap_preferences);
+
+        setupActivity();
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    private void setupActivity() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            ActionBar bar = getActionBar();
+            bar.setDisplayShowHomeEnabled(true);
+            bar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }
