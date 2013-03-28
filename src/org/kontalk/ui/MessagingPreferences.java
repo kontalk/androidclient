@@ -34,6 +34,8 @@ import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;
+import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -49,6 +51,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -60,6 +63,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 
@@ -84,6 +88,8 @@ public final class MessagingPreferences extends PreferenceActivity {
         }
 
         addPreferencesFromResource(R.xml.preferences);
+
+        setupActivity();
 
         // push notifications checkbox
         final Preference pushNotifications = findPreference("pref_push_notifications");
@@ -215,6 +221,27 @@ public final class MessagingPreferences extends PreferenceActivity {
         ServerList list = ServerListUpdater.getCurrentList(this);
         if (list != null)
             updateServerListLastUpdate(updateServerList, list);
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    private void setupActivity() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            ActionBar bar = getActionBar();
+            bar.setDisplayShowHomeEnabled(true);
+            bar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                startActivity(new Intent(this, ConversationList.class));
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
