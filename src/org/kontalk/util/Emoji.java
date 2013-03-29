@@ -144,6 +144,61 @@ public final class Emoji {
         emojiTheme.put(0x1F440, R.drawable.emoji_eyes);
         emojiTheme.put(0x1F443, R.drawable.emoji_nose);
 
+        // GROUP 2: Flower (http://punchdrunker.github.com/iOSEmoji/table_html/flower.html)
+        emojiTheme.put(0x2600, R.drawable.emoji_sunny);
+        emojiTheme.put(0x2614, R.drawable.emoji_umbrella);
+        emojiTheme.put(0x2601, R.drawable.emoji_cloud);
+        emojiTheme.put(0x26C4, R.drawable.emoji_snowman);
+        emojiTheme.put(0x1F319, R.drawable.emoji_moon);
+        emojiTheme.put(0x26A1, R.drawable.emoji_zap);
+        emojiTheme.put(0x1F300, R.drawable.emoji_cyclone);
+        emojiTheme.put(0x1F30A, R.drawable.emoji_ocean);
+        emojiTheme.put(0x1F431, R.drawable.emoji_cat);
+        emojiTheme.put(0x1F436, R.drawable.emoji_dog);
+        emojiTheme.put(0x1F42D, R.drawable.emoji_mouse);
+        emojiTheme.put(0x1F439, R.drawable.emoji_hamster);
+        emojiTheme.put(0x1F430, R.drawable.emoji_rabbit);
+        emojiTheme.put(0x1F43A, R.drawable.emoji_wolf);
+        emojiTheme.put(0x1F438, R.drawable.emoji_frog);
+        emojiTheme.put(0x1F42F, R.drawable.emoji_tiger);
+        emojiTheme.put(0x1F428, R.drawable.emoji_koala);
+        emojiTheme.put(0x1F43B, R.drawable.emoji_bear);
+        emojiTheme.put(0x1F437, R.drawable.emoji_pig);
+        emojiTheme.put(0x1F42E, R.drawable.emoji_cow);
+        emojiTheme.put(0x1F417, R.drawable.emoji_boar);
+        emojiTheme.put(0x1F435, R.drawable.emoji_monkey_face);
+        emojiTheme.put(0x1F412, R.drawable.emoji_monkey);
+        emojiTheme.put(0x1F434, R.drawable.emoji_horse);
+        emojiTheme.put(0x1F40E, R.drawable.emoji_horse_racing);
+        emojiTheme.put(0x1F42B, R.drawable.emoji_camel);
+        emojiTheme.put(0x1F411, R.drawable.emoji_sheep);
+        emojiTheme.put(0x1F418, R.drawable.emoji_elephant);
+        emojiTheme.put(0x1F40D, R.drawable.emoji_snake);
+        emojiTheme.put(0x1F426, R.drawable.emoji_bird);
+        emojiTheme.put(0x1F424, R.drawable.emoji_baby_chick);
+        emojiTheme.put(0x1F414, R.drawable.emoji_chicken);
+        emojiTheme.put(0x1F427, R.drawable.emoji_penguin);
+        emojiTheme.put(0x1F41B, R.drawable.emoji_bug);
+        emojiTheme.put(0x1F419, R.drawable.emoji_octopus);
+        emojiTheme.put(0x1F420, R.drawable.emoji_tropical_fish);
+        emojiTheme.put(0x1F41F, R.drawable.emoji_fish);
+        emojiTheme.put(0x1F433, R.drawable.emoji_whale);
+        emojiTheme.put(0x1F42C, R.drawable.emoji_dolphin);
+        emojiTheme.put(0x1F490, R.drawable.emoji_bouquet);
+        emojiTheme.put(0x1F338, R.drawable.emoji_cherry_blossom);
+        emojiTheme.put(0x1F337, R.drawable.emoji_tulip);
+        emojiTheme.put(0x1F340, R.drawable.emoji_four_leaf_clover);
+        emojiTheme.put(0x1F339, R.drawable.emoji_rose);
+        emojiTheme.put(0x1F33B, R.drawable.emoji_sunflower);
+        emojiTheme.put(0x1F33A, R.drawable.emoji_hibiscus);
+        emojiTheme.put(0x1F341, R.drawable.emoji_maple_leaf);
+        emojiTheme.put(0x1F343, R.drawable.emoji_leaves);
+        emojiTheme.put(0x1F342, R.drawable.emoji_fallen_leaf);
+        emojiTheme.put(0x1F334, R.drawable.emoji_palm_tree);
+        emojiTheme.put(0x1F335, R.drawable.emoji_cactus);
+        emojiTheme.put(0x1F33E, R.drawable.emoji_ear_of_rice);
+        emojiTheme.put(0x1F41A, R.drawable.emoji_shell);
+
         //emojiTheme.put(0x, R.drawable.emoji_);
 
         // UNSORTED
@@ -371,7 +426,64 @@ public final class Emoji {
             0x1F442,
             0x1F440,
             0x1F443,
-        }
+        /*
+        },
+        {
+        */
+            0x2600,
+            0x2614,
+            0x2601,
+            0x26C4,
+            0x1F319,
+            0x26A1,
+            0x1F300,
+            0x1F30A,
+            0x1F431,
+            0x1F436,
+            0x1F42D,
+            0x1F439,
+            0x1F430,
+            0x1F43A,
+            0x1F438,
+            0x1F42F,
+            0x1F428,
+            0x1F43B,
+            0x1F437,
+            0x1F42E,
+            0x1F417,
+            0x1F435,
+            0x1F412,
+            0x1F434,
+            0x1F40E,
+            0x1F42B,
+            0x1F411,
+            0x1F418,
+            0x1F40D,
+            0x1F426,
+            0x1F424,
+            0x1F414,
+            0x1F427,
+            0x1F41B,
+            0x1F419,
+            0x1F420,
+            0x1F41F,
+            0x1F433,
+            0x1F42C,
+            0x1F490,
+            0x1F338,
+            0x1F337,
+            0x1F340,
+            0x1F339,
+            0x1F33B,
+            0x1F33A,
+            0x1F341,
+            0x1F343,
+            0x1F342,
+            0x1F334,
+            0x1F335,
+            0x1F33E,
+            0x1F41A,
+        },
     };
 
     public static boolean isSoftBankEmoji(char c) {
