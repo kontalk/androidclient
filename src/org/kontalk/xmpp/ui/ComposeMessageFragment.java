@@ -573,11 +573,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
     			return true;
 
-    		case R.id.goto_conversation_list:
-                getActivity().finish();
-    			startActivity(new Intent(getActivity(), ConversationList.class));
-    			return true;
-
     		case R.id.menu_smiley:
     		    AdapterView.OnItemClickListener listener = new AdapterView.OnItemClickListener() {
     		        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
