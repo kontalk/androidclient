@@ -179,6 +179,7 @@
     <string name="all_threads">Conversazioni</string>
     <string name="menu_status">Stato</string>
     <string name="menu_attachment">Allega</string>
+    <string name="menu_smileys">Smiley</string>
     <string name="vcard_message">Messaggio vCard</string>
     <string name="open_file">Apri file</string>
     <string name="msg_msgcenter_restarted">Centro messaggi riavviato.</string>

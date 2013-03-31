@@ -178,6 +178,7 @@
     <string name="all_threads">Todos los threads</string>
     <string name="menu_status">Estado</string>
     <string name="menu_attachment">Adjuntar</string>
+    <string name="menu_smileys">Smileys</string>
     <string name="vcard_message">vCard mensaje</string>
     <string name="open_file">Abrir el archivo</string>
     <string name="msg_msgcenter_restarted">Centro de mensajes reiniciado.</string>

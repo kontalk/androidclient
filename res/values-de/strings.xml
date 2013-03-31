@@ -177,6 +177,7 @@
     <string name="all_threads">Alle Threads</string>
     <string name="menu_status">Status</string>
     <string name="menu_attachment">Anhängen</string>
+    <string name="menu_smileys">Smileys</string>
     <string name="vcard_message">vCard Nachricht</string>
     <string name="open_file">Datei öffnen</string>
     <string name="msg_msgcenter_restarted">Nachrichtenzentrale neu gestartet.</string>
@@ -218,7 +219,7 @@
     <string name="status_activity_title">Statusnachricht</string>
     <string name="hint_status_entry">Geben Sie Ihre Statusnachricht hier ein</string>
     <string name="header_recent_status">Kürzlich benutzte Statusnachrichten</string>
-    
+
     <string name="title_offline_mode_warning">Offline-Modus</string>
     <string name="message_offline_mode_warning">Im Offline-Modus kontaktiert Kontalk den Server nicht bis Sie wieder in den Online-Modus gehen. Sie können weder Nachrichten senden noch empfangen und Sie werden anderen Nutzern als abwesend angezeigt.</string>
 
