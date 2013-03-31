@@ -109,10 +109,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.TextView.OnEditorActionListener;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockListFragment;
@@ -664,11 +664,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     			if (threadId > 0)
     				deleteThread();
 
-    			return true;
-
-    		case R.id.goto_conversation_list:
-                getActivity().finish();
-    			startActivity(new Intent(getActivity(), ConversationList.class));
     			return true;
 
     		case R.id.menu_smiley:
