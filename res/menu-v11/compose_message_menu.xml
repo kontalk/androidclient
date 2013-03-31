@@ -22,6 +22,5 @@
     <item android:icon="@drawable/ic_title_attach" android:title="@string/menu_attachment" android:id="@+id/menu_attachment" android:showAsAction="ifRoom"/>
     <item android:icon="@android:drawable/ic_menu_delete" android:title="@string/delete_thread" android:id="@+id/delete_thread"/>
     <item android:icon="@drawable/ic_menu_friendslist" android:title="@string/all_threads" android:id="@+id/goto_conversation_list"/>
-    <!-- TODO i18n -->
-    <item android:icon="@drawable/ic_title_smiley" android:title="Smileys" android:id="@+id/menu_smiley" android:showAsAction="always"/>
+    <item android:icon="@drawable/ic_title_smiley" android:title="@string/menu_smileys" android:id="@+id/menu_smiley" android:showAsAction="always"/>
 </menu>
