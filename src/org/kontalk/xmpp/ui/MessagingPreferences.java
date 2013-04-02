@@ -556,6 +556,18 @@ public final class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
+    public static int getIdleTimeMillis(Context context, int defaultValue) {
+        String val = getString(context, "pref_idle_time", null);
+        int nval;
+        try {
+            nval = Integer.valueOf(val);
+        }
+        catch (Exception e) {
+            nval = defaultValue;
+        }
+        return (nval < defaultValue) ? defaultValue : nval;
+    }
+
     /** Recent statuses database helper. */
     private static final class RecentStatusDbHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "status.db";

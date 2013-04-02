@@ -81,7 +81,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.Process;
 import android.support.v4.content.LocalBroadcastManager;
@@ -202,7 +201,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
-        private final static int IDLE_MSG_TIME = 60000;
+        private final static int DEFAULT_IDLE_TIME = 60000;
 
         /** A reference to the message center. */
         private WeakReference<MessageCenterService> s;
@@ -255,8 +254,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         public void reset() {
             removeMessages(MSG_IDLE);
 
-            if (mRefCount <= 0 && getLooper().getThread().isAlive())
-                sendMessageDelayed(obtainMessage(MSG_IDLE), IDLE_MSG_TIME);
+            if (mRefCount <= 0 && getLooper().getThread().isAlive()) {
+                int time;
+                MessageCenterService service = s.get();
+                if (service != null)
+                    time = MessagingPreferences.getIdleTimeMillis(service, DEFAULT_IDLE_TIME);
+                else
+                    time = DEFAULT_IDLE_TIME;
+
+                sendMessageDelayed(obtainMessage(MSG_IDLE), time);
+            }
         }
 
         public void hold() {
