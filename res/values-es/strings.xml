@@ -98,7 +98,7 @@
     <string name="pref_title_on_encrypt_userdata">El mensaje de estado será visible sólo a aquellos que tienen su número de teléfono</string>
     <string name="pref_title_off_encrypt_userdata">El mensaje de estado será visible para todos</string>
     <string name="pref_hide_presence">Ocultar presencia</string>
-    <string name="pref_title_on_hide_presence">Los usuarios no podran verte en linea</string>
+    <string name="pref_title_on_hide_presence">Los usuarios no podran verte en línea</string>
     <string name="pref_title_off_hide_presence">Los usuarios podrán saber cuando estás en línea y la ultima vez que te conectaste</string>
     <string name="contact_not_registered">Contacto no parece estar registrado en Kontalk.</string>
     <string name="error_store_outbox">Inhabilitado en almacenar mensajes en la bandeja de salida.</string>
@@ -121,9 +121,6 @@
     <string name="pref_ringtone">Seleccionar tono</string>
     <string name="pref_vibrate">Vibración</string>
     <string name="pref_title_vibrate">También vibran cuando se le notifique</string>
-    <string name="vibrate_always">Siempre</string>
-    <string name="vibrate_silent_only">Sólo cuando en silencio</string>
-    <string name="vibrate_never">Nunca</string>
     <string name="confirm_delete_message">Borrar mensaje</string>
     <string name="confirm_will_delete_message">El mensaje será borrado.</string>
     <string name="err_authentication_failed">Código de validación negado. Error de autenticación.</string>
@@ -172,9 +169,6 @@
     <string name="no_user_not_found">No, enviar una invitación</string>
     <string name="pref_appearance_settings">Configuración de la apariencia</string>
     <string name="pref_font_size">Tamaño del font</string>
-    <string name="message_text_small">Pequeño</string>
-    <string name="message_text_medium">Medio</string>
-    <string name="message_text_large">Grande</string>
     <string name="all_threads">Todos los threads</string>
     <string name="menu_status">Estado</string>
     <string name="menu_attachment">Adjuntar</string>
@@ -207,8 +201,6 @@
     <string name="msg_status_encrypted">Cifrado</string>
     <string name="pref_balloons">Tema mensajes</string>
     <string name="pref_title_balloons">Elegís un tema para los mensajes</string>
-    <string name="balloons_classic">Clásico</string>
-    <string name="balloons_iphone">iPhone</string>
     <string name="attachment_picture">Imagen</string>
     <string name="attachment_contact">Contacto</string>
     <string name="chooser_send_picture"> Envío imagen</string>

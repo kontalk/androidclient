@@ -17,55 +17,29 @@
  -->
 
 <resources>
-
-    <string-array name="vibrate_values">
-        <item>always</item>
-        <item>silent_only</item>
-        <item>never</item>
-    </string-array>
-
     <string-array name="vibrate_labels">
-        <item>Always</item>
-        <item>Only when silent</item>
-        <item>Never</item>
-    </string-array>
-
-    <string-array name="fontsize_values">
-        <item>small</item>
-        <item>medium</item>
-        <item>large</item>
+        <item>Sempre</item>
+        <item>Solo in modalità silenziosa</item>
+        <item>Mai</item>
     </string-array>
 
     <string-array name="fontsize_labels">
-        <item>Small</item>
-        <item>Medium</item>
-        <item>Large</item>
-    </string-array>
-
-    <string-array name="balloons_values">
-        <item>classic</item>
-        <item>iphone</item>
+        <item>Piccolo</item>
+        <item>Medio</item>
+        <item>Grande</item>
     </string-array>
 
     <string-array name="balloons_labels">
-        <item>Classic</item>
+        <item>Classico</item>
         <item>iPhone</item>
     </string-array>
 
-    <string-array name="idle_time_values">
-        <item>60000</item>
-        <item>120000</item>
-        <item>180000</item>
-        <item>240000</item>
-        <item>300000</item>
-    </string-array>
-
     <string-array name="idle_time_labels">
-        <item>1 minute</item>
-        <item>2 minutes</item>
-        <item>3 minutes</item>
-        <item>4 minutes</item>
-        <item>5 minutes</item>
+        <item>1 minuto</item>
+        <item>2 minuti</item>
+        <item>3 minuti</item>
+        <item>4 minuti</item>
+        <item>5 minuti</item>
     </string-array>
 
 </resources>

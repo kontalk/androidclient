@@ -85,7 +85,7 @@
     <string name="pref_restart_msgcenter">Restart message center</string>
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
     <string name="pref_idle_time">Keep-alive duration</string>
-    <string name="pref_title_idle_time">Works only if push notifications are enabled and supported by server.</string>
+    <string name="pref_title_idle_time">Works only if push notifications are enabled and supported by server</string>
     <string name="pref_maintainance">Mainteinance</string>
     <string name="contacts_list_title">Choose a contact</string>
     <string name="pref_messaging_settings">Messaging settings</string>
@@ -124,9 +124,6 @@
     <string name="pref_ringtone">Select ringtone</string>
     <string name="pref_vibrate">Vibrate</string>
     <string name="pref_title_vibrate">Also vibrate when notified</string>
-    <string name="vibrate_always">Always</string>
-    <string name="vibrate_silent_only">Only when silent</string>
-    <string name="vibrate_never">Never</string>
     <string name="confirm_delete_message">Delete message</string>
     <string name="confirm_will_delete_message">The message will be deleted.</string>
     <string name="err_authentication_failed">Validation code refused. Authentication failed.</string>
@@ -175,9 +172,6 @@
     <string name="no_user_not_found">Send invite</string>
     <string name="pref_appearance_settings">Appearance settings</string>
     <string name="pref_font_size">Font size</string>
-    <string name="message_text_small">Small</string>
-    <string name="message_text_medium">Medium</string>
-    <string name="message_text_large">Large</string>
     <string name="all_threads">All threads</string>
     <string name="menu_status">Status</string>
     <string name="menu_attachment">Attach</string>
@@ -212,8 +206,6 @@
 
     <string name="pref_balloons">Chat balloon theme</string>
     <string name="pref_title_balloons">Choose a message balloon theme</string>
-    <string name="balloons_classic">Classic</string>
-    <string name="balloons_iphone">iPhone</string>
 
     <string name="attachment_picture">Picture</string>
     <string name="attachment_contact">Contact</string>

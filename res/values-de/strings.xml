@@ -120,9 +120,6 @@
     <string name="pref_ringtone">Klingelton auswählen</string>
     <string name="pref_vibrate">Vibration</string>
     <string name="pref_title_vibrate">Bei Benachrichtigungen vibrieren</string>
-    <string name="vibrate_always">Immer</string>
-    <string name="vibrate_silent_only">Nur wenn lautlos</string>
-    <string name="vibrate_never">Nie</string>
     <string name="confirm_delete_message">Nachricht löschen</string>
     <string name="confirm_will_delete_message">Die Nachricht wird gelöscht.</string>
     <string name="err_authentication_failed">Validierungscode abgelehnt. Authentifizierung fehlgeschlagen.</string>
@@ -171,9 +168,6 @@
     <string name="no_user_not_found">Einladung schicken</string>
     <string name="pref_appearance_settings">Darstellungseinstellungen</string>
     <string name="pref_font_size">Schriftgröße</string>
-    <string name="message_text_small">Klein</string>
-    <string name="message_text_medium">Mittel</string>
-    <string name="message_text_large">Groß</string>
     <string name="all_threads">Alle Threads</string>
     <string name="menu_status">Status</string>
     <string name="menu_attachment">Anhängen</string>
@@ -207,8 +201,6 @@
 
     <string name="pref_balloons">Gesprächs-Ballon Thema</string>
     <string name="pref_title_balloons">Wählen Sie ein Gesprächs-Ballon Thema</string>
-    <string name="balloons_classic">Klassisch</string>
-    <string name="balloons_iphone">iPhone</string>
 
     <string name="attachment_picture">Bild</string>
     <string name="attachment_contact">Kontakt</string>
