@@ -27,8 +27,6 @@ import org.apache.http.entity.InputStreamEntity;
 import org.kontalk.xmpp.service.ProgressListener;
 import org.kontalk.xmpp.upload.UploadConnection;
 
-import android.os.Bundle;
-
 
 public class ProgressInputStreamEntity extends InputStreamEntity {
     protected final UploadConnection mConn;

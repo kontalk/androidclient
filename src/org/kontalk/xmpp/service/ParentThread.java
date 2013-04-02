@@ -5,6 +5,7 @@ package org.kontalk.xmpp.service;
  * Implement this interface to be notified of events happening in child threads.
  * Obviously a child thread must support this.
  * @author Daniele Ricci
+ * @deprecated Legacy code.
  */
 public interface ParentThread {
 

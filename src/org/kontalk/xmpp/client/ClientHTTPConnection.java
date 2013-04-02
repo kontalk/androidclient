@@ -3,7 +3,6 @@ package org.kontalk.xmpp.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,17 +21,11 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.service.ClientThread;
 import org.kontalk.xmpp.service.DownloadListener;
-import org.kontalk.xmpp.service.RequestListener;
-import org.kontalk.xmpp.ui.MessagingPreferences;
-import org.kontalk.xmpp.util.ProgressInputStreamEntity;
 import org.kontalk.xmpp.util.ProgressOutputStreamEntity;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.net.Uri;
 import android.util.Log;
 
 

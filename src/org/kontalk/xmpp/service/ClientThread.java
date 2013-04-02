@@ -34,6 +34,7 @@ import android.util.Log;
 /**
  * Kontalk client thread.
  * @author Daniele Ricci
+ * @deprecated Legacy code.
  */
 public class ClientThread extends Thread {
     private static final String TAG = ClientThread.class.getSimpleName();

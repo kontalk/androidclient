@@ -6,6 +6,7 @@ import org.kontalk.xmpp.service.ClientThread;
 /**
  * Interface for listening to client thread events.
  * @author Daniele Ricci
+ * @deprecated Legacy code.
  */
 public interface ClientListener {
 

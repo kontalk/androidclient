@@ -20,8 +20,6 @@ package org.kontalk.xmpp.service;
 
 import org.kontalk.xmpp.upload.UploadConnection;
 
-import android.os.Bundle;
-
 
 /**
  * Generic interface for listening to progress and status of a generic request.

@@ -4,24 +4,18 @@ import java.io.IOException;
 import java.util.Random;
 
 import org.kontalk.xmpp.R;
-import org.kontalk.xmpp.client.MessageSender;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
-import org.kontalk.xmpp.service.MessageCenterServiceLegacy;
-import org.kontalk.xmpp.service.MessageCenterServiceLegacy.MessageCenterInterface;
 
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
-import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -40,7 +34,6 @@ public class QuickReplyActivity extends Activity {
     private EditText mContentEdit;
     private Button mReply;
     private PendingIntent mOpenConv;
-    private ComposerServiceConnection mConn;
 
     private String userId;
     private String userString;
@@ -118,49 +111,6 @@ public class QuickReplyActivity extends Activity {
         mReply.setEnabled(enabled);
     }
 
-    /** Used for binding to the message center to send messages. */
-    private final class ComposerServiceConnection implements ServiceConnection {
-        public final MessageSender job;
-        private MessageCenterServiceLegacy service;
-
-        public ComposerServiceConnection(String userId, byte[] text,
-                String mime, Uri msgUri, String encryptKey) {
-            job = new MessageSender(userId, text, mime, msgUri, encryptKey, false);
-            // listener will be set by message center
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            service = null;
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder ibinder) {
-            MessageCenterInterface binder = (MessageCenterInterface) ibinder;
-            service = binder.getService();
-            service.sendMessage(job);
-            try {
-                unbindService(this);
-            }
-            catch (Exception e) {
-                // ignore exception on exit
-            }
-            finish();
-            service = null;
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        try {
-            // unbind anyway
-            unbindService(mConn);
-        }
-        catch (Exception e) {
-            // ignore
-        }
-    }
 
     private final class TextMessageThread extends Thread {
         private final String mText;
@@ -198,16 +148,7 @@ public class QuickReplyActivity extends Activity {
                 Uri newMsg = ctx.getContentResolver().insert(
                         Messages.CONTENT_URI, values);
                 if (newMsg != null) {
-                    // send the message!
-                    mConn = new ComposerServiceConnection(
-                            userId, mText.getBytes(), PlainTextMessage.MIME_TYPE,
-                            newMsg, key);
-                    if (!bindService(
-                            new Intent(getApplicationContext(), MessageCenterServiceLegacy.class),
-                            mConn, Context.BIND_AUTO_CREATE)) {
-                        // cannot bind :(
-                        throw new IllegalArgumentException("unable to bind to service");
-                    }
+                    // TODO send the message!
                 }
                 else {
                     throw new IOException();
