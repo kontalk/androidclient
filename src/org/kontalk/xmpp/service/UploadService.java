@@ -138,7 +138,7 @@ public class UploadService extends IntentService implements ProgressListener {
             queue.put(filename, mMessageId);
 
             // upload content
-            String mediaUrl = mConn.upload(file, "application/octet-stream" /* TODO */, null, this);
+            String mediaUrl = mConn.upload(file, mime, null, this);
             Log.d(TAG, "uploaded with media URL: " + mediaUrl);
 
             // update message fetch_url

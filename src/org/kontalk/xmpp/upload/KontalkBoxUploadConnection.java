@@ -142,7 +142,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
      * @return the request object
      * @throws IOException
      */
-    public HttpRequestBase prepare(String path, List<NameValuePair> params,
+    public HttpRequestBase prepare(List<NameValuePair> params,
         String token, String mime, byte[] content, boolean forcePost)
         throws IOException {
 
@@ -150,7 +150,6 @@ public class KontalkBoxUploadConnection implements UploadConnection {
 
         // compose uri
         StringBuilder uri = new StringBuilder(mBaseUrl);
-        uri.append(path);
         if (params != null)
             uri.append("?").append(URLEncodedUtils.format(params, "UTF-8"));
 
@@ -158,7 +157,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         if (content != null || forcePost) {
             req = new HttpPost(uri.toString());
             req.setHeader("Content-Type", mime != null ? mime
-                : "application/x-google-protobuf");
+                : "application/octet-stream");
             if (content != null)
                 ((HttpPost) req).setEntity(new ByteArrayEntity(content));
         }
@@ -195,7 +194,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         String token, String mime, InputStream data, long length, boolean encrypted)
             throws IOException {
 
-        HttpPost req = (HttpPost) prepare("/upload", null, token, mime, null, true);
+        HttpPost req = (HttpPost) prepare(null, token, mime, null, true);
         req.setEntity(new ProgressInputStreamEntity(data, length, this, listener));
 
         if (encrypted)

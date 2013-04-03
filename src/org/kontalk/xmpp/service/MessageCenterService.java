@@ -778,23 +778,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         String mime = data.getString("org.kontalk.message.mime");
         String _mediaUri = data.getString("org.kontalk.message.media.uri");
         if (_mediaUri != null) {
-            // media message - start upload service
-            Uri mediaUri = Uri.parse(_mediaUri);
-
-            // TODO start upload intent service
-            Intent i = new Intent(this, UploadService.class);
-            i.setData(mediaUri);
-            i.setAction(UploadService.ACTION_UPLOAD);
             // take the first available upload service :)
-            // TODO i.putExtra(UploadService.EXTRA_POST_URL, service.mUploadServices);
-            i.putExtra(UploadService.EXTRA_POST_URL, "http://10.0.2.2/kontalk/upload.php");
-            i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
-            i.putExtra(UploadService.EXTRA_MIME, mime);
+            String postUrl = mUploadServices.get(getUploadService());
+            if (postUrl != null) {
+                // media message - start upload service
+                Uri mediaUri = Uri.parse(_mediaUri);
 
-            // TODO should support JIDs too
-            String toUser = data.getString("org.kontalk.message.toUser");
-            i.putExtra(UploadService.EXTRA_USER_ID, toUser);
-            startService(i);
+                // start upload intent service
+                Intent i = new Intent(this, UploadService.class);
+                i.setData(mediaUri);
+                i.setAction(UploadService.ACTION_UPLOAD);
+                i.putExtra(UploadService.EXTRA_POST_URL, postUrl);
+                i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
+                i.putExtra(UploadService.EXTRA_MIME, mime);
+
+                // TODO should support JIDs too
+                String toUser = data.getString("org.kontalk.message.toUser");
+                i.putExtra(UploadService.EXTRA_USER_ID, toUser);
+                startService(i);
+            }
+            else {
+                // TODO warn user about this problem
+                Log.w(TAG, "no upload service - this shouldn't happen!");
+            }
         }
 
         else {
