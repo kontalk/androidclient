@@ -640,11 +640,9 @@ public class MessagesProvider extends ContentProvider {
                 long _id = ContentUris.parseId(uri);
                 table = TABLE_MESSAGES;
                 where = Messages._ID + " = ?";
-                /*
-                 TODO args copy
+                // WARNING selectionArgs is not supported yet
                 if (selection != null)
                     where += " AND (" + selection + ")";
-                 */
                 args = new String[] { String.valueOf(_id) };
                 break;
             }
@@ -653,11 +651,9 @@ public class MessagesProvider extends ContentProvider {
                 messageId = uri.getPathSegments().get(1);
                 table = TABLE_MESSAGES;
                 where = Messages.MESSAGE_ID + " = ?";
-                /*
-                 TODO args copy
+                // WARNING selectionArgs is not supported yet
                 if (selection != null)
                     where += " AND (" + selection + ")";
-                 */
                 args = new String[] { String.valueOf(messageId) };
                 break;
 
