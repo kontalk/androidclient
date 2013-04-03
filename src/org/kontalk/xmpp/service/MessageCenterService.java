@@ -332,6 +332,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
         pm.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
+        pm.addExtensionProvider(AckServerReceipt.ELEMENT_NAME, AckServerReceipt.NAMESPACE, new AckServerReceipt.Provider());
         pm.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
     }
 
@@ -672,7 +673,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPresence();
         // resend failed and pending messages
         resendPendingMessages(false);
-        // receipts will be sent while consuming incoming messages
+        // resend failed and pending received receipts
+        resendPendingReceipts();
 
         broadcast(ACTION_CONNECTED);
     }
@@ -766,6 +768,36 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
+    private void resendPendingReceipts() {
+        Cursor c = getContentResolver().query(Messages.CONTENT_URI,
+            new String[] {
+                Messages._ID,
+                Messages.MESSAGE_ID,
+                Messages.PEER,
+            },
+            Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
+            Messages.STATUS + " = " + Messages.STATUS_RECEIVED,
+            null, Messages._ID);
+
+        while (c.moveToNext()) {
+            long id = c.getLong(0);
+            String msgId = c.getString(1);
+            String userId = c.getString(2);
+
+            Bundle b = new Bundle();
+
+            b.putLong("org.kontalk.message.msgId", id);
+            b.putString("org.kontalk.message.toUser", userId);
+            b.putString("org.kontalk.message.ack", msgId);
+
+            Log.v(TAG, "resending pending receipt for message " + id);
+            sendMessage(b);
+        }
+
+        c.close();
+
+    }
+
     private void sendMessage(Bundle data) {
 
         // check if message is already pending
@@ -855,12 +887,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (fetchUrl != null)
                 m.addExtension(new OutOfBandData(fetchUrl, mime));
 
-            m.setBody(body);
-            // standalone message: no receipt
-            if (!data.getBoolean("org.kontalk.message.standalone", false))
-                m.addExtension(new ServerReceiptRequest());
-            if (chatState != null)
-                m.addExtension(new ChatStateExtension(chatState));
+            // received receipt
+            String serverId = data.getString("org.kontalk.message.ack");
+            if (serverId != null) {
+                m.addExtension(new ReceivedServerReceipt(serverId));
+            }
+            else {
+                m.setBody(body);
+                // standalone message: no receipt
+                if (!data.getBoolean("org.kontalk.message.standalone", false))
+                    m.addExtension(new ServerReceiptRequest());
+                if (chatState != null)
+                    m.addExtension(new ChatStateExtension(chatState));
+            }
 
             sendPacket(m);
         }
@@ -868,7 +907,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
 
     /** Process an incoming message. */
-    private void incoming(AbstractMessage<?> msg) {
+    private Uri incoming(AbstractMessage<?> msg) {
         String sender = msg.getSender(true);
 
         // save to local storage
@@ -942,8 +981,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
         values.put(Messages.LENGTH, msg.getLength());
+
+        Uri msgUri = null;
         try {
-            getContentResolver().insert(Messages.CONTENT_URI, values);
+            msgUri = getContentResolver().insert(Messages.CONTENT_URI, values);
         }
         catch (SQLiteConstraintException econstr) {
             // duplicated message, skip it
@@ -961,6 +1002,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+
+        return msgUri;
     }
 
     /** Returns the first available upload service. */
@@ -1454,6 +1497,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Listener for message stanzas. */
     private final class MessageListener implements PacketListener {
         private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+        private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
         @Override
         public void processPacket(Packet packet) {
@@ -1559,6 +1603,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             }
                         }
 
+                        // ack is received after sending a <received/> message
+                        else if (ext instanceof AckServerReceipt) {
+                            // mark message as confirmed
+                            ContentValues values = new ContentValues(1);
+                            values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
+                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                                values, selectionIncoming, null);
+
+                            mWaitingReceipt.remove(id);
+                        }
+
                     }
                 }
 
@@ -1567,14 +1622,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     String msgId = null;
                     if (_ext != null) {
                         ServerReceiptRequest req = (ServerReceiptRequest) _ext;
-                        // send ack :)
+                        // prepare for ack
                         msgId = req.getId();
-                        ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
-                        org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
-                            org.jivesoftware.smack.packet.Message.Type.chat);
-                        ack.addExtension(receipt);
-
-                        sendPacket(ack);
                     }
 
                     if (msgId == null)
@@ -1674,7 +1723,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         if (fetchUrl != null)
                             msg.setFetchUrl(fetchUrl);
 
-                        incoming(msg);
+                        Uri msgUri = incoming(msg);
+                        if (_ext != null) {
+                            // send ack :)
+                            ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
+                            org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
+                                org.jivesoftware.smack.packet.Message.Type.chat);
+                            ack.addExtension(receipt);
+
+                            if (msgUri != null) {
+                                // will mark this message as confirmed
+                                long storageId = ContentUris.parseId(msgUri);
+                                mWaitingReceipt.put(ack.getPacketID(), storageId);
+                            }
+                            sendPacket(ack);
+                        }
                     }
 
                 }
