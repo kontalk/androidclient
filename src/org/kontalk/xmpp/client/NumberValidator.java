@@ -549,6 +549,13 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
     }
 
+    /** Returns the localized region name for the given region code. */
+    public static String getRegionDisplayName(String regionCode, Locale language) {
+        return (regionCode == null || regionCode.equals("ZZ") ||
+                regionCode.equals(PhoneNumberUtil.REGION_CODE_FOR_NON_GEO_ENTITY))
+            ? "" : new Locale("", regionCode).getDisplayCountry(language);
+    }
+
     @Override
     public void connectionClosed() {
         // TODO Auto-generated method stub

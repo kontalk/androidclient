@@ -19,6 +19,9 @@
 package org.kontalk.xmpp.ui;
 
 import java.net.SocketException;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.Set;
 
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
@@ -27,6 +30,7 @@ import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.xmpp.sync.SyncAdapter;
+import org.kontalk.xmpp.ui.CountryCodesAdapter.CountryCode;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -42,6 +46,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -49,11 +54,16 @@ import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
@@ -72,7 +82,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public static final String PARAM_AUTHTOKEN = "org.kontalk.authtoken";
 
     private AccountManager mAccountManager;
-    private EditText mCountryCode;
+    private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
     private Button mManualButton;
@@ -111,19 +121,44 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
-        mCountryCode = (EditText) findViewById(R.id.phone_cc);
+        mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
         mManualButton = (Button) findViewById(R.id.button_manual);
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
+        // populate country codes
+        CountryCodesAdapter ccList = new CountryCodesAdapter(this, android.R.layout.simple_list_item_1, android.R.layout.simple_list_item_1);
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        Set<String> ccSet = util.getSupportedRegions();
+        for (String cc : ccSet)
+            ccList.add(cc);
+
+        ccList.sort(new Comparator<CountryCodesAdapter.CountryCode>() {
+            public int compare(CountryCodesAdapter.CountryCode lhs, CountryCodesAdapter.CountryCode rhs) {
+                return lhs.regionName.compareTo(rhs.regionName);
+            }
+        });
+        mCountryCode.setAdapter(ccList);
+
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {
             mPhone.setText(String.valueOf(myNum.getNationalNumber()));
-            mCountryCode.setText(String.valueOf(myNum.getCountryCode()));
+            // TODO mCountryCode.setText(String.valueOf(myNum.getCountryCode()));
+            Log.d(TAG, "selecting country " + util.getRegionCodeForNumber(myNum));
+            CountryCode cc = new CountryCode();
+            cc.regionCode = util.getRegionCodeForNumber(myNum);
+            cc.countryCode = myNum.getCountryCode();
+            mCountryCode.setSelection(ccList.getPositionForId(cc));
         }
         else {
-            mCountryCode.setText(NumberValidator.getCountryCode(this));
+            // TODO mCountryCode.setText(NumberValidator.getCountryCode(this));
+            final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
+            CountryCode cc = new CountryCode();
+            cc.regionCode = regionCode;
+            cc.countryCode = util.getCountryCodeForRegion(regionCode);
+            mCountryCode.setSelection(ccList.getPositionForId(cc));
         }
 
         // configuration change??
@@ -237,9 +272,22 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             .show();
     }
 
+    /** TODO TOTALLY BROKEN SECTION DO NOT BUILD THIS */
     private boolean checkInput() {
+        // TODO convert this to isValidNumberForRegion()
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        CountryCode cc1 = (CountryCode) mCountryCode.getSelectedItem();
+        try {
+            boolean valid = util.isValidNumberForRegion(util.parse(mPhone.getText().toString(), cc1.regionCode), cc1.regionCode);
+            // TODO util.format(null, PhoneNumberFormat.E164)
+            Log.v(TAG, "valid number: " + valid);
+        }
+        catch (NumberParseException e1) {
+            e1.printStackTrace();
+        }
+
         // check country code input
-        String cc = mCountryCode.getText().toString().trim();
+        String cc = ""; // TODO mCountryCode.getText().toString().trim();
         if (cc.length() < 1) {
             error(R.string.title_invalid_number, R.string.msg_invalid_cc);
             return false;

@@ -37,35 +37,16 @@
             android:paddingBottom="10dip"
             android:text="@string/number_validation_intro1" />
 
-        <LinearLayout
-            android:gravity="center_vertical"
+        <Spinner android:id="@+id/phone_cc"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:spinnerMode="dialog"/>
 
-            <TextView
-                style="@android:style/TextAppearance.Large"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:paddingLeft="10dip"
-                android:paddingRight="5dip"
-                android:text="@string/number_validation_plus" />
-
-            <EditText
-                android:id="@+id/phone_cc"
-                android:layout_width="45dip"
-                android:layout_height="wrap_content"
-                android:inputType="phone"
-                android:maxLength="2"
-                android:minWidth="45dip" />
-
-            <EditText
-                android:id="@+id/phone_number"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="phone" />
-
-        </LinearLayout>
+        <EditText
+            android:id="@+id/phone_number"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone" />
 
         <Button
             android:id="@+id/button_validate"
