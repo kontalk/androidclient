@@ -38,8 +38,10 @@ import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
+import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -59,7 +61,7 @@ public class MessageListItem extends RelativeLayout {
     static private Drawable sDefaultContactImage;
 
     private AbstractMessage<?> mMessage;
-    private CharSequence formattedMessage;
+    private SpannableStringBuilder formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
     private ImageView mLockView;
@@ -169,6 +171,25 @@ public class MessageListItem extends RelativeLayout {
         else
             sizeId = android.R.style.TextAppearance;
         mTextView.setTextAppearance(context, sizeId);
+
+        // linkify!
+        boolean linksFound = Linkify.addLinks(formattedMessage, Linkify.ALL);
+
+        /*
+         * workaround for bugs:
+         * http://code.google.com/p/android/issues/detail?id=17343
+         * http://code.google.com/p/android/issues/detail?id=22493
+         * applies only to ICS
+         */
+        if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH ||
+                android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+            formattedMessage.append("\u2060");
+
+        if (linksFound)
+            mTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        else
+            mTextView.setMovementMethod(null);
+
         mTextView.setText(formattedMessage);
 
         int resId = -1;
@@ -264,7 +285,7 @@ public class MessageListItem extends RelativeLayout {
         }
     }
 
-    private CharSequence formatMessage(final Contact contact, final Pattern highlight) {
+    private SpannableStringBuilder formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf;
         String textContent = mMessage.getTextContent();
 
@@ -317,15 +338,6 @@ public class MessageListItem extends RelativeLayout {
                 buf.setSpan(mHighlightColorSpan, m.start(), m.end(), 0);
         }
 
-        /*
-         * workaround for bugs:
-         * http://code.google.com/p/android/issues/detail?id=17343
-         * http://code.google.com/p/android/issues/detail?id=22493
-         * applies only to ICS
-         */
-        if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH ||
-                android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-            buf.append("\u2060");
         return buf;
     }
 
