@@ -70,9 +70,7 @@
                 android:paddingRight="5dip"
                 android:maxWidth="@dimen/message_text_width"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:autoLink="all"
-                android:linksClickable="true"/>
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
 
