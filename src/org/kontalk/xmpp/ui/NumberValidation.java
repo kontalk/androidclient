@@ -52,6 +52,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -128,7 +129,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
-        CountryCodesAdapter ccList = new CountryCodesAdapter(this, android.R.layout.simple_list_item_1, android.R.layout.simple_list_item_1);
+        final CountryCodesAdapter ccList = new CountryCodesAdapter(this, android.R.layout.simple_spinner_item, R.layout.country_dropdown_item);
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         Set<String> ccSet = util.getSupportedRegions();
         for (String cc : ccSet)
@@ -140,6 +141,14 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             }
         });
         mCountryCode.setAdapter(ccList);
+        mCountryCode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                ccList.setSelected(position);
+            }
+            public void onNothingSelected(AdapterView<?> parent) {
+                // TODO Auto-generated method stub
+            }
+        });
 
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {

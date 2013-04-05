@@ -24,9 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.client.NumberValidator;
-
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 import android.content.Context;
 import android.util.Log;
@@ -34,7 +33,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckedTextView;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 
 public class CountryCodesAdapter extends BaseAdapter {
@@ -42,6 +45,7 @@ public class CountryCodesAdapter extends BaseAdapter {
     private final List<CountryCode> mData;
     private final int mViewId;
     private final int mDropdownViewId;
+    private int mSelected;
 
     public static final class CountryCode implements Comparable<String> {
         public String regionCode;
@@ -128,19 +132,24 @@ public class CountryCodesAdapter extends BaseAdapter {
         return cc != null ? mData.indexOf(cc) : -1;
     }
 
+    public void setSelected(int position) {
+        mSelected = position;
+    }
+
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        DropDownViewHolder holder;
         View view;
         if (convertView == null) {
-            view = mInflater.inflate(mViewId, null, false);
-            holder = new ViewHolder();
-            holder.description = (TextView) view.findViewById(android.R.id.text1);
+            view = mInflater.inflate(mDropdownViewId, null, false);
+            holder = new DropDownViewHolder();
+            holder.icon = (ImageView) view.findViewById(android.R.id.icon);
+            holder.description = (CheckedTextView) view.findViewById(android.R.id.text1);
             view.setTag(holder);
         }
         else {
             view = convertView;
-            holder = (ViewHolder) view.getTag();
+            holder = (DropDownViewHolder) view.getTag();
         }
 
         CountryCode e = mData.get(position);
@@ -152,6 +161,9 @@ public class CountryCodesAdapter extends BaseAdapter {
             .append(')');
 
         holder.description.setText(text);
+        holder.description.setChecked((mSelected == position));
+        // TEST
+        holder.icon.setImageResource(R.drawable.flag_it);
 
         return view;
     }
@@ -161,7 +173,7 @@ public class CountryCodesAdapter extends BaseAdapter {
         ViewHolder holder;
         View view;
         if (convertView == null) {
-            view = mInflater.inflate(mDropdownViewId, null, false);
+            view = mInflater.inflate(mViewId, null, false);
             holder = new ViewHolder();
             holder.description = (TextView) view.findViewById(android.R.id.text1);
             view.setTag(holder);
@@ -187,5 +199,10 @@ public class CountryCodesAdapter extends BaseAdapter {
 
     private final static class ViewHolder {
         TextView description;
+    }
+
+    private final static class DropDownViewHolder {
+        CheckedTextView description;
+        ImageView icon;
     }
 }
