@@ -22,6 +22,7 @@ import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
@@ -1406,19 +1407,30 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		updateUI();
 	}
 
-	private final class UserPresenceBroadcastReceiver extends BroadcastReceiver {
+	private static final class UserPresenceBroadcastReceiver extends BroadcastReceiver {
+	    private final WeakReference<ComposeMessageFragment> f;
+	    private final String userId;
+
+	    public UserPresenceBroadcastReceiver(ComposeMessageFragment fragment, String userId) {
+            f = new WeakReference<ComposeMessageFragment>(fragment);
+            this.userId = userId;
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
+            ComposeMessageFragment fragment = f.get();
             String action = intent.getAction();
             if (MessageCenterService.ACTION_USER_PRESENCE.equals(action)) {
                 int event = intent.getIntExtra("org.kontalk.presence.event", 0);
                 CharSequence text = null;
 
                 if (event == UserEvent.EVENT_OFFLINE_VALUE) {
-                    text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
+                    if (fragment != null)
+                        text = fragment.buildLastSeenText(fragment.getResources().getString(R.string.seen_moment_ago_label));
                 }
                 else if (event == UserEvent.EVENT_ONLINE_VALUE) {
-                    text = getResources().getString(R.string.seen_online_label);
+                    if (fragment != null)
+                        text = fragment.getResources().getString(R.string.seen_online_label);
                 }
                 else if (event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
                     // update users table
@@ -1434,7 +1446,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
                 if (text != null) {
                     try {
-                        setStatusText(text);
+                        fragment.setStatusText(text);
                     }
                     catch (Exception e) {
                         // something could happen in the mean time - e.g. fragment destruction
@@ -1443,12 +1455,14 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             }
 
             else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                // request user lookup
-                PresenceServiceConnection conn = new PresenceServiceConnection(userId, true);
-                getActivity().bindService(
-                        new Intent(getActivity().getApplicationContext(),
-                                MessageCenterService.class), conn,
-                        Context.BIND_AUTO_CREATE);
+                if (fragment != null) {
+                    // request user lookup
+                    PresenceServiceConnection conn = fragment.new PresenceServiceConnection(userId, true);
+                    fragment.getActivity().bindService(
+                            new Intent(fragment.getActivity().getApplicationContext(),
+                                    MessageCenterService.class), conn,
+                            Context.BIND_AUTO_CREATE);
+                }
             }
         }
 	}
@@ -1461,7 +1475,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                             MessageCenterService.class), conn,
                     Context.BIND_AUTO_CREATE);
 
-            mPresenceReceiver = new UserPresenceBroadcastReceiver();
+            mPresenceReceiver = new UserPresenceBroadcastReceiver(this, userId);
 
     	    try {
     	        // filter for user presence
