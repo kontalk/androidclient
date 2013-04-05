@@ -275,42 +275,18 @@ public class ComposeMessage extends SherlockFragmentActivity {
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
-    private void processSendIntent() {
-        String mime = sendIntent.getType();
-        boolean multi = Intent.ACTION_SEND_MULTIPLE.equals(sendIntent.getAction());
+    private void sendMedia(Uri uri) {
+        Log.d(TAG, "looking up mime type for uri " + uri);
+        String mime = MediaStorage.getType(this, uri);
+        Log.d(TAG, "using detected mime type " + mime);
 
-        if (mime.startsWith("*/") || mime.endsWith("/*")) {
-            Uri uri = (Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
-            Log.d(TAG, "looking up mime type for uri " + uri + " (invalid type: " + mime + ")");
-            mime = MediaStorage.getType(this, uri);
-            Log.d(TAG, "using detected mime type " + mime);
-        }
-
-        // send text message - just fill the text entry
-        if (PlainTextMessage.supportsMimeType(mime)) {
-            mFragment.setTextEntry(sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT));
-        }
-
-        else if (ImageMessage.supportsMimeType(mime)) {
+        if (ImageMessage.supportsMimeType(mime)) {
             // send image immediately
-            if (multi) {
-                ArrayList<Uri> contents = sendIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                for (Uri uri : contents)
-                    mFragment.sendBinaryMessage(uri, mime, true, ImageMessage.class);
-            }
-            else
-                mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, true, ImageMessage.class);
+            mFragment.sendBinaryMessage(uri, mime, true, ImageMessage.class);
         }
 
         else if (VCardMessage.supportsMimeType(mime)) {
-            // send vcard immediately
-            if (multi) {
-                ArrayList<Uri> contents = sendIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                for (Uri uri : contents)
-                    mFragment.sendBinaryMessage(uri, mime, true, VCardMessage.class);
-            }
-            else
-                mFragment.sendBinaryMessage((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM), mime, false, VCardMessage.class);
+            mFragment.sendBinaryMessage(uri, mime, true, VCardMessage.class);
         }
 
         else {
@@ -318,6 +294,42 @@ public class ComposeMessage extends SherlockFragmentActivity {
             Log.w(TAG, "mime " + mime + " not supported");
             Toast.makeText(this, R.string.send_mime_not_supported, Toast.LENGTH_LONG)
                 .show();
+        }
+    }
+
+    private void processSendIntent() {
+        String mime = sendIntent.getType();
+        boolean multi = Intent.ACTION_SEND_MULTIPLE.equals(sendIntent.getAction());
+
+        if (multi) {
+            // multiple texts: take only the first one
+            // FIXME this will not allow text file attachments
+            if (PlainTextMessage.supportsMimeType(mime)) {
+                ArrayList<CharSequence> texts = sendIntent.getCharSequenceArrayListExtra(Intent.EXTRA_TEXT);
+                if (texts != null && texts.size() > 0)
+                    mFragment.setTextEntry(texts.get(0));
+            }
+
+            else {
+                ArrayList<Uri> uris = sendIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                if (uris != null) {
+                    for (Uri uri : uris) {
+                        sendMedia(uri);
+                    }
+                }
+            }
+        }
+
+        else {
+            // FIXME this will not allow text file attachments
+            if (PlainTextMessage.supportsMimeType(mime)) {
+                CharSequence text = sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+                mFragment.setTextEntry(text);
+            }
+
+            else {
+                sendMedia((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM));
+            }
         }
 
         sendIntent = null;
