@@ -25,10 +25,10 @@
     <ImageView android:id="@android:id/icon"
         android:layout_width="0dip"
         android:layout_height="match_parent"
+        android:padding="10dp"
         android:layout_weight="1"
         android:layout_gravity="center_vertical"
-        android:scaleType="center"
-        android:src="@drawable/flag_it"/>
+        android:scaleType="fitCenter" />
 
 	<CheckedTextView
 	    android:id="@android:id/text1"
@@ -39,7 +39,6 @@
 	    android:layout_height="match_parent"
 	    android:ellipsize="marquee"
 	    android:singleLine="true"
-	    android:layout_weight="6"
-	    android:text="Italy (+39)" />
+	    android:layout_weight="6" />
 
 </LinearLayout>

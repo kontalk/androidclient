@@ -63,8 +63,6 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
@@ -129,7 +127,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
-        final CountryCodesAdapter ccList = new CountryCodesAdapter(this, android.R.layout.simple_spinner_item, R.layout.country_dropdown_item);
+        final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         Set<String> ccSet = util.getSupportedRegions();
         for (String cc : ccSet)
