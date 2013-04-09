@@ -498,7 +498,18 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         setProgressMessage(getString(R.string.msg_initializing));
 
         // manual sync
-        SyncerUI.execute(this, mSyncFinish, false);
+        // give time to the AccountManager to add the account
+        // FIXME this doesn't take configuration changes into account
+        mHandler.postDelayed(new Runnable() {
+            public void run() {
+                try {
+                    SyncerUI.execute(NumberValidation.this, mSyncFinish, false);
+                }
+                catch (Exception e) {
+                    // dead activity etc.
+                }
+            }
+        }, 3000);
     }
 
     @Override
