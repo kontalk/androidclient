@@ -172,7 +172,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
                     // a phone number should come here...
                     String number = NumberValidator.fixNumber(this,
                             uri.getSchemeSpecificPart(),
-                            Authenticator.getDefaultAccountName(this), null);
+                            Authenticator.getDefaultAccountName(this), 0);
                     // compute hash and open conversation
                     String userId = MessageUtils.sha1(number);
 

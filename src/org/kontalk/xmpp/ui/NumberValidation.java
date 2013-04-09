@@ -47,7 +47,6 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -62,7 +61,9 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
@@ -148,10 +149,10 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             }
         });
 
+        // FIXME this doesn't consider creation because of configuration change
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {
             mPhone.setText(String.valueOf(myNum.getNationalNumber()));
-            // TODO mCountryCode.setText(String.valueOf(myNum.getCountryCode()));
             Log.d(TAG, "selecting country " + util.getRegionCodeForNumber(myNum));
             CountryCode cc = new CountryCode();
             cc.regionCode = util.getRegionCodeForNumber(myNum);
@@ -159,7 +160,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             mCountryCode.setSelection(ccList.getPositionForId(cc));
         }
         else {
-            // TODO mCountryCode.setText(NumberValidator.getCountryCode(this));
             final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
             final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
             CountryCode cc = new CountryCode();
@@ -281,49 +281,29 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     /** TODO TOTALLY BROKEN SECTION DO NOT BUILD THIS */
     private boolean checkInput() {
-        // TODO convert this to isValidNumberForRegion()
+        mPhoneNumber = null;
+
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-        CountryCode cc1 = (CountryCode) mCountryCode.getSelectedItem();
+        CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
+        PhoneNumber phone;
         try {
-            boolean valid = util.isValidNumberForRegion(util.parse(mPhone.getText().toString(), cc1.regionCode), cc1.regionCode);
-            // TODO util.format(null, PhoneNumberFormat.E164)
-            Log.v(TAG, "valid number: " + valid);
+            phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+            if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
+                throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+            }
+
         }
         catch (NumberParseException e1) {
-            e1.printStackTrace();
-        }
-
-        // check country code input
-        String cc = ""; // TODO mCountryCode.getText().toString().trim();
-        if (cc.length() < 1) {
-            error(R.string.title_invalid_number, R.string.msg_invalid_cc);
-            return false;
-        }
-
-        // check number input
-        String phone = null;
-        try {
-            String p = mPhone.getText().toString().trim();
-            if (p.length() < 3 || !TextUtils.isDigitsOnly(p)) throw new Exception();
-            String t = "+" + cc + p;
-            phone = NumberValidator.fixNumber(this, t, t, cc);
-        }
-        catch (Exception e) {
             error(R.string.title_invalid_number, R.string.msg_invalid_number);
             return false;
         }
-        // exposing sensitive data - Log.d(TAG, "checking phone number: \"" + phone + "\"");
-
-        // empty number :S
-        if (phone.length() == 0) {
-            phone = null;
-        }
 
         // check phone number format
+        String phoneStr = null;
         if (phone != null) {
-            if (!PhoneNumberUtils.isWellFormedSmsAddress(phone)) {
+            phoneStr = util.format(phone, PhoneNumberFormat.E164);
+            if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
                 Log.i(TAG, "not a well formed SMS address");
-                phone = null;
             }
         }
 
@@ -334,7 +314,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             return false;
         }
 
-        mPhoneNumber = phone;
+        Log.v(TAG, "Using phone number to register: " + phoneStr);
+        mPhoneNumber = phoneStr;
         return true;
     }
 

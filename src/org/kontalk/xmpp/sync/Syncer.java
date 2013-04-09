@@ -232,14 +232,6 @@ public class Syncer {
             return;
         }
 
-        CharSequence countryCode = NumberValidator.getCountryPrefix(mContext);
-        if (countryCode == null) {
-            Log.w(TAG, "no SIM available and no saved country code - aborting sync");
-            syncResult.stats.numIoExceptions++;
-            return;
-        }
-        Log.i(TAG, "using country code: " + countryCode);
-
         // query all contacts
         Cursor cursor = null;
         Uri offlineUri = Users.CONTENT_URI.buildUpon()
@@ -271,7 +263,7 @@ public class Syncer {
 
             // fix number
             try {
-                number = NumberValidator.fixNumber(mContext, number, account.name, null);
+                number = NumberValidator.fixNumber(mContext, number, account.name, 0);
             }
             catch (Exception e) {
                 Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);

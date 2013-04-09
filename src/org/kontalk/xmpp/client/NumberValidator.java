@@ -51,7 +51,9 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
@@ -467,74 +469,48 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         public void onAuthTokenFailed(NumberValidator v, int reason);
     }
 
-    public static CharSequence getCountryCode(Context context) {
+    /**
+     * Converts pretty much any phone number into E.164 format.
+     * @param myNumber used to take the country code if not found in the number
+     * @param lastResortCc manual country code last resort
+     * @throws IllegalArgumentException if no country code is available.
+     */
+    public static String fixNumber(Context context, String number, String myNumber, int lastResortCc)
+            throws NumberParseException {
+
         final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
-        int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
-        return cc > 0 ? String.valueOf(cc) : "";
-    }
+        String myRegionCode = tm.getSimCountryIso();
+        if (myRegionCode != null)
+            myRegionCode = myRegionCode.toUpperCase(Locale.US);
 
-    public static CharSequence getCountryPrefix(Context context) {
-        return getCountryPrefix(context, null, -1);
-    }
-
-    public static CharSequence getCountryPrefix(Context context, String from, int lastResort) {
-        final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
-        int cc = PhoneNumberUtil.getInstance().getCountryCodeForRegion(regionCode);
-        if (cc <= 0) {
-            cc = MessagingPreferences.getLastCountryCode(context);
-            // still no country code - take it from the given number (if any)
-            if (cc <= 0 && from != null) {
-                try {
-                    PhoneNumber n = PhoneNumberUtil.getInstance().parse(from, null);
-                    cc = n.getCountryCode();
-                }
-                catch (Exception e) {
-                    // ignore exception for now
-                    Log.d(TAG, "error parsing number: " + from, e);
-                }
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        try {
+            if (myNumber != null) {
+                PhoneNumber myNum = util.parse(myNumber, myRegionCode);
+                // use region code found in my number
+                myRegionCode = util.getRegionCodeForNumber(myNum);
             }
         }
-
-        // last resort
-        if (cc <= 0)
-            cc = lastResort;
-
-        // try again...
-        if (cc > 0) {
-            MessagingPreferences.setLastCountryCode(context, cc);
-            return "+" + cc;
+        catch (NumberParseException e) {
+            // ehm :)
         }
 
-        // give up... :(
-        return null;
-    }
-
-    public static String fixNumber(Context context, String number, String myNumber, String lastResort)
-            throws IllegalArgumentException {
-        // normalize number: strip separators
-        number = PhoneNumberUtils.stripSeparators(number.trim());
-
-        // normalize number: add country code if not found
-        if (number.startsWith("00"))
-            number = '+' + number.substring(2);
-        else if (number.charAt(0) != '+') {
-            int cc;
-            try {
-                cc = Integer.parseInt(lastResort);
+        PhoneNumber parsedNum;
+        try {
+            parsedNum = util.parse(number, myRegionCode);
+        }
+        catch (NumberParseException e) {
+            // parse failed with default region code, try last resort
+            if (lastResortCc > 0) {
+                myRegionCode = util.getRegionCodeForCountryCode(lastResortCc);
+                parsedNum = util.parse(number, myRegionCode);
             }
-            catch (Exception e) {
-                cc = -1;
-            }
-
-            CharSequence prefix = getCountryPrefix(context, myNumber, cc);
-            if (prefix == null)
-                throw new IllegalArgumentException("no country code available");
-            number = prefix + number;
+            else
+                throw e;
         }
 
-        return number;
+        // a NumberParseException would have been thrown at this point
+        return util.format(parsedNum, PhoneNumberFormat.E164);
     }
 
     /** Returns the (parsed) number stored in this device SIM card. */

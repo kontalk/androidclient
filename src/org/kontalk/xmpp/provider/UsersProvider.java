@@ -368,7 +368,7 @@ public class UsersProvider extends ContentProvider {
                     // fix number
                     try {
                         number = NumberValidator.fixNumber(context, number,
-                                Authenticator.getDefaultAccountName(context), null);
+                                Authenticator.getDefaultAccountName(context), 0);
                     }
                     catch (Exception e) {
                         Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
@@ -439,7 +439,7 @@ public class UsersProvider extends ContentProvider {
                         // fix number
                         try {
                             number = NumberValidator.fixNumber(context, number,
-                                    Authenticator.getDefaultAccountName(context), null);
+                                    Authenticator.getDefaultAccountName(context), 0);
                         }
                         catch (Exception e) {
                             Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
