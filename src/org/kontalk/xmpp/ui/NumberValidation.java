@@ -279,7 +279,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             .show();
     }
 
-    /** TODO TOTALLY BROKEN SECTION DO NOT BUILD THIS */
     private boolean checkInput() {
         mPhoneNumber = null;
 
