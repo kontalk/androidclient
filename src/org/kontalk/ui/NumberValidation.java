@@ -19,6 +19,9 @@
 package org.kontalk.ui;
 
 import java.net.SocketException;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.Set;
 
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -28,6 +31,7 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.client.Protocol.RegistrationResponse.RegistrationStatus;
 import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.ui.CountryCodesAdapter.CountryCode;
 import org.kontalk.util.SyncerUI;
 
 import android.accounts.Account;
@@ -43,18 +47,24 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
-import android.text.TextUtils;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
@@ -73,7 +83,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public static final String PARAM_AUTHTOKEN = "org.kontalk.authtoken";
 
     private AccountManager mAccountManager;
-    private EditText mCountryCode;
+    private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
     private Button mManualButton;
@@ -123,19 +133,51 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
-        mCountryCode = (EditText) findViewById(R.id.phone_cc);
+        mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
         mManualButton = (Button) findViewById(R.id.button_manual);
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
+        // populate country codes
+        final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        Set<String> ccSet = util.getSupportedRegions();
+        for (String cc : ccSet)
+            ccList.add(cc);
+
+        ccList.sort(new Comparator<CountryCodesAdapter.CountryCode>() {
+            public int compare(CountryCodesAdapter.CountryCode lhs, CountryCodesAdapter.CountryCode rhs) {
+                return lhs.regionName.compareTo(rhs.regionName);
+            }
+        });
+        mCountryCode.setAdapter(ccList);
+        mCountryCode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                ccList.setSelected(position);
+            }
+            public void onNothingSelected(AdapterView<?> parent) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        // FIXME this doesn't consider creation because of configuration change
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {
             mPhone.setText(String.valueOf(myNum.getNationalNumber()));
-            mCountryCode.setText(String.valueOf(myNum.getCountryCode()));
+            Log.d(TAG, "selecting country " + util.getRegionCodeForNumber(myNum));
+            CountryCode cc = new CountryCode();
+            cc.regionCode = util.getRegionCodeForNumber(myNum);
+            cc.countryCode = myNum.getCountryCode();
+            mCountryCode.setSelection(ccList.getPositionForId(cc));
         }
         else {
-            mCountryCode.setText(NumberValidator.getCountryCode(this));
+            final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
+            CountryCode cc = new CountryCode();
+            cc.regionCode = regionCode;
+            cc.countryCode = util.getCountryCodeForRegion(regionCode);
+            mCountryCode.setSelection(ccList.getPositionForId(cc));
         }
 
         // configuration change??
@@ -247,37 +289,29 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     private boolean checkInput() {
-        // check country code input
-        String cc = mCountryCode.getText().toString().trim();
-        if (cc.length() < 1) {
-            error(R.string.title_invalid_number, R.string.msg_invalid_cc);
-            return false;
-        }
+        mPhoneNumber = null;
 
-        // check number input
-        String phone = null;
+        PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+        CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
+        PhoneNumber phone;
         try {
-            String p = mPhone.getText().toString().trim();
-            if (p.length() < 3 || !TextUtils.isDigitsOnly(p)) throw new Exception();
-            String t = "+" + cc + p;
-            phone = NumberValidator.fixNumber(this, t, t, cc);
+            phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+            if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
+                throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+            }
+
         }
-        catch (Exception e) {
+        catch (NumberParseException e1) {
             error(R.string.title_invalid_number, R.string.msg_invalid_number);
             return false;
         }
-        // exposing sensitive data - Log.d(TAG, "checking phone number: \"" + phone + "\"");
-
-        // empty number :S
-        if (phone.length() == 0) {
-            phone = null;
-        }
 
         // check phone number format
+        String phoneStr = null;
         if (phone != null) {
-            if (!PhoneNumberUtils.isWellFormedSmsAddress(phone)) {
+            phoneStr = util.format(phone, PhoneNumberFormat.E164);
+            if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
                 Log.i(TAG, "not a well formed SMS address");
-                phone = null;
             }
         }
 
@@ -288,7 +322,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             return false;
         }
 
-        mPhoneNumber = phone;
+        Log.v(TAG, "Using phone number to register: " + phoneStr);
+        mPhoneNumber = phoneStr;
         return true;
     }
 
