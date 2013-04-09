@@ -525,8 +525,14 @@ public class MessagesProvider extends ContentProvider {
         }
 
         // insert new thread
-        long resThreadId = db.insert(TABLE_THREADS, null, values);
-        if (resThreadId < 0) {
+        try {
+            threadId = db.insertOrThrow(TABLE_THREADS, null, values);
+
+            // notify newly created thread by userid
+            // this will be used for fixing ticket #18
+            notifications.add(Threads.getUri(peer));
+        }
+        catch (SQLException e) {
             // clear draft (since we are inserting a new message here)
             values.putNull(Threads.DRAFT);
 
@@ -538,13 +544,6 @@ public class MessagesProvider extends ContentProvider {
                     threadId = c.getLong(0);
                 c.close();
             }
-        }
-        else {
-            threadId = resThreadId;
-
-            // notify newly created thread by userid
-            // this will be used for fixing ticket #18
-            notifications.add(Threads.getUri(peer));
         }
 
         return threadId;
