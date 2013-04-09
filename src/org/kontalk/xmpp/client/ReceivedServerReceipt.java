@@ -34,7 +34,7 @@ public class ReceivedServerReceipt extends ServerReceipt {
             Map<String, String> attributeMap, List<? extends PacketExtension> content) {
             ReceivedServerReceipt p = new ReceivedServerReceipt(attributeMap.get("id"));
             try {
-                p.setTimestamp(StringUtils.parseXEP0082Date(attributeMap.get("stamp")));
+                p.setTimestamp(StringUtils.parseDate(attributeMap.get("stamp")));
             }
             catch (Exception e) {
                 // ignored

@@ -36,7 +36,6 @@ import org.jivesoftware.smackx.packet.DataForm;
 import org.jivesoftware.smackx.provider.DataFormProvider;
 import org.kontalk.xmpp.service.XMPPConnectionHelper;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
-import org.kontalk.xmpp.ui.MessagingPreferences;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

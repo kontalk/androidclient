@@ -43,7 +43,6 @@ import android.os.Parcelable;
  * @version 1.0
  */
 public abstract class AbstractMessage<T> {
-    private static final String TAG = AbstractMessage.class.getSimpleName();
 
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
