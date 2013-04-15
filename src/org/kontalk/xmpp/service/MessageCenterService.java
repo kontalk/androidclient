@@ -810,6 +810,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         String mime = data.getString("org.kontalk.message.mime");
         String _mediaUri = data.getString("org.kontalk.message.media.uri");
         if (_mediaUri != null) {
+            /*
+             * FIXME at this point, mUploadServices could be not filled yet
+             * e.g. when we send a message right after connection intent has
+             * been broadcasted. Therefore we should delay the message until
+             * we receive information about upload services.
+             * https://code.google.com/p/kontalk/issues/detail?id=70
+             */
             // take the first available upload service :)
             String postUrl = mUploadServices.get(getUploadService());
             if (postUrl != null) {
