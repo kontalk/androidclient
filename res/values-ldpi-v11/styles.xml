@@ -20,9 +20,9 @@
 
   <!-- default theme selector -->
   <style name="Theme.Light" parent="Theme.Sherlock.Light">
-      <item name="actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
-      <item name="actionBarSize">@dimen/actionbar_height</item>
-      <item name="actionButtonStyle">@style/Widget.Sherlock.Light.ActionButton.LowDensity</item>
+      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
+      <item name="android:actionBarSize">@dimen/actionbar_height</item>
+      <item name="android:actionButtonStyle">@style/Widget.Sherlock.Light.ActionButton.LowDensity</item>
   </style>
 
   <style name="TextAppearance.Widget.ActionBar.Title.Inverse"
