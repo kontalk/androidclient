@@ -1180,6 +1180,18 @@ public class MessagesProvider extends ContentProvider {
                 Messages._ID + " = " + msgId, null);
     }
 
+    public static boolean exists(Context context, long msgId) {
+        // check if the message lives :)
+        boolean b = false;
+        Cursor c = context.getContentResolver().
+            query(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                null, null, null, null);
+        if (c.moveToFirst())
+            b = true;
+        c.close();
+        return b;
+    }
+
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_THREADS, THREADS);

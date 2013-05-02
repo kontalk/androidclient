@@ -228,6 +228,12 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public void progress(UploadConnection conn, long bytes) {
+        if (mCanceled || !MessagesProvider.exists(this, mMessageId)) {
+            Log.v(TAG, "upload canceled or message deleted - aborting");
+            mConn.abort();
+            mCanceled = true;
+        }
+
         Log.v(TAG, "bytes = " + bytes);
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
