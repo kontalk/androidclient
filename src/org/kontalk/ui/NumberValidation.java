@@ -198,6 +198,18 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putString("phoneNumber", mPhoneNumber);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        mPhoneNumber = state.getString("phoneNumber");
+    }
+
     /** Returning the validator thread. */
     @Override
     public Object onRetainNonConfigurationInstance() {
