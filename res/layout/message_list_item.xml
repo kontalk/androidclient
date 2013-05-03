@@ -51,7 +51,7 @@
             android:visibility="gone" />
 
         <ImageView
-            android:id="@+id/lock_icon"
+            android:id="@+id/lock_icon_outgoing"
             android:visibility="gone"
             android:layout_width="22dp"
             android:layout_height="22dp"
@@ -63,11 +63,21 @@
             android:paddingTop="4dip"
             android:paddingBottom="4dip"
             android:paddingLeft="5dip"
-            android:paddingRight="5dip"
+            android:paddingRight="2dip"
             android:maxWidth="@dimen/message_text_width"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"/>
+
+        <ImageView
+            android:id="@+id/lock_icon_incoming"
+            android:visibility="gone"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginBottom="4dip"
+            android:layout_marginRight="4dp"
+            android:contentDescription="@string/msg_status_encrypted"
+            android:src="@drawable/ic_msg_warning" />
 
         <TextView android:id="@+id/date_view_incoming"
             style="@android:style/TextAppearance.Small"

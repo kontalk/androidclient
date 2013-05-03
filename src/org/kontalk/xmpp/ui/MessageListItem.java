@@ -44,8 +44,6 @@ import android.text.style.ImageSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -65,7 +63,8 @@ public class MessageListItem extends RelativeLayout {
     private SpannableStringBuilder formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
-    private ImageView mLockView;
+    private ImageView mLockIconIncoming;
+    private ImageView mLockIconOutgoing;
     private TextView mDateViewIncoming;
     private TextView mDateViewOutgoing;
     private LinearLayout mBalloonView;
@@ -110,7 +109,8 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
-        mLockView = (ImageView) findViewById(R.id.lock_icon);
+        mLockIconIncoming = (ImageView) findViewById(R.id.lock_icon_incoming);
+        mLockIconOutgoing = (ImageView) findViewById(R.id.lock_icon_outgoing);
         mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
         mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
         mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
@@ -139,7 +139,8 @@ public class MessageListItem extends RelativeLayout {
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
                 mStatusIcon.setVisibility(VISIBLE);
             }
-            mLockView.setVisibility(VISIBLE);
+            mLockIconOutgoing.setVisibility(VISIBLE);
+            mLockIconIncoming.setVisibility(GONE);
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             setGravity(Gravity.RIGHT);
@@ -196,9 +197,12 @@ public class MessageListItem extends RelativeLayout {
         int resId = 0;
         int statusId = 0;
 
-        mLockView.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
+        boolean wasEncrypted = mMessage.wasEncrypted();
 
         if (mMessage.getSender() != null) {
+            mLockIconIncoming.setVisibility(wasEncrypted ? GONE : VISIBLE);
+            mLockIconOutgoing.setVisibility(GONE);
+
             if (mBalloonView != null) {
 	            mBalloonView.setBackgroundResource(MessagingPreferences
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
@@ -220,6 +224,9 @@ public class MessageListItem extends RelativeLayout {
             }
         }
         else {
+            mLockIconOutgoing.setVisibility(wasEncrypted ? GONE : VISIBLE);
+            mLockIconIncoming.setVisibility(GONE);
+
             if (mBalloonView != null) {
             	mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
