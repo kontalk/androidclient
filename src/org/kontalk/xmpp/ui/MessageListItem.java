@@ -43,9 +43,9 @@ import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -66,8 +66,9 @@ public class MessageListItem extends RelativeLayout {
     private TextView mTextView;
     private ImageView mStatusIcon;
     private ImageView mLockView;
-    private TextView mDateView;
-    private View mBalloonView;
+    private TextView mDateViewIncoming;
+    private TextView mDateViewOutgoing;
+    private LinearLayout mBalloonView;
     private LinearLayout mParentView;
 
     private ImageView mAvatarIncoming;
@@ -110,35 +111,29 @@ public class MessageListItem extends RelativeLayout {
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
         mLockView = (ImageView) findViewById(R.id.lock_icon);
-        mBalloonView = findViewById(R.id.balloon_view);
-        mDateView = (TextView) findViewById(R.id.date_view);
+        mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
+        mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
+        mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
         mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
         mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
         mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
 
         if (isInEditMode()) {
             mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
-            mTextView.setText("TEST");
+            //mTextView.setText("TEST");
             //mTextView.setText(":-)");
             /* INCOMING
-            if (mDateView == null) {
-                if (mBalloonView != null)
-                    mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
-                if (mDateViewIncoming != null) {
-    	            mDateViewIncoming.setVisibility(VISIBLE);
-    	            mDateViewOutgoing.setVisibility(GONE);
-    	            mDateViewIncoming.setText("28 Nov");
-                }
+            //setGravity(Gravity.LEFT);
+            if (mBalloonView != null) {
+                mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
+                mBalloonView.setGravity(Gravity.LEFT);
             }
-            else {
-                int backId = R.drawable.message_list_item_in_fill;
-                mNameView.setBackgroundResource(backId);
-                mDateView.setBackgroundResource(backId);
-                mBackground.setBackgroundResource(R.drawable.message_list_item_in_border);
-            	mNameView.setText("Daniele Ricci");
-            	mDateView.setText("11:56");
-            }
+            mDateViewIncoming.setVisibility(VISIBLE);
+            mDateViewOutgoing.setVisibility(GONE);
+            mDateViewIncoming.setText("28 Nov");
+            mLockView.setVisibility(VISIBLE);
             */
+
 	        /* OUTGOING */
             if (mStatusIcon != null) {
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
@@ -148,12 +143,13 @@ public class MessageListItem extends RelativeLayout {
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             setGravity(Gravity.RIGHT);
-            if (mBalloonView != null)
+            if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-            if (mDateView != null) {
-                mDateView.setVisibility(VISIBLE);
-                mDateView.setText("00:00");
+                mBalloonView.setGravity(Gravity.RIGHT);
             }
+            mDateViewOutgoing.setVisibility(VISIBLE);
+            mDateViewIncoming.setVisibility(GONE);
+            mDateViewOutgoing.setText("00:00, 13 Apr");
             if (mAvatarIncoming != null) {
                 mAvatarIncoming.setVisibility(GONE);
                 mAvatarOutgoing.setVisibility(VISIBLE);
@@ -203,13 +199,18 @@ public class MessageListItem extends RelativeLayout {
         mLockView.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
 
         if (mMessage.getSender() != null) {
-            if (mBalloonView != null)
+            if (mBalloonView != null) {
 	            mBalloonView.setBackgroundResource(MessagingPreferences
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
+            }
+            else {
+                mParentView.setGravity(Gravity.LEFT);
+            }
 
             setGravity(Gravity.LEFT);
-            mParentView.setGravity(Gravity.LEFT);
-            //setBackgroundResource(R.drawable.light_blue_background);
+            mDateViewOutgoing.setVisibility(GONE);
+            mDateViewIncoming.setVisibility(VISIBLE);
+            mDateViewIncoming.setText(formatTimestamp());
 
             if (mAvatarIncoming != null) {
                 mAvatarOutgoing.setVisibility(GONE);
@@ -219,13 +220,18 @@ public class MessageListItem extends RelativeLayout {
             }
         }
         else {
-            if (mBalloonView != null)
+            if (mBalloonView != null) {
             	mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
+            }
+            else {
+                mParentView.setGravity(Gravity.RIGHT);
+            }
 
             setGravity(Gravity.RIGHT);
-            mParentView.setGravity(Gravity.RIGHT);
-            //setBackgroundResource(R.drawable.white_background);
+            mDateViewIncoming.setVisibility(GONE);
+            mDateViewOutgoing.setVisibility(VISIBLE);
+            mDateViewOutgoing.setText(formatTimestamp());
 
             if (mAvatarOutgoing != null) {
                 mAvatarIncoming.setVisibility(GONE);
@@ -272,19 +278,6 @@ public class MessageListItem extends RelativeLayout {
             mStatusIcon.setImageDrawable(null);
             mStatusIcon.setVisibility(GONE);
         }
-
-        // we are using a custom bg, place the background and invert text color
-        if (MessagingPreferences.getConversationBackground(getContext()) != null) {
-            mDateView.setBackgroundResource(R.drawable.datebox);
-            mDateView.setTextAppearance(getContext(), android.R.style.TextAppearance_Small_Inverse);
-        }
-        else {
-            mDateView.setBackgroundResource(0);
-            mDateView.setTextAppearance(getContext(), android.R.style.TextAppearance_Small);
-        }
-
-        // enforce text size
-        mDateView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimensionPixelSize(R.dimen.dateview_text_size));
     }
 
     private final class MaxSizeImageSpan extends ImageSpan {
@@ -337,10 +330,20 @@ public class MessageListItem extends RelativeLayout {
             buf = new SpannableStringBuilder();
         }
 
+        if (highlight != null) {
+            Matcher m = highlight.matcher(buf.toString());
+            while (m.find())
+                buf.setSpan(mHighlightColorSpan, m.start(), m.end(), 0);
+        }
+
+        return buf;
+    }
+
+    private CharSequence formatTimestamp() {
         long serverTime = mMessage.getServerTimestamp();
         long ts = serverTime > 0 ? serverTime : mMessage.getTimestamp();
 
-        // if we are in the same day, just prime time, else print date & time
+        // if we are in the same day, just print time, otherwise print date+time
         boolean fullFormat;
         Calendar thenCal = new GregorianCalendar();
         thenCal.setTimeInMillis(ts);
@@ -354,15 +357,7 @@ public class MessageListItem extends RelativeLayout {
             fullFormat = true;
         }
 
-        mDateView.setText(MessageUtils.formatTimeStampString(getContext(), ts, fullFormat));
-
-        if (highlight != null) {
-            Matcher m = highlight.matcher(buf.toString());
-            while (m.find())
-                buf.setSpan(mHighlightColorSpan, m.start(), m.end(), 0);
-        }
-
-        return buf;
+        return MessageUtils.formatTimeStampString(getContext(), ts, fullFormat);
     }
 
     public final void unbind() {
