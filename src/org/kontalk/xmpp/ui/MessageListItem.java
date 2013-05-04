@@ -180,7 +180,7 @@ public class MessageListItem extends RelativeLayout {
          * http://code.google.com/p/android/issues/detail?id=22493
          * applies from Honeycomb to JB 4.2.2 afaik
          */
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB ||
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
                 android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
             formattedMessage.append("\u2060");
 
