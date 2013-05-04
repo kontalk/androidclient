@@ -43,7 +43,9 @@ import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -63,10 +65,8 @@ public class MessageListItem extends RelativeLayout {
     private SpannableStringBuilder formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
-    private ImageView mLockIconIncoming;
-    private ImageView mLockIconOutgoing;
-    private TextView mDateViewIncoming;
-    private TextView mDateViewOutgoing;
+    private ImageView mLockIcon;
+    private TextView mDateView;
     private LinearLayout mBalloonView;
     private LinearLayout mParentView;
 
@@ -109,11 +109,9 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
-        mLockIconIncoming = (ImageView) findViewById(R.id.lock_icon_incoming);
-        mLockIconOutgoing = (ImageView) findViewById(R.id.lock_icon_outgoing);
+        mLockIcon = (ImageView) findViewById(R.id.lock_icon);
         mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
-        mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
-        mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
+        mDateView = (TextView) findViewById(R.id.date_view);
         mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
         mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
         mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
@@ -123,15 +121,15 @@ public class MessageListItem extends RelativeLayout {
             //mTextView.setText("TEST");
             //mTextView.setText(":-)");
             /* INCOMING
-            //setGravity(Gravity.LEFT);
+            setGravity(Gravity.LEFT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
-                mBalloonView.setGravity(Gravity.LEFT);
             }
             mDateViewIncoming.setVisibility(VISIBLE);
             mDateViewOutgoing.setVisibility(GONE);
             mDateViewIncoming.setText("28 Nov");
-            mLockView.setVisibility(VISIBLE);
+            mLockIconOutgoing.setVisibility(GONE);
+            mLockIconIncoming.setVisibility(GONE);
             */
 
 	        /* OUTGOING */
@@ -139,18 +137,14 @@ public class MessageListItem extends RelativeLayout {
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
                 mStatusIcon.setVisibility(VISIBLE);
             }
-            mLockIconOutgoing.setVisibility(VISIBLE);
-            mLockIconIncoming.setVisibility(GONE);
+            mLockIcon.setVisibility(VISIBLE);
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             setGravity(Gravity.RIGHT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-                mBalloonView.setGravity(Gravity.RIGHT);
             }
-            mDateViewOutgoing.setVisibility(VISIBLE);
-            mDateViewIncoming.setVisibility(GONE);
-            mDateViewOutgoing.setText("00:00, 13 Apr");
+            mDateView.setText("00:00, 13 Apr");
             if (mAvatarIncoming != null) {
                 mAvatarIncoming.setVisibility(GONE);
                 mAvatarOutgoing.setVisibility(VISIBLE);
@@ -197,24 +191,28 @@ public class MessageListItem extends RelativeLayout {
         int resId = 0;
         int statusId = 0;
 
-        boolean wasEncrypted = mMessage.wasEncrypted();
+        mLockIcon.setVisibility(mMessage.wasEncrypted() ? GONE : VISIBLE);
 
         if (mMessage.getSender() != null) {
-            mLockIconIncoming.setVisibility(wasEncrypted ? GONE : VISIBLE);
-            mLockIconOutgoing.setVisibility(GONE);
+            //RelativeLayout.LayoutParams params = mLockIcon.getLayoutParams();
+            //params.leftMargin = MessageUtils.
 
             if (mBalloonView != null) {
 	            mBalloonView.setBackgroundResource(MessagingPreferences
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
+	            mBalloonView.setGravity(Gravity.LEFT);
             }
             else {
                 mParentView.setGravity(Gravity.LEFT);
             }
 
             setGravity(Gravity.LEFT);
-            mDateViewOutgoing.setVisibility(GONE);
-            mDateViewIncoming.setVisibility(VISIBLE);
-            mDateViewIncoming.setText(formatTimestamp());
+            /*
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mTextView.getLayoutParams();
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
+            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            mTextView.setLayoutParams(params);
+            */
 
             if (mAvatarIncoming != null) {
                 mAvatarOutgoing.setVisibility(GONE);
@@ -224,21 +222,22 @@ public class MessageListItem extends RelativeLayout {
             }
         }
         else {
-            mLockIconOutgoing.setVisibility(wasEncrypted ? GONE : VISIBLE);
-            mLockIconIncoming.setVisibility(GONE);
-
             if (mBalloonView != null) {
             	mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
+            	mBalloonView.setGravity(Gravity.RIGHT);
             }
             else {
                 mParentView.setGravity(Gravity.RIGHT);
             }
 
             setGravity(Gravity.RIGHT);
-            mDateViewIncoming.setVisibility(GONE);
-            mDateViewOutgoing.setVisibility(VISIBLE);
-            mDateViewOutgoing.setText(formatTimestamp());
+            /*
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mTextView.getLayoutParams();
+            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            mTextView.setLayoutParams(params);
+            */
 
             if (mAvatarOutgoing != null) {
                 mAvatarIncoming.setVisibility(GONE);
@@ -285,6 +284,8 @@ public class MessageListItem extends RelativeLayout {
             mStatusIcon.setImageDrawable(null);
             mStatusIcon.setVisibility(GONE);
         }
+
+        mDateView.setText(formatTimestamp());
     }
 
     private final class MaxSizeImageSpan extends ImageSpan {
