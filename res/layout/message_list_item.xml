@@ -22,57 +22,61 @@
     android:paddingTop="2dip"
     android:paddingBottom="2dip"
     android:paddingLeft="5dp"
-    android:paddingRight="5dp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:id="@+id/balloon_view"
-        android:orientation="vertical"
+    <LinearLayout android:id="@+id/balloon_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:gravity="bottom" >
 
-        <TextView android:id="@+id/text_view"
-            android:maxWidth="@dimen/message_text_width"
-            android:paddingTop="2dip"
-            android:paddingBottom="2dip"
+        <TextView android:id="@+id/date_view_outgoing"
+            style="@android:style/TextAppearance.Small"
+            android:textSize="@dimen/dateview_text_size"
+            android:paddingBottom="6dip"
             android:paddingLeft="5dip"
             android:paddingRight="5dip"
+            android:visibility="gone"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/status_indicator"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginBottom="4dip"
+            android:adjustViewBounds="false"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/lock_icon"
+            android:visibility="gone"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginBottom="4dip"
+            android:contentDescription="@string/msg_status_encrypted"
+            android:src="@drawable/ic_msg_warning" />
+
+        <TextView android:id="@+id/text_view"
+            android:paddingTop="4dip"
+            android:paddingBottom="4dip"
+            android:paddingLeft="5dip"
+            android:paddingRight="5dip"
+            android:maxWidth="@dimen/message_text_width"
+            android:layout_weight="1"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"/>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginLeft="4dp"
-            android:baselineAligned="false"
+        <TextView android:id="@+id/date_view_incoming"
+            style="@android:style/TextAppearance.Small"
+            android:textSize="@dimen/dateview_text_size"
+            android:paddingBottom="6dip"
+            android:paddingRight="5dip"
+            android:visibility="gone"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/status_indicator"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:adjustViewBounds="false"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/lock_icon"
-                android:visibility="gone"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:contentDescription="@string/msg_status_encrypted"
-                android:src="@drawable/ic_msg_warning" />
-
-            <TextView android:id="@+id/date_view"
-                style="@android:style/TextAppearance.Small"
-                android:textSize="@dimen/dateview_text_size"
-                android:gravity="center_vertical"
-                android:layout_marginLeft="2dp"
-                android:paddingRight="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
-
-        </LinearLayout>
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 
