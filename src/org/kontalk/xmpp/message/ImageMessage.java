@@ -140,7 +140,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
                 loadPreview(previewFile);
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             Log.w(TAG, "unable to load thumbnail, generating one");
 
             try {
@@ -154,7 +154,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
                     loadPreview(previewFile);
                 }
             }
-            catch (IOException e1) {
+            catch (Exception e1) {
                 Log.e(TAG, "unable to generate thumbnail", e1);
             }
         }
