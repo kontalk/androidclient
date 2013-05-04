@@ -35,6 +35,7 @@
         <TextView android:id="@+id/text_view"
             android:maxWidth="@dimen/message_text_width"
             android:paddingTop="2dip"
+            android:paddingBottom="2dip"
             android:paddingLeft="5dip"
             android:paddingRight="5dip"
             android:layout_width="wrap_content"
@@ -43,6 +44,7 @@
         <LinearLayout
             android:orientation="horizontal"
             android:layout_marginLeft="4dp"
+            android:baselineAligned="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
@@ -65,10 +67,10 @@
                 style="@android:style/TextAppearance.Small"
                 android:textSize="@dimen/dateview_text_size"
                 android:gravity="center_vertical"
-                android:layout_marginLeft="4dp"
+                android:layout_marginLeft="2dp"
                 android:paddingRight="4dp"
                 android:layout_width="wrap_content"
-                android:layout_height="22dp" />
+                android:layout_height="match_parent" />
 
         </LinearLayout>
 
