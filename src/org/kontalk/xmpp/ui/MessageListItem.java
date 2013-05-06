@@ -19,8 +19,6 @@
 package org.kontalk.xmpp.ui;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,9 +61,7 @@ public class MessageListItem extends RelativeLayout {
     private SpannableStringBuilder formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
-    private ImageView mLockView;
-    private TextView mDateViewIncoming;
-    private TextView mDateViewOutgoing;
+    private TextView mDateView;
     private LinearLayout mBalloonView;
     private LinearLayout mParentView;
 
@@ -108,10 +104,8 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
-        mLockView = (ImageView) findViewById(R.id.lock_icon);
         mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
-        mDateViewIncoming = (TextView) findViewById(R.id.date_view_incoming);
-        mDateViewOutgoing = (TextView) findViewById(R.id.date_view_outgoing);
+        mDateView = (TextView) findViewById(R.id.date_view);
         mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
         mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
         mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
@@ -124,12 +118,9 @@ public class MessageListItem extends RelativeLayout {
             //setGravity(Gravity.LEFT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
-                mBalloonView.setGravity(Gravity.LEFT);
+                mTextView.setGravity(Gravity.LEFT);
             }
-            mDateViewIncoming.setVisibility(VISIBLE);
-            mDateViewOutgoing.setVisibility(GONE);
-            mDateViewIncoming.setText("28 Nov");
-            mLockView.setVisibility(VISIBLE);
+            mDateView.setText("28 Nov");
             */
 
 	        /* OUTGOING */
@@ -137,17 +128,14 @@ public class MessageListItem extends RelativeLayout {
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
                 mStatusIcon.setVisibility(VISIBLE);
             }
-            mLockView.setVisibility(VISIBLE);
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
             setGravity(Gravity.RIGHT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-                mBalloonView.setGravity(Gravity.RIGHT);
+                mTextView.setGravity(Gravity.RIGHT);
             }
-            mDateViewOutgoing.setVisibility(VISIBLE);
-            mDateViewIncoming.setVisibility(GONE);
-            mDateViewOutgoing.setText("00:00, 13 Apr");
+            mDateView.setText("16:25");
             if (mAvatarIncoming != null) {
                 mAvatarIncoming.setVisibility(GONE);
                 mAvatarOutgoing.setVisibility(VISIBLE);
@@ -194,21 +182,17 @@ public class MessageListItem extends RelativeLayout {
         int resId = 0;
         int statusId = 0;
 
-        mLockView.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
-
         if (mMessage.getSender() != null) {
             if (mBalloonView != null) {
 	            mBalloonView.setBackgroundResource(MessagingPreferences
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
+	            mTextView.setGravity(Gravity.LEFT);
             }
             else {
                 mParentView.setGravity(Gravity.LEFT);
             }
 
             setGravity(Gravity.LEFT);
-            mDateViewOutgoing.setVisibility(GONE);
-            mDateViewIncoming.setVisibility(VISIBLE);
-            mDateViewIncoming.setText(formatTimestamp());
 
             if (mAvatarIncoming != null) {
                 mAvatarOutgoing.setVisibility(GONE);
@@ -221,15 +205,13 @@ public class MessageListItem extends RelativeLayout {
             if (mBalloonView != null) {
             	mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
+            	mTextView.setGravity(Gravity.RIGHT);
             }
             else {
                 mParentView.setGravity(Gravity.RIGHT);
             }
 
             setGravity(Gravity.RIGHT);
-            mDateViewIncoming.setVisibility(GONE);
-            mDateViewOutgoing.setVisibility(VISIBLE);
-            mDateViewOutgoing.setText(formatTimestamp());
 
             if (mAvatarOutgoing != null) {
                 mAvatarIncoming.setVisibility(GONE);
@@ -276,6 +258,8 @@ public class MessageListItem extends RelativeLayout {
             mStatusIcon.setImageDrawable(null);
             mStatusIcon.setVisibility(GONE);
         }
+
+        mDateView.setText(formatTimestamp());
     }
 
     private final class MaxSizeImageSpan extends ImageSpan {
@@ -341,21 +325,7 @@ public class MessageListItem extends RelativeLayout {
         long serverTime = mMessage.getServerTimestamp();
         long ts = serverTime > 0 ? serverTime : mMessage.getTimestamp();
 
-        // if we are in the same day, just print time, otherwise print date+time
-        boolean fullFormat;
-        Calendar thenCal = new GregorianCalendar();
-        thenCal.setTimeInMillis(ts);
-        Calendar nowCal = new GregorianCalendar();
-        if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
-            && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
-            && thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)) {
-            fullFormat = false;
-        }
-        else {
-            fullFormat = true;
-        }
-
-        return MessageUtils.formatTimeStampString(getContext(), ts, fullFormat);
+        return MessageUtils.formatTimeStampString(getContext(), ts, false);
     }
 
     public final void unbind() {
