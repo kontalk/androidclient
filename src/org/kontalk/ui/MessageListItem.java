@@ -179,10 +179,10 @@ public class MessageListItem extends RelativeLayout {
          * workaround for bugs:
          * http://code.google.com/p/android/issues/detail?id=17343
          * http://code.google.com/p/android/issues/detail?id=22493
-         * applies only to ICS
+         * applies from Honeycomb to JB 4.2.2 afaik
          */
-        if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH ||
-                android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
+                android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
             formattedMessage.append("\u2060");
 
         if (linksFound)
