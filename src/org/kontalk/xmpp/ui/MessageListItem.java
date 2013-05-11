@@ -61,6 +61,7 @@ public class MessageListItem extends RelativeLayout {
     private SpannableStringBuilder formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
+    private ImageView mWarningIcon;
     private TextView mDateView;
     private LinearLayout mBalloonView;
     private LinearLayout mParentView;
@@ -104,6 +105,7 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
+        mWarningIcon = (ImageView) findViewById(R.id.warning_icon);
         mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
         mDateView = (TextView) findViewById(R.id.date_view);
         mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
@@ -130,6 +132,7 @@ public class MessageListItem extends RelativeLayout {
             }
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
+            mWarningIcon.setVisibility(VISIBLE);
             setGravity(Gravity.RIGHT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
@@ -181,6 +184,8 @@ public class MessageListItem extends RelativeLayout {
 
         int resId = 0;
         int statusId = 0;
+
+        mWarningIcon.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
 
         if (mMessage.getSender() != null) {
             if (mBalloonView != null) {

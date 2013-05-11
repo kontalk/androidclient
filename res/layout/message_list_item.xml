@@ -54,6 +54,12 @@
                 android:adjustViewBounds="false"
                 android:visibility="gone" />
 
+            <ImageView android:id="@+id/warning_icon"
+                android:visibility="gone"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_msg_warning" />
+
             <TextView android:id="@+id/date_view"
                 style="@android:style/TextAppearance.Small"
                 android:textSize="@dimen/dateview_text_size"
