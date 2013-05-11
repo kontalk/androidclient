@@ -18,9 +18,7 @@
 
 package org.kontalk.ui;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,7 +62,7 @@ public class MessageListItem extends RelativeLayout {
     private SpannableStringBuilder formattedMessage;
     private TextView mTextView;
     private ImageView mStatusIcon;
-    private ImageView mLockView;
+    private ImageView mWarningIcon;
     private TextView mDateView;
     private View mBalloonView;
     private LinearLayout mParentView;
@@ -108,7 +106,7 @@ public class MessageListItem extends RelativeLayout {
 
         mTextView = (TextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
-        mLockView = (ImageView) findViewById(R.id.lock_icon);
+        mWarningIcon = (ImageView) findViewById(R.id.warning_icon);
         mBalloonView = findViewById(R.id.balloon_view);
         mDateView = (TextView) findViewById(R.id.date_view);
         mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
@@ -117,38 +115,31 @@ public class MessageListItem extends RelativeLayout {
 
         if (isInEditMode()) {
             mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
+            //mTextView.setText("TEST");
             //mTextView.setText(":-)");
             /* INCOMING
-            if (mStatusIcon != null)
-            	mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
-            if (mDateView == null) {
-                if (mBalloonView != null)
-                    mBalloonView.setBackgroundResource(R.drawable.balloon_incoming);
-                if (mDateViewIncoming != null) {
-    	            mDateViewIncoming.setVisibility(VISIBLE);
-    	            mDateViewOutgoing.setVisibility(GONE);
-    	            mDateViewIncoming.setText("28 Nov");
-                }
+            //setGravity(Gravity.LEFT);
+            if (mBalloonView != null) {
+                mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
+                mTextView.setGravity(Gravity.LEFT);
             }
-            else {
-                int backId = R.drawable.message_list_item_in_fill;
-                mNameView.setBackgroundResource(backId);
-                mDateView.setBackgroundResource(backId);
-                mBackground.setBackgroundResource(R.drawable.message_list_item_in_border);
-            	mNameView.setText("Daniele Ricci");
-            	mDateView.setText("11:56");
-            }
+            mDateView.setText("28 Nov");
             */
-	        /* OUTGOING */
+
+            /* OUTGOING */
+            if (mStatusIcon != null) {
+                mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
+                mStatusIcon.setVisibility(VISIBLE);
+            }
             if (mStatusIcon != null)
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
+            mWarningIcon.setVisibility(VISIBLE);
             setGravity(Gravity.RIGHT);
-            if (mBalloonView != null)
+            if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-            if (mDateView != null) {
-                mDateView.setVisibility(VISIBLE);
-                mDateView.setText("28 Nov");
+                mTextView.setGravity(Gravity.RIGHT);
             }
+            mDateView.setText("16:25");
             if (mAvatarIncoming != null) {
                 mAvatarIncoming.setVisibility(GONE);
                 mAvatarOutgoing.setVisibility(VISIBLE);
@@ -195,16 +186,19 @@ public class MessageListItem extends RelativeLayout {
         int resId = -1;
         int statusId = -1;
 
-        mLockView.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
+        mWarningIcon.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
 
         if (mMessage.getSender() != null) {
-            if (mBalloonView != null)
-	            mBalloonView.setBackgroundResource(MessagingPreferences
-	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
+            if (mBalloonView != null) {
+                mBalloonView.setBackgroundResource(MessagingPreferences
+                    .getBalloonResource(getContext(), Messages.DIRECTION_IN));
+                mTextView.setGravity(Gravity.LEFT);
+            }
+            else {
+                mParentView.setGravity(Gravity.LEFT);
+            }
 
             setGravity(Gravity.LEFT);
-            mParentView.setGravity(Gravity.LEFT);
-            //setBackgroundResource(R.drawable.light_blue_background);
 
             if (mAvatarIncoming != null) {
                 mAvatarOutgoing.setVisibility(GONE);
@@ -214,13 +208,16 @@ public class MessageListItem extends RelativeLayout {
             }
         }
         else {
-            if (mBalloonView != null)
-            	mBalloonView.setBackgroundResource(MessagingPreferences
+            if (mBalloonView != null) {
+                mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
+                mTextView.setGravity(Gravity.RIGHT);
+            }
+            else {
+                mParentView.setGravity(Gravity.RIGHT);
+            }
 
             setGravity(Gravity.RIGHT);
-            mParentView.setGravity(Gravity.RIGHT);
-            //setBackgroundResource(R.drawable.white_background);
 
             if (mAvatarOutgoing != null) {
                 mAvatarIncoming.setVisibility(GONE);
@@ -268,6 +265,7 @@ public class MessageListItem extends RelativeLayout {
             mStatusIcon.setVisibility(GONE);
         }
 
+        mDateView.setText(formatTimestamp());
     }
 
     private final class MaxSizeImageSpan extends ImageSpan {
@@ -313,25 +311,6 @@ public class MessageListItem extends RelativeLayout {
             buf = new SpannableStringBuilder();
         }
 
-        Date serverTime = mMessage.getServerTimestamp();
-        long ts = serverTime != null ? serverTime.getTime() : mMessage.getTimestamp();
-
-        // if we are in the same day, just prime time, else print date & time
-        boolean fullFormat;
-        Calendar thenCal = new GregorianCalendar();
-        thenCal.setTimeInMillis(ts);
-        Calendar nowCal = new GregorianCalendar();
-        if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
-            && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
-            && thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)) {
-            fullFormat = false;
-        }
-        else {
-            fullFormat = true;
-        }
-
-        mDateView.setText(MessageUtils.formatTimeStampString(getContext(), ts, fullFormat));
-
         if (highlight != null) {
             Matcher m = highlight.matcher(buf.toString());
             while (m.find())
@@ -339,6 +318,13 @@ public class MessageListItem extends RelativeLayout {
         }
 
         return buf;
+    }
+
+    private CharSequence formatTimestamp() {
+        Date serverTime = mMessage.getServerTimestamp();
+        long ts = serverTime != null ? serverTime.getTime() : mMessage.getTimestamp();
+
+        return MessageUtils.formatTimeStampString(getContext(), ts, false);
     }
 
     public final void unbind() {

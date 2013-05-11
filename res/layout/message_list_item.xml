@@ -21,60 +21,53 @@
     android:id="@+id/msg_list_item"
     android:paddingTop="2dip"
     android:paddingBottom="2dip"
+    android:paddingLeft="5dp"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content">
 
-    <LinearLayout android:id="@+id/message_view_parent"
-        android:paddingLeft="5dip"
+    <LinearLayout android:id="@+id/balloon_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:gravity="right">
 
-        <LinearLayout android:id="@+id/balloon_view"
+        <TextView android:id="@+id/text_view"
+            android:maxWidth="@dimen/message_text_width"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="@dimen/message_text_margin_right"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="2"
-            android:orientation="horizontal"
-            android:gravity="bottom" >
+            android:layout_height="0dp"/>
 
-            <ImageView
-                android:id="@+id/status_indicator"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_marginBottom="4dip"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:layout_marginRight="2dp"
+            android:layout_marginBottom="2dp"
+            android:gravity="right|bottom" >
+
+            <ImageView android:id="@+id/status_indicator"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
                 android:adjustViewBounds="false"
                 android:visibility="gone" />
 
-            <ImageView
-                android:id="@+id/lock_icon"
+            <ImageView android:id="@+id/warning_icon"
                 android:visibility="gone"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_marginBottom="4dip"
-                android:contentDescription="@string/msg_status_encrypted"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
                 android:src="@drawable/ic_msg_warning" />
 
-            <TextView android:id="@+id/text_view"
-                android:paddingTop="4dip"
-                android:paddingBottom="4dip"
-                android:paddingLeft="5dip"
-                android:paddingRight="5dip"
-                android:maxWidth="@dimen/message_text_width"
+            <TextView android:id="@+id/date_view"
+                style="@android:style/TextAppearance.Small"
+                android:textSize="@dimen/dateview_text_size"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 
-        <TextView android:id="@+id/date_view"
-            android:paddingTop="4dip"
-            android:paddingLeft="5dip"
-            android:paddingRight="5dip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="11sp"
-            android:textAppearance="?android:attr/textAppearanceSmall"/>
-
     </LinearLayout>
+
 </org.kontalk.ui.MessageListItem>
