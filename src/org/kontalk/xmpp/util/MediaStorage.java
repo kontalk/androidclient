@@ -42,8 +42,8 @@ import android.webkit.MimeTypeMap;
 public abstract class MediaStorage {
     public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
 
-    private static final int THUMBNAIL_WIDTH = 80;
-    private static final int THUMBNAIL_HEIGHT = 80;
+    private static final int THUMBNAIL_WIDTH = 128;
+    private static final int THUMBNAIL_HEIGHT = 128;
 
     public static boolean isExternalStorageAvailable() {
         return Environment.getExternalStorageState()
