@@ -34,6 +34,7 @@ import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.GCMIntentService;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.AckServerReceipt;
+import org.kontalk.xmpp.client.BitsOfBinary;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
 import org.kontalk.xmpp.client.MessageEncrypted;
@@ -334,6 +335,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
         pm.addExtensionProvider(AckServerReceipt.ELEMENT_NAME, AckServerReceipt.NAMESPACE, new AckServerReceipt.Provider());
         pm.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
+        pm.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
     }
 
     @Override
@@ -718,6 +720,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.MIME,
                 Messages.LOCAL_URI,
                 Messages.FETCH_URL,
+                Messages.PREVIEW_PATH,
                 Messages.ENCRYPT_KEY
             },
             Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
@@ -733,7 +736,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String mime = c.getString(3);
             String fileUri = c.getString(4);
             String fetchUrl = c.getString(5);
-            String key = c.getString(6);
+            String previewPath = c.getString(6);
+            String key = c.getString(7);
 
             // media message encountered and no upload service available - delay message
             if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
@@ -751,6 +755,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // message has already been uploaded - just send media
             if (fetchUrl != null) {
                 b.putString("org.kontalk.message.fetch.url", fetchUrl);
+                b.putString("org.kontalk.message.preview.uri", fileUri);
+                b.putString("org.kontalk.message.preview.path", previewPath);
             }
             // check if the message contains some large file to be sent
             else if (fileUri != null) {
@@ -823,6 +829,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // media message - start upload service
                 Uri mediaUri = Uri.parse(_mediaUri);
 
+                // preview file path (if any)
+                String previewPath = data.getString("org.kontalk.message.preview.path");
+
                 // start upload intent service
                 Intent i = new Intent(this, UploadService.class);
                 i.setData(mediaUri);
@@ -830,6 +839,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(UploadService.EXTRA_POST_URL, postUrl);
                 i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
                 i.putExtra(UploadService.EXTRA_MIME, mime);
+                i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
 
                 // TODO should support JIDs too
                 String toUser = data.getString("org.kontalk.message.toUser");
@@ -861,6 +871,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String body = data.getString("org.kontalk.message.body");
             String key = data.getString("org.kontalk.message.encryptKey");
             String fetchUrl = data.getString("org.kontalk.message.fetch.url");
+
+            // generate preview if needed
+            String _previewUri = data.getString("org.kontalk.message.preview.uri");
+            String previewFilename = data.getString("org.kontalk.message.preview.path");
+            if (_previewUri != null && previewFilename != null) {
+                File previewPath = new File(previewFilename);
+                if (!previewPath.isFile()) {
+                    Uri previewUri = Uri.parse(_previewUri);
+                    try {
+                        MediaStorage.cacheThumbnail(this, previewUri, previewPath);
+                    }
+                    catch (IOException e) {
+                        Log.w(TAG, "unable to generate preview for media", e);
+                    }
+                }
+
+                m.addExtension(new BitsOfBinary(MediaStorage.THUMBNAIL_MIME, previewPath));
+            }
 
             ChatState chatState;
             try {
@@ -929,21 +957,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // message has a fetch url - store preview in cache (if any)
         // TODO abstract somehow
         if (msg.getFetchUrl() != null) {
-            /*
-            if (msg instanceof ImageMessage) {
-                String filename = AbstractMessage.buildMediaFilename(msg);
-                File file = null;
-                try {
-                    file = MediaStorage.writeInternalMedia(this, filename, content);
-                }
-                catch (IOException e) {
-                    Log.e(TAG, "unable to write to media storage", e);
-                }
-                // update uri
-                msg.setPreviewFile(file);
-            }
-            */
-
             // use text content for database table
             try {
                 content = msg.getTextContent().getBytes();
@@ -982,6 +995,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.ENCRYPTED, msg.isEncrypted());
         values.put(Messages.ENCRYPT_KEY, msg.wasEncrypted() ? "" : null);
         values.put(Messages.FETCH_URL, msg.getFetchUrl());
+
+        File previewFile = msg.getPreviewFile();
+        if (previewFile != null)
+            values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
+
         values.put(Messages.UNREAD, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
 
@@ -1140,23 +1158,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a binary message. */
-    public static void sendBinaryMessage(final Context context, String userId, String mime, Uri localUri, long msgId) {
+    public static void sendBinaryMessage(final Context context, String userId, String mime, Uri localUri, String previewPath, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
 
-    public static void sendUploadedMedia(final Context context, String userId, String mime, String fetchUrl, long msgId) {
+    public static void sendUploadedMedia(final Context context, String userId,
+            String mime, Uri localUri, String previewPath, String fetchUrl, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
@@ -1688,6 +1710,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         serverTimestamp = System.currentTimeMillis();
 
                     // out of band data
+                    File previewFile = null;
                     String fetchUrl = null;
                     PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
                     if (_media != null && _media instanceof OutOfBandData) {
@@ -1695,6 +1718,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         mime = media.getMime();
                         fetchUrl = media.getUrl();
                         length = -1;
+
+                        // bits-of-binary for preview
+                        PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                        if (_preview != null && _preview instanceof BitsOfBinary) {
+                            BitsOfBinary preview = (BitsOfBinary) _preview;
+                            String previewMime = preview.getType();
+                            if (previewMime == null)
+                                previewMime = MediaStorage.THUMBNAIL_MIME;
+
+                            String filename = ImageMessage.buildMediaFilename(msgId, previewMime);
+                            try {
+                                previewFile = MediaStorage.writeInternalMedia(MessageCenterService.this, filename, preview.getContents());
+                            }
+                            catch (IOException e) {
+                                Log.w(TAG, "error storing thumbnail", e);
+                            }
+                        }
                     }
 
                     AbstractMessage<?> msg = null;
@@ -1729,6 +1769,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // set the fetch url (if any)
                         if (fetchUrl != null)
                             msg.setFetchUrl(fetchUrl);
+
+                        // set preview path (if any)
+                        if (previewFile != null)
+                            msg.setPreviewFile(previewFile);
 
                         Uri msgUri = incoming(msg);
                         if (_ext != null) {

@@ -100,10 +100,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.TextView.OnEditorActionListener;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockListFragment;
@@ -357,6 +357,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			Class<? extends AbstractMessage<?>> klass) {
 		Log.v(TAG, "sending binary content: " + uri);
 		Uri newMsg = null;
+        File previewFile = null;
 
 		try {
 		    // TODO convert to thread (?)
@@ -366,10 +367,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			String msgId = "draft" + (new Random().nextInt());
 			String content = AbstractMessage.getSampleTextContent(klass, mime);
 
-			File previewFile = null;
 			// generate thumbnail
+			// FIXME this is blocking!!!!
 			if (media) {
-				String filename = ImageMessage.buildMediaFilename(msgId, mime);
+				String filename = ImageMessage.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
 				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
 						filename);
 			}
@@ -415,8 +416,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 			// send message!
 			// FIXME do not encrypt binary messages for now
+			String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
 			MessageCenterService.sendBinaryMessage(getActivity(),
-			    userId, mime, uri, ContentUris.parseId(newMsg));
+			    userId, mime, uri, previewPath, ContentUris.parseId(newMsg));
 		}
 		else {
 			getActivity().runOnUiThread(new Runnable() {

@@ -65,6 +65,8 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_USER_ID = "org.kontalk.upload.USER_ID";
     /** Media MIME type. */
     public static final String EXTRA_MIME = "org.kontalk.upload.MIME";
+    /** Preview file path. */
+    public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
     // Intent data is the local file Uri
 
     // data about the upload currently being processed
@@ -117,6 +119,8 @@ public class UploadService extends IntentService implements ProgressListener {
         String userId = intent.getStringExtra(EXTRA_USER_ID);
         // media mime type
         String mime = intent.getStringExtra(EXTRA_MIME);
+        // preview file path
+        String previewPath = intent.getStringExtra(EXTRA_PREVIEW_PATH);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -145,7 +149,7 @@ public class UploadService extends IntentService implements ProgressListener {
             MessagesProvider.uploaded(this, msgId, mediaUrl);
 
             // send message with fetch url to server
-            MessageCenterService.sendUploadedMedia(this, userId, mime, mediaUrl, msgId);
+            MessageCenterService.sendUploadedMedia(this, userId, mime, file, previewPath, mediaUrl, msgId);
 
             // end operations
             completed();

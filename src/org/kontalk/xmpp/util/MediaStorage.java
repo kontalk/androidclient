@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -44,6 +45,7 @@ public abstract class MediaStorage {
 
     private static final int THUMBNAIL_WIDTH = 128;
     private static final int THUMBNAIL_HEIGHT = 128;
+    public static final String THUMBNAIL_MIME = "image/png";
 
     public static boolean isExternalStorageAvailable() {
         return Environment.getExternalStorageState()
@@ -161,7 +163,7 @@ public abstract class MediaStorage {
                 "Kontalk");
         path.mkdirs();
         String timeStamp =
-            new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String filename = "image" + timeStamp + "_";
         return File.createTempFile(filename, ".jpg", path);
     }
