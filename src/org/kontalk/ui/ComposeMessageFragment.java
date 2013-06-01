@@ -1426,7 +1426,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
                 if (event == UserEvent.EVENT_OFFLINE_VALUE) {
                     if (fragment != null)
-                        text = fragment.buildLastSeenText(fragment.getResources().getString(R.string.seen_moment_ago_label));
+                        text = fragment.getResources().getString(R.string.seen_moment_ago_label);
                 }
                 else if (event == UserEvent.EVENT_ONLINE_VALUE) {
                     if (fragment != null)
@@ -1522,7 +1522,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                 text = getResources().getString(R.string.seen_online_label);
                             }
                             else if (diff <= 10) {
-                                text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
+                                text = getResources().getString(R.string.seen_moment_ago_label);
                             }
                         }
 
@@ -1558,7 +1558,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                         if (text == null && res.hasTimestamp()) {
                             long time = res.getTimestamp();
                             if (time > 0) {
-                                text = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, time * 1000));
+                                text = MessageUtils.formatRelativeTimeSpan(context, time * 1000);
                             }
                         }
 
@@ -1911,13 +1911,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	        Toast.makeText(getActivity(), R.string.warning_offline_mode,
 	            Toast.LENGTH_LONG).show();
 	    }
-	}
-
-	private CharSequence buildLastSeenText(CharSequence content) {
-        SpannableStringBuilder builder = new SpannableStringBuilder("Y ");
-        builder.append(content);
-        builder.setSpan(new ImageSpan(getActivity(), R.drawable.ic_eyes), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return builder;
 	}
 
 }
