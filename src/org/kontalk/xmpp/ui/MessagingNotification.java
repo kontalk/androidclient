@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
@@ -173,6 +174,12 @@ public class MessagingNotification {
         builder.addAction(android.R.drawable.ic_menu_revert, "Reply", accumulator.getPendingIntent());
 
         builder.setTicker(accumulator.getTicker());
+        Contact contact = accumulator.getContact();
+        if (contact != null) {
+            BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+            if (avatar != null)
+                builder.setLargeIcon(avatar.getBitmap());
+        }
         builder.setNumber(accumulator.unreadCount);
         builder.setSmallIcon(R.drawable.icon_stat);
         builder.setContentTitle(accumulator.getTitle());
@@ -255,6 +262,10 @@ public class MessagingNotification {
 
         private void cacheContact() {
             mContact = Contact.findByUserId(mContext, conversation.peer);
+        }
+
+        public Contact getContact() {
+            return mContact;
         }
 
         /** Returns the text that should be used as a ticker in the notification. */
