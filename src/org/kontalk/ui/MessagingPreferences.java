@@ -384,6 +384,10 @@ public final class MessagingPreferences extends PreferenceActivity {
             return direction == Messages.DIRECTION_IN ?
                 R.drawable.balloon_iphone_incoming :
                     R.drawable.balloon_iphone_outgoing;
+        else if ("old_classic".equals(balloonTheme))
+            return direction == Messages.DIRECTION_IN ?
+                R.drawable.balloon_old_classic_incoming :
+                    R.drawable.balloon_old_classic_outgoing;
 
         // all other cases
         return direction == Messages.DIRECTION_IN ?

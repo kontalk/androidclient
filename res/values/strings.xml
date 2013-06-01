@@ -210,6 +210,7 @@
     <string name="pref_balloons">Chat balloon theme</string>
     <string name="pref_title_balloons">Choose a message balloon theme</string>
     <string name="balloons_classic">Classic</string>
+    <string name="balloons_old_classic">Classic (old)</string>
     <string name="balloons_iphone">iPhone</string>
 
     <string name="attachment_picture">Picture</string>
