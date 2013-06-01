@@ -24,7 +24,7 @@
 
     <android.widget.QuickContactBadge
         android:id="@+id/avatar"
-        android:layout_marginLeft="7dip"
+        android:layout_marginLeft="@dimen/conv_list_margin_left"
         android:layout_centerVertical="true"
         style="?android:attr/quickContactBadgeStyleWindowSmall" />
 
