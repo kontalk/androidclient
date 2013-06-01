@@ -44,11 +44,13 @@
 
     <string-array name="balloons_values">
         <item>classic</item>
+        <item>old_classic</item>
         <item>iphone</item>
     </string-array>
 
     <string-array name="balloons_labels">
         <item>Classic</item>
+        <item>Classic (old)</item>
         <item>iPhone</item>
     </string-array>
 

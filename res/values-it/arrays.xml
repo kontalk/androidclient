@@ -31,6 +31,7 @@
 
     <string-array name="balloons_labels">
         <item>Classico</item>
+        <item>Classico (vecchio)</item>
         <item>iPhone</item>
     </string-array>
 

@@ -147,13 +147,17 @@ public class MessagingNotification {
             return;
         }
 
+        NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
+
         // loop all threads and accumulate them
         MessageAccumulator accumulator = new MessageAccumulator(context);
         while (c.moveToNext()) {
+            String content = c.getString(2);
+            style.addLine(content);
             accumulator.accumulate(
                 c.getLong(0),
                 c.getString(1),
-                c.getString(2),
+                content,
                 c.getInt(3),
                 c.getLong(4)
             );
@@ -162,6 +166,12 @@ public class MessagingNotification {
 
         //Notification no = new Notification(R.drawable.icon_stat, accumulator.getTicker(), accumulator.getTimestamp());
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
+
+        style.setBigContentTitle(accumulator.getTitle());
+        builder.setStyle(style);
+
+        builder.addAction(android.R.drawable.ic_menu_revert, "Reply", accumulator.getPendingIntent());
+
         builder.setTicker(accumulator.getTicker());
         builder.setNumber(accumulator.unreadCount);
         builder.setSmallIcon(R.drawable.icon_stat);
