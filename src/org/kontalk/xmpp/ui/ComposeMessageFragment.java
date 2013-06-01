@@ -1454,10 +1454,10 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                         // user offline
                                         long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
                                         if (stamp >= 0) {
-                                            statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, stamp));
+                                            statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
                                         }
                                         else {
-                                            statusText = buildLastSeenText(getString(R.string.seen_moment_ago_label));
+                                            statusText = getString(R.string.seen_moment_ago_label);
                                         }
                                     }
                                 }
@@ -1521,8 +1521,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                      */
                                     if (mAvailableResources.size() == 0) {
                                         if (mMostAvailable.stamp != null) {
-                                            statusText = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context,
-                                                mMostAvailable.stamp.getTime()));
+                                            statusText = MessageUtils.formatRelativeTimeSpan(context,
+                                                mMostAvailable.stamp.getTime());
                                         }
                                     }
                                 }
@@ -1998,13 +1998,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	        Toast.makeText(getActivity(), R.string.warning_offline_mode,
 	            Toast.LENGTH_LONG).show();
 	    }
-	}
-
-	private CharSequence buildLastSeenText(CharSequence content) {
-        SpannableStringBuilder builder = new SpannableStringBuilder("Y ");
-        builder.append(content);
-        builder.setSpan(new ImageSpan(getActivity(), R.drawable.ic_eyes), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return builder;
 	}
 
 }
