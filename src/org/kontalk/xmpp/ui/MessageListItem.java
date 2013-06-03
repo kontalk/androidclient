@@ -120,7 +120,6 @@ public class MessageListItem extends RelativeLayout {
             //setGravity(Gravity.LEFT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
-                mTextView.setGravity(Gravity.LEFT);
             }
             mDateView.setText("28 Nov");
             */
@@ -136,7 +135,6 @@ public class MessageListItem extends RelativeLayout {
             setGravity(Gravity.RIGHT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-                mTextView.setGravity(Gravity.RIGHT);
             }
             mDateView.setText("16:25");
             if (mAvatarIncoming != null) {
@@ -191,7 +189,6 @@ public class MessageListItem extends RelativeLayout {
             if (mBalloonView != null) {
 	            mBalloonView.setBackgroundResource(MessagingPreferences
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
-	            mTextView.setGravity(Gravity.LEFT);
             }
             else {
                 mParentView.setGravity(Gravity.LEFT);
@@ -210,7 +207,6 @@ public class MessageListItem extends RelativeLayout {
             if (mBalloonView != null) {
             	mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
-            	mTextView.setGravity(Gravity.RIGHT);
             }
             else {
                 mParentView.setGravity(Gravity.RIGHT);
