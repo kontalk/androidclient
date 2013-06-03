@@ -59,7 +59,7 @@ public class MessageListItem extends RelativeLayout {
 
     private AbstractMessage<?> mMessage;
     private SpannableStringBuilder formattedMessage;
-    private TextView mTextView;
+    private MessageItemTextView mTextView;
     private ImageView mStatusIcon;
     private ImageView mWarningIcon;
     private TextView mDateView;
@@ -103,7 +103,7 @@ public class MessageListItem extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mTextView = (TextView) findViewById(R.id.text_view);
+        mTextView = (MessageItemTextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
         mWarningIcon = (ImageView) findViewById(R.id.warning_icon);
         mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
