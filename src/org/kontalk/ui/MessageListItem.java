@@ -60,7 +60,7 @@ public class MessageListItem extends RelativeLayout {
 
     private AbstractMessage<?> mMessage;
     private SpannableStringBuilder formattedMessage;
-    private TextView mTextView;
+    private MessageItemTextView mTextView;
     private ImageView mStatusIcon;
     private ImageView mWarningIcon;
     private TextView mDateView;
@@ -104,7 +104,7 @@ public class MessageListItem extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mTextView = (TextView) findViewById(R.id.text_view);
+        mTextView = (MessageItemTextView) findViewById(R.id.text_view);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
         mWarningIcon = (ImageView) findViewById(R.id.warning_icon);
         mBalloonView = findViewById(R.id.balloon_view);
@@ -121,7 +121,6 @@ public class MessageListItem extends RelativeLayout {
             //setGravity(Gravity.LEFT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
-                mTextView.setGravity(Gravity.LEFT);
             }
             mDateView.setText("28 Nov");
             */
@@ -137,7 +136,6 @@ public class MessageListItem extends RelativeLayout {
             setGravity(Gravity.RIGHT);
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-                mTextView.setGravity(Gravity.RIGHT);
             }
             mDateView.setText("16:25");
             if (mAvatarIncoming != null) {
@@ -192,7 +190,6 @@ public class MessageListItem extends RelativeLayout {
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_IN));
-                mTextView.setGravity(Gravity.LEFT);
             }
             else {
                 mParentView.setGravity(Gravity.LEFT);
@@ -211,7 +208,6 @@ public class MessageListItem extends RelativeLayout {
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(MessagingPreferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
-                mTextView.setGravity(Gravity.RIGHT);
             }
             else {
                 mParentView.setGravity(Gravity.RIGHT);

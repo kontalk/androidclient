@@ -31,7 +31,7 @@
         android:orientation="vertical"
         android:gravity="right">
 
-        <TextView android:id="@+id/text_view"
+        <org.kontalk.ui.MessageItemTextView android:id="@+id/text_view"
             android:maxWidth="@dimen/message_text_width"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="@dimen/message_text_margin_right"
@@ -39,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"/>
 
-        <LinearLayout
+        <LinearLayout android:id="@+id/status_box"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
