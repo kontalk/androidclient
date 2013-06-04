@@ -52,6 +52,7 @@ public class ConversationListItem extends RelativeLayout {
     private ImageView mErrorIndicator;
     //private ImageView mPresenceView;
     private QuickContactBadge mAvatarView;
+    private TextView mCounterView;
 
     static private Drawable sDefaultContactImage;
 
@@ -79,15 +80,20 @@ public class ConversationListItem extends RelativeLayout {
         mErrorIndicator = (ImageView) findViewById(R.id.error);
         //mPresenceView = (ImageView) findViewById(R.id.presence);
         mAvatarView = (QuickContactBadge) findViewById(R.id.avatar);
+        mCounterView = (TextView) findViewById(R.id.counter);
 
         if (isInEditMode()) {
-            mFromView.setText("Test zio (3)");
+            mFromView.setText("Test zio");
             mSubjectView.setText("Bella zio senti per domani facciamo che mi vieni a prendere ok?");
             mDateView.setText("20:14");
             mAvatarView.setVisibility(VISIBLE);
             mAvatarView.setImageResource(R.drawable.ic_contact_picture);
+            /*
             mErrorIndicator.setVisibility(VISIBLE);
             mErrorIndicator.setImageResource(R.drawable.ic_msg_pending);
+            */
+            mCounterView.setVisibility(VISIBLE);
+            mCounterView.setText("5");
         }
     }
 
@@ -109,9 +115,6 @@ public class ConversationListItem extends RelativeLayout {
         }
 
         SpannableStringBuilder from = new SpannableStringBuilder(recipient);
-        if (conv.getMessageCount() > 1)
-            from.append(" (" + conv.getMessageCount() + ") ");
-
         if (conv.getUnreadCount() > 0)
             from.setSpan(STYLE_BOLD, 0, from.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
@@ -170,8 +173,15 @@ public class ConversationListItem extends RelativeLayout {
         // no matching resource or draft - hide status icon
         if (resId < 0 || mConversation.getDraft() != null) {
             mErrorIndicator.setVisibility(GONE);
+
+            int unread = mConversation.getUnreadCount();
+            if (unread > 0) {
+            	mCounterView.setText(String.valueOf(unread));
+            	mCounterView.setVisibility(VISIBLE);
+            }
         }
         else {
+        	mCounterView.setVisibility(GONE);
             mErrorIndicator.setVisibility(VISIBLE);
             mErrorIndicator.setImageResource(resId);
             mErrorIndicator.setContentDescription(getResources().getString(statusId));
