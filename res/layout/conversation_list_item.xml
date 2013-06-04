@@ -85,7 +85,7 @@
         android:layout_alignRight="@+id/from"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/contacts_list_item_grayed" />
+        android:textColor="@color/grayed_out" />
 
     <FrameLayout android:id="@+id/emblems"
         android:layout_width="wrap_content"
@@ -93,28 +93,23 @@
         android:layout_marginTop="-2dip"
         android:layout_alignRight="@+id/from"
         android:layout_alignTop="@+id/subject">
-    
+
 	    <ImageView
 	        android:id="@+id/error"
 	        android:layout_width="22dip"
 	        android:layout_height="fill_parent"
 	        android:visibility="gone" />
-	    
+
 	    <TextView
 	        android:id="@+id/counter"
-	        android:textAppearance="?android:attr/textAppearanceSmallInverse"
+            style="@style/TextAppearance.Widget.ConversationCountBadge"
 	        android:layout_width="wrap_content"
 	        android:minWidth="22dip"
 	        android:layout_height="fill_parent"
 	        android:layout_marginLeft="4dip"
-	        android:paddingLeft="4dip"
-	        android:paddingRight="4dip"
-	        android:background="@drawable/conversation_badge"
-	        android:textSize="11sp"
-	        android:textStyle="bold"
 	        android:gravity="center"
 	        android:visibility="gone" />
-    
+
     </FrameLayout>
 
 </org.kontalk.xmpp.ui.ConversationListItem>

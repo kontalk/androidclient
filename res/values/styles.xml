@@ -68,4 +68,16 @@
   <!-- default light-to-dark theme selector -->
   <style name="Theme.Light2" parent="android:Theme"/>
 
+  <style name="TextAppearance.Widget.ConversationCountBadge"
+      parent="@android:style/TextAppearance.Small.Inverse">
+    <item name="android:textAppearance">?android:attr/textAppearanceSmallInverse</item>
+    <item name="android:textColor">#ffffff</item>
+    <item name="android:textSize">12sp</item>
+    <item name="android:textStyle">bold</item>
+    <item name="android:background">@drawable/conversation_badge</item>
+    <item name="android:paddingLeft">4dp</item>
+    <item name="android:paddingRight">4dp</item>
+
+  </style>
+
 </resources>

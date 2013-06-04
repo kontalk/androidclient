@@ -78,7 +78,7 @@ public class ContactsListItem extends RelativeLayout {
         String text2 = contact.getStatus();
         if (text2 == null) {
             text2 = contact.getNumber();
-            mText2.setTextColor(getResources().getColor(R.color.contacts_list_item_grayed));
+            mText2.setTextColor(getResources().getColor(R.color.grayed_out));
         }
         else {
             mText2.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
