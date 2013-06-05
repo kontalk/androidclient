@@ -27,6 +27,18 @@
             android:paddingLeft="5dip"
             android:paddingRight="3dip"
             android:background="@drawable/bottombar_landscape_565">
+
+            <ImageButton
+                android:id="@+id/smiley_button"
+                style="?android:attr/buttonStyle"
+                android:src="@drawable/smiley_btn"
+                android:adjustViewBounds="false"
+                android:drawablePadding="0dip"
+                android:layout_width="48dp"
+                android:layout_height="fill_parent"
+                android:minHeight="48dip"
+                android:contentDescription="@string/menu_smileys" />
+
                 <EditText
                     android:id="@+id/text_editor"
                     android:layout_width="0dip"
