@@ -98,6 +98,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -173,6 +174,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private boolean mIsTyping;
     private CharSequence mCurrentStatus;
     private TextWatcher mChatStateListener;
+    private AdapterView.OnItemClickListener mSmileySelectListener;
 
     private static final class PresenceData {
         public String status;
@@ -290,6 +292,36 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			    submitSend();
 			}
 		});
+
+        mSmileySelectListener = new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Editable text = mTextEntry.getText();
+                int startPos = mTextEntry.getSelectionStart();
+                int endPos = mTextEntry.getSelectionEnd();
+
+                if (startPos < 0) startPos = text.length();
+                if (endPos < 0) endPos = startPos;
+                int startMin = Math.min(startPos, endPos);
+
+                // add unicode emoji
+                char[] value = Character.toChars((int) id);
+                text.replace(startMin, Math.max(startPos, endPos),
+                    String.valueOf(value), 0, value.length);
+
+                // textview change listener will do the rest
+
+                // dismiss smileys popup
+                mSmileyPopup.dismiss();
+            }
+        };
+
+		ImageButton smileyButton = (ImageButton) getView().findViewById(R.id.smiley_button);
+        smileyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSmileysPopup(v);
+            }
+        });
 
 		Configuration config = getResources().getConfiguration();
 		mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
@@ -573,30 +605,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     			return true;
 
     		case R.id.menu_smiley:
-    		    AdapterView.OnItemClickListener listener = new AdapterView.OnItemClickListener() {
-    		        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    		            Editable text = mTextEntry.getText();
-    		            int startPos = mTextEntry.getSelectionStart();
-    		            int endPos = mTextEntry.getSelectionEnd();
-
-    		            if (startPos < 0) startPos = text.length();
-    		            if (endPos < 0) endPos = startPos;
-                        int startMin = Math.min(startPos, endPos);
-
-                        // add unicode emoji
-                        char[] value = Character.toChars((int) id);
-    		            text.replace(startMin, Math.max(startPos, endPos),
-    		                String.valueOf(value), 0, value.length);
-
-    		            // textview change listener will do the rest
-
-    		            // dismiss smileys popup
-    		            mSmileyPopup.dismiss();
-    		        }
-                };
-                if (mSmileyPopup == null)
-                    mSmileyPopup = MessageUtils.smileysPopup(getActivity(), listener);
-                mSmileyPopup.show(getActivity().findViewById(R.id.menu_smiley));
+    		    showSmileysPopup(getActivity().findViewById(R.id.menu_smiley));
     		    return true;
 		}
 
@@ -752,6 +761,12 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	private void selectContactAttachment() {
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
+	}
+
+	private void showSmileysPopup(View anchor) {
+        if (mSmileyPopup == null)
+            mSmileyPopup = MessageUtils.smileysPopup(getActivity(), mSmileySelectListener);
+        mSmileyPopup.show(anchor);
 	}
 
 	private void deleteThread() {

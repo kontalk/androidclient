@@ -27,17 +27,27 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#fff"
-        android:paddingBottom="4dip" >
+        android:background="#fff">
+
+        <ImageButton
+            android:id="@+id/smiley_button"
+            style="?android:attr/borderlessButtonStyle"
+            android:src="@drawable/smiley_btn"
+            android:adjustViewBounds="false"
+            android:drawablePadding="0dip"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dip"
+            android:layout_gravity="bottom"
+            android:contentDescription="@string/menu_smileys" />
 
         <EditText
             android:textColor="@android:color/black"
             android:id="@+id/text_editor"
             android:layout_width="0dip"
-            android:layout_gravity="bottom"
             android:layout_height="wrap_content"
-            android:layout_weight="1.0"
-            android:layout_marginLeft="8dip"
+            android:layout_weight="1"
+            android:layout_gravity="bottom"
             android:autoText="true"
             android:textSize="16sp"
             android:capitalize="sentences"
