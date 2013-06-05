@@ -81,8 +81,10 @@
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/from"
         android:layout_alignBottom="@+id/from"
         android:layout_alignRight="@+id/from"
+        android:gravity="center_vertical"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/grayed_out" />
