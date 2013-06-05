@@ -27,8 +27,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#fff"
-        android:paddingBottom="4dip" >
+        android:background="#fff">
 
         <EditText
             android:textColor="@android:color/black"
