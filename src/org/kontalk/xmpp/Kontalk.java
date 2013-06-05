@@ -24,6 +24,7 @@ import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.service.NetworkStateReceiver;
 import org.kontalk.xmpp.service.SystemBootStartup;
+import org.kontalk.xmpp.service.UploadService;
 import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.ComposeMessage;
 import org.kontalk.xmpp.ui.MessagingNotification;
@@ -131,6 +132,7 @@ public class Kontalk extends Application {
         enableService(context, pm, SearchActivity.class, enabled);
         enableService(context, pm, MessageCenterService.class, enabled);
         enableService(context, pm, DownloadService.class, enabled);
+        enableService(context, pm, UploadService.class, enabled);
         enableService(context, pm, SystemBootStartup.class, enabled);
         enableService(context, pm, NetworkStateReceiver.class, enabled);
     }
