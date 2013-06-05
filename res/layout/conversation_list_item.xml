@@ -90,7 +90,7 @@
     <FrameLayout android:id="@+id/emblems"
         android:layout_width="wrap_content"
         android:layout_height="22dip"
-        android:layout_marginTop="-2dip"
+        android:layout_marginLeft="4dip"
         android:layout_alignRight="@+id/from"
         android:layout_alignTop="@+id/subject">
 
@@ -106,7 +106,6 @@
 	        android:layout_width="wrap_content"
 	        android:minWidth="22dip"
 	        android:layout_height="fill_parent"
-	        android:layout_marginLeft="4dip"
 	        android:gravity="center"
 	        android:visibility="gone" />
 
