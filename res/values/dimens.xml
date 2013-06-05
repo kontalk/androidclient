@@ -4,4 +4,6 @@
     <dimen name="dateview_text_size">11sp</dimen>
     <dimen name="message_text_margin_right">0dp</dimen>
     <dimen name="conv_list_margin_left">7dp</dimen>
+    <dimen name="contacts_list_margin_left">0dp</dimen>
+    <dimen name="contacts_list_margin_right">0dp</dimen>
 </resources>
