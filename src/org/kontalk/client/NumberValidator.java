@@ -28,14 +28,7 @@ import org.kontalk.client.Protocol.ServerInfoResponse;
 import org.kontalk.client.Protocol.ValidationResponse;
 import org.kontalk.client.Protocol.ValidationResponse.ValidationStatus;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Bundle;
-import android.os.Handler;
-import android.telephony.PhoneNumberUtils;
-import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -57,8 +50,6 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 public class NumberValidator implements Runnable {
     private static final String TAG = NumberValidator.class.getSimpleName();
 
-    private static final int MAX_SMS_WAIT_TIME = 30000;
-
     /** Initialization */
     public static final int STEP_INIT = 0;
     /** Serverinfo check */
@@ -68,28 +59,20 @@ public class NumberValidator implements Runnable {
     /** Requesting authentication token */
     public static final int STEP_AUTH_TOKEN = 3;
 
-    private final Context mContext;
     private final EndpointServer mServer;
     private final String mPhone;
     private final ClientConnection mClient;
-    private final boolean mManual;
     private NumberValidatorListener mListener;
     private volatile int mStep;
     private CharSequence mValidationCode;
-    private BroadcastReceiver mSmsReceiver;
-    private volatile String mSmsFrom;
     private boolean mAlreadyChecked;
 
-    private Runnable mTimeout;
-    private Handler mHandler;
     private Thread mThread;
 
-    public NumberValidator(Context context, EndpointServer server, String phone, boolean manual) {
-        mContext = context.getApplicationContext();
+    public NumberValidator(EndpointServer server, String phone) {
         mServer = server;
         mPhone = phone;
         mClient = new ClientConnection(mServer);
-        mManual = manual;
     }
 
     public synchronized void start() {
@@ -103,9 +86,6 @@ public class NumberValidator implements Runnable {
         try {
             // begin!
             if (mStep == STEP_INIT) {
-                // unregister previous receiver
-                cancelBroadcastReceiver();
-
                 // check that server is authorized to generate auth tokens
                 mStep = STEP_CHECK_INFO;
                 boolean supportsToken = checkServer();
@@ -121,94 +101,16 @@ public class NumberValidator implements Runnable {
 
                 mAlreadyChecked = true;
 
-                if (!mManual) {
-                    // setup the sms receiver
-                    IntentFilter filter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
-                    mSmsReceiver = new BroadcastReceiver() {
-                        @Override
-                        public void onReceive(Context context, Intent intent) {
-                            Log.d(TAG, "SMS received! " + intent.toString());
-
-                            Bundle bdl = intent.getExtras();
-                            Object pdus[] = (Object [])bdl.get("pdus");
-                            for(int n=0; n < pdus.length; n++) {
-                                byte[] byteData = (byte[])pdus[n];
-                                SmsMessage sms = SmsMessage.createFromPdu(byteData);
-
-                                // wait for sms origin to be filled
-                                synchronized (this) {
-                                    while (mSmsFrom == null) {
-                                        try {
-                                            wait();
-                                        }
-                                        catch (InterruptedException e) {
-                                        }
-                                    }
-                                }
-
-                                // possible message!
-                                if (mSmsFrom.equals(sms.getOriginatingAddress()) ||
-                                        PhoneNumberUtils.compare(mSmsFrom, sms.getOriginatingAddress())) {
-                                    String txt = sms.getMessageBody();
-                                    if (txt != null && txt.length() > 0) {
-                                        clearTimeout();
-                                        // FIXME take the entire message text for now
-                                        mValidationCode = txt;
-                                        mStep = STEP_AUTH_TOKEN;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            Log.d(TAG, "validation code found = \"" + mValidationCode + "\"");
-
-                            if (mValidationCode != null) {
-                                // unregister this receiver
-                                context.unregisterReceiver(this);
-                                mSmsReceiver = null;
-
-                                // next start call will trigger the next condition
-                                mThread = null;
-
-                                // the listener will call start() again
-                                if (mListener != null)
-                                    mListener.onValidationCodeReceived(NumberValidator.this, mValidationCode);
-                            }
-                        }
-                    };
-                    mContext.registerReceiver(mSmsReceiver, filter);
-                }
-
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
                 mClient.reconnect();
                 RegistrationResponse res = mClient.registerWait(mPhone);
                 if (mListener != null) {
-                    // clear previous timeout
-                    clearTimeout();
-                    // set timeout
-                    if (!mManual)
-                        setTimeout();
-
                     if (res.getStatus() == RegistrationStatus.STATUS_CONTINUE) {
+                        String smsFrom = res.getSmsFrom();
+                        Log.d(TAG, "using sms sender id: " + smsFrom);
 
-                        if (!mManual) {
-                            if (res.hasSmsFrom()) {
-                                mSmsFrom = res.getSmsFrom();
-                                Log.d(TAG, "using sms sender id: " + mSmsFrom);
-                                mListener.onValidationRequested(this);
-                                synchronized (mSmsReceiver) {
-                                    mSmsReceiver.notifyAll();
-                                }
-                            }
-                            else {
-                                // no sms from identification?
-                                throw new IllegalArgumentException("no sms from id");
-                            }
-                        }
-                        else {
-                            mListener.onValidationRequested(this);
-                        }
+                        mListener.onValidationRequested(this);
                     }
                     else {
                         // validation failed :(
@@ -272,15 +174,12 @@ public class NumberValidator implements Runnable {
     public synchronized void shutdown() {
         Log.w(TAG, "shutting down");
         try {
-            clearTimeout();
-
             if (mThread != null) {
                 mClient.close();
                 mThread.interrupt();
                 mThread.join();
                 mThread = null;
             }
-            cancelBroadcastReceiver();
         }
         catch (Exception e) {
             // ignored
@@ -300,34 +199,6 @@ public class NumberValidator implements Runnable {
         return mStep;
     }
 
-    public void cancelBroadcastReceiver() {
-        if (mSmsReceiver != null) {
-            mContext.unregisterReceiver(mSmsReceiver);
-            mSmsReceiver = null;
-        }
-    }
-
-    private void clearTimeout() {
-        if (mTimeout != null && mHandler != null)
-            mHandler.removeCallbacks(mTimeout);
-    }
-
-    private void setTimeout() {
-        if (mHandler != null) {
-            mTimeout = new Runnable() {
-                public void run() {
-                    mTimeout = null;
-                    if (mListener != null)
-                        mListener.onValidationCodeTimeout(NumberValidator.this);
-                    mStep = STEP_INIT;
-                }
-            };
-
-            // set SMS timeout
-            mHandler.postDelayed(mTimeout, MAX_SMS_WAIT_TIME);
-        }
-    }
-
     private boolean checkServer() throws IOException {
         mClient.reconnect();
         ServerInfoResponse info = mClient.serverinfoWait();
@@ -345,16 +216,8 @@ public class NumberValidator implements Runnable {
         }
     }
 
-    public synchronized void setListener(NumberValidatorListener listener, Handler handler) {
-        // clear any timeout set in the previous handler
-        clearTimeout();
+    public synchronized void setListener(NumberValidatorListener listener) {
         mListener = listener;
-        mHandler = handler;
-        // retaining previous running validation
-        if (mStep == STEP_VALIDATION && mHandler != null) {
-            if (!mManual)
-                setTimeout();
-        }
     }
 
     public abstract interface NumberValidatorListener {
@@ -369,12 +232,6 @@ public class NumberValidator implements Runnable {
 
         /** Called if phone number validation failed. */
         public void onValidationFailed(NumberValidator v, RegistrationStatus reason);
-
-        /** Called when the validation code SMS has been received. */
-        public void onValidationCodeReceived(NumberValidator v, CharSequence code);
-
-        /** Called if we are waiting too much time for the SMS. */
-        public void onValidationCodeTimeout(NumberValidator v);
 
         /** Called on receiving of authentication token. */
         public void onAuthTokenReceived(NumberValidator v, CharSequence token);

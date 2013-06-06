@@ -58,7 +58,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
             mValidator = data.validator;
             if (mValidator != null) {
                 startProgress();
-                mValidator.setListener(this, null);
+                mValidator.setListener(this);
             }
         }
 
@@ -128,8 +128,8 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
 
         // send the code
         EndpointServer server = MessagingPreferences.getEndpointServer(this);
-        mValidator = new NumberValidator(this, server, null, true);
-        mValidator.setListener(this, null);
+        mValidator = new NumberValidator(server, null);
+        mValidator.setListener(this);
 
         mValidator.manualInput(code);
         mValidator.start();
@@ -189,16 +189,6 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
 
     @Override
     public void onValidationFailed(NumberValidator v, RegistrationStatus reason) {
-        // not used.
-    }
-
-    @Override
-    public void onValidationCodeReceived(NumberValidator v, CharSequence code) {
-        // not used.
-    }
-
-    @Override
-    public void onValidationCodeTimeout(NumberValidator v) {
         // not used.
     }
 

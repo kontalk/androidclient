@@ -16,12 +16,12 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources>
     <string name="app_name">Kontalk</string>
-    <string name="service_name">Centro Messaggi</string>
-    <string name="authenticator_name">Servizio Autenticazione</string>
-    <string name="sync_service_name">Sincronizzazione Contatti</string>
-    <string name="download_service">Download Service</string>
+    <string name="service_name">Centro messaggi</string>
+    <string name="authenticator_name">Servizio di autenticazione</string>
+    <string name="sync_service_name">Sincronizzazione contatti</string>
+    <string name="download_service">Download file</string>
     <string name="yes">Sì</string>
     <string name="no">No</string>
     <string name="menu_compose">Nuovo messaggio</string>
@@ -33,13 +33,12 @@
     <string name="pref_network_settings">Impostazioni di rete</string>
     <string name="pref_network_uri">Indirizzo server manuale</string>
     <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
-    <string name="number_validation_plus">+</string>
-    <string name="number_validation_intro1">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
-    <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
+    <string name="number_validation_intro1">Seleziona il tuo prefisso internazionale e inserisci il tuo numero di cellulare. Ti sarà spedito un SMS con un codice di verifica. Il tuo numero sarà usato una sola volta, dopodiché sarà scartato.</string>
+    <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e potrai inserire il codice di verifica che riceverai.</string>
     <string name="code_validation_intro">Riceverai a breve un SMS al numero che hai inserito. Inserisci qui sotto il codice ricevuto nel messaggio.</string>
-    <string name="code_validation_intro2">Inserisci un codice di validazione che avevi ricevuto. Notare che un codice di validazione può essere usato una sola volta.</string>
+    <string name="code_validation_intro2">Inserisci un codice di verifica che avevi ricevuto. Notare che un codice di verifica può essere usato una sola volta.</string>
     <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
-    <string name="msg_validating_phone">Validazione numero di telefono&#8230;</string>
+    <string name="msg_validating_phone">Verifica numero di telefono&#8230;</string>
     <string name="msg_initializing">Inizializzazione&#8230;</string>
     <string name="msg_authenticated">Registrazione sul network effettuata!</string>
     <string name="share">Condividi</string>
@@ -126,11 +125,11 @@
     <string name="vibrate_never">Mai</string>
     <string name="confirm_delete_message">Elimina messaggio</string>
     <string name="confirm_will_delete_message">Il messaggio sarà eliminato.</string>
-    <string name="err_authentication_failed">Codice di validazione rifiutato. Autenticazione fallita.</string>
+    <string name="err_authentication_failed">Codice di verifica rifiutato. Autenticazione fallita.</string>
     <string name="err_validation_failed">Verifica del numero di telefono fallita.</string>
     <string name="err_validation_retry_later">Troppi tentativi. Per favore aspetta qualche minuto e riprova.</string>
-    <string name="msg_validation_canceled">Validazione annullata. Potresti comunque ricevere un SMS.</string>
-    <string name="err_validation_error">Errore durante la validazione. Riprova più tardi.</string>
+    <string name="msg_validation_canceled">Verifica annullata. Potresti comunque ricevere un SMS.</string>
+    <string name="err_validation_error">Errore durante la verifica. Riprova più tardi.</string>
     <string name="err_validation_network_error">Impossibile connettersi al server. Riprova più tardi.</string>
     <string name="err_validation_server_not_supported">Il server selezionato non supporta la registrazione. Configurane un altro nelle impostazioni.</string>
     <string name="text_encrypted">(cifrato)</string>
@@ -138,8 +137,7 @@
     <string name="msg_draft_saved">Messaggio salvato come bozza.</string>
     <string name="send_mime_not_supported">Tipo di file non è supportato.</string>
     <string name="button_validate">Verifica</string>
-    <string name="button_manual_validation">Verifica manuale</string>
-    <string name="button_validation_code">Codice di validazione</string>
+    <string name="button_validation_code">Codice di verifica</string>
     <string name="notify_ticker_download_completed">Download completato</string>
     <string name="notify_title_download_completed">Download completato</string>
     <string name="notify_text_download_completed">Download allegato completato</string>
@@ -158,7 +156,7 @@
     <string name="menu_refresh">Aggiorna</string>
     <string name="menu_invite">Invita utenti</string>
     <string name="title_error">Errore</string>
-    <string name="msg_do_refresh">Usa Menu > Aggiorna per aggiornare la lista contatti.</string>
+    <string name="msg_do_refresh">Usa Menu &gt; Aggiorna per aggiornare la lista contatti.</string>
     <string name="msg_sync_progress">Aggiornamento lista contatti in corso&#8230;</string>
     <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
     <string name="err_sync_nonetwork">Rete non disponibile. Riprova più tardi.</string>
@@ -195,39 +193,29 @@
     <string name="serverlist_updating">Aggiornamento lista server&#8230;</string>
     <string name="serverlist_update_error">Impossibile scaricare la lista dei server. Riprova in seguito.</string>
     <string name="serverlist_update_nodata">Nessuna lista server disponibile.</string>
-
     <string name="pref_remove_prefix">Prefisso di composizione</string>
     <string name="pref_title_remove_prefix">Rimuovi un prefisso in Kontalk per far corrispondere i numeri di telefono</string>
-
-    <!-- message delivery status -->
     <string name="msg_status_sending">Invio in corso</string>
     <string name="msg_status_sent">Inviato</string>
     <string name="msg_status_notaccepted">Rifiutato</string>
     <string name="msg_status_notdelivered">Non consegnato</string>
     <string name="msg_status_delivered">Consegnato</string>
     <string name="msg_status_encrypted">Cifrato</string>
-
     <string name="pref_balloons">Tema messaggi</string>
     <string name="pref_title_balloons">Scegli un tema per i messaggi</string>
     <string name="balloons_classic">Classico</string>
     <string name="balloons_old_classic">Classico (vecchio)</string>
     <string name="balloons_iphone">iPhone</string>
-
     <string name="attachment_picture">Immagine</string>
     <string name="attachment_contact">Contatto</string>
-
     <string name="chooser_send_picture">Invia immagine</string>
     <string name="chooser_error_no_camera">Memoria esterna non disponibile. Non sarà possibile scattare una nuovo foto da spedire.</string>
-
     <string name="status_activity_title">Messaggio di stato</string>
     <string name="hint_status_entry">Inserisci il tuo messaggio di stato</string>
     <string name="header_recent_status">Messaggi di status recenti</string>
-
     <string name="title_offline_mode_warning">Modalità offline</string>
     <string name="message_offline_mode_warning">Durante la modalità offline Kontalk non si connetterà al server fino a quando non tornerai online. Non potrai inviare o ricevere messaggi e gli utenti ti vedranno offline.</string>
-
     <string name="warning_offline_mode">Modalità offline attiva. I messaggi saranno inviati quando tornerai online.</string>
     <string name="going_offline">Entro in modalità offline.</string>
     <string name="going_online">Entro in modalità online.</string>
-
 </resources>
