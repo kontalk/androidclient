@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources>
     <string name="app_name">Kontalk XMPP</string>
     <string name="service_name">Message Center</string>
     <string name="authenticator_name">Authentication Service</string>
@@ -33,12 +33,12 @@
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
-    <string name="number_validation_intro1">Please enter your country code and mobile phone number. A SMS with a validation code will be sent to you. Your phone number will be used once and then discarded.</string>
-    <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the validation code you will receive via SMS manually using the button above.</string>
+    <string name="number_validation_intro1">Please select your country code and input your mobile phone number. A SMS with a verification code will be sent to you. Your phone number will be used once and then discarded.</string>
+    <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the verification code you will receive via SMS.</string>
     <string name="code_validation_intro">You shall receive a SMS to the number you input briefly. Please insert the code you receive below.</string>
-    <string name="code_validation_intro2">Please insert a validation code you previously received. Please note that a validation code can be used only once.</string>
+    <string name="code_validation_intro2">Please insert a verification code you received. Please note that a verification code can be used only once.</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
-    <string name="msg_validating_phone">Validating phone number&#8230;</string>
+    <string name="msg_validating_phone">Verifying phone number&#8230;</string>
     <string name="msg_initializing">Initializing&#8230;</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="share">Share</string>
@@ -125,19 +125,18 @@
     <string name="pref_title_vibrate">Also vibrate when notified</string>
     <string name="confirm_delete_message">Delete message</string>
     <string name="confirm_will_delete_message">The message will be deleted.</string>
-    <string name="err_authentication_failed">Validation code refused. Authentication failed.</string>
+    <string name="err_authentication_failed">Verification code refused. Authentication failed.</string>
     <string name="err_validation_failed">Phone number verification failed.</string>
     <string name="msg_validation_canceled">Validation canceled. You might receive a SMS anyway.</string>
-    <string name="err_validation_error">An error occurred during validation. Please try again later.</string>
+    <string name="err_validation_error">An error occurred during verification. Please try again later.</string>
     <string name="err_validation_network_error">Unable to connect to server. Please try again later.</string>
     <string name="err_validation_server_not_supported">Selected server does not support registration. Please configure another one in Settings screen.</string>
     <string name="text_encrypted">(encrypted)</string>
     <string name="peer_unknown">(unknown)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
-    <string name="button_validate">Validate</string>
-    <string name="button_manual_validation">Manual validation</string>
-    <string name="button_validation_code">Input validation code</string>
+    <string name="button_validate">Verify</string>
+    <string name="button_validation_code">Verification code</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>
     <string name="notify_text_download_completed">Attachment download completed</string>

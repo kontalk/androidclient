@@ -32,9 +32,8 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:paddingLeft="20dip"
-            android:paddingRight="20dip"
             android:paddingBottom="10dip"
+            android:gravity="center_horizontal"
             android:text="@string/number_validation_intro1" />
 
         <Spinner android:id="@+id/phone_cc"
@@ -56,13 +55,6 @@
             android:text="@string/button_validate" />
 
         <Button
-            android:id="@+id/button_manual"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:onClick="validateManual"
-            android:text="@string/button_manual_validation" />
-
-        <Button
             android:id="@+id/button_validation_code"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -72,9 +64,8 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:paddingLeft="20dip"
-            android:paddingRight="20dip"
             android:paddingTop="10dip"
+            android:gravity="center_horizontal"
             android:text="@string/number_validation_intro2" />
     </LinearLayout>
 

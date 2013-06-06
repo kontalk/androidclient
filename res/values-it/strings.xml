@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources>
     <string name="app_name">Kontalk XMPP</string>
     <string name="service_name">Centro messaggi</string>
     <string name="authenticator_name">Servizio di autenticazione</string>
@@ -33,12 +33,12 @@
     <string name="pref_network_settings">Impostazioni di rete</string>
     <string name="pref_network_uri">Indirizzo server manuale</string>
     <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
-    <string name="number_validation_intro1">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
-    <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
+    <string name="number_validation_intro1">Seleziona il tuo prefisso internazionale e inserisci il tuo numero di cellulare. Ti sarà spedito un SMS con un codice di verifica. Il tuo numero sarà usato una sola volta, dopodiché sarà scartato.</string>
+    <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e potrai inserire il codice di verifica che riceverai.</string>
     <string name="code_validation_intro">Riceverai a breve un SMS al numero che hai inserito. Inserisci qui sotto il codice ricevuto nel messaggio.</string>
-    <string name="code_validation_intro2">Inserisci un codice di validazione che avevi ricevuto. Notare che un codice di validazione può essere usato una sola volta.</string>
+    <string name="code_validation_intro2">Inserisci un codice di verifica che avevi ricevuto. Notare che un codice di verifica può essere usato una sola volta.</string>
     <string name="warn_invalid_number">Inserisci un numero di telefono valido.</string>
-    <string name="msg_validating_phone">Validazione numero di telefono&#8230;</string>
+    <string name="msg_validating_phone">Verifica numero di telefono&#8230;</string>
     <string name="msg_initializing">Inizializzazione&#8230;</string>
     <string name="msg_authenticated">Registrazione sul network effettuata!</string>
     <string name="share">Condividi</string>
@@ -125,10 +125,10 @@
     <string name="pref_title_vibrate">Attiva anche vibrazione alla notifica</string>
     <string name="confirm_delete_message">Elimina messaggio</string>
     <string name="confirm_will_delete_message">Il messaggio sarà eliminato.</string>
-    <string name="err_authentication_failed">Codice di validazione rifiutato. Autenticazione fallita.</string>
+    <string name="err_authentication_failed">Codice di verifica rifiutato. Autenticazione fallita.</string>
     <string name="err_validation_failed">Verifica del numero di telefono fallita.</string>
-    <string name="msg_validation_canceled">Validazione annullata. Potresti comunque ricevere un SMS.</string>
-    <string name="err_validation_error">Errore durante la validazione. Riprova più tardi.</string>
+    <string name="msg_validation_canceled">Verifica annullata. Potresti comunque ricevere un SMS.</string>
+    <string name="err_validation_error">Errore durante la verifica. Riprova più tardi.</string>
     <string name="err_validation_network_error">Impossibile connettersi al server. Riprova più tardi.</string>
     <string name="err_validation_server_not_supported">Il server selezionato non supporta la registrazione. Configurane un altro nelle impostazioni.</string>
     <string name="text_encrypted">(cifrato)</string>
@@ -136,8 +136,7 @@
     <string name="msg_draft_saved">Messaggio salvato come bozza.</string>
     <string name="send_mime_not_supported">Tipo di file non è supportato.</string>
     <string name="button_validate">Verifica</string>
-    <string name="button_manual_validation">Verifica manuale</string>
-    <string name="button_validation_code">Codice di validazione</string>
+    <string name="button_validation_code">Codice di verifica</string>
     <string name="notify_ticker_download_completed">Download completato</string>
     <string name="notify_title_download_completed">Download completato</string>
     <string name="notify_text_download_completed">Download allegato completato</string>

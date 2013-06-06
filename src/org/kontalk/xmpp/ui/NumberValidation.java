@@ -67,6 +67,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
+/** Number validation activity. */
 public class NumberValidation extends SherlockAccountAuthenticatorActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
@@ -85,7 +86,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
-    private Button mManualButton;
     private Button mInsertCode;
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
@@ -95,7 +95,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private String mAuthtoken;
     private String mAuthtokenType;
     private String mPhoneNumber;
-    private boolean mManualValidation;
 
     private boolean mFromInternal;
     /** Runnable for delaying initial manual sync starter. */
@@ -124,7 +123,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
-        mManualButton = (Button) findViewById(R.id.button_manual);
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
@@ -180,7 +178,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
                 mPhoneNumber = data.phoneNumber;
                 mValidator = data.validator;
                 if (mValidator != null)
-                    mValidator.setListener(this, mHandler);
+                    mValidator.setListener(this);
             }
             if (data.progressMessage != null) {
                 setProgressMessage(data.progressMessage, true);
@@ -277,7 +275,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
-        mManualButton.setEnabled(enabled);
         mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
@@ -342,21 +339,10 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             startProgress();
 
             EndpointServer server = MessagingPreferences.getEndpointServer(this);
-            mValidator = new NumberValidator(this, server, mPhoneNumber, mManualValidation);
-            mValidator.setListener(this, mHandler);
+            mValidator = new NumberValidator(this, server, mPhoneNumber);
+            mValidator.setListener(this);
             mValidator.start();
         }
-    }
-
-    /**
-     * Opens the manual validation window for manual input of the validation code.
-     * Also used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void validateManual(View v) {
-        // we are starting a manual validation
-        mManualValidation = true;
-        startValidation();
     }
 
     /**
@@ -366,8 +352,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
      */
     public void validatePhone(View v) {
         keepScreenOn(true);
-        // we are starting an automatic validation
-        mManualValidation = false;
         startValidation();
     }
 
@@ -596,24 +580,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     @Override
     public void onValidationRequested(NumberValidator v) {
-        if (mManualValidation) {
-            Log.d(TAG, "validation has been requested, requesting validation code to user");
-            proceedManual();
-        }
-        else
-            Log.d(TAG, "validation has been requested, waiting for SMS");
-    }
-
-    @Override
-    public void onValidationCodeReceived(NumberValidator v, CharSequence code) {
-        Log.d(TAG, "validation SMS received, restarting validator thread");
-        // start again!
-        v.start();
-    }
-
-    @Override
-    public void onValidationCodeTimeout(NumberValidator v) {
-        Log.d(TAG, "validation SMS still not received, going manual");
+        Log.d(TAG, "validation has been requested, requesting validation code to user");
         proceedManual();
     }
 
@@ -622,10 +589,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // abort sms broadcast receiver
-                if (mValidator != null)
-                    mValidator.cancelBroadcastReceiver();
-
                 abortProgress(true);
                 startValidationCode(REQUEST_MANUAL_VALIDATION);
             }

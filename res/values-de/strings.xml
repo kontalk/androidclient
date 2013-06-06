@@ -33,7 +33,6 @@
     <string name="pref_network_settings">Netzwerkeinstellungen</string>
     <string name="pref_network_uri">Manuelle Serveradresse</string>
     <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverlisten</string>
-    <string name="number_validation_plus">+</string>
     <string name="number_validation_intro1">Bitte Länderkennung und Telefonnr. eingeben. Eine SMS mit dem Validierungscode wird Ihnen zugeschickt. Die Telefonnr. wird nur einmalig genutzt und dann auf dem Server gelöscht.</string>
     <string name="number_validation_intro2">Wenn dieses Gerät keine SMS empfangen kann, setzen Sie bitte die Telefonnr. eines Ihnen gehörenden dazu fähigen Gerätes hier ein. Geben Sie dann den dorthin zugestellten Validierungscode manuell ein, indem Sie auf obigen Knopf drücken.</string>
     <string name="code_validation_intro">Sie sollten in Kürze eine SMS an die angegebene Telefonnr. erhalten. Bitte geben Sie den Code unten ein.</string>
@@ -133,7 +132,6 @@
     <string name="msg_draft_saved">Nachricht als Entwurf gespeichert.</string>
     <string name="send_mime_not_supported">Dateityp nicht unterstützt.</string>
     <string name="button_validate">Validierung</string>
-    <string name="button_manual_validation">Manuelle Validierung</string>
     <string name="button_validation_code">Validierungscode eingeben</string>
     <string name="notify_ticker_download_completed">Herunterladen abgeschlossen</string>
     <string name="notify_title_download_completed">Herunterladen abgeschlossen</string>
