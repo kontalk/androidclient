@@ -194,7 +194,6 @@
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
 
-    <!-- message delivery status -->
     <string name="msg_status_sending">Sending</string>
     <string name="msg_status_sent">Sent</string>
     <string name="msg_status_notaccepted">Refused</string>

@@ -18,10 +18,10 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Kontalk XMPP</string>
-    <string name="service_name">Centro Messaggi</string>
-    <string name="authenticator_name">Servizio Autenticazione</string>
-    <string name="sync_service_name">Sincronizzazione Contatti</string>
-    <string name="download_service">Download Service</string>
+    <string name="service_name">Centro messaggi</string>
+    <string name="authenticator_name">Servizio di autenticazione</string>
+    <string name="sync_service_name">Sincronizzazione contatti</string>
+    <string name="download_service">Download file</string>
     <string name="yes">Sì</string>
     <string name="no">No</string>
     <string name="menu_compose">Nuovo messaggio</string>
@@ -33,7 +33,6 @@
     <string name="pref_network_settings">Impostazioni di rete</string>
     <string name="pref_network_uri">Indirizzo server manuale</string>
     <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
-    <string name="number_validation_plus">+</string>
     <string name="number_validation_intro1">Inserisci il tuo numero di cellulare, comprensivo di prefisso internazionale.</string>
     <string name="number_validation_intro2">Se non puoi ricevere SMS su questo dispositivo, inserisci un altro numero che possiedi e inserisci manualmente il codice di verifica usando il pulsante qui sopra.</string>
     <string name="code_validation_intro">Riceverai a breve un SMS al numero che hai inserito. Inserisci qui sotto il codice ricevuto nel messaggio.</string>
@@ -157,7 +156,7 @@
     <string name="menu_refresh">Aggiorna</string>
     <string name="menu_invite">Invita utenti</string>
     <string name="title_error">Errore</string>
-    <string name="msg_do_refresh">Usa Menu > Aggiorna per aggiornare la lista contatti.</string>
+    <string name="msg_do_refresh">Usa Menu &gt; Aggiorna per aggiornare la lista contatti.</string>
     <string name="msg_sync_progress">Aggiornamento lista contatti in corso&#8230;</string>
     <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
     <string name="err_sync_nonetwork">Rete non disponibile. Riprova più tardi.</string>
@@ -191,36 +190,26 @@
     <string name="serverlist_updating">Aggiornamento lista server&#8230;</string>
     <string name="serverlist_update_error">Impossibile scaricare la lista dei server. Riprova in seguito.</string>
     <string name="serverlist_update_nodata">Nessuna lista server disponibile.</string>
-
     <string name="pref_remove_prefix">Prefisso di composizione</string>
     <string name="pref_title_remove_prefix">Rimuovi un prefisso in Kontalk per far corrispondere i numeri di telefono</string>
-
-    <!-- message delivery status -->
     <string name="msg_status_sending">Invio in corso</string>
     <string name="msg_status_sent">Inviato</string>
     <string name="msg_status_notaccepted">Rifiutato</string>
     <string name="msg_status_notdelivered">Non consegnato</string>
     <string name="msg_status_delivered">Consegnato</string>
     <string name="msg_status_encrypted">Cifrato</string>
-
     <string name="pref_balloons">Tema messaggi</string>
     <string name="pref_title_balloons">Scegli un tema per i messaggi</string>
-
     <string name="attachment_picture">Immagine</string>
     <string name="attachment_contact">Contatto</string>
-
     <string name="chooser_send_picture">Invia immagine</string>
     <string name="chooser_error_no_camera">Memoria esterna non disponibile. Non sarà possibile scattare una nuovo foto da spedire.</string>
-
     <string name="status_activity_title">Messaggio di stato</string>
     <string name="hint_status_entry">Inserisci il tuo messaggio di stato</string>
     <string name="header_recent_status">Messaggi di status recenti</string>
-
     <string name="title_offline_mode_warning">Modalità offline</string>
     <string name="message_offline_mode_warning">Durante la modalità offline Kontalk non si connetterà al server fino a quando non tornerai online. Non potrai inviare o ricevere messaggi e gli utenti ti vedranno offline.</string>
-
     <string name="warning_offline_mode">Modalità offline attiva. I messaggi saranno inviati quando tornerai online.</string>
     <string name="going_offline">Entro in modalità offline.</string>
     <string name="going_online">Entro in modalità online.</string>
-
 </resources>
