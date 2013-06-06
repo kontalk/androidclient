@@ -33,7 +33,6 @@
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
-    <string name="number_validation_plus">+</string>
     <string name="number_validation_intro1">Please enter your country code and mobile phone number. A SMS with a validation code will be sent to you. Your phone number will be used once and then discarded.</string>
     <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the validation code you will receive via SMS manually using the button above.</string>
     <string name="code_validation_intro">You shall receive a SMS to the number you input briefly. Please insert the code you receive below.</string>
