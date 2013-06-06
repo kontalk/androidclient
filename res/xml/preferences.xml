@@ -33,6 +33,9 @@
             android:summary="@string/pref_title_push_notifications"
             android:title="@string/pref_push_notifications"
             android:defaultValue="true"/>
+        <Preference android:key="pref_revalidate"
+            android:title="@string/pref_revalidate"
+            android:summary="@string/pref_title_revalidate"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_messaging_settings"

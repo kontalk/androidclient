@@ -200,6 +200,9 @@
             android:label="@string/status_activity_title"
             android:theme="@style/Theme.Light"/>
 
+        <activity android:name=".ui.RevalidateActivity"
+            android:theme="@style/Theme.Light"/>
+
         <!--
         <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"

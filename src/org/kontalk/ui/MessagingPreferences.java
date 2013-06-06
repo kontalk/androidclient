@@ -154,6 +154,16 @@ public final class MessagingPreferences extends PreferenceActivity {
 
         // manual server address is handled in Application context
 
+        // request verification code
+        final Preference revalidate = findPreference("pref_revalidate");
+        revalidate.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivity(new Intent(MessagingPreferences.this, RevalidateActivity.class));
+                return true;
+            }
+        });
+
         // server list last update timestamp
         final Preference updateServerList = findPreference("pref_update_server_list");
         updateServerList.setOnPreferenceClickListener(new OnPreferenceClickListener() {

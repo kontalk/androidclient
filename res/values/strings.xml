@@ -227,4 +227,7 @@
     <string name="going_offline">Going offline.</string>
     <string name="going_online">Going online.</string>
 
+    <string name="pref_revalidate">Request verification code</string>
+    <string name="pref_title_revalidate">Obtain a new verification code to register another device with this phone number</string>
+
 </resources>
