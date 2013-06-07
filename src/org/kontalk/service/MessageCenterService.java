@@ -47,6 +47,7 @@ import org.kontalk.client.Protocol.UserInfoUpdateRequest;
 import org.kontalk.client.Protocol.UserInfoUpdateResponse;
 import org.kontalk.client.Protocol.UserInfoUpdateResponse.UserInfoUpdateStatus;
 import org.kontalk.client.ReceivedJob;
+import org.kontalk.client.RevalidateJob;
 import org.kontalk.client.ServerinfoJob;
 import org.kontalk.client.TxListener;
 import org.kontalk.client.UserPresenceRequestJob;
@@ -839,6 +840,12 @@ public class MessageCenterService extends Service
     /** Used by the {@link ComposeMessageFragment}. */
     public UserLookupJob lookupUser(String userId) {
         UserLookupJob job = new UserLookupJob(userId);
+        pushRequest(job);
+        return job;
+    }
+
+    public RevalidateJob revalidate() {
+        RevalidateJob job = new RevalidateJob();
         pushRequest(job);
         return job;
     }
