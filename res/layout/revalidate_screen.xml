@@ -30,15 +30,14 @@
         android:gravity="center_horizontal"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:text="Verification code" />
+        android:text="@string/revalidate_title" />
 
     <TextView android:id="@+id/account"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="10dip"
         android:gravity="center_horizontal"
-        android:textSize="18sp"
-        android:text="+39123456" />
+        android:textSize="18sp" />
 
     <ProgressBar android:id="@android:id/progress"
         android:layout_width="fill_parent"
@@ -57,15 +56,14 @@
         android:padding="20dp"
         android:textStyle="bold"
         android:visibility="gone"
-        android:textIsSelectable="true"
-        android:text="123456" />
+        android:textIsSelectable="true" />
 
     <Button android:id="@+id/button_retry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:onClick="retry"
-        android:text="Retry" />
+        android:text="@string/button_retry" />
 
     <TextView
         android:layout_width="fill_parent"
@@ -74,6 +72,6 @@
         android:gravity="center_horizontal"
         android:textSize="16sp"
         android:layout_marginTop="10dp"
-        android:text="Use this verification code on another device to register with the same phone number." />
+        android:text="@string/revalidate_summary" />
 
 </LinearLayout>

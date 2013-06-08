@@ -230,4 +230,8 @@
     <string name="pref_revalidate">Request verification code</string>
     <string name="pref_title_revalidate">Obtain a new verification code to register another device with this phone number</string>
 
+    <string name="revalidate_title">Verification code</string>
+    <string name="revalidate_summary">Use this verification code on another device to register with the same phone number.</string>
+    <string name="button_retry">Retry</string>
+
 </resources>
