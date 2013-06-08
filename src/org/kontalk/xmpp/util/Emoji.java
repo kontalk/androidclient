@@ -271,10 +271,23 @@ public final class Emoji {
         emojiTheme.put(0x2663, R.drawable.emoji_clubs);
         emojiTheme.put(0x2666, R.drawable.emoji_diamonds);
         emojiTheme.put(0x1F3C6, R.drawable.emoji_trophy);
-        //emojiTheme.put(0x1F47E, R.drawable.emoji_);
-        //emojiTheme.put(0x1F3AF, R.drawable.emoji_);
-        //emojiTheme.put(0x1F004, R.drawable.emoji_);
-        //emojiTheme.put(0x1F3AC, R.drawable.emoji_);
+        emojiTheme.put(0x1F47E, R.drawable.emoji_space_invader);
+        emojiTheme.put(0x1F3AF, R.drawable.emoji_dart);
+        emojiTheme.put(0x1F004, R.drawable.emoji_mahjong);
+        emojiTheme.put(0x1F3AC, R.drawable.emoji_clapper);
+        emojiTheme.put(0x1F4DD, R.drawable.emoji_memo);
+        emojiTheme.put(0x1F4D6, R.drawable.emoji_book);
+        emojiTheme.put(0x1F3A8, R.drawable.emoji_art);
+        emojiTheme.put(0x1F3A4, R.drawable.emoji_microphone);
+        emojiTheme.put(0x1F3A7, R.drawable.emoji_headphones);
+        emojiTheme.put(0x1F3BA, R.drawable.emoji_trumpet);
+        emojiTheme.put(0x1F3B7, R.drawable.emoji_saxophone);
+        emojiTheme.put(0x1F3B8, R.drawable.emoji_guitar);
+        emojiTheme.put(0x303D, R.drawable.emoji_part_alternation_mark);
+        emojiTheme.put(0x1F45F, R.drawable.emoji_shoe);
+        emojiTheme.put(0x1F461, R.drawable.emoji_sandal);
+        emojiTheme.put(0x1F460, R.drawable.emoji_high_heel);
+        emojiTheme.put(0x1F462, R.drawable.emoji_boot);
 
         //emojiTheme.put(0x, R.drawable.emoji_);
 
@@ -550,6 +563,98 @@ public final class Emoji {
             0x1F335,
             0x1F33E,
             0x1F41A,
+        /*
+        },
+        {
+        */
+            0x1F38D,
+            0x1F49D,
+            0x1F38E,
+            0x1F392,
+            0x1F393,
+            0x1F38F,
+            0x1F386,
+            0x1F387,
+            0x1F390,
+            0x1F391,
+            0x1F383,
+            0x1F47B,
+            0x1F385,
+            0x1F384,
+            0x1F381,
+            0x1F514,
+            0x1F389,
+            0x1F388,
+            0x1F4BF,
+            0x1F4C0,
+            0x1F4F7,
+            0x1F3A5,
+            0x1F4BB,
+            0x1F4FA,
+            0x1F4F1,
+            0x1F4E0,
+            0x260E,
+            0x1F4BD,
+            0x1F4FC,
+            0x1F50A,
+            0x1F4E2,
+            0x1F4E3,
+            0x1F4FB,
+            0x1F4E1,
+            0x27BF,
+            0x1F50D,
+            0x1F513,
+            0x1F512,
+            0x1F511,
+            0x2702,
+            0x1F528,
+            0x1F4A1,
+            0x1F4F2,
+            0x1F4E9,
+            0x1F4EB,
+            0x1F4EE,
+            0x1F6C0,
+            0x1F6BD,
+            0x1F4BA,
+            0x1F4B0,
+            0x1F531,
+            0x1F6AC,
+            0x1F4A3,
+            0x1F52B,
+            0x1F48A,
+            0x1F489,
+            0x1F3C8,
+            0x1F3C0,
+            0x26BD,
+            0x26BE,
+            0x1F3BE,
+            0x26F3,
+            0x1F3B1,
+            0x1F3CA,
+            0x1F3C4,
+            0x1F3BF,
+            0x2660,
+            0x2665,
+            0x2663,
+            0x2666,
+            0x1F3C6,
+            0x1F47E,
+            0x1F3AF,
+            0x1F004,
+            0x1F3AC,
+            0x1F4DD,
+            0x1F4D6,
+            0x1F3A8,
+            0x1F3A4,
+            0x1F3A7,
+            0x1F3BA,
+            0x1F3B7,
+            0x1F3B8,
+            0x303D,
+            0x1F45F,
+            0x1F461,
+            0x1F460,
+            0x1F462,
         },
     };
 
