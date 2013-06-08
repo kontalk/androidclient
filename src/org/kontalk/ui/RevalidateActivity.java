@@ -155,6 +155,7 @@ public class RevalidateActivity extends SherlockActivity implements RequestListe
         }
         else {
             Toast.makeText(this, R.string.err_sync_nonetwork, Toast.LENGTH_SHORT).show();
+            error(null, null, null);
         }
     }
 
