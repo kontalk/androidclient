@@ -27,18 +27,25 @@
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dip"
         android:gravity="center_horizontal"
         android:textSize="24sp"
         android:textStyle="bold"
         android:text="Verification code" />
 
+    <TextView android:id="@+id/account"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dip"
+        android:gravity="center_horizontal"
+        android:textSize="18sp"
+        android:text="+39123456" />
+
     <ProgressBar android:id="@android:id/progress"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:indeterminate="true"
         android:indeterminateOnly="true"
-        android:padding="20dp"
         android:visibility="visible"
         android:layout_gravity="center_horizontal"/>
 
@@ -53,11 +60,11 @@
         android:textIsSelectable="true"
         android:text="123456" />
 
-    <Button
-        android:layout_width="fill_parent"
+    <Button android:id="@+id/button_retry"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:onClick="validatePhone"
+        android:onClick="retry"
         android:text="Retry" />
 
     <TextView

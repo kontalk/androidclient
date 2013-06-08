@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ClientConnection;
 import org.kontalk.client.Protocol.ValidationCodeResponse;
 import org.kontalk.client.RevalidateJob;
@@ -34,10 +35,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -45,6 +49,13 @@ import com.google.protobuf.MessageLite;
 
 
 public class RevalidateActivity extends SherlockActivity implements RequestListener, TxListener {
+
+    private ProgressBar mProgress;
+    private TextView mCode;
+    private Button mRetry;
+
+    private Handler mHandler;
+    private Runnable mTimeout;
 
     private class RevalidateServiceConnection implements ServiceConnection {
         private MessageCenterService service;
@@ -80,20 +91,29 @@ public class RevalidateActivity extends SherlockActivity implements RequestListe
         setContentView(R.layout.revalidate_screen);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mProgress = (ProgressBar) findViewById(android.R.id.progress);
+        mCode = (TextView) findViewById(R.id.validation_code);
+        mRetry = (Button) findViewById(R.id.button_retry);
+
+        // fill account name
+        String acc = Authenticator.getDefaultAccountName(this);
+        TextView textAccount = (TextView) findViewById(R.id.account);
+        textAccount.setText(acc);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // TODO request verification code through MessageCenterService
+
+        mHandler = new Handler();
+        mTimeout = new Runnable() {
+            public void run() {
+                error(null, null, null);
+            }
+        };
         mConn = new RevalidateServiceConnection();
-        if (!bindService(new Intent(getApplicationContext(),
-                        MessageCenterService.class), mConn,
-                        Context.BIND_AUTO_CREATE)) {
-            // cannot bind :(
-            // mMessageSenderListener.error(conn.job, new
-            // IllegalArgumentException("unable to bind to message center"));
-        }
+        retry(null);
     }
 
     @Override
@@ -117,6 +137,27 @@ public class RevalidateActivity extends SherlockActivity implements RequestListe
         return super.onOptionsItemSelected(item);
     }
 
+    public void retry(View v) {
+        if (MessageCenterService.isNetworkConnectionAvailable(this)) {
+
+            mRetry.setVisibility(View.GONE);
+            mProgress.setVisibility(View.VISIBLE);
+
+            // wait for 30 seconds
+            mHandler.postDelayed(mTimeout, 30000);
+
+            if (!bindService(new Intent(getApplicationContext(),
+                MessageCenterService.class), mConn,
+                Context.BIND_AUTO_CREATE)) {
+            // cannot bind :(
+            // IllegalArgumentException("unable to bind to message center");
+            }
+        }
+        else {
+            Toast.makeText(this, R.string.err_sync_nonetwork, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override
     public void starting(ClientThread client, RequestJob job) {
     }
@@ -136,22 +177,27 @@ public class RevalidateActivity extends SherlockActivity implements RequestListe
 
     @Override
     public boolean error(ClientThread client, RequestJob job, Throwable exc) {
-        // TODO
+        // remove timeout
+        mHandler.removeCallbacks(mTimeout);
+        // show retry button
+        mProgress.setVisibility(View.GONE);
+        mCode.setVisibility(View.GONE);
+        mRetry.setVisibility(View.VISIBLE);
         return false;
     }
 
     @Override
     public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
-        Log.v("REVAL", "message tx=" + txId + ", pack=" + pack);
         if (pack != null && pack instanceof ValidationCodeResponse) {
             final ValidationCodeResponse res = (ValidationCodeResponse) pack;
-            Log.v("REVAL", "validation code: " + res.getCode());
-
             runOnUiThread(new Runnable() {
                 public void run() {
-                    ((TextView)findViewById(R.id.validation_code)).setText(res.getCode());
-                    findViewById(android.R.id.progress).setVisibility(View.GONE);
-                    findViewById(R.id.validation_code).setVisibility(View.VISIBLE);
+                    // remove timeout
+                    mHandler.removeCallbacks(mTimeout);
+                    // show code
+                    mCode.setText(res.getCode());
+                    mProgress.setVisibility(View.GONE);
+                    mCode.setVisibility(View.VISIBLE);
                 }
             });
         }
