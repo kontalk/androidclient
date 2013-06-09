@@ -816,15 +816,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         String mime = data.getString("org.kontalk.message.mime");
         String _mediaUri = data.getString("org.kontalk.message.media.uri");
         if (_mediaUri != null) {
-            /*
-             * FIXME at this point, mUploadServices could be not filled yet
-             * e.g. when we send a message right after connection intent has
-             * been broadcasted. Therefore we should delay the message until
-             * we receive information about upload services.
-             * https://code.google.com/p/kontalk/issues/detail?id=70
-             */
             // take the first available upload service :)
-            String postUrl = mUploadServices.get(getUploadService());
+            String postUrl = getUploadService();
             if (postUrl != null) {
                 // media message - start upload service
                 Uri mediaUri = Uri.parse(_mediaUri);
@@ -1031,13 +1024,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return msgUri;
     }
 
-    /** Returns the first available upload service. */
+    /** Returns the first available upload service post URL. */
     private String getUploadService() {
         if (mUploadServices != null && mUploadServices.size() > 0) {
             Set<String> keys = mUploadServices.keySet();
             for (String key : keys) {
-                if (mUploadServices.get(key) != null)
-                    return key;
+                String url = mUploadServices.get(key);
+                if (url != null)
+                    return url;
             }
         }
 
