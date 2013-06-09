@@ -311,7 +311,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                 // textview change listener will do the rest
 
                 // dismiss smileys popup
-                mSmileyPopup.dismiss();
+                // TEST mSmileyPopup.dismiss();
             }
         };
 
@@ -573,8 +573,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		inflater.inflate(R.menu.compose_message_menu, menu);
 		MenuItem item = menu.findItem(R.id.menu_attachment2);
 		if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        item = menu.findItem(R.id.menu_smiley);
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
 		mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
 		mViewContactMenu = menu.findItem(R.id.view_contact);
@@ -603,10 +601,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     				deleteThread();
 
     			return true;
-
-    		case R.id.menu_smiley:
-    		    showSmileysPopup(getActivity().findViewById(R.id.menu_smiley));
-    		    return true;
 		}
 
 		return super.onOptionsItemSelected(item);

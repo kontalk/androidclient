@@ -21,5 +21,4 @@
     <item android:icon="@drawable/ic_title_contact" android:title="@string/view_contact" android:id="@+id/view_contact"/>
     <item android:icon="@drawable/ic_title_attach" android:title="@string/menu_attachment" android:id="@+id/menu_attachment" android:showAsAction="ifRoom"/>
     <item android:icon="@android:drawable/ic_menu_delete" android:title="@string/delete_thread" android:id="@+id/delete_thread"/>
-    <item android:icon="@drawable/ic_title_smiley" android:title="@string/menu_smileys" android:id="@+id/menu_smiley" android:showAsAction="always"/>
 </menu>
