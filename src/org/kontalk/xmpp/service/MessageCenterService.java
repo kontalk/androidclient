@@ -711,7 +711,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(p);
     }
 
+    /**
+     * Queries for pending messages and send them through.
+     * @param retrying if true, we are retrying to send media messages after
+     * receiving upload info (non-media messages will be filtered out)
+     */
     private void resendPendingMessages(boolean retrying) {
+        StringBuilder filter = new StringBuilder(Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
+            Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
+            Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
+            Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED);
+
+        // filter out non-media non-uploaded messages
+        if (retrying) filter
+            .append(" AND ")
+            .append(Messages.FETCH_URL)
+            .append(" IS NULL AND ")
+            .append(Messages.LOCAL_URI)
+            .append(" IS NOT NULL");
+
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,
@@ -723,10 +741,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.PREVIEW_PATH,
                 Messages.ENCRYPT_KEY
             },
-            Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
-            Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
-            Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
-            Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED,
+            filter.toString(),
             null, Messages._ID);
 
         while (c.moveToNext()) {
@@ -741,8 +756,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // media message encountered and no upload service available - delay message
             if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
-                Log.w(TAG, "no upload info received yet, delaying outgoing messages");
-                break;
+                Log.w(TAG, "no upload info received yet, delaying media message");
+                continue;
             }
 
             Bundle b = new Bundle();
@@ -761,6 +776,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // check if the message contains some large file to be sent
             else if (fileUri != null) {
                 b.putString("org.kontalk.message.media.uri", fileUri);
+                b.putString("org.kontalk.message.preview.path", previewPath);
             }
             // we have a simple boring plain text message :(
             else {
