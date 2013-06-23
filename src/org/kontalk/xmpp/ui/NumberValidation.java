@@ -29,6 +29,8 @@ import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.service.KeyPairGeneratorService;
 import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.CountryCodesAdapter.CountryCode;
 
@@ -36,15 +38,18 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -96,16 +101,49 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private String mAuthtokenType;
     private String mPhoneNumber;
 
+    private PersonalKey mKey;
+    private LocalBroadcastManager lbm;
+
     private boolean mFromInternal;
     /** Runnable for delaying initial manual sync starter. */
     private Runnable mSyncStart;
     private boolean mSyncing;
 
+    private KeyGeneratedReceiver mKeyReceiver;
+
     private static final class RetainData {
         NumberValidator validator;
         CharSequence progressMessage;
         String phoneNumber;
+        PersonalKey key;
         boolean syncing;
+    }
+
+    private interface PersonalKeyRunnable {
+        public void run(PersonalKey key);
+    }
+
+    private final static class KeyGeneratedReceiver extends BroadcastReceiver {
+        private final Handler handler;
+        private final PersonalKeyRunnable action;
+
+        public KeyGeneratedReceiver(Handler handler, PersonalKeyRunnable action) {
+            this.handler = handler;
+            this.action = action;
+        }
+
+        @Override
+        public void onReceive(Context context, final Intent intent) {
+            if (KeyPairGeneratorService.ACTION_GENERATE.equals(intent.getAction())) {
+                handler.post(new Runnable() {
+                    public void run() {
+                        PersonalKey key = intent.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
+                        action.run(key);
+                    }
+                });
+            }
+        }
+
     }
 
     @Override
@@ -115,6 +153,28 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
         mAccountManager = AccountManager.get(this);
         mHandler = new Handler();
+
+        lbm = LocalBroadcastManager.getInstance(getApplicationContext());
+
+        IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
+        PersonalKeyRunnable action = new PersonalKeyRunnable() {
+            public void run(PersonalKey key) {
+                mKey = key;
+                if (mValidator != null)
+                    // this will release the waiting lock
+                    mValidator.setKey(mKey);
+            }
+        };
+
+        mKeyReceiver = new KeyGeneratedReceiver(mHandler, action);
+        lbm.registerReceiver(mKeyReceiver, filter);
+
+        Toast.makeText(this, "Generating keypair in the background.",
+            Toast.LENGTH_LONG).show();
+
+        Intent i = new Intent(this, KeyPairGeneratorService.class);
+        i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
+        startService(i);
 
         final Intent intent = getIntent();
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
@@ -150,11 +210,12 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         // FIXME this doesn't consider creation because of configuration change
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {
-            mPhone.setText(String.valueOf(myNum.getNationalNumber()));
+            //mPhone.setText(String.valueOf(myNum.getNationalNumber()));
+            mPhone.setText("3396241840");
             Log.d(TAG, "selecting country " + util.getRegionCodeForNumber(myNum));
             CountryCode cc = new CountryCode();
-            cc.regionCode = util.getRegionCodeForNumber(myNum);
-            cc.countryCode = myNum.getCountryCode();
+            cc.regionCode = "IT"; //util.getRegionCodeForNumber(myNum);
+            cc.countryCode = 39; //myNum.getCountryCode();
             mCountryCode.setSelection(ccList.getPositionForId(cc));
         }
         else {
@@ -177,6 +238,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
                 mPhoneNumber = data.phoneNumber;
                 mValidator = data.validator;
+                mKey = data.key;
                 if (mValidator != null)
                     mValidator.setListener(this);
             }
@@ -204,6 +266,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         RetainData data = new RetainData();
         data.validator = mValidator;
         data.phoneNumber = mPhoneNumber;
+        data.key = mKey;
         if (mProgress != null) data.progressMessage = mProgressMessage;
         data.syncing = mSyncing;
         return data;
@@ -236,6 +299,9 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     protected void onStop() {
         super.onStop();
         keepScreenOn(false);
+
+        if (mKeyReceiver != null)
+            lbm.unregisterReceiver(mKeyReceiver);
 
         if (mProgress != null) {
             if (isFinishing())
@@ -299,7 +365,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
                 throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
             }
-
         }
         catch (NumberParseException e1) {
             error(R.string.title_invalid_number, R.string.msg_invalid_number);
@@ -338,8 +403,9 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
             Log.d(TAG, "phone number checked, sending validation request");
             startProgress();
 
+            // key generation finished, start immediately
             EndpointServer server = MessagingPreferences.getEndpointServer(this);
-            mValidator = new NumberValidator(this, server, mPhoneNumber);
+            mValidator = new NumberValidator(this, server, mPhoneNumber, mKey);
             mValidator.setListener(this);
             mValidator.start();
         }
@@ -598,6 +664,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     private void startValidationCode(int requestCode) {
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
+        i.putExtra("phone", mPhoneNumber);
+        i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }
 }

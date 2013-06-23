@@ -79,6 +79,7 @@
             android:label="@string/download_service"/>
         <service android:name=".service.UploadService"/>
         <service android:name=".GCMIntentService"/>
+        <service android:name=".service.KeyPairGeneratorService"/>
 
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"

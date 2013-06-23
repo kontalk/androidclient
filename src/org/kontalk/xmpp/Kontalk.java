@@ -18,7 +18,10 @@
 
 package org.kontalk.xmpp;
 
+import java.security.Security;
+
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.crypto.Keyring;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
@@ -29,6 +32,7 @@ import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.ComposeMessage;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.SearchActivity;
+import org.spongycastle.jce.provider.BouncyCastleProvider;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -57,10 +61,18 @@ public class Kontalk extends Application {
     private Handler mHandler;
     private SharedPreferences.OnSharedPreferenceChangeListener mPrefChangedListener;
 
+    static {
+        // register spongy castle provider
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
         mHandler = new Handler();
+
+        // initialize the keyring
+        Keyring.init(this);
 
         // update notifications from locally unread messages
         MessagingNotification.updateMessagesNotification(this, false);
