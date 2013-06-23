@@ -218,7 +218,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onAuthTokenReceived(final NumberValidator v, final CharSequence token) {
+    public void onAuthTokenReceived(final NumberValidator v, final CharSequence token, final String publicKey) {
         Log.d(TAG, "got authentication token!");
 
         runOnUiThread(new Runnable() {
@@ -227,7 +227,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
                 abort(true);
                 Intent i = new Intent();
                 i.putExtra(NumberValidation.PARAM_AUTHTOKEN, token);
-                i.putExtra(KeyPairGeneratorService.EXTRA_KEY, v.getKey());
+                i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKey);
                 setResult(RESULT_OK, i);
                 finish();
             }

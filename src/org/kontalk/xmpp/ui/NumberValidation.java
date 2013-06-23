@@ -18,6 +18,7 @@
 
 package org.kontalk.xmpp.ui;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.util.Comparator;
 import java.util.Locale;
@@ -52,6 +53,7 @@ import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -86,6 +88,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     public static final String PARAM_AUTHTOKEN = "org.kontalk.authtoken";
+    public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
 
     private AccountManager mAccountManager;
     private Spinner mCountryCode;
@@ -321,7 +324,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
-            finishLogin(data.getStringExtra(PARAM_AUTHTOKEN));
+            finishLogin(data.getStringExtra(PARAM_AUTHTOKEN), data.getStringExtra(PARAM_PUBLICKEY));
         }
     }
 
@@ -555,8 +558,17 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         });
     }
 
-    protected void finishLogin(String token) {
+    protected void finishLogin(String token, String publicKey) {
         Log.v(TAG, "finishing login");
+
+        // update public key
+        try {
+            mKey.update(Base64.decode(publicKey, Base64.DEFAULT));
+        }
+        catch (IOException e) {
+            Log.v(TAG, "error decoding public key", e);
+            // TODO what now??
+        }
 
         if (mProgress == null)
             startProgress();
@@ -590,15 +602,19 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         delayedSync();
     }
 
+    /**
+     * @deprecated CodeValidation handles this step now.
+     */
+    @Deprecated
     @Override
-    public void onAuthTokenReceived(NumberValidator v, final CharSequence token) {
+    public void onAuthTokenReceived(NumberValidator v, final CharSequence token, final String publicKey) {
         Log.d(TAG, "got authentication token!");
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abort(true);
-                finishLogin(token.toString());
+                finishLogin(token.toString(), publicKey);
             }
         });
     }

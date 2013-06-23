@@ -19,8 +19,11 @@
 package org.kontalk.xmpp.crypto;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
@@ -28,22 +31,26 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Date;
 
-import org.spongycastle.bcpg.ArmoredOutputStream;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
-import org.spongycastle.openpgp.PGPKeyRing;
 import org.spongycastle.openpgp.PGPKeyRingGenerator;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.spongycastle.openpgp.PGPSecretKey;
+import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
+import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculator;
+import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
+import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.content.Context;
@@ -58,7 +65,9 @@ public class PersonalKey implements Parcelable {
     private static final String SECRET_KEY_FILE = "privatekey.pgp";
     private static final String PUBLIC_KEY_FILE = "publickey.pgp";
 
-    private final PGPKeyPair mSignKp;
+    /** The signing (public) key. */
+    private PGPKeyPair mSignKp;
+    /** The encryption (private) key. */
     private final PGPKeyPair mEncryptKp;
 
     private PersonalKey(PGPKeyPair signKp, PGPKeyPair encryptKp) {
@@ -108,7 +117,7 @@ public class PersonalKey implements Parcelable {
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, mSignKp,
             userid.toString(), sha1Calc, null, null,
             new JcaPGPContentSignerBuilder(mSignKp.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
-            new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc).setProvider("BC").build(passphrase.toCharArray()));
+            new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc).setProvider("SC").build(passphrase.toCharArray()));
 
         keyRingGen.addSubKey(mEncryptKp);
 
@@ -116,12 +125,12 @@ public class PersonalKey implements Parcelable {
         OutputStream out;
 
         keyfile = new File(context.getFilesDir(), SECRET_KEY_FILE);
-        out = new ArmoredOutputStream(new FileOutputStream(keyfile));
+        out = new FileOutputStream(keyfile);
         keyRingGen.generateSecretKeyRing().encode(out);
         out.close();
 
         keyfile = new File(context.getFilesDir(), PUBLIC_KEY_FILE);
-        out = new ArmoredOutputStream(new FileOutputStream(keyfile));
+        out = new FileOutputStream(keyfile);
         PGPPublicKeyRing pubRing = keyRingGen.generatePublicKeyRing();
         pubRing.encode(out);
         out.close();
@@ -129,9 +138,42 @@ public class PersonalKey implements Parcelable {
         return pubRing;
     }
 
-    public static PersonalKey load(Context context) {
+    /**
+     * Updates the public key.
+     * @return the public keyring.
+     */
+    public PGPPublicKeyRing update(byte[] keyData) throws IOException {
+        PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, new BcKeyFingerprintCalculator());
+        mSignKp = new PGPKeyPair(ring.getPublicKey(), mSignKp.getPrivateKey());
+        return ring;
+    }
+
+    /** Loads the key pair from storage. */
+    public static PersonalKey load(Context context, String passphrase) throws IOException, PGPException {
+        File keyfile = new File(context.getFilesDir(), SECRET_KEY_FILE);
+        InputStream in = new FileInputStream(keyfile);
+
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(in, new BcKeyFingerprintCalculator());
+
+        PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
+            .setProvider("SC")
+            .build(passphrase.toCharArray());
+
+        // master (signing) key
+        PGPSecretKey secSign = secRing.getSecretKey(0);
+        PGPPrivateKey secPriv = secSign.extractPrivateKey(decryptor);
+        PGPPublicKey secPub = secRing.getPublicKey(0);
+        PGPKeyPair encryptKp = new PGPKeyPair(secPub, secPriv);
+
+        // sub (encryption) key
+        PGPSecretKey secEnc = secRing.getSecretKey(1);
+        PGPPrivateKey pubPriv = secEnc.extractPrivateKey(decryptor);
+        PGPPublicKey pubPub = secRing.getPublicKey(1);
+        PGPKeyPair signKp = new PGPKeyPair(pubPub, pubPriv);
+
         // TODO
-        return null;
+        return new PersonalKey(signKp, encryptKp);
     }
 
     public static PersonalKey create(Context context, int keysize) throws IOException {

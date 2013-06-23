@@ -225,18 +225,25 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         if (iq.getType() == IQ.Type.RESULT) {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
+                                String token = null, publicKey = null;
+
                                 // ok! message will be sent
                                 Iterator<FormField> iter = response.getFields();
                                 while (iter.hasNext()) {
                                     FormField field = iter.next();
-                                    if (field.getVariable().equals("token")) {
-                                        String token = field.getValues().next();
-                                        if (!TextUtils.isEmpty(token))
-                                            mListener.onAuthTokenReceived(NumberValidator.this, token);
-
-                                        // prevent error handling
-                                        return;
+                                    if ("token".equals(field.getVariable())) {
+                                        token = field.getValues().next();
                                     }
+                                    else if ("publickey".equals(field.getVariable())) {
+                                        publicKey = field.getValues().next();
+                                    }
+                                }
+
+                                if (!TextUtils.isEmpty(token)) {
+                                    mListener.onAuthTokenReceived(NumberValidator.this, token, publicKey);
+
+                                    // prevent error handling
+                                    return;
                                 }
                             }
                         }
@@ -395,7 +402,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         public void onValidationFailed(NumberValidator v, int reason);
 
         /** Called on receiving of authentication token. */
-        public void onAuthTokenReceived(NumberValidator v, CharSequence token);
+        public void onAuthTokenReceived(NumberValidator v, CharSequence token, String publicKey);
 
         /** Called if validation code has not been verified. */
         public void onAuthTokenFailed(NumberValidator v, int reason);
