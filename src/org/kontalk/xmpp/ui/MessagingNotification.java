@@ -18,8 +18,13 @@
 
 package org.kontalk.xmpp.ui;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.kontalk.xmpp.R;
+import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.data.Contact;
+import org.kontalk.xmpp.provider.MyMessages.CommonColumns;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 
@@ -30,13 +35,18 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.BigTextStyle;
+import android.support.v4.app.NotificationCompat.InboxStyle;
+import android.support.v4.app.NotificationCompat.Style;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 
 
@@ -53,18 +63,24 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_DOWNLOAD_ERROR  = 106;
     public static final int NOTIFICATION_ID_QUICK_REPLY     = 107;
 
-    private static final String[] THREADS_UNREAD_PROJECTION =
+    private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
-        Threads._ID,
-        Threads.PEER,
-        Threads.CONTENT,
-        Threads.UNREAD,
-        Threads.TIMESTAMP
+        Messages.THREAD_ID,
+        CommonColumns.PEER,
+        CommonColumns.CONTENT,
     };
 
-    private static final String THREADS_UNREAD_SELECTION =
-        Threads.UNREAD + " <> 0 AND " +
-        Threads.DIRECTION + " = " + Messages.DIRECTION_IN;
+    private static final String[] THREADS_UNREAD_PROJECTION =
+    {
+        CommonColumns._ID,
+        CommonColumns.PEER,
+        CommonColumns.CONTENT,
+        CommonColumns.UNREAD,
+    };
+
+    private static final String MESSAGES_UNREAD_SELECTION =
+        CommonColumns.UNREAD + " <> 0 AND " +
+        CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** Pending delayed notification update flag. */
     private static volatile boolean mPending;
@@ -81,6 +97,10 @@ public class MessagingNotification {
 
     public static String getPaused() {
         return mPaused;
+    }
+
+    private static boolean supportsBigNotifications() {
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN;
     }
 
     /** Starts messages notification updates in another thread. */
@@ -130,61 +150,213 @@ public class MessagingNotification {
         NotificationManager nm = (NotificationManager) context
             .getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // query for unread threads
-        String query = THREADS_UNREAD_SELECTION;
+        String query = MESSAGES_UNREAD_SELECTION;
         String[] args = null;
+        String[] proj;
+        String order;
+        Uri uri;
+        if (supportsBigNotifications()) {
+            uri = Messages.CONTENT_URI;
+            proj = MESSAGES_UNREAD_PROJECTION;
+            order = Messages.DEFAULT_SORT_ORDER;
+        }
+        else {
+            uri = Threads.CONTENT_URI;
+            proj = THREADS_UNREAD_PROJECTION;
+            order = Threads.INVERTED_SORT_ORDER;
+        }
+
+        // is there a peer to not notify for?
         if (mPaused != null) {
-            query += " AND " + Threads.PEER + " <> ?";
+            query += " AND " + CommonColumns.PEER + " <> ?";
             args = new String[] { mPaused };
         }
-        Cursor c = res.query(Threads.CONTENT_URI,
-                THREADS_UNREAD_PROJECTION, query, args,
-                Threads.INVERTED_SORT_ORDER);
+
+        Cursor c = res.query(uri, proj, query, args, order);
 
         // no unread messages - delete notification
-        if (c.getCount() == 0) {
+        int unread = c.getCount();
+        if (unread == 0) {
             c.close();
             nm.cancel(NOTIFICATION_ID_MESSAGES);
             return;
         }
 
-        NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
-
-        // loop all threads and accumulate them
-        MessageAccumulator accumulator = new MessageAccumulator(context);
-        while (c.moveToNext()) {
-            String content = c.getString(2);
-            style.addLine(content);
-            accumulator.accumulate(
-                c.getLong(0),
-                c.getString(1),
-                content,
-                c.getInt(3),
-                c.getLong(4)
-            );
-        }
-        c.close();
-
-        //Notification no = new Notification(R.drawable.icon_stat, accumulator.getTicker(), accumulator.getTimestamp());
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
 
-        style.setBigContentTitle(accumulator.getTitle());
-        builder.setStyle(style);
+        if (supportsBigNotifications()) {
+            Map<String, StringBuilder> convs = new HashMap<String, StringBuilder>();
 
-        builder.addAction(android.R.drawable.ic_menu_revert, "Reply", accumulator.getPendingIntent());
+            String peer = null;
+            long id = 0;
+            while (c.moveToNext()) {
+                // thread_id for PendingIntent
+                id = c.getLong(0);
+                peer = c.getString(1);
+                byte[] content = c.getBlob(2);
 
-        builder.setTicker(accumulator.getTicker());
-        Contact contact = accumulator.getContact();
-        if (contact != null) {
-            BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
-            if (avatar != null)
-                builder.setLargeIcon(avatar.getBitmap());
+                StringBuilder b = convs.get(peer);
+                if (b == null) {
+                    b = new StringBuilder();
+                    convs.put(peer, b);
+                }
+                else {
+                    b.append('\n');
+                }
+
+                b.append(new String(content));
+            }
+            c.close();
+
+            // TODO we are not ready for this -- builder.addAction(android.R.drawable.ic_menu_revert, "Reply", accumulator.getPendingIntent());
+
+            /* -- FIXME FIXME VERY UGLY CODE FIXME FIXME -- */
+
+            Style style;
+            String title, text, ticker;
+
+            // more than one conversation - use InboxStyle
+            if (convs.size() > 1) {
+                style = new InboxStyle();
+
+                // ticker: "X unread messages"
+                ticker = context.getString(R.string.unread_messages, unread);
+
+                // title
+                title = ticker;
+
+                // text: comma separated names (TODO RTL?)
+                StringBuilder btext = new StringBuilder();
+                int count = 0;
+                for (String user : convs.keySet()) {
+                    count++;
+
+                    Contact contact = Contact.findByUserId(context, user);
+                    String name = (contact != null) ? contact.getName() :
+                        context.getString(R.string.peer_unknown);
+
+                    if (contact != null) {
+                        if (btext.length() > 0)
+                            btext.append(", ");
+                        btext.append(name);
+                    }
+
+                    // inbox line
+                    if (count < 5) {
+                        SpannableStringBuilder buf = new SpannableStringBuilder();
+                        buf.append(name).append(": ");
+                        // FIXME this span doesn't seem to work :(
+                        buf.setSpan(new ForegroundColorSpan(Color.WHITE), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        // TODO take just the last message
+                        buf.append(convs.get(user).toString());
+
+                        ((InboxStyle) style).addLine(buf.toString());
+                    }
+                }
+
+                if (btext.length() > 0)
+                    text = btext.toString();
+                else
+                    // TODO i18n
+                    text = "(unknown users)";
+
+                String summary;
+                if (count > 5)
+                    // TODO i18n
+                    summary = "+" + (convs.size() - count) + " more";
+                else
+                    summary = Authenticator.getDefaultAccount(context).name;
+
+                ((InboxStyle) style).setSummaryText(summary);
+            }
+            // one conversation, use BigTextStyle
+            else {
+                String content = convs.get(peer).toString();
+
+                // big text content
+                style = new BigTextStyle();
+                ((BigTextStyle) style).bigText(content);
+
+                // ticker
+                Contact contact = Contact.findByUserId(context, peer);
+                String name = (contact != null) ? contact.getName() :
+                    context.getString(R.string.peer_unknown);
+                    // debug mode -- conversation.peer;
+
+                SpannableStringBuilder buf = new SpannableStringBuilder();
+                buf.append(name).append(':').append(' ');
+                buf.setSpan(new StyleSpan(Typeface.BOLD), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                buf.append(content);
+
+                ticker = buf.toString();
+
+                // title
+                title = name;
+
+                // text
+                text = (unread > 1) ?
+                    context.getString(R.string.unread_messages, unread)
+                    : content;
+
+                // avatar
+                if (contact != null) {
+                    BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+                    if (avatar != null)
+                        builder.setLargeIcon(avatar.getBitmap());
+                }
+            }
+
+            builder.setNumber(unread);
+            builder.setSmallIcon(R.drawable.icon_stat);
+
+            builder.setTicker(ticker);
+            builder.setContentTitle(title);
+            builder.setContentText(text);
+            builder.setStyle(style);
+
+            Intent ni;
+            // more than one unread conversation - open ConversationList
+            if (convs.size() > 1) {
+                ni = new Intent(context, ConversationList.class);
+            }
+            // one unread conversation - open ComposeMessage on that peer
+            else {
+                ni = ComposeMessage.fromConversation(context, id);
+            }
+            PendingIntent pi = PendingIntent.getActivity(context, NOTIFICATION_ID_MESSAGES,
+                    ni, 0);
+
+            builder.setContentIntent(pi);
         }
-        builder.setNumber(accumulator.unreadCount);
-        builder.setSmallIcon(R.drawable.icon_stat);
-        builder.setContentTitle(accumulator.getTitle());
-        builder.setContentText(accumulator.getText());
-        builder.setContentIntent(accumulator.getPendingIntent());
+
+        else {
+
+            // loop all threads and accumulate them
+            MessageAccumulator accumulator = new MessageAccumulator(context);
+            while (c.moveToNext()) {
+                String content = c.getString(2);
+                accumulator.accumulate(
+                    c.getLong(0),
+                    c.getString(1),
+                    content,
+                    c.getInt(3)
+                );
+            }
+            c.close();
+
+            builder.setTicker(accumulator.getTicker());
+            Contact contact = accumulator.getContact();
+            if (contact != null) {
+                BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+                if (avatar != null)
+                    builder.setLargeIcon(avatar.getBitmap());
+            }
+            builder.setNumber(accumulator.unreadCount);
+            builder.setSmallIcon(R.drawable.icon_stat);
+            builder.setContentTitle(accumulator.getTitle());
+            builder.setContentText(accumulator.getText());
+            builder.setContentIntent(accumulator.getPendingIntent());
+        }
 
         if (isNew) {
             int defaults = Notification.DEFAULT_LIGHTS;
@@ -204,7 +376,7 @@ public class MessagingNotification {
 
         nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
 
-        // TODO take this from configuration
+        /* TODO take this from configuration
         boolean quickReply = false;
         if (isNew && quickReply) {
             Intent i = new Intent(context.getApplicationContext(), QuickReplyActivity.class);
@@ -214,6 +386,7 @@ public class MessagingNotification {
             i.putExtra("org.kontalk.quickreply.OPEN_INTENT", accumulator.getLastMessagePendingIntent());
             context.startActivity(i);
         }
+        */
     }
 
     /**
@@ -226,7 +399,6 @@ public class MessagingNotification {
             public long id;
             public String peer;
             public String content;
-            public long timestamp;
         }
 
         private ConversationStub conversation;
@@ -240,7 +412,7 @@ public class MessagingNotification {
         }
 
         /** Adds a conversation thread to the accumulator. */
-        public void accumulate(long id, String peer, String content, int unread, long timestamp) {
+        public void accumulate(long id, String peer, String content, int unread) {
             // check old accumulated conversation
             if (conversation != null) {
                 if (!conversation.peer.equalsIgnoreCase(peer))
@@ -255,7 +427,6 @@ public class MessagingNotification {
             conversation.id = id;
             conversation.peer = peer;
             conversation.content = content;
-            conversation.timestamp = timestamp;
 
             unreadCount += unread;
         }
@@ -301,11 +472,6 @@ public class MessagingNotification {
             return (unreadCount > 1) ?
                     mContext.getString(R.string.unread_messages, unreadCount)
                     : conversation.content;
-        }
-
-        /** Returns the timestamp to be used in the notification. */
-        public long getTimestamp() {
-            return conversation.timestamp;
         }
 
         /** Builds a {@link PendingIntent} to be used in the notification. */
