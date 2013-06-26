@@ -185,7 +185,7 @@ public class MessagingNotification {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
 
         if (supportsBigNotifications()) {
-            Map<String, StringBuilder> convs = new HashMap<String, StringBuilder>();
+            Map<String, CharSequence[]> convs = new HashMap<String, CharSequence[]>();
 
             String peer = null;
             long id = 0;
@@ -195,16 +195,20 @@ public class MessagingNotification {
                 peer = c.getString(1);
                 byte[] content = c.getBlob(2);
 
-                StringBuilder b = convs.get(peer);
+                CharSequence[] b = convs.get(peer);
                 if (b == null) {
-                    b = new StringBuilder();
+                    b = new CharSequence[2];
+                    b[0] = new StringBuilder();
+                    b[1] = null;
                     convs.put(peer, b);
                 }
                 else {
-                    b.append('\n');
+                    ((StringBuilder) b[0]).append('\n');
                 }
 
-                b.append(new String(content));
+                String line = new String(content);
+                ((StringBuilder) b[0]).append(line);
+                b[1] = line;
             }
             c.close();
 
@@ -213,7 +217,7 @@ public class MessagingNotification {
             /* -- FIXME FIXME VERY UGLY CODE FIXME FIXME -- */
 
             Style style;
-            String title, text, ticker;
+            CharSequence title, text, ticker;
 
             // more than one conversation - use InboxStyle
             if (convs.size() > 1) {
@@ -244,13 +248,12 @@ public class MessagingNotification {
                     // inbox line
                     if (count < 5) {
                         SpannableStringBuilder buf = new SpannableStringBuilder();
-                        buf.append(name).append(": ");
-                        // FIXME this span doesn't seem to work :(
+                        buf.append(name).append(' ');
                         buf.setSpan(new ForegroundColorSpan(Color.WHITE), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        // TODO take just the last message
-                        buf.append(convs.get(user).toString());
+                        // take just the last message
+                        buf.append(convs.get(user)[1]);
 
-                        ((InboxStyle) style).addLine(buf.toString());
+                        ((InboxStyle) style).addLine(buf);
                     }
                 }
 
@@ -271,11 +274,13 @@ public class MessagingNotification {
             }
             // one conversation, use BigTextStyle
             else {
-                String content = convs.get(peer).toString();
+                String content = convs.get(peer)[0].toString();
+                CharSequence last = convs.get(peer)[1];
 
                 // big text content
                 style = new BigTextStyle();
                 ((BigTextStyle) style).bigText(content);
+                ((BigTextStyle) style).setSummaryText(Authenticator.getDefaultAccount(context).name);
 
                 // ticker
                 Contact contact = Contact.findByUserId(context, peer);
@@ -286,9 +291,9 @@ public class MessagingNotification {
                 SpannableStringBuilder buf = new SpannableStringBuilder();
                 buf.append(name).append(':').append(' ');
                 buf.setSpan(new StyleSpan(Typeface.BOLD), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                buf.append(content);
+                buf.append(last);
 
-                ticker = buf.toString();
+                ticker = buf;
 
                 // title
                 title = name;
