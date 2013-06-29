@@ -35,10 +35,10 @@ import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.packet.DataForm;
 import org.jivesoftware.smackx.provider.DataFormProvider;
 import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.crypto.PersonalKey.PGPKeyPairRing;
 import org.kontalk.xmpp.service.XMPPConnectionHelper;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.xmpp.util.MessageUtils;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.Context;
 import android.os.Handler;
@@ -75,6 +75,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private final EndpointServer mServer;
     private final String mPhone;
     private PersonalKey mKey;
+    private PGPKeyPairRing mKeyRing;
     private volatile Object mKeyLock = new Object();
 
     private final XMPPConnectionHelper mConnector;
@@ -240,7 +241,19 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 }
 
                                 if (!TextUtils.isEmpty(token)) {
-                                    mListener.onAuthTokenReceived(NumberValidator.this, token, publicKey);
+                                    byte[] publicKeyData;
+                                    byte[] privateKeyData;
+                                    try {
+                                        publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
+                                        privateKeyData = mKeyRing.privateKey.getEncoded();
+                                    }
+                                    catch (Exception e) {
+                                        // TODO that easy?
+                                        publicKeyData = null;
+                                        privateKeyData = null;
+                                    }
+
+                                    mListener.onAuthTokenReceived(NumberValidator.this, token, privateKeyData, publicKeyData);
 
                                     // prevent error handling
                                     return;
@@ -362,8 +375,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             String publicKey;
             try {
                 String userId = MessageUtils.sha1(mPhone);
-                PGPPublicKeyRing pubring = mKey.store(mContext, "TEST", userId + '@' + mServer.getNetwork(), "NO COMMENT", "test");
-                publicKey = Base64.encodeToString(pubring.getEncoded(), Base64.NO_WRAP);
+                mKeyRing = mKey.store(mContext, "TEST", userId + '@' + mServer.getNetwork(), "NO COMMENT", "test");
+                publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
             }
             catch (Exception e) {
                 // TODO
@@ -402,7 +415,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         public void onValidationFailed(NumberValidator v, int reason);
 
         /** Called on receiving of authentication token. */
-        public void onAuthTokenReceived(NumberValidator v, CharSequence token, String publicKey);
+        public void onAuthTokenReceived(NumberValidator v, CharSequence token, byte[] privateKey, byte[] publicKey);
 
         /** Called if validation code has not been verified. */
         public void onAuthTokenFailed(NumberValidator v, int reason);

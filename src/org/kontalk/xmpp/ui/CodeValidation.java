@@ -25,6 +25,7 @@ import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.crypto.PersonalKey.PGPKeyPairRing;
 import org.kontalk.xmpp.service.KeyPairGeneratorService;
 
 import android.app.AlertDialog;
@@ -218,7 +219,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onAuthTokenReceived(final NumberValidator v, final CharSequence token, final String publicKey) {
+    public void onAuthTokenReceived(final NumberValidator v, final CharSequence token, final byte[] privateKeyData, final byte[] publicKeyData) {
         Log.d(TAG, "got authentication token!");
 
         runOnUiThread(new Runnable() {
@@ -227,7 +228,8 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
                 abort(true);
                 Intent i = new Intent();
                 i.putExtra(NumberValidation.PARAM_AUTHTOKEN, token);
-                i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKey);
+                i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
+                i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
                 setResult(RESULT_OK, i);
                 finish();
             }

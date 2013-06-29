@@ -45,6 +45,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     public static final String ACCOUNT_TYPE = "org.kontalk.xmpp.account";
     public static final String AUTHTOKEN_TYPE = "org.kontalk.token";
+    public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
+    public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
 
     private final Context mContext;
     private final Handler mHandler;

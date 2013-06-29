@@ -89,6 +89,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     public static final String PARAM_AUTHTOKEN = "org.kontalk.authtoken";
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
+    public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
 
     private AccountManager mAccountManager;
     private Spinner mCountryCode;
@@ -158,26 +159,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mHandler = new Handler();
 
         lbm = LocalBroadcastManager.getInstance(getApplicationContext());
-
-        IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
-        PersonalKeyRunnable action = new PersonalKeyRunnable() {
-            public void run(PersonalKey key) {
-                mKey = key;
-                if (mValidator != null)
-                    // this will release the waiting lock
-                    mValidator.setKey(mKey);
-            }
-        };
-
-        mKeyReceiver = new KeyGeneratedReceiver(mHandler, action);
-        lbm.registerReceiver(mKeyReceiver, filter);
-
-        Toast.makeText(this, "Generating keypair in the background.",
-            Toast.LENGTH_LONG).show();
-
-        Intent i = new Intent(this, KeyPairGeneratorService.class);
-        i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
-        startService(i);
 
         final Intent intent = getIntent();
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
@@ -249,18 +230,18 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
                 setProgressMessage(data.progressMessage, true);
             }
         }
+
+        if (savedInstanceState != null) {
+            mPhoneNumber = savedInstanceState.getString("phoneNumber");
+            mKey = savedInstanceState.getParcelable("key");
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         state.putString("phoneNumber", mPhoneNumber);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle state) {
-        super.onRestoreInstanceState(state);
-        mPhoneNumber = state.getString("phoneNumber");
+        state.putParcelable("key", mKey);
     }
 
     /** Returning the validator thread. */
@@ -299,6 +280,35 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (mKey == null) {
+            PersonalKeyRunnable action = new PersonalKeyRunnable() {
+                public void run(PersonalKey key) {
+                    mKey = key;
+                    if (mValidator != null)
+                        // this will release the waiting lock
+                        mValidator.setKey(mKey);
+                }
+            };
+
+            mKeyReceiver = new KeyGeneratedReceiver(mHandler, action);
+
+            IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
+            lbm.registerReceiver(mKeyReceiver, filter);
+
+            // TODO i18n
+            Toast.makeText(this, "Generating keypair in the background.",
+                Toast.LENGTH_LONG).show();
+
+            Intent i = new Intent(this, KeyPairGeneratorService.class);
+            i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
+            startService(i);
+        }
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         keepScreenOn(false);
@@ -324,7 +334,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
-            finishLogin(data.getStringExtra(PARAM_AUTHTOKEN), data.getStringExtra(PARAM_PUBLICKEY));
+            finishLogin(data.getStringExtra(PARAM_AUTHTOKEN), data.getByteArrayExtra(PARAM_PRIVATEKEY), data.getByteArrayExtra(PARAM_PUBLICKEY));
         }
     }
 
@@ -543,6 +553,12 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         mHandler.postDelayed(mSyncStart, 2000);
     }
 
+    /** @deprecated {@link CodeValidation} handles this now. */
+    @Override
+    @Deprecated
+    public void onAuthTokenReceived(NumberValidator v, CharSequence token, byte[] privateKey, byte[] publicKey) {
+    }
+
     @Override
     public void onAuthTokenFailed(NumberValidator v, int reason) {
         Log.e(TAG, "authentication token request failed (" + reason + ")");
@@ -558,12 +574,12 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         });
     }
 
-    protected void finishLogin(String token, String publicKey) {
+    protected void finishLogin(String token, byte[] privateKeyData, byte[] publicKeyData) {
         Log.v(TAG, "finishing login");
 
         // update public key
         try {
-            mKey.update(Base64.decode(publicKey, Base64.DEFAULT));
+            mKey.update(publicKeyData);
         }
         catch (IOException e) {
             Log.v(TAG, "error decoding public key", e);
@@ -580,6 +596,8 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
         // the password is actually the auth token
         mAccountManager.addAccountExplicitly(account, mAuthtoken, null);
+        mAccountManager.setUserData(account, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+        mAccountManager.setUserData(account, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
         // Set contacts sync for this account.
         ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
         ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);
@@ -600,23 +618,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
         // manual sync starter
         delayedSync();
-    }
-
-    /**
-     * @deprecated CodeValidation handles this step now.
-     */
-    @Deprecated
-    @Override
-    public void onAuthTokenReceived(NumberValidator v, final CharSequence token, final String publicKey) {
-        Log.d(TAG, "got authentication token!");
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                abort(true);
-                finishLogin(token.toString(), publicKey);
-            }
-        });
     }
 
     @Override
