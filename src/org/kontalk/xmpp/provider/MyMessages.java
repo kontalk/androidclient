@@ -25,7 +25,19 @@ import android.provider.BaseColumns;
 public final class MyMessages {
     private MyMessages() {}
 
-    public static final class Messages implements BaseColumns {
+    public interface CommonColumns extends BaseColumns {
+        public static final String PEER = "peer";
+        public static final String MIME = "mime";
+        public static final String DIRECTION = "direction";
+        public static final String CONTENT = "content";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String UNREAD = "unread";
+        public static final String STATUS_CHANGED = "status_changed";
+        public static final String STATUS = "status";
+        public static final String MESSAGE_ID = "msg_id";
+    }
+
+    public static final class Messages implements CommonColumns {
         private Messages() {}
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
@@ -64,17 +76,8 @@ public final class MyMessages {
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.xmpp.message";
 
         public static final String THREAD_ID = "thread_id";
-        public static final String MESSAGE_ID = "msg_id";
         public static final String REAL_ID = "real_id";
-        public static final String PEER = "peer";
-        public static final String MIME = "mime";
-        public static final String CONTENT = "content";
-        public static final String DIRECTION = "direction";
-        public static final String UNREAD = "unread";
-        public static final String TIMESTAMP = "timestamp";
         public static final String SERVER_TIMESTAMP = "server_timestamp";
-        public static final String STATUS_CHANGED = "status_changed";
-        public static final String STATUS = "status";
         public static final String FETCH_URL = "fetch_url";
         public static final String LOCAL_URI = "local_uri";
         public static final String PREVIEW_PATH = "preview_path";
@@ -88,7 +91,7 @@ public final class MyMessages {
     }
 
     /** Threads are just for conversations metadata. */
-    public static final class Threads implements BaseColumns {
+    public static final class Threads implements CommonColumns {
         private Threads() {}
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
@@ -113,16 +116,7 @@ public final class MyMessages {
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.thread";
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.thread";
 
-        public static final String MESSAGE_ID = "msg_id";
-        public static final String PEER = "peer";
-        public static final String DIRECTION = "direction";
         public static final String COUNT = "count";
-        public static final String UNREAD = "unread";
-        public static final String MIME = "mime";
-        public static final String CONTENT = "content";
-        public static final String TIMESTAMP = "timestamp";
-        public static final String STATUS_CHANGED = "status_changed";
-        public static final String STATUS = "status";
         public static final String DRAFT = "draft";
 
         public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
