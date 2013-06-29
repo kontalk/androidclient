@@ -140,6 +140,7 @@ public class PersonalKey implements Parcelable {
         return ring;
     }
 
+    /** Creates a {@link PersonalKey} from private and public key byte buffers. */
     @SuppressWarnings("unchecked")
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase) throws PGPException, IOException {
         KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
@@ -193,35 +194,6 @@ public class PersonalKey implements Parcelable {
 
         throw new PGPException("invalid key data");
     }
-
-    /** Loads the key pair from storage.
-    public static PersonalKey load(Context context, String passphrase) throws IOException, PGPException {
-        File keyfile = new File(context.getFilesDir(), SECRET_KEY_FILE);
-        InputStream in = new FileInputStream(keyfile);
-
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(in, new BcKeyFingerprintCalculator());
-
-        PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
-        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
-            .setProvider("SC")
-            .build(passphrase.toCharArray());
-
-        // master (signing) key
-        PGPSecretKey secSign = secRing.getSecretKey();
-        PGPPrivateKey secPriv = secSign.extractPrivateKey(decryptor);
-        PGPPublicKey secPub = secRing.getPublicKey();
-        PGPKeyPair encryptKp = new PGPKeyPair(secPub, secPriv);
-
-        // sub (encryption) key
-        PGPSecretKey secEnc = secRing.getSecretKey(1);
-        PGPPrivateKey pubPriv = secEnc.extractPrivateKey(decryptor);
-        PGPPublicKey pubPub = secRing.getPublicKey(1);
-        PGPKeyPair signKp = new PGPKeyPair(pubPub, pubPriv);
-
-        // TODO
-        return new PersonalKey(signKp, encryptKp);
-    }
-    */
 
     public static PersonalKey create(Context context, int keysize) throws IOException {
         try {
