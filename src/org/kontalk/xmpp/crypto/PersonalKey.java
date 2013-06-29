@@ -101,6 +101,14 @@ public class PersonalKey implements Parcelable {
         }
     }
 
+    public PGPKeyPair getEncryptKeyPair() {
+        return mEncryptKp;
+    }
+
+    public PGPKeyPair getSignKeyPair() {
+        return mSignKp;
+    }
+
     /**
      * TODO
      * @return the public keyring.

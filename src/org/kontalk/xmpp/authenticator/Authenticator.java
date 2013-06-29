@@ -18,8 +18,13 @@
 
 package org.kontalk.xmpp.authenticator;
 
+import java.io.IOException;
+
 import org.kontalk.xmpp.R;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.ui.NumberValidation;
+import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.util.encoders.Base64;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
@@ -73,7 +78,10 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static Account getDefaultAccount(Context ctx) {
-        AccountManager m = AccountManager.get(ctx);
+        return getDefaultAccount(AccountManager.get(ctx));
+    }
+
+    private static Account getDefaultAccount(AccountManager m) {
         Account[] accs = m.getAccountsByType(ACCOUNT_TYPE);
         return (accs.length > 0) ? accs[0] : null;
     }
@@ -81,6 +89,19 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static String getDefaultAccountName(Context ctx) {
         Account acc = getDefaultAccount(ctx);
         return (acc != null) ? acc.name : null;
+    }
+
+    public static PersonalKey loadDefaultPersonalKey(Context ctx, String passphrase)
+            throws PGPException, IOException {
+        AccountManager m = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(m);
+
+        String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
+        String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
+
+        return PersonalKey
+            .load(Base64.decode(privKeyData), Base64.decode(pubKeyData),
+                passphrase);
     }
 
     @Override
