@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
 
+import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
@@ -194,12 +195,11 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         // FIXME this doesn't consider creation because of configuration change
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {
-            //mPhone.setText(String.valueOf(myNum.getNationalNumber()));
-            mPhone.setText("3396241840");
+            mPhone.setText(String.valueOf(myNum.getNationalNumber()));
             Log.d(TAG, "selecting country " + util.getRegionCodeForNumber(myNum));
             CountryCode cc = new CountryCode();
-            cc.regionCode = "IT"; //util.getRegionCodeForNumber(myNum);
-            cc.countryCode = 39; //myNum.getCountryCode();
+            cc.regionCode = util.getRegionCodeForNumber(myNum);
+            cc.countryCode = myNum.getCountryCode();
             mCountryCode.setSelection(ccList.getPositionForId(cc));
         }
         else {
@@ -369,32 +369,37 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     private boolean checkInput() {
         mPhoneNumber = null;
+        String phoneStr = null;
 
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
-        PhoneNumber phone;
-        try {
-            phone = util.parse(mPhone.getText().toString(), cc.regionCode);
-            if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
-                throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+        if (!BuildConfig.DEBUG) {
+            PhoneNumber phone;
+            try {
+                phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+                if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
+                    throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+                }
             }
-        }
-        catch (NumberParseException e1) {
-            error(R.string.title_invalid_number, R.string.msg_invalid_number);
-            return false;
-        }
+            catch (NumberParseException e1) {
+                error(R.string.title_invalid_number, R.string.msg_invalid_number);
+                return false;
+            }
 
-        // check phone number format
-        String phoneStr = null;
-        if (phone != null) {
-            phoneStr = util.format(phone, PhoneNumberFormat.E164);
-            if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
-                Log.i(TAG, "not a well formed SMS address");
+            // check phone number format
+            if (phone != null) {
+                phoneStr = util.format(phone, PhoneNumberFormat.E164);
+                if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
+                    Log.i(TAG, "not a well formed SMS address");
+                }
             }
+        }
+        else {
+            phoneStr = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
         }
 
         // phone is null - invalid number
-        if (phone == null) {
+        if (phoneStr == null) {
             Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
                 .show();
             return false;
