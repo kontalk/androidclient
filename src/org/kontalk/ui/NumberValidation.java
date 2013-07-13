@@ -324,7 +324,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         }
 
         // phone is null - invalid number
-        if (phone == null) {
+        if (phoneStr == null) {
             Toast.makeText(this, R.string.warn_invalid_number, Toast.LENGTH_SHORT)
                 .show();
             return false;
