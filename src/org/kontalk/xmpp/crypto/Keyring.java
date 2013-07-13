@@ -1,48 +1,34 @@
 package org.kontalk.xmpp.crypto;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.spongycastle.openpgp.PGPPublicKeyRingCollection;
-import org.spongycastle.openpgp.PGPSecretKeyRingCollection;
 import org.spongycastle.openpgp.PGPUtil;
 
 import android.content.Context;
 import android.util.Log;
 
+
+/**
+ * Users public keyring.
+ * TODO this might not be needed. In fact, public keys can be stored in users
+ * database and retrieved (cached) on demand.
+ */
 public class Keyring {
 
-    private static final String SECRET_KEYRING = "secring.gpg";
     private static final String PUBLIC_KEYRING = "pubring.gpg";
 
     /** The singleton instance. */
     private static Keyring sInstance;
 
-    /** The secret keyring. */
-    private PGPSecretKeyRingCollection mSecretRing;
     /** The public keyring. */
     private PGPPublicKeyRingCollection mPublicRing;
 
-    private final File mSecRingFile;
-    private final File mPubRingFile;
-
     public Keyring(Context context) {
-        mSecRingFile = new File(context.getFilesDir(), SECRET_KEYRING);
-        mPubRingFile = new File(context.getFilesDir(), PUBLIC_KEYRING);
-
         try {
-            FileInputStream in = new FileInputStream(mSecRingFile);
-            // load stuff
-            mSecretRing = new PGPSecretKeyRingCollection(PGPUtil.getDecoderStream(in));
-            in.close();
-        }
-        catch (Exception e) {
-            // no secret keyring found
-            Log.w("Keyring", "no secret keyring found", e);
-        }
-
-        try {
-            FileInputStream in = new FileInputStream(mPubRingFile);
+            InputStream in = context.openFileInput(PUBLIC_KEYRING);
             // load stuff
             mPublicRing = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(in));
             in.close();
@@ -62,5 +48,10 @@ public class Keyring {
         return sInstance;
     }
 
+    public void store(Context context) throws IOException {
+        OutputStream out = context.openFileOutput(PUBLIC_KEYRING, Context.MODE_PRIVATE);
+        mPublicRing.encode(out);
+        out.close();
+    }
 
 }

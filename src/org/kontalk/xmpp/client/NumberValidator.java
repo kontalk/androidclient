@@ -34,6 +34,7 @@ import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.packet.DataForm;
 import org.jivesoftware.smackx.provider.DataFormProvider;
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.PersonalKey.PGPKeyPairRing;
 import org.kontalk.xmpp.service.XMPPConnectionHelper;
@@ -375,7 +376,11 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             String publicKey;
             try {
                 String userId = MessageUtils.sha1(mPhone);
-                mKeyRing = mKey.store(mContext, "TEST", userId + '@' + mServer.getNetwork(), "NO COMMENT", "test");
+                // TODO what in name and comment fields here?
+                mKeyRing = mKey.store(mContext, "TEST",
+                    userId + '@' + mServer.getNetwork(), "NO COMMENT",
+                    // TODO should we ask passphrase to the user?
+                    ((Kontalk)mContext.getApplicationContext()).getCachedPassphrase());
                 publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
             }
             catch (Exception e) {
