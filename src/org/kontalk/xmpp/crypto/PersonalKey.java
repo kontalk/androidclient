@@ -23,6 +23,7 @@ import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.SignatureException;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -31,12 +32,17 @@ import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPKeyRingGenerator;
+import org.spongycastle.openpgp.PGPObjectFactory;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 import org.spongycastle.openpgp.PGPSecretKey;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
+import org.spongycastle.openpgp.PGPSignatureGenerator;
+import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.spongycastle.openpgp.PGPSignatureSubpacketVector;
+import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculator;
@@ -114,6 +120,7 @@ public class PersonalKey implements Parcelable {
      * @return the public keyring.
      */
     public PGPKeyPairRing store(Context context, String name, String email, String comment, String passphrase) throws PGPException {
+        // FIXME correct order is: name (comment) <email>
         StringBuilder userid = new StringBuilder(name)
             .append(" <");
         if (email != null)
@@ -220,6 +227,55 @@ public class PersonalKey implements Parcelable {
             io.initCause(e);
             throw io;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public PGPPublicKeyRing signPublicKey(byte[] publicKeyring, String notationName, String notationValue)
+            throws PGPException, IOException, SignatureException {
+
+        PGPObjectFactory reader = new PGPObjectFactory(publicKeyring);
+        Object o = reader.nextObject();
+        while (o != null) {
+            Log.v("PersonalKey", o.toString());
+            if (o instanceof PGPPublicKeyRing) {
+                PGPPublicKeyRing pubRing = (PGPPublicKeyRing) o;
+                Iterator<PGPPublicKey> iter = pubRing.getPublicKeys();
+                while (iter.hasNext()) {
+                    PGPPublicKey pk = iter.next();
+                    if (pk.isMasterKey()) {
+                        PGPPublicKey signed = signPublicKey(pk, notationName, notationValue);
+                        return PGPPublicKeyRing.insertPublicKey(pubRing, signed);
+                    }
+                }
+            }
+            o = reader.nextObject();
+        }
+
+        throw new PGPException("invalid keyring data.");
+    }
+
+    public PGPPublicKey signPublicKey(PGPPublicKey keyToBeSigned, String notationName, String notationValue)
+            throws PGPException, IOException, SignatureException {
+
+        PGPPrivateKey pgpPrivKey = mSignKp.getPrivateKey();
+
+        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
+            new JcaPGPContentSignerBuilder(mSignKp.getPublicKey().getAlgorithm(),
+                PGPUtil.SHA256).setProvider("SC"));
+
+        sGen.init(PGPSignature.DIRECT_KEY, pgpPrivKey);
+
+        PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
+
+        //boolean isHumanReadable = true;
+        //spGen.setNotationData(true, isHumanReadable, notationName, notationValue);
+
+        PGPSignatureSubpacketVector packetVector = spGen.generate();
+        sGen.setHashedSubpackets(packetVector);
+
+        PGPSignature sig = sGen.generateCertification("", keyToBeSigned);
+        return PGPPublicKey.addCertification(keyToBeSigned, "", sig);
+        //return PGPPublicKey.addCertification(keyToBeSigned, sGen.generate());
     }
 
     @Override
