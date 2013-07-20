@@ -69,7 +69,6 @@ import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
 import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
@@ -1504,7 +1503,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     (MessageCenterService.this,
                         ((Kontalk)getApplicationContext()).getCachedPassphrase());
 
-                PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), "Name", "Value");
+                // TODO user id??
+                PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), null);
                 String keydata = Base64.encodeToString(signedKey.getEncoded(), Base64.NO_WRAP);
 
                 SubscribePublicKey pk = new SubscribePublicKey(keydata);

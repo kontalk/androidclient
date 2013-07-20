@@ -229,8 +229,11 @@ public class PersonalKey implements Parcelable {
         }
     }
 
+    /**
+     * WARNING first uid is used, id parameter is ignored
+     */
     @SuppressWarnings("unchecked")
-    public PGPPublicKeyRing signPublicKey(byte[] publicKeyring, String notationName, String notationValue)
+    public PGPPublicKeyRing signPublicKey(byte[] publicKeyring, String id)
             throws PGPException, IOException, SignatureException {
 
         PGPObjectFactory reader = new PGPObjectFactory(publicKeyring);
@@ -243,7 +246,8 @@ public class PersonalKey implements Parcelable {
                 while (iter.hasNext()) {
                     PGPPublicKey pk = iter.next();
                     if (pk.isMasterKey()) {
-                        PGPPublicKey signed = signPublicKey(pk, notationName, notationValue);
+                        id = (String) pk.getUserIDs().next();
+                        PGPPublicKey signed = signPublicKey(pk, id);
                         return PGPPublicKeyRing.insertPublicKey(pubRing, signed);
                     }
                 }
@@ -254,7 +258,7 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid keyring data.");
     }
 
-    public PGPPublicKey signPublicKey(PGPPublicKey keyToBeSigned, String notationName, String notationValue)
+    public PGPPublicKey signPublicKey(PGPPublicKey keyToBeSigned, String id)
             throws PGPException, IOException, SignatureException {
 
         PGPPrivateKey pgpPrivKey = mSignKp.getPrivateKey();
@@ -267,15 +271,10 @@ public class PersonalKey implements Parcelable {
 
         PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
 
-        //boolean isHumanReadable = true;
-        //spGen.setNotationData(true, isHumanReadable, notationName, notationValue);
-
         PGPSignatureSubpacketVector packetVector = spGen.generate();
         sGen.setHashedSubpackets(packetVector);
 
-        PGPSignature sig = sGen.generateCertification("", keyToBeSigned);
-        return PGPPublicKey.addCertification(keyToBeSigned, "", sig);
-        //return PGPPublicKey.addCertification(keyToBeSigned, sGen.generate());
+        return PGPPublicKey.addCertification(keyToBeSigned, id, sGen.generate());
     }
 
     @Override
