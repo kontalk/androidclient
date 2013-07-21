@@ -141,6 +141,9 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         @Override
         public void onReceive(Context context, final Intent intent) {
             if (KeyPairGeneratorService.ACTION_GENERATE.equals(intent.getAction())) {
+                // we can stop the service now
+                context.stopService(new Intent(context, KeyPairGeneratorService.class));
+
                 handler.post(new Runnable() {
                     public void run() {
                         PersonalKey key = intent.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);

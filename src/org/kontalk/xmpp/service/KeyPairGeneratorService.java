@@ -77,9 +77,6 @@ public class KeyPairGeneratorService extends Service {
                     PersonalKey key = PersonalKey.create(service, 512);
                     Log.v("KeyPair", "key pair generated: " + key);
                     service.keypairGenerated(key);
-
-                    // we can suicide
-                    service.stopSelf();
                 }
                 catch (IOException e) {
                     Log.v("KeyPair", "keypair generation failed", e);
