@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
@@ -298,29 +299,33 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     private boolean checkInput() {
         mPhoneNumber = null;
+        String phoneStr = null;
 
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
-        PhoneNumber phone;
-        try {
-            phone = util.parse(mPhone.getText().toString(), cc.regionCode);
-            if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
-                throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+        if (!BuildConfig.DEBUG) {
+            PhoneNumber phone;
+            try {
+                phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+                if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
+                    throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
+                }
+            }
+            catch (NumberParseException e1) {
+                error(R.string.title_invalid_number, R.string.msg_invalid_number);
+                return false;
             }
 
-        }
-        catch (NumberParseException e1) {
-            error(R.string.title_invalid_number, R.string.msg_invalid_number);
-            return false;
-        }
-
-        // check phone number format
-        String phoneStr = null;
-        if (phone != null) {
-            phoneStr = util.format(phone, PhoneNumberFormat.E164);
-            if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
-                Log.i(TAG, "not a well formed SMS address");
+            // check phone number format
+            if (phone != null) {
+                phoneStr = util.format(phone, PhoneNumberFormat.E164);
+                if (!PhoneNumberUtils.isWellFormedSmsAddress(phoneStr)) {
+                    Log.i(TAG, "not a well formed SMS address");
+                }
             }
+        }
+        else {
+            phoneStr = String.format(Locale.US, "+%d%s", cc.countryCode, mPhone.getText().toString());
         }
 
         // phone is null - invalid number
