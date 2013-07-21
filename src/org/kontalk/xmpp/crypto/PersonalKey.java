@@ -153,7 +153,7 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid key data");
     }
 
-    public static PersonalKey create(Context context, int keysize) throws IOException {
+    public static PersonalKey create(int keysize) throws IOException {
         try {
             KeyPairGenerator gen = KeyPairGenerator.getInstance("ElGamal", "SC");
             gen.initialize(keysize, new SecureRandom());
@@ -172,9 +172,6 @@ public class PersonalKey implements Parcelable {
         }
     }
 
-    /**
-     * WARNING first uid is used, id parameter is ignored
-     */
     @SuppressWarnings("unchecked")
     public PGPPublicKeyRing signPublicKey(byte[] publicKeyring, String id)
             throws PGPException, IOException, SignatureException {
@@ -189,7 +186,6 @@ public class PersonalKey implements Parcelable {
                 while (iter.hasNext()) {
                     PGPPublicKey pk = iter.next();
                     if (pk.isMasterKey()) {
-                        id = (String) pk.getUserIDs().next();
                         PGPPublicKey signed = signPublicKey(pk, id);
                         return PGPPublicKeyRing.insertPublicKey(pubRing, signed);
                     }

@@ -16,27 +16,30 @@ public class SubscribePublicKey implements PacketExtension {
     private final byte[] mKey;
     /** Public key fingerprint. */
     private final String mFingerprint;
+    /** User ID to sign. */
+    private final String mUid;
 
     /** Base64-encoded public key (cached). */
     private String mEncodedKey;
 
     public SubscribePublicKey(String keydata) {
-        this(Base64.decode(keydata, Base64.DEFAULT), null);
+        this(Base64.decode(keydata, Base64.DEFAULT), null, null);
         mEncodedKey = keydata;
     }
 
     public SubscribePublicKey(byte[] keydata) {
-        this(keydata, null);
+        this(keydata, null, null);
     }
 
-    public SubscribePublicKey(String keydata, String fingerprint) {
-        this(Base64.decode(keydata, Base64.DEFAULT), fingerprint);
+    public SubscribePublicKey(String keydata, String fingerprint, String uid) {
+        this(Base64.decode(keydata, Base64.DEFAULT), fingerprint, uid);
         mEncodedKey = keydata;
     }
 
-    public SubscribePublicKey(byte[] keydata, String fingerprint) {
+    public SubscribePublicKey(byte[] keydata, String fingerprint, String uid) {
         mKey = keydata;
         mFingerprint = fingerprint;
+        mUid = uid;
     }
 
     @Override
@@ -55,6 +58,10 @@ public class SubscribePublicKey implements PacketExtension {
 
     public byte[] getKey() {
         return mKey;
+    }
+
+    public String getUid() {
+        return mUid;
     }
 
     @Override
@@ -86,8 +93,8 @@ public class SubscribePublicKey implements PacketExtension {
 
         @Override
         public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
-            String key = null, print = null;
-            boolean in_key = false, in_print = false, done = false;
+            String key = null, print = null, uid = null;
+            boolean in_key = false, in_print = false, in_uid = false, done = false;
 
             while (!done) {
                 int eventType = parser.next();
@@ -98,6 +105,8 @@ public class SubscribePublicKey implements PacketExtension {
                         in_key = true;
                     else if ("print".equals(parser.getName()))
                         in_print = true;
+                    else if ("uid".equals(parser.getName()))
+                        in_uid = true;
                 }
                 else if (eventType == XmlPullParser.END_TAG)
                 {
@@ -105,6 +114,8 @@ public class SubscribePublicKey implements PacketExtension {
                         in_key = false;
                     else if ("print".equals(parser.getName()))
                         in_print = false;
+                    else if ("uid".equals(parser.getName()))
+                        in_uid = false;
                     else if (ELEMENT_NAME.equals(parser.getName()))
                         done = true;
                 }
@@ -113,11 +124,13 @@ public class SubscribePublicKey implements PacketExtension {
                         key = parser.getText();
                     else if (in_print)
                         print = parser.getText();
+                    else if (in_uid)
+                        uid = parser.getText();
                 }
             }
 
-            if (key != null && print != null)
-                return new SubscribePublicKey(key, print);
+            if (key != null && print != null && uid != null)
+                return new SubscribePublicKey(key, print, uid);
             else
                 return null;
 

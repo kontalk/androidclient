@@ -1503,8 +1503,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     (MessageCenterService.this,
                         ((Kontalk)getApplicationContext()).getCachedPassphrase());
 
-                // TODO user id??
-                PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), null);
+                PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), pkey.getUid());
                 String keydata = Base64.encodeToString(signedKey.getEncoded(), Base64.NO_WRAP);
 
                 SubscribePublicKey pk = new SubscribePublicKey(keydata);
