@@ -560,6 +560,19 @@ public final class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
+    public static int getDrawerHeight (Context context) {
+        int height = getInt(context, "pref_drawer_height", -1);
+        return (height > 0) ? height : context.getResources()
+            .getDimensionPixelSize(R.dimen.default_drawer_height);
+    }
+
+    public static boolean setDrawerHeight (Context context, int height) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putInt("pref_drawer_height", height)
+            .commit();
+    }
+
     public static int getIdleTimeMillis(Context context, int defaultValue) {
         String val = getString(context, "pref_idle_time", null);
         int nval;

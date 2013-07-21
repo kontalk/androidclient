@@ -45,4 +45,8 @@
 
     <include layout="@layout/composer_bar"/>
 
+    <FrameLayout android:id="@+id/drawer"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"/>
+
 </LinearLayout>

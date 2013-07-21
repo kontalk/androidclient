@@ -32,7 +32,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.ChatState;
 import org.kontalk.xmpp.R;
@@ -52,8 +51,10 @@ import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.sync.Syncer;
 import org.kontalk.xmpp.ui.IconContextMenu.IconContextMenuOnClickListener;
+import org.kontalk.xmpp.util.Emoji;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
+import org.kontalk.xmpp.util.MessageUtils.ImageAdapter;
 import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
 
 import android.accounts.Account;
@@ -93,11 +94,14 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -143,7 +147,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private MenuItem mCallMenu;
 
 	private boolean mIsKeyboardOpen;
-	private boolean mIsLandscape;
 
 	/** The thread id. */
 	private long threadId = -1;
@@ -325,7 +328,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
 		Configuration config = getResources().getConfiguration();
 		mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
-		mIsLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
 		onKeyboardStateChanged(mIsKeyboardOpen);
 
 		processArguments(savedInstanceState);
@@ -338,10 +340,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		super.onConfigurationChanged(newConfig);
 
 		mIsKeyboardOpen = newConfig.keyboardHidden == KEYBOARDHIDDEN_NO;
-		boolean isLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
-		if (mIsLandscape != isLandscape) {
-			mIsLandscape = isLandscape;
-		}
 		onKeyboardStateChanged(mIsKeyboardOpen);
 	}
 
@@ -758,9 +756,21 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	}
 
 	private void showSmileysPopup(View anchor) {
+	    LayoutInflater inflater = getActivity().getLayoutInflater();
+	    View group = inflater.inflate(R.layout.emoji_selector, null);
+
+	    GridView grid = (GridView) group.findViewById(R.id.scroller);
+        ImageAdapter adapter = new ImageAdapter(getActivity(), Emoji.emojiGroups);
+        grid.setAdapter(adapter);
+        grid.setOnItemClickListener(mSmileySelectListener);
+
+        getParentActivity().showDrawer(group);
+
+	    /*
         if (mSmileyPopup == null)
             mSmileyPopup = MessageUtils.smileysPopup(getActivity(), mSmileySelectListener);
         mSmileyPopup.show(anchor);
+        */
 	}
 
 	private void deleteThread() {

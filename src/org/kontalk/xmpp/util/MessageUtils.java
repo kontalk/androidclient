@@ -136,7 +136,7 @@ public final class MessageUtils {
         }
     }
 
-    private static final class ImageAdapter extends BaseAdapter {
+    public static final class ImageAdapter extends BaseAdapter {
         private Context mContext;
         private int[][] mTheme;
 
