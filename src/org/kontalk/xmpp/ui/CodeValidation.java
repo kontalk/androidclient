@@ -24,6 +24,8 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.service.KeyPairGeneratorService;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -48,6 +50,8 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     private EditText mCode;
     private Button mButton;
     private NumberValidator mValidator;
+    private PersonalKey mKey;
+    private String mPhone;
 
     private static final class RetainData {
         NumberValidator validator;
@@ -83,6 +87,9 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
             ((TextView) findViewById(R.id.code_validation_intro))
                 .setText(R.string.code_validation_intro2);
         }
+
+        mKey = getIntent().getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
+        mPhone = getIntent().getStringExtra("phone");
     }
 
     @Override
@@ -144,7 +151,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
 
         // send the code
         EndpointServer server = MessagingPreferences.getEndpointServer(this);
-        mValidator = new NumberValidator(this, server, null);
+        mValidator = new NumberValidator(this, server, mPhone, mKey);
         mValidator.setListener(this);
 
         mValidator.manualInput(code);
@@ -211,7 +218,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
     }
 
     @Override
-    public void onAuthTokenReceived(NumberValidator v, final CharSequence token) {
+    public void onAuthTokenReceived(final NumberValidator v, final CharSequence token, final byte[] privateKeyData, final byte[] publicKeyData) {
         Log.d(TAG, "got authentication token!");
 
         runOnUiThread(new Runnable() {
@@ -220,6 +227,8 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
                 abort(true);
                 Intent i = new Intent();
                 i.putExtra(NumberValidation.PARAM_AUTHTOKEN, token);
+                i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
+                i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
                 setResult(RESULT_OK, i);
                 finish();
             }

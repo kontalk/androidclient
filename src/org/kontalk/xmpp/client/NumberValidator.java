@@ -34,14 +34,19 @@ import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.packet.DataForm;
 import org.jivesoftware.smackx.provider.DataFormProvider;
+import org.kontalk.xmpp.Kontalk;
+import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.service.XMPPConnectionHelper;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.xmpp.util.MessageUtils;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -70,21 +75,28 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     private final EndpointServer mServer;
     private final String mPhone;
+    private PersonalKey mKey;
+    private PGPKeyPairRing mKeyRing;
+    private volatile Object mKeyLock = new Object();
+
     private final XMPPConnectionHelper mConnector;
     private NumberValidatorListener mListener;
     private volatile int mStep;
     private CharSequence mValidationCode;
 
+    private final Context mContext;
     private Thread mThread;
 
     private HandlerThread mServiceHandler;
     private Handler mInternalHandler;
 
-    public NumberValidator(Context context, EndpointServer server, String phone) {
+    public NumberValidator(Context context, EndpointServer server, String phone, PersonalKey key) {
+        mContext = context.getApplicationContext();
         mServer = server;
         mPhone = phone;
+        mKey = key;
 
-        mConnector = new XMPPConnectionHelper(context.getApplicationContext(), mServer, true);
+        mConnector = new XMPPConnectionHelper(mContext, mServer, true);
         mConnector.setRetryEnabled(false);
 
         SmackAndroid.init(context.getApplicationContext());
@@ -94,6 +106,17 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private void configure(ProviderManager pm) {
         pm.addIQProvider("query", "jabber:iq:register", new RegistrationFormProvider());
         pm.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
+    }
+
+    public void setKey(PersonalKey key) {
+        synchronized (mKeyLock) {
+            mKey = key;
+            mKeyLock.notifyAll();
+        }
+    }
+
+    public PersonalKey getKey() {
+        return mKey;
     }
 
     public synchronized void start() {
@@ -132,6 +155,21 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                     }
                 }
                 */
+
+                synchronized (mKeyLock) {
+                    if (mKey == null) {
+                        Log.v(TAG, "waiting for key generator");
+                        try {
+                            // wait endlessly?
+                            mKeyLock.wait();
+                        }
+                        catch (InterruptedException e) {
+                            mStep = STEP_INIT;
+                            return;
+                        }
+                        Log.v(TAG, "key generation completed " + mKey);
+                    }
+                }
 
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
@@ -189,18 +227,37 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         if (iq.getType() == IQ.Type.RESULT) {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
+                                String token = null, publicKey = null;
+
                                 // ok! message will be sent
                                 Iterator<FormField> iter = response.getFields();
                                 while (iter.hasNext()) {
                                     FormField field = iter.next();
-                                    if (field.getVariable().equals("token")) {
-                                        String token = field.getValues().next();
-                                        if (!TextUtils.isEmpty(token))
-                                            mListener.onAuthTokenReceived(NumberValidator.this, token);
-
-                                        // prevent error handling
-                                        return;
+                                    if ("token".equals(field.getVariable())) {
+                                        token = field.getValues().next();
                                     }
+                                    else if ("publickey".equals(field.getVariable())) {
+                                        publicKey = field.getValues().next();
+                                    }
+                                }
+
+                                if (!TextUtils.isEmpty(token)) {
+                                    byte[] publicKeyData;
+                                    byte[] privateKeyData;
+                                    try {
+                                        publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
+                                        privateKeyData = mKeyRing.secretKey.getEncoded();
+                                    }
+                                    catch (Exception e) {
+                                        // TODO that easy?
+                                        publicKeyData = null;
+                                        privateKeyData = null;
+                                    }
+
+                                    mListener.onAuthTokenReceived(NumberValidator.this, token, privateKeyData, publicKeyData);
+
+                                    // prevent error handling
+                                    return;
                                 }
                             }
                         }
@@ -309,11 +366,37 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         type.addValue("http://kontalk.org/protocol/register#code");
         form.addField(type);
 
-        FormField phone = new FormField("code");
-        phone.setLabel("Validation code");
-        phone.setType(FormField.TYPE_TEXT_SINGLE);
-        phone.addValue(mValidationCode.toString());
-        form.addField(phone);
+        FormField code = new FormField("code");
+        code.setLabel("Validation code");
+        code.setType(FormField.TYPE_TEXT_SINGLE);
+        code.addValue(mValidationCode.toString());
+        form.addField(code);
+
+        if (mKey != null) {
+            String publicKey;
+            try {
+                String userId = MessageUtils.sha1(mPhone);
+                // TODO what in name and comment fields here?
+                mKeyRing = mKey.store(mContext, "TEST",
+                    userId + '@' + mServer.getNetwork(), "NO COMMENT",
+                    // TODO should we ask passphrase to the user?
+                    ((Kontalk)mContext.getApplicationContext()).getCachedPassphrase());
+                publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
+            }
+            catch (Exception e) {
+                // TODO
+                Log.v(TAG, "error saving key", e);
+                publicKey = null;
+            }
+
+            if (publicKey != null) {
+                FormField key = new FormField("publickey");
+                key.setLabel("Public key");
+                key.setType(FormField.TYPE_TEXT_SINGLE);
+                key.addValue(publicKey);
+                form.addField(key);
+            }
+        }
 
         iq.addExtension(form.getDataFormToSend());
         return iq;
@@ -337,7 +420,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         public void onValidationFailed(NumberValidator v, int reason);
 
         /** Called on receiving of authentication token. */
-        public void onAuthTokenReceived(NumberValidator v, CharSequence token);
+        public void onAuthTokenReceived(NumberValidator v, CharSequence token, byte[] privateKey, byte[] publicKey);
 
         /** Called if validation code has not been verified. */
         public void onAuthTokenFailed(NumberValidator v, int reason);

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.Roster.SubscriptionMode;
 import org.jivesoftware.smack.SmackAndroid;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
@@ -32,6 +33,7 @@ import org.jivesoftware.smackx.packet.DiscoverItems;
 import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.GCMIntentService;
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.AckServerReceipt;
 import org.kontalk.xmpp.client.BitsOfBinary;
@@ -48,9 +50,11 @@ import org.kontalk.xmpp.client.ServerReceipt;
 import org.kontalk.xmpp.client.ServerReceiptRequest;
 import org.kontalk.xmpp.client.StanzaGroupExtension;
 import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
+import org.kontalk.xmpp.client.SubscribePublicKey;
 import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
@@ -63,6 +67,7 @@ import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
 import android.app.Service;
@@ -336,6 +341,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addExtensionProvider(AckServerReceipt.ELEMENT_NAME, AckServerReceipt.NAMESPACE, new AckServerReceipt.Provider());
         pm.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
         pm.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
+        pm.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
     }
 
     @Override
@@ -639,6 +645,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void created() {
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) mHelper.getConnection();
+
+        // we want to manually handle roster stuff
+        mConnection.getRoster().setSubscriptionMode(SubscriptionMode.manual);
 
         PacketFilter filter;
 
@@ -1478,54 +1487,107 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Listener for presence stanzas. */
     private final class PresenceListener implements PacketListener {
+
+        private Packet subscribe(Presence p) {
+            PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+            if (_pkey instanceof SubscribePublicKey) {
+                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
+
+                // sign key and send it back
+                try {
+                    PersonalKey key = Authenticator.loadDefaultPersonalKey
+                        (MessageCenterService.this,
+                            ((Kontalk)getApplicationContext()).getCachedPassphrase());
+
+                    PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), pkey.getUid());
+                    String keydata = Base64.encodeToString(signedKey.getEncoded(), Base64.NO_WRAP);
+
+                    SubscribePublicKey pk = new SubscribePublicKey(keydata);
+                    Presence p2 = new Presence(Presence.Type.subscribed);
+                    p2.setTo(p.getFrom());
+                    p2.addExtension(pk);
+                    return p2;
+                }
+                catch (Exception e) {
+                    Log.w(TAG, "unable to sign public key", e);
+                    // TODO should we notify the user about this?
+                    // TODO throw new PGPException(...)
+                    return null;
+                }
+            }
+
+            // no public key extension: accept subscription anyway?
+            return null;
+        }
+
         @Override
         public void processPacket(Packet packet) {
             try {
-                Log.v(TAG, "presence: " + packet);
                 Presence p = (Presence) packet;
-                Intent i = new Intent(ACTION_PRESENCE);
-                Presence.Type type = p.getType();
-                i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
-                i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-                String from = p.getFrom();
-                String network = StringUtils.parseServer(from);
-                // our network - convert to userId
-                if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                    StringBuilder b = new StringBuilder();
-                    b.append(StringUtils.parseName(from));
-                    b.append(StringUtils.parseResource(from));
-                    i.putExtra(EXTRA_FROM_USERID, b.toString());
+                // presence subscription request
+                if (p.getType() == Presence.Type.subscribe) {
+                    Packet r = subscribe(p);
+                    if (r != null)
+                        mConnection.sendPacket(r);
                 }
 
-                i.putExtra(EXTRA_FROM, from);
-                i.putExtra(EXTRA_TO, p.getTo());
-                i.putExtra(EXTRA_STATUS, p.getStatus());
-                Presence.Mode mode = p.getMode();
-                i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
-                i.putExtra(EXTRA_PRIORITY, p.getPriority());
+                // presence subscription response
+                /*
+                else if (p.getType() == Presence.Type.subscribed) {
+                    // TODO broadcast this
+                }
 
-                // getExtension doesn't work here
-                Iterator<PacketExtension> iter = p.getExtensions().iterator();
-                while (iter.hasNext()) {
-                    PacketExtension _ext = iter.next();
-                    if (_ext instanceof DelayInformation) {
-                        DelayInformation delay = (DelayInformation) _ext;
-                        i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
-                        break;
+                else if (p.getType() == Presence.Type.unsubscribed) {
+                    // TODO can this even happen?
+                }
+                */
+
+                else {
+                    Intent i = new Intent(ACTION_PRESENCE);
+                    Presence.Type type = p.getType();
+                    i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
+                    i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+
+                    String from = p.getFrom();
+                    String network = StringUtils.parseServer(from);
+                    // our network - convert to userId
+                    if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                        StringBuilder b = new StringBuilder();
+                        b.append(StringUtils.parseName(from));
+                        b.append(StringUtils.parseResource(from));
+                        i.putExtra(EXTRA_FROM_USERID, b.toString());
                     }
-                }
 
-                // non-standard stanza group extension
-                PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
-                if (ext != null && ext instanceof StanzaGroupExtension) {
-                    StanzaGroupExtension g = (StanzaGroupExtension) ext;
-                    i.putExtra(EXTRA_GROUP_ID, g.getId());
-                    i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
-                }
+                    i.putExtra(EXTRA_FROM, from);
+                    i.putExtra(EXTRA_TO, p.getTo());
+                    i.putExtra(EXTRA_STATUS, p.getStatus());
+                    Presence.Mode mode = p.getMode();
+                    i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
+                    i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
-                Log.v(TAG, "broadcasting presence: " + i);
-                mLocalBroadcastManager.sendBroadcast(i);
+                    // getExtension doesn't work here
+                    Iterator<PacketExtension> iter = p.getExtensions().iterator();
+                    while (iter.hasNext()) {
+                        PacketExtension _ext = iter.next();
+                        if (_ext instanceof DelayInformation) {
+                            DelayInformation delay = (DelayInformation) _ext;
+                            i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
+                            break;
+                        }
+                    }
+
+                    // non-standard stanza group extension
+                    PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
+                    if (ext != null && ext instanceof StanzaGroupExtension) {
+                        StanzaGroupExtension g = (StanzaGroupExtension) ext;
+                        i.putExtra(EXTRA_GROUP_ID, g.getId());
+                        i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
+                    }
+
+                    Log.v(TAG, "broadcasting presence: " + i);
+                    mLocalBroadcastManager.sendBroadcast(i);
+                }
             }
             catch (Exception e) {
                 Log.e(TAG, "error parsing presence", e);

@@ -18,7 +18,11 @@
 
 package org.kontalk.xmpp;
 
+import java.io.IOException;
+
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.crypto.PGP;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
@@ -29,6 +33,7 @@ import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.ComposeMessage;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.SearchActivity;
+import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -56,6 +61,20 @@ public class Kontalk extends Application {
 
     private Handler mHandler;
     private SharedPreferences.OnSharedPreferenceChangeListener mPrefChangedListener;
+    private PersonalKey mDefaultKey;
+
+    /**
+     * Passphrase to decrypt the personal private key.
+     * This should be asked to the user and stored in memory - otherwise use
+     * a dummy password if user doesn't want to remember it (or optionally do
+     * not encrypt the private key).
+     */
+    private String mKeyPassphrase = "test";
+
+    static {
+        // register provider
+        PGP.registerProvider();
+    }
 
     @Override
     public void onCreate() {
@@ -123,6 +142,53 @@ public class Kontalk extends Application {
 
         // enable/disable components
         setServicesEnabled(this, account != null);
+
+        /* TEST encryption
+        try {
+            byte[] data = "TESTDATA".getBytes();
+
+            PersonalKey key = getPersonalKey();
+            PGPKeyPair enc = key.getEncryptKeyPair();
+
+            // will contain encrypted data
+            ByteArrayOutputStream eOut = new ByteArrayOutputStream();
+            ArmoredOutputStream aOut = new ArmoredOutputStream(eOut);
+
+            BcPGPDataEncryptorBuilder builder = new BcPGPDataEncryptorBuilder(PGPEncryptedData.TRIPLE_DES);
+            PGPEncryptedDataGenerator eg = new PGPEncryptedDataGenerator(builder.setSecureRandom(new SecureRandom()));
+            eg.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(enc.getPublicKey()));
+
+            OutputStream cOut = eg.open(aOut, 1024);
+
+            PGPLiteralDataGenerator litgen = new PGPLiteralDataGenerator();
+            OutputStream fOut = litgen.open(cOut, PGPLiteralDataGenerator.UTF8, "", new Date(), new byte[1024]);
+            fOut.write(data);
+            fOut.close();
+
+            cOut.close();
+            aOut.close();
+
+            byte[] encrypted = eOut.toByteArray();
+            Log.v(TAG, "data = " + data.length + " bytes, encrypted data = " + encrypted.length + " bytes");
+            OutputStream out = new FileOutputStream(new File(Environment.getExternalStorageDirectory(), "enc.pgp"));
+            out.write(encrypted);
+            out.close();
+        }
+        catch (Exception e) {
+            Log.e(TAG, "key test error", e);
+        }
+        */
+    }
+
+    public PersonalKey getPersonalKey() throws PGPException, IOException {
+        if (mDefaultKey == null)
+            mDefaultKey = Authenticator.loadDefaultPersonalKey(this, mKeyPassphrase);
+
+        return mDefaultKey;
+    }
+
+    public String getCachedPassphrase()  {
+        return mKeyPassphrase;
     }
 
     /** Enable/disable application components when account is added or removed. */
