@@ -82,6 +82,11 @@ public class SubscribePublicKey implements PacketExtension {
             .append(mFingerprint)
             .append("</print>");
 
+        if (mUid != null)
+            buf.append("<uid>")
+            .append(mUid)
+            .append("</uid>");
+
         buf.append("</")
             .append(ELEMENT_NAME)
             .append('>');
