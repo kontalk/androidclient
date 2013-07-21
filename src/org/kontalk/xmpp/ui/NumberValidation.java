@@ -186,37 +186,6 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         return new HashSet<String>();
     }
 
-    /**
-     * Compatibility method for {@link PhoneNumberUtil#getSupportedRegions()}.
-     * This was introduced because crappy Honeycomb has an old version of
-     * libphonenumber, therefore Dalvik will insist on we using it.
-     * In case getSupportedRegions doesn't exist, getSupportedCountries will be
-     * used.
-     */
-    @SuppressWarnings("unchecked")
-    private Set<String> getSupportedRegions(PhoneNumberUtil util) {
-        try {
-            return (Set<String>) util.getClass()
-                .getMethod("getSupportedRegions")
-                .invoke(util);
-        }
-        catch (NoSuchMethodException e) {
-            try {
-                return (Set<String>) util.getClass()
-                    .getMethod("getSupportedCountries")
-                    .invoke(util);
-            }
-            catch (Exception helpme) {
-                // ignored
-            }
-        }
-        catch (Exception e) {
-            // ignored
-        }
-
-        return new HashSet<String>();
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
