@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.security.Security;
 
 import org.kontalk.xmpp.authenticator.Authenticator;
-import org.kontalk.xmpp.crypto.Keyring;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.service.DownloadService;
@@ -82,9 +81,6 @@ public class Kontalk extends Application {
     public void onCreate() {
         super.onCreate();
         mHandler = new Handler();
-
-        // initialize the keyring
-        Keyring.init(this);
 
         // update notifications from locally unread messages
         MessagingNotification.updateMessagesNotification(this, false);
