@@ -21,6 +21,7 @@ package org.kontalk.xmpp.ui;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
@@ -151,6 +152,37 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     }
 
+    /**
+     * Compatibility method for {@link PhoneNumberUtil#getSupportedRegions()}.
+     * This was introduced because crappy Honeycomb has an old version of
+     * libphonenumber, therefore Dalvik will insist on we using it.
+     * In case getSupportedRegions doesn't exist, getSupportedCountries will be
+     * used.
+     */
+    @SuppressWarnings("unchecked")
+    private Set<String> getSupportedRegions(PhoneNumberUtil util) {
+        try {
+            return (Set<String>) util.getClass()
+                .getMethod("getSupportedRegions")
+                .invoke(util);
+        }
+        catch (NoSuchMethodException e) {
+            try {
+                return (Set<String>) util.getClass()
+                    .getMethod("getSupportedCountries")
+                    .invoke(util);
+            }
+            catch (Exception helpme) {
+                // ignored
+            }
+        }
+        catch (Exception e) {
+            // ignored
+        }
+
+        return new HashSet<String>();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -173,7 +205,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         // populate country codes
         final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
-        Set<String> ccSet = util.getSupportedRegions();
+        Set<String> ccSet = getSupportedRegions(util);
         for (String cc : ccSet)
             ccList.add(cc);
 
