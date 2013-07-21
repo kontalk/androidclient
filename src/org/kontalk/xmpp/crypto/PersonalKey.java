@@ -20,40 +20,28 @@ package org.kontalk.xmpp.crypto;
 
 import java.io.IOException;
 import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.spongycastle.bcpg.HashAlgorithmTags;
-import org.spongycastle.openpgp.PGPEncryptedData;
+import org.kontalk.xmpp.crypto.PGP.PGPDecryptedKeyPairRing;
+import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
-import org.spongycastle.openpgp.PGPKeyRingGenerator;
 import org.spongycastle.openpgp.PGPObjectFactory;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 import org.spongycastle.openpgp.PGPSecretKey;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
-import org.spongycastle.openpgp.PGPSignature;
-import org.spongycastle.openpgp.PGPSignatureGenerator;
-import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
-import org.spongycastle.openpgp.PGPSignatureSubpacketVector;
-import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
-import org.spongycastle.openpgp.operator.PGPDigestCalculator;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
 import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.content.Context;
 import android.os.Parcel;
@@ -64,85 +52,40 @@ import android.util.Log;
 /** Personal asymmetric encryption key. */
 public class PersonalKey implements Parcelable {
 
-    /** The signing (public) key. */
-    private PGPKeyPair mSignKp;
-    /** The encryption (private) key. */
-    private final PGPKeyPair mEncryptKp;
+    /** Decrypted key pair (for direct usage). */
+    private final PGPDecryptedKeyPairRing mPair;
 
     private PersonalKey(PGPKeyPair signKp, PGPKeyPair encryptKp) {
-        mSignKp = signKp;
-        mEncryptKp = encryptKp;
+        mPair = new PGPDecryptedKeyPairRing(signKp, encryptKp);
     }
 
     private PersonalKey(Parcel in) throws PGPException {
-        JcaPGPKeyConverter conv = new JcaPGPKeyConverter().setProvider("SC");
-
-        // TODO read byte data
-        PrivateKey privSign = (PrivateKey) in.readSerializable();
-        PublicKey pubSign = (PublicKey) in.readSerializable();
-        int algoSign = in.readInt();
-        Date dateSign = new Date(in.readLong());
-
-        PGPPublicKey pubKeySign = conv.getPGPPublicKey(algoSign, pubSign, dateSign);
-        PGPPrivateKey privKeySign = conv.getPGPPrivateKey(pubKeySign, privSign);
-        mSignKp = new PGPKeyPair(pubKeySign, privKeySign);
-
-        PrivateKey privEnc = (PrivateKey) in.readSerializable();
-        PublicKey pubEnc = (PublicKey) in.readSerializable();
-        int algoEnc = in.readInt();
-        Date dateEnc = new Date(in.readLong());
-
-        PGPPublicKey pubKeyEnc = conv.getPGPPublicKey(algoEnc, pubEnc, dateEnc);
-        PGPPrivateKey privKeyEnc = conv.getPGPPrivateKey(pubKeyEnc, privEnc);
-        mEncryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
-    }
-
-    public static final class PGPKeyPairRing {
-        public PGPPublicKeyRing publicKey;
-        public PGPSecretKeyRing privateKey;
-
-        PGPKeyPairRing(PGPPublicKeyRing publicKey, PGPSecretKeyRing privateKey) {
-            this.publicKey = publicKey;
-            this.privateKey = privateKey;
-        }
+        mPair = PGP.fromParcel(in);
     }
 
     public PGPKeyPair getEncryptKeyPair() {
-        return mEncryptKp;
+        return mPair.encryptKey;
     }
 
     public PGPKeyPair getSignKeyPair() {
-        return mSignKp;
+        return mPair.signKey;
     }
 
-    /**
-     * TODO
-     * @return the public keyring.
-     */
     public PGPKeyPairRing store(Context context, String name, String email, String comment, String passphrase) throws PGPException {
-        // FIXME correct order is: name (comment) <email>
-        StringBuilder userid = new StringBuilder(name)
-            .append(" <");
-        if (email != null)
-            userid.append(email);
-        userid.append('>');
-        if (comment != null)
-            userid.append(" (")
+        // name[ (comment)] <[email]>
+        StringBuilder userid = new StringBuilder(name);
+
+        if (comment != null) userid
+            .append(" (")
             .append(comment)
             .append(')');
 
-        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
-        PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, mSignKp,
-            userid.toString(), sha1Calc, null, null,
-            new JcaPGPContentSignerBuilder(mSignKp.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
-            new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc).setProvider("SC").build(passphrase.toCharArray()));
+        userid.append(" <");
+        if (email != null)
+            userid.append(email);
+        userid.append('>');
 
-        keyRingGen.addSubKey(mEncryptKp);
-
-        PGPSecretKeyRing secRing = keyRingGen.generateSecretKeyRing();
-        PGPPublicKeyRing pubRing = keyRingGen.generatePublicKeyRing();
-
-        return new PGPKeyPairRing(pubRing, secRing);
+        return PGP.store(mPair, userid.toString(), passphrase);
     }
 
     /**
@@ -151,7 +94,7 @@ public class PersonalKey implements Parcelable {
      */
     public PGPPublicKeyRing update(byte[] keyData) throws IOException {
         PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, new BcKeyFingerprintCalculator());
-        mSignKp = new PGPKeyPair(ring.getPublicKey(), mSignKp.getPrivateKey());
+        mPair.signKey = new PGPKeyPair(ring.getPublicKey(), mPair.signKey.getPrivateKey());
         return ring;
     }
 
@@ -261,20 +204,7 @@ public class PersonalKey implements Parcelable {
     public PGPPublicKey signPublicKey(PGPPublicKey keyToBeSigned, String id)
             throws PGPException, IOException, SignatureException {
 
-        PGPPrivateKey pgpPrivKey = mSignKp.getPrivateKey();
-
-        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
-            new JcaPGPContentSignerBuilder(mSignKp.getPublicKey().getAlgorithm(),
-                PGPUtil.SHA256).setProvider("SC"));
-
-        sGen.init(PGPSignature.DIRECT_KEY, pgpPrivKey);
-
-        PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
-
-        PGPSignatureSubpacketVector packetVector = spGen.generate();
-        sGen.setHashedSubpackets(packetVector);
-
-        return PGPPublicKey.addCertification(keyToBeSigned, id, sGen.generate());
+        return PGP.signPublicKey(mPair.signKey, keyToBeSigned, id);
     }
 
     @Override
@@ -286,25 +216,7 @@ public class PersonalKey implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         // TODO write byte arrays
         try {
-            PrivateKey privSign = mSignKp.getPrivateKey().getKey();
-            PublicKey pubSign = mSignKp.getPublicKey().getKey("SC");
-            int algoSign = mSignKp.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-            Date dateSign = mSignKp.getPrivateKey().getPublicKeyPacket().getTime();
-
-            PrivateKey privEnc = mEncryptKp.getPrivateKey().getKey();
-            PublicKey pubEnc = mEncryptKp.getPublicKey().getKey("SC");
-            int algoEnc = mEncryptKp.getPrivateKey().getPublicKeyPacket().getAlgorithm();
-            Date dateEnc = mEncryptKp.getPrivateKey().getPublicKeyPacket().getTime();
-
-            dest.writeSerializable(privSign);
-            dest.writeSerializable(pubSign);
-            dest.writeInt(algoSign);
-            dest.writeLong(dateSign.getTime());
-
-            dest.writeSerializable(privEnc);
-            dest.writeSerializable(pubEnc);
-            dest.writeInt(algoEnc);
-            dest.writeLong(dateEnc.getTime());
+            PGP.toParcel(mPair, dest);
         }
         catch (Exception e) {
             Log.e("PersonalKey", "error writing key to parcel", e);

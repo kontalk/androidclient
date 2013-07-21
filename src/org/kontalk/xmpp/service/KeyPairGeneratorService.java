@@ -74,6 +74,7 @@ public class KeyPairGeneratorService extends Service {
             KeyPairGeneratorService service = s.get();
             if (service != null) {
                 try {
+                    // TODO 512 bits? Are you kidding me?
                     PersonalKey key = PersonalKey.create(service, 512);
                     Log.v("KeyPair", "key pair generated: " + key);
                     service.keypairGenerated(key);

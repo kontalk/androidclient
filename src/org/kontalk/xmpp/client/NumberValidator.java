@@ -35,8 +35,8 @@ import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.packet.DataForm;
 import org.jivesoftware.smackx.provider.DataFormProvider;
 import org.kontalk.xmpp.Kontalk;
+import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
-import org.kontalk.xmpp.crypto.PersonalKey.PGPKeyPairRing;
 import org.kontalk.xmpp.service.XMPPConnectionHelper;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.xmpp.util.MessageUtils;
@@ -246,7 +246,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                     byte[] privateKeyData;
                                     try {
                                         publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
-                                        privateKeyData = mKeyRing.privateKey.getEncoded();
+                                        privateKeyData = mKeyRing.secretKey.getEncoded();
                                     }
                                     catch (Exception e) {
                                         // TODO that easy?

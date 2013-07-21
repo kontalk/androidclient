@@ -25,7 +25,6 @@ import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.xmpp.crypto.PersonalKey;
-import org.kontalk.xmpp.crypto.PersonalKey.PGPKeyPairRing;
 import org.kontalk.xmpp.service.KeyPairGeneratorService;
 
 import android.app.AlertDialog;

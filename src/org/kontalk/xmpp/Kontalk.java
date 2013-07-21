@@ -19,9 +19,9 @@
 package org.kontalk.xmpp;
 
 import java.io.IOException;
-import java.security.Security;
 
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.crypto.PGP;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.service.DownloadService;
@@ -33,7 +33,6 @@ import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.ComposeMessage;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.SearchActivity;
-import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -73,8 +72,8 @@ public class Kontalk extends Application {
     private String mKeyPassphrase = "test";
 
     static {
-        // register spongy castle provider
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+        // register provider
+        PGP.registerProvider();
     }
 
     @Override
