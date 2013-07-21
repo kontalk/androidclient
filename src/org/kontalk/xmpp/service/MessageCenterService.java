@@ -3,7 +3,6 @@ package org.kontalk.xmpp.service;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.security.SignatureException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -68,7 +67,6 @@ import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
-import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
@@ -1490,58 +1488,60 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Listener for presence stanzas. */
     private final class PresenceListener implements PacketListener {
 
-        /** TEST */
-        private Packet testSubscribe(Presence p) {
-            // TODO
+        private Packet subscribe(Presence p) {
             PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
-            Log.v(TAG, "Subscription: " + _pkey);
-            SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
-            // TODO sign key and send it back
+            if (_pkey instanceof SubscribePublicKey) {
+                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
 
-            try {
-                PersonalKey key = Authenticator.loadDefaultPersonalKey
-                    (MessageCenterService.this,
-                        ((Kontalk)getApplicationContext()).getCachedPassphrase());
+                // sign key and send it back
+                try {
+                    PersonalKey key = Authenticator.loadDefaultPersonalKey
+                        (MessageCenterService.this,
+                            ((Kontalk)getApplicationContext()).getCachedPassphrase());
 
-                PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), pkey.getUid());
-                String keydata = Base64.encodeToString(signedKey.getEncoded(), Base64.NO_WRAP);
+                    PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), pkey.getUid());
+                    String keydata = Base64.encodeToString(signedKey.getEncoded(), Base64.NO_WRAP);
 
-                SubscribePublicKey pk = new SubscribePublicKey(keydata);
-                Presence p2 = new Presence(Presence.Type.subscribed);
-                p2.setTo(p.getFrom());
-                p2.addExtension(pk);
-                return p2;
-            }
-            catch (PGPException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            catch (SignatureException e) {
-                e.printStackTrace();
+                    SubscribePublicKey pk = new SubscribePublicKey(keydata);
+                    Presence p2 = new Presence(Presence.Type.subscribed);
+                    p2.setTo(p.getFrom());
+                    p2.addExtension(pk);
+                    return p2;
+                }
+                catch (Exception e) {
+                    Log.w(TAG, "unable to sign public key", e);
+                    // TODO should we notify the user about this?
+                    // TODO throw new PGPException(...)
+                    return null;
+                }
             }
 
+            // no public key extension: accept subscription anyway?
             return null;
         }
 
         @Override
         public void processPacket(Packet packet) {
             try {
-                Log.v(TAG, "presence: " + packet);
                 Presence p = (Presence) packet;
 
                 // presence subscription request
                 if (p.getType() == Presence.Type.subscribe) {
-                    // TEST
-                    Packet r = testSubscribe(p);
-                    mConnection.sendPacket(r);
+                    Packet r = subscribe(p);
+                    if (r != null)
+                        mConnection.sendPacket(r);
                 }
 
                 // presence subscription response
+                /*
                 else if (p.getType() == Presence.Type.subscribed) {
-                    // TODO
+                    // TODO broadcast this
                 }
+
+                else if (p.getType() == Presence.Type.unsubscribed) {
+                    // TODO can this even happen?
+                }
+                */
 
                 else {
                     Intent i = new Intent(ACTION_PRESENCE);

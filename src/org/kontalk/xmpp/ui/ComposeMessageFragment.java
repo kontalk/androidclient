@@ -1408,6 +1408,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
                         // we handle only (un)available presence stanzas
                         String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+
                         if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
 
                             CharSequence statusText = null;
@@ -1540,14 +1541,19 @@ public class ComposeMessageFragment extends SherlockListFragment implements
                                     setStatusText(statusText);
                             }
                         }
+
+                        // subscription accepted, send presence probe
+                        else if (Presence.Type.subscribed.name().equals(type)) {
+                            mPresenceId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        }
                     }
 
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
                         // reset compose sent flag
                         mComposeSent = false;
 
-                        // send probe and subscription request
-                        presenceProbe();
+                        // send subscription request
+                        presenceSubscribe();
                     }
 
                     else if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
@@ -1577,26 +1583,18 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
-            // send presence probe
-            presenceProbe();
+            // send presence subscription request
+            presenceSubscribe();
 	    }
 	}
 
-	private void presenceProbe() {
+	/** Sends a subscription request for the current peer. */
+	private void presenceSubscribe() {
         // send subscription request
         Intent i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
         i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
-        getActivity().startService(i);
-
-        // send presence probe
-        mPresenceId = Packet.nextID();
-        i = new Intent(getActivity(), MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, "probe");
-        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mPresenceId);
         getActivity().startService(i);
 	}
 
