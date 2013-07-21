@@ -15,6 +15,9 @@ import android.util.Log;
 /** Generates a key pair in the background. */
 public class KeyPairGeneratorService extends Service {
 
+    // FIXME 1024 bits DSA/ElGamal? Are you kidding me?
+    private static final int DEFAULT_KEY_SIZE = 1024;
+
     public static final String ACTION_GENERATE = "org.kontalk.keypair.GENERATE";
 
     public static final String EXTRA_KEY = "org.kontalk.keypair.KEY";
@@ -74,8 +77,7 @@ public class KeyPairGeneratorService extends Service {
             KeyPairGeneratorService service = s.get();
             if (service != null) {
                 try {
-                    // TODO 512 bits? Are you kidding me?
-                    PersonalKey key = PersonalKey.create(512);
+                    PersonalKey key = PersonalKey.create(DEFAULT_KEY_SIZE);
                     Log.v("KeyPair", "key pair generated: " + key);
                     service.keypairGenerated(key);
                 }
