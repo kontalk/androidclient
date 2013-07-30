@@ -6,5 +6,4 @@
     <dimen name="conv_list_margin_left">7dp</dimen>
     <dimen name="contacts_list_margin_left">0dp</dimen>
     <dimen name="contacts_list_margin_right">0dp</dimen>
-    <dimen name="default_drawer_height">200dp</dimen>
 </resources>

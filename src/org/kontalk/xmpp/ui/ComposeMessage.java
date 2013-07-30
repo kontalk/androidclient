@@ -34,7 +34,6 @@ import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 
-import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -43,10 +42,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -82,8 +78,6 @@ public class ComposeMessage extends SherlockFragmentActivity {
     private TextView mTitleView;
     private TextView mSubtitleView;
     private ImageView mAvatarView;
-
-    private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -339,52 +333,6 @@ public class ComposeMessage extends SherlockFragmentActivity {
         }
 
         sendIntent = null;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        mGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener(){
-            public void onGlobalLayout(){
-                final View root = getWindow().getDecorView().findViewById(android.R.id.content);
-
-                int heightDiff = root.getRootView().getHeight() -
-                    (root.getHeight() + root.getTop());
-
-                if (heightDiff > 0)
-                    MessagingPreferences.setDrawerHeight(ComposeMessage.this, heightDiff);
-            }
-        };
-
-        // listen for height changes
-        final View root = getWindow().getDecorView().findViewById(android.R.id.content);
-        root.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
-    }
-
-    @SuppressWarnings("deprecation")
-    @SuppressLint("NewApi")
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (mGlobalLayoutListener != null) {
-            final View root = getWindow().getDecorView().findViewById(android.R.id.content);
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN)
-                root.getViewTreeObserver().removeOnGlobalLayoutListener(mGlobalLayoutListener);
-            else
-                root.getViewTreeObserver().removeGlobalOnLayoutListener(mGlobalLayoutListener);
-        }
-    }
-
-    public void showDrawer(View v) {
-        FrameLayout drawer = (FrameLayout) findViewById(R.id.drawer);
-        LayoutParams p = drawer.getLayoutParams();
-        p.height = MessagingPreferences.getDrawerHeight(this);
-        drawer.setLayoutParams(p);
-
-        drawer.addView(v);
     }
 
     @Override
