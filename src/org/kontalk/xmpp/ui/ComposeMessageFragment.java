@@ -19,6 +19,7 @@
 package org.kontalk.xmpp.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
+import static android.content.res.Configuration.KEYBOARD_UNDEFINED;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +81,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ResultReceiver;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
@@ -145,8 +147,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private MenuItem mDeleteThreadMenu;
     private MenuItem mViewContactMenu;
     private MenuItem mCallMenu;
-
-	private boolean mIsKeyboardOpen;
 
 	/** The thread id. */
 	private long threadId = -1;
@@ -327,8 +327,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         });
 
 		Configuration config = getResources().getConfiguration();
-		mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
-		onKeyboardStateChanged(mIsKeyboardOpen);
+		boolean isKeyboardOpen = (config.keyboardHidden == KEYBOARDHIDDEN_NO);
+        onKeyboardStateChanged(isKeyboardOpen);
 
 		processArguments(savedInstanceState);
 
@@ -339,8 +339,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 
-		mIsKeyboardOpen = newConfig.keyboardHidden == KEYBOARDHIDDEN_NO;
-		onKeyboardStateChanged(mIsKeyboardOpen);
+		boolean isKeyboardOpen = (newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
+        onKeyboardStateChanged(isKeyboardOpen);
 	}
 
 	public void reload() {
@@ -756,21 +756,47 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	}
 
 	private void showSmileysPopup(View anchor) {
-	    LayoutInflater inflater = getActivity().getLayoutInflater();
-	    View group = inflater.inflate(R.layout.emoji_selector, null);
+	    InputMethodManager imm = (InputMethodManager) getActivity()
+	        .getSystemService(Context.INPUT_METHOD_SERVICE);
 
-	    GridView grid = (GridView) group.findViewById(R.id.scroller);
-        ImageAdapter adapter = new ImageAdapter(getActivity(), Emoji.emojiGroups);
-        grid.setAdapter(adapter);
-        grid.setOnItemClickListener(mSmileySelectListener);
+	    if (getParentActivity().isDrawerVisible()) {
+	        getParentActivity().hideDrawer();
+	        imm.showSoftInput(mTextEntry, 0);
+	    }
 
-        getParentActivity().showDrawer(group);
+	    else {
 
+            // be sure to close the input method
+    	    if (!imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(), 0, new ResultReceiver(new Handler()) {
+    	        @Override
+    	        protected void onReceiveResult(int resultCode, Bundle resultData) {
+    	            Log.v(TAG, "resultCode = " + resultCode);
+    	            if (resultCode == InputMethodManager.RESULT_HIDDEN ||
+    	                    resultCode == InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
+    	                showSmileysDrawer();
+    	            }
+    	        }
+    	    })) {
+    	        showSmileysDrawer();
+    	    }
+	    }
 	    /*
         if (mSmileyPopup == null)
             mSmileyPopup = MessageUtils.smileysPopup(getActivity(), mSmileySelectListener);
         mSmileyPopup.show(anchor);
         */
+	}
+
+	private void showSmileysDrawer() {
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View group = inflater.inflate(R.layout.emoji_selector, null);
+
+        GridView grid = (GridView) group.findViewById(R.id.scroller);
+        ImageAdapter adapter = new ImageAdapter(getActivity(), Emoji.emojiGroups);
+        grid.setAdapter(adapter);
+        grid.setOnItemClickListener(mSmileySelectListener);
+
+        getParentActivity().showDrawer(group);
 	}
 
 	private void deleteThread() {

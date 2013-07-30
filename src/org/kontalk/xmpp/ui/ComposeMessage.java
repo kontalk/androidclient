@@ -46,6 +46,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -349,11 +350,30 @@ public class ComposeMessage extends SherlockFragmentActivity {
             public void onGlobalLayout(){
                 final View root = getWindow().getDecorView().findViewById(android.R.id.content);
 
-                int heightDiff = root.getRootView().getHeight() -
-                    (root.getHeight() + root.getTop());
+                Log.v(TAG, "root.getRootView().getHeight() = " + root.getRootView().getHeight());
+                Log.v(TAG, "root.getHeight() = " + root.getHeight());
+                Log.v(TAG, "root.getTop() = " + root.getTop());
 
-                if (heightDiff > 0)
+                int heightDiff = root.getRootView().getHeight() - root.getHeight();
+
+                // using ActionBarSherlock, action bar height was not considered in the line above
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
+                    // take out action bar height
+                    heightDiff -= getSupportActionBar().getHeight();
+                    // parent of parent has the right top
+                    heightDiff -= ((View) root.getParent().getParent()).getTop();
+                }
+                else {
+                    heightDiff -= root.getTop();
+                }
+
+                // TODO why 150?
+                if (heightDiff > 150) {
                     MessagingPreferences.setDrawerHeight(ComposeMessage.this, heightDiff);
+
+                    // keyboard has been shown, hide drawer
+                    hideDrawer();
+                }
             }
         };
 
@@ -378,6 +398,19 @@ public class ComposeMessage extends SherlockFragmentActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        if (isDrawerVisible())
+            hideDrawer();
+        else
+            super.onBackPressed();
+    }
+
+    public boolean isDrawerVisible() {
+        FrameLayout drawer = (FrameLayout) findViewById(R.id.drawer);
+        return drawer.getVisibility() == View.VISIBLE;
+    }
+
     public void showDrawer(View v) {
         FrameLayout drawer = (FrameLayout) findViewById(R.id.drawer);
         LayoutParams p = drawer.getLayoutParams();
@@ -385,6 +418,12 @@ public class ComposeMessage extends SherlockFragmentActivity {
         drawer.setLayoutParams(p);
 
         drawer.addView(v);
+        drawer.setVisibility(View.VISIBLE);
+    }
+
+    public void hideDrawer() {
+        FrameLayout drawer = (FrameLayout) findViewById(R.id.drawer);
+        drawer.setVisibility(View.GONE);
     }
 
     @Override
