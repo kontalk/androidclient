@@ -32,7 +32,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.ChatState;
 import org.kontalk.xmpp.R;
@@ -141,9 +140,6 @@ public class ComposeMessageFragment extends SherlockListFragment implements
     private MenuItem mDeleteThreadMenu;
     private MenuItem mViewContactMenu;
     private MenuItem mCallMenu;
-
-	private boolean mIsKeyboardOpen;
-	private boolean mIsLandscape;
 
 	/** The thread id. */
 	private long threadId = -1;
@@ -324,9 +320,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         });
 
 		Configuration config = getResources().getConfiguration();
-		mIsKeyboardOpen = config.keyboardHidden == KEYBOARDHIDDEN_NO;
-		mIsLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
-		onKeyboardStateChanged(mIsKeyboardOpen);
+		onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
 
 		processArguments(savedInstanceState);
 
@@ -337,12 +331,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 
-		mIsKeyboardOpen = newConfig.keyboardHidden == KEYBOARDHIDDEN_NO;
-		boolean isLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
-		if (mIsLandscape != isLandscape) {
-			mIsLandscape = isLandscape;
-		}
-		onKeyboardStateChanged(mIsKeyboardOpen);
+		onKeyboardStateChanged(newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
 	}
 
 	public void reload() {
