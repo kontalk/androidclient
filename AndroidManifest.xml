@@ -21,7 +21,7 @@
       android:versionCode="99"
       android:versionName="3.0"
       android:installLocation="internalOnly">
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="17"/>
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="18"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
