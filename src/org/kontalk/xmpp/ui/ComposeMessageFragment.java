@@ -647,6 +647,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
             Intent i = new Intent(getActivity(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
             i.putExtra(AbstractMessage.MSG_ID, msg.getId());
+            i.putExtra(AbstractMessage.MSG_SENDER, msg.getSender());
             i.setData(Uri.parse(fetchUrl));
             getActivity().startService(i);
 	    }
