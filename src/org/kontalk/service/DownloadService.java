@@ -33,6 +33,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.message.AbstractMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.ui.ConversationList;
+import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
 
@@ -65,7 +66,8 @@ public class DownloadService extends IntentService implements DownloadListener {
     private Notification mCurrentNotification;
     private long mTotalBytes;
 
-    private String messageId;
+    private String mMessageId;
+    private String mPeer;
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
 
@@ -80,7 +82,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             String msgId = queue.get(url);
             if (msgId != null) {
                 // interrupt worker if running
-                if (msgId.equals(messageId)) {
+                if (msgId.equals(mMessageId)) {
                     mDownloadClient.abort();
                     mCanceled = true;
                 }
@@ -126,8 +128,9 @@ public class DownloadService extends IntentService implements DownloadListener {
             // make sure storage directory is present
             MediaStorage.MEDIA_ROOT.mkdirs();
 
-            messageId = intent.getStringExtra(AbstractMessage.MSG_ID);
-            queue.put(url, messageId);
+            mMessageId = intent.getStringExtra(AbstractMessage.MSG_ID);
+            mPeer = intent.getStringExtra(AbstractMessage.MSG_SENDER);
+            queue.put(url, mMessageId);
 
             // download content
             mDownloadClient.downloadAutofilename(url, MediaStorage.MEDIA_ROOT, this);
@@ -137,7 +140,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         }
         finally {
             queue.remove(url);
-            messageId = null;
+            mMessageId = null;
+            mPeer = null;
         }
     }
 
@@ -183,33 +187,37 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         Uri uri = Uri.fromFile(destination);
 
-        // detect mime type if not available
-        if (mime == null)
-            mime = getContentResolver().getType(uri);
+        // notify only if conversation is not open
+        if (!mPeer.equals(MessagingNotification.getPaused())) {
 
-        // create intent for download complete notification
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setDataAndType(uri, mime);
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_DOWNLOAD_OK, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+            // detect mime type if not available
+            if (mime == null)
+                mime = getContentResolver().getType(uri);
 
-        // create notification
-        Notification no = new Notification(R.drawable.icon_stat,
-                getString(R.string.notify_ticker_download_completed),
-                System.currentTimeMillis());
-        no.setLatestEventInfo(getApplicationContext(),
-                getString(R.string.notify_title_download_completed),
-                getString(R.string.notify_text_download_completed), pi);
-        no.flags |= Notification.FLAG_AUTO_CANCEL;
+            // create intent for download complete notification
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(uri, mime);
+            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+                    NOTIFICATION_ID_DOWNLOAD_OK, i, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        // notify!!
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(NOTIFICATION_ID_DOWNLOAD_OK, no);
+            // create notification
+            Notification no = new Notification(R.drawable.icon_stat,
+                    getString(R.string.notify_ticker_download_completed),
+                    System.currentTimeMillis());
+            no.setLatestEventInfo(getApplicationContext(),
+                    getString(R.string.notify_title_download_completed),
+                    getString(R.string.notify_text_download_completed), pi);
+            no.flags |= Notification.FLAG_AUTO_CANCEL;
+
+            // notify!!
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.notify(NOTIFICATION_ID_DOWNLOAD_OK, no);
+        }
 
         // update messages.localUri
         ContentValues values = new ContentValues();
         values.put(Messages.LOCAL_URI, uri.toString());
-        getContentResolver().update(Messages.getUri(messageId), values, null, null);
+        getContentResolver().update(Messages.getUri(mMessageId), values, null, null);
     }
 
     @Override
