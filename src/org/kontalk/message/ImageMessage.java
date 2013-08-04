@@ -47,7 +47,9 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     private static final String[][] MIME_TYPES = {
         { "image/png", "png" },
         { "image/jpeg", "jpg" },
-        { "image/gif", "gif" }
+        { "image/gif", "gif" },
+        // non-standard
+        { "image/jpg", "jpg" }
     };
 
     /** Used only for transporting thumbnail data from polling to storage. */
