@@ -50,7 +50,7 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
 
-    <application android:name="org.kontalk.xmpp.Kontalk"
+    <application android:name=".Kontalk"
         android:label="@string/app_name"
         android:icon="@drawable/icon"
         android:theme="@style/Theme.Light"
