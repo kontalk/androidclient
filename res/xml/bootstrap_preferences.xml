@@ -68,4 +68,15 @@
             android:singleLine="true" android:inputType="phone"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:key="pref_other"
+        android:title="@string/pref_other">
+        <Preference
+            android:key="pref_about"
+            android:title="@string/pref_about">
+            <intent
+             android:targetClass="org.kontalk.ui.AboutActivity"
+             android:targetPackage="org.kontalk" />
+        </Preference>
+    </PreferenceCategory>
+
 </PreferenceScreen>

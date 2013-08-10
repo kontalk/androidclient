@@ -18,6 +18,7 @@
 
 <resources>
     <string name="app_name">Kontalk</string>
+    <string name="app_description">Community-driven instant messaging network</string>
     <string name="service_name">Message Center</string>
     <string name="authenticator_name">Authentication Service</string>
     <string name="sync_service_name">Sync Contacts</string>
@@ -233,5 +234,15 @@
     <string name="revalidate_title">Verification code</string>
     <string name="revalidate_summary">Use this verification code on another device to register with the same phone number.</string>
     <string name="button_retry">Retry</string>
+
+    <string name="pref_other">Other</string>
+    <string name="pref_about">About</string>
+
+    <string name="about_version">%1$s (%2$d)</string>
+
+    <string name="social_twitter">Twitter</string>
+    <string name="social_googleplus">Google Plus</string>
+    <string name="social_facebook">Facebook</string>
+    <string name="social_identica">Identica</string>
 
 </resources>
