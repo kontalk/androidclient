@@ -22,7 +22,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:drawable/status_bar_item_app_background"
-    >
+    android:id="@+id/progress_notification">
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -45,6 +45,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -62,6 +63,9 @@ public class DownloadService extends IntentService implements DownloadListener {
     public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
     public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
 
+    private NotificationCompat.Builder mNotificationBuilder;
+    private NotificationManager mNotificationManager;
+
     // data about the download currently being processed
     private Notification mCurrentNotification;
     private long mTotalBytes;
@@ -77,6 +81,9 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mNotificationManager == null)
+            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
             String url = intent.getData().toString();
             String msgId = queue.get(url);
@@ -145,6 +152,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         }
     }
 
+    // TODO move this a MessagingNotification or to another builder class
+
     public void startForeground(long totalBytes) {
         Log.d(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
@@ -152,22 +161,57 @@ public class DownloadService extends IntentService implements DownloadListener {
         Intent ni = new Intent(getApplicationContext(), ConversationList.class);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_DOWNLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+                NOTIFICATION_ID_DOWNLOADING, ni, 0);
 
-        mCurrentNotification = new Notification(R.drawable.icon_stat,
-                getString(R.string.downloading_attachment), System.currentTimeMillis());
-        mCurrentNotification.contentIntent = pi;
-        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
+        if (mNotificationBuilder == null) {
+            mNotificationBuilder = new NotificationCompat.Builder(getApplicationContext())
+                .setTicker(getString(R.string.downloading_attachment))
+                // HACK this is needed otherwise notification won't be showed
+                .setSmallIcon(R.drawable.icon_stat)
+                .setContentIntent(pi)
+                .setOngoing(true);
+        }
 
-        foregroundNotification(0);
+        foregroundNotification(-1);
         startForeground(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
     }
 
     private void foregroundNotification(int progress) {
-        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setTextViewText(R.id.title, getString(R.string.downloading_attachment));
-        mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
-        mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            mNotificationBuilder
+                .setSmallIcon(R.drawable.icon_stat)
+                .setProgress(100, progress, false)
+                .setContentTitle(getString(R.string.attachment_download))
+                .setContentText(getString(R.string.downloading_attachment));
+
+            if (progress < 0)
+                mNotificationBuilder.setProgress(0, 0, true);
+            else
+                mNotificationBuilder.setProgress(100, progress, false);
+
+            // this is because of the HACK below
+            mCurrentNotification = mNotificationBuilder.build();
+        }
+        else {
+            RemoteViews contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
+            // this should not be needed -- contentView.setOnClickPendingIntent(R.id.progress_notification, null);
+            contentView.setTextViewText(R.id.title, getString(R.string.downloading_attachment));
+            contentView.setTextViewText(R.id.progress_text, (progress < 0) ? "" : String.format("%d%%", progress));
+
+            if (progress < 0)
+                contentView.setProgressBar(R.id.progress_bar, 0, 0, true);
+            else
+                contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
+
+            mNotificationBuilder.setContent(contentView);
+
+            /**
+             * HACK working around bug #30495
+             * @see https://code.google.com/p/android/issues/detail?id=30495
+             */
+            mCurrentNotification = mNotificationBuilder.build();
+            mCurrentNotification.contentView = contentView;
+        }
     }
 
     public void stopForeground() {
@@ -201,17 +245,16 @@ public class DownloadService extends IntentService implements DownloadListener {
                     NOTIFICATION_ID_DOWNLOAD_OK, i, Intent.FLAG_ACTIVITY_NEW_TASK);
 
             // create notification
-            Notification no = new Notification(R.drawable.icon_stat,
-                    getString(R.string.notify_ticker_download_completed),
-                    System.currentTimeMillis());
-            no.setLatestEventInfo(getApplicationContext(),
-                    getString(R.string.notify_title_download_completed),
-                    getString(R.string.notify_text_download_completed), pi);
-            no.flags |= Notification.FLAG_AUTO_CANCEL;
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+            .setSmallIcon(R.drawable.icon_stat)
+            .setContentTitle(getString(R.string.notify_title_download_completed))
+            .setContentText(getString(R.string.notify_text_download_completed))
+            .setTicker(getString(R.string.notify_ticker_download_completed))
+            .setContentIntent(pi)
+            .setAutoCancel(true);
 
             // notify!!
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            nm.notify(NOTIFICATION_ID_DOWNLOAD_OK, no);
+            mNotificationManager.notify(NOTIFICATION_ID_DOWNLOAD_OK, builder.build());
         }
 
         // update messages.localUri
@@ -236,17 +279,16 @@ public class DownloadService extends IntentService implements DownloadListener {
                 NOTIFICATION_ID_DOWNLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // create notification
-        Notification no = new Notification(R.drawable.icon_stat,
-                ticker,
-                System.currentTimeMillis());
-        no.setLatestEventInfo(getApplicationContext(),
-                getString(R.string.notify_title_download_error),
-                text, pi);
-        no.flags |= Notification.FLAG_AUTO_CANCEL;
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+            .setSmallIcon(R.drawable.icon_stat)
+            .setContentTitle(getString(R.string.notify_title_download_error))
+            .setContentText(text)
+            .setTicker(ticker)
+            .setContentIntent(pi)
+            .setAutoCancel(true);
 
         // notify!!
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(NOTIFICATION_ID_DOWNLOAD_ERROR, no);
+        mNotificationManager.notify(NOTIFICATION_ID_DOWNLOAD_ERROR, builder.build());
     }
 
     @Override
@@ -255,8 +297,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
-            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            nm.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
+            mNotificationManager.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
         }
 
         Thread.yield();
