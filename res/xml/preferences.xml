@@ -125,4 +125,15 @@
             android:title="@string/pref_restart_msgcenter"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:key="pref_other"
+        android:title="@string/pref_other">
+        <Preference
+            android:key="pref_about"
+            android:title="@string/pref_about">
+            <intent
+             android:targetClass="org.kontalk.xmpp.ui.AboutActivity"
+             android:targetPackage="org.kontalk.xmpp" />
+        </Preference>
+    </PreferenceCategory>
+
 </PreferenceScreen>
