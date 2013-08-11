@@ -173,7 +173,8 @@ public class DownloadService extends IntentService implements DownloadListener {
                 pi);
         }
 
-        foregroundNotification(-1);
+        // if we don't know the content length yet, start an interminate progress
+        foregroundNotification(totalBytes > 0 ? 0 : -1);
         startForeground(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
     }
 

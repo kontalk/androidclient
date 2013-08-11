@@ -27,6 +27,9 @@ import org.kontalk.xmpp.upload.UploadConnection;
  */
 public interface ProgressListener {
 
+    /** Called when operation is starting (before writeTo happens). */
+    public void start(UploadConnection conn);
+
     /**
      * Called now and then while processing data.
      * Useful for checking the upload progress.

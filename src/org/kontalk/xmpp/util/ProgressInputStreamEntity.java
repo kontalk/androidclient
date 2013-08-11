@@ -41,6 +41,7 @@ public class ProgressInputStreamEntity extends InputStreamEntity {
 
     @Override
     public void writeTo(final OutputStream outstream) throws IOException {
+        mListener.start(mConn);
         super.writeTo(new CountingOutputStream(outstream, mConn, mListener));
     }
 

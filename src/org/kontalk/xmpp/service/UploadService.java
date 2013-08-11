@@ -18,6 +18,10 @@
 
 package org.kontalk.xmpp.service;
 
+/*
+ * TODO instead of using a notification ID per type, use a notification ID per
+ * upload.
+ */
 import static org.kontalk.xmpp.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
 import static org.kontalk.xmpp.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
 
@@ -29,6 +33,7 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.ui.ConversationList;
+import org.kontalk.xmpp.ui.ProgressNotificationBuilder;
 import org.kontalk.xmpp.upload.KontalkBoxUploadConnection;
 import org.kontalk.xmpp.upload.UploadConnection;
 import org.kontalk.xmpp.util.MediaStorage;
@@ -40,8 +45,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 
 /**
@@ -69,6 +74,9 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
     // Intent data is the local file Uri
 
+    private ProgressNotificationBuilder mNotificationBuilder;
+    private NotificationManager mNotificationManager;
+
     // data about the upload currently being processed
     private Notification mCurrentNotification;
     private long mTotalBytes;
@@ -83,6 +91,9 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mNotificationManager == null)
+            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         if (ACTION_UPLOAD_ABORT.equals(intent.getAction())) {
             String filename = intent.getData().toString();
             // TODO check for race conditions on queue
@@ -129,7 +140,10 @@ public class UploadService extends IntentService implements ProgressListener {
             // notify user about upload immediately
             long length = MediaStorage.getLength(this, file);
             Log.v(TAG, "file size is " + length + " bytes");
-            startForeground(length);
+
+            mTotalBytes = length;
+            startForeground(0);
+
             mCanceled = false;
 
             if (mConn == null) {
@@ -165,33 +179,42 @@ public class UploadService extends IntentService implements ProgressListener {
 
     public void startForeground(long totalBytes) {
         Log.d(TAG, "starting foreground progress notification");
-        mTotalBytes = totalBytes;
 
         Intent ni = new Intent(getApplicationContext(), ConversationList.class);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_UPLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mCurrentNotification = new Notification(R.drawable.icon_stat,
-                getString(R.string.sending_message), System.currentTimeMillis());
-        mCurrentNotification.contentIntent = pi;
-        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
+        if (mNotificationBuilder == null) {
+            mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
+                R.layout.progress_notification,
+                getString(R.string.sending_message),
+                R.drawable.icon_stat,
+                pi);
+        }
 
-        foregroundNotification(0);
+        // if we don't know the content length yet, start an interminate progress
+        foregroundNotification(totalBytes > 0 ? 0 : -1);
         startForeground(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
     }
 
     private void foregroundNotification(int progress) {
-        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setTextViewText(R.id.title, getString(R.string.sending_message));
-        mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
-        mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
+        mCurrentNotification = mNotificationBuilder
+            .progress(progress,
+                R.string.attachment_upload,
+                R.string.sending_message)
+            .build();
     }
 
     public void stopForeground() {
         stopForeground(true);
         mCurrentNotification = null;
         mTotalBytes = 0;
+    }
+
+    @Override
+    public void start(UploadConnection conn) {
+        startForeground(mTotalBytes);
     }
 
     public void completed() {
@@ -217,17 +240,17 @@ public class UploadService extends IntentService implements ProgressListener {
                 NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // create notification
-        Notification no = new Notification(R.drawable.icon_stat,
-                ticker,
-                System.currentTimeMillis());
-        no.setLatestEventInfo(getApplicationContext(),
-                getString(R.string.notify_title_upload_error),
-                text, pi);
-        no.flags |= Notification.FLAG_AUTO_CANCEL;
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+            .setSmallIcon(R.drawable.icon_stat)
+            .setContentTitle(getString(R.string.notify_title_upload_error))
+            .setContentText(text)
+            .setTicker(ticker)
+            .setContentIntent(pi)
+            .setAutoCancel(true);
+
 
         // notify!!
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, no);
+        mNotificationManager.notify(NOTIFICATION_ID_UPLOAD_ERROR, builder.build());
     }
 
     @Override
@@ -238,7 +261,7 @@ public class UploadService extends IntentService implements ProgressListener {
             mCanceled = true;
         }
 
-        Log.v(TAG, "bytes = " + bytes);
+        //Log.v(TAG, "bytes = " + bytes);
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
