@@ -62,14 +62,13 @@ import org.kontalk.message.UserPresenceMessage;
 import org.kontalk.message.VCardMessage;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.ComposeMessageFragment;
 import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.MessagingPreferences;
+import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.MediaStorage;
 
 import android.accounts.Account;
@@ -91,10 +90,10 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.google.protobuf.ByteString;
@@ -129,6 +128,9 @@ public class MessageCenterService extends Service
     public static final String MESSAGE_RECEIVED = "org.kontalk.MESSAGE_RECEIVED";
 
     public static final String GCM_REGISTRATION_ID = "org.kontalk.GCM_REGISTRATION_ID";
+
+    private ProgressNotificationBuilder mNotificationBuilder;
+    private NotificationManager mNotificationManager;
 
     private Notification mCurrentNotification;
     private long mTotalBytes;
@@ -201,6 +203,9 @@ public class MessageCenterService extends Service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mNotificationManager == null)
+            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         //Log.d(TAG, "Message Center starting - " + intent);
         boolean execStart = false;
 
@@ -787,40 +792,40 @@ public class MessageCenterService extends Service
     }
 
     public void startForeground(String userId, long totalBytes) {
-        mTotalBytes = totalBytes;
-
-        Intent ni = new Intent(getApplicationContext(), ComposeMessage.class);
-        ni.setAction(ComposeMessage.ACTION_VIEW_USERID);
-        ni.setData(Threads.getUri(userId));
+        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_UPLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mCurrentNotification = new Notification(R.drawable.icon_stat,
-                getResources().getString(R.string.sending_message),
-                System.currentTimeMillis());
-        mCurrentNotification.contentIntent = pi;
-        mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
+        if (mNotificationBuilder == null) {
+            mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
+                R.layout.progress_notification,
+                getString(R.string.sending_message),
+                R.drawable.icon_stat,
+                pi);
+        }
 
-        foregroundNotification(0);
+        // if we don't know the content length yet, start an interminate progress
+        foregroundNotification(totalBytes > 0 ? 0 : -1);
         startForeground(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
     }
 
     private void foregroundNotification(int progress) {
-        mCurrentNotification.contentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.progress_notification);
-        mCurrentNotification.contentView.setTextViewText(R.id.title, getResources().getString(R.string.sending_message));
-        mCurrentNotification.contentView.setTextViewText(R.id.progress_text, String.format("%d%%", progress));
-        mCurrentNotification.contentView.setProgressBar(R.id.progress_bar, 100, progress, false);
+        mCurrentNotification = mNotificationBuilder
+            .progress(progress,
+                R.string.attachment_upload,
+                R.string.sending_message)
+            .build();
     }
 
     public void publishProgress(long bytes) {
         if (mCurrentNotification != null) {
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            nm.cancel(NOTIFICATION_ID_UPLOAD_ERROR);
+            mNotificationManager.cancel(NOTIFICATION_ID_UPLOAD_ERROR);
 
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
-            nm.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
+            mNotificationManager.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
         }
     }
 
@@ -1042,12 +1047,15 @@ public class MessageCenterService extends Service
 
     @Override
     public void starting(ClientThread client, RequestJob job) {
+        Log.d(TAG, "starting foreground progress notification");
+
         // not a plain text message - use progress notification
         if (job instanceof MessageSender) {
             MessageSender msg = (MessageSender) job;
             if (msg.isAsync(this)) {
                 try {
-                    startForeground(msg.getUserId(), msg.getContentLength(this));
+                    mTotalBytes = msg.getContentLength(this);
+                    startForeground(msg.getUserId(), 0);
                 }
                 catch (IOException e) {
                     Log.e(TAG, "error reading message data to send", e);
@@ -1120,17 +1128,17 @@ public class MessageCenterService extends Service
                         NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
 
                 // create notification
-                Notification no = new Notification(R.drawable.icon_stat,
-                        getString(R.string.notify_ticker_upload_error),
-                        System.currentTimeMillis());
-                no.setLatestEventInfo(getApplicationContext(),
-                        getString(R.string.notify_title_upload_error),
-                        getString(R.string.notify_text_upload_error), pi);
-                no.flags |= Notification.FLAG_AUTO_CANCEL;
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
+                    .setSmallIcon(R.drawable.icon_stat)
+                    .setContentTitle(getString(R.string.notify_title_upload_error))
+                    .setContentText(getString(R.string.notify_ticker_upload_error))
+                    .setTicker(getString(R.string.notify_ticker_upload_error))
+                    .setContentIntent(pi)
+                    .setAutoCancel(true);
+
 
                 // notify!!
-                NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                nm.notify(NOTIFICATION_ID_UPLOAD_ERROR, no);
+                mNotificationManager.notify(NOTIFICATION_ID_UPLOAD_ERROR, builder.build());
             }
         }
 

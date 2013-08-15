@@ -183,6 +183,8 @@
     <string name="open_file">Open file</string>
     <string name="msg_msgcenter_restarted">Message center restarted.</string>
     <string name="downloading_attachment">Downloading attachment&#8230;</string>
+    <string name="attachment_download">Attachment download</string>
+    <string name="attachment_upload">Attachment upload</string>
     <string name="seen_moment_ago_label">a moment ago</string>
     <string name="seen_online_label">User is online</string>
     <string name="pref_custom_background">Custom background</string>
