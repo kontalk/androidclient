@@ -266,8 +266,7 @@ public class UploadService extends IntentService implements ProgressListener {
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
-            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            nm.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
+            mNotificationManager.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
         }
 
         Thread.yield();
