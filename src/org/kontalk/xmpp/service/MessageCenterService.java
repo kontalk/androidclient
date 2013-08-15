@@ -1632,6 +1632,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (chatstate != null && !chatstate.getElementName().equals(ChatState.active.name()))
                     return;
 
+                // delayed deliver extension is the first the be processed
+                // because it's used also in delivery receipts
+                PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
+                if (_delay == null)
+                    _delay = m.getExtension("x", "jabber:x:delay");
+
+                Date stamp = null;
+                if (_delay != null) {
+                    if (_delay instanceof DelayInformation) {
+                        stamp = ((DelayInformation) _delay).getStamp();
+                    }
+                    else if (_delay instanceof DelayInfo) {
+                        stamp = ((DelayInfo) _delay).getStamp();
+                    }
+                }
+
+                long serverTimestamp = 0;
+                if (stamp != null)
+                    serverTimestamp = stamp.getTime();
+                else
+                    serverTimestamp = System.currentTimeMillis();
+
                 PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
 
                 // delivery receipt
@@ -1645,19 +1667,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                         // TODO compress this code
                         if (ext instanceof ReceivedServerReceipt) {
-                            long changed;
-                            Date date = ((ReceivedServerReceipt)ext).getTimestamp();
-                            if (date != null)
-                                changed = date.getTime();
-                            else
-                                changed = System.currentTimeMillis();
 
                             // message has been delivered: check if we have previously stored the server id
                             if (msgId > 0) {
                                 ContentValues values = new ContentValues(3);
                                 values.put(Messages.MESSAGE_ID, ext.getId());
                                 values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                                values.put(Messages.STATUS_CHANGED, changed);
+                                values.put(Messages.STATUS_CHANGED, serverTimestamp);
                                 cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
                                     values, selectionOutgoing, null);
 
@@ -1667,7 +1683,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 Uri msg = Messages.getUri(ext.getId());
                                 ContentValues values = new ContentValues(2);
                                 values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                                values.put(Messages.STATUS_CHANGED, changed);
+                                values.put(Messages.STATUS_CHANGED, serverTimestamp);
                                 cr.update(msg, values, selectionOutgoing, null);
                             }
 
@@ -1759,27 +1775,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             Log.e(TAG, "decryption failed", exc);
                         }
                     }
-
-                    // delayed deliver extension
-                    PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
-                    if (_delay == null)
-                        _delay = m.getExtension("x", "jabber:x:delay");
-
-                    Date stamp = null;
-                    if (_delay != null) {
-                        if (_delay instanceof DelayInformation) {
-                            stamp = ((DelayInformation) _delay).getStamp();
-                        }
-                        else if (_delay instanceof DelayInfo) {
-                            stamp = ((DelayInfo) _delay).getStamp();
-                        }
-                    }
-
-                    long serverTimestamp = 0;
-                    if (stamp != null)
-                        serverTimestamp = stamp.getTime();
-                    else
-                        serverTimestamp = System.currentTimeMillis();
 
                     // out of band data
                     File previewFile = null;
