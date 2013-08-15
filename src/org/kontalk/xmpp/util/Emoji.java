@@ -288,6 +288,53 @@ public final class Emoji {
         emojiTheme.put(0x1F461, R.drawable.emoji_sandal);
         emojiTheme.put(0x1F460, R.drawable.emoji_high_heel);
         emojiTheme.put(0x1F462, R.drawable.emoji_boot);
+        emojiTheme.put(0x1F455, R.drawable.emoji_tshirt);
+        emojiTheme.put(0x1F454, R.drawable.emoji_necktie);
+        emojiTheme.put(0x1F457, R.drawable.emoji_dress);
+        emojiTheme.put(0x1F458, R.drawable.emoji_kimono);
+        emojiTheme.put(0x1F459, R.drawable.emoji_bikini);
+        emojiTheme.put(0x1F380, R.drawable.emoji_ribbon);
+        emojiTheme.put(0x1F3A9, R.drawable.emoji_tophat);
+        emojiTheme.put(0x1F451, R.drawable.emoji_crown);
+        emojiTheme.put(0x1F452, R.drawable.emoji_womans_hat);
+        emojiTheme.put(0x1F302, R.drawable.emoji_closed_umbrella);
+        emojiTheme.put(0x1F4BC, R.drawable.emoji_briefcase);
+        emojiTheme.put(0x1F45C, R.drawable.emoji_handbag);
+        emojiTheme.put(0x1F484, R.drawable.emoji_lipstick);
+        emojiTheme.put(0x1F48D, R.drawable.emoji_ring);
+        emojiTheme.put(0x1F48E, R.drawable.emoji_gem);
+        emojiTheme.put(0x2615, R.drawable.emoji_coffee);
+        emojiTheme.put(0x1F375, R.drawable.emoji_tea);
+        emojiTheme.put(0x1F37A, R.drawable.emoji_beer);
+        emojiTheme.put(0x1F37B, R.drawable.emoji_beers);
+        emojiTheme.put(0x1F378, R.drawable.emoji_cocktail);
+        emojiTheme.put(0x1F376, R.drawable.emoji_sake);
+        emojiTheme.put(0x1F374, R.drawable.emoji_fork_and_knife);
+        emojiTheme.put(0x1F354, R.drawable.emoji_hamburger);
+        emojiTheme.put(0x1F35F, R.drawable.emoji_fries);
+        emojiTheme.put(0x1F35D, R.drawable.emoji_spaghetti);
+        emojiTheme.put(0x1F35B, R.drawable.emoji_curry);
+        emojiTheme.put(0x1F371, R.drawable.emoji_bento);
+        emojiTheme.put(0x1F363, R.drawable.emoji_sushi);
+        emojiTheme.put(0x1F359, R.drawable.emoji_rice_ball);
+        emojiTheme.put(0x1F358, R.drawable.emoji_rice_cracker);
+        emojiTheme.put(0x1F35A, R.drawable.emoji_rice);
+        emojiTheme.put(0x1F35C, R.drawable.emoji_ramen);
+        emojiTheme.put(0x1F372, R.drawable.emoji_stew);
+        emojiTheme.put(0x1F35E, R.drawable.emoji_bread);
+        emojiTheme.put(0x1F373, R.drawable.emoji_egg);
+        emojiTheme.put(0x1F362, R.drawable.emoji_oden);
+        emojiTheme.put(0x1F361, R.drawable.emoji_dango);
+        emojiTheme.put(0x1F366, R.drawable.emoji_icecream);
+        emojiTheme.put(0x1F367, R.drawable.emoji_shaved_ice);
+        emojiTheme.put(0x1F382, R.drawable.emoji_birthday);
+        emojiTheme.put(0x1F370, R.drawable.emoji_cake);
+        emojiTheme.put(0x1F34E, R.drawable.emoji_apple);
+        emojiTheme.put(0x1F34A, R.drawable.emoji_tangerine);
+        emojiTheme.put(0x1F349, R.drawable.emoji_watermelon);
+        emojiTheme.put(0x1F353, R.drawable.emoji_strawberry);
+        emojiTheme.put(0x1F346, R.drawable.emoji_eggplant);
+        emojiTheme.put(0x1F345, R.drawable.emoji_tomato);
 
         //emojiTheme.put(0x, R.drawable.emoji_);
 
@@ -655,6 +702,53 @@ public final class Emoji {
             0x1F461,
             0x1F460,
             0x1F462,
+            0x1F455,
+            0x1F454,
+            0x1F457,
+            0x1F458,
+            0x1F459,
+            0x1F380,
+            0x1F3A9,
+            0x1F451,
+            0x1F452,
+            0x1F302,
+            0x1F4BC,
+            0x1F45C,
+            0x1F484,
+            0x1F48D,
+            0x1F48E,
+            0x2615,
+            0x1F375,
+            0x1F37A,
+            0x1F37B,
+            0x1F378,
+            0x1F376,
+            0x1F374,
+            0x1F354,
+            0x1F35F,
+            0x1F35D,
+            0x1F35B,
+            0x1F371,
+            0x1F363,
+            0x1F359,
+            0x1F358,
+            0x1F35A,
+            0x1F35C,
+            0x1F372,
+            0x1F35E,
+            0x1F373,
+            0x1F362,
+            0x1F361,
+            0x1F366,
+            0x1F367,
+            0x1F382,
+            0x1F370,
+            0x1F34E,
+            0x1F34A,
+            0x1F349,
+            0x1F353,
+            0x1F346,
+            0x1F345,
         },
     };
 
