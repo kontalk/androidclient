@@ -199,22 +199,149 @@ public final class Emoji {
         emojiTheme.put(0x1F33E, R.drawable.emoji_ear_of_rice);
         emojiTheme.put(0x1F41A, R.drawable.emoji_shell);
 
+        // GROUP 3: Bell (http://punchdrunker.github.com/iOSEmoji/table_html/bell.html)
+        emojiTheme.put(0x1F38D, R.drawable.emoji_bamboo);
+        emojiTheme.put(0x1F49D, R.drawable.emoji_gift_heart);
+        emojiTheme.put(0x1F38E, R.drawable.emoji_dolls);
+        emojiTheme.put(0x1F392, R.drawable.emoji_school_satchel);
+        emojiTheme.put(0x1F393, R.drawable.emoji_mortar_board);
+        emojiTheme.put(0x1F38F, R.drawable.emoji_flags);
+        emojiTheme.put(0x1F386, R.drawable.emoji_fireworks);
+        emojiTheme.put(0x1F387, R.drawable.emoji_sparkler);
+        emojiTheme.put(0x1F390, R.drawable.emoji_wind_chime);
+        emojiTheme.put(0x1F391, R.drawable.emoji_rice_scene);
+        emojiTheme.put(0x1F383, R.drawable.emoji_jack_o_lantern);
+        emojiTheme.put(0x1F47B, R.drawable.emoji_ghost);
+        emojiTheme.put(0x1F385, R.drawable.emoji_santa);
+        emojiTheme.put(0x1F384, R.drawable.emoji_christmas_tree);
+        emojiTheme.put(0x1F381, R.drawable.emoji_gift);
+        emojiTheme.put(0x1F514, R.drawable.emoji_bell);
+        emojiTheme.put(0x1F389, R.drawable.emoji_tada);
+        emojiTheme.put(0x1F388, R.drawable.emoji_balloon);
+        emojiTheme.put(0x1F4BF, R.drawable.emoji_cd);
+        emojiTheme.put(0x1F4C0, R.drawable.emoji_dvd);
+        emojiTheme.put(0x1F4F7, R.drawable.emoji_camera);
+        emojiTheme.put(0x1F3A5, R.drawable.emoji_movie_camera);
+        emojiTheme.put(0x1F4BB, R.drawable.emoji_computer);
+        emojiTheme.put(0x1F4FA, R.drawable.emoji_tv);
+        emojiTheme.put(0x1F4F1, R.drawable.emoji_iphone);
+        emojiTheme.put(0x1F4E0, R.drawable.emoji_fax);
+        emojiTheme.put(0x260E, R.drawable.emoji_phone);
+        emojiTheme.put(0x1F4BD, R.drawable.emoji_minidisc);
+        emojiTheme.put(0x1F4FC, R.drawable.emoji_vhs);
+        emojiTheme.put(0x1F50A, R.drawable.emoji_speaker);
+        emojiTheme.put(0x1F4E2, R.drawable.emoji_loudspeaker);
+        emojiTheme.put(0x1F4E3, R.drawable.emoji_mega);
+        emojiTheme.put(0x1F4FB, R.drawable.emoji_radio);
+        emojiTheme.put(0x1F4E1, R.drawable.emoji_satellite);
+        emojiTheme.put(0x27BF, R.drawable.emoji_loop);
+        emojiTheme.put(0x1F50D, R.drawable.emoji_mag);
+        emojiTheme.put(0x1F513, R.drawable.emoji_unlock);
+        emojiTheme.put(0x1F512, R.drawable.emoji_lock);
+        emojiTheme.put(0x1F511, R.drawable.emoji_key);
+        emojiTheme.put(0x2702, R.drawable.emoji_scissors);
+        emojiTheme.put(0x1F528, R.drawable.emoji_hammer);
+        emojiTheme.put(0x1F4A1, R.drawable.emoji_bulb);
+        emojiTheme.put(0x1F4F2, R.drawable.emoji_calling);
+        emojiTheme.put(0x1F4E9, R.drawable.emoji_incoming_envelope);
+        emojiTheme.put(0x1F4EB, R.drawable.emoji_mailbox);
+        emojiTheme.put(0x1F4EE, R.drawable.emoji_postbox);
+        emojiTheme.put(0x1F6C0, R.drawable.emoji_bath);
+        emojiTheme.put(0x1F6BD, R.drawable.emoji_toilet);
+        emojiTheme.put(0x1F4BA, R.drawable.emoji_seat);
+        emojiTheme.put(0x1F4B0, R.drawable.emoji_moneybag);
+        emojiTheme.put(0x1F531, R.drawable.emoji_trident);
+        emojiTheme.put(0x1F6AC, R.drawable.emoji_smoking);
+        emojiTheme.put(0x1F4A3, R.drawable.emoji_bomb);
+        emojiTheme.put(0x1F52B, R.drawable.emoji_gun);
+        emojiTheme.put(0x1F48A, R.drawable.emoji_pill);
+        emojiTheme.put(0x1F489, R.drawable.emoji_syringe);
+        emojiTheme.put(0x1F3C8, R.drawable.emoji_rugby_football);
+        emojiTheme.put(0x1F3C0, R.drawable.emoji_basketball);
+        emojiTheme.put(0x26BD, R.drawable.emoji_soccer);
+        emojiTheme.put(0x26BE, R.drawable.emoji_baseball);
+        emojiTheme.put(0x1F3BE, R.drawable.emoji_tennis);
+        emojiTheme.put(0x26F3, R.drawable.emoji_golf);
+        emojiTheme.put(0x1F3B1, R.drawable.emoji_8ball);
+        emojiTheme.put(0x1F3CA, R.drawable.emoji_swimmer);
+        emojiTheme.put(0x1F3C4, R.drawable.emoji_surfer);
+        emojiTheme.put(0x1F3BF, R.drawable.emoji_ski);
+        emojiTheme.put(0x2660, R.drawable.emoji_spades);
+        emojiTheme.put(0x2665, R.drawable.emoji_hearts);
+        emojiTheme.put(0x2663, R.drawable.emoji_clubs);
+        emojiTheme.put(0x2666, R.drawable.emoji_diamonds);
+        emojiTheme.put(0x1F3C6, R.drawable.emoji_trophy);
+        emojiTheme.put(0x1F47E, R.drawable.emoji_space_invader);
+        emojiTheme.put(0x1F3AF, R.drawable.emoji_dart);
+        emojiTheme.put(0x1F004, R.drawable.emoji_mahjong);
+        emojiTheme.put(0x1F3AC, R.drawable.emoji_clapper);
+        emojiTheme.put(0x1F4DD, R.drawable.emoji_memo);
+        emojiTheme.put(0x1F4D6, R.drawable.emoji_book);
+        emojiTheme.put(0x1F3A8, R.drawable.emoji_art);
+        emojiTheme.put(0x1F3A4, R.drawable.emoji_microphone);
+        emojiTheme.put(0x1F3A7, R.drawable.emoji_headphones);
+        emojiTheme.put(0x1F3BA, R.drawable.emoji_trumpet);
+        emojiTheme.put(0x1F3B7, R.drawable.emoji_saxophone);
+        emojiTheme.put(0x1F3B8, R.drawable.emoji_guitar);
+        emojiTheme.put(0x303D, R.drawable.emoji_part_alternation_mark);
+        emojiTheme.put(0x1F45F, R.drawable.emoji_shoe);
+        emojiTheme.put(0x1F461, R.drawable.emoji_sandal);
+        emojiTheme.put(0x1F460, R.drawable.emoji_high_heel);
+        emojiTheme.put(0x1F462, R.drawable.emoji_boot);
+        emojiTheme.put(0x1F455, R.drawable.emoji_tshirt);
+        emojiTheme.put(0x1F454, R.drawable.emoji_necktie);
+        emojiTheme.put(0x1F457, R.drawable.emoji_dress);
+        emojiTheme.put(0x1F458, R.drawable.emoji_kimono);
+        emojiTheme.put(0x1F459, R.drawable.emoji_bikini);
+        emojiTheme.put(0x1F380, R.drawable.emoji_ribbon);
+        emojiTheme.put(0x1F3A9, R.drawable.emoji_tophat);
+        emojiTheme.put(0x1F451, R.drawable.emoji_crown);
+        emojiTheme.put(0x1F452, R.drawable.emoji_womans_hat);
+        emojiTheme.put(0x1F302, R.drawable.emoji_closed_umbrella);
+        emojiTheme.put(0x1F4BC, R.drawable.emoji_briefcase);
+        emojiTheme.put(0x1F45C, R.drawable.emoji_handbag);
+        emojiTheme.put(0x1F484, R.drawable.emoji_lipstick);
+        emojiTheme.put(0x1F48D, R.drawable.emoji_ring);
+        emojiTheme.put(0x1F48E, R.drawable.emoji_gem);
+        emojiTheme.put(0x2615, R.drawable.emoji_coffee);
+        emojiTheme.put(0x1F375, R.drawable.emoji_tea);
+        emojiTheme.put(0x1F37A, R.drawable.emoji_beer);
+        emojiTheme.put(0x1F37B, R.drawable.emoji_beers);
+        emojiTheme.put(0x1F378, R.drawable.emoji_cocktail);
+        emojiTheme.put(0x1F376, R.drawable.emoji_sake);
+        emojiTheme.put(0x1F374, R.drawable.emoji_fork_and_knife);
+        emojiTheme.put(0x1F354, R.drawable.emoji_hamburger);
+        emojiTheme.put(0x1F35F, R.drawable.emoji_fries);
+        emojiTheme.put(0x1F35D, R.drawable.emoji_spaghetti);
+        emojiTheme.put(0x1F35B, R.drawable.emoji_curry);
+        emojiTheme.put(0x1F371, R.drawable.emoji_bento);
+        emojiTheme.put(0x1F363, R.drawable.emoji_sushi);
+        emojiTheme.put(0x1F359, R.drawable.emoji_rice_ball);
+        emojiTheme.put(0x1F358, R.drawable.emoji_rice_cracker);
+        emojiTheme.put(0x1F35A, R.drawable.emoji_rice);
+        emojiTheme.put(0x1F35C, R.drawable.emoji_ramen);
+        emojiTheme.put(0x1F372, R.drawable.emoji_stew);
+        emojiTheme.put(0x1F35E, R.drawable.emoji_bread);
+        emojiTheme.put(0x1F373, R.drawable.emoji_egg);
+        emojiTheme.put(0x1F362, R.drawable.emoji_oden);
+        emojiTheme.put(0x1F361, R.drawable.emoji_dango);
+        emojiTheme.put(0x1F366, R.drawable.emoji_icecream);
+        emojiTheme.put(0x1F367, R.drawable.emoji_shaved_ice);
+        emojiTheme.put(0x1F382, R.drawable.emoji_birthday);
+        emojiTheme.put(0x1F370, R.drawable.emoji_cake);
+        emojiTheme.put(0x1F34E, R.drawable.emoji_apple);
+        emojiTheme.put(0x1F34A, R.drawable.emoji_tangerine);
+        emojiTheme.put(0x1F349, R.drawable.emoji_watermelon);
+        emojiTheme.put(0x1F353, R.drawable.emoji_strawberry);
+        emojiTheme.put(0x1F346, R.drawable.emoji_eggplant);
+        emojiTheme.put(0x1F345, R.drawable.emoji_tomato);
+
         //emojiTheme.put(0x, R.drawable.emoji_);
 
         // UNSORTED
         emojiTheme.put(0x1F455, R.drawable.emoji_tshirt);
         emojiTheme.put(0x1F45F, R.drawable.emoji_shoe);
-        emojiTheme.put(0x1F4F7, R.drawable.emoji_camera);
         emojiTheme.put(0x260E, R.drawable.emoji_telephone);
-        emojiTheme.put(0x1F4F1, R.drawable.emoji_iphone);
-        emojiTheme.put(0x1F4E0, R.drawable.emoji_fax);
-        emojiTheme.put(0x1F4BB, R.drawable.emoji_computer);
-        emojiTheme.put(0x1F3BF, R.drawable.emoji_ski);
-        emojiTheme.put(0x26F3, R.drawable.emoji_golf);
-        emojiTheme.put(0x1F3BE, R.drawable.emoji_tennis);
-        emojiTheme.put(0x26BE, R.drawable.emoji_baseball);
-        emojiTheme.put(0x1F3C4, R.drawable.emoji_surfer);
-        emojiTheme.put(0x26BD, R.drawable.emoji_soccer);
         emojiTheme.put(0x1F41F, R.drawable.emoji_fish);
         emojiTheme.put(0x1F434, R.drawable.emoji_horse);
         emojiTheme.put(0x1F697, R.drawable.emoji_car);
@@ -483,6 +610,145 @@ public final class Emoji {
             0x1F335,
             0x1F33E,
             0x1F41A,
+        /*
+        },
+        {
+        */
+            0x1F38D,
+            0x1F49D,
+            0x1F38E,
+            0x1F392,
+            0x1F393,
+            0x1F38F,
+            0x1F386,
+            0x1F387,
+            0x1F390,
+            0x1F391,
+            0x1F383,
+            0x1F47B,
+            0x1F385,
+            0x1F384,
+            0x1F381,
+            0x1F514,
+            0x1F389,
+            0x1F388,
+            0x1F4BF,
+            0x1F4C0,
+            0x1F4F7,
+            0x1F3A5,
+            0x1F4BB,
+            0x1F4FA,
+            0x1F4F1,
+            0x1F4E0,
+            0x260E,
+            0x1F4BD,
+            0x1F4FC,
+            0x1F50A,
+            0x1F4E2,
+            0x1F4E3,
+            0x1F4FB,
+            0x1F4E1,
+            0x27BF,
+            0x1F50D,
+            0x1F513,
+            0x1F512,
+            0x1F511,
+            0x2702,
+            0x1F528,
+            0x1F4A1,
+            0x1F4F2,
+            0x1F4E9,
+            0x1F4EB,
+            0x1F4EE,
+            0x1F6C0,
+            0x1F6BD,
+            0x1F4BA,
+            0x1F4B0,
+            0x1F531,
+            0x1F6AC,
+            0x1F4A3,
+            0x1F52B,
+            0x1F48A,
+            0x1F489,
+            0x1F3C8,
+            0x1F3C0,
+            0x26BD,
+            0x26BE,
+            0x1F3BE,
+            0x26F3,
+            0x1F3B1,
+            0x1F3CA,
+            0x1F3C4,
+            0x1F3BF,
+            0x2660,
+            0x2665,
+            0x2663,
+            0x2666,
+            0x1F3C6,
+            0x1F47E,
+            0x1F3AF,
+            0x1F004,
+            0x1F3AC,
+            0x1F4DD,
+            0x1F4D6,
+            0x1F3A8,
+            0x1F3A4,
+            0x1F3A7,
+            0x1F3BA,
+            0x1F3B7,
+            0x1F3B8,
+            0x303D,
+            0x1F45F,
+            0x1F461,
+            0x1F460,
+            0x1F462,
+            0x1F455,
+            0x1F454,
+            0x1F457,
+            0x1F458,
+            0x1F459,
+            0x1F380,
+            0x1F3A9,
+            0x1F451,
+            0x1F452,
+            0x1F302,
+            0x1F4BC,
+            0x1F45C,
+            0x1F484,
+            0x1F48D,
+            0x1F48E,
+            0x2615,
+            0x1F375,
+            0x1F37A,
+            0x1F37B,
+            0x1F378,
+            0x1F376,
+            0x1F374,
+            0x1F354,
+            0x1F35F,
+            0x1F35D,
+            0x1F35B,
+            0x1F371,
+            0x1F363,
+            0x1F359,
+            0x1F358,
+            0x1F35A,
+            0x1F35C,
+            0x1F372,
+            0x1F35E,
+            0x1F373,
+            0x1F362,
+            0x1F361,
+            0x1F366,
+            0x1F367,
+            0x1F382,
+            0x1F370,
+            0x1F34E,
+            0x1F34A,
+            0x1F349,
+            0x1F353,
+            0x1F346,
+            0x1F345,
         },
     };
 
