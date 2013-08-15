@@ -24,6 +24,7 @@ package org.kontalk.xmpp.client;
  * Defines a server address and features.
  * @author Daniele Ricci
  * @version 1.0
+ * TODO http port is deprecated
  */
 public class EndpointServer {
     /** Default Kontalk client port. */
