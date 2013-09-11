@@ -376,6 +376,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 		Log.v(TAG, "sending binary content: " + uri);
 		Uri newMsg = null;
         File previewFile = null;
+        long length = -1;
 
 		try {
 		    // TODO convert to thread (?)
@@ -394,6 +395,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			}
 
 			// save to local storage
+			length = MediaStorage.getLength(getActivity(), uri);
             ContentValues values = new ContentValues();
 			// must supply a message ID...
 			values.put(Messages.MESSAGE_ID, msgId);
@@ -405,7 +407,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 			values.put(Messages.STATUS, Messages.STATUS_SENDING);
 			values.put(Messages.LOCAL_URI, uri.toString());
-            values.put(Messages.LENGTH, MediaStorage.getLength(getActivity(), uri));
+            values.put(Messages.LENGTH, length);
 			if (previewFile != null)
 				values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
 			newMsg = getActivity().getContentResolver().insert(
@@ -436,7 +438,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 			// FIXME do not encrypt binary messages for now
 			String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
 			MessageCenterService.sendBinaryMessage(getActivity(),
-			    userId, mime, uri, previewPath, ContentUris.parseId(newMsg));
+			    userId, mime, uri, length, previewPath, ContentUris.parseId(newMsg));
 		}
 		else {
 			getActivity().runOnUiThread(new Runnable() {

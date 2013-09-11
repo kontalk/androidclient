@@ -748,7 +748,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.LOCAL_URI,
                 Messages.FETCH_URL,
                 Messages.PREVIEW_PATH,
-                Messages.ENCRYPT_KEY
+                Messages.ENCRYPT_KEY,
+                Messages.LENGTH
             },
             filter.toString(),
             null, Messages._ID);
@@ -762,6 +763,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String fetchUrl = c.getString(5);
             String previewPath = c.getString(6);
             String key = c.getString(7);
+            long length = c.getLong(8);
 
             // media message encountered and no upload service available - delay message
             if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
@@ -775,6 +777,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             b.putString("org.kontalk.message.mime", mime);
             b.putString("org.kontalk.message.toUser", userId);
             b.putString("org.kontalk.message.encryptKey", key);
+            b.putLong("org.kontalk.message.length", length);
 
             // message has already been uploaded - just send media
             if (fetchUrl != null) {
@@ -937,8 +940,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             // add download url if present
-            if (fetchUrl != null)
-                m.addExtension(new OutOfBandData(fetchUrl, mime));
+            if (fetchUrl != null) {
+                // in this case we will need the length too
+                long length = data.getLong("org.kontalk.message.length");
+                m.addExtension(new OutOfBandData(fetchUrl, mime, length));
+            }
 
             // received receipt
             String serverId = data.getString("org.kontalk.message.ack");
@@ -1177,26 +1183,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a binary message. */
-    public static void sendBinaryMessage(final Context context, String userId, String mime, Uri localUri, String previewPath, long msgId) {
+    public static void sendBinaryMessage(final Context context, String userId, String mime, Uri localUri, long length, String previewPath, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
 
     public static void sendUploadedMedia(final Context context, String userId,
-            String mime, Uri localUri, String previewPath, String fetchUrl, long msgId) {
+            String mime, Uri localUri, long length, String previewPath, String fetchUrl, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
+        i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
@@ -1784,7 +1792,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         OutOfBandData media = (OutOfBandData) _media;
                         mime = media.getMime();
                         fetchUrl = media.getUrl();
-                        length = -1;
+                        length = media.getLength();
 
                         // bits-of-binary for preview
                         PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);

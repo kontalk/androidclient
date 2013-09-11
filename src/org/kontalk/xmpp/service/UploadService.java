@@ -163,7 +163,7 @@ public class UploadService extends IntentService implements ProgressListener {
             MessagesProvider.uploaded(this, msgId, mediaUrl);
 
             // send message with fetch url to server
-            MessageCenterService.sendUploadedMedia(this, userId, mime, file, previewPath, mediaUrl, msgId);
+            MessageCenterService.sendUploadedMedia(this, userId, mime, file, length, previewPath, mediaUrl, msgId);
 
             // end operations
             completed();

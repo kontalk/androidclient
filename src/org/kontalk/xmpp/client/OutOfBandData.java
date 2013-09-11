@@ -16,14 +16,16 @@ public class OutOfBandData implements PacketExtension {
 
     private final String mUrl;
     private final String mMime;
+    private final long mLength;
 
     public OutOfBandData(String url) {
-        this(url, null);
+        this(url, null, -1);
     }
 
-    public OutOfBandData(String url, String mime) {
+    public OutOfBandData(String url, String mime, long length) {
         mUrl = url;
         mMime = mime;
+        mLength = length;
     }
 
     @Override
@@ -44,17 +46,24 @@ public class OutOfBandData implements PacketExtension {
         return mMime;
     }
 
+    public long getLength() {
+        return mLength;
+    }
+
     @Override
     public String toXML() {
         /*
   <x xmlns='jabber:x:oob'>
-    <url type='image/png'>http://prime.kontalk.net/media/filename_or_hash</url>
+    <url type='image/png' length='2034782'>http://prime.kontalk.net/media/filename_or_hash</url>
   </x>
          */
         StringBuilder xml = new StringBuilder();
         xml.append(String.format("<%s xmlns='%s'><url", ELEMENT_NAME, NAMESPACE));
         if (mMime != null)
             xml.append(String.format(" type='%s'", mMime));
+
+        if (mLength >= 0)
+            xml.append(String.format(" length='%d'", mLength));
 
         xml
             .append(">")
@@ -69,6 +78,7 @@ public class OutOfBandData implements PacketExtension {
         @Override
         public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
             String url = null, mime = null;
+            long length = -1;
             boolean in_url = false, done = false;
 
             while (!done)
@@ -80,6 +90,13 @@ public class OutOfBandData implements PacketExtension {
                     if ("url".equals(parser.getName())) {
                         in_url = true;
                         mime = parser.getAttributeValue(null, "type");
+                        String _length = parser.getAttributeValue(null, "length");
+                        try {
+                            length = Long.parseLong(_length);
+                        }
+                        catch (Exception e) {
+                            // ignored
+                        }
                     }
 
                 }
@@ -95,7 +112,7 @@ public class OutOfBandData implements PacketExtension {
             }
 
             if (url != null)
-                return new OutOfBandData(url, mime);
+                return new OutOfBandData(url, mime, length);
             else
                 return null;
         }
