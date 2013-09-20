@@ -189,7 +189,7 @@ public class UploadService extends IntentService implements ProgressListener {
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
                 R.layout.progress_notification,
                 getString(R.string.sending_message),
-                R.drawable.icon_stat,
+                R.drawable.stat_notify,
                 pi);
         }
 
@@ -241,7 +241,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
         // create notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
-            .setSmallIcon(R.drawable.icon_stat)
+            .setSmallIcon(R.drawable.stat_notify)
             .setContentTitle(getString(R.string.notify_title_upload_error))
             .setContentText(text)
             .setTicker(ticker)
