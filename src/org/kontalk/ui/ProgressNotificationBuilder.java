@@ -60,7 +60,7 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
      */
     public ProgressNotificationBuilder progress(int progress, int contentTitle, int contentText) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            this.setSmallIcon(R.drawable.icon_stat)
+            this.setSmallIcon(R.drawable.stat_notify)
                 .setProgress(100, progress, false)
                 .setContentTitle(mContext.getString(contentTitle))
                 .setContentText(mContext.getString(contentText));

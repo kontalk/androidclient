@@ -311,7 +311,7 @@ public class MessagingNotification {
             }
 
             builder.setNumber(unread);
-            builder.setSmallIcon(R.drawable.icon_stat);
+            builder.setSmallIcon(R.drawable.stat_notify);
 
             builder.setTicker(ticker);
             builder.setContentTitle(title);
@@ -356,7 +356,7 @@ public class MessagingNotification {
                     builder.setLargeIcon(avatar.getBitmap());
             }
             builder.setNumber(accumulator.unreadCount);
-            builder.setSmallIcon(R.drawable.icon_stat);
+            builder.setSmallIcon(R.drawable.stat_notify);
             builder.setContentTitle(accumulator.getTitle());
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());

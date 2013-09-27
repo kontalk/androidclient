@@ -801,7 +801,7 @@ public class MessageCenterService extends Service
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
                 R.layout.progress_notification,
                 getString(R.string.sending_message),
-                R.drawable.icon_stat,
+                R.drawable.stat_notify,
                 pi);
         }
 
@@ -1129,7 +1129,7 @@ public class MessageCenterService extends Service
 
                 // create notification
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
-                    .setSmallIcon(R.drawable.icon_stat)
+                    .setSmallIcon(R.drawable.stat_notify)
                     .setContentTitle(getString(R.string.notify_title_upload_error))
                     .setContentText(getString(R.string.notify_ticker_upload_error))
                     .setTicker(getString(R.string.notify_ticker_upload_error))
