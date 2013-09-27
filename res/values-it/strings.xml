@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
 
@@ -18,6 +18,7 @@
 
 <resources>
     <string name="app_name">Kontalk</string>
+    <string name="app_description">Rete di messaggistica istantanea gestita dalla comunità</string>
     <string name="service_name">Centro messaggi</string>
     <string name="authenticator_name">Servizio di autenticazione</string>
     <string name="sync_service_name">Sincronizzazione contatti</string>
@@ -182,6 +183,8 @@
     <string name="open_file">Apri file</string>
     <string name="msg_msgcenter_restarted">Centro messaggi riavviato.</string>
     <string name="downloading_attachment">Download in corso&#8230;</string>
+    <string name="attachment_download">Download allegato</string>
+    <string name="attachment_upload">Invio allegato</string>
     <string name="seen_moment_ago_label">un momento fa</string>
     <string name="seen_online_label">Utente online</string>
     <string name="pref_custom_background">Sfondo personalizzato</string>
@@ -218,4 +221,16 @@
     <string name="warning_offline_mode">Modalità offline attiva. I messaggi saranno inviati quando tornerai online.</string>
     <string name="going_offline">Entro in modalità offline.</string>
     <string name="going_online">Entro in modalità online.</string>
+    <string name="pref_revalidate">Richiedi codice di verifica</string>
+    <string name="pref_title_revalidate">Richiedi un nuovo codice di verifica per registrare un altro dispositivo con questo numero</string>
+    <string name="revalidate_title">Codice di verifica</string>
+    <string name="revalidate_summary">Usa questo codice di verifica su un altro dispositivo per registrarti con lo stesso numero di telefono.</string>
+    <string name="button_retry">Riprova</string>
+    <string name="pref_other">Altro</string>
+    <string name="pref_about">Info</string>
+    <string name="about_version">%1$s (%2$d)</string>
+    <string name="social_twitter">Twitter</string>
+    <string name="social_googleplus">Google Plus</string>
+    <string name="social_facebook">Facebook</string>
+    <string name="social_identica">Identica</string>
 </resources>
