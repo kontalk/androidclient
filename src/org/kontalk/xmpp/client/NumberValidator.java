@@ -377,8 +377,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             try {
                 String userId = MessageUtils.sha1(mPhone);
                 // TODO what in name and comment fields here?
-                mKeyRing = mKey.store(mContext, "TEST",
-                    userId + '@' + mServer.getNetwork(), "NO COMMENT",
+                mKeyRing = mKey.store(userId, mServer.getNetwork(),
                     // TODO should we ask passphrase to the user?
                     ((Kontalk)mContext.getApplicationContext()).getCachedPassphrase());
                 publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);

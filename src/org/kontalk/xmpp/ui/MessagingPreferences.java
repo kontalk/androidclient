@@ -117,6 +117,20 @@ public final class MessagingPreferences extends PreferenceActivity {
             }
         });
 
+        // regenerate key pair
+        final Preference regenKeyPair = findPreference("pref_regenerate_keypair");
+        regenKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                // TODO take this out after implementing foreground notification
+                Toast.makeText(MessagingPreferences.this, R.string.msg_generating_keypair,
+                    Toast.LENGTH_LONG).show();
+
+                MessageCenterService.regenerateKeyPair(getApplicationContext());
+                return true;
+            }
+        });
+
         // use custom background
         final Preference customBg = findPreference("pref_custom_background");
         customBg.setOnPreferenceClickListener(new OnPreferenceClickListener() {

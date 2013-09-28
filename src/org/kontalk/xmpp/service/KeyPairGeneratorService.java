@@ -6,7 +6,10 @@ import java.lang.ref.WeakReference;
 import org.kontalk.xmpp.crypto.PersonalKey;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -15,12 +18,12 @@ import android.util.Log;
 /** Generates a key pair in the background. */
 public class KeyPairGeneratorService extends Service {
 
-    // FIXME 1024 bits DSA/ElGamal? Are you kidding me?
-    private static final int DEFAULT_KEY_SIZE = 1024;
+    private static final int DEFAULT_KEY_SIZE = 512;
 
     public static final String ACTION_GENERATE = "org.kontalk.keypair.GENERATE";
 
     public static final String EXTRA_KEY = "org.kontalk.keypair.KEY";
+    public static final String EXTRA_FOREGROUND = "org.kontalk.keypair.FOREGROUND";
 
     private GeneratorThread mThread;
     private volatile PersonalKey mKey;
@@ -36,6 +39,9 @@ public class KeyPairGeneratorService extends Service {
         if (ACTION_GENERATE.equals(action)) {
             // start the keypair generator
             if (mThread == null) {
+                if (intent.getBooleanExtra(EXTRA_FOREGROUND, false))
+                    startForeground();
+
                 mThread = new GeneratorThread(this);
                 mThread.start();
             }
@@ -52,6 +58,10 @@ public class KeyPairGeneratorService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void startForeground() {
+        // TODO startForeground(...)
     }
 
     private void broadcastKey() {
@@ -87,6 +97,36 @@ public class KeyPairGeneratorService extends Service {
                 }
             }
         }
+    }
+
+    public interface PersonalKeyRunnable {
+        public void run(PersonalKey key);
+    }
+
+    public final static class KeyGeneratedReceiver extends BroadcastReceiver {
+        private final Handler handler;
+        private final PersonalKeyRunnable action;
+
+        public KeyGeneratedReceiver(Handler handler, PersonalKeyRunnable action) {
+            this.handler = handler;
+            this.action = action;
+        }
+
+        @Override
+        public void onReceive(Context context, final Intent intent) {
+            if (KeyPairGeneratorService.ACTION_GENERATE.equals(intent.getAction())) {
+                // we can stop the service now
+                context.stopService(new Intent(context, KeyPairGeneratorService.class));
+
+                handler.post(new Runnable() {
+                    public void run() {
+                        PersonalKey key = intent.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
+                        action.run(key);
+                    }
+                });
+            }
+        }
+
     }
 
 }

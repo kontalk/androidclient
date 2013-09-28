@@ -43,7 +43,6 @@ import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBu
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -71,7 +70,13 @@ public class PersonalKey implements Parcelable {
         return mPair.signKey;
     }
 
-    public PGPKeyPairRing store(Context context, String name, String email, String comment, String passphrase) throws PGPException {
+    public PGPKeyPairRing store(String userId, String network, String passphrase) throws PGPException {
+        return store("TEST",
+            userId + '@' + network, "NO COMMENT",
+            passphrase);
+    }
+
+    public PGPKeyPairRing store(String name, String email, String comment, String passphrase) throws PGPException {
         // name[ (comment)] <[email]>
         StringBuilder userid = new StringBuilder(name);
 

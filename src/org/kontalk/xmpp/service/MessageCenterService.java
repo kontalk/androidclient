@@ -21,11 +21,15 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Registration;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.ChatState;
+import org.jivesoftware.smackx.Form;
+import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.packet.ChatStateExtension;
+import org.jivesoftware.smackx.packet.DataForm;
 import org.jivesoftware.smackx.packet.DelayInfo;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.DiscoverInfo;
@@ -54,6 +58,7 @@ import org.kontalk.xmpp.client.SubscribePublicKey;
 import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.ImageMessage;
@@ -61,6 +66,8 @@ import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.UsersProvider;
+import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
+import org.kontalk.xmpp.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.MessagingPreferences;
@@ -70,12 +77,15 @@ import org.kontalk.xmpp.util.RandomString;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.ConnectivityManager;
@@ -93,6 +103,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
 
@@ -139,6 +150,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to request a last activity.
      */
     public static final String ACTION_LAST_ACTIVITY = "org.kontalk.action.LAST_ACTIVITY";
+
+    /**
+     * Commence key pair regeneration.
+     * {@link KeyPairGeneratorService} service will be started to generate the
+     * key pair. After that, we will send the public key to the server for
+     * verification and signature. Once the server returns the signed public
+     * key, it will be installed in the default account.
+     */
+    public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
 
     // common parameters
     /** connect to custom server -- TODO not used yet */
@@ -199,11 +219,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Supported upload services. */
     private Map<String, String> mUploadServices;
 
+    /** Service handler. */
+    private Handler mHandler;
+
     /** Idle handler. */
     private IdleConnectionHandler mIdleHandler;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
     private Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
+
+    private RegenerateKeyPairListener mKeyPairRegenerator;
 
     private static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
@@ -313,6 +338,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         thread.start();
 
         mIdleHandler = new IdleConnectionHandler(this, thread.getLooper());
+        mHandler = new Handler();
     }
 
     private void sendPacket(Packet packet) {
@@ -382,6 +408,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             new DisconnectThread(mConnection).start();
             mConnection = null;
         }
+
+        // stop any key pair regeneration service
+        endKeyPairRegeneration();
     }
 
     private static final class AbortThread extends Thread {
@@ -476,6 +505,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
                 else
                     setPushRegistrationId(regId);
+            }
+
+            else if (ACTION_REGENERATE_KEYPAIR.equals(action)) {
+                beginKeyPairRegeneration();
             }
 
             else if (ACTION_CONNECTED.equals(action)) {
@@ -1069,6 +1102,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return null;
     }
 
+    private void beginKeyPairRegeneration() {
+        if (mKeyPairRegenerator == null)
+            mKeyPairRegenerator = new RegenerateKeyPairListener();
+    }
+
+    private void endKeyPairRegeneration() {
+        if (mKeyPairRegenerator != null) {
+            mKeyPairRegenerator.abort();
+            mKeyPairRegenerator = null;
+        }
+    }
+
     /** Checks for network availability. */
     public static boolean isNetworkConnectionAvailable(Context context) {
         final ConnectivityManager cm = (ConnectivityManager) context
@@ -1208,6 +1253,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
+        context.startService(i);
+    }
+
+    public static void regenerateKeyPair(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
+        context.startService(i);
+    }
+
+    public static void requestConnectionStatus(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_CONNECTED);
         context.startService(i);
     }
 
@@ -1889,6 +1946,198 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                 }
             }
+        }
+    }
+
+    /** Listener and manager for a key pair regeneration cycle. */
+    private final class RegenerateKeyPairListener implements PacketListener {
+        private BroadcastReceiver mKeyReceiver, mConnReceiver;
+        private LocalBroadcastManager mLocalBroadcast;
+        private PGPKeyPairRing mKeyRing;
+        private Account mAccount;
+
+        public RegenerateKeyPairListener() {
+            mLocalBroadcast = LocalBroadcastManager.getInstance(MessageCenterService.this);
+
+            setupKeyPairReceiver();
+            setupConnectedReceiver();
+
+            Intent i = new Intent(getApplicationContext(), KeyPairGeneratorService.class);
+            i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
+            i.putExtra(KeyPairGeneratorService.EXTRA_FOREGROUND, true);
+            startService(i);
+        }
+
+        public void abort() {
+            if (mKeyReceiver != null) {
+                mLocalBroadcast.unregisterReceiver(mKeyReceiver);
+                mKeyReceiver = null;
+            }
+
+            if (mConnReceiver != null) {
+                mLocalBroadcast.unregisterReceiver(mConnReceiver);
+                mConnReceiver = null;
+            }
+        }
+
+        private Packet prepareKeyPacket() {
+            Registration iq = new Registration();
+            iq.setType(IQ.Type.SET);
+            iq.setTo(mConnection.getServiceName());
+            Form form = new Form(Form.TYPE_SUBMIT);
+
+            FormField type = new FormField("FORM_TYPE");
+            type.setType(FormField.TYPE_HIDDEN);
+            type.addValue("http://kontalk.org/protocol/register#key");
+            form.addField(type);
+
+            if (mKeyRing != null) {
+                String publicKey;
+                try {
+                    publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
+                }
+                catch (IOException e) {
+                    // TODO
+                    Log.v(TAG, "error encoding key", e);
+                    publicKey = null;
+                }
+
+                if (publicKey != null) {
+                    FormField fieldKey = new FormField("publickey");
+                    fieldKey.setLabel("Public key");
+                    fieldKey.setType(FormField.TYPE_TEXT_SINGLE);
+                    fieldKey.addValue(publicKey);
+                    form.addField(fieldKey);
+                }
+
+                // TODO what if publicKey is null?
+            }
+
+            // TODO what if mKeyRing is null?
+
+            iq.addExtension(form.getDataFormToSend());
+            return iq;
+        }
+
+        private void setupKeyPairReceiver() {
+            if (mKeyReceiver == null) {
+
+                PersonalKeyRunnable action = new PersonalKeyRunnable() {
+                    public void run(PersonalKey key) {
+                        Log.d(TAG, "keypair generation complete.");
+                        // unregister the broadcast receiver
+                        mLocalBroadcast.unregisterReceiver(mKeyReceiver);
+                        mKeyReceiver = null;
+                        mAccount = Authenticator.getDefaultAccount(MessageCenterService.this);
+
+                        // store the key
+                        try {
+                            String userId = MessageUtils.sha1(mAccount.name);
+                            mKeyRing = key.store(userId, mServer.getNetwork(),
+                                // TODO should we ask passphrase to the user?
+                                ((Kontalk)getApplicationContext()).getCachedPassphrase());
+                        }
+                        catch (Exception e) {
+                            // TODO
+                            Log.v(TAG, "error saving key", e);
+                        }
+
+
+                        // listen for connection events
+                        setupConnectedReceiver();
+                        // request connection status
+                        requestConnectionStatus(MessageCenterService.this);
+
+                        // CONNECTED listener will do the rest
+                    }
+                };
+
+                mKeyReceiver = new KeyGeneratedReceiver(mIdleHandler, action);
+
+                IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
+                mLocalBroadcast.registerReceiver(mKeyReceiver, filter);
+            }
+        }
+
+        private void setupConnectedReceiver() {
+            if (mConnReceiver == null) {
+                mConnReceiver = new BroadcastReceiver() {
+                    public void onReceive(Context context, Intent intent) {
+                        // unregister the broadcast receiver
+                        mLocalBroadcast.unregisterReceiver(mConnReceiver);
+                        mConnReceiver = null;
+
+                        // prepare public key packet
+                        Packet iq = prepareKeyPacket();
+
+                        // setup packet filter for response
+                        PacketIDFilter filter = new PacketIDFilter(iq.getPacketID());
+                        mConnection.addPacketListener(RegenerateKeyPairListener.this, filter);
+
+                        // send the key out
+                        sendPacket(iq);
+
+                        // now wait for a response
+                    }
+                };
+
+                IntentFilter filter = new IntentFilter(ACTION_CONNECTED);
+                mLocalBroadcast.registerReceiver(mConnReceiver, filter);
+            }
+        }
+
+        @Override
+        public void processPacket(Packet packet) {
+            IQ iq = (IQ) packet;
+            if (iq.getType() == IQ.Type.RESULT) {
+                DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
+                if (response != null) {
+                    String publicKey = null;
+
+                    // ok! message will be sent
+                    Iterator<FormField> iter = response.getFields();
+                    while (iter.hasNext()) {
+                        FormField field = iter.next();
+                        if ("publickey".equals(field.getVariable())) {
+                            publicKey = field.getValues().next();
+                            break;
+                        }
+                    }
+
+                    if (!TextUtils.isEmpty(publicKey)) {
+                        byte[] publicKeyData;
+                        byte[] privateKeyData;
+                        try {
+                            publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
+                            privateKeyData = mKeyRing.secretKey.getEncoded();
+                        }
+                        catch (Exception e) {
+                            // TODO that easy?
+                            publicKeyData = null;
+                            privateKeyData = null;
+                        }
+
+                        // store key data in AccountManager
+                        // FIXME this should be done by the Authenticator
+                        AccountManager am = AccountManager.get(MessageCenterService.this);
+                        am.setUserData(mAccount, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+                        am.setUserData(mAccount, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+
+                        // TODO turn this into a notification
+                        mHandler.post(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                    // TODO i18n
+                                    "Key pair regeneration completed.",
+                                    Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
+            }
+
+            // we are done here
+            endKeyPairRegeneration();
         }
     }
 

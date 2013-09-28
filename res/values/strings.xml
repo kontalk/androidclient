@@ -86,6 +86,8 @@
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
     <string name="pref_idle_time">Disconnect when idle</string>
     <string name="pref_title_idle_time">Works only if push notifications are enabled and supported by server</string>
+    <string name="pref_regenerate_keypair">Regenerate key pair</string>
+    <string name="pref_title_regenerate_keypair">Use this in case your personal key pair has been compromised</string>
     <string name="pref_maintainance">Mainteinance</string>
     <string name="contacts_list_title">Choose a contact</string>
     <string name="pref_messaging_settings">Messaging settings</string>
@@ -232,5 +234,7 @@
     <string name="social_googleplus">Google Plus</string>
     <string name="social_facebook">Facebook</string>
     <string name="social_identica">Identica</string>
+
+    <string name="msg_generating_keypair">Generating keypair in the background.</string>
 
 </resources>
