@@ -1951,12 +1951,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Listener and manager for a key pair regeneration cycle. */
     private final class RegenerateKeyPairListener implements PacketListener {
         private BroadcastReceiver mKeyReceiver, mConnReceiver;
-        private LocalBroadcastManager mLocalBroadcast;
         private PGPKeyPairRing mKeyRing;
 
         public RegenerateKeyPairListener() {
-            mLocalBroadcast = LocalBroadcastManager.getInstance(MessageCenterService.this);
-
             setupKeyPairReceiver();
             setupConnectedReceiver();
 
@@ -1968,12 +1965,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         public void abort() {
             if (mKeyReceiver != null) {
-                mLocalBroadcast.unregisterReceiver(mKeyReceiver);
+                mLocalBroadcastManager.unregisterReceiver(mKeyReceiver);
                 mKeyReceiver = null;
             }
 
             if (mConnReceiver != null) {
-                mLocalBroadcast.unregisterReceiver(mConnReceiver);
+                mLocalBroadcastManager.unregisterReceiver(mConnReceiver);
                 mConnReceiver = null;
             }
         }
@@ -2024,7 +2021,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     public void run(PersonalKey key) {
                         Log.d(TAG, "keypair generation complete.");
                         // unregister the broadcast receiver
-                        mLocalBroadcast.unregisterReceiver(mKeyReceiver);
+                        mLocalBroadcastManager.unregisterReceiver(mKeyReceiver);
                         mKeyReceiver = null;
 
                         // store the key
@@ -2053,7 +2050,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mKeyReceiver = new KeyGeneratedReceiver(mIdleHandler, action);
 
                 IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
-                mLocalBroadcast.registerReceiver(mKeyReceiver, filter);
+                mLocalBroadcastManager.registerReceiver(mKeyReceiver, filter);
             }
         }
 
@@ -2062,7 +2059,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mConnReceiver = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
                         // unregister the broadcast receiver
-                        mLocalBroadcast.unregisterReceiver(mConnReceiver);
+                        mLocalBroadcastManager.unregisterReceiver(mConnReceiver);
                         mConnReceiver = null;
 
                         // prepare public key packet
@@ -2080,7 +2077,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 };
 
                 IntentFilter filter = new IntentFilter(ACTION_CONNECTED);
-                mLocalBroadcast.registerReceiver(mConnReceiver, filter);
+                mLocalBroadcastManager.registerReceiver(mConnReceiver, filter);
             }
         }
 

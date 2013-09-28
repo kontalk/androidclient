@@ -1,16 +1,24 @@
 package org.kontalk.xmpp.service;
 
+import static org.kontalk.xmpp.ui.MessagingNotification.NOTIFICATION_ID_KEYPAIR_GEN;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.ui.ConversationList;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Process;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -62,7 +70,25 @@ public class KeyPairGeneratorService extends Service {
     }
 
     private void startForeground() {
-        // TODO startForeground(...)
+        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        // FIXME this intent should actually open the ComposeMessage activity
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
+            NOTIFICATION_ID_KEYPAIR_GEN, ni, 0);
+
+        Notification no = new NotificationCompat.Builder(this)
+            .setOngoing(true)
+            .setTicker("Generating key pair...")
+            .setSmallIcon(R.drawable.stat_notify)
+            .setContentTitle("Generating key pair")
+            .setContentText("You can continue to work normally.")
+            .setContentIntent(pi)
+            .build();
+
+        startForeground(NOTIFICATION_ID_KEYPAIR_GEN, no);
+    }
+
+    private void stopForeground() {
+        stopForeground(true);
     }
 
     private void broadcastKey() {
@@ -85,12 +111,16 @@ public class KeyPairGeneratorService extends Service {
 
         @Override
         public void run() {
+            // set a low priority
+            android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+
             KeyPairGeneratorService service = s.get();
             if (service != null) {
                 try {
                     PersonalKey key = PersonalKey.create(DEFAULT_KEY_SIZE);
                     Log.v("KeyPair", "key pair generated: " + key);
                     service.keypairGenerated(key);
+                    service.stopForeground();
                 }
                 catch (IOException e) {
                     Log.v("KeyPair", "keypair generation failed", e);
