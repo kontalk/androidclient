@@ -2037,7 +2037,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             Log.v(TAG, "error saving key", e);
                         }
 
-
                         // listen for connection events
                         setupConnectedReceiver();
                         // request connection status
@@ -2116,7 +2115,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         Authenticator.setDefaultPersonalKey(MessageCenterService.this,
                             publicKeyData, privateKeyData);
 
-                        // TODO turn this into a notification
+                        // TODO turn this into a notification?
                         mHandler.post(new Runnable() {
                             public void run() {
                                 Toast.makeText(getApplicationContext(),
