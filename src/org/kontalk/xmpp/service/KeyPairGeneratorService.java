@@ -120,12 +120,13 @@ public class KeyPairGeneratorService extends Service {
                     PersonalKey key = PersonalKey.create(DEFAULT_KEY_SIZE);
                     Log.v("KeyPair", "key pair generated: " + key);
                     service.keypairGenerated(key);
-                    service.stopForeground();
                 }
                 catch (IOException e) {
                     Log.v("KeyPair", "keypair generation failed", e);
                     // TODO notify user
                 }
+
+                service.stopForeground();
             }
         }
     }
