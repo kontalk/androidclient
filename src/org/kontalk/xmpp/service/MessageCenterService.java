@@ -38,6 +38,7 @@ import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.GCMIntentService;
 import org.kontalk.xmpp.Kontalk;
+import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.AckServerReceipt;
 import org.kontalk.xmpp.client.BitsOfBinary;
@@ -2115,12 +2116,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         Authenticator.setDefaultPersonalKey(MessageCenterService.this,
                             publicKeyData, privateKeyData);
 
-                        // TODO turn this into a notification?
                         mHandler.post(new Runnable() {
                             public void run() {
                                 Toast.makeText(getApplicationContext(),
-                                    // TODO i18n
-                                    "Key pair regeneration completed.",
+                                    R.string.msg_gen_keypair_complete,
                                     Toast.LENGTH_LONG).show();
                             }
                         });

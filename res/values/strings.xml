@@ -236,5 +236,9 @@
     <string name="social_identica">Identica</string>
 
     <string name="msg_generating_keypair">Generating keypair in the background.</string>
+    <string name="msg_gen_keypair_complete">Key pair regeneration completed.</string>
+    <string name="notify_gen_keypair_ticker">Generating key pair&#8230;</string>
+    <string name="notify_gen_keypair_title">Generating key pair</string>
+    <string name="notify_gen_keypair_text">You can continue to work normally.</string>
 
 </resources>

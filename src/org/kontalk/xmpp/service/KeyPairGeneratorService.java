@@ -77,10 +77,10 @@ public class KeyPairGeneratorService extends Service {
 
         Notification no = new NotificationCompat.Builder(this)
             .setOngoing(true)
-            .setTicker("Generating key pair...")
+            .setTicker(getString(R.string.notify_gen_keypair_ticker))
             .setSmallIcon(R.drawable.stat_notify)
-            .setContentTitle("Generating key pair")
-            .setContentText("You can continue to work normally.")
+            .setContentTitle(getString(R.string.notify_gen_keypair_title))
+            .setContentText(getString(R.string.notify_gen_keypair_text))
             .setContentIntent(pi)
             .build();
 
