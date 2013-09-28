@@ -18,7 +18,8 @@ import android.util.Log;
 /** Generates a key pair in the background. */
 public class KeyPairGeneratorService extends Service {
 
-    private static final int DEFAULT_KEY_SIZE = 512;
+    // TODO of course this is just to be quick in the emulator
+    private static final int DEFAULT_KEY_SIZE = 1024;
 
     public static final String ACTION_GENERATE = "org.kontalk.keypair.GENERATE";
 
