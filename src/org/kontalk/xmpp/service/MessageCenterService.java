@@ -1977,42 +1977,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         private Packet prepareKeyPacket() {
-            Registration iq = new Registration();
-            iq.setType(IQ.Type.SET);
-            iq.setTo(mConnection.getServiceName());
-            Form form = new Form(Form.TYPE_SUBMIT);
-
-            FormField type = new FormField("FORM_TYPE");
-            type.setType(FormField.TYPE_HIDDEN);
-            type.addValue("http://kontalk.org/protocol/register#key");
-            form.addField(type);
-
             if (mKeyRing != null) {
-                String publicKey;
                 try {
-                    publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
-                }
-                catch (IOException e) {
-                    // TODO
-                    Log.v(TAG, "error encoding key", e);
-                    publicKey = null;
-                }
+                    String publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
 
-                if (publicKey != null) {
+                    Registration iq = new Registration();
+                    iq.setType(IQ.Type.SET);
+                    iq.setTo(mConnection.getServiceName());
+                    Form form = new Form(Form.TYPE_SUBMIT);
+
+                    FormField type = new FormField("FORM_TYPE");
+                    type.setType(FormField.TYPE_HIDDEN);
+                    type.addValue("http://kontalk.org/protocol/register#key");
+                    form.addField(type);
+
                     FormField fieldKey = new FormField("publickey");
                     fieldKey.setLabel("Public key");
                     fieldKey.setType(FormField.TYPE_TEXT_SINGLE);
                     fieldKey.addValue(publicKey);
                     form.addField(fieldKey);
-                }
 
-                // TODO what if publicKey is null?
+                    iq.addExtension(form.getDataFormToSend());
+                    return iq;
+                }
+                catch (IOException e) {
+                    Log.v(TAG, "error encoding key", e);
+                }
             }
 
-            // TODO what if mKeyRing is null?
-
-            iq.addExtension(form.getDataFormToSend());
-            return iq;
+            return null;
         }
 
         private void setupKeyPairReceiver() {
@@ -2032,18 +2025,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             mKeyRing = key.store(userId, mServer.getNetwork(),
                                 // TODO should we ask passphrase to the user?
                                 ((Kontalk)getApplicationContext()).getCachedPassphrase());
+
+                            // listen for connection events
+                            setupConnectedReceiver();
+                            // request connection status
+                            requestConnectionStatus(MessageCenterService.this);
+
+                            // CONNECTED listener will do the rest
                         }
                         catch (Exception e) {
-                            // TODO
+                            // TODO notify user
                             Log.v(TAG, "error saving key", e);
                         }
-
-                        // listen for connection events
-                        setupConnectedReceiver();
-                        // request connection status
-                        requestConnectionStatus(MessageCenterService.this);
-
-                        // CONNECTED listener will do the rest
                     }
                 };
 
@@ -2065,14 +2058,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // prepare public key packet
                         Packet iq = prepareKeyPacket();
 
-                        // setup packet filter for response
-                        PacketIDFilter filter = new PacketIDFilter(iq.getPacketID());
-                        mConnection.addPacketListener(RegenerateKeyPairListener.this, filter);
+                        if (iq != null) {
 
-                        // send the key out
-                        sendPacket(iq);
+                            // setup packet filter for response
+                            PacketIDFilter filter = new PacketIDFilter(iq.getPacketID());
+                            mConnection.addPacketListener(RegenerateKeyPairListener.this, filter);
 
-                        // now wait for a response
+                            // send the key out
+                            sendPacket(iq);
+
+                            // now wait for a response
+                        }
+
+                        // TODO else?
                     }
                 };
 
@@ -2107,22 +2105,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             privateKeyData = mKeyRing.secretKey.getEncoded();
                         }
                         catch (Exception e) {
-                            // TODO that easy?
                             publicKeyData = null;
                             privateKeyData = null;
                         }
 
-                        // store key data in AccountManager
-                        Authenticator.setDefaultPersonalKey(MessageCenterService.this,
-                            publicKeyData, privateKeyData);
+                        if (publicKeyData != null && privateKeyData != null) {
+                            // store key data in AccountManager
+                            Authenticator.setDefaultPersonalKey(MessageCenterService.this,
+                                publicKeyData, privateKeyData);
 
-                        mHandler.post(new Runnable() {
-                            public void run() {
-                                Toast.makeText(getApplicationContext(),
-                                    R.string.msg_gen_keypair_complete,
-                                    Toast.LENGTH_LONG).show();
-                            }
-                        });
+                            mHandler.post(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(),
+                                        R.string.msg_gen_keypair_complete,
+                                        Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+
+                        // TODO else?
                     }
                 }
             }
