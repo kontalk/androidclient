@@ -77,7 +77,6 @@ import org.kontalk.xmpp.util.RandomString;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -1954,7 +1953,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private BroadcastReceiver mKeyReceiver, mConnReceiver;
         private LocalBroadcastManager mLocalBroadcast;
         private PGPKeyPairRing mKeyRing;
-        private Account mAccount;
 
         public RegenerateKeyPairListener() {
             mLocalBroadcast = LocalBroadcastManager.getInstance(MessageCenterService.this);
@@ -2028,11 +2026,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // unregister the broadcast receiver
                         mLocalBroadcast.unregisterReceiver(mKeyReceiver);
                         mKeyReceiver = null;
-                        mAccount = Authenticator.getDefaultAccount(MessageCenterService.this);
 
                         // store the key
                         try {
-                            String userId = MessageUtils.sha1(mAccount.name);
+                            Account acc = Authenticator.getDefaultAccount(MessageCenterService.this);
+                            String userId = MessageUtils.sha1(acc.name);
                             mKeyRing = key.store(userId, mServer.getNetwork(),
                                 // TODO should we ask passphrase to the user?
                                 ((Kontalk)getApplicationContext()).getCachedPassphrase());
@@ -2118,10 +2116,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         }
 
                         // store key data in AccountManager
-                        // FIXME this should be done by the Authenticator
-                        AccountManager am = AccountManager.get(MessageCenterService.this);
-                        am.setUserData(mAccount, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
-                        am.setUserData(mAccount, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+                        Authenticator.setDefaultPersonalKey(MessageCenterService.this,
+                            publicKeyData, privateKeyData);
 
                         // TODO turn this into a notification
                         mHandler.post(new Runnable() {

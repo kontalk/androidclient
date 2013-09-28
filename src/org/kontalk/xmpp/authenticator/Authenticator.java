@@ -24,7 +24,6 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.ui.NumberValidation;
 import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.util.encoders.Base64;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
@@ -36,6 +35,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -100,8 +100,15 @@ public class Authenticator extends AbstractAccountAuthenticator {
         String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
 
         return PersonalKey
-            .load(Base64.decode(privKeyData), Base64.decode(pubKeyData),
+            .load(Base64.decode(privKeyData, Base64.DEFAULT), Base64.decode(pubKeyData, Base64.DEFAULT),
                 passphrase);
+    }
+
+    public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData) {
+        AccountManager am = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(am);
+        am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+        am.setUserData(acc, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
     }
 
     @Override
