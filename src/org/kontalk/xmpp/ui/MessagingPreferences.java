@@ -122,7 +122,7 @@ public final class MessagingPreferences extends PreferenceActivity {
         regenKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                // TODO take this out after implementing foreground notification
+
                 Toast.makeText(MessagingPreferences.this, R.string.msg_generating_keypair,
                     Toast.LENGTH_LONG).show();
 

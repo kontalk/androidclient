@@ -1,14 +1,15 @@
 package org.kontalk.xmpp.crypto;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
+import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 
 import org.spongycastle.bcpg.HashAlgorithmTags;
@@ -40,7 +41,10 @@ import android.os.Parcel;
 public class PGP {
 
     /** Security provider: Spongy Castle. */
-    private static final String PROVIDER = "SC";
+    public static final String PROVIDER = "SC";
+
+    /** Default EC curve used. */
+    private static final String EC_CURVE = "P-256";
 
     private PGP() {
     }
@@ -72,17 +76,21 @@ public class PGP {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    // TODO one day this will be ECDSA
-    public static PGPDecryptedKeyPairRing create(int keysize)
-            throws NoSuchAlgorithmException, NoSuchProviderException, PGPException {
+    /** Creates an ECDSA/ECDH key pair. */
+    public static PGPDecryptedKeyPairRing create()
+            throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
 
-        KeyPairGenerator gen = KeyPairGenerator.getInstance("ElGamal", PROVIDER);
-        gen.initialize(keysize, new SecureRandom());
+        KeyPairGenerator gen;
 
-        PGPKeyPair encryptKp = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, gen.generateKeyPair(), new Date());
+        gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
+        gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-        gen = KeyPairGenerator.getInstance("DSA", PROVIDER);
-        PGPKeyPair signKp = new JcaPGPKeyPair(PGPPublicKey.DSA, gen.generateKeyPair(), new Date());
+        PGPKeyPair encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
+
+        gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
+        gen.initialize(new ECGenParameterSpec(EC_CURVE));
+
+        PGPKeyPair signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
 
         return new PGPDecryptedKeyPairRing(signKp, encryptKp);
     }
@@ -96,7 +104,7 @@ public class PGP {
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.signKey,
             id, sha1Calc, null, null,
-            new JcaPGPContentSignerBuilder(pair.signKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
+            new JcaPGPContentSignerBuilder(pair.signKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256),
             new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
                 .setProvider(PROVIDER).build(passphrase.toCharArray()));
 

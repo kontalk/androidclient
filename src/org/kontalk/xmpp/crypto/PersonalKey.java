@@ -19,10 +19,7 @@
 package org.kontalk.xmpp.crypto;
 
 import java.io.IOException;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
 import java.security.SignatureException;
-import java.util.Date;
 import java.util.Iterator;
 
 import org.kontalk.xmpp.crypto.PGP.PGPDecryptedKeyPairRing;
@@ -40,7 +37,6 @@ import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
 import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
 import android.os.Parcel;
@@ -53,6 +49,10 @@ public class PersonalKey implements Parcelable {
 
     /** Decrypted key pair (for direct usage). */
     private final PGPDecryptedKeyPairRing mPair;
+
+    private PersonalKey(PGPDecryptedKeyPairRing keyPair) {
+        mPair = keyPair;
+    }
 
     private PersonalKey(PGPKeyPair signKp, PGPKeyPair encryptKp) {
         mPair = new PGPDecryptedKeyPairRing(signKp, encryptKp);
@@ -112,7 +112,7 @@ public class PersonalKey implements Parcelable {
 
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
         PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
-            .setProvider("SC")
+            .setProvider(PGP.PROVIDER)
             .build(passphrase.toCharArray());
 
         PGPKeyPair signKp, encryptKp;
@@ -158,17 +158,10 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid key data");
     }
 
-    public static PersonalKey create(int keysize) throws IOException {
+    public static PersonalKey create() throws IOException {
         try {
-            KeyPairGenerator gen = KeyPairGenerator.getInstance("ElGamal", "SC");
-            gen.initialize(keysize, new SecureRandom());
-
-            PGPKeyPair encryptKp = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, gen.generateKeyPair(), new Date());
-
-            gen = KeyPairGenerator.getInstance("DSA", "SC");
-            PGPKeyPair signKp = new JcaPGPKeyPair(PGPPublicKey.DSA, gen.generateKeyPair(), new Date());
-
-            return new PersonalKey(signKp, encryptKp);
+            PGPDecryptedKeyPairRing kp = PGP.create();
+            return new PersonalKey(kp);
         }
         catch (Exception e) {
             IOException io = new IOException("unable to generate keypair");
