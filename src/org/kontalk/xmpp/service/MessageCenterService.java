@@ -61,6 +61,7 @@ import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.crypto.X509Bridge;
 import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
@@ -2100,19 +2101,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (!TextUtils.isEmpty(publicKey)) {
                         byte[] publicKeyData;
                         byte[] privateKeyData;
+                        byte[] bridgeCertData;
                         try {
                             publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
                             privateKeyData = mKeyRing.secretKey.getEncoded();
+
+                            String passphrase = ((Kontalk) getApplicationContext()).getCachedPassphrase();
+                            // TODO subjectAltName?
+                            bridgeCertData = X509Bridge.createCertificate(mKeyRing.secretKey.getSecretKey(),
+                                passphrase, null).getEncoded();
                         }
                         catch (Exception e) {
+                            Log.e(TAG, "error decoding key data", e);
                             publicKeyData = null;
                             privateKeyData = null;
+                            bridgeCertData = null;
                         }
 
-                        if (publicKeyData != null && privateKeyData != null) {
+                        if (publicKeyData != null && privateKeyData != null && bridgeCertData != null) {
+
                             // store key data in AccountManager
                             Authenticator.setDefaultPersonalKey(MessageCenterService.this,
-                                publicKeyData, privateKeyData);
+                                publicKeyData, privateKeyData, bridgeCertData);
 
                             mHandler.post(new Runnable() {
                                 public void run() {

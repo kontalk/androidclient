@@ -330,7 +330,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private void initConnection() throws XMPPException {
         if (!mConnector.isConnected()) {
             mConnector.setListener(this);
-            mConnector.connectOnce();
+            mConnector.connectOnce(null);
         }
     }
 

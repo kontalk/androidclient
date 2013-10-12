@@ -64,6 +64,9 @@ public class PGP {
     /** Default EC curve used. */
     private static final String EC_CURVE = "P-256";
 
+    // temporary flag for ECC experimentation
+    private static final boolean EXPERIMENTAL_ECC = false;
+
     private PGP() {
     }
 
@@ -99,16 +102,33 @@ public class PGP {
             throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
 
         KeyPairGenerator gen;
+        PGPKeyPair encryptKp, signKp;
 
-        gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
-        gen.initialize(new ECGenParameterSpec(EC_CURVE));
+        if (EXPERIMENTAL_ECC) {
 
-        PGPKeyPair encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
+            gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
+            gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-        gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
-        gen.initialize(new ECGenParameterSpec(EC_CURVE));
+            encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
 
-        PGPKeyPair signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
+            gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
+            gen.initialize(new ECGenParameterSpec(EC_CURVE));
+
+            signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
+        }
+
+        else {
+
+            gen = KeyPairGenerator.getInstance("ElGamal", PROVIDER);
+            gen.initialize(1024);
+
+            encryptKp = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, gen.generateKeyPair(), new Date());
+
+            gen = KeyPairGenerator.getInstance("DSA", PROVIDER);
+            gen.initialize(1024);
+
+            signKp = new JcaPGPKeyPair(PGPPublicKey.DSA, gen.generateKeyPair(), new Date());
+        }
 
         return new PGPDecryptedKeyPairRing(signKp, encryptKp);
     }
