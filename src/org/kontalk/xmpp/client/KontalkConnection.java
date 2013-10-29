@@ -9,12 +9,11 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
+import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
@@ -59,8 +58,8 @@ public class KontalkConnection extends XMPPConnection {
 
             // in-memory keystore
             KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keystore.load(null, "changeit".toCharArray());
-            keystore.setKeyEntry("private", privateKey, "changeit".toCharArray(), new Certificate[] { bridgeCert });
+            keystore.load(null, null);
+            keystore.setKeyEntry("private", privateKey, null, new Certificate[] { bridgeCert });
 
             // key managers
             KeyManager[] km;
@@ -99,6 +98,9 @@ public class KontalkConnection extends XMPPConnection {
             ctx.init(km, tm, null);
             config.setCustomSSLContext(ctx);
             //config.setSocketFactory(SSLSocketFactory.getDefault());
+
+            // enable SASL EXTERNAL
+            SASLAuthentication.supportSASLMechanism("EXTERNAL");
         }
         catch (Exception e) {
             Log.w(Kontalk.TAG, "unable to setup SSL connection", e);

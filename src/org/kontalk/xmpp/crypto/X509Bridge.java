@@ -125,18 +125,18 @@ public class X509Bridge {
         Vector<DERObjectIdentifier> x509NameOids = new Vector<DERObjectIdentifier>();
         Vector<String> x509NameValues = new Vector<String>();
 
+        /*
         x509NameOids.add(X509Name.O);
         x509NameValues.add(DN_COMMON_PART_O);
 
         x509NameOids.add(X509Name.OU);
         x509NameValues.add(DN_COMMON_PART_OU);
+        */
 
         for (@SuppressWarnings("unchecked") Iterator<Object> it = (Iterator<Object>) publicKey.getUserIDs(); it.hasNext();) {
             Object attrib = it.next();
             x509NameOids.add(X509Name.CN);
-            // FIXME what is this?
-            x509NameValues.add("Henry Story");
-            //x509NameValues.add(attrib.toString());
+            x509NameValues.add(attrib.toString());
         }
 
         X509Name x509name = new X509Name(x509NameOids, x509NameValues);

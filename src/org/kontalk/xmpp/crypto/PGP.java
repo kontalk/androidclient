@@ -119,15 +119,15 @@ public class PGP {
 
         else {
 
-            gen = KeyPairGenerator.getInstance("ElGamal", PROVIDER);
+            gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
             gen.initialize(1024);
 
-            encryptKp = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, gen.generateKeyPair(), new Date());
+            encryptKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
 
-            gen = KeyPairGenerator.getInstance("DSA", PROVIDER);
+            gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
             gen.initialize(1024);
 
-            signKp = new JcaPGPKeyPair(PGPPublicKey.DSA, gen.generateKeyPair(), new Date());
+            signKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
         }
 
         return new PGPDecryptedKeyPairRing(signKp, encryptKp);
@@ -142,7 +142,7 @@ public class PGP {
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.signKey,
             id, sha1Calc, null, null,
-            new JcaPGPContentSignerBuilder(pair.signKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256),
+            new JcaPGPContentSignerBuilder(pair.signKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
             new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
                 .setProvider(PROVIDER).build(passphrase.toCharArray()));
 
@@ -160,8 +160,8 @@ public class PGP {
         PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
 
         PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
-            new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
-                PGPUtil.SHA256).setProvider(PROVIDER));
+            new JcaPGPContentSignerBuilder(PGPPublicKey.RSA_GENERAL, // secret.getPublicKey().getAlgorithm(),
+                PGPUtil.SHA1).setProvider(PROVIDER));
 
         sGen.init(PGPSignature.DIRECT_KEY, pgpPrivKey);
 
