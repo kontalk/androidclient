@@ -78,7 +78,7 @@ public class AboutActivity extends SherlockActivity {
 	    try {
 	        // we try to first activate the Facebook app
 	        getPackageManager().getPackageInfo("com.facebook.katana", 0);
-	        startUrl("fb://profile/337867392917587");
+	        startUrl(getString(R.string.facebook_profile));
 	    } catch (Exception e) {
 	        // no facebook (or error) - start the profile page URL
 	        startUrl(getString(R.string.facebook_link));
