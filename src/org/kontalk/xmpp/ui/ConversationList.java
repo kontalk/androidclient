@@ -20,14 +20,16 @@ package org.kontalk.xmpp.ui;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.sync.SyncAdapter;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ListAdapter;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 
 /**
@@ -35,7 +37,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ConversationList extends SherlockFragmentActivity {
+public class ConversationList extends ActionBarActivity implements ContactsSyncActivity {
     //private static final String TAG = ConversationList.class.getSimpleName();
 
     @Override
@@ -104,6 +106,26 @@ public class ConversationList extends SherlockFragmentActivity {
 
     public boolean isDualPane() {
         return findViewById(R.id.fragment_compose_message) != null;
+    }
+
+    /** Called when a contact has been selected from a {@link ContactsListFragment}. */
+    protected void onNewContactSelected(Fragment fragment, Contact cl) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.remove(fragment);
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        ft.commit();
+
+        // TODO handle pick
+        /*
+        Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(cl.getContact().getHash()));
+        setResult(RESULT_OK, i);
+        finish();
+        */
+    }
+
+    @Override
+    public void setSyncing(boolean syncing) {
+        // TODO
     }
 
 }

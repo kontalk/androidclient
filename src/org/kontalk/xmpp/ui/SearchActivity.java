@@ -21,23 +21,22 @@ package org.kontalk.xmpp.ui;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.data.SearchItem;
 
+import android.app.ListActivity;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
-
-import com.actionbarsherlock.app.SherlockListActivity;
-import com.actionbarsherlock.view.MenuItem;
 
 
 /**
  * A basic search activity for the entire database.
  * @author Daniele Ricci
  */
-public class SearchActivity extends SherlockListActivity {
+public class SearchActivity extends ListActivity {
     private static final String TAG = SearchActivity.class.getSimpleName();
 
     private Cursor mCursor;
@@ -49,7 +48,7 @@ public class SearchActivity extends SherlockListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_list);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // TODO getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {

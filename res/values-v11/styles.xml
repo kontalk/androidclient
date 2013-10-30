@@ -18,27 +18,32 @@
 
 <resources>
   <!-- default light-to-dark theme selector -->
-  <style name="Theme.Light2" parent="android:Theme.Holo.Light"/>
+  <style name="Theme.Light2" parent="@android:style/Theme.Holo.Light"/>
 
   <!-- default theme selector -->
-  <style name="Theme.Light" parent="Theme.Sherlock.Light">
-      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
+  <style name="Theme.Light" parent="@style/Theme.AppCompat.Light">
+      <item name="android:actionBarStyle">@style/Widget.Light.ActionBar.Blue.Bold</item>
       <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
       </style>
 
-  <style name="Theme.Light.Subtitle" parent="Theme.Light">
-      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
+  <style name="Theme.Light.Subtitle" parent="@style/Theme.Light">
+      <item name="android:actionBarStyle">@style/Widget.Light.ActionBar.Blue.Custom</item>
   </style>
 
-  <style name="Widget.Sherlock.Light.ActionBar.Blue" parent="Widget.Sherlock.Light.ActionBar.Solid">
+  <style name="Widget.Light.ActionBar.Blue" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
     <item name="android:background">@drawable/titlebar_bg</item>
     <item name="android:titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse</item>
     <item name="android:subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
-
   </style>
 
-  <style name="Widget.Sherlock.Light.ActionBar.Blue.Bold" parent="Widget.Sherlock.Light.ActionBar.Blue">
-    <item name="android:titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse.Bold</item>
+  <style name="Widget.Light.ActionBar.Blue.Custom" parent="@style/Widget.Light.ActionBar.Blue">
+    <item name="android:homeAsUpIndicator">@null</item>
+    <item name="android:displayOptions">showHome|showCustom|homeAsUp</item>
+    <item name="android:customNavigationLayout">@layout/compose_message_action_view</item>
+  </style>
+
+  <style name="Widget.Light.ActionBar.Blue.Bold" parent="@style/Widget.Light.ActionBar.Blue">
+    <item name="android:titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse.Bold</item>
   </style>
 
 </resources>

@@ -37,18 +37,15 @@ import org.kontalk.xmpp.util.MessageUtils;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 
 /**
@@ -56,7 +53,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ComposeMessage extends SherlockFragmentActivity {
+public class ComposeMessage extends ActionBarActivity {
     private static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
@@ -77,7 +74,7 @@ public class ComposeMessage extends SherlockFragmentActivity {
     private ComposeMessageFragment mFragment;
     private TextView mTitleView;
     private TextView mSubtitleView;
-    private ImageView mAvatarView;
+    //private ImageView mAvatarView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,17 +83,20 @@ public class ComposeMessage extends SherlockFragmentActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
-        ActionBar bar = getSupportActionBar();
-        bar.setCustomView(R.layout.compose_message_action_view);
-        bar.setDisplayShowHomeEnabled(false);
-        bar.setDisplayShowCustomEnabled(true);
+        //ActionBar bar = getSupportActionBar();
+        //bar.setCustomView(R.layout.compose_message_action_view);
+        //bar.setDisplayShowHomeEnabled(false);
+        //bar.setDisplayShowCustomEnabled(true);
+        //bar.setDisplayHomeAsUpEnabled(true);
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
-        mTitleView = (TextView) findViewById(R.id.title);
-        mSubtitleView = (TextView) findViewById(R.id.summary);
-        mAvatarView = (ImageView) findViewById(R.id.avatar);
+
+        View customView = getSupportActionBar().getCustomView();
+        mTitleView = (TextView) customView.findViewById(R.id.title);
+        mSubtitleView = (TextView) customView.findViewById(R.id.summary);
+        //mAvatarView = (ImageView) customView.findViewById(R.id.avatar);
 
         processIntent(savedInstanceState);
     }
@@ -107,12 +107,14 @@ public class ComposeMessage extends SherlockFragmentActivity {
             mTitleView.setText(title);
         if (subtitle != null)
             mSubtitleView.setText(subtitle);
+        /* TODO
         if (contact != null) {
             Drawable avatar = contact.getAvatar(this, null);
             if (avatar == null)
                 avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
             mAvatarView.setImageDrawable(avatar);
         }
+         */
     }
 
     public void onAvatarClick(View view) {

@@ -37,11 +37,16 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
+import android.support.v4.view.MenuItemCompat;
 import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -49,13 +54,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 
-
-public class ConversationListFragment extends SherlockListFragment {
+public class ConversationListFragment extends ListFragment {
 
     private static final String TAG = ConversationListFragment.class.getSimpleName();
 
@@ -150,11 +150,11 @@ public class ConversationListFragment extends SherlockListFragment {
 
         // compose message
         MenuItem item = menu.findItem(R.id.menu_compose2);
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
 
         // search
         mSearchMenuAction = menu.findItem(R.id.menu_search2);
-        mSearchMenuAction.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        MenuItemCompat.setShowAsAction(mSearchMenuAction, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
 
         // search (might not exist)
         mSearchMenu = menu.findItem(R.id.menu_search);

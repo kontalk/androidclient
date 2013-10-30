@@ -25,11 +25,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 
 
 /**
@@ -37,7 +36,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class AboutActivity extends SherlockActivity {
+public class AboutActivity extends ActionBarActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

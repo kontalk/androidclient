@@ -4,21 +4,20 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.service.MessageCenterService;
 
 import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import com.actionbarsherlock.app.SherlockListActivity;
-import com.actionbarsherlock.view.MenuItem;
-
 
 /** Status message activity. */
-public class StatusActivity extends SherlockListActivity {
+public class StatusActivity extends ListActivity {
     private EditText mStatus;
     private CursorAdapter mAdapter;
 
@@ -36,7 +35,7 @@ public class StatusActivity extends SherlockListActivity {
             new String[] { "status" }, new int[] { android.R.id.text1 });
         setListAdapter(mAdapter);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // TODO getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     public static void start(Activity context) {
