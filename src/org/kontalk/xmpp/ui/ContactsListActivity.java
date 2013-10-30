@@ -49,12 +49,14 @@ public class ContactsListActivity extends ActionBarActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        supportRequestWindowFeature(Window.FEATURE_PROGRESS);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list_screen);
 
         setSupportProgressBarIndeterminate(true);
         // HACK this is for crappy honeycomb :)
         setSupportProgressBarIndeterminateVisibility(false);
+        setSupportProgressBarVisibility(false);
 
         mFragment = (ContactsListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);

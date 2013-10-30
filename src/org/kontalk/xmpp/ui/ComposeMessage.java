@@ -37,11 +37,13 @@ import org.kontalk.xmpp.util.MessageUtils;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
@@ -80,14 +82,15 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
-        //ActionBar bar = getSupportActionBar();
-        //bar.setCustomView(R.layout.compose_message_action_view);
-        //bar.setDisplayShowHomeEnabled(false);
-        //bar.setDisplayShowCustomEnabled(true);
-        //bar.setDisplayHomeAsUpEnabled(true);
+        ActionBar bar = getSupportActionBar();
+        bar.setDisplayShowHomeEnabled(true);
+        bar.setCustomView(R.layout.compose_message_action_view);
+        bar.setDisplayShowCustomEnabled(true);
+        bar.setDisplayHomeAsUpEnabled(true);
+        bar.setHomeButtonEnabled(true);
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
@@ -101,20 +104,32 @@ public class ComposeMessage extends ActionBarActivity {
         processIntent(savedInstanceState);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        switch (itemId) {
+            case android.R.id.home:
+                onAvatarClick(null);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     /** Sets custom title. Pass null to any of the arguments to skip setting it. */
     public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
         if (title != null)
             mTitleView.setText(title);
         if (subtitle != null)
             mSubtitleView.setText(subtitle);
-        /* TODO
         if (contact != null) {
             Drawable avatar = contact.getAvatar(this, null);
             if (avatar == null)
                 avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
-            mAvatarView.setImageDrawable(avatar);
+            //mAvatarView.setImageDrawable(avatar);
+            getSupportActionBar().setIcon(avatar);
         }
-         */
     }
 
     public void onAvatarClick(View view) {
