@@ -19,62 +19,39 @@
 package org.kontalk.xmpp.ui;
 
 import org.kontalk.xmpp.R;
-import org.kontalk.xmpp.data.SearchItem;
 
-import android.app.ListActivity;
 import android.app.SearchManager;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ListView;
 
 
 /**
- * A basic search activity for the entire database.
- * TODO convert to ActionBarActivity + ListFragment
+ * Activity wrapper for {@link SearchFragment}.
  * @author Daniele Ricci
  */
-public class SearchActivity extends ListActivity {
-    private static final String TAG = SearchActivity.class.getSimpleName();
+public class SearchActivity extends ActionBarActivity {
 
-    private Cursor mCursor;
-    private String mQuery;
-    private SearchListAdapter mListAdapter;
+    private SearchFragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.search_list);
+        setContentView(R.layout.search_list_screen);
 
-        // TODO getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mFragment = (SearchFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_search_list);
 
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            mQuery = intent.getStringExtra(SearchManager.QUERY);
-            Log.i(TAG, "searching: " + mQuery);
-            setTitle(getResources().getString(R.string.title_search, mQuery));
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            setTitle(getResources().getString(R.string.title_search, query));
 
-            mCursor = SearchItem.query(this, mQuery);
-            startManagingCursor(mCursor);
-
-            mListAdapter = new SearchListAdapter(this, mCursor);
-            // TODO mListAdapter.setOnContentChangedListener(mContentChangedListener);
-            setListAdapter(mListAdapter);
+            mFragment.setQuery(query);
         }
-    }
-
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        SearchListItem item = (SearchListItem) v;
-        long msgId = item.getSearchItem().getMessageId();
-        long threadId = item.getSearchItem().getThreadId();
-        Intent i = ComposeMessage.fromConversation(this, threadId);
-        i.putExtra(ComposeMessage.EXTRA_MESSAGE, msgId);
-        i.putExtra(ComposeMessage.EXTRA_HIGHLIGHT, mQuery);
-        startActivity(i);
     }
 
     @Override
