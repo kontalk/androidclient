@@ -25,7 +25,7 @@ import android.support.v7.app.ActionBarActivity;
 /**
  * Base class for implementing an Activity that is used to help implement an
  * AbstractAccountAuthenticator. If the AbstractAccountAuthenticator needs to use an activity
- * to handle the request then it can have the activity extend SherlockAccountAuthenticatorActivity.
+ * to handle the request then it can have the activity extend AccountAuthenticatorActionBarActivity.
  * The AbstractAccountAuthenticator passes in the response to the intent using the following:
  * <pre>
  *      intent.putExtra({@link android.accounts.AccountManager#KEY_ACCOUNT_AUTHENTICATOR_RESPONSE}, response);
