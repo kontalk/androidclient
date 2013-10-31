@@ -79,7 +79,6 @@ public class ComposeMessage extends ActionBarActivity {
     private ComposeMessageFragment mFragment;
     private TextView mTitleView;
     private TextView mSubtitleView;
-    //private ImageView mAvatarView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +97,6 @@ public class ComposeMessage extends ActionBarActivity {
         View customView = getSupportActionBar().getCustomView();
         mTitleView = (TextView) customView.findViewById(R.id.title);
         mSubtitleView = (TextView) customView.findViewById(R.id.summary);
-        //mAvatarView = (ImageView) customView.findViewById(R.id.avatar);
 
         processIntent(savedInstanceState);
     }
@@ -133,7 +131,7 @@ public class ComposeMessage extends ActionBarActivity {
 
         switch (itemId) {
             case android.R.id.home:
-                onAvatarClick(null);
+                onAvatarClick();
                 return true;
         }
 
@@ -150,12 +148,12 @@ public class ComposeMessage extends ActionBarActivity {
             Drawable avatar = contact.getAvatar(this, null);
             if (avatar == null)
                 avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
-            //mAvatarView.setImageDrawable(avatar);
+
             getSupportActionBar().setIcon(avatar);
         }
     }
 
-    public void onAvatarClick(View view) {
+    private void onAvatarClick() {
         finish();
         startActivity(new Intent(this, ConversationList.class));
     }
