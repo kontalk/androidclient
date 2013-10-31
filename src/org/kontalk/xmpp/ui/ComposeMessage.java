@@ -34,6 +34,7 @@ import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 
+import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -46,6 +47,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -85,12 +88,8 @@ public class ComposeMessage extends ActionBarActivity {
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
-        ActionBar bar = getSupportActionBar();
-        bar.setDisplayShowHomeEnabled(true);
-        bar.setCustomView(R.layout.compose_message_action_view);
-        bar.setDisplayShowCustomEnabled(true);
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setHomeButtonEnabled(true);
+
+        setupActionBar();
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
@@ -102,6 +101,30 @@ public class ComposeMessage extends ActionBarActivity {
         //mAvatarView = (ImageView) customView.findViewById(R.id.avatar);
 
         processIntent(savedInstanceState);
+    }
+
+    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
+    private void setupActionBar() {
+        ActionBar bar = getSupportActionBar();
+        bar.setDisplayShowHomeEnabled(true);
+        bar.setCustomView(R.layout.compose_message_action_view);
+        bar.setDisplayShowCustomEnabled(true);
+        bar.setDisplayHomeAsUpEnabled(true);
+        bar.setHomeButtonEnabled(true);
+
+        // hack to remove padding from activity icon
+
+        int homeId;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
+            homeId = android.R.id.home;
+        else
+            homeId = android.support.v7.appcompat.R.id.home;
+
+        ImageView icon = (ImageView) findViewById(homeId);
+
+        FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
+        iconLp.topMargin = iconLp.bottomMargin = 0;
+        icon.setLayoutParams(iconLp);
     }
 
     @Override
