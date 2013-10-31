@@ -16,7 +16,11 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 
-/** Status message activity. */
+/**
+ * Status message activity.
+ * TODO convert to ActionBarActivity + ListFragment
+ * TODO use popup activity on tablet
+ */
 public class StatusActivity extends ListActivity {
     private EditText mStatus;
     private CursorAdapter mAdapter;

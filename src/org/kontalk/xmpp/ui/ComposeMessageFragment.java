@@ -1986,7 +1986,7 @@ public class ComposeMessageFragment extends ListFragment implements
         // using fragments...
         else {
             ConversationList activity = (ConversationList) getActivity();
-            activity.getListFragment().endConversation(ComposeMessageFragment.this);
+            activity.getListFragment().endConversation(this);
         }
 	}
 

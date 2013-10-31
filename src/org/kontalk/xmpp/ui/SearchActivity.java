@@ -34,6 +34,7 @@ import android.widget.ListView;
 
 /**
  * A basic search activity for the entire database.
+ * TODO convert to ActionBarActivity + ListFragment
  * @author Daniele Ricci
  */
 public class SearchActivity extends ListActivity {

@@ -39,7 +39,7 @@ import android.widget.Toast;
 
 
 public class ContactsListActivity extends ActionBarActivity
-        implements ContactsSyncActivity {
+        implements ContactsSyncActivity, ContactPickerListener {
 
     private MenuItem mSyncButton;
 
@@ -132,8 +132,10 @@ public class ContactsListActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-    protected void onListItemClick(Contact c) {
-        Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(c.getHash()));
+    /** Called when a contact has been selected from a {@link ContactsListFragment}. */
+    @Override
+    public void onContactSelected(ContactsListFragment fragment, Contact contact) {
+        Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(contact.getHash()));
         setResult(RESULT_OK, i);
         finish();
     }

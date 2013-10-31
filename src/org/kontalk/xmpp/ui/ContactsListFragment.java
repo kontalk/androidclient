@@ -90,7 +90,7 @@ public class ContactsListFragment extends ListFragment
         // retain current sync state to hide the refresh button and start indeterminate progress
         registerSyncReceiver();
         if (SyncAdapter.isActive(parent))
-            ((ContactsListActivity) parent).setSyncing(true);
+            ((ContactsSyncActivity) parent).setSyncing(true);
     }
 
     @Override
@@ -122,21 +122,10 @@ public class ContactsListFragment extends ListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        Activity _parent = getActivity();
+        ContactPickerListener parent = (ContactPickerListener) getActivity();
 
-        // fragment inside standalone activity
-        if (_parent instanceof ContactsListActivity) {
-            ContactsListActivity parent = (ContactsListActivity) _parent;
-
-            parent.onListItemClick(((ContactsListItem) v).getContact());
-        }
-
-        // fragment inside main activity
-        else {
-            ConversationList parent = (ConversationList) _parent;
-
-            parent.onNewContactSelected(this, ((ContactsListItem) v).getContact());
-        }
+        if (parent != null)
+            parent.onContactSelected(this, ((ContactsListItem) v).getContact());
     }
 
     private void registerSyncReceiver() {

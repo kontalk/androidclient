@@ -24,7 +24,6 @@ import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.service.MessageCenterService;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -34,9 +33,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.view.MenuItemCompat;
 import android.text.Html;
@@ -60,8 +57,6 @@ public class ConversationListFragment extends ListFragment {
     private static final String TAG = ConversationListFragment.class.getSimpleName();
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
-
-    private static final int REQUEST_CONTACT_PICKER = 7720;
 
     /** Context menu group ID for this fragment. */
     private static final int CONTEXT_MENU_GROUP_ID = 1;
@@ -257,7 +252,9 @@ public class ConversationListFragment extends ListFragment {
 
         switch (item.getItemId()) {
             case MENU_OPEN_THREAD:
-                openConversation(conv, info.position);
+                ConversationList parent = getParentActivity();
+                if (parent != null)
+                    parent.openConversation(conv, info.position);
                 return true;
 
             case MENU_VIEW_CONTACT:
@@ -291,10 +288,9 @@ public class ConversationListFragment extends ListFragment {
     }
 
     public void chooseContact() {
-        // TODO one day it will be like this
-        // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
-        Intent i = new Intent(getActivity(), ContactsListActivity.class);
-        startActivityForResult(i, REQUEST_CONTACT_PICKER);
+        ConversationList parent = getParentActivity();
+        if (parent != null)
+            parent.showContactPicker();
     }
 
     private void deleteAll() {
@@ -353,87 +349,13 @@ public class ConversationListFragment extends ListFragment {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // contact chooser
-        if (requestCode == REQUEST_CONTACT_PICKER) {
-            if (resultCode == Activity.RESULT_OK) {
-                Uri uri = data.getData();
-                if (uri != null)
-                    openConversation(uri);
-            }
-        }
-    }
-
-    @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
-        openConversation(conv, position);
-    }
 
-    private void openConversation(Conversation conv, int position) {
-    	if (mDualPane) {
-    		getListView().setItemChecked(position, true);
-
-    		// get the old fragment
-    		ComposeMessageFragment f = (ComposeMessageFragment) getActivity()
-    				.getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
-
-            // check if we are replacing the same fragment
-    		if (f == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
-    			f = ComposeMessageFragment.fromConversation(getActivity(), conv);
-                // Execute a transaction, replacing any existing fragment
-                // with this one inside the frame.
-                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-                ft.replace(R.id.fragment_compose_message, f);
-                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                ft.addToBackStack(null);
-                ft.commit();
-    		}
-    	}
-    	else {
-	        Intent i = ComposeMessage.fromConversation(getActivity(), conv);
-	        startActivity(i);
-    	}
-    }
-
-    private void openConversation(Uri threadUri) {
-        if (mDualPane) {
-            // TODO position
-            //getListView().setItemChecked(position, true);
-
-            // load conversation
-            String userId = threadUri.getLastPathSegment();
-            Conversation conv = Conversation.loadFromUserId(getActivity(), userId);
-
-            // get the old fragment
-            ComposeMessageFragment f = (ComposeMessageFragment) getActivity()
-                    .getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
-
-            // check if we are replacing the same fragment
-            if (f == null || conv == null || !f.getConversation().getRecipient().equals(conv.getRecipient())) {
-                if (conv == null)
-                    f = ComposeMessageFragment.fromUserId(getActivity(), userId);
-                else
-                    f = ComposeMessageFragment.fromConversation(getActivity(), conv);
-
-                // Execute a transaction, replacing any existing fragment
-                // with this one inside the frame.
-                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-                ft.replace(R.id.fragment_compose_message, f);
-                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                ft.addToBackStack(null);
-                ft.commitAllowingStateLoss();
-            }
-        }
-        else {
-            Intent i = ComposeMessage.fromUserId(getActivity(), threadUri.getLastPathSegment());
-            if (i != null)
-                startActivity(i);
-            else
-                Toast.makeText(getActivity(), R.string.contact_not_registered, Toast.LENGTH_LONG)
-                    .show();
-        }
+        ConversationList parent = getParentActivity();
+        if (parent != null)
+            parent.openConversation(conv, position);
     }
 
     /** Used only in fragment contexts. */

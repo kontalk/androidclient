@@ -33,6 +33,9 @@ import android.widget.TextView;
 
 /**
  * About activity.
+ * TODO this activity should be refactored:
+ * - on phones: tabbed activity with fragments (about, donations, credit)
+ * - on tablets: fragments opened directly from settings activity
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
