@@ -78,7 +78,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
 /** Number validation activity. */
-public class NumberValidation extends SherlockAccountAuthenticatorActivity
+public class NumberValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
 

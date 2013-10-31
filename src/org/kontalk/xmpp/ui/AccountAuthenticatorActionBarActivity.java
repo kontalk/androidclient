@@ -36,7 +36,7 @@ import android.support.v7.app.ActionBarActivity;
  * is never set or if it is set to null then error {@link android.accounts.AccountManager#ERROR_CODE_CANCELED}
  * will be called on the response.
  */
-public class SherlockAccountAuthenticatorActivity extends ActionBarActivity {
+public class AccountAuthenticatorActionBarActivity extends ActionBarActivity {
     private AccountAuthenticatorResponse mAccountAuthenticatorResponse = null;
     private Bundle mResultBundle = null;
 
