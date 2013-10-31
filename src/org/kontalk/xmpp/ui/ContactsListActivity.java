@@ -61,9 +61,6 @@ public class ContactsListActivity extends ActionBarActivity
         mFragment = (ContactsListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);
 
-        TextView text = (TextView) findViewById(android.R.id.empty);
-        text.setText(Html.fromHtml(getString(R.string.text_contacts_empty)));
-
         if (!getIntent().getBooleanExtra("picker", false))
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
