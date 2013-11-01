@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -38,7 +39,7 @@ import android.widget.TextView;
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class AboutFragment extends Fragment {
+public class AboutFragment extends Fragment implements OnClickListener {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,10 +59,36 @@ public class AboutFragment extends Fragment {
             // shouldn't happen
         }
 
+        view.findViewById(R.id.button_twitter).setOnClickListener(this);
+        view.findViewById(R.id.button_googleplus).setOnClickListener(this);
+        view.findViewById(R.id.button_facebook).setOnClickListener(this);
+        view.findViewById(R.id.button_identica).setOnClickListener(this);
+
         return view;
 	}
 
-	public void socialFacebook(View v) {
+	@Override
+	public void onClick(View v) {
+	    switch (v.getId()) {
+	        case R.id.button_twitter:
+	            socialTwitter();
+	            break;
+
+	        case R.id.button_googleplus:
+	            socialGooglePlus();
+	            break;
+
+	        case R.id.button_facebook:
+	            socialFacebook();
+	            break;
+
+	        case R.id.button_identica:
+	            socialIdentica();
+	            break;
+	    }
+	}
+
+	private void socialFacebook() {
 	    try {
 	        // we try to first activate the Facebook app
 	        getActivity().getPackageManager().getPackageInfo("com.facebook.katana", 0);
@@ -73,19 +100,19 @@ public class AboutFragment extends Fragment {
 	    }
 	}
 
-	public void socialGooglePlus(View v) {
+	private void socialGooglePlus() {
 	    startUrl(getString(R.string.googleplus_link));
 	}
 
-	public void socialIdentica(View v) {
+	private void socialIdentica() {
 	    startUrl(getString(R.string.identica_link));
 	}
 
-	public void socialTwitter(View v) {
+	private void socialTwitter() {
 	    startUrl(getString(R.string.twitter_link));
 	}
 
-	public void startUrl(String url) {
+	private void startUrl(String url) {
 	    Intent link = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 	    startActivity(link);
 	}

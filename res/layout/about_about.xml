@@ -91,44 +91,40 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <ImageButton
+            <ImageButton android:id="@+id/button_twitter"
                 android:contentDescription="@string/social_twitter"
                 android:layout_height="48dp"
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
                 android:layout_marginRight="10dp"
                 android:longClickable="false"
-                android:onClick="socialTwitter"
                 android:src="@drawable/social_twitter"/>
 
-            <ImageButton
+            <ImageButton android:id="@+id/button_googleplus"
                 android:contentDescription="@string/social_googleplus"
                 android:layout_height="48dp"
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
                 android:layout_marginRight="10dp"
                 android:longClickable="false"
-                android:onClick="socialGooglePlus"
                 android:src="@drawable/social_googleplus"/>
 
-            <ImageButton
+            <ImageButton android:id="@+id/button_facebook"
                 android:contentDescription="@string/social_facebook"
                 android:layout_height="48dp"
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
                 android:layout_marginRight="10dp"
                 android:longClickable="false"
-                android:onClick="socialFacebook"
                 android:src="@drawable/social_facebook"/>
 
-            <ImageButton
+            <ImageButton android:id="@+id/button_identica"
                 android:contentDescription="@string/social_identica"
                 android:layout_height="48dp"
                 android:layout_width="48dp"
                 android:background="@android:drawable/list_selector_background"
                 android:layout_marginRight="10dp"
                 android:longClickable="false"
-                android:onClick="socialIdentica"
                 android:src="@drawable/social_identica"/>
 
         </LinearLayout>
