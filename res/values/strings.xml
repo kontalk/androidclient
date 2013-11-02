@@ -224,7 +224,12 @@
     <string name="going_online">Going online.</string>
 
     <string name="pref_other">Other</string>
+    <string name="pref_donate">Donate</string>
     <string name="pref_about">About</string>
+
+    <string name="title_about">About</string>
+    <string name="title_donation">Donate</string>
+    <string name="title_credits">Credits</string>
 
     <string name="about_version">%1$s (%2$d)</string>
 
@@ -232,5 +237,7 @@
     <string name="social_googleplus">Google Plus</string>
     <string name="social_facebook">Facebook</string>
     <string name="social_identica">Identica</string>
+
+    <string name="donate_text">Kontalk needs money to continue running. Consider a donation, even a small one.</string>
 
 </resources>

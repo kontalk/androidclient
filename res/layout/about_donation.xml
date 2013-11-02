@@ -37,101 +37,24 @@
         android:paddingRight="16dp"
         android:paddingTop="16dp" >
 
-        <ImageView android:id="@+id/icon"
-            android:contentDescription="@string/app_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/ic_launcher" />
-
-        <TextView android:id="@+id/title"
+        <TextView
+            style="@android:style/TextAppearance.Medium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
-            android:text="@string/app_name"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-        <TextView android:id="@+id/version"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:text="@string/about_version" />
-
-        <TextView android:id="@+id/description"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
+            android:autoLink="all"
             android:gravity="center_horizontal"
-            android:text="@string/app_description" />
+            android:text="@string/donate_text" />
 
-        <TextView android:id="@+id/website"
+        <TextView
+            style="@android:style/TextAppearance.Large"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
             android:autoLink="all"
-            android:text="@string/website" />
-
-        <TextView android:id="@+id/mailto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:autoLink="all"
-            android:text="@string/mailto" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:contentDescription="@string/social_twitter"
-                android:layout_height="48dp"
-                android:layout_width="48dp"
-                android:background="@android:drawable/list_selector_background"
-                android:layout_marginRight="10dp"
-                android:longClickable="false"
-                android:onClick="socialTwitter"
-                android:src="@drawable/social_twitter"/>
-
-            <ImageButton
-                android:contentDescription="@string/social_googleplus"
-                android:layout_height="48dp"
-                android:layout_width="48dp"
-                android:background="@android:drawable/list_selector_background"
-                android:layout_marginRight="10dp"
-                android:longClickable="false"
-                android:onClick="socialGooglePlus"
-                android:src="@drawable/social_googleplus"/>
-
-            <ImageButton
-                android:contentDescription="@string/social_facebook"
-                android:layout_height="48dp"
-                android:layout_width="48dp"
-                android:background="@android:drawable/list_selector_background"
-                android:layout_marginRight="10dp"
-                android:longClickable="false"
-                android:onClick="socialFacebook"
-                android:src="@drawable/social_facebook"/>
-
-            <ImageButton
-                android:contentDescription="@string/social_identica"
-                android:layout_height="48dp"
-                android:layout_width="48dp"
-                android:background="@android:drawable/list_selector_background"
-                android:layout_marginRight="10dp"
-                android:longClickable="false"
-                android:onClick="socialIdentica"
-                android:src="@drawable/social_identica"/>
-
-        </LinearLayout>
+            android:text="@string/netsite" />
 
     </LinearLayout>
 </ScrollView>
