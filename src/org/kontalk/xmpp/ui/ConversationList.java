@@ -136,7 +136,7 @@ public class ConversationList extends ActionBarActivity
         // remove contact picker fragment
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.remove(fragment);
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
         ft.commit();
 
         // open by user hash
@@ -145,7 +145,13 @@ public class ConversationList extends ActionBarActivity
 
     public void showContactPicker() {
         if (isDualPane()) {
-            // TODO fragment
+            ContactsListFragment f = new ContactsListFragment();
+
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.add(R.id.fragment_conversation_list, f);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.addToBackStack(null);
+            ft.commitAllowingStateLoss();
         }
         else {
             // TODO one day it will be like this
