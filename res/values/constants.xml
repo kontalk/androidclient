@@ -20,7 +20,7 @@
 <resources>
     <string name="website">www.kontalk.org</string>
 	<string name="mailto">devteam@kontalk.org</string>
-	<string name="facebook_link">http://www.facebook.com/pages/Kontalk/337867392917587</string>
+	<string name="facebook_link">http://www.facebook.com/kontalknet</string>
 	<string name="facebook_profile">fb://profile/337867392917587</string>
 	<string name="googleplus_link">https://plus.google.com/u/0/102201749813756709299</string>
 	<string name="twitter_link">https://twitter.com/kontalknet</string>
