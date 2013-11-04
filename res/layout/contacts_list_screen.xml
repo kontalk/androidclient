@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-     Kontalk Android client
+<!-- Kontalk Android client
      Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -15,22 +14,10 @@
 
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
--->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
-    android:layout_marginLeft="4dp"
-    android:layout_marginRight="4dp"
-    android:layout_marginBottom="4dp"
+ -->
+
+<fragment android:name="org.kontalk.xmpp.ui.ContactsListFragment"
+    android:id="@+id/fragment_contacts_list"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
-    <Button android:id="@+id/button_ok"
-        android:text="@android:string/ok"
-        android:layout_weight="1"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"/>
-    <Button android:id="@+id/button_cancel"
-        android:text="@android:string/cancel"
-        android:layout_weight="1"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+    android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -19,13 +19,13 @@ package org.kontalk.xmpp.ui;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 
-import com.actionbarsherlock.app.SherlockActivity;
 
 /**
  * Base class for implementing an Activity that is used to help implement an
  * AbstractAccountAuthenticator. If the AbstractAccountAuthenticator needs to use an activity
- * to handle the request then it can have the activity extend SherlockAccountAuthenticatorActivity.
+ * to handle the request then it can have the activity extend AccountAuthenticatorActionBarActivity.
  * The AbstractAccountAuthenticator passes in the response to the intent using the following:
  * <pre>
  *      intent.putExtra({@link android.accounts.AccountManager#KEY_ACCOUNT_AUTHENTICATOR_RESPONSE}, response);
@@ -36,7 +36,7 @@ import com.actionbarsherlock.app.SherlockActivity;
  * is never set or if it is set to null then error {@link android.accounts.AccountManager#ERROR_CODE_CANCELED}
  * will be called on the response.
  */
-public class SherlockAccountAuthenticatorActivity extends SherlockActivity {
+public class AccountAuthenticatorActionBarActivity extends ActionBarActivity {
     private AccountAuthenticatorResponse mAccountAuthenticatorResponse = null;
     private Bundle mResultBundle = null;
 

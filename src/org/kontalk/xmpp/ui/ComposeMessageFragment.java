@@ -80,7 +80,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
+import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -90,6 +92,9 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -103,17 +108,12 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-
 
 /**
  * The composer fragment.
  * @author Daniele Ricci
  */
-public class ComposeMessageFragment extends SherlockListFragment implements
+public class ComposeMessageFragment extends ListFragment implements
 		View.OnLongClickListener, IconContextMenuOnClickListener {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
@@ -563,7 +563,9 @@ public class ComposeMessageFragment extends SherlockListFragment implements
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.compose_message_menu, menu);
 		MenuItem item = menu.findItem(R.id.menu_attachment2);
-		if (item != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+		if (item != null) MenuItemCompat
+		    .setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
 
 		mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
 		mViewContactMenu = menu.findItem(R.id.view_contact);
@@ -1984,7 +1986,7 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         // using fragments...
         else {
             ConversationList activity = (ConversationList) getActivity();
-            activity.getListFragment().endConversation(ComposeMessageFragment.this);
+            activity.getListFragment().endConversation(this);
         }
 	}
 

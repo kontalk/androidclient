@@ -34,21 +34,23 @@ import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 
+import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 
 /**
@@ -56,7 +58,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ComposeMessage extends SherlockFragmentActivity {
+public class ComposeMessage extends ActionBarActivity {
     private static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
@@ -77,28 +79,63 @@ public class ComposeMessage extends SherlockFragmentActivity {
     private ComposeMessageFragment mFragment;
     private TextView mTitleView;
     private TextView mSubtitleView;
-    private ImageView mAvatarView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
-        ActionBar bar = getSupportActionBar();
-        bar.setCustomView(R.layout.compose_message_action_view);
-        bar.setDisplayShowHomeEnabled(false);
-        bar.setDisplayShowCustomEnabled(true);
+
+        setupActionBar();
 
         // load the fragment
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
-        mTitleView = (TextView) findViewById(R.id.title);
-        mSubtitleView = (TextView) findViewById(R.id.summary);
-        mAvatarView = (ImageView) findViewById(R.id.avatar);
+
+        View customView = getSupportActionBar().getCustomView();
+        mTitleView = (TextView) customView.findViewById(R.id.title);
+        mSubtitleView = (TextView) customView.findViewById(R.id.summary);
 
         processIntent(savedInstanceState);
+    }
+
+    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
+    private void setupActionBar() {
+        ActionBar bar = getSupportActionBar();
+        bar.setDisplayShowHomeEnabled(true);
+        bar.setCustomView(R.layout.compose_message_action_view);
+        bar.setDisplayShowCustomEnabled(true);
+        bar.setDisplayHomeAsUpEnabled(true);
+        bar.setHomeButtonEnabled(true);
+
+        // hack to remove padding from activity icon
+
+        int homeId;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
+            homeId = android.R.id.home;
+        else
+            homeId = android.support.v7.appcompat.R.id.home;
+
+        ImageView icon = (ImageView) findViewById(homeId);
+
+        FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
+        iconLp.topMargin = iconLp.bottomMargin = 0;
+        icon.setLayoutParams(iconLp);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        switch (itemId) {
+            case android.R.id.home:
+                onAvatarClick();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /** Sets custom title. Pass null to any of the arguments to skip setting it. */
@@ -111,11 +148,12 @@ public class ComposeMessage extends SherlockFragmentActivity {
             Drawable avatar = contact.getAvatar(this, null);
             if (avatar == null)
                 avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
-            mAvatarView.setImageDrawable(avatar);
+
+            getSupportActionBar().setIcon(avatar);
         }
     }
 
-    public void onAvatarClick(View view) {
+    private void onAvatarClick() {
         finish();
         startActivity(new Intent(this, ConversationList.class));
     }

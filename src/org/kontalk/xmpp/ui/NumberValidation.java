@@ -53,10 +53,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -66,9 +70,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -77,7 +78,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 
 /** Number validation activity. */
-public class NumberValidation extends SherlockAccountAuthenticatorActivity
+public class NumberValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
     private static final String TAG = NumberValidation.class.getSimpleName();
 
@@ -247,7 +248,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
         }
 
         // configuration change??
-        RetainData data = (RetainData) getLastNonConfigurationInstance();
+        RetainData data = (RetainData) getLastCustomNonConfigurationInstance();
         if (data != null) {
             synchronized (this) {
                 // sync starter was queued, we can exit
@@ -281,7 +282,7 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     /** Returning the validator thread. */
     @Override
-    public Object onRetainNonConfigurationInstance() {
+    public Object onRetainCustomNonConfigurationInstance() {
         RetainData data = new RetainData();
         data.validator = mValidator;
         data.phoneNumber = mPhoneNumber;
@@ -293,10 +294,10 @@ public class NumberValidation extends SherlockAccountAuthenticatorActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getSupportMenuInflater();
+        MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
         MenuItem item = menu.findItem(R.id.menu_settings);
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 

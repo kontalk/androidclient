@@ -66,6 +66,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
+/**
+ * Preferences activity.
+ * TODO convert to fragments layout
+ * @author Daniele Ricci
+ */
 public final class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
 

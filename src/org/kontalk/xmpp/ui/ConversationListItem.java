@@ -34,12 +34,13 @@ import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
+import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class ConversationListItem extends RelativeLayout {
+public class ConversationListItem extends RelativeLayout implements Checkable {
     //private static final String TAG = ConversationListItem.class.getSimpleName();
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
@@ -53,6 +54,8 @@ public class ConversationListItem extends RelativeLayout {
     //private ImageView mPresenceView;
     private QuickContactBadge mAvatarView;
     private TextView mCounterView;
+
+    private boolean mChecked = false;
 
     static private Drawable sDefaultContactImage;
 
@@ -99,6 +102,8 @@ public class ConversationListItem extends RelativeLayout {
 
     public final void bind(Context context, final Conversation conv) {
         mConversation = conv;
+        mChecked = false;
+
         String recipient = null;
 
         Contact contact = mConversation.getContact();
@@ -194,6 +199,28 @@ public class ConversationListItem extends RelativeLayout {
 
     public Conversation getConversation() {
         return mConversation;
+    }
+
+    @Override
+    public boolean isChecked() {
+        return mChecked;
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        mChecked = checked;
+
+        /** TODO checked conversation item
+        if (mChecked)
+            setBackgroundResource(R.color.conversation_active_background);
+        else
+            setBackgroundResource(0);
+         */
+    }
+
+    @Override
+    public void toggle() {
+        setChecked(!mChecked);
     }
 
 }

@@ -1,40 +1,43 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.kontalk.xmpp.ui;
 
 import org.kontalk.xmpp.R;
-import org.kontalk.xmpp.service.MessageCenterService;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.CursorAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-
-import com.actionbarsherlock.app.SherlockListActivity;
-import com.actionbarsherlock.view.MenuItem;
+import android.support.v7.app.ActionBarActivity;
+import android.view.MenuItem;
 
 
-/** Status message activity. */
-public class StatusActivity extends SherlockListActivity {
-    private EditText mStatus;
-    private CursorAdapter mAdapter;
+/**
+ * Status message activity.
+ * TODO use popup activity on tablet
+ * @author Daniele Ricci
+ */
+public class StatusActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.status_screen);
-
-        mStatus = (EditText) findViewById(android.R.id.input);
-        // TODO retrieve current status from server
-        mStatus.setText(MessagingPreferences.getStatusMessage(this));
-
-        mAdapter = new SimpleCursorAdapter(this,
-            android.R.layout.simple_list_item_1, null,
-            new String[] { "status" }, new int[] { android.R.id.text1 });
-        setListAdapter(mAdapter);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
@@ -43,23 +46,6 @@ public class StatusActivity extends SherlockListActivity {
         Intent intent = new Intent(context, StatusActivity.class);
         context.startActivityIfNeeded(intent, -1);
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // TODO async query
-        Cursor c = MessagingPreferences.getRecentStatusMessages(this);
-        mAdapter.changeCursor(c);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mAdapter != null)
-            mAdapter.changeCursor(null);
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -73,30 +59,4 @@ public class StatusActivity extends SherlockListActivity {
         }
     }
 
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        Cursor c = (Cursor) mAdapter.getItem(position);
-        // 0 = _id, 1 = status
-        finish(c.getString(1));
-    }
-
-    private void finish(String text) {
-        if (text.trim().length() <= 0)
-            text = text.trim();
-        MessagingPreferences.setStatusMessage(this, text);
-        MessagingPreferences.addRecentStatusMessage(this, text);
-
-        // start the message center to push the status message
-        MessageCenterService.updateStatus(this);
-        finish();
-    }
-
-    public void onStatusOk(View view) {
-        String text = mStatus.getText().toString();
-        finish(text);
-    }
-
-    public void onStatusCancel(View view) {
-        finish();
-    }
 }

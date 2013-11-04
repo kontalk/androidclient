@@ -31,19 +31,18 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
-
 
 /** Manual validation code input. */
-public class CodeValidation extends SherlockAccountAuthenticatorActivity
+public class CodeValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
     private static final String TAG = CodeValidation.class.getSimpleName();
 
@@ -73,7 +72,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
         mButton = (Button) findViewById(R.id.send_button);
 
         // configuration change??
-        RetainData data = (RetainData) getLastNonConfigurationInstance();
+        RetainData data = (RetainData) getLastCustomNonConfigurationInstance();
         if (data != null) {
             mValidator = data.validator;
             if (mValidator != null) {
@@ -112,7 +111,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
 
     /** Returning the validator thread. */
     @Override
-    public Object onRetainNonConfigurationInstance() {
+    public Object onRetainCustomNonConfigurationInstance() {
         RetainData data = new RetainData();
         data.validator = mValidator;
         return data;
