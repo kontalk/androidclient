@@ -210,10 +210,12 @@ public class ConversationListItem extends RelativeLayout implements Checkable {
     public void setChecked(boolean checked) {
         mChecked = checked;
 
+        /** TODO checked conversation item
         if (mChecked)
             setBackgroundResource(R.color.conversation_active_background);
         else
             setBackgroundResource(0);
+         */
     }
 
     @Override
