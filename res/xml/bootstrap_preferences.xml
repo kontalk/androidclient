@@ -73,8 +73,14 @@
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
-        <Preference
-            android:key="pref_about"
+        <Preference android:key="pref_donate"
+            android:title="@string/pref_donate">
+            <intent
+             android:targetClass="org.kontalk.xmpp.ui.AboutActivity"
+             android:targetPackage="org.kontalk.xmpp"
+             android:action="org.kontalk.DONATION" />
+        </Preference>
+        <Preference android:key="pref_about"
             android:title="@string/pref_about">
             <intent
              android:targetClass="org.kontalk.xmpp.ui.AboutActivity"

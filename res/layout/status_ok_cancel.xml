@@ -23,16 +23,14 @@
     android:layout_marginBottom="4dp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
-    <Button
+    <Button android:id="@+id/button_ok"
         android:text="@android:string/ok"
         android:layout_weight="1"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:onClick="onStatusOk"/>
-    <Button
+        android:layout_height="wrap_content"/>
+    <Button android:id="@+id/button_cancel"
         android:text="@android:string/cancel"
         android:layout_weight="1"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:onClick="onStatusCancel"/>
+        android:layout_height="wrap_content"/>
 </LinearLayout>

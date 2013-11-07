@@ -174,6 +174,12 @@ public class MessagingNotification {
 
         Cursor c = res.query(uri, proj, query, args, order);
 
+        // this shouldn't happen, but who knows...
+        if (c == null) {
+            nm.cancel(NOTIFICATION_ID_MESSAGES);
+            return;
+        }
+
         // no unread messages - delete notification
         int unread = c.getCount();
         if (unread == 0) {

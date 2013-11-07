@@ -20,6 +20,7 @@ package org.kontalk.xmpp.ui;
 
 import org.kontalk.xmpp.R;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -41,6 +42,9 @@ import android.view.MenuItem;
  * @author Andrea Cappelli
  */
 public class AboutActivity extends ActionBarActivity {
+
+    public static final String ACTION_DONATION = "org.kontalk.DONATION";
+    public static final String ACTION_CREDITS = "org.kontalk.CREDITS";
 
     private static final int ABOUT_ABOUT = 0;
     private static final int ABOUT_DONATION = 1;
@@ -80,6 +84,19 @@ public class AboutActivity extends ActionBarActivity {
 		);
 
         setupActivity();
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            String action = intent.getAction();
+            if (action != null) {
+
+                if (ACTION_DONATION.equals(action))
+                    mPager.setCurrentItem(ABOUT_DONATION, true);
+
+                else if (ACTION_CREDITS.equals(action))
+                    mPager.setCurrentItem(ABOUT_CREDITS, true);
+            }
+        }
 	}
 
 	private void setupActivity() {
@@ -105,13 +122,13 @@ public class AboutActivity extends ActionBarActivity {
         };
 
         bar.addTab(bar.newTab()
-            .setText("About")
+            .setText(R.string.title_about)
             .setTabListener(listener));
         bar.addTab(bar.newTab()
-            .setText("Donate")
+            .setText(R.string.title_donation)
             .setTabListener(listener));
         bar.addTab(bar.newTab()
-            .setText("Credits")
+            .setText(R.string.title_credits)
             .setTabListener(listener));
     }
 

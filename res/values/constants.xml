@@ -25,4 +25,5 @@
 	<string name="googleplus_link">https://plus.google.com/u/0/102201749813756709299</string>
 	<string name="twitter_link">https://twitter.com/kontalknet</string>
 	<string name="identica_link">https://identi.ca/kontalknet</string>
+    <string name="netsite">www.kontalk.net</string>
 </resources>

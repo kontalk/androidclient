@@ -45,7 +45,7 @@ public class ConversationList extends ActionBarActivity
         implements ContactsSyncActivity, ContactPickerListener {
     //private static final String TAG = ConversationList.class.getSimpleName();
 
-    ConversationListFragment mFragment;
+    private ConversationListFragment mFragment;
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
 
@@ -133,26 +133,15 @@ public class ConversationList extends ActionBarActivity
     /** Called when a contact has been selected from a {@link ContactsListFragment}. */
     @Override
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
-        // remove contact picker fragment
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.remove(fragment);
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        ft.commit();
-
         // open by user hash
         openConversation(Threads.getUri(contact.getHash()));
     }
 
     public void showContactPicker() {
-        if (isDualPane()) {
-            // TODO fragment
-        }
-        else {
-            // TODO one day it will be like this
-            // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
-            Intent i = new Intent(this, ContactsListActivity.class);
-            startActivityForResult(i, REQUEST_CONTACT_PICKER);
-        }
+        // TODO one day it will be like this
+        // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
+        Intent i = new Intent(this, ContactsListActivity.class);
+        startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
     @Override
@@ -175,7 +164,7 @@ public class ConversationList extends ActionBarActivity
                 // with this one inside the frame.
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_compose_message, f);
-                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 ft.addToBackStack(null);
                 ft.commit();
             }
@@ -189,7 +178,7 @@ public class ConversationList extends ActionBarActivity
     private void openConversation(Uri threadUri) {
         if (isDualPane()) {
             // TODO position
-            //getListView().setItemChecked(position, true);
+            //mFragment.getListView().setItemChecked(position, true);
 
             // load conversation
             String userId = threadUri.getLastPathSegment();

@@ -39,20 +39,7 @@ public class CreditsFragment extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.about_credits, container, false);
-        //Create a Card
-        Card card = new Card(getActivity(), R.layout.card_credits);
-        //Create a CardHeader
-        CardHeader header = new CardHeader(getActivity());
-        //Add Header to card
-        card.addCardHeader(header);
-        //Set card in the cardView
-        CardView cardView = (CardView) view.findViewById(R.id.carddemo);
-
-        cardView.setCard(card);
-
-        return view;
-
+        return inflater.inflate(R.layout.about_credits, container, false);
 	}
 
 }
