@@ -80,7 +80,7 @@ public class X509Bridge {
     public static X509Certificate createCertificate(PGPSecretKey secretKey, String passphrase, String subjectAltName)
             throws PGPException, InvalidKeyException, IllegalStateException,
             NoSuchAlgorithmException, SignatureException, CertificateException,
-            NoSuchProviderException {
+            NoSuchProviderException, IOException {
 
         // extract the private key
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
@@ -116,7 +116,7 @@ public class X509Bridge {
 
     private static X509Certificate createCertificate(PGPPublicKey publicKey, PGPPrivateKey privateKey, String subjectAltName)
             throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException,
-                SignatureException, CertificateException, NoSuchProviderException, PGPException {
+                SignatureException, CertificateException, NoSuchProviderException, PGPException, IOException {
 
         /*
          * The X.509 Name to be the subject DN is prepared.
@@ -159,7 +159,8 @@ public class X509Bridge {
         return createCertificate(
                 publicKey.getKey(PGP.PROVIDER), privateKey.getKey(), x509name,
                 creationTime, validTo,
-                subjectAltName);
+                subjectAltName,
+                publicKey.getEncoded());
     }
 
     /**
@@ -195,7 +196,7 @@ public class X509Bridge {
      */
     private static X509Certificate createCertificate(PublicKey pubKey,
             PrivateKey privKey, X509Name subject,
-            Date startDate, Date endDate, String subjectAltName)
+            Date startDate, Date endDate, String subjectAltName, byte[] publicKeyData)
             throws InvalidKeyException, IllegalStateException,
             NoSuchAlgorithmException, SignatureException, CertificateException,
             NoSuchProviderException {
@@ -292,6 +293,13 @@ public class X509Bridge {
             certGenerator.addExtension(X509Extensions.SubjectAlternativeName,
                     false, subjectAltNames);
         }
+
+        /*
+         * Adds the PGP public key block extension.
+         */
+        SubjectPGPPublicKeyInfo publicKeyExtension =
+            new SubjectPGPPublicKeyInfo(publicKeyData);
+        certGenerator.addExtension(SubjectPGPPublicKeyInfo.OID, false, publicKeyExtension);
 
         /*
          * Creates and sign this certificate with the private key
