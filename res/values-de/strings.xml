@@ -85,7 +85,7 @@
     <string name="pref_title_restart_msgcenter">Benutzen, wenn die Nachrichtenzentrale nicht korrekt funktioniert</string>
     <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
     <string name="pref_title_idle_time">Funktioniert nur, wenn Push-Benachrichtigungen aktiviert sind und vom Server unterstützt werden</string>
-    <string name="pref_maintainance">Wartung</string>
+    <string name="pref_maintenance">Wartung</string>
     <string name="contacts_list_title">Wählen Sie einen Kontakt</string>
     <string name="pref_messaging_settings">Nachrichten Einstellungen</string>
     <string name="pref_privacy_settings">Datenschutz Einstellungen</string>

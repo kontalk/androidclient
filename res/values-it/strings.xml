@@ -85,7 +85,7 @@
     <string name="pref_title_restart_msgcenter">Premilo se il centro messaggi non funziona correttamente</string>
     <string name="pref_idle_time">Disconnetti se inattivo</string>
     <string name="pref_title_idle_time">Funziona solo se le notifiche push sono abilitate e supportate dal server</string>
-    <string name="pref_maintainance">Manutenzione</string>
+    <string name="pref_maintenance">Manutenzione</string>
     <string name="contacts_list_title">Scegli un contatto</string>
     <string name="pref_messaging_settings">Impostazioni messaggi</string>
     <string name="pref_privacy_settings">Privacy</string>

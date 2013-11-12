@@ -83,7 +83,7 @@
     <string name="title_file_info">Información del archivo</string>
     <string name="pref_restart_msgcenter">Reinicie centro de mensajes</string>
     <string name="pref_title_restart_msgcenter">Use esta opción si el centro de mensajes no funciona correctamente</string>
-    <string name="pref_maintainance">Mantenimiento</string>
+    <string name="pref_maintenance">Mantenimiento</string>
     <string name="contacts_list_title">Elija un contacto</string>
     <string name="pref_messaging_settings">Ajustes de mensajes</string>
     <string name="pref_privacy_settings">Privacidad</string>

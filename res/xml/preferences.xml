@@ -112,8 +112,8 @@
             android:defaultValue="always"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:key="pref_maintainance"
-        android:title="@string/pref_maintainance">
+    <PreferenceCategory android:key="pref_maintenance"
+        android:title="@string/pref_maintenance">
         <ListPreference android:key="pref_idle_time"
             android:title="@string/pref_idle_time"
             android:summary="@string/pref_title_idle_time"
