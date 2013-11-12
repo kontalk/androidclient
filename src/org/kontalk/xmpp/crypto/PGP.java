@@ -1,14 +1,33 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2013 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.kontalk.xmpp.crypto;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
+import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 
 import org.spongycastle.bcpg.HashAlgorithmTags;
@@ -40,7 +59,16 @@ import android.os.Parcel;
 public class PGP {
 
     /** Security provider: Spongy Castle. */
-    private static final String PROVIDER = "SC";
+    public static final String PROVIDER = "SC";
+
+    /** Default EC curve used. */
+    private static final String EC_CURVE = "P-256";
+
+    /** Default RSA key length used. */
+    private static final int RSA_KEY_LENGTH = 2048;
+
+    // temporary flag for ECC experimentation
+    private static final boolean EXPERIMENTAL_ECC = false;
 
     private PGP() {
     }
@@ -72,17 +100,38 @@ public class PGP {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    // TODO one day this will be ECDSA
-    public static PGPDecryptedKeyPairRing create(int keysize)
-            throws NoSuchAlgorithmException, NoSuchProviderException, PGPException {
+    /** Creates an ECDSA/ECDH key pair. */
+    public static PGPDecryptedKeyPairRing create()
+            throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
 
-        KeyPairGenerator gen = KeyPairGenerator.getInstance("ElGamal", PROVIDER);
-        gen.initialize(keysize, new SecureRandom());
+        KeyPairGenerator gen;
+        PGPKeyPair encryptKp, signKp;
 
-        PGPKeyPair encryptKp = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, gen.generateKeyPair(), new Date());
+        if (EXPERIMENTAL_ECC) {
 
-        gen = KeyPairGenerator.getInstance("DSA", PROVIDER);
-        PGPKeyPair signKp = new JcaPGPKeyPair(PGPPublicKey.DSA, gen.generateKeyPair(), new Date());
+            gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
+            gen.initialize(new ECGenParameterSpec(EC_CURVE));
+
+            encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
+
+            gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
+            gen.initialize(new ECGenParameterSpec(EC_CURVE));
+
+            signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
+        }
+
+        else {
+
+            gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
+            gen.initialize(RSA_KEY_LENGTH);
+
+            encryptKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
+
+            gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
+            gen.initialize(RSA_KEY_LENGTH);
+
+            signKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
+        }
 
         return new PGPDecryptedKeyPairRing(signKp, encryptKp);
     }
@@ -115,7 +164,7 @@ public class PGP {
 
         PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
             new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
-                PGPUtil.SHA256).setProvider(PROVIDER));
+                PGPUtil.SHA1).setProvider(PROVIDER));
 
         sGen.init(PGPSignature.DIRECT_KEY, pgpPrivKey);
 

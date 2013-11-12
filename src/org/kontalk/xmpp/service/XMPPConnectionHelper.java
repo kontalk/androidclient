@@ -21,10 +21,12 @@ package org.kontalk.xmpp.service;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.XMPPException;
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.ClientHTTPConnection;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
+import org.kontalk.xmpp.crypto.PersonalKey;
 
 import android.content.Context;
 import android.util.Log;
@@ -99,7 +101,7 @@ public class XMPPConnectionHelper extends Thread {
         connect();
     }
 
-    public void connectOnce() throws XMPPException {
+    public void connectOnce(PersonalKey key) throws XMPPException {
         Log.d(TAG, "using server " + mServer.toString());
 
         if (mServerDirty) {
@@ -111,7 +113,12 @@ public class XMPPConnectionHelper extends Thread {
 
         // recreate connection if closed
         if (mConn == null || !mConn.isConnected()) {
-            mConn = new KontalkConnection(mServer);
+            if (key == null)
+                mConn = new KontalkConnection(mServer);
+            else
+                mConn = new KontalkConnection(mServer,
+                    key.getSignKeyPair().getPrivateKey().getKey(),
+                    key.getBridgeCertificate());
             if (mListener != null)
                 mListener.created();
         }
@@ -142,9 +149,17 @@ public class XMPPConnectionHelper extends Thread {
             return;
         }
 
+        PersonalKey key = null;
+        try {
+            key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
+        }
+        catch (Exception e) {
+            Log.e(Kontalk.TAG, "unable to retrieve personal key - not using SSL", e);
+        }
+
         while (mConnecting) {
             try {
-                connectOnce();
+                connectOnce(key);
 
                 // this should be the right moment
                 mRetryCount = 0;

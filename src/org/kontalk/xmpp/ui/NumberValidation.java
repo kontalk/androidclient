@@ -33,7 +33,10 @@ import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.crypto.X509Bridge;
 import org.kontalk.xmpp.service.KeyPairGeneratorService;
+import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
+import org.kontalk.xmpp.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.CountryCodesAdapter.CountryCode;
 
@@ -41,7 +44,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -124,36 +126,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         String phoneNumber;
         PersonalKey key;
         boolean syncing;
-    }
-
-    private interface PersonalKeyRunnable {
-        public void run(PersonalKey key);
-    }
-
-    private final static class KeyGeneratedReceiver extends BroadcastReceiver {
-        private final Handler handler;
-        private final PersonalKeyRunnable action;
-
-        public KeyGeneratedReceiver(Handler handler, PersonalKeyRunnable action) {
-            this.handler = handler;
-            this.action = action;
-        }
-
-        @Override
-        public void onReceive(Context context, final Intent intent) {
-            if (KeyPairGeneratorService.ACTION_GENERATE.equals(intent.getAction())) {
-                // we can stop the service now
-                context.stopService(new Intent(context, KeyPairGeneratorService.class));
-
-                handler.post(new Runnable() {
-                    public void run() {
-                        PersonalKey key = intent.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
-                        action.run(key);
-                    }
-                });
-            }
-        }
-
     }
 
     /**
@@ -334,8 +306,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
             lbm.registerReceiver(mKeyReceiver, filter);
 
-            // TODO i18n
-            Toast.makeText(this, "Generating keypair in the background.",
+            Toast.makeText(this, R.string.msg_generating_keypair,
                 Toast.LENGTH_LONG).show();
 
             Intent i = new Intent(this, KeyPairGeneratorService.class);
@@ -635,10 +606,24 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
         mAuthtoken = token;
 
+        // generate the bridge certificate
+        String passphrase = ((Kontalk) getApplicationContext()).getCachedPassphrase();
+        byte[] bridgeCertData;
+        try {
+            // TODO subjectAltName?
+            bridgeCertData = X509Bridge.createCertificate(privateKeyData, publicKeyData, passphrase, null).getEncoded();
+        }
+        catch (Exception e) {
+            // abort
+            throw new RuntimeException("unable to build X.509 bridge certificate", e);
+        }
+
         // the password is actually the auth token
         mAccountManager.addAccountExplicitly(account, mAuthtoken, null);
         mAccountManager.setUserData(account, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
         mAccountManager.setUserData(account, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+        mAccountManager.setUserData(account, Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
+
         // Set contacts sync for this account.
         ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
         ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);

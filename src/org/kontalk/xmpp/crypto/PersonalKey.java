@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2013 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,17 @@
 
 package org.kontalk.xmpp.crypto;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
+import java.io.InputStream;
+import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.util.Date;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.spongycastle.openpgp.PGPException;
@@ -40,10 +44,8 @@ import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
 import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -54,13 +56,21 @@ public class PersonalKey implements Parcelable {
 
     /** Decrypted key pair (for direct usage). */
     private final PGPDecryptedKeyPairRing mPair;
+    /** X.509 bridge certificate. */
+    private X509Certificate mBridgeCert;
 
-    private PersonalKey(PGPKeyPair signKp, PGPKeyPair encryptKp) {
-        mPair = new PGPDecryptedKeyPairRing(signKp, encryptKp);
+    private PersonalKey(PGPDecryptedKeyPairRing keyPair, X509Certificate bridgeCert) {
+        mPair = keyPair;
+        mBridgeCert = bridgeCert;
+    }
+
+    private PersonalKey(PGPKeyPair signKp, PGPKeyPair encryptKp, X509Certificate bridgeCert) {
+        this(new PGPDecryptedKeyPairRing(signKp, encryptKp), bridgeCert);
     }
 
     private PersonalKey(Parcel in) throws PGPException {
         mPair = PGP.fromParcel(in);
+        mBridgeCert = X509Bridge.fromParcel(in);
     }
 
     public PGPKeyPair getEncryptKeyPair() {
@@ -71,7 +81,17 @@ public class PersonalKey implements Parcelable {
         return mPair.signKey;
     }
 
-    public PGPKeyPairRing store(Context context, String name, String email, String comment, String passphrase) throws PGPException {
+    public X509Certificate getBridgeCertificate() {
+        return mBridgeCert;
+    }
+
+    public PGPKeyPairRing store(String userId, String network, String passphrase) throws PGPException {
+        return store("TEST",
+            userId + '@' + network, "NO COMMENT",
+            passphrase);
+    }
+
+    public PGPKeyPairRing store(String name, String email, String comment, String passphrase) throws PGPException {
         // name[ (comment)] <[email]>
         StringBuilder userid = new StringBuilder(name);
 
@@ -100,14 +120,16 @@ public class PersonalKey implements Parcelable {
 
     /** Creates a {@link PersonalKey} from private and public key byte buffers. */
     @SuppressWarnings("unchecked")
-    public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase) throws PGPException, IOException {
+    public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
+            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+
         KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
         PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
-            .setProvider("SC")
+            .setProvider(PGP.PROVIDER)
             .build(passphrase.toCharArray());
 
         PGPKeyPair signKp, encryptKp;
@@ -117,6 +139,7 @@ public class PersonalKey implements Parcelable {
         PGPPublicKey   encPub = null;
         PGPPrivateKey  encPriv = null;
 
+        // public keys
         Iterator<PGPPublicKey> pkeys = pubRing.getPublicKeys();
         while (pkeys.hasNext()) {
             PGPPublicKey key = pkeys.next();
@@ -130,6 +153,7 @@ public class PersonalKey implements Parcelable {
             }
         }
 
+        // secret keys
         Iterator<PGPSecretKey> skeys = secRing.getSecretKeys();
         while (skeys.hasNext()) {
             PGPSecretKey key = skeys.next();
@@ -144,26 +168,41 @@ public class PersonalKey implements Parcelable {
             }
         }
 
-        if (encPriv != null && encPub != null && signPriv != null && signPub != null) {
+        // X.509 bridge certificate
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509", PGP.PROVIDER);
+        InputStream in = new ByteArrayInputStream(bridgeCertData);
+        X509Certificate bridgeCert = (X509Certificate) certFactory.generateCertificate(in);
+
+        /* TEST
+        X500Principal subject = bridgeCert.getSubjectX500Principal();
+        Log.d(Kontalk.TAG, "subject <" + subject.toString() + "> (" + subject.getName() + ")");
+
+        FileOutputStream fout = new FileOutputStream("/sdcard/bridge.crt");
+        fout.write(bridgeCertData);
+        fout.close();
+
+        fout = new FileOutputStream("/sdcard/private.key");
+        fout.write(privateKeyData);
+        fout.close();
+
+        fout = new FileOutputStream("/sdcard/public.key");
+        fout.write(publicKeyData);
+        fout.close();
+         */
+
+        if (encPriv != null && encPub != null && signPriv != null && signPub != null && bridgeCert != null) {
             signKp = new PGPKeyPair(signPub, signPriv);
             encryptKp = new PGPKeyPair(encPub, encPriv);
-            return new PersonalKey(signKp, encryptKp);
+            return new PersonalKey(signKp, encryptKp, bridgeCert);
         }
 
         throw new PGPException("invalid key data");
     }
 
-    public static PersonalKey create(int keysize) throws IOException {
+    public static PersonalKey create() throws IOException {
         try {
-            KeyPairGenerator gen = KeyPairGenerator.getInstance("ElGamal", "SC");
-            gen.initialize(keysize, new SecureRandom());
-
-            PGPKeyPair encryptKp = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, gen.generateKeyPair(), new Date());
-
-            gen = KeyPairGenerator.getInstance("DSA", "SC");
-            PGPKeyPair signKp = new JcaPGPKeyPair(PGPPublicKey.DSA, gen.generateKeyPair(), new Date());
-
-            return new PersonalKey(signKp, encryptKp);
+            PGPDecryptedKeyPairRing kp = PGP.create();
+            return new PersonalKey(kp, null);
         }
         catch (Exception e) {
             IOException io = new IOException("unable to generate keypair");
@@ -215,7 +254,7 @@ public class PersonalKey implements Parcelable {
             PGP.toParcel(mPair, dest);
         }
         catch (Exception e) {
-            Log.e("PersonalKey", "error writing key to parcel", e);
+            throw new RuntimeException("error writing key to parcel", e);
         }
     }
 
@@ -226,6 +265,7 @@ public class PersonalKey implements Parcelable {
                 return new PersonalKey(source);
             }
             catch (PGPException e) {
+                Log.w(Kontalk.TAG, "error creating from parcel", e);
                 return null;
             }
         }

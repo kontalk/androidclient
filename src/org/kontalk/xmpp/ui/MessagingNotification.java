@@ -62,6 +62,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_DOWNLOAD_OK     = 105;
     public static final int NOTIFICATION_ID_DOWNLOAD_ERROR  = 106;
     public static final int NOTIFICATION_ID_QUICK_REPLY     = 107;
+    public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 108;
 
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {

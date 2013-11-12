@@ -19,12 +19,13 @@
 package org.kontalk.xmpp.authenticator;
 
 import java.io.IOException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.ui.NumberValidation;
 import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.util.encoders.Base64;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
@@ -36,6 +37,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -52,6 +54,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String AUTHTOKEN_TYPE = "org.kontalk.token";
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
+    public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
 
     private final Context mContext;
     private final Handler mHandler;
@@ -92,16 +95,28 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static PersonalKey loadDefaultPersonalKey(Context ctx, String passphrase)
-            throws PGPException, IOException {
+            throws PGPException, IOException, CertificateException, NoSuchProviderException {
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);
 
         String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
         String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
+        String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
 
         return PersonalKey
-            .load(Base64.decode(privKeyData), Base64.decode(pubKeyData),
-                passphrase);
+            .load(Base64.decode(privKeyData, Base64.DEFAULT),
+                  Base64.decode(pubKeyData, Base64.DEFAULT),
+                  passphrase,
+                  Base64.decode(bridgeCertData, Base64.DEFAULT)
+            );
+    }
+
+    public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData, byte[] bridgeCertData) {
+        AccountManager am = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(am);
+        am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+        am.setUserData(acc, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+        am.setUserData(acc, Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
     }
 
     @Override

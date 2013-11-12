@@ -19,6 +19,8 @@
 package org.kontalk.xmpp;
 
 import java.io.IOException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
 
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.crypto.PGP;
@@ -54,7 +56,7 @@ import android.util.Log;
 
  */
 public class Kontalk extends Application {
-    private static final String TAG = Kontalk.class.getSimpleName();
+    public static final String TAG = Kontalk.class.getSimpleName();
 
     /** Supported client protocol revision. */
     public static final int CLIENT_PROTOCOL = 4;
@@ -180,9 +182,15 @@ public class Kontalk extends Application {
         */
     }
 
-    public PersonalKey getPersonalKey() throws PGPException, IOException {
-        if (mDefaultKey == null)
-            mDefaultKey = Authenticator.loadDefaultPersonalKey(this, mKeyPassphrase);
+    public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
+        try {
+            if (mDefaultKey == null)
+                mDefaultKey = Authenticator.loadDefaultPersonalKey(this, mKeyPassphrase);
+        }
+        catch (NoSuchProviderException e) {
+            // this shouldn't happen, so crash the application
+            throw new RuntimeException("no such crypto provider!?", e);
+        }
 
         return mDefaultKey;
     }
