@@ -64,6 +64,9 @@ public class PGP {
     /** Default EC curve used. */
     private static final String EC_CURVE = "P-256";
 
+    /** Default RSA key length used. */
+    private static final int RSA_KEY_LENGTH = 2048;
+
     // temporary flag for ECC experimentation
     private static final boolean EXPERIMENTAL_ECC = false;
 
@@ -120,12 +123,12 @@ public class PGP {
         else {
 
             gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
-            gen.initialize(1024);
+            gen.initialize(RSA_KEY_LENGTH);
 
             encryptKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
 
             gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
-            gen.initialize(1024);
+            gen.initialize(RSA_KEY_LENGTH);
 
             signKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
         }
@@ -160,7 +163,7 @@ public class PGP {
         PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
 
         PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
-            new JcaPGPContentSignerBuilder(PGPPublicKey.RSA_GENERAL, // secret.getPublicKey().getAlgorithm(),
+            new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
                 PGPUtil.SHA1).setProvider(PROVIDER));
 
         sGen.init(PGPSignature.DIRECT_KEY, pgpPrivKey);

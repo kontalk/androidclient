@@ -19,7 +19,6 @@
 package org.kontalk.xmpp.crypto;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchProviderException;
@@ -28,8 +27,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.PGP.PGPDecryptedKeyPairRing;
@@ -176,6 +173,7 @@ public class PersonalKey implements Parcelable {
         InputStream in = new ByteArrayInputStream(bridgeCertData);
         X509Certificate bridgeCert = (X509Certificate) certFactory.generateCertificate(in);
 
+        /* TEST
         X500Principal subject = bridgeCert.getSubjectX500Principal();
         Log.d(Kontalk.TAG, "subject <" + subject.toString() + "> (" + subject.getName() + ")");
 
@@ -190,6 +188,7 @@ public class PersonalKey implements Parcelable {
         fout = new FileOutputStream("/sdcard/public.key");
         fout.write(publicKeyData);
         fout.close();
+         */
 
         if (encPriv != null && encPub != null && signPriv != null && signPub != null && bridgeCert != null) {
             signKp = new PGPKeyPair(signPub, signPriv);
@@ -255,7 +254,7 @@ public class PersonalKey implements Parcelable {
             PGP.toParcel(mPair, dest);
         }
         catch (Exception e) {
-            Log.e("PersonalKey", "error writing key to parcel", e);
+            throw new RuntimeException("error writing key to parcel", e);
         }
     }
 
@@ -266,6 +265,7 @@ public class PersonalKey implements Parcelable {
                 return new PersonalKey(source);
             }
             catch (PGPException e) {
+                Log.w(Kontalk.TAG, "error creating from parcel", e);
                 return null;
             }
         }

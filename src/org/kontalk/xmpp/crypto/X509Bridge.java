@@ -71,8 +71,7 @@ import android.os.Parcel;
  */
 public class X509Bridge {
 
-    public final static String DN_COMMON_PART_O = "OpenPGP to X.509 Bridge";
-    public final static String DN_COMMON_PART_OU = "RDFauth Test";
+    private final static String DN_COMMON_PART_O = "OpenPGP to X.509 Bridge";
 
     private X509Bridge() {
     }
@@ -125,13 +124,8 @@ public class X509Bridge {
         Vector<DERObjectIdentifier> x509NameOids = new Vector<DERObjectIdentifier>();
         Vector<String> x509NameValues = new Vector<String>();
 
-        /*
         x509NameOids.add(X509Name.O);
         x509NameValues.add(DN_COMMON_PART_O);
-
-        x509NameOids.add(X509Name.OU);
-        x509NameValues.add(DN_COMMON_PART_OU);
-        */
 
         for (@SuppressWarnings("unchecked") Iterator<Object> it = (Iterator<Object>) publicKey.getUserIDs(); it.hasNext();) {
             Object attrib = it.next();
@@ -241,12 +235,17 @@ public class X509Bridge {
         String pubKeyAlgorithm = pubKey.getAlgorithm();
         if (pubKeyAlgorithm.equals("DSA")) {
             certGenerator.setSignatureAlgorithm("SHA1WithDSA");
-        } else if (pubKeyAlgorithm.equals("RSA")) {
+        }
+        else if (pubKeyAlgorithm.equals("RSA")) {
             certGenerator.setSignatureAlgorithm("SHA1WithRSAEncryption");
-        } else {
-            RuntimeException re = new RuntimeException(
+        }
+        else if (pubKeyAlgorithm.equals("ECDSA")) {
+            // TODO is this even legal?
+            certGenerator.setSignatureAlgorithm("SHA1WithECDSA");
+        }
+        else {
+            throw new RuntimeException(
                     "Algorithm not recognised: " + pubKeyAlgorithm);
-            throw re;
         }
 
         /*
