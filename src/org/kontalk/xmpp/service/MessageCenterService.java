@@ -398,16 +398,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         if (mHelper != null) {
-            mHelper.setListener(null);
-            // this is because of NetworkOnMainThreadException
-            new AbortThread(mHelper).start();
-            mHelper = null;
+            synchronized (mHelper) {
+                mHelper.setListener(null);
+                // this is because of NetworkOnMainThreadException
+                new AbortThread(mHelper).start();
+                mHelper = null;
+            }
         }
         if (mConnection != null) {
-            mConnection.removeConnectionListener(this);
-            // this is because of NetworkOnMainThreadException
-            new DisconnectThread(mConnection).start();
-            mConnection = null;
+            synchronized (mConnection) {
+                mConnection.removeConnectionListener(this);
+                // this is because of NetworkOnMainThreadException
+                new DisconnectThread(mConnection).start();
+                mConnection = null;
+            }
         }
 
         // stop any key pair regeneration service

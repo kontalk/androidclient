@@ -105,6 +105,10 @@ public class XMPPConnectionHelper extends Thread {
         Log.d(TAG, "using server " + mServer.toString());
 
         if (mServerDirty) {
+            // reset dirty server status
+            mServerDirty = false;
+
+            // destroy connection
             if (mConn != null) {
                 mConn.disconnect();
                 mConn = null;
