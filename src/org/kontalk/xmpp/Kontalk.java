@@ -180,6 +180,16 @@ public class Kontalk extends Application {
             Log.e(TAG, "key test error", e);
         }
         */
+
+        /* TEST delete key data :D
+        AccountManager am = AccountManager.get(this);
+        Account acc = Authenticator.getDefaultAccount(am);
+        if (acc != null) {
+            am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, null);
+            am.setUserData(acc, Authenticator.DATA_PUBLICKEY, null);
+            am.setUserData(acc, Authenticator.DATA_BRIDGECERT, null);
+        }
+        */
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {

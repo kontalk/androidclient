@@ -84,7 +84,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return getDefaultAccount(AccountManager.get(ctx));
     }
 
-    private static Account getDefaultAccount(AccountManager m) {
+    public static Account getDefaultAccount(AccountManager m) {
         Account[] accs = m.getAccountsByType(ACCOUNT_TYPE);
         return (accs.length > 0) ? accs[0] : null;
     }
@@ -92,6 +92,12 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static String getDefaultAccountName(Context ctx) {
         Account acc = getDefaultAccount(ctx);
         return (acc != null) ? acc.name : null;
+    }
+
+    public static boolean hasPersonalKey(AccountManager am, Account account) {
+        return am.getUserData(account, DATA_PRIVATEKEY) != null &&
+            am.getUserData(account, DATA_PUBLICKEY) != null &&
+            am.getUserData(account, DATA_BRIDGECERT) != null;
     }
 
     public static PersonalKey loadDefaultPersonalKey(Context ctx, String passphrase)

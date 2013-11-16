@@ -23,9 +23,13 @@ import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
+import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.sync.SyncAdapter;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -58,6 +62,7 @@ public class ConversationList extends ActionBarActivity
                 .findFragmentById(R.id.fragment_conversation_list);
 
         checkBigUpgrade1();
+        checkBigUpgrade2();
     }
 
     public void titleComposeMessage(View view) {
@@ -77,6 +82,21 @@ public class ConversationList extends ActionBarActivity
         if (!MessagingPreferences.getBigUpgrade1(this) || (oldSync != null && oldSync.booleanValue())) {
             SyncAdapter.requestSync(getApplicationContext(), true);
             // TODO we need to requery the list when sync has finished
+        }
+    }
+
+    /** Second big upgrade: asymmetric key encryption. */
+    private void checkBigUpgrade2() {
+        AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
+        Account account = Authenticator.getDefaultAccount(am);
+        if (account != null) {
+            if (!Authenticator.hasPersonalKey(am, account)) {
+                // no key pair found, generate a new one
+                Toast.makeText(this, R.string.msg_generating_keypair,
+                    Toast.LENGTH_LONG).show();
+
+                MessageCenterService.regenerateKeyPair(getApplicationContext());
+            }
         }
     }
 
