@@ -33,12 +33,10 @@ import java.util.Map;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.ClientHTTPConnection;
-import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.ui.ConversationList;
 import org.kontalk.xmpp.ui.MessagingNotification;
-import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.ui.ProgressNotificationBuilder;
 import org.kontalk.xmpp.util.MediaStorage;
 
@@ -123,9 +121,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         mCanceled = false;
 
         if (mDownloadClient == null) {
-            EndpointServer server = MessagingPreferences.getEndpointServer(this);
             String token = Authenticator.getDefaultAccountToken(this);
-            mDownloadClient = new ClientHTTPConnection(null, this, server, token);
+            mDownloadClient = new ClientHTTPConnection(this, token);
         }
 
         try {

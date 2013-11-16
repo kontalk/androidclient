@@ -3,25 +3,19 @@ package org.kontalk.xmpp.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.kontalk.xmpp.service.ClientThread;
 import org.kontalk.xmpp.service.DownloadListener;
 import org.kontalk.xmpp.util.ProgressOutputStreamEntity;
 
@@ -41,71 +35,20 @@ public class ClientHTTPConnection {
     private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
     private static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
 
-    /** Message flags header. */
-    private static final String HEADER_MESSAGE_FLAGS = "X-Message-Flags";
-
     protected final Context mContext;
-    protected final EndpointServer mServer;
     protected final String mAuthToken;
-    protected final ClientThread mClient;
 
     protected HttpRequestBase currentRequest;
     protected HttpClient mConnection;
 
-    public ClientHTTPConnection(ClientThread client, Context context, EndpointServer server, String token) {
+    public ClientHTTPConnection(Context context, String token) {
         mContext = context;
-        mServer = server;
         mAuthToken = token;
-        mClient = client;
     }
 
     public void abort() {
         if (currentRequest != null)
             currentRequest.abort();
-    }
-
-    /**
-     * A generic endpoint request method for the messaging server.
-     * @param path request path
-     * @param params additional GET parameters
-     * @param token the autentication token (if needed)
-     * @param mime if null will use <code>application/x-google-protobuf</code>
-     * @param content the POST body content, if null it will use GET
-     * @param forcePost force a POST request even with null content (useful for
-     * post-poning entity creation)
-     * @return the request object
-     * @throws IOException
-     */
-    public HttpRequestBase prepare(String path,
-            List<NameValuePair> params, String token,
-            String mime, byte[] content, boolean forcePost) throws IOException {
-
-        HttpRequestBase req;
-
-        // compose uri
-        StringBuilder uri = new StringBuilder(mServer.getHttpUrl());
-        uri.append(path);
-        if (params != null)
-            uri.append("?").
-                append(URLEncodedUtils.format(params, "UTF-8"));
-
-        // request type
-        if (content != null || forcePost) {
-            req = new HttpPost(uri.toString());
-            req.setHeader("Content-Type", mime != null ?
-                    mime : "application/x-google-protobuf");
-            if (content != null)
-                ((HttpPost)req).setEntity(new ByteArrayEntity(content));
-        }
-        else
-            req = new HttpGet(uri.toString());
-
-        // token
-        if (token != null)
-            req.setHeader(HEADER_NAME_AUTHORIZATION,
-                    HEADER_VALUE_AUTHORIZATION + token);
-
-        return req;
     }
 
     /**
@@ -115,7 +58,7 @@ public class ClientHTTPConnection {
      * @return the request object
      * @throws IOException
      */
-    public HttpRequestBase prepareURLDownload(String token, String url) throws IOException {
+    private HttpRequestBase prepareURLDownload(String token, String url) throws IOException {
         HttpGet req = new HttpGet(url);
 
         if (token != null)

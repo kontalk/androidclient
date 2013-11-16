@@ -29,27 +29,17 @@ package org.kontalk.xmpp.client;
 public class EndpointServer {
     /** Default Kontalk client port. */
     public static final int DEFAULT_PORT = 5222;
-    /** Default Kontalk HTTP port. */
-    public static final int DEFAULT_HTTP_PORT = 6128;
 
     private String mHost;
     private int mPort;
-    private int mHttpPort;
     private String mNetwork;
 
-    private String mUrl;
-
     public EndpointServer(String host) {
-        this(null, host, DEFAULT_PORT, DEFAULT_HTTP_PORT);
+        this(null, host, DEFAULT_PORT);
         if (host.contains("|")) {
             String[] parsed = host.split("\\|");
             mNetwork = parsed[0];
             mHost = parsed[1];
-        }
-        if (mHost.contains("/")) {
-            String[] parsed = mHost.split("/");
-            mHost = parsed[0];
-            mHttpPort = Integer.parseInt(parsed[1]);
         }
         if (mHost.contains(":")) {
             String[] parsed = mHost.split(":");
@@ -58,11 +48,10 @@ public class EndpointServer {
         }
     }
 
-    public EndpointServer(String network, String host, int port, int httpPort) {
+    public EndpointServer(String network, String host, int port) {
         mNetwork = network;
         mHost = host;
         mPort = port;
-        mHttpPort = httpPort;
     }
 
     @Override
@@ -82,13 +71,4 @@ public class EndpointServer {
         return mNetwork;
     }
 
-    public String getHttpUrl() {
-        if (mUrl == null)
-            mUrl = String.format("http://%s:%d", mHost, mHttpPort);
-        return mUrl;
-    }
-
-    public int getHttpPort() {
-        return mHttpPort;
-    }
 }
