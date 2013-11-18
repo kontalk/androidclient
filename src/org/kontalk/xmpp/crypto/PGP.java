@@ -42,8 +42,6 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
-import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
-import org.spongycastle.openpgp.PGPSignatureSubpacketVector;
 import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.PGPDigestCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
@@ -166,14 +164,9 @@ public class PGP {
             new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
                 PGPUtil.SHA1).setProvider(PROVIDER));
 
-        sGen.init(PGPSignature.DIRECT_KEY, pgpPrivKey);
+        sGen.init(PGPSignature.CASUAL_CERTIFICATION, pgpPrivKey);
 
-        PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
-
-        PGPSignatureSubpacketVector packetVector = spGen.generate();
-        sGen.setHashedSubpackets(packetVector);
-
-        return PGPPublicKey.addCertification(keyToBeSigned, id, sGen.generate());
+        return PGPPublicKey.addCertification(keyToBeSigned, id, sGen.generateCertification(id, keyToBeSigned));
     }
 
     public static PGPDecryptedKeyPairRing fromParcel(Parcel in) throws PGPException {
