@@ -54,7 +54,7 @@ public class KontalkConnection extends XMPPConnection {
 
     private void setupSSL(PrivateKey privateKey, X509Certificate bridgeCert) {
         try {
-            SSLContext ctx = SSLContext.getInstance("TLSv1");
+            SSLContext ctx = SSLContext.getInstance("TLS");
 
             // in-memory keystore
             KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
