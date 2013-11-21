@@ -19,6 +19,7 @@
 package org.kontalk.xmpp.ui;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.SocketException;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -42,6 +43,8 @@ import org.kontalk.xmpp.ui.CountryCodesAdapter.CountryCode;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
@@ -106,7 +109,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private NumberValidator mValidator;
     private Handler mHandler;
 
-    private String mAuthtoken;
     private String mAuthtokenType;
     private String mPhoneNumber;
 
@@ -586,7 +588,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
-    protected void finishLogin(String token, byte[] privateKeyData, byte[] publicKeyData) {
+    protected void finishLogin(final String token, final byte[] privateKeyData, final byte[] publicKeyData) {
         Log.v(TAG, "finishing login");
 
         // update public key
@@ -604,7 +606,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
 
         final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
-        mAuthtoken = token;
 
         // generate the bridge certificate
         String passphrase = ((Kontalk) getApplicationContext()).getCachedPassphrase();
@@ -618,32 +619,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             throw new RuntimeException("unable to build X.509 bridge certificate", e);
         }
 
-        // the password is actually the auth token
-        mAccountManager.addAccountExplicitly(account, mAuthtoken, null);
-        mAccountManager.setUserData(account, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
-        mAccountManager.setUserData(account, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
-        mAccountManager.setUserData(account, Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
-
-        // Set contacts sync for this account.
-        ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
-        ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);
-
-        // send back result
-        final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, mPhoneNumber);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);
-        if (mAuthtokenType != null
-            && mAuthtokenType.equals(Authenticator.AUTHTOKEN_TYPE)) {
-            intent.putExtra(AccountManager.KEY_AUTHTOKEN, mAuthtoken);
-        }
-        setAccountAuthenticatorResult(intent.getExtras());
-        setResult(RESULT_OK, intent);
-
-        // ok enable services
-        Kontalk.setServicesEnabled(this, true);
-
-        // manual sync starter
-        delayedSync();
+        // workaround for bug in AccountManager (http://stackoverflow.com/a/11698139/1045199)
+        // procedure will continue in removeAccount callback
+        mAccountManager.removeAccount(account,
+            new AccountRemovalCallback(this, account, token,
+                privateKeyData, publicKeyData, bridgeCertData),
+            mHandler);
     }
 
     @Override
@@ -710,5 +691,65 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("phone", mPhoneNumber);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
+    }
+
+    private static class AccountRemovalCallback implements AccountManagerCallback<Boolean> {
+        private WeakReference<NumberValidation> a;
+        private final Account account;
+        private final String token;
+        private final byte[] privateKeyData;
+        private final byte[] publicKeyData;
+        private final byte[] bridgeCertData;
+
+        public AccountRemovalCallback(NumberValidation activity, Account account,
+                String token, byte[] privateKeyData, byte[] publicKeyData,
+                byte[] bridgeCertData) {
+            this.a = new WeakReference<NumberValidation>(activity);
+            this.account = account;
+            this.token = token;
+            this.privateKeyData = privateKeyData;
+            this.publicKeyData = publicKeyData;
+            this.bridgeCertData = bridgeCertData;
+        }
+
+        @Override
+        public void run(AccountManagerFuture<Boolean> result) {
+            NumberValidation ctx = a.get();
+            if (ctx != null) {
+                AccountManager am = (AccountManager) ctx
+                    .getSystemService(Context.ACCOUNT_SERVICE);
+
+                // account userdata
+                Bundle data = new Bundle();
+                data.putString(Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+                data.putString(Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+                data.putString(Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
+
+                // the password is actually the auth token
+                am.addAccountExplicitly(account, token, data);
+
+                // Set contacts sync for this account.
+                ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
+                ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);
+
+                // send back result
+                final Intent intent = new Intent();
+                intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
+                intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);
+                if (ctx.mAuthtokenType != null
+                    && ctx.mAuthtokenType.equals(Authenticator.AUTHTOKEN_TYPE)) {
+                    intent.putExtra(AccountManager.KEY_AUTHTOKEN, token);
+                }
+                ctx.setAccountAuthenticatorResult(intent.getExtras());
+                ctx.setResult(RESULT_OK, intent);
+
+                // ok enable services
+                Kontalk.setServicesEnabled(ctx, true);
+
+                // manual sync starter
+                ctx.delayedSync();
+            }
+        }
+
     }
 }
