@@ -1572,9 +1572,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // sign key and send it back
                 try {
-                    PersonalKey key = Authenticator.loadDefaultPersonalKey
-                        (MessageCenterService.this,
-                            ((Kontalk)getApplicationContext()).getCachedPassphrase());
+                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
                     PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), pkey.getUid());
                     String keydata = Base64.encodeToString(signedKey.getEncoded(), Base64.NO_WRAP);
@@ -2134,6 +2132,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             // store key data in AccountManager
                             Authenticator.setDefaultPersonalKey(MessageCenterService.this,
                                 publicKeyData, privateKeyData, bridgeCertData);
+                            // invalidate cached personal key
+                            ((Kontalk)getApplicationContext()).invalidatePersonalKey();
 
                             mHandler.post(new Runnable() {
                                 public void run() {

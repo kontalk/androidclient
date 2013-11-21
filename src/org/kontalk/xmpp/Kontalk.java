@@ -135,7 +135,10 @@ public class Kontalk extends Application {
                         Log.w(TAG, "my account has been removed, shutting down");
                         // delete all messages
                         MessagesProvider.deleteDatabase(Kontalk.this);
+                        // stop message center
                         MessageCenterService.stop(Kontalk.this);
+                        // invalidate cached personal key
+                        invalidatePersonalKey();
                     }
                 }
             };
@@ -203,6 +206,11 @@ public class Kontalk extends Application {
         }
 
         return mDefaultKey;
+    }
+
+    /** Invalidates the cached personal key. */
+    public void invalidatePersonalKey() {
+        mDefaultKey = null;
     }
 
     public String getCachedPassphrase()  {
