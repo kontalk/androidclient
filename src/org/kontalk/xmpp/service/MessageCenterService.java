@@ -397,6 +397,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mIdleHandler = null;
         }
 
+        // disable listeners
+        if (mHelper != null)
+            mHelper.setListener(null);
+        if (mConnection != null)
+            mConnection.removeConnectionListener(this);
+
+        // abort connection helper (if any)
         if (mHelper != null) {
             synchronized (mHelper) {
                 mHelper.setListener(null);
@@ -405,6 +412,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 mHelper = null;
             }
         }
+
+        // disconnect from server (if any)
         if (mConnection != null) {
             synchronized (mConnection) {
                 mConnection.removeConnectionListener(this);
