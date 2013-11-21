@@ -406,7 +406,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // abort connection helper (if any)
         if (mHelper != null) {
             synchronized (mHelper) {
-                mHelper.setListener(null);
                 // this is because of NetworkOnMainThreadException
                 new AbortThread(mHelper).start();
                 mHelper = null;
@@ -416,7 +415,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // disconnect from server (if any)
         if (mConnection != null) {
             synchronized (mConnection) {
-                mConnection.removeConnectionListener(this);
                 // this is because of NetworkOnMainThreadException
                 new DisconnectThread(mConnection).start();
                 mConnection = null;
