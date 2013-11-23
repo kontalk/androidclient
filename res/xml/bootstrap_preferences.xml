@@ -56,11 +56,13 @@
             <CheckBoxPreference android:key="pref_send_typing"
                 android:title="@string/pref_send_typing"
                 android:defaultValue="true"/>
+            <!--
             <CheckBoxPreference android:key="pref_hide_presence"
                 android:summaryOff="@string/pref_title_off_hide_presence"
                 android:summaryOn="@string/pref_title_on_hide_presence"
                 android:title="@string/pref_hide_presence"
                 android:defaultValue="false"/>
+             -->
         </PreferenceScreen>
         <EditTextPreference android:key="pref_remove_prefix"
             android:dialogTitle="@string/pref_remove_prefix"

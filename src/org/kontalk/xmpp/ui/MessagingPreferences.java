@@ -547,18 +547,6 @@ public final class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
-    /** Combines various settings into a group of UserStatus flags. */
-    public static int getUserFlags(Context context) {
-        int flags = 0;
-        /*
-        if (getBoolean(context, "pref_hide_presence", false))
-            flags |= UserStatusFlags.FLAG_HIDE_PRESENCE_VALUE;
-         */
-
-        // TODO other flags
-        return flags;
-    }
-
     public static boolean getSendTyping(Context context) {
         return getBoolean(context, "pref_send_typing", true);
     }
