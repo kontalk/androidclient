@@ -13,7 +13,6 @@ import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.provider.MyUsers.Users;
 import org.kontalk.xmpp.service.MessageCenterService;
-import org.kontalk.xmpp.ui.MessagingPreferences;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -363,9 +362,7 @@ public class Syncer {
 
                     // update fields
                     try {
-                        String status = null;
-                        if (!TextUtils.isEmpty(entry.status))
-                            status = MessagingPreferences.decryptUserdata(mContext, entry.status, data != null ? data.number : null);
+                        String status = entry.status;
 
                         if (!TextUtils.isEmpty(status))
                             registeredValues.put(Users.STATUS, status);

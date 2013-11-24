@@ -751,7 +751,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Sends our initial presence. */
     private void sendPresence() {
-        String status = MessagingPreferences.getStatusMessageInternal(this);
+        String status = MessagingPreferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
             p.setStatus(status);
@@ -793,7 +793,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.LOCAL_URI,
                 Messages.FETCH_URL,
                 Messages.PREVIEW_PATH,
-                Messages.ENCRYPT_KEY,
                 Messages.LENGTH
             },
             filter.toString(),
@@ -807,8 +806,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String fileUri = c.getString(4);
             String fetchUrl = c.getString(5);
             String previewPath = c.getString(6);
-            String key = c.getString(7);
-            long length = c.getLong(8);
+            long length = c.getLong(7);
 
             // media message encountered and no upload service available - delay message
             if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
@@ -821,7 +819,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             b.putLong("org.kontalk.message.msgId", id);
             b.putString("org.kontalk.message.mime", mime);
             b.putString("org.kontalk.message.toUser", userId);
-            b.putString("org.kontalk.message.encryptKey", key);
             b.putLong("org.kontalk.message.length", length);
 
             // message has already been uploaded - just send media
@@ -935,7 +932,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             String body = data.getString("org.kontalk.message.body");
-            String key = data.getString("org.kontalk.message.encryptKey");
+            boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
             String fetchUrl = data.getString("org.kontalk.message.fetch.url");
 
             // generate preview if needed
@@ -964,12 +961,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 chatState = null;
             }
 
-            // encrypt message
-            if (key != null) {
+            if (encrypt) {
                 byte[] toMessage = null;
                 Coder coder = null;
                 try {
-                    coder = MessagingPreferences.getEncryptCoder(key);
+                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+                    coder = MessagingPreferences.getEncryptCoder(key, new String[] { to });
                     if (coder != null)
                         toMessage = coder.encrypt(body.getBytes());
                 }
@@ -1062,6 +1059,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         values.put(Messages.CONTENT, content);
         values.put(Messages.ENCRYPTED, msg.isEncrypted());
+        // TODO remove this
         values.put(Messages.ENCRYPT_KEY, msg.wasEncrypted() ? "" : null);
         values.put(Messages.FETCH_URL, msg.getFetchUrl());
 
@@ -1211,7 +1209,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // FIXME this is what sendPresence already does
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
-        i.putExtra(EXTRA_STATUS, MessagingPreferences.getStatusMessageInternal(context));
+        i.putExtra(EXTRA_STATUS, MessagingPreferences.getStatusMessage(context));
         i.putExtra(EXTRA_PUSH_REGID, pushRegistrationId);
         context.startService(i);
     }
@@ -1227,14 +1225,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a text message. */
-    public static void sendTextMessage(final Context context, String userId, String text, String encryptKey, long msgId) {
+    public static void sendTextMessage(final Context context, String userId, String text, boolean encrypt, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", PlainTextMessage.MIME_TYPE);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.body", text);
-        i.putExtra("org.kontalk.message.encryptKey", encryptKey);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
@@ -1832,8 +1830,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     boolean isEncrypted = wasEncrypted;
                     if (isEncrypted && content != null) {
                         // decrypt message
-                        Coder coder = MessagingPreferences.getDecryptCoder(MessageCenterService.this, mMyUsername);
                         try {
+                            PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+                            Coder coder = MessagingPreferences.getDecryptCoder(key);
+
                             // decode base64
                             content = Base64.decode(content, Base64.DEFAULT);
                             // length of raw encrypted message

@@ -15,7 +15,7 @@ public interface UploadConnection {
 
     public void abort();
 
-    public String upload(Uri uri, String mime, String key, ProgressListener listener)
+    public String upload(Uri uri, String mime, boolean encrypt, ProgressListener listener)
         throws IOException;
 
 }

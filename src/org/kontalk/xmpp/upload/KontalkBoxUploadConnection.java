@@ -18,7 +18,9 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.service.ProgressListener;
 import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.ProgressInputStreamEntity;
@@ -63,7 +65,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
     }
 
     @Override
-    public String upload(Uri uri, String mime, String key, ProgressListener listener)
+    public String upload(Uri uri, String mime, boolean encrypt, ProgressListener listener)
             throws IOException {
 
         HttpResponse response = null;
@@ -80,11 +82,13 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             Coder coder = null;
             boolean encrypted = false;
             // check if we have to encrypt the message
-            if (key != null) {
-                coder = MessagingPreferences.getEncryptCoder(key);
+            if (encrypt) {
+                PersonalKey key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
+                // TODO recipients?
+                coder = MessagingPreferences.getEncryptCoder(key, null);
                 if (coder != null) {
                     toMessage = coder.wrapInputStream(in);
-                    toLength = Coder.getEncryptedLength(length);
+                    toLength = coder.getEncryptedLength(length);
                     encrypted = true;
                 }
             }

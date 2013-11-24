@@ -19,20 +19,19 @@
 package org.kontalk.xmpp.ui;
 
 import java.io.InputStream;
-import java.security.GeneralSecurityException;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.ServerList;
 import org.kontalk.xmpp.crypto.Coder;
-import org.kontalk.xmpp.crypto.PassKey;
+import org.kontalk.xmpp.crypto.PGPCoder;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.service.ServerListUpdater;
 import org.kontalk.xmpp.util.MessageUtils;
 
-import android.accounts.Account;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -60,7 +59,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -337,14 +335,16 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBoolean(context, "pref_encrypt", true);
     }
 
-    /** Returns a {@link Coder} instance for encrypting contents. */
-    public static Coder getEncryptCoder(String passphrase) {
-        return new Coder(new PassKey(passphrase));
+    /** Returns a {@link Coder} instance for encrypting data. */
+    public static Coder getEncryptCoder(PersonalKey key, String[] recipients) {
+        // TODO get recipients public keys from users database
+        return new PGPCoder(key, null);
     }
 
-    /** Returns a {@link Coder} instance for decrypting contents. */
-    public static Coder getDecryptCoder(Context context, String myNumber) {
-        return new Coder(new PassKey(myNumber));
+    /** Returns a {@link Coder} instance for decrypting data. */
+    public static Coder getDecryptCoder(PersonalKey key) {
+        // TODO recipients here??
+        return new PGPCoder(key, null);
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {
@@ -417,63 +417,11 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getString(context, "pref_status_message", null);
     }
 
-    /**
-     * Retrieves the status message for internal use (e.g. encrypting it if
-     * requested).
-     */
-    public static String getStatusMessageInternal(Context context) {
-        String status = getStatusMessage(context);
-
-        if (status != null && getBoolean(context, "pref_encrypt_userdata", true)) {
-            // retrive own number for encryption key
-            Account acc = Authenticator.getDefaultAccount(context);
-            Coder coder = new Coder(new PassKey(acc.name));
-
-            try {
-                byte[] statusEnc = coder.encrypt(status.getBytes());
-                // encode to Base64 for safe sending
-                return USERDATA_CRYPT_PREFIX + Base64.encodeToString(statusEnc, Base64.NO_WRAP);
-            }
-            catch (GeneralSecurityException e) {
-                // encryption error, will return cleartext status message
-            }
-        }
-
-        return status;
-    }
-
     public static boolean setStatusMessage(Context context, String message) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.edit()
             .putString("pref_status_message", message)
             .commit();
-    }
-
-    public static String decryptUserdata(Context context, String data) {
-        // retrive own number for decryption key
-        Account acc = Authenticator.getDefaultAccount(context);
-        return decryptUserdata(context, data, acc.name);
-    }
-
-    public static String decryptUserdata(Context context, String data, String key) {
-        if (data != null && data.startsWith(USERDATA_CRYPT_PREFIX) && key != null) {
-            Coder coder = new Coder(new PassKey(key));
-            data = data.substring(USERDATA_CRYPT_PREFIX.length());
-
-            try {
-                byte[] statusEnc = Base64.decode(data, Base64.NO_WRAP);
-                byte[] statusClear = coder.decrypt(statusEnc);
-                return new String(statusClear);
-            }
-            catch (GeneralSecurityException e) {
-                // decryption error, will return status as-is
-                return data;
-            }
-        }
-
-        else {
-            return data;
-        }
     }
 
     public static Drawable getConversationBackground(Context context) {

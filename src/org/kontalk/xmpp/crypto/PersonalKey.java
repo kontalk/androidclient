@@ -85,6 +85,12 @@ public class PersonalKey implements Parcelable {
         return mBridgeCert;
     }
 
+    /** Returns the first user ID on the key that matches the given network. */
+    public String getUserId(String network) {
+        // TODO ehm :)
+        return (String) mPair.signKey.getPublicKey().getUserIDs().next();
+    }
+
     public PGPKeyPairRing store(String userId, String network, String passphrase) throws PGPException {
         return store("TEST",
             userId + '@' + network, "NO COMMENT",

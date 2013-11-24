@@ -23,7 +23,6 @@ import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashSet;
@@ -34,9 +33,11 @@ import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.ChatState;
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.message.AbstractMessage;
@@ -55,7 +56,6 @@ import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -511,7 +511,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
                     // send message!
                     MessageCenterService.sendTextMessage(getActivity(),
-                        userId, mText, key, ContentUris.parseId(newMsg));
+                        userId, mText, MessagingPreferences
+                            .getEncryptionEnabled(getActivity()),
+                        ContentUris.parseId(newMsg));
                 }
                 else {
                     getActivity().runOnUiThread(new Runnable() {
@@ -793,10 +795,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void decryptMessage(AbstractMessage<?> msg) {
-		Account acc = Authenticator.getDefaultAccount(getActivity());
-		Coder coder = MessagingPreferences.getDecryptCoder(getActivity(),
-				acc.name);
 		try {
+	        PersonalKey key = ((Kontalk)getActivity().getApplicationContext())
+	            .getPersonalKey();
+	        Coder coder = MessagingPreferences.getDecryptCoder(key);
 			// decrypt the message
 			msg.decrypt(coder);
 			// update database
@@ -807,7 +809,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			values.put(Messages.LENGTH, content.length);
 			getActivity().getContentResolver().update(
 					Messages.getUri(msg.getId()), values, null, null);
-		} catch (GeneralSecurityException e) {
+		} catch (Exception e) {
 			Log.e(TAG, "unable to decrypt message", e);
 			Toast.makeText(getActivity(), "Decryption failed!",
 					Toast.LENGTH_LONG).show();
