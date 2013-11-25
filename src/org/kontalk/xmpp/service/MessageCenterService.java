@@ -405,20 +405,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // abort connection helper (if any)
         if (mHelper != null) {
-            synchronized (mHelper) {
-                // this is because of NetworkOnMainThreadException
-                new AbortThread(mHelper).start();
-                mHelper = null;
-            }
+            // this is because of NetworkOnMainThreadException
+            new AbortThread(mHelper).start();
+            mHelper = null;
         }
 
         // disconnect from server (if any)
         if (mConnection != null) {
-            synchronized (mConnection) {
-                // this is because of NetworkOnMainThreadException
-                new DisconnectThread(mConnection).start();
-                mConnection = null;
-            }
+            // this is because of NetworkOnMainThreadException
+            new DisconnectThread(mConnection).start();
+            mConnection = null;
         }
 
         // stop any key pair regeneration service
@@ -629,12 +625,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    /**
-     * Create connection to server if needed.
-     * WARNING this method blocks! Be sure to call it from a separate thread.
-     */
+    /** Creates a connection to server if needed. */
     private synchronized void createConnection() {
         if (mConnection == null || (!mConnection.isAuthenticated() && mHelper == null)) {
+            mConnection = null;
+
             // reset push notification variable
             mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
             // reset waiting messages
@@ -687,7 +682,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public void created() {
+    public synchronized void created() {
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) mHelper.getConnection();
 
