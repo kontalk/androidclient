@@ -627,7 +627,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Creates a connection to server if needed. */
     private synchronized void createConnection() {
-        if (mConnection == null || (!mConnection.isAuthenticated() && mHelper == null)) {
+        if (mConnection == null && mHelper == null) {
             mConnection = null;
 
             // reset push notification variable
