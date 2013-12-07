@@ -87,8 +87,7 @@ public class PersonalKey implements Parcelable {
 
     /** Returns the first user ID on the key that matches the given network. */
     public String getUserId(String network) {
-        // TODO ehm :)
-        return (String) mPair.signKey.getPublicKey().getUserIDs().next();
+        return PGP.getUserId(mPair.signKey.getPublicKey(), network);
     }
 
     public PGPKeyPairRing store(String userId, String network, String passphrase) throws PGPException {

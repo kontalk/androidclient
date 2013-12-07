@@ -335,16 +335,10 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBoolean(context, "pref_encrypt", true);
     }
 
-    /** Returns a {@link Coder} instance for encrypting data. */
-    public static Coder getEncryptCoder(PersonalKey key, String[] recipients) {
-        // TODO get recipients public keys from users database
-        return new PGPCoder(key, null);
-    }
-
     /** Returns a {@link Coder} instance for decrypting data. */
-    public static Coder getDecryptCoder(PersonalKey key) {
+    public static Coder getDecryptCoder(EndpointServer server, PersonalKey key) {
         // TODO recipients here??
-        return new PGPCoder(key, null);
+        return new PGPCoder(server, key, null);
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {

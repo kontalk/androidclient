@@ -21,6 +21,7 @@ import org.apache.http.util.EntityUtils;
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.crypto.PersonalKey;
+import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.ProgressListener;
 import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.ProgressInputStreamEntity;
@@ -85,7 +86,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             if (encrypt) {
                 PersonalKey key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
                 // TODO recipients?
-                coder = MessagingPreferences.getEncryptCoder(key, null);
+                coder = null; // TODO UsersProvider.getEncryptCoder(key, null);
                 if (coder != null) {
                     toMessage = coder.wrapInputStream(in);
                     toLength = coder.getEncryptedLength(length);

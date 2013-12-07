@@ -29,6 +29,7 @@ import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
@@ -36,6 +37,7 @@ import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPKeyRingGenerator;
+import org.spongycastle.openpgp.PGPObjectFactory;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -51,6 +53,7 @@ import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
+import android.util.Log;
 
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
@@ -218,6 +221,34 @@ public class PGP {
         dest.writeInt(algoEnc);
         dest.writeLong(dateEnc.getTime());
 
+    }
+
+    /** Returns the first user ID on the key that matches the given hostname. */
+    public static String getUserId(PGPPublicKey key, String host) {
+        // TODO ehm :)
+        return (String) key.getUserIDs().next();
+    }
+
+    /** Returns the first master key found in the given public keyring. */
+    @SuppressWarnings("unchecked")
+    public static PGPPublicKey getMasterKey(byte[] publicKeyring) throws IOException, PGPException {
+        PGPObjectFactory reader = new PGPObjectFactory(publicKeyring);
+        Object o = reader.nextObject();
+        while (o != null) {
+            Log.v("PersonalKey", o.toString());
+            if (o instanceof PGPPublicKeyRing) {
+                PGPPublicKeyRing pubRing = (PGPPublicKeyRing) o;
+                Iterator<PGPPublicKey> iter = pubRing.getPublicKeys();
+                while (iter.hasNext()) {
+                    PGPPublicKey pk = iter.next();
+                    if (pk.isMasterKey())
+                        return pk;
+                }
+            }
+            o = reader.nextObject();
+        }
+
+        throw new PGPException("invalid keyring data.");
     }
 
 }

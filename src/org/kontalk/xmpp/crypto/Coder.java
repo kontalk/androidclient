@@ -28,8 +28,11 @@ import java.security.GeneralSecurityException;
  */
 public interface Coder {
 
-    public byte[] encrypt(byte[] unencrypted) throws GeneralSecurityException;
+    /** Encrypts a string. */
+    public byte[] encryptText(String text) throws GeneralSecurityException;
 
+    /** Decrypts a byte array. */
+    // TODO this should throw a more specific exception to track security errors
     public byte[] decrypt(byte[] encrypted) throws GeneralSecurityException;
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;

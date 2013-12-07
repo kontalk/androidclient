@@ -798,7 +798,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		try {
 	        PersonalKey key = ((Kontalk)getActivity().getApplicationContext())
 	            .getPersonalKey();
-	        Coder coder = MessagingPreferences.getDecryptCoder(key);
+	        Coder coder = null; // TODO MessagingPreferences.getDecryptCoder(key);
 			// decrypt the message
 			msg.decrypt(coder);
 			// update database
