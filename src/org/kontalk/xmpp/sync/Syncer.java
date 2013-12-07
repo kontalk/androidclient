@@ -69,6 +69,7 @@ public class Syncer {
         public String from;
         public String status;
         public long timestamp;
+        public byte[] publicKey;
     }
 
     // FIXME this class should handle most recent/available presence stanzas
@@ -78,6 +79,7 @@ public class Syncer {
         private final String iq;
         private final List<String> hashList;
         private int presenceCount = -1;
+        private int vCardCount = -1;
         private int rosterCount = -1;
 
         public PresenceBroadcastReceiver(String iq, List<String> hashList, Syncer notifyTo) {
@@ -112,14 +114,8 @@ public class Syncer {
                     }
 
                     // done with presence data
-                    Log.v(TAG, "presence count " + presenceCount + ", roster with " + rosterCount + " elements");
-                    if (rosterCount >= 0 && presenceCount >= rosterCount) {
-                        Syncer w = notifyTo.get();
-                        if (w != null)
-                            synchronized (w) {
-                                w.notifyAll();
-                            }
-                    }
+                    if (rosterCount >= 0 && presenceCount >= rosterCount && vCardCount >= presenceCount)
+                        finish();
                 }
             }
 
@@ -138,15 +134,35 @@ public class Syncer {
                     }
 
                     // all presence data already received (WHATT???)
-                    Log.v(TAG, "roster with " + rosterCount + " elements, presence count " + presenceCount);
-                    if (rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount)) {
-                        Syncer w = notifyTo.get();
-                        if (w != null)
-                            synchronized (w) {
-                                w.notifyAll();
-                            }
-                    }
+                    if (rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount))
+                        finish();
                 }
+            }
+
+            else if (MessageCenterService.ACTION_VCARD.equals(action)) {
+                if (response != null) {
+                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    // see if bare JID is present in roster response
+                    String compare = StringUtils.parseBareAddress(jid);
+                    for (PresenceItem item : response) {
+                        if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
+
+                            // increment vcard count
+                            if (vCardCount < 0)
+                                vCardCount = 1;
+                            else
+                                vCardCount++;
+
+                            break;
+                        }
+                    }
+
+                    // done with presence data
+                    if (rosterCount >= 0 && presenceCount >= rosterCount && vCardCount >= presenceCount)
+                        finish();
+                }
+
             }
 
             // connected! Retry...
@@ -171,6 +187,14 @@ public class Syncer {
 
         public List<PresenceItem> getResponse() {
             return (rosterCount >= 0) ? response : null;
+        }
+
+        private void finish() {
+            Syncer w = notifyTo.get();
+            if (w != null)
+                synchronized (w) {
+                    w.notifyAll();
+                }
         }
     }
 
@@ -301,6 +325,7 @@ public class Syncer {
             f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER);
             f.addAction(MessageCenterService.ACTION_CONNECTED);
+            f.addAction(MessageCenterService.ACTION_VCARD);
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
             // request current connection status
@@ -373,6 +398,11 @@ public class Syncer {
                             registeredValues.put(Users.LAST_SEEN, entry.timestamp);
                         else
                             registeredValues.putNull(Users.LAST_SEEN);
+
+                        if (entry.publicKey != null)
+                            registeredValues.put(Users.PUBLIC_KEY, entry.publicKey);
+                        else
+                            registeredValues.putNull(Users.PUBLIC_KEY);
 
                         usersProvider.update(offlineUri, registeredValues,
                             Users.HASH + " = ?", new String[] { userId });

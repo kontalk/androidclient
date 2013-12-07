@@ -1,3 +1,20 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2013 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.kontalk.xmpp.service;
 
 import java.io.File;
@@ -44,7 +61,7 @@ import org.kontalk.xmpp.client.AckServerReceipt;
 import org.kontalk.xmpp.client.BitsOfBinary;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
-import org.kontalk.xmpp.client.MessageEncrypted;
+import org.kontalk.xmpp.client.OpenPGPEncryptedMessage;
 import org.kontalk.xmpp.client.OutOfBandData;
 import org.kontalk.xmpp.client.Ping;
 import org.kontalk.xmpp.client.PushRegistration;
@@ -58,6 +75,7 @@ import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
 import org.kontalk.xmpp.client.SubscribePublicKey;
 import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.client.UploadInfo;
+import org.kontalk.xmpp.client.VCard4;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
@@ -161,6 +179,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
 
+    /**
+     * Broadcasted when receiving a vCard.
+     * Send this intent to update your own vCard.
+     */
+    public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
+
     // common parameters
     /** connect to custom server -- TODO not used yet */
     public static final String EXTRA_SERVER = "org.kontalk.server";
@@ -190,6 +214,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.LAST_ACTIVITY
     public static final String EXTRA_SECONDS = "org.kontalk.last.seconds";
+
+    // use with org.kontalk.action.VCARD
+    public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
 
     // other
     public static final String GCM_REGISTRATION_ID = "org.kontalk.GCM_REGISTRATION_ID";
@@ -361,6 +388,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void configure(ProviderManager pm) {
         pm.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
         pm.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
+        pm.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
         pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtensionProvider());
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
@@ -369,6 +397,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
         pm.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
         pm.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
+        pm.addExtensionProvider(OpenPGPEncryptedMessage.ELEMENT_NAME, OpenPGPEncryptedMessage.NAMESPACE, new OpenPGPEncryptedMessage.Provider());
     }
 
     @Override
@@ -705,6 +734,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         filter = new PacketTypeFilter(LastActivity.class);
         mConnection.addPacketListener(new LastActivityListener(), filter);
+
+        filter = new PacketTypeFilter(VCard4.class);
+        mConnection.addPacketListener(new VCardListener(), filter);
     }
 
     @Override
@@ -961,9 +993,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Coder coder = null;
                 try {
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                    coder = MessagingPreferences.getEncryptCoder(key, new String[] { to });
+                    coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
                     if (coder != null)
-                        toMessage = coder.encrypt(body.getBytes());
+                        toMessage = coder.encryptText(body);
                 }
                 catch (Exception e) {
                     // should we notify the user this message will be sent cleartext?
@@ -971,8 +1003,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 if (toMessage != null) {
-                    body = Base64.encodeToString(toMessage, Base64.NO_WRAP);
-                    m.addExtension(new MessageEncrypted());
+                    // using encryption: use fake body
+                    // TODO use dedicated message
+                    body = getString(R.string.text_encrypted);
+                    m.addExtension(new OpenPGPEncryptedMessage(toMessage));
                 }
             }
 
@@ -990,6 +1024,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             else {
                 m.setBody(body);
+
                 // standalone message: no receipt
                 if (!data.getBoolean("org.kontalk.message.standalone", false))
                     m.addExtension(new ServerReceiptRequest());
@@ -1555,6 +1590,54 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    /** Listener for vCard4 iq stanzas. */
+    private final class VCardListener implements PacketListener {
+
+        @Override
+        public void processPacket(Packet packet) {
+            VCard4 p = (VCard4) packet;
+
+            Intent i = new Intent(ACTION_VCARD);
+            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+
+            String from = p.getFrom();
+            String network = StringUtils.parseServer(from);
+            // our network - convert to userId
+            if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                StringBuilder b = new StringBuilder();
+                b.append(StringUtils.parseName(from));
+                b.append(StringUtils.parseResource(from));
+                i.putExtra(EXTRA_FROM_USERID, b.toString());
+            }
+
+            i.putExtra(EXTRA_FROM, from);
+            i.putExtra(EXTRA_TO, p.getTo());
+            i.putExtra(EXTRA_PUBLIC_KEY, p.getPGPKey());
+
+            Log.v(TAG, "broadcasting vcard: " + i);
+            mLocalBroadcastManager.sendBroadcast(i);
+
+            /*
+            byte[] keydata = p.getPGPKey();
+            if (keydata != null) {
+                Log.i(TAG, "vcard has key (" + keydata.length + " bytes)");
+
+                String userId = StringUtils.parseName(vcard.getFrom());
+                // TODO this should be moved into Syncer
+                Uri offlineUri = Users.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(Users.OFFLINE, "true").build();
+
+                ContentValues values = new ContentValues(1);
+                values.put(Users.PUBLIC_KEY, keydata);
+                getContentResolver().update(offlineUri, values,
+                    Users.HASH + "=?", new String[] { userId });
+
+                //UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
+            }
+            */
+        }
+    }
+
     /** Listener for presence stanzas. */
     private final class PresenceListener implements PacketListener {
 
@@ -1568,7 +1651,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
                     PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), pkey.getUid());
-                    String keydata = Base64.encodeToString(signedKey.getEncoded(), Base64.NO_WRAP);
+                    byte[] _keydata = signedKey.getEncoded();
+
+                    // store to users table
+                    String userId = StringUtils.parseName(p.getFrom());
+                    UsersProvider.setUserKey(MessageCenterService.this, userId, _keydata);
+
+                    String keydata = Base64.encodeToString(_keydata, Base64.NO_WRAP);
 
                     SubscribePublicKey pk = new SubscribePublicKey(keydata);
                     Presence p2 = new Presence(Presence.Type.subscribed);
@@ -1820,29 +1909,38 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     byte[] content = body != null ? body.getBytes() : new byte[0];
                     long length = content.length;
 
-                    // message decryption
-                    boolean wasEncrypted = (m.getExtension(MessageEncrypted.ELEMENT_NAME, MessageEncrypted.NAMESPACE) != null);
-                    boolean isEncrypted = wasEncrypted;
-                    if (isEncrypted && content != null) {
-                        // decrypt message
-                        try {
-                            PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                            Coder coder = MessagingPreferences.getDecryptCoder(key);
+                    boolean wasEncrypted = false;
+                    boolean isEncrypted = false;
 
-                            // decode base64
-                            content = Base64.decode(content, Base64.DEFAULT);
-                            // length of raw encrypted message
-                            length = content.length;
-                            // decrypt
-                            content = coder.decrypt(content);
-                            length = content.length;
-                            isEncrypted = false;
-                        }
-                        catch (Exception exc) {
-                            // pass over the message even if encrypted
-                            // UI will warn the user about that and wait
-                            // for user decisions
-                            Log.e(TAG, "decryption failed", exc);
+                    PacketExtension _encrypted = m.getExtension(OpenPGPEncryptedMessage.ELEMENT_NAME, OpenPGPEncryptedMessage.NAMESPACE);
+
+                    if (_encrypted != null && _encrypted instanceof OpenPGPEncryptedMessage) {
+                        OpenPGPEncryptedMessage mEnc = (OpenPGPEncryptedMessage) _encrypted;
+                        byte[] encryptedData = mEnc.getData();
+
+                        // message decryption
+                        wasEncrypted = isEncrypted = true;
+                        if (encryptedData != null) {
+                            // decrypt message
+                            try {
+                                PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+                                Coder coder = MessagingPreferences.getDecryptCoder(mServer, key);
+
+                                // content is already base64-decoded
+                                content = encryptedData;
+                                // length of raw encrypted message
+                                length = content.length;
+                                // decrypt
+                                content = coder.decrypt(content);
+                                length = content.length;
+                                isEncrypted = false;
+                            }
+                            catch (Exception exc) {
+                                // pass over the message even if encrypted
+                                // UI will warn the user about that and wait
+                                // for user decisions
+                                Log.e(TAG, "decryption failed", exc);
+                            }
                         }
                     }
 

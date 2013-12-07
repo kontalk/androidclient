@@ -21,13 +21,20 @@ package org.kontalk.xmpp.provider;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.NumberValidator;
+import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.crypto.PGP;
+import org.kontalk.xmpp.crypto.PGPCoder;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.provider.MyUsers.Users;
 import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.MessageUtils;
+import org.spongycastle.openpgp.PGPPublicKey;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -53,7 +60,7 @@ public class UsersProvider extends ContentProvider {
     private static final String TAG = UsersProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.xmpp.users";
 
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -75,7 +82,8 @@ public class UsersProvider extends ContentProvider {
             "contact_id INTEGER," +
             "registered INTEGER NOT NULL DEFAULT 0," +
             "status TEXT," +
-            "last_seen INTEGER" +
+            "last_seen INTEGER," +
+            "public_key BLOB" +
             ")";
 
         /** This table will contain all the users in contact list .*/
@@ -99,6 +107,11 @@ public class UsersProvider extends ContentProvider {
             "DROP TABLE IF EXISTS " + TABLE_USERS_OFFLINE,
             SCHEMA_USERS_OFFLINE
         };
+        // version 5 - add public_key column
+        private static final String[] SCHEMA_V4_TO_V5 = {
+            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN public_key BLOB",
+            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN public_key BLOB"
+        };
 
         private Context mContext;
 
@@ -119,6 +132,7 @@ public class UsersProvider extends ContentProvider {
             mNew = true;
         }
 
+        /** TODO simplify upgrade process based on org.kontalk database schema */
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             if (oldVersion == 1) {
@@ -129,12 +143,21 @@ public class UsersProvider extends ContentProvider {
             else if (oldVersion == 2) {
                 for (String sql : SCHEMA_V2_TO_V3)
                     db.execSQL(sql);
-                // upgrade for version 4 too
+                // upgrade for versions 4 and 5 too
                 for (String sql : SCHEMA_V3_TO_V4)
+                    db.execSQL(sql);
+                for (String sql : SCHEMA_V4_TO_V5)
                     db.execSQL(sql);
             }
             else if (oldVersion == 3) {
                 for (String sql : SCHEMA_V3_TO_V4)
+                    db.execSQL(sql);
+                // upgrade for version 4 too
+                for (String sql : SCHEMA_V4_TO_V5)
+                    db.execSQL(sql);
+            }
+            else if (oldVersion == 4) {
+                for (String sql : SCHEMA_V4_TO_V5)
                     db.execSQL(sql);
             }
         }
@@ -509,6 +532,53 @@ public class UsersProvider extends ContentProvider {
             Users.HASH + "=?", new String[] { userId });
     }
 
+    /** Returns a {@link Coder} instance for encrypting data. */
+    public static Coder getEncryptCoder(Context context, EndpointServer server, PersonalKey key, String[] recipients) {
+        // get recipients public keys from users database
+        PGPPublicKey keys[] = new PGPPublicKey[recipients.length];
+        for (int i = 0; i < recipients.length; i++) {
+            String rcpt = StringUtils.parseName(recipients[i]);
+
+            keys[i] = getEncryptionKey(context, rcpt);
+            if (keys[i] == null)
+                throw new IllegalArgumentException("public key not found for user " + rcpt);
+        }
+
+        return new PGPCoder(server, key, keys);
+    }
+
+    /** Retrieves the public key for a user. */
+    public static PGPPublicKey getEncryptionKey(Context context, String userId) {
+        byte[] keydata = null;
+        ContentResolver res = context.getContentResolver();
+        Cursor c = res.query(Users.CONTENT_URI,
+                new String[] { Users.PUBLIC_KEY },
+                Users.HASH + "=?",
+                new String[] { userId },
+                null);
+
+        if (c.moveToFirst())
+            keydata = c.getBlob(0);
+
+        c.close();
+
+        try {
+            return PGP.getMasterKey(keydata);
+        }
+        catch (Exception e) {
+            // ignored
+        }
+
+        return null;
+    }
+
+    public static void setUserKey(Context context, String userId, byte[] keydata) {
+        ContentValues values = new ContentValues(1);
+        values.put(Users.PUBLIC_KEY, keydata);
+        context.getContentResolver().update(Users.CONTENT_URI, values,
+            Users.HASH + "=?", new String[] { userId });
+    }
+
     /* Transactions compatibility layer */
 
     @TargetApi(11)
@@ -548,6 +618,7 @@ public class UsersProvider extends ContentProvider {
         usersProjectionMap.put(Users.REGISTERED, Users.REGISTERED);
         usersProjectionMap.put(Users.STATUS, Users.STATUS);
         usersProjectionMap.put(Users.LAST_SEEN, Users.LAST_SEEN);
+        usersProjectionMap.put(Users.PUBLIC_KEY, Users.PUBLIC_KEY);
     }
 
 }

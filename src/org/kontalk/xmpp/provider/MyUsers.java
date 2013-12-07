@@ -42,6 +42,7 @@ public class MyUsers {
         public static final String REGISTERED = "registered";
         public static final String STATUS = "status";
         public static final String LAST_SEEN = "last_seen";
+        public static final String PUBLIC_KEY = "public_key";
 
         // uri parameter for update: triggers a complete resync
         public static final String RESYNC = "resync";
