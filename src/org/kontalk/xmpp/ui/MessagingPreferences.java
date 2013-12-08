@@ -24,9 +24,6 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.ServerList;
-import org.kontalk.xmpp.crypto.Coder;
-import org.kontalk.xmpp.crypto.PGPCoder;
-import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.service.ServerListUpdater;
@@ -333,12 +330,6 @@ public final class MessagingPreferences extends PreferenceActivity {
 
     public static boolean getEncryptionEnabled(Context context) {
         return getBoolean(context, "pref_encrypt", true);
-    }
-
-    /** Returns a {@link Coder} instance for decrypting data. */
-    public static Coder getDecryptCoder(EndpointServer server, PersonalKey key) {
-        // TODO recipients here??
-        return new PGPCoder(server, key, null);
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {

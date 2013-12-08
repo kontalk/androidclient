@@ -19,9 +19,9 @@ package org.kontalk.xmpp.crypto;
 
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
-import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
-import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT;
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,14 +47,17 @@ import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPLiteralData;
 import org.spongycastle.openpgp.PGPLiteralDataGenerator;
 import org.spongycastle.openpgp.PGPObjectFactory;
+import org.spongycastle.openpgp.PGPOnePassSignature;
 import org.spongycastle.openpgp.PGPOnePassSignatureList;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyEncryptedData;
 import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
+import org.spongycastle.openpgp.PGPSignatureList;
 import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.spongycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
+import org.spongycastle.openpgp.operator.bc.BcPGPContentVerifierBuilderProvider;
 import org.spongycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
@@ -70,13 +73,25 @@ public class PGPCoder implements Coder {
     private static final int BUFFER_SIZE = 1 << 8;
 
     private final EndpointServer mServer;
-    private final PGPPublicKey[] mRecipients;
     private final PersonalKey mKey;
+
+    // either one of these two has a value
+
+    private final PGPPublicKey[] mRecipients;
+    private final PGPPublicKey mSender;
 
     public PGPCoder(EndpointServer server, PersonalKey key, PGPPublicKey[] recipients) {
         mServer = server;
         mKey = key;
         mRecipients = recipients;
+        mSender = null;
+    }
+
+    public PGPCoder(EndpointServer server, PersonalKey key, PGPPublicKey sender) {
+        mServer = server;
+        mKey = key;
+        mRecipients = null;
+        mSender = sender;
     }
 
     @Override
@@ -200,6 +215,7 @@ public class PGPCoder implements Coder {
             PGPObjectFactory plainFact = new PGPObjectFactory(clear);
 
             Object message = plainFact.nextObject();
+            String msgData;
 
             if (message instanceof PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
@@ -207,10 +223,12 @@ public class PGPCoder implements Coder {
 
                 message = pgpFact.nextObject();
 
+                PGPOnePassSignature ops = null;
                 if (message instanceof PGPOnePassSignatureList) {
-                    if (verify) {
-                    	// TODO verify signature
-                    }
+                	if (verify) {
+                		ops = ((PGPOnePassSignatureList) message).get(0);
+                		ops.init(new BcPGPContentVerifierBuilderProvider(), mSender);
+                	}
 
                     message = pgpFact.nextObject();
                 }
@@ -225,6 +243,9 @@ public class PGPCoder implements Coder {
 
                     while ((ch = unc.read()) >= 0) {
                         out.write(ch);
+
+                        if (ops != null)
+                        	ops.update((byte) ch);
                     }
 
                     // verify message integrity first
@@ -269,7 +290,7 @@ public class PGPCoder implements Coder {
 	                    	// TODO this needs verified signature
 	                    }
 
-	                    return msg.getBody();
+	                    msgData = msg.getBody();
 
                     }
                     catch (ParseException e) {
@@ -280,8 +301,36 @@ public class PGPCoder implements Coder {
 	                    		"Verification was requested but no CPIM valid data was found");
                     	else
                     		// return data as-is
-                    		return data;
+                    		msgData = data;
                     }
+
+                    if (verify) {
+                    	if (ops == null) {
+                    		throw new DecryptException(
+                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+	                    		"No signature list found");
+                    	}
+
+	                    message = pgpFact.nextObject();
+
+	                    if (message instanceof PGPSignatureList) {
+	                    	PGPSignature signature = ((PGPSignatureList) message).get(0);
+	                    	if (!ops.verify(signature)) {
+	                    		throw new DecryptException(
+	                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+    	                    		"Signature verification failed");
+	                    	}
+	                    }
+
+	                    else {
+                    		throw new DecryptException(
+    	                    		DECRYPT_EXCEPTION_INVALID_DATA,
+    	                    		"Invalid signature packet");
+	                    }
+
+                    }
+
+                    return msgData;
 
                 }
                 else {
@@ -290,6 +339,8 @@ public class PGPCoder implements Coder {
                 		DECRYPT_EXCEPTION_INVALID_DATA,
                 		"Unknown packet type " + message.getClass().getName());
                 }
+
+
 
             }
 
@@ -311,9 +362,11 @@ public class PGPCoder implements Coder {
 
     }
 
-    /** TODO */
-    private void verify() {
-    	// TODO
+    /** Verifies the first digital signatures on the message. */
+    private void verify(PGPOnePassSignatureList message) throws PGPException {
+    	PGPOnePassSignature sig = message.get(0);
+
+    	sig.init(new BcPGPContentVerifierBuilderProvider(), mSender);
     }
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException {

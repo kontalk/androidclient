@@ -539,7 +539,7 @@ public class UsersProvider extends ContentProvider {
         for (int i = 0; i < recipients.length; i++) {
             String rcpt = StringUtils.parseName(recipients[i]);
 
-            keys[i] = getEncryptionKey(context, rcpt);
+            keys[i] = getPublicKey(context, rcpt);
             if (keys[i] == null)
                 throw new IllegalArgumentException("public key not found for user " + rcpt);
         }
@@ -547,8 +547,19 @@ public class UsersProvider extends ContentProvider {
         return new PGPCoder(server, key, keys);
     }
 
+    /** Returns a {@link Coder} instance for decrypting data. */
+    public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
+        String rcpt = StringUtils.parseName(sender);
+
+        PGPPublicKey senderKey = getPublicKey(context, rcpt);
+        if (senderKey == null)
+            throw new IllegalArgumentException("public key not found for user " + rcpt);
+
+        return new PGPCoder(server, key, senderKey);
+    }
+
     /** Retrieves the public key for a user. */
-    public static PGPPublicKey getEncryptionKey(Context context, String userId) {
+    public static PGPPublicKey getPublicKey(Context context, String userId) {
         byte[] keydata = null;
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(Users.CONTENT_URI,

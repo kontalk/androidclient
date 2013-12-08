@@ -1923,7 +1923,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             // decrypt message
                             try {
                                 PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                                Coder coder = MessagingPreferences.getDecryptCoder(mServer, key);
+                                Coder coder = UsersProvider.getDecryptCoder(MessageCenterService.this,
+                                		mServer, key, from);
 
                                 // content is already base64-decoded
                                 content = encryptedData;
