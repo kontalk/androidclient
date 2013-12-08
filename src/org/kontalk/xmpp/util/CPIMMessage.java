@@ -19,6 +19,7 @@ package org.kontalk.xmpp.util;
 
 import java.util.Date;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.message.PlainTextMessage;
 
 
@@ -48,8 +49,15 @@ public class CPIMMessage {
         mBody = body;
     }
 
-    public String toString() {
+    @SuppressWarnings("deprecation")
+	public String toString() {
         if (mBuf == null) {
+        	String date;
+        	// we must use this because StringUtils#formatXEP0082Date doesn't seem right
+        	synchronized (StringUtils.XEP_0082_UTC_FORMAT) {
+        		date = StringUtils.XEP_0082_UTC_FORMAT.format(mDate);
+        	}
+
             mBuf = new StringBuilder("Content-type: ")
                 .append(TYPE)
                 .append("\n\nFrom: ")
@@ -57,8 +65,7 @@ public class CPIMMessage {
                 .append("\nTo: ")
                 .append(mTo)
                 .append("\nDateTime: ")
-                // TODO date format
-                .append(mDate.toString())
+                .append(date)
                 .append("\n\nContent-type: ")
                 .append(mMime)
                 .append("; charset=")
