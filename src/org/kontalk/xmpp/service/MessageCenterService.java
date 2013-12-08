@@ -1036,7 +1036,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-
     /** Process an incoming message. */
     private Uri incoming(AbstractMessage<?> msg) {
         String sender = msg.getSender(true);
@@ -1931,7 +1930,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 // length of raw encrypted message
                                 length = content.length;
                                 // decrypt
-                                content = coder.decrypt(content);
+                                content = coder.decrypt(content, true);
                                 length = content.length;
                                 isEncrypted = false;
                             }

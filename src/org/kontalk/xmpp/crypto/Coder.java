@@ -33,7 +33,7 @@ public interface Coder {
 
     /** Decrypts a byte array. */
     // TODO this should throw a more specific exception to track security errors
-    public byte[] decrypt(byte[] encrypted) throws GeneralSecurityException;
+    public byte[] decrypt(byte[] encrypted, boolean verify) throws GeneralSecurityException;
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
 

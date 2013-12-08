@@ -17,8 +17,13 @@
  */
 package org.kontalk.xmpp.crypto;
 
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
@@ -49,8 +54,6 @@ import org.spongycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
-
-import android.util.Log;
 
 
 /**
@@ -153,7 +156,7 @@ public class PGPCoder implements Coder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public byte[] decrypt(byte[] encrypted) throws GeneralSecurityException {
+    public byte[] decrypt(byte[] encrypted, boolean verify) throws GeneralSecurityException {
         try {
             PGPObjectFactory pgpF = new PGPObjectFactory(encrypted);
             PGPEncryptedDataList enc;
@@ -184,15 +187,11 @@ public class PGPCoder implements Coder {
             }
 
             if (sKey == null)
-                throw new IllegalArgumentException("Secret key for message not found.");
+                throw new DecryptException(
+                	DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND,
+                	"Secret key for message not found.");
 
             InputStream clear = pbe.getDataStream(new BcPublicKeyDataDecryptorFactory(sKey));
-
-            if (pbe.isIntegrityProtected()) {
-                if (!pbe.verify()) {
-                    throw new PGPException("Message failed integrity check");
-                }
-            }
 
             PGPObjectFactory plainFact = new PGPObjectFactory(clear);
 
@@ -203,35 +202,76 @@ public class PGPCoder implements Coder {
                 PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream());
 
                 message = pgpFact.nextObject();
-            }
 
-            if (message instanceof PGPLiteralData) {
-                PGPLiteralData ld = (PGPLiteralData) message;
+                if (message instanceof PGPOnePassSignatureList) {
+                    if (verify) {
+                    	// TODO
+                    }
 
-                InputStream unc = ld.getInputStream();
-                int ch;
-
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-                while ((ch = unc.read()) >= 0) {
-                    out.write(ch);
+                    message = pgpFact.nextObject();
                 }
 
-                return out.toByteArray();
+                if (message instanceof PGPLiteralData) {
+                    PGPLiteralData ld = (PGPLiteralData) message;
+
+                    InputStream unc = ld.getInputStream();
+                    int ch;
+
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+                    while ((ch = unc.read()) >= 0) {
+                        out.write(ch);
+                    }
+
+                    // verify message integrity first
+                    if (pbe.isIntegrityProtected()) {
+                    	try {
+	                        if (!pbe.verify()) {
+	                            throw new DecryptException(
+	                            	DECRYPT_EXCEPTION_INTEGRITY_CHECK,
+	                            	"Message integrity check failed");
+	                        }
+                    	}
+                    	catch (PGPException e) {
+                            throw new DecryptException(
+                            	DECRYPT_EXCEPTION_INTEGRITY_CHECK,
+                            	e);
+                    	}
+                    }
+
+                    return out.toByteArray();
+
+                }
+                else {
+                	// invalid or unknown packet
+                    throw new DecryptException(
+                		DECRYPT_EXCEPTION_INVALID_DATA,
+                		"Unknown packet type " + message.getClass().getName());
+                }
 
             }
-            else if (message instanceof PGPOnePassSignatureList) {
-                throw new PGPException("Encrypted message contains a signed message - not literal data.");
-            }
+
             else {
-                throw new PGPException("Message is not a simple encrypted file - type unknown.");
+            	throw new DecryptException(DecryptException
+        			.DECRYPT_EXCEPTION_INVALID_DATA,
+        			"Compressed data packet expected");
             }
 
         }
 
-        catch (Exception e) {
-            throw new GeneralSecurityException(e);
+        catch (IOException ioe) {
+        	throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, ioe);
         }
+
+        catch (PGPException pe) {
+        	throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, pe);
+        }
+
+    }
+
+    /** TODO */
+    private void verify() {
+    	// TODO
     }
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException {
