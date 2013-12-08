@@ -20,6 +20,8 @@ package org.kontalk.xmpp.crypto;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER;
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,10 +30,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
 
 import org.kontalk.xmpp.client.EndpointServer;
+import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.util.CPIMMessage;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPCompressedData;
@@ -156,7 +160,7 @@ public class PGPCoder implements Coder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public byte[] decrypt(byte[] encrypted, boolean verify) throws GeneralSecurityException {
+    public String decryptText(byte[] encrypted, boolean verify) throws GeneralSecurityException {
         try {
             PGPObjectFactory pgpF = new PGPObjectFactory(encrypted);
             PGPEncryptedDataList enc;
@@ -205,7 +209,7 @@ public class PGPCoder implements Coder {
 
                 if (message instanceof PGPOnePassSignatureList) {
                     if (verify) {
-                    	// TODO
+                    	// TODO verify signature
                     }
 
                     message = pgpFact.nextObject();
@@ -239,7 +243,45 @@ public class PGPCoder implements Coder {
                     	}
                     }
 
-                    return out.toByteArray();
+                    String data = new String(out.toByteArray());
+
+                    try {
+	                    // parse and check Message/CPIM
+	                    CPIMMessage msg = CPIMMessage.parse(data);
+
+	                    if (verify) {
+	                    	// verify CPIM headers, including mime type which must be text/plain
+
+	                    	// check mime type
+	                    	if (!PlainTextMessage.MIME_TYPE.equalsIgnoreCase(msg.getMime()))
+	                    		throw new DecryptException(
+	                    			DECRYPT_EXCEPTION_INTEGRITY_CHECK,
+	                    			"MIME type mismatch");
+
+	                    	// check that the recipient matches the full uid of the personal key
+	                    	String myUid = mKey.getUserId(mServer.getNetwork());
+	                    	if (!myUid.equals(msg.getTo()))
+	                    		throw new DecryptException(
+	                    			DECRYPT_EXCEPTION_INVALID_RECIPIENT,
+	                    			"Destination does not match personal key");
+
+	                    	// check that sender matches the public key of the signature
+	                    	// TODO this needs verified signature
+	                    }
+
+	                    return msg.getBody();
+
+                    }
+                    catch (ParseException e) {
+                    	if (verify)
+                    		// verification requested: invalid CPIM data
+                    		throw new DecryptException(
+	                    		DECRYPT_EXCEPTION_INVALID_DATA,
+	                    		"Verification was requested but no CPIM valid data was found");
+                    	else
+                    		// return data as-is
+                    		return data;
+                    }
 
                 }
                 else {

@@ -1930,7 +1930,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 // length of raw encrypted message
                                 length = content.length;
                                 // decrypt
-                                content = coder.decrypt(content, true);
+                                String contentText = coder.decryptText(content, true);
+
+                                // decrypt was successful, convert back to byte array
+                                content = contentText.getBytes();
                                 length = content.length;
                                 isEncrypted = false;
                             }

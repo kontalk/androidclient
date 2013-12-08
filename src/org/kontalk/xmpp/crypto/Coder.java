@@ -31,9 +31,8 @@ public interface Coder {
     /** Encrypts a string. */
     public byte[] encryptText(String text) throws GeneralSecurityException;
 
-    /** Decrypts a byte array. */
-    // TODO this should throw a more specific exception to track security errors
-    public byte[] decrypt(byte[] encrypted, boolean verify) throws GeneralSecurityException;
+    /** Decrypts a byte array which should content text. */
+    public String decryptText(byte[] encrypted, boolean verify) throws GeneralSecurityException;
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
 
