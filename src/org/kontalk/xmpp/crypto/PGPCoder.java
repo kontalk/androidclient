@@ -20,6 +20,7 @@ package org.kontalk.xmpp.crypto;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT;
+import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
 import static org.kontalk.xmpp.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
 
@@ -248,7 +249,33 @@ public class PGPCoder implements Coder {
                         	ops.update((byte) ch);
                     }
 
-                    // verify message integrity first
+                    if (verify) {
+                    	if (ops == null) {
+                    		throw new DecryptException(
+                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+	                    		"No signature list found");
+                    	}
+
+	                    message = pgpFact.nextObject();
+
+	                    if (message instanceof PGPSignatureList) {
+	                    	PGPSignature signature = ((PGPSignatureList) message).get(0);
+	                    	if (!ops.verify(signature)) {
+	                    		throw new DecryptException(
+	                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+    	                    		"Signature verification failed");
+	                    	}
+	                    }
+
+	                    else {
+                    		throw new DecryptException(
+    	                    		DECRYPT_EXCEPTION_INVALID_DATA,
+    	                    		"Invalid signature packet");
+	                    }
+
+                    }
+
+                    // verify message integrity
                     if (pbe.isIntegrityProtected()) {
                     	try {
 	                        if (!pbe.verify()) {
@@ -286,8 +313,14 @@ public class PGPCoder implements Coder {
 	                    			DECRYPT_EXCEPTION_INVALID_RECIPIENT,
 	                    			"Destination does not match personal key");
 
-	                    	// check that sender matches the public key of the signature
-	                    	// TODO this needs verified signature
+	                    	// check that the sender matches the full uid of the sender's key
+	                    	String otherUid = PGP.getUserId(mSender, mServer.getNetwork());
+	                    	if (!otherUid.equals(msg.getFrom()))
+	                    		throw new DecryptException(
+	                    			DECRYPT_EXCEPTION_INVALID_SENDER,
+	                    			"Sender does not match sender's key");
+
+	                    	// TODO check DateTime (possibly compare it with <delay/>)
 	                    }
 
 	                    msgData = msg.getBody();
@@ -304,32 +337,6 @@ public class PGPCoder implements Coder {
                     		msgData = data;
                     }
 
-                    if (verify) {
-                    	if (ops == null) {
-                    		throw new DecryptException(
-                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
-	                    		"No signature list found");
-                    	}
-
-	                    message = pgpFact.nextObject();
-
-	                    if (message instanceof PGPSignatureList) {
-	                    	PGPSignature signature = ((PGPSignatureList) message).get(0);
-	                    	if (!ops.verify(signature)) {
-	                    		throw new DecryptException(
-	                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
-    	                    		"Signature verification failed");
-	                    	}
-	                    }
-
-	                    else {
-                    		throw new DecryptException(
-    	                    		DECRYPT_EXCEPTION_INVALID_DATA,
-    	                    		"Invalid signature packet");
-	                    }
-
-                    }
-
                     return msgData;
 
                 }
@@ -339,8 +346,6 @@ public class PGPCoder implements Coder {
                 		DECRYPT_EXCEPTION_INVALID_DATA,
                 		"Unknown packet type " + message.getClass().getName());
                 }
-
-
 
             }
 
@@ -360,13 +365,6 @@ public class PGPCoder implements Coder {
         	throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, pe);
         }
 
-    }
-
-    /** Verifies the first digital signatures on the message. */
-    private void verify(PGPOnePassSignatureList message) throws PGPException {
-    	PGPOnePassSignature sig = message.get(0);
-
-    	sig.init(new BcPGPContentVerifierBuilderProvider(), mSender);
     }
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException {
