@@ -479,6 +479,7 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.LOCAL_URI);
         values.remove(Messages.PREVIEW_PATH);
         values.remove(Messages.ENCRYPTED);
+        values.remove(Messages.SECURITY_FLAGS);
         values.remove(Messages.SERVER_TIMESTAMP);
         values.remove(Messages.LENGTH);
 
