@@ -241,7 +241,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private XMPPConnectionHelper mHelper;
     /** The connection instance. */
     private KontalkConnection mConnection;
-    /** My username (account name). */
+    /**
+     * My username (account name).
+     * @deprecated Remove this if not needed before converting package to org.kontalk
+     */
+    @Deprecated
     private String mMyUsername;
 
     /** Supported upload services. */
@@ -798,10 +802,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * receiving upload info (non-media messages will be filtered out)
      */
     private void resendPendingMessages(boolean retrying) {
-        StringBuilder filter = new StringBuilder(Messages.DIRECTION + " = " + Messages.DIRECTION_OUT + " AND " +
-            Messages.STATUS + " <> " + Messages.STATUS_SENT + " AND " +
-            Messages.STATUS + " <> " + Messages.STATUS_RECEIVED + " AND " +
-            Messages.STATUS + " <> " + Messages.STATUS_NOTDELIVERED);
+        StringBuilder filter = new StringBuilder()
+            .append(Messages.DIRECTION)
+            .append('=')
+            .append(Messages.DIRECTION_OUT)
+            .append(" AND ")
+            .append(Messages.STATUS)
+            .append("<>")
+            .append(Messages.STATUS_SENT)
+            .append(" AND ")
+            .append(Messages.STATUS)
+            .append("<>")
+            .append(Messages.STATUS_RECEIVED)
+            .append(" AND ")
+            .append(Messages.STATUS)
+            .append("<>")
+            .append(Messages.STATUS_NOTDELIVERED);
 
         // filter out non-media non-uploaded messages
         if (retrying) filter
@@ -820,7 +836,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.LOCAL_URI,
                 Messages.FETCH_URL,
                 Messages.PREVIEW_PATH,
-                Messages.LENGTH
+                Messages.LENGTH,
+                Messages.ENCRYPTED
             },
             filter.toString(),
             null, Messages._ID);
@@ -834,6 +851,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String fetchUrl = c.getString(5);
             String previewPath = c.getString(6);
             long length = c.getLong(7);
+            boolean encrypted = c.getInt(8) != 0;
 
             // media message encountered and no upload service available - delay message
             if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
@@ -847,6 +865,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             b.putString("org.kontalk.message.mime", mime);
             b.putString("org.kontalk.message.toUser", userId);
             b.putLong("org.kontalk.message.length", length);
+            b.putBoolean("org.kontalk.message.encrypt", encrypted);
 
             // message has already been uploaded - just send media
             if (fetchUrl != null) {
@@ -1088,8 +1107,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         values.put(Messages.CONTENT, content);
         values.put(Messages.ENCRYPTED, msg.isEncrypted());
-        // TODO remove this
-        values.put(Messages.ENCRYPT_KEY, msg.wasEncrypted() ? "" : null);
+        values.put(Messages.SECURITY_FLAGS, msg.getSecurityFlags());
         values.put(Messages.FETCH_URL, msg.getFetchUrl());
 
         File previewFile = msg.getPreviewFile();
@@ -1908,7 +1926,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     byte[] content = body != null ? body.getBytes() : new byte[0];
                     long length = content.length;
 
-                    boolean wasEncrypted = false;
+                    int securityFlags = Coder.SECURITY_CLEARTEXT;
                     boolean isEncrypted = false;
 
                     PacketExtension _encrypted = m.getExtension(OpenPGPEncryptedMessage.ELEMENT_NAME, OpenPGPEncryptedMessage.NAMESPACE);
@@ -1918,7 +1936,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         byte[] encryptedData = mEnc.getData();
 
                         // message decryption
-                        wasEncrypted = isEncrypted = true;
+                        isEncrypted = true;
+                        securityFlags = Coder.SECURITY_BASIC;
                         if (encryptedData != null) {
                             // decrypt message
                             try {
@@ -2000,9 +2019,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // set length
                         msg.setLength(length);
 
-                        // remember encryption! :)
-                        if (wasEncrypted)
-                            msg.setWasEncrypted(true);
+                        // remember security flags
+                        msg.setSecurityFlags(securityFlags);
 
                         // set the fetch url (if any)
                         if (fetchUrl != null)

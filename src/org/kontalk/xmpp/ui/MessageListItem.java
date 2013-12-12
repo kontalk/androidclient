@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kontalk.xmpp.R;
+import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.ImageMessage;
@@ -183,7 +184,7 @@ public class MessageListItem extends RelativeLayout {
         int resId = 0;
         int statusId = 0;
 
-        mWarningIcon.setVisibility((mMessage.wasEncrypted()) ? GONE : VISIBLE);
+        mWarningIcon.setVisibility((mMessage.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) ? GONE : VISIBLE);
 
         if (mMessage.getSender() != null) {
             if (mBalloonView != null) {

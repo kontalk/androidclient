@@ -82,7 +82,7 @@ public final class MyMessages {
         public static final String LOCAL_URI = "local_uri";
         public static final String PREVIEW_PATH = "preview_path";
         public static final String ENCRYPTED = "encrypted";
-        public static final String ENCRYPT_KEY = "encrypt_key";
+        public static final String SECURITY_FLAGS = "security_flags";
         public static final String LENGTH = "length";
 
         // not DESC here because the listview is reverse-stacked

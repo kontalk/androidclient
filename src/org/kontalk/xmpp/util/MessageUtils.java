@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 import org.kontalk.xmpp.R;
+import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.VCardMessage;
@@ -336,7 +337,7 @@ public final class MessageUtils {
         // Encrypted
         details.append('\n');
         details.append(res.getString(R.string.encrypted_label));
-        if (msg.wasEncrypted()) {
+        if (msg.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
             details.append(res.getString(R.string.yes));
         }
         else {

@@ -461,12 +461,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	    @Override
 	    public void run() {
 	        try {
-                // get encryption key if needed
-                String key = null;
-                if (MessagingPreferences.getEncryptionEnabled(getActivity())) {
-                    // use recipient phone number
-                    key = Contact.numberByUserId(getActivity(), userId);
-                }
+	            boolean encrypted = MessagingPreferences.getEncryptionEnabled(getActivity());
 
                 /* TODO maybe this hack could work...?
                 MessageListItem v = (MessageListItem) LayoutInflater.from(getActivity())
@@ -487,7 +482,8 @@ public class ComposeMessageFragment extends ListFragment implements
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                values.put(Messages.ENCRYPT_KEY, key);
+                values.put(Messages.ENCRYPTED, encrypted);
+                values.put(Messages.SECURITY_FLAGS, Coder.SECURITY_BASIC);
                 values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);
@@ -794,6 +790,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		builder.create().show();
 	}
 
+	/** TODO */
 	private void decryptMessage(AbstractMessage<?> msg) {
 		try {
 	        PersonalKey key = ((Kontalk)getActivity().getApplicationContext())

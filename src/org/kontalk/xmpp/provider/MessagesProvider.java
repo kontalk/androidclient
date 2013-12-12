@@ -23,10 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.kontalk.xmpp.R;
+import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
-import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Messages.Fulltext;
+import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
 
 import android.annotation.TargetApi;
@@ -78,9 +79,8 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> fulltextProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
-        /** This table will contain all the messages .*/
-        private static final String SCHEMA_MESSAGES =
-            "CREATE TABLE " + TABLE_MESSAGES + " (" +
+
+        private static final String _SCHEMA_MESSAGES = "(" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "thread_id INTEGER NOT NULL, " +
             "msg_id TEXT NOT NULL, " +  // UNIQUE
@@ -100,7 +100,8 @@ public class MessagesProvider extends ContentProvider {
             "fetch_url TEXT," +
             "local_uri TEXT," +
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
-            "encrypt_key TEXT," +
+            // security flags
+            "security_flags INTEGER NOT NULL DEFAULT 0," +
             "preview_path TEXT," +
             // timestamp declared by server for incoming messages
             // timestamp of message accepted by server for outgoing messages
@@ -108,6 +109,10 @@ public class MessagesProvider extends ContentProvider {
             // message length (original file length for media messages)
             "length INTEGER NOT NULL DEFAULT 0" +
             ")";
+
+        /** This table will contain all the messages .*/
+        private static final String SCHEMA_MESSAGES =
+            "CREATE TABLE " + TABLE_MESSAGES + " " + _SCHEMA_MESSAGES;
 
         /** This table will contain the latest message from each conversation. */
         private static final String SCHEMA_THREADS =
@@ -203,108 +208,9 @@ public class MessagesProvider extends ContentProvider {
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
             "END";
 
-
-        private static final String SCHEMA_V1_TO_V2 =
-            // add column preview_path to table messages
-            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN preview_path TEXT";
-
-        private static final String[] SCHEMA_V2_TO_V3 = {
-            // create temporary messages tables without msg_id UNIQUE constraint
-            "CREATE TABLE " + TABLE_MESSAGES + "_new (" +
-            "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "thread_id INTEGER NOT NULL, " +
-            "msg_id TEXT NOT NULL, " +
-            "real_id TEXT, " +
-            "peer TEXT NOT NULL, " +
-            "mime TEXT NOT NULL, " +
-            "content BLOB," +
-            "direction INTEGER NOT NULL, " +
-            "unread INTEGER NOT NULL DEFAULT 0, " +
-            // this the sent/received timestamp
-            "timestamp INTEGER NOT NULL," +
-            // this the timestamp of the latest status change
-            "status_changed INTEGER," +
-            "status INTEGER," +
-            "fetch_url TEXT," +
-            "fetched INTEGER NOT NULL DEFAULT 0," +
-            "local_uri TEXT," +
-            "encrypted INTEGER NOT NULL DEFAULT 0, " +
-            "encrypt_key TEXT," +
-            "preview_path TEXT," +
-            // server-received timestamp (or local sending time)
-            "server_timestamp TEXT," +
-            // message length (original file length for media messages)
-            "length INTEGER NOT NULL DEFAULT 0" +
-            ")",
-            // create temporary threads tables without msg_id UNIQUE constraint
-            "CREATE TABLE " + TABLE_THREADS + "_new (" +
-            "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "msg_id TEXT NOT NULL, " +
-            "peer TEXT NOT NULL UNIQUE, " +
-            "direction INTEGER NOT NULL, " +
-            "count INTEGER NOT NULL DEFAULT 0, " +
-            "unread INTEGER NOT NULL DEFAULT 0, " +
-            "mime TEXT NOT NULL, " +
-            "content TEXT, " +
-            // this the sent/received timestamp
-            "timestamp INTEGER NOT NULL," +
-            // this the timestamp of the latest status change
-            "status_changed INTEGER," +
-            "status INTEGER," +
-            "draft TEXT" +
-            ")",
-            // copy contents of messages table
-            "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
-            "_id, thread_id, msg_id, real_id, peer, mime, content, direction, unread, timestamp, status_changed, status, fetch_url, " +
-            "fetched, local_uri, encrypted, encrypt_key, preview_path, NULL, 0"
-                + " FROM " + TABLE_MESSAGES,
-            // copy contents of threads table
-            "INSERT INTO " + TABLE_THREADS + "_new SELECT * FROM " + TABLE_THREADS,
-            // drop table messages
-            "DROP TABLE " + TABLE_MESSAGES,
-            // drop table threads
-            "DROP TABLE " + TABLE_THREADS,
-            // rename messages_new to messages
-            "ALTER TABLE " + TABLE_MESSAGES + "_new RENAME TO " + TABLE_MESSAGES,
-            // rename threads_new to threads
-            "ALTER TABLE " + TABLE_THREADS + "_new RENAME TO " + TABLE_THREADS,
-            // unique message index
-            SCHEMA_MESSAGES_INDEX,
-            // timestamp message index (for sorting)
-            SCHEMA_MESSAGES_TIMESTAMP_IDX,
-            // triggers
-            TRIGGER_THREADS_INSERT_COUNT,
-            TRIGGER_THREADS_UPDATE_COUNT,
-            TRIGGER_THREADS_DELETE_COUNT
-        };
-
-        private static final String[] SCHEMA_V3_TO_V4 = {
-            SCHEMA_MESSAGES_TIMESTAMP_IDX
-        };
-
         private static final String[] SCHEMA_V4_TO_V5 = {
             // create temporary messages tables without msg_id UNIQUE constraint
-            "CREATE TABLE " + TABLE_MESSAGES + "_new (" +
-            "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "thread_id INTEGER NOT NULL, " +
-            "msg_id TEXT NOT NULL, " +
-            "real_id TEXT, " +
-            "peer TEXT NOT NULL, " +
-            "mime TEXT NOT NULL, " +
-            "content BLOB," +
-            "direction INTEGER NOT NULL, " +
-            "unread INTEGER NOT NULL DEFAULT 0, " +
-            "timestamp INTEGER NOT NULL," +
-            "status_changed INTEGER," +
-            "status INTEGER," +
-            "fetch_url TEXT," +
-            "local_uri TEXT," +
-            "encrypted INTEGER NOT NULL DEFAULT 0, " +
-            "encrypt_key TEXT," +
-            "preview_path TEXT," +
-            "server_timestamp INTEGER," +
-            "length INTEGER NOT NULL DEFAULT 0" +
-            ")",
+            "CREATE TABLE " + TABLE_MESSAGES + "_new " + _SCHEMA_MESSAGES,
             // create temporary threads tables without msg_id UNIQUE constraint
             "CREATE TABLE " + TABLE_THREADS + "_new (" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -323,7 +229,8 @@ public class MessagesProvider extends ContentProvider {
             // copy contents of messages table
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
             "_id, thread_id, msg_id, real_id, peer, mime, content, direction, unread, timestamp, status_changed, status, fetch_url, " +
-            "local_uri, encrypted, encrypt_key, preview_path, datetime(server_timestamp), length"
+            "local_uri, encrypted, CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED +
+            " ELSE " + Coder.SECURITY_CLEARTEXT + " END AS security_flags, preview_path, datetime(server_timestamp), length"
                 + " FROM " + TABLE_MESSAGES,
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT * FROM " + TABLE_THREADS,
@@ -363,18 +270,11 @@ public class MessagesProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (oldVersion < 2) {
-                db.execSQL(SCHEMA_V1_TO_V2);
-            }
-            if (oldVersion < 3) {
-                for (int i = 0; i < SCHEMA_V2_TO_V3.length; i++)
-                    db.execSQL(SCHEMA_V2_TO_V3[i]);
-            }
             if (oldVersion < 4) {
-                for (int i = 0; i < SCHEMA_V3_TO_V4.length; i++)
-                    db.execSQL(SCHEMA_V3_TO_V4[i]);
+                // unsupported version
+                throw new SQLException("Upgrade from version less than 4 is unsupported.");
             }
-            if (oldVersion < 5) {
+            else if (oldVersion == 4) {
                 for (int i = 0; i < SCHEMA_V4_TO_V5.length; i++)
                     db.execSQL(SCHEMA_V4_TO_V5[i]);
             }
@@ -579,7 +479,6 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.LOCAL_URI);
         values.remove(Messages.PREVIEW_PATH);
         values.remove(Messages.ENCRYPTED);
-        values.remove(Messages.ENCRYPT_KEY);
         values.remove(Messages.SERVER_TIMESTAMP);
         values.remove(Messages.LENGTH);
 
@@ -1220,7 +1119,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
         messagesProjectionMap.put(Messages.LOCAL_URI, Messages.LOCAL_URI);
         messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
-        messagesProjectionMap.put(Messages.ENCRYPT_KEY, Messages.ENCRYPT_KEY);
+        messagesProjectionMap.put(Messages.SECURITY_FLAGS, Messages.SECURITY_FLAGS);
         messagesProjectionMap.put(Messages.PREVIEW_PATH, Messages.PREVIEW_PATH);
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
         messagesProjectionMap.put(Messages.LENGTH, Messages.LENGTH);

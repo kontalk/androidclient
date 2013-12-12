@@ -63,7 +63,7 @@ public abstract class AbstractMessage<T> {
         Messages.LOCAL_URI,
         Messages.PREVIEW_PATH,
         Messages.ENCRYPTED,
-        Messages.ENCRYPT_KEY,
+        Messages.SECURITY_FLAGS,
         Messages.LENGTH
     };
 
@@ -83,7 +83,7 @@ public abstract class AbstractMessage<T> {
     public static final int COLUMN_LOCAL_URI = 12;
     public static final int COLUMN_PREVIEW_PATH = 13;
     public static final int COLUMN_ENCRYPTED = 14;
-    public static final int COLUMN_ENCRYPT_KEY = 15;
+    public static final int COLUMN_SECURITY = 15;
     public static final int COLUMN_LENGTH = 16;
 
     public static final String MSG_ID = "org.kontalk.message.id";
@@ -105,8 +105,7 @@ public abstract class AbstractMessage<T> {
     protected long statusChanged;
     protected int status;
     protected boolean encrypted;
-    /** Of course this is used only for outgoing messages. */
-    protected String encryptKey;
+    protected int security;
 
     /**
      * Recipients (outgoing) - will contain one element for incoming
@@ -149,8 +148,8 @@ public abstract class AbstractMessage<T> {
 
         if (encrypted) {
             this.encrypted = encrypted;
-            // with this we avoid of making it null
-            encryptKey = "";
+            // only basic encryption for now
+            this.security = Coder.SECURITY_BASIC;
         }
     }
 
@@ -309,18 +308,16 @@ public abstract class AbstractMessage<T> {
         return encrypted;
     }
 
-    /** Returns true if the message is or was sent encrypted. */
-    public boolean wasEncrypted() {
-        return (encryptKey != null);
-    }
-
     public void setEncrypted() {
         encrypted = true;
-        encryptKey = "";
     }
 
-    public void setWasEncrypted(boolean encrypted) {
-        this.encryptKey = encrypted ? "" : null;
+    public int getSecurityFlags() {
+        return security;
+    }
+
+    public void setSecurityFlags(int flags) {
+        this.security = flags;
     }
 
     /** Decrypts the message. */
@@ -338,7 +335,7 @@ public abstract class AbstractMessage<T> {
         recipients = new ArrayList<String>();
         fetchUrl = c.getString(COLUMN_FETCH_URL);
         encrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
-        encryptKey = c.getString(COLUMN_ENCRYPT_KEY);
+        security = c.getInt(COLUMN_SECURITY);
         serverTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
         length = c.getLong(COLUMN_LENGTH);
         String _localUri = c.getString(COLUMN_LOCAL_URI);
@@ -375,7 +372,7 @@ public abstract class AbstractMessage<T> {
         statusChanged = 0;
         status = 0;
         encrypted = false;
-        encryptKey = null;
+        security = 0;
     }
 
     /** Release this message for later use in the global pool. */

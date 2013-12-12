@@ -143,7 +143,7 @@ public class QuickReplyActivity extends Activity {
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                values.put(Messages.ENCRYPT_KEY, key);
+                //values.put(Messages.ENCRYPT_KEY, key);
                 values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = ctx.getContentResolver().insert(
                         Messages.CONTENT_URI, values);
