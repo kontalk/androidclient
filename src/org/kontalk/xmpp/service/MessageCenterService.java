@@ -751,9 +751,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void authenticated() {
         Log.v(TAG, "authenticated!");
-        // helper is not needed any more
-        mHelper = null;
-
         // discovery
         discovery();
         // send presence
@@ -762,6 +759,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         resendPendingMessages(false);
         // resend failed and pending received receipts
         resendPendingReceipts();
+
+        // helper is not needed any more
+        mHelper = null;
 
         broadcast(ACTION_CONNECTED);
     }
