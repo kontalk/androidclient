@@ -36,6 +36,7 @@ import org.jivesoftware.smackx.ChatState;
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.data.Contact;
@@ -1761,7 +1762,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		processStart(true);
 		if (userId != null) {
             // set notifications on pause
-            MessagingNotification.setPaused(userId);
+			EndpointServer server = MessagingPreferences.getEndpointServer(getActivity());
+            MessagingNotification.setPaused(userId + '@' + server.getNetwork());
             // subscribe to presence notifications
             subscribePresence();
 		}

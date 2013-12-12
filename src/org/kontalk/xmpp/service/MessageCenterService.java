@@ -20,6 +20,7 @@ package org.kontalk.xmpp.service;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -85,6 +86,7 @@ import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
+import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -94,6 +96,7 @@ import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
+import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
@@ -1010,16 +1013,46 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (encrypt) {
                 byte[] toMessage = null;
-                Coder coder = null;
                 try {
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                    coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
+                    Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
                     if (coder != null)
                         toMessage = coder.encryptText(body);
                 }
-                catch (Exception e) {
-                    // should we notify the user this message will be sent cleartext?
-                    coder = null;
+
+                // FIXME there is some very ugly code here
+                // FIXME notify just once per session (store in Kontalk instance?)
+
+                catch (PGPException pgpe) {
+                	// warn user: message will be sent cleartext
+                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                		Toast.makeText(this, "Unable to load personal key. Message will be sent in cleartext.",
+                			Toast.LENGTH_LONG).show();
+                	}
+                }
+
+                catch (IOException io) {
+                	// warn user: message will be sent cleartext
+                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                		Toast.makeText(this, "Unable to load personal key. Message will be sent in cleartext.",
+                			Toast.LENGTH_LONG).show();
+                	}
+                }
+
+                catch (IllegalArgumentException noPublicKey) {
+                	// warn user: message will be sent cleartext
+                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                		Toast.makeText(this, "Unable to find a public key for this user. Message will be sent in cleartext.",
+                			Toast.LENGTH_LONG).show();
+                	}
+                }
+
+                catch (GeneralSecurityException e) {
+                	// warn user: message will be sent cleartext
+                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                		Toast.makeText(this, "Unable to encrypt message. Message will be sent in cleartext.",
+                			Toast.LENGTH_LONG).show();
+                	}
                 }
 
                 if (toMessage != null) {
@@ -1027,6 +1060,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // TODO use dedicated message
                     body = getString(R.string.text_encrypted);
                     m.addExtension(new OpenPGPEncryptedMessage(toMessage));
+                }
+
+                else {
+                	// update message security flags
+                    ContentValues values = new ContentValues(1);
+                    values.put(Messages.SECURITY_FLAGS, Coder.SECURITY_CLEARTEXT);
+                    getContentResolver().update(ContentUris.withAppendedId
+                    		(Messages.CONTENT_URI, msgId), values, null, null);
                 }
             }
 

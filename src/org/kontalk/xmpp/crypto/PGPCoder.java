@@ -169,9 +169,14 @@ public class PGPCoder implements Coder {
             return out.toByteArray();
         }
 
-        catch (Exception e) {
+        catch (PGPException e) {
             throw new GeneralSecurityException(e);
         }
+
+        catch (IOException e) {
+            throw new GeneralSecurityException(e);
+        }
+
     }
 
     @SuppressWarnings("unchecked")

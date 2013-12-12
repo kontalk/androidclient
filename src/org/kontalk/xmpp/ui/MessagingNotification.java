@@ -21,6 +21,7 @@ package org.kontalk.xmpp.ui;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.data.Contact;
@@ -92,8 +93,8 @@ public class MessagingNotification {
     /** This class is not instanciable. */
     private MessagingNotification() {}
 
-    public static void setPaused(String peer) {
-        mPaused = peer;
+    public static void setPaused(String jid) {
+        mPaused = jid;
     }
 
     public static String getPaused() {
@@ -170,7 +171,7 @@ public class MessagingNotification {
         // is there a peer to not notify for?
         if (mPaused != null) {
             query += " AND " + CommonColumns.PEER + " <> ?";
-            args = new String[] { mPaused };
+            args = new String[] { StringUtils.parseName(mPaused) };
         }
 
         Cursor c = res.query(uri, proj, query, args, order);
