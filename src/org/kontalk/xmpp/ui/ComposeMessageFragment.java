@@ -482,8 +482,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
-                values.put(Messages.ENCRYPTED, encrypted);
-                values.put(Messages.SECURITY_FLAGS, Coder.SECURITY_BASIC);
+                values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                 values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);

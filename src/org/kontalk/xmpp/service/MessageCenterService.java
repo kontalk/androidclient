@@ -837,7 +837,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.FETCH_URL,
                 Messages.PREVIEW_PATH,
                 Messages.LENGTH,
-                Messages.ENCRYPTED
+                Messages.SECURITY_FLAGS
             },
             filter.toString(),
             null, Messages._ID);
@@ -851,7 +851,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String fetchUrl = c.getString(5);
             String previewPath = c.getString(6);
             long length = c.getLong(7);
-            boolean encrypted = c.getInt(8) != 0;
+            int securityFlags = c.getInt(8);
 
             // media message encountered and no upload service available - delay message
             if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
@@ -865,7 +865,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             b.putString("org.kontalk.message.mime", mime);
             b.putString("org.kontalk.message.toUser", userId);
             b.putLong("org.kontalk.message.length", length);
-            b.putBoolean("org.kontalk.message.encrypt", encrypted);
+            // TODO shouldn't we pass security flags directly here??
+            b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
             // message has already been uploaded - just send media
             if (fetchUrl != null) {
