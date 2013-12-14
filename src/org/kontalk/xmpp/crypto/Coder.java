@@ -78,8 +78,11 @@ public interface Coder {
     /** Encrypts a string. */
     public byte[] encryptText(String text) throws GeneralSecurityException;
 
+    /** Encrypts a stanza. */
+    public byte[] encryptStanza(String xml) throws GeneralSecurityException;
+
     /** Decrypts a byte array which should content text. */
-    public String decryptText(byte[] encrypted, boolean verify) throws GeneralSecurityException;
+    public String decryptText(byte[] encrypted, boolean verify, StringBuilder mime) throws GeneralSecurityException;
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
 

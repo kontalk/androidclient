@@ -60,9 +60,9 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.AckServerReceipt;
 import org.kontalk.xmpp.client.BitsOfBinary;
+import org.kontalk.xmpp.client.E2EEncryption;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
-import org.kontalk.xmpp.client.OpenPGPEncryptedMessage;
 import org.kontalk.xmpp.client.OutOfBandData;
 import org.kontalk.xmpp.client.Ping;
 import org.kontalk.xmpp.client.PushRegistration;
@@ -86,7 +86,6 @@ import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
-import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -96,6 +95,7 @@ import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.MediaStorage;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
+import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -404,7 +404,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
         pm.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
         pm.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
-        pm.addExtensionProvider(OpenPGPEncryptedMessage.ELEMENT_NAME, OpenPGPEncryptedMessage.NAMESPACE, new OpenPGPEncryptedMessage.Provider());
+        pm.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
     }
 
     @Override
@@ -982,6 +982,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             String body = data.getString("org.kontalk.message.body");
+            if (body != null)
+            	m.setBody(body);
+
             boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
             String fetchUrl = data.getString("org.kontalk.message.fetch.url");
 
@@ -1011,13 +1014,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 chatState = null;
             }
 
+            // add chat state if message is not a received receipt
+            String serverId = data.getString("org.kontalk.message.ack");
+            if (serverId == null && chatState != null)
+            	m.addExtension(new ChatStateExtension(chatState));
+
+            // add download url if present
+            if (fetchUrl != null) {
+                // in this case we will need the length too
+                long length = data.getLong("org.kontalk.message.length");
+                m.addExtension(new OutOfBandData(fetchUrl, mime, length));
+            }
+
             if (encrypt) {
                 byte[] toMessage = null;
                 try {
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
                     Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
-                    if (coder != null)
-                        toMessage = coder.encryptText(body);
+                    if (coder != null) {
+                        //toMessage = coder.encryptText(body);
+
+                    	toMessage = coder.encryptStanza(m.toXML());
+                    	org.jivesoftware.smack.packet.Message encMsg =
+                    		new org.jivesoftware.smack.packet.Message(m.getTo(),
+                    				m.getType());
+
+                    	encMsg.setPacketID(m.getPacketID());
+                    	encMsg.addExtension(new E2EEncryption(toMessage));
+                    	m = encMsg;
+                    }
                 }
 
                 // FIXME there is some very ugly code here
@@ -1055,14 +1080,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 	}
                 }
 
-                if (toMessage != null) {
-                    // using encryption: use fake body
-                    // TODO use dedicated message
-                    body = getString(R.string.text_encrypted);
-                    m.addExtension(new OpenPGPEncryptedMessage(toMessage));
-                }
-
-                else {
+                if (toMessage == null) {
                 	// update message security flags
                     ContentValues values = new ContentValues(1);
                     values.put(Messages.SECURITY_FLAGS, Coder.SECURITY_CLEARTEXT);
@@ -1071,26 +1089,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
-            // add download url if present
-            if (fetchUrl != null) {
-                // in this case we will need the length too
-                long length = data.getLong("org.kontalk.message.length");
-                m.addExtension(new OutOfBandData(fetchUrl, mime, length));
-            }
-
             // received receipt
-            String serverId = data.getString("org.kontalk.message.ack");
             if (serverId != null) {
                 m.addExtension(new ReceivedServerReceipt(serverId));
             }
             else {
-                m.setBody(body);
-
                 // standalone message: no receipt
                 if (!data.getBoolean("org.kontalk.message.standalone", false))
                     m.addExtension(new ServerReceiptRequest());
-                if (chatState != null)
-                    m.addExtension(new ChatStateExtension(chatState));
             }
 
             sendPacket(m);
@@ -1971,10 +1977,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     int securityFlags = Coder.SECURITY_CLEARTEXT;
                     boolean isEncrypted = false;
 
-                    PacketExtension _encrypted = m.getExtension(OpenPGPEncryptedMessage.ELEMENT_NAME, OpenPGPEncryptedMessage.NAMESPACE);
+                    PacketExtension _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
-                    if (_encrypted != null && _encrypted instanceof OpenPGPEncryptedMessage) {
-                        OpenPGPEncryptedMessage mEnc = (OpenPGPEncryptedMessage) _encrypted;
+                    if (_encrypted != null && _encrypted instanceof E2EEncryption) {
+                    	E2EEncryption mEnc = (E2EEncryption) _encrypted;
                         byte[] encryptedData = mEnc.getData();
 
                         // message decryption
@@ -1992,7 +1998,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 // length of raw encrypted message
                                 length = content.length;
                                 // decrypt
-                                String contentText = coder.decryptText(content, true);
+                                StringBuilder mimeFound = new StringBuilder();
+                                String contentText = coder.decryptText(content, true, mimeFound);
+
+                                if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mimeFound.toString())) {
+                                	m = XMPPUtils.parseMessageStanza(contentText);
+                                	contentText = m.getBody() != null ? m.getBody() : "";
+                                }
 
                                 // decrypt was successful, convert back to byte array
                                 content = contentText.getBytes();
@@ -2076,8 +2088,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         if (_ext != null) {
                             // send ack :)
                             ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
-                            org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
-                                org.jivesoftware.smack.packet.Message.Type.chat);
+                            org.jivesoftware.smack.packet.Message ack =
+                            	new org.jivesoftware.smack.packet.Message(from,
+                            		org.jivesoftware.smack.packet.Message.Type.chat);
                             ack.addExtension(receipt);
 
                             if (msgUri != null) {

@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.security.SignatureException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ import java.util.Iterator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.util.CPIMMessage;
+import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPCompressedData;
 import org.spongycastle.openpgp.PGPCompressedDataGenerator;
@@ -98,75 +100,8 @@ public class PGPCoder implements Coder {
     @Override
     public byte[] encryptText(String text) throws GeneralSecurityException {
         try {
-            String from = mKey.getUserId(mServer.getNetwork());
-            StringBuilder to = new StringBuilder();
-            for (PGPPublicKey rcpt : mRecipients)
-                to.append(PGP.getUserId(rcpt, mServer.getNetwork()))
-                    .append("; ");
-
-            // secure the message against the most basic attacks using Message/CPIM
-            CPIMMessage cpim = new CPIMMessage(from, to.toString(), new Date(), text);
-            byte[] plainText = cpim.toByteArray();
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ByteArrayInputStream in = new ByteArrayInputStream(plainText);
-
-            // setup data encryptor & generator
-            BcPGPDataEncryptorBuilder encryptor = new BcPGPDataEncryptorBuilder(PGPEncryptedData.AES_192);
-            encryptor.setWithIntegrityPacket(true);
-            encryptor.setSecureRandom(new SecureRandom());
-
-            // add public key recipients
-            PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(encryptor);
-            for (PGPPublicKey rcpt : mRecipients)
-                encGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(rcpt));
-
-            OutputStream encryptedOut = encGen.open(out, new byte[BUFFER_SIZE]);
-
-            // setup compressed data generator
-            PGPCompressedDataGenerator compGen = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
-            OutputStream compressedOut = compGen.open(encryptedOut, new byte[BUFFER_SIZE]);
-
-            // setup signature generator
-            PGPSignatureGenerator sigGen = new PGPSignatureGenerator
-                    (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
-                        .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
-            sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
-
-            PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
-            spGen.setSignerUserID(false, mKey.getUserId(mServer.getNetwork()));
-            sigGen.setUnhashedSubpackets(spGen.generate());
-
-            sigGen.generateOnePassVersion(false)
-                .encode(compressedOut);
-
-            // Initialize literal data generator
-            PGPLiteralDataGenerator literalGen = new PGPLiteralDataGenerator();
-            OutputStream literalOut = literalGen.open(
-                compressedOut,
-                PGPLiteralData.BINARY,
-                "",
-                new Date(),
-                new byte[BUFFER_SIZE]);
-
-            // read the "in" stream, compress, encrypt and write to the "out" stream
-            // this must be done if clear data is bigger than the buffer size
-            // but there are other ways to optimize...
-            byte[] buf = new byte[BUFFER_SIZE];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                literalOut.write(buf, 0, len);
-                sigGen.update(buf, 0, len);
-            }
-
-            in.close();
-            literalGen.close();
-            // Generate the signature, compress, encrypt and write to the "out" stream
-            sigGen.generate().encode(compressedOut);
-            compGen.close();
-            encGen.close();
-
-            return out.toByteArray();
+        	// consider plain text
+            return encryptData("text/plain", text);
         }
 
         catch (PGPException e) {
@@ -176,12 +111,106 @@ public class PGPCoder implements Coder {
         catch (IOException e) {
             throw new GeneralSecurityException(e);
         }
+    }
 
+    @Override
+    public byte[] encryptStanza(String xml) throws GeneralSecurityException {
+        try {
+            // prepare XML wrapper
+            StringBuilder xmlWrapper = new StringBuilder(
+            			"<xmpp xmlns='jabber:client'>")
+            	.append(  xml  )
+            	.append("</xmpp>");
+
+            return encryptData(XMPPUtils.XML_XMPP_TYPE, xmlWrapper.toString());
+        }
+
+        catch (PGPException e) {
+            throw new GeneralSecurityException(e);
+        }
+
+        catch (IOException e) {
+            throw new GeneralSecurityException(e);
+        }
+    }
+
+    private byte[] encryptData(String mime, String data)
+    		throws PGPException, IOException, SignatureException {
+
+        String from = mKey.getUserId(mServer.getNetwork());
+        StringBuilder to = new StringBuilder();
+        for (PGPPublicKey rcpt : mRecipients)
+            to.append(PGP.getUserId(rcpt, mServer.getNetwork()))
+                .append("; ");
+
+        // secure the message against the most basic attacks using Message/CPIM
+        CPIMMessage cpim = new CPIMMessage(from, to.toString(), new Date(), mime, data);
+        byte[] plainText = cpim.toByteArray();
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayInputStream in = new ByteArrayInputStream(plainText);
+
+        // setup data encryptor & generator
+        BcPGPDataEncryptorBuilder encryptor = new BcPGPDataEncryptorBuilder(PGPEncryptedData.AES_192);
+        encryptor.setWithIntegrityPacket(true);
+        encryptor.setSecureRandom(new SecureRandom());
+
+        // add public key recipients
+        PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(encryptor);
+        for (PGPPublicKey rcpt : mRecipients)
+            encGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(rcpt));
+
+        OutputStream encryptedOut = encGen.open(out, new byte[BUFFER_SIZE]);
+
+        // setup compressed data generator
+        PGPCompressedDataGenerator compGen = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
+        OutputStream compressedOut = compGen.open(encryptedOut, new byte[BUFFER_SIZE]);
+
+        // setup signature generator
+        PGPSignatureGenerator sigGen = new PGPSignatureGenerator
+                (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
+                    .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
+        sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
+
+        PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
+        spGen.setSignerUserID(false, mKey.getUserId(mServer.getNetwork()));
+        sigGen.setUnhashedSubpackets(spGen.generate());
+
+        sigGen.generateOnePassVersion(false)
+            .encode(compressedOut);
+
+        // Initialize literal data generator
+        PGPLiteralDataGenerator literalGen = new PGPLiteralDataGenerator();
+        OutputStream literalOut = literalGen.open(
+            compressedOut,
+            PGPLiteralData.BINARY,
+            "",
+            new Date(),
+            new byte[BUFFER_SIZE]);
+
+        // read the "in" stream, compress, encrypt and write to the "out" stream
+        // this must be done if clear data is bigger than the buffer size
+        // but there are other ways to optimize...
+        byte[] buf = new byte[BUFFER_SIZE];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            literalOut.write(buf, 0, len);
+            sigGen.update(buf, 0, len);
+        }
+
+        in.close();
+        literalGen.close();
+        // Generate the signature, compress, encrypt and write to the "out" stream
+        sigGen.generate().encode(compressedOut);
+        compGen.close();
+        encGen.close();
+
+        return out.toByteArray();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public String decryptText(byte[] encrypted, boolean verify) throws GeneralSecurityException {
+    public String decryptText(byte[] encrypted, boolean verify, StringBuilder mime) throws GeneralSecurityException {
         try {
             PGPObjectFactory pgpF = new PGPObjectFactory(encrypted);
             PGPEncryptedDataList enc;
@@ -302,11 +331,15 @@ public class PGPCoder implements Coder {
 	                    // parse and check Message/CPIM
 	                    CPIMMessage msg = CPIMMessage.parse(data);
 
+	                    if (mime != null)
+	                    	mime.append(msg.getMime());
+
 	                    if (verify) {
-	                    	// verify CPIM headers, including mime type which must be text/plain
+	                    	// verify CPIM headers, including mime type must be either text or xml
 
 	                    	// check mime type
-	                    	if (!PlainTextMessage.MIME_TYPE.equalsIgnoreCase(msg.getMime()))
+	                    	if (!PlainTextMessage.MIME_TYPE.equalsIgnoreCase(msg.getMime()) &&
+	                    			!XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(msg.getMime()))
 	                    		throw new DecryptException(
 	                    			DECRYPT_EXCEPTION_INTEGRITY_CHECK,
 	                    			"MIME type mismatch");
@@ -329,7 +362,6 @@ public class PGPCoder implements Coder {
 	                    }
 
 	                    msgData = msg.getBody();
-
                     }
                     catch (ParseException e) {
                     	if (verify)

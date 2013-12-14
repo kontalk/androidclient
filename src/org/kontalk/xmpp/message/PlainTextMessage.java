@@ -84,7 +84,8 @@ public class PlainTextMessage extends AbstractMessage<byte[]> {
     @Override
     public void decrypt(Coder coder) throws GeneralSecurityException {
         if (isEncrypted()) {
-        	String contentText = coder.decryptText(content, true);
+        	// FIXME ehm :)
+        	String contentText = coder.decryptText(content, true, null);
             content = contentText.getBytes();
             length = content.length;
             encrypted = false;

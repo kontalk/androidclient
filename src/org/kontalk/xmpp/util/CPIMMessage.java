@@ -51,7 +51,7 @@ public class CPIMMessage {
         this(from, to, date, PlainTextMessage.MIME_TYPE, body);
     }
 
-    private CPIMMessage(String from, String to, Date date, String mime, String body) {
+    public CPIMMessage(String from, String to, Date date, String mime, String body) {
         mFrom = from;
         mTo = to;
         mDate = date;
