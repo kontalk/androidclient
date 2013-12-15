@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -97,6 +99,7 @@ import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.RandomString;
 import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
@@ -1208,8 +1211,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void beginKeyPairRegeneration() {
-        if (mKeyPairRegenerator == null)
-            mKeyPairRegenerator = new RegenerateKeyPairListener();
+        if (mKeyPairRegenerator == null) {
+        	try {
+        		mKeyPairRegenerator = new RegenerateKeyPairListener();
+        	}
+        	catch (Exception e) {
+        		Log.e(TAG, "unable to initiate keypair regeneration", e);
+        		// TODO warn user
+        	}
+        }
     }
 
     private void endKeyPairRegeneration() {
@@ -2132,8 +2142,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class RegenerateKeyPairListener implements PacketListener {
         private BroadcastReceiver mKeyReceiver, mConnReceiver;
         private PGPKeyPairRing mKeyRing;
+        private PGPPublicKey mRevoked;
 
-        public RegenerateKeyPairListener() {
+        public RegenerateKeyPairListener()
+        		throws CertificateException, SignatureException, PGPException, IOException {
+
+            revokeCurrentKey();
             setupKeyPairReceiver();
             setupConnectedReceiver();
 
@@ -2159,22 +2173,32 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (mKeyRing != null) {
                 try {
                     String publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
+                    String revokedKey = Base64.encodeToString(mRevoked.getEncoded(), Base64.NO_WRAP);
 
                     Registration iq = new Registration();
                     iq.setType(IQ.Type.SET);
                     iq.setTo(mConnection.getServiceName());
                     Form form = new Form(Form.TYPE_SUBMIT);
 
+                    // form type: register#key
                     FormField type = new FormField("FORM_TYPE");
                     type.setType(FormField.TYPE_HIDDEN);
                     type.addValue("http://kontalk.org/protocol/register#key");
                     form.addField(type);
 
+                    // new (to-be-signed) public key
                     FormField fieldKey = new FormField("publickey");
                     fieldKey.setLabel("Public key");
                     fieldKey.setType(FormField.TYPE_TEXT_SINGLE);
                     fieldKey.addValue(publicKey);
                     form.addField(fieldKey);
+
+                    // old (revoked) public key
+                    FormField fieldRevoked = new FormField("revoked");
+                    fieldRevoked.setLabel("Revoked public key");
+                    fieldRevoked.setType(FormField.TYPE_TEXT_SINGLE);
+                    fieldRevoked.addValue(revokedKey);
+                    form.addField(fieldRevoked);
 
                     iq.addExtension(form.getDataFormToSend());
                     return iq;
@@ -2258,6 +2282,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }
 
+        /** We do this here so if something goes wrong the old key is still valid. */
+        private void revokeCurrentKey()
+        		throws CertificateException, PGPException, IOException, SignatureException {
+
+        	PersonalKey oldKey = ((Kontalk) getApplicationContext()).getPersonalKey();
+        	mRevoked = oldKey.revoke(false);
+        }
+
         @Override
         public void processPacket(Packet packet) {
             IQ iq = (IQ) packet;
@@ -2311,6 +2343,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                         Toast.LENGTH_LONG).show();
                                 }
                             });
+
+                            // restart message center
+                            restart(getApplicationContext());
                         }
 
                         // TODO else?

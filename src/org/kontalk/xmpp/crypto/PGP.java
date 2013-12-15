@@ -158,6 +158,7 @@ public class PGP {
         return new PGPKeyPairRing(pubRing, secRing);
     }
 
+    /** Signs a public key with the given secret key. */
     public static PGPPublicKey signPublicKey(PGPKeyPair secret, PGPPublicKey keyToBeSigned, String id)
             throws PGPException, IOException, SignatureException {
 
@@ -170,6 +171,22 @@ public class PGP {
         sGen.init(PGPSignature.CASUAL_CERTIFICATION, pgpPrivKey);
 
         return PGPPublicKey.addCertification(keyToBeSigned, id, sGen.generateCertification(id, keyToBeSigned));
+    }
+
+    /** Revokes the given key. */
+    public static PGPPublicKey revokeKey(PGPKeyPair secret)
+            throws PGPException, IOException, SignatureException {
+
+        PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
+        PGPPublicKey pgpPubKey = secret.getPublicKey();
+
+        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
+            new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
+                PGPUtil.SHA1).setProvider(PROVIDER));
+
+        sGen.init(PGPSignature.KEY_REVOCATION, pgpPrivKey);
+
+        return PGPPublicKey.addCertification(pgpPubKey, sGen.generateCertification(pgpPubKey));
     }
 
     public static PGPDecryptedKeyPairRing fromParcel(Parcel in) throws PGPException {

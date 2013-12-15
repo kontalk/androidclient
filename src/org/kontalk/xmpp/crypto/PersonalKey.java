@@ -91,6 +91,7 @@ public class PersonalKey implements Parcelable {
     }
 
     public PGPKeyPairRing store(String userId, String network, String passphrase) throws PGPException {
+    	// FIXME dummy values
         return store("TEST",
             userId + '@' + network, "NO COMMENT",
             passphrase);
@@ -246,6 +247,22 @@ public class PersonalKey implements Parcelable {
 
         return PGP.signPublicKey(mPair.signKey, keyToBeSigned, id);
     }
+
+    /**
+     * Revokes the whole key pair using the master (signing) key.
+     * @param store true to store the key in this object
+     * @return the revoked master public key
+     */
+	public PGPPublicKey revoke(boolean store)
+			throws PGPException, IOException, SignatureException {
+
+		PGPPublicKey revoked = PGP.revokeKey(mPair.signKey);
+
+		if (store)
+			mPair.signKey = new PGPKeyPair(revoked, mPair.signKey.getPrivateKey());
+
+		return revoked;
+	}
 
     @Override
     public int describeContents() {
