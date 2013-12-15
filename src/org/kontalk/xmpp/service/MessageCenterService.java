@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,6 +82,7 @@ import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.client.VCard4;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.crypto.DecryptException;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.X509Bridge;
@@ -2009,11 +2012,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 length = content.length;
                                 // decrypt
                                 StringBuilder mimeFound = new StringBuilder();
-                                String contentText = coder.decryptText(content, true, mimeFound);
+                                StringBuilder clearText = new StringBuilder();
+                                List<DecryptException> errors = new LinkedList<DecryptException>();
+                                coder.decryptText(content, true, clearText, mimeFound, errors);
+
+                                String contentText;
 
                                 if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mimeFound.toString())) {
-                                	m = XMPPUtils.parseMessageStanza(contentText);
+                                	m = XMPPUtils.parseMessageStanza(clearText.toString());
                                 	contentText = m.getBody() != null ? m.getBody() : "";
+                                }
+                                else {
+                                	contentText = clearText.toString();
                                 }
 
                                 // decrypt was successful, convert back to byte array
@@ -2021,6 +2031,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 length = content.length;
                                 isEncrypted = false;
                             }
+
+                            // decryption errors
+                            catch (GeneralSecurityException sec) {
+                            	// TODO
+                            }
+
+                            // XML parsing and other errors
                             catch (Exception exc) {
                                 // pass over the message even if encrypted
                                 // UI will warn the user about that and wait

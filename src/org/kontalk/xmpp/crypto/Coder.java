@@ -20,6 +20,7 @@ package org.kontalk.xmpp.crypto;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
+import java.util.List;
 
 
 /**
@@ -82,7 +83,10 @@ public interface Coder {
     public byte[] encryptStanza(String xml) throws GeneralSecurityException;
 
     /** Decrypts a byte array which should content text. */
-    public String decryptText(byte[] encrypted, boolean verify, StringBuilder mime) throws GeneralSecurityException;
+    public void decryptText(byte[] encrypted, boolean verify,
+    		StringBuilder out, StringBuilder mime, List<DecryptException> errors)
+    				throws GeneralSecurityException;
+
 
     public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
 

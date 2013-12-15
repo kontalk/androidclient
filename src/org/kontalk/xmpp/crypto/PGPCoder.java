@@ -35,6 +35,7 @@ import java.security.SignatureException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.message.PlainTextMessage;
@@ -210,7 +211,10 @@ public class PGPCoder implements Coder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public String decryptText(byte[] encrypted, boolean verify, StringBuilder mime) throws GeneralSecurityException {
+    public void decryptText(byte[] encrypted, boolean verify,
+    		StringBuilder out, StringBuilder mime, List<DecryptException> errors)
+    				throws GeneralSecurityException {
+
         try {
             PGPObjectFactory pgpF = new PGPObjectFactory(encrypted);
             PGPEncryptedDataList enc;
@@ -250,7 +254,8 @@ public class PGPCoder implements Coder {
             PGPObjectFactory plainFact = new PGPObjectFactory(clear);
 
             Object message = plainFact.nextObject();
-            String msgData;
+
+            String msgData = null;
 
             if (message instanceof PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
@@ -274,10 +279,10 @@ public class PGPCoder implements Coder {
                     InputStream unc = ld.getInputStream();
                     int ch;
 
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
                     while ((ch = unc.read()) >= 0) {
-                        out.write(ch);
+                        bout.write(ch);
 
                         if (ops != null)
                         	ops.update((byte) ch);
@@ -285,26 +290,33 @@ public class PGPCoder implements Coder {
 
                     if (verify) {
                     	if (ops == null) {
-                    		throw new DecryptException(
-                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
-	                    		"No signature list found");
+                    		if (errors != null)
+	                    		errors.add(new DecryptException(
+	                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+		                    		"No signature list found"));
                     	}
 
 	                    message = pgpFact.nextObject();
 
-	                    if (message instanceof PGPSignatureList) {
-	                    	PGPSignature signature = ((PGPSignatureList) message).get(0);
-	                    	if (!ops.verify(signature)) {
-	                    		throw new DecryptException(
-	                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
-    	                    		"Signature verification failed");
-	                    	}
-	                    }
+	                    if (ops != null) {
 
-	                    else {
-                    		throw new DecryptException(
-    	                    		DECRYPT_EXCEPTION_INVALID_DATA,
-    	                    		"Invalid signature packet");
+		                    if (message instanceof PGPSignatureList) {
+		                    	PGPSignature signature = ((PGPSignatureList) message).get(0);
+		                    	if (!ops.verify(signature)) {
+		                    		if (errors != null)
+			                    		errors.add(new DecryptException(
+			                				DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+		    	                    		"Signature verification failed"));
+		                    	}
+		                    }
+
+		                    else {
+	                    		if (errors != null)
+		                    		errors.add(new DecryptException(
+		    	                    		DECRYPT_EXCEPTION_INVALID_DATA,
+		    	                    		"Invalid signature packet"));
+		                    }
+
 	                    }
 
                     }
@@ -313,19 +325,21 @@ public class PGPCoder implements Coder {
                     if (pbe.isIntegrityProtected()) {
                     	try {
 	                        if (!pbe.verify()) {
+	                        	// unrecoverable situation
 	                            throw new DecryptException(
 	                            	DECRYPT_EXCEPTION_INTEGRITY_CHECK,
 	                            	"Message integrity check failed");
 	                        }
                     	}
                     	catch (PGPException e) {
+                    		// unrecoverable situation
                             throw new DecryptException(
                             	DECRYPT_EXCEPTION_INTEGRITY_CHECK,
                             	e);
                     	}
                     }
 
-                    String data = new String(out.toByteArray());
+                    String data = bout.toString();
 
                     try {
 	                    // parse and check Message/CPIM
@@ -333,6 +347,8 @@ public class PGPCoder implements Coder {
 
 	                    if (mime != null)
 	                    	mime.append(msg.getMime());
+
+	                    msgData = msg.getBody();
 
 	                    if (verify) {
 	                    	// verify CPIM headers, including mime type must be either text or xml
@@ -361,20 +377,27 @@ public class PGPCoder implements Coder {
 	                    	// TODO check DateTime (possibly compare it with <delay/>)
 	                    }
 
-	                    msgData = msg.getBody();
                     }
-                    catch (ParseException e) {
-                    	if (verify)
+                    catch (ParseException pe) {
+                		// return data as-is
+                		msgData = data;
+
+                    	if (verify && errors != null)
                     		// verification requested: invalid CPIM data
-                    		throw new DecryptException(
-	                    		DECRYPT_EXCEPTION_INVALID_DATA,
-	                    		"Verification was requested but no CPIM valid data was found");
-                    	else
-                    		// return data as-is
-                    		msgData = data;
+                    		errors.add(new DecryptException(
+	                    		DECRYPT_EXCEPTION_INVALID_DATA, pe,
+	                    		"Verification was requested but no CPIM valid data was found"));
                     }
 
-                    return msgData;
+                    catch (DecryptException de) {
+                    	if (errors != null)
+                    		errors.add(de);
+                    }
+
+                    finally {
+                    	if (msgData != null)
+                    		out.append(msgData);
+                    }
 
                 }
                 else {
@@ -393,6 +416,8 @@ public class PGPCoder implements Coder {
             }
 
         }
+
+        // unrecoverable situations
 
         catch (IOException ioe) {
         	throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, ioe);
