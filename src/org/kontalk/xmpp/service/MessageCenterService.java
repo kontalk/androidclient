@@ -1020,11 +1020,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 chatState = null;
             }
 
-            // add chat state if message is not a received receipt
-            String serverId = data.getString("org.kontalk.message.ack");
-            if (serverId == null && chatState != null)
-            	m.addExtension(new ChatStateExtension(chatState));
-
             // add download url if present
             if (fetchUrl != null) {
                 // in this case we will need the length too
@@ -1038,15 +1033,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
                     Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
                     if (coder != null) {
-                        //toMessage = coder.encryptText(body);
 
-                    	toMessage = coder.encryptStanza(m.toXML());
+                    	// no extensions, create a simple text version to save space
+                    	if (m.getExtensions().size() == 0) {
+                            toMessage = coder.encryptText(body);
+                    	}
+
+                    	// some extension, encrypt whole stanza just to be sure
+                    	else {
+                    		toMessage = coder.encryptStanza(m.toXML());
+                    	}
+
                     	org.jivesoftware.smack.packet.Message encMsg =
-                    		new org.jivesoftware.smack.packet.Message(m.getTo(),
-                    				m.getType());
+	                    		new org.jivesoftware.smack.packet.Message(m.getTo(),
+	                    				m.getType());
 
                     	encMsg.setPacketID(m.getPacketID());
                     	encMsg.addExtension(new E2EEncryption(toMessage));
+
                     	m = encMsg;
                     }
                 }
@@ -1095,11 +1099,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
+            // message server id
+            String serverId = data.getString("org.kontalk.message.ack");
+
             // received receipt
             if (serverId != null) {
                 m.addExtension(new ReceivedServerReceipt(serverId));
             }
             else {
+                // add chat state if message is not a received receipt
+                if (chatState != null)
+                	m.addExtension(new ChatStateExtension(chatState));
+
                 // standalone message: no receipt
                 if (!data.getBoolean("org.kontalk.message.standalone", false))
                     m.addExtension(new ServerReceiptRequest());
@@ -2025,6 +2036,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 else {
                                 	contentText = clearText.toString();
                                 }
+
+                                Log.v(TAG, "contentText=" + contentText);
 
                                 // decrypt was successful, convert back to byte array
                                 content = contentText.getBytes();
