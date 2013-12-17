@@ -84,7 +84,7 @@
     <string name="title_file_info">File information</string>
     <string name="pref_restart_msgcenter">Restart message center</string>
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
-    <string name="pref_maintainance">Mainteinance</string>
+    <string name="pref_maintainance">Maintenance</string>
     <string name="contacts_list_title">Choose a contact</string>
     <string name="pref_messaging_settings">Messaging settings</string>
     <string name="pref_privacy_settings">Privacy settings</string>
