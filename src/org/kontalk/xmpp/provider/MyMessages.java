@@ -27,9 +27,7 @@ public final class MyMessages {
 
     public interface CommonColumns extends BaseColumns {
         public static final String PEER = "peer";
-        public static final String MIME = "mime";
         public static final String DIRECTION = "direction";
-        public static final String CONTENT = "content";
         public static final String TIMESTAMP = "timestamp";
         public static final String UNREAD = "unread";
         public static final String STATUS_CHANGED = "status_changed";
@@ -69,7 +67,8 @@ public final class MyMessages {
             public static final Uri CONTENT_URI = Uri.parse("content://"
                     + MessagesProvider.AUTHORITY + "/fulltext");
 
-            public static final String _ID = "rowid";
+            public static final String THREAD_ID = "thread_id";
+            public static final String CONTENT = "content";
         }
 
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.xmpp.message";
@@ -78,12 +77,13 @@ public final class MyMessages {
         public static final String THREAD_ID = "thread_id";
         public static final String REAL_ID = "real_id";
         public static final String SERVER_TIMESTAMP = "server_timestamp";
-        public static final String FETCH_URL = "fetch_url";
-        public static final String LOCAL_URI = "local_uri";
-        public static final String PREVIEW_PATH = "preview_path";
+
+        public static final String BODY_MIME = "body_mime";
+        public static final String BODY_CONTENT = "body_content";
+        public static final String BODY_LENGTH = "body_length";
+
         public static final String ENCRYPTED = "encrypted";
         public static final String SECURITY_FLAGS = "security_flags";
-        public static final String LENGTH = "length";
 
         // not DESC here because the listview is reverse-stacked
         public static final String DEFAULT_SORT_ORDER = "timestamp";
@@ -116,6 +116,7 @@ public final class MyMessages {
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.thread";
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.thread";
 
+        public static final String CONTENT = "content";
         public static final String COUNT = "count";
         public static final String DRAFT = "draft";
 

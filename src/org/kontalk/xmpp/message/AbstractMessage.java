@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2013 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,9 +40,9 @@ import android.os.Parcelable;
  * An abstract message.
  * FIXME it should be a {@link Parcelable}
  * @author Daniele Ricci
- * @version 1.0
+ * @version 2.0
  */
-public abstract class AbstractMessage<T> {
+public abstract class AbstractMessage {
 
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
@@ -56,15 +56,12 @@ public abstract class AbstractMessage<T> {
         Messages.TIMESTAMP,
         Messages.SERVER_TIMESTAMP,
         Messages.STATUS_CHANGED,
-        Messages.MIME,
-        Messages.CONTENT,
         Messages.STATUS,
-        Messages.FETCH_URL,
-        Messages.LOCAL_URI,
-        Messages.PREVIEW_PATH,
         Messages.ENCRYPTED,
         Messages.SECURITY_FLAGS,
-        Messages.LENGTH
+        Messages.BODY_MIME,
+        Messages.BODY_CONTENT,
+        Messages.BODY_LENGTH,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
@@ -76,15 +73,12 @@ public abstract class AbstractMessage<T> {
     public static final int COLUMN_TIMESTAMP = 5;
     public static final int COLUMN_SERVER_TIMESTAMP = 6;
     public static final int COLUMN_STATUS_CHANGED = 7;
-    public static final int COLUMN_MIME = 8;
-    public static final int COLUMN_CONTENT = 9;
-    public static final int COLUMN_STATUS = 10;
-    public static final int COLUMN_FETCH_URL = 11;
-    public static final int COLUMN_LOCAL_URI = 12;
-    public static final int COLUMN_PREVIEW_PATH = 13;
-    public static final int COLUMN_ENCRYPTED = 14;
-    public static final int COLUMN_SECURITY = 15;
-    public static final int COLUMN_LENGTH = 16;
+    public static final int COLUMN_STATUS = 8;
+    public static final int COLUMN_ENCRYPTED = 9;
+    public static final int COLUMN_SECURITY = 10;
+    public static final int COLUMN_BODY_MIME = 11;
+    public static final int COLUMN_BODY_CONTENT = 12;
+    public static final int COLUMN_BODY_LENGTH = 13;
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
@@ -98,8 +92,6 @@ public abstract class AbstractMessage<T> {
     protected long databaseId;
     protected String id;
     protected String sender;
-    protected String mime;
-    protected T content;
     protected long timestamp;
     protected long serverTimestamp;
     protected long statusChanged;
@@ -129,18 +121,19 @@ public abstract class AbstractMessage<T> {
     /** Message length (original file length for media messages). */
     protected long length;
 
-    public AbstractMessage(Context context, String id, long timestamp, String sender, String mime, T content, boolean encrypted, List<String> group) {
-        this(context, id, timestamp, sender, mime, content, encrypted);
+    /** Message components. */
+    protected List<MessageComponent<?>> mComponents;
+
+    public AbstractMessage(Context context, String id, long timestamp, String sender, boolean encrypted, List<String> group) {
+        this(context, id, timestamp, sender, encrypted);
         this.group = group;
     }
 
-    public AbstractMessage(Context context, String id, long timestamp, String sender, String mime, T content, boolean encrypted) {
+    public AbstractMessage(Context context, String id, long timestamp, String sender, boolean encrypted) {
         this.mContext = context;
 
         this.id = id;
         this.sender = sender;
-        this.mime = mime;
-        this.content = content;
         this.recipients = new ArrayList<String>();
         // will be updated if necessary
         this.timestamp = System.currentTimeMillis();
@@ -180,18 +173,6 @@ public abstract class AbstractMessage<T> {
 
     public List<String> getGroup() {
         return group;
-    }
-
-    public String getMime() {
-        return mime;
-    }
-
-    public T getContent() {
-        return content;
-    }
-
-    public void setContent(T content) {
-        this.content = content;
     }
 
     public long getTimestamp() {
@@ -260,7 +241,7 @@ public abstract class AbstractMessage<T> {
     public abstract byte[] getBinaryContent();
 
     /** A sample text content from class name and mime type. */
-    public static String getSampleTextContent(Class<? extends AbstractMessage<?>> klass,
+    public static String getSampleTextContent(Class<? extends AbstractMessage> klass,
             String mime) {
         String cname = klass.getSimpleName();
         return cname.substring(0, cname.length() - "Message".length()) +
@@ -328,20 +309,21 @@ public abstract class AbstractMessage<T> {
         databaseId = c.getLong(COLUMN_ID);
         id = c.getString(COLUMN_MESSAGE_ID);
         //realId = c.getString(COLUMN_REAL_ID);
-        mime = c.getString(COLUMN_MIME);
         timestamp = c.getLong(COLUMN_TIMESTAMP);
         statusChanged = c.getLong(COLUMN_STATUS_CHANGED);
         status = c.getInt(COLUMN_STATUS);
         recipients = new ArrayList<String>();
-        fetchUrl = c.getString(COLUMN_FETCH_URL);
         encrypted = (c.getShort(COLUMN_ENCRYPTED) > 0);
         security = c.getInt(COLUMN_SECURITY);
         serverTimestamp = c.getLong(COLUMN_SERVER_TIMESTAMP);
+        /*
+        fetchUrl = c.getString(COLUMN_FETCH_URL);
         length = c.getLong(COLUMN_LENGTH);
         String _localUri = c.getString(COLUMN_LOCAL_URI);
         // load local uri
         if (_localUri != null && _localUri.length() > 0)
             localUri = Uri.parse(_localUri);
+         */
 
         String peer = c.getString(COLUMN_PEER);
         int direction = c.getInt(COLUMN_DIRECTION);
@@ -365,8 +347,6 @@ public abstract class AbstractMessage<T> {
         databaseId = 0;
         id = null;
         sender = null;
-        mime = null;
-        content = null;
         timestamp = 0;
         serverTimestamp = 0;
         statusChanged = 0;
@@ -378,27 +358,8 @@ public abstract class AbstractMessage<T> {
     /** Release this message for later use in the global pool. */
     public abstract void recycle();
 
-    public static AbstractMessage<?> fromCursor(Context context, Cursor cursor) {
-        String mime = cursor.getString(COLUMN_MIME);
-
-        if (PlainTextMessage.supportsMimeType(mime)) {
-            PlainTextMessage msg = PlainTextMessage.obtain(context);
-            msg.populateFromCursor(cursor);
-            return msg;
-        }
-
-        else if (ImageMessage.supportsMimeType(mime)) {
-            ImageMessage msg = new ImageMessage(context);
-            msg.populateFromCursor(cursor);
-            return msg;
-        }
-
-        else if (VCardMessage.supportsMimeType(mime)) {
-        	VCardMessage msg = new VCardMessage(context);
-        	msg.populateFromCursor(cursor);
-        	return msg;
-        }
-
+    public static AbstractMessage fromCursor(Context context, Cursor cursor) {
+    	// TODO
         return null;
     }
 
@@ -410,11 +371,8 @@ public abstract class AbstractMessage<T> {
                 MESSAGE_LIST_PROJECTION, null, null, Messages.DEFAULT_SORT_ORDER);
     }
 
-    public static String buildMediaFilename(AbstractMessage<?> msg) {
-        if (msg instanceof ImageMessage)
-            return ImageMessage.buildMediaFilename(msg.getId(), msg.getMime());
-        else if (msg instanceof VCardMessage)
-            return VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
+    public static String buildMediaFilename(AbstractMessage msg) {
+    	// TODO
         return null;
     }
 

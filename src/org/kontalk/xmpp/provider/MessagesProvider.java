@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
-import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
@@ -86,8 +85,6 @@ public class MessagesProvider extends ContentProvider {
             "msg_id TEXT NOT NULL, " +  // UNIQUE
             "real_id TEXT, " +
             "peer TEXT NOT NULL, " +
-            "mime TEXT NOT NULL, " +
-            "content BLOB," +
             "direction INTEGER NOT NULL, " +
             "unread INTEGER NOT NULL DEFAULT 0, " +
             // this the sent/received timestamp
@@ -97,17 +94,27 @@ public class MessagesProvider extends ContentProvider {
             // updated when status field is modified
             "status_changed INTEGER," +
             "status INTEGER," +
-            "fetch_url TEXT," +
-            "local_uri TEXT," +
+
+            // for text body or encrypted stanza
+            "body_mime TEXT," +
+            "body_content BLOB," +
+            "body_length INTEGER NOT NULL DEFAULT 0," +
+
+            // for a single attachment
+            "att_mime TEXT, " +
+            "att_preview_path TEXT," +
+            "att_fetch_url TEXT," +
+            "att_local_uri TEXT," +
+            "att_length INTEGER NOT NULL DEFAULT 0," +
+            "att_encrypted INTEGER NOT NULL DEFAULT 0," +
+            "att_security_flags INTEGER NOT NULL DEFAULT 0," +
+
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             // security flags
             "security_flags INTEGER NOT NULL DEFAULT 0," +
-            "preview_path TEXT," +
             // timestamp declared by server for incoming messages
             // timestamp of message accepted by server for outgoing messages
-            "server_timestamp INTEGER," +
-            // message length (original file length for media messages)
-            "length INTEGER NOT NULL DEFAULT 0" +
+            "server_timestamp INTEGER" +
             ")";
 
         /** This table will contain all the messages .*/
@@ -123,7 +130,6 @@ public class MessagesProvider extends ContentProvider {
             "direction INTEGER NOT NULL, " +
             "count INTEGER NOT NULL DEFAULT 0, " +
             "unread INTEGER NOT NULL DEFAULT 0, " +
-            "mime TEXT NOT NULL, " +
             "content TEXT, " +
             // this the sent/received timestamp
             "timestamp INTEGER NOT NULL," +
@@ -336,7 +342,7 @@ public class MessagesProvider extends ContentProvider {
             case FULLTEXT_ID:
                 qb.setTables(TABLE_FULLTEXT);
                 qb.setProjectionMap(fulltextProjectionMap);
-                qb.appendWhere(Messages.CONTENT + " MATCH ?");
+                qb.appendWhere(Fulltext.CONTENT + " MATCH ?");
                 selectionArgs = new String[] { uri.getQueryParameter("pattern") };
                 break;
 
@@ -425,10 +431,9 @@ public class MessagesProvider extends ContentProvider {
 
             if (rowId > 0) {
                 // update fulltext table
+            	byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
                 Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-                String mime = values.getAsString(Messages.MIME);
-                if ((encrypted == null || !encrypted.booleanValue()) && PlainTextMessage.MIME_TYPE.equals(mime)) {
-                    byte[] content = values.getAsByteArray(Messages.CONTENT);
+                if (content != null && content.length > 0 && (encrypted == null || !encrypted.booleanValue())) {
                     updateFulltext(db, rowId, threadId, content);
                 }
 
@@ -475,13 +480,11 @@ public class MessagesProvider extends ContentProvider {
         values.remove(Messages.UNREAD);
         // remove some other column
         values.remove(Messages.REAL_ID);
-        values.remove(Messages.FETCH_URL);
-        values.remove(Messages.LOCAL_URI);
-        values.remove(Messages.PREVIEW_PATH);
+        values.remove(Messages.BODY_MIME);
+        values.remove(Messages.BODY_LENGTH);
         values.remove(Messages.ENCRYPTED);
         values.remove(Messages.SECURITY_FLAGS);
         values.remove(Messages.SERVER_TIMESTAMP);
-        values.remove(Messages.LENGTH);
 
         // use text content in threads instead of binary content
         Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
@@ -490,7 +493,8 @@ public class MessagesProvider extends ContentProvider {
         }
         else {
             // use the binary content converted to string
-            byte[] content = values.getAsByteArray(Messages.CONTENT);
+            byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
+            values.remove(Messages.BODY_CONTENT);
             values.put(Threads.CONTENT, new String(content));
         }
 
@@ -610,12 +614,12 @@ public class MessagesProvider extends ContentProvider {
                     boolean doUpdateFulltext;
                     String[] projection;
 
-                    byte[] oldContent = values.getAsByteArray(Messages.CONTENT);
+                    byte[] oldContent = values.getAsByteArray(Messages.BODY_CONTENT);
                     if (oldContent != null) {
                         doUpdateFulltext = true;
                         projection = new String[] { Messages.THREAD_ID, Messages._ID,
-                                Messages.DIRECTION, Messages.MIME,
-                                Messages.ENCRYPTED, Messages.CONTENT };
+                                Messages.DIRECTION, Messages.ENCRYPTED,
+                                Messages.BODY_CONTENT };
                     }
                     else {
                         doUpdateFulltext = false;
@@ -639,11 +643,9 @@ public class MessagesProvider extends ContentProvider {
                             // update fulltext if necessary
                             if (doUpdateFulltext) {
                                 int direction = c.getInt(2);
-                                String mime = c.getString(3);
                                 int encrypted = c.getInt(4);
-                                if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
-                                        PlainTextMessage.MIME_TYPE.equals(mime))
-                                    updateFulltext(db, c.getLong(1), threadId, c.getBlob(5));
+                                if ((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true)
+                                    updateFulltext(db, c.getLong(1), threadId, c.getBlob(4));
                             }
                         }
 
@@ -669,8 +671,8 @@ public class MessagesProvider extends ContentProvider {
 
         ContentValues fulltext = new ContentValues();
         fulltext.put(Fulltext._ID, id);
-        fulltext.put(Messages.THREAD_ID, threadId);
-        fulltext.put(Messages.CONTENT, text);
+        fulltext.put(Fulltext.THREAD_ID, threadId);
+        fulltext.put(Fulltext.CONTENT, text);
         db.replace(TABLE_FULLTEXT, null, fulltext);
     }
 
@@ -786,7 +788,6 @@ public class MessagesProvider extends ContentProvider {
                         Messages.THREAD_ID,
                         Messages._ID,
                         Messages.DIRECTION,
-                        Messages.MIME,
                         Messages.ENCRYPTED
                     },
                     where, args, null, null, null);
@@ -797,10 +798,8 @@ public class MessagesProvider extends ContentProvider {
 
                         // update fulltext
                         int direction = c.getInt(2);
-                        String mime = c.getString(3);
-                        int encrypted = c.getInt(4);
-                        if (((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true) &&
-                                PlainTextMessage.MIME_TYPE.equals(mime))
+                        int encrypted = c.getInt(3);
+                        if ((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true)
                             db.delete(TABLE_FULLTEXT, Fulltext._ID + " = " + c.getLong(1), null);
                     }
 
@@ -872,9 +871,8 @@ public class MessagesProvider extends ContentProvider {
         Cursor c = db.query(TABLE_MESSAGES, new String[] {
                 Messages.MESSAGE_ID,
                 Messages.DIRECTION,
-                Messages.MIME,
                 Messages.STATUS,
-                Messages.CONTENT,
+                Messages.BODY_CONTENT,
                 Messages.TIMESTAMP,
                 Messages.ENCRYPTED
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
@@ -886,10 +884,8 @@ public class MessagesProvider extends ContentProvider {
                 ContentValues v = new ContentValues();
                 v.put(Threads.MESSAGE_ID, c.getString(0));
                 v.put(Threads.DIRECTION, c.getInt(1));
-                String mime = c.getString(2);
-                v.put(Threads.MIME, mime);
-                v.put(Threads.STATUS, c.getInt(3));
-                int encrypted = c.getInt(6);
+                v.put(Threads.STATUS, c.getInt(2));
+                int encrypted = c.getInt(5);
 
                 // check if message is encrypted
                 String content;
@@ -897,12 +893,12 @@ public class MessagesProvider extends ContentProvider {
                     content = getContext().getResources().getString(R.string.text_encrypted);
                 else {
                     // convert to string...
-                    byte[] buf = c.getBlob(4);
+                    byte[] buf = c.getBlob(3);
                     content = new String(buf);
                 }
 
                 v.put(Threads.CONTENT, content);
-                v.put(Threads.TIMESTAMP, c.getLong(5));
+                v.put(Threads.TIMESTAMP, c.getLong(4));
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
                 if (rc > 0) {
                     notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
@@ -1073,11 +1069,15 @@ public class MessagesProvider extends ContentProvider {
         return 0;
     }
 
+    // FIXME hard-coded to IMAGE_
     public static void uploaded(Context context, long msgId, String fetchUrl) {
+    	// TODO
+    	/*
         ContentValues values = new ContentValues(1);
-        values.put(Messages.FETCH_URL, fetchUrl);
+        values.put(Messages.IMAGE_FETCH_URL, fetchUrl);
         context.getContentResolver().update(Messages.CONTENT_URI, values,
                 Messages._ID + " = " + msgId, null);
+         */
     }
 
     public static boolean exists(Context context, long msgId) {
@@ -1110,20 +1110,19 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.MESSAGE_ID, Messages.MESSAGE_ID);
         messagesProjectionMap.put(Messages.REAL_ID, Messages.REAL_ID);
         messagesProjectionMap.put(Messages.PEER, Messages.PEER);
-        messagesProjectionMap.put(Messages.MIME, Messages.MIME);
-        messagesProjectionMap.put(Messages.CONTENT, Messages.CONTENT);
+
+        messagesProjectionMap.put(Messages.BODY_MIME, Messages.BODY_MIME);
+        messagesProjectionMap.put(Messages.BODY_CONTENT, Messages.BODY_CONTENT);
+        messagesProjectionMap.put(Messages.BODY_LENGTH, Messages.BODY_LENGTH);
+
         messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
         messagesProjectionMap.put(Messages.DIRECTION, Messages.DIRECTION);
         messagesProjectionMap.put(Messages.TIMESTAMP, Messages.TIMESTAMP);
         messagesProjectionMap.put(Messages.STATUS_CHANGED, Messages.STATUS_CHANGED);
         messagesProjectionMap.put(Messages.STATUS, Messages.STATUS);
-        messagesProjectionMap.put(Messages.FETCH_URL, Messages.FETCH_URL);
-        messagesProjectionMap.put(Messages.LOCAL_URI, Messages.LOCAL_URI);
         messagesProjectionMap.put(Messages.ENCRYPTED, Messages.ENCRYPTED);
         messagesProjectionMap.put(Messages.SECURITY_FLAGS, Messages.SECURITY_FLAGS);
-        messagesProjectionMap.put(Messages.PREVIEW_PATH, Messages.PREVIEW_PATH);
         messagesProjectionMap.put(Messages.SERVER_TIMESTAMP, Messages.SERVER_TIMESTAMP);
-        messagesProjectionMap.put(Messages.LENGTH, Messages.LENGTH);
 
         threadsProjectionMap = new HashMap<String, String>();
         threadsProjectionMap.put(Threads._ID, Threads._ID);
@@ -1132,7 +1131,6 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DIRECTION, Threads.DIRECTION);
         threadsProjectionMap.put(Threads.COUNT, Threads.COUNT);
         threadsProjectionMap.put(Threads.UNREAD, Threads.UNREAD);
-        threadsProjectionMap.put(Threads.MIME, Threads.MIME);
         threadsProjectionMap.put(Threads.CONTENT, Threads.CONTENT);
         threadsProjectionMap.put(Threads.TIMESTAMP, Threads.TIMESTAMP);
         threadsProjectionMap.put(Threads.STATUS_CHANGED, Threads.STATUS_CHANGED);
@@ -1140,8 +1138,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
 
         fulltextProjectionMap = new HashMap<String, String>();
-        fulltextProjectionMap.put(Messages._ID, Messages._ID);
-        fulltextProjectionMap.put(Messages.THREAD_ID, Messages.THREAD_ID);
-        fulltextProjectionMap.put(Messages.CONTENT, Messages.CONTENT);
+        fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);
+        fulltextProjectionMap.put(Fulltext.CONTENT, Fulltext.CONTENT);
     }
 }
