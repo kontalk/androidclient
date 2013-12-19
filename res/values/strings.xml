@@ -39,8 +39,8 @@
     <string name="code_validation_intro">You shall receive a SMS to the number you input briefly. Please insert the code you receive below.</string>
     <string name="code_validation_intro2">Please insert a verification code you received. Please note that a verification code can be used only once.</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
-    <string name="msg_validating_phone">Verifying phone number&#8230;</string>
-    <string name="msg_initializing">Initializing&#8230;</string>
+    <string name="msg_validating_phone">Requesting verification code SMS&#8230;</string>
+    <string name="msg_initializing">Registering to the Kontalk network&#8230;</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="share">Share</string>
     <string name="copy_message_text">Copy message text</string>
@@ -157,7 +157,7 @@
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
     <string name="title_error">Error</string>
-    <string name="msg_do_refresh">Use Menu &gt; Refresh to update contact list.</string>
+    <string name="msg_do_refresh">Use the refresh button to update contact list.</string>
     <string name="msg_sync_progress">Refreshing contacts list&#8230;</string>
     <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>
     <string name="err_sync_nonetwork">Network not available. Please retry later.</string>
@@ -208,7 +208,7 @@
     <string name="msg_status_encrypted">Encrypted</string>
 
     <string name="pref_balloons">Chat balloon theme</string>
-    <string name="pref_title_balloons">Choose a message balloon theme</string>
+    <string name="pref_title_balloons">Choose a chat balloon theme</string>
     <string name="balloons_classic">Classic</string>
     <string name="balloons_old_classic">Classic (old)</string>
     <string name="balloons_iphone">iPhone</string>
@@ -245,6 +245,6 @@
     <string name="social_twitter">Twitter</string>
     <string name="social_googleplus">Google Plus</string>
     <string name="social_facebook">Facebook</string>
-    <string name="social_identica">Identica</string>
+    <string name="social_identica">Identi.ca</string>
 
 </resources>
