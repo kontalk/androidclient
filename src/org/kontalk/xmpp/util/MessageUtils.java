@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.message.AbstractMessage;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
@@ -270,7 +271,7 @@ public final class MessageUtils {
         return convertToHex(sha1hash);
     }
 
-    public static CharSequence getFileInfoMessage(Context context, AbstractMessage<?> msg, String decodedPeer) {
+    public static CharSequence getFileInfoMessage(Context context, CompositeMessage msg, String decodedPeer) {
         StringBuilder details = new StringBuilder();
         Resources res = context.getResources();
         int direction = msg.getDirection();
@@ -288,26 +289,30 @@ public final class MessageUtils {
         details.append(res.getString(R.string.message_type_label));
 
         int resId;
+        /* TODO
         if (msg instanceof ImageMessage)
             resId = R.string.image_message;
         else if (msg instanceof VCardMessage)
             resId = R.string.vcard_message;
         else
+        */
             resId = R.string.text_message;
 
         details.append(res.getString(resId));
 
         // Message length
+        /*
         details.append('\n');
         details.append(res.getString(R.string.size_label));
         details.append((msg.getLength() >= 0) ?
             humanReadableByteCount(msg.getLength(), false) :
                 res.getString(R.string.size_unknown));
+		 */
 
         return details.toString();
     }
 
-    public static CharSequence getMessageDetails(Context context, AbstractMessage<?> msg, String decodedPeer) {
+    public static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
         SpannableStringBuilder details = new SpannableStringBuilder();
         Resources res = context.getResources();
         int direction = msg.getDirection();
@@ -316,11 +321,13 @@ public final class MessageUtils {
         details.append(res.getString(R.string.message_type_label));
 
         int resId;
+        /*
         if (msg instanceof ImageMessage)
             resId = R.string.image_message;
         else if (msg instanceof VCardMessage)
         	resId = R.string.vcard_message;
         else
+         */
             resId = R.string.text_message;
 
         details.append(res.getString(resId));
@@ -349,11 +356,13 @@ public final class MessageUtils {
         }
 
         // Message length
+        /* TODO
         details.append('\n');
         details.append(res.getString(R.string.size_label));
         details.append((msg.getLength() >= 0) ?
             humanReadableByteCount(msg.getLength(), false) :
                 res.getString(R.string.size_unknown));
+         */
 
         // Date
         int status = msg.getStatus();

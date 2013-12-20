@@ -22,7 +22,6 @@ import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashSet;
@@ -33,12 +32,10 @@ import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.ChatState;
-import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.crypto.Coder;
-import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.message.AbstractMessage;
@@ -46,12 +43,10 @@ import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.TextComponent;
-import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
-import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.sync.Syncer;
 import org.kontalk.xmpp.ui.IconContextMenu.IconContextMenuOnClickListener;
@@ -86,7 +81,6 @@ import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
-import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -375,7 +369,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	/** Sends out a binary message. */
 	public void sendBinaryMessage(Uri uri, String mime, boolean media,
-			Class<? extends AbstractMessage<?>> klass) {
+			Class<? extends AbstractMessage> klass) {
 		Log.v(TAG, "sending binary content: " + uri);
 		Uri newMsg = null;
         File previewFile = null;
@@ -403,16 +397,17 @@ public class ComposeMessageFragment extends ListFragment implements
 			// must supply a message ID...
 			values.put(Messages.MESSAGE_ID, msgId);
 			values.put(Messages.PEER, userId);
-			values.put(Messages.MIME, mime);
-			values.put(Messages.CONTENT, content.getBytes());
+			//values.put(Messages.MIME, mime);
+			//values.put(Messages.CONTENT, content.getBytes());
 			values.put(Messages.UNREAD, false);
 			values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
 			values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 			values.put(Messages.STATUS, Messages.STATUS_SENDING);
-			values.put(Messages.LOCAL_URI, uri.toString());
+			/*values.put(Messages.LOCAL_URI, uri.toString());
             values.put(Messages.LENGTH, length);
 			if (previewFile != null)
 				values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
+			*/
 			newMsg = getActivity().getContentResolver().insert(
 					Messages.CONTENT_URI, values);
 		}
@@ -603,6 +598,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	public void onListItemClick(ListView listView, View view, int position, long id) {
 	    MessageListItem item = (MessageListItem) view;
 	    final CompositeMessage msg = item.getMessage();
+
+	    /*
 	    if (msg.getFetchUrl() != null || msg.getLocalUri() != null) {
 	        // outgoing message or already fetched
 	        if (msg.getLocalUri() != null) {
@@ -643,9 +640,11 @@ public class ComposeMessageFragment extends ListFragment implements
                 builder.show();
 	        }
 	    }
+	    */
 	}
 
-	private void startDownload(AbstractMessage<?> msg) {
+	private void startDownload(CompositeMessage msg) {
+		/*
 	    String fetchUrl = msg.getFetchUrl();
 	    if (fetchUrl != null) {
             Intent i = new Intent(getActivity(), DownloadService.class);
@@ -660,9 +659,11 @@ public class ComposeMessageFragment extends ListFragment implements
 	        Toast.makeText(getActivity(), R.string.err_attachment_corrupted,
 	            Toast.LENGTH_LONG).show();
 	    }
+	    */
 	}
 
-	private void stopDownload(AbstractMessage<?> msg) {
+	private void stopDownload(CompositeMessage msg) {
+		/*
         String fetchUrl = msg.getFetchUrl();
         if (fetchUrl != null) {
             Intent i = new Intent(getActivity(), DownloadService.class);
@@ -670,12 +671,15 @@ public class ComposeMessageFragment extends ListFragment implements
             i.setData(Uri.parse(fetchUrl));
             getActivity().startService(i);
         }
+        */
 	}
 
-	private void openFile(AbstractMessage<?> msg) {
+	private void openFile(CompositeMessage msg) {
+		/*
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setDataAndType(msg.getLocalUri(), msg.getMime());
         startActivity(i);
+        */
 	}
 
 	/** Listener for attachment type chooser. */
@@ -793,7 +797,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	/** TODO */
-	private void decryptMessage(AbstractMessage<?> msg) {
+	private void decryptMessage(CompositeMessage msg) {
+		/*
 		try {
 	        PersonalKey key = ((Kontalk)getActivity().getApplicationContext())
 	            .getPersonalKey();
@@ -813,6 +818,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			Toast.makeText(getActivity(), "Decryption failed!",
 					Toast.LENGTH_LONG).show();
 		}
+		*/
 	}
 
 	private static final int MENU_SHARE = 1;
@@ -829,7 +835,7 @@ public class ComposeMessageFragment extends ListFragment implements
 			ContextMenuInfo menuInfo) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 		MessageListItem vitem = (MessageListItem) info.targetView;
-		AbstractMessage<?> msg = vitem.getMessage();
+		CompositeMessage msg = vitem.getMessage();
 
 		menu.setHeaderTitle(R.string.title_message_options);
 
@@ -837,10 +843,13 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (!msg.isEncrypted()) {
 			// sharing media messages has no purpose if media file hasn't been
 			// retrieved yet
+			/*
 			if (msg instanceof PlainTextMessage ? true : msg.getLocalUri() != null)
 				menu.add(CONTEXT_MENU_GROUP_ID, MENU_SHARE, MENU_SHARE, R.string.share);
+			*/
 		}
 
+		/*
 		if (msg.getFetchUrl() != null || msg.getLocalUri() != null) {
 		    // message has a local uri - add open file entry
 		    if (msg.getLocalUri() != null) {
@@ -881,6 +890,8 @@ public class ComposeMessageFragment extends ListFragment implements
 						R.string.copy_message_text);
 		}
 
+		*/
+
 		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DETAILS, MENU_DETAILS, R.string.menu_message_details);
 		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE, MENU_DELETE, R.string.delete_message);
 	}
@@ -898,6 +909,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		switch (item.getItemId()) {
 			case MENU_SHARE: {
+				/*
 				Intent i = null;
 				if (msg instanceof PlainTextMessage)
                     try {
@@ -915,10 +927,12 @@ public class ComposeMessageFragment extends ListFragment implements
 				    // TODO ehm...
 				    Log.w(TAG, "error sharing message");
 
+				*/
 				return true;
 			}
 
 			case MENU_COPY_TEXT: {
+				/*
 			    try {
     				ClipboardManager cpm = (ClipboardManager) getActivity()
     						.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -930,6 +944,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 				Toast.makeText(getActivity(), R.string.message_text_copied,
 						Toast.LENGTH_SHORT).show();
+				 */
 				return true;
 			}
 
@@ -1058,6 +1073,7 @@ public class ComposeMessageFragment extends ListFragment implements
 						Log.v(TAG, "using detected mime type " + mime);
 					}
 
+					/*
 					if (ImageMessage.supportsMimeType(mime))
 					    sendBinaryMessage(uri, mime, true, ImageMessage.class);
 					else if (VCardMessage.supportsMimeType(mime))
@@ -1065,6 +1081,7 @@ public class ComposeMessageFragment extends ListFragment implements
 					else
 			            Toast.makeText(getActivity(), R.string.send_mime_not_supported, Toast.LENGTH_LONG)
 		                    .show();
+		             */
 				}
 			}
             // operation aborted
@@ -1088,7 +1105,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		                    c.moveToFirst();
 		                    String lookupKey = c.getString(0);
 		                    Uri vcardUri = Uri.withAppendedPath(Contacts.CONTENT_VCARD_URI, lookupKey);
-		                    sendBinaryMessage(vcardUri, VCardMessage.MIME_TYPES[0], false, VCardMessage.class);
+		                    // TODO sendBinaryMessage(vcardUri, VCardMessage.MIME_TYPES[0], false, VCardMessage.class);
 		                }
 		                finally {
 		                    c.close();

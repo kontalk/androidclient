@@ -2121,6 +2121,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                         if (TextComponent.supportsMimeType(mime)) {
                             TextComponent txt = new TextComponent(new String(content));
+                            msg.addComponent(txt);
                         }
 
                     }

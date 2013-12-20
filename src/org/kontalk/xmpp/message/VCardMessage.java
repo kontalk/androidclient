@@ -18,18 +18,18 @@ public class VCardMessage extends PlainTextMessage {
     public VCardMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
         super(context, id, timestamp, sender, content, encrypted);
         // force mime type
-        mime = MIME_TYPES[0];
+        //mime = MIME_TYPES[0];
     }
 
     public VCardMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
         super(context, id, timestamp, sender, content, encrypted, group);
         // force mime type
-        mime = MIME_TYPES[0];
+        //mime = MIME_TYPES[0];
     }
 
     @Override
     public String getTextContent() {
-        String s = "vCard: " + mime;
+        String s = "vCard: " + "ciao";
         if (encrypted)
             s += " " + mContext.getResources().getString(R.string.text_encrypted);
         return s;

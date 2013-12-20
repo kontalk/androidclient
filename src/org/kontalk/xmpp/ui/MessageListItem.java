@@ -18,16 +18,14 @@
 
 package org.kontalk.xmpp.ui;
 
-import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
-import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.CompositeMessage;
-import org.kontalk.xmpp.message.ImageMessage;
+import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
@@ -35,7 +33,6 @@ import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -282,37 +279,34 @@ public class MessageListItem extends RelativeLayout {
 
     private SpannableStringBuilder formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf;
-        String textContent;
-        try {
-            textContent = mMessage.getTextContent();
-        }
-        catch (UnsupportedEncodingException e) {
-            // TODO handle this
-            textContent = mMessage.getBinaryContent().toString();
-        }
 
-        if (!TextUtils.isEmpty(textContent)) {
-            if (mMessage.isEncrypted()) {
-                buf = new SpannableStringBuilder(getResources().getString(R.string.text_encrypted));
-            }
-            else {
-                buf = new SpannableStringBuilder(textContent);
-
-                if (mMessage instanceof ImageMessage) {
-                    ImageMessage image = (ImageMessage) mMessage;
-                    Bitmap bitmap = image.getContent();
-                    if (bitmap != null) {
-                        ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
-                        buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    }
-                }
-                else {
-                    MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
-                }
-            }
+        if (mMessage.isEncrypted()) {
+            buf = new SpannableStringBuilder(getResources().getString(R.string.text_encrypted));
         }
         else {
-            buf = new SpannableStringBuilder();
+            TextComponent txt = (TextComponent) mMessage.getComponent(TextComponent.class);
+            String textContent = txt.getContent();
+
+            if (TextUtils.isEmpty(textContent)) {
+            	buf = new SpannableStringBuilder();
+            }
+
+            else {
+	            buf = new SpannableStringBuilder(textContent);
+
+            /*
+            if (mMessage instanceof ImageMessage) {
+                ImageMessage image = (ImageMessage) mMessage;
+                Bitmap bitmap = image.getContent();
+                if (bitmap != null) {
+                    ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
+                    buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+            }
+            else {*/
+                MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
+            //}
+            }
         }
 
         if (highlight != null) {
@@ -332,7 +326,7 @@ public class MessageListItem extends RelativeLayout {
     }
 
     public final void unbind() {
-        mMessage.recycle();
+        // TODO mMessage.recycle();
         mMessage = null;
     }
 

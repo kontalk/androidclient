@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.data.Contact;
-import org.kontalk.xmpp.message.AbstractMessage;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 
 import android.content.Context;
@@ -67,7 +67,7 @@ public class MessageListAdapter extends CursorAdapter {
         }
 
         MessageListItem headerView = (MessageListItem) view;
-        AbstractMessage<?> msg = AbstractMessage.fromCursor(context, cursor);
+        CompositeMessage msg = CompositeMessage.fromCursor(context, cursor);
         if (msg.getDirection() == Messages.DIRECTION_IN && mContact == null)
         	mContact = Contact.findByUserId(context, msg.getSender());
 

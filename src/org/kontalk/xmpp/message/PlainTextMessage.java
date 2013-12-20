@@ -52,7 +52,7 @@ public class PlainTextMessage extends AbstractMessage<byte[]> {
     public static final String MIME_TYPE = "text/plain";
 
     protected PlainTextMessage(Context context) {
-        super(context, null, 0, null, null, null, false);
+        super(context, null, 0, null, false);
     }
 
     public PlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
@@ -60,29 +60,30 @@ public class PlainTextMessage extends AbstractMessage<byte[]> {
     }
 
     public PlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
-        super(context, id, timestamp, sender, MIME_TYPE, content, encrypted, group);
+        super(context, id, timestamp, sender, encrypted, group);
     }
 
     @Override
     protected void populateFromCursor(Cursor c) {
         super.populateFromCursor(c);
-        content = c.getBlob(COLUMN_CONTENT);
+        //content = c.getBlob(COLUMN_CONTENT);
     }
 
     @Override
     public String getTextContent() throws UnsupportedEncodingException {
         if (encrypted)
             return mContext.getResources().getString(R.string.text_encrypted);
-        return new String(content, "UTF-8");
+        return "ciao";
     }
 
     @Override
     public byte[] getBinaryContent() {
-        return content;
+        return null;
     }
 
     @Override
     public void decrypt(Coder coder) throws GeneralSecurityException {
+    	/*
         if (isEncrypted()) {
         	// FIXME ehm :)
         	StringBuilder clearText = new StringBuilder();
@@ -91,6 +92,7 @@ public class PlainTextMessage extends AbstractMessage<byte[]> {
             length = content.length;
             encrypted = false;
         }
+        */
     }
 
     public static boolean supportsMimeType(String mime) {

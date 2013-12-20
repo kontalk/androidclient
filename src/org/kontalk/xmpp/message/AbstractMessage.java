@@ -42,7 +42,7 @@ import android.os.Parcelable;
  * @author Daniele Ricci
  * @version 2.0
  */
-public abstract class AbstractMessage {
+public abstract class AbstractMessage<T> {
 
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;

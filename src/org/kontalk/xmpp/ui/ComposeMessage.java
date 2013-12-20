@@ -320,11 +320,11 @@ public class ComposeMessage extends ActionBarActivity {
 
         if (ImageMessage.supportsMimeType(mime)) {
             // send image immediately
-            mFragment.sendBinaryMessage(uri, mime, true, ImageMessage.class);
+            // TODO mFragment.sendBinaryMessage(uri, mime, true, ImageMessage.class);
         }
 
         else if (VCardMessage.supportsMimeType(mime)) {
-            mFragment.sendBinaryMessage(uri, mime, true, VCardMessage.class);
+            // TODO mFragment.sendBinaryMessage(uri, mime, true, VCardMessage.class);
         }
 
         else {

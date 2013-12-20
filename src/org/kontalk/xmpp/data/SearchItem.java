@@ -32,8 +32,8 @@ import android.database.Cursor;
 public class SearchItem {
     public static final String[] SEARCH_PROJECTION = {
         Fulltext._ID + " AS " + Messages._ID,
-        Messages.THREAD_ID,
-        Messages.CONTENT
+        Fulltext.THREAD_ID,
+        Fulltext.CONTENT
     };
 
     protected final long mId;

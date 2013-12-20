@@ -137,14 +137,14 @@ public class QuickReplyActivity extends Activity {
                 // must supply a message ID...
                 values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
                 values.put(Messages.PEER, userId);
-                values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-                values.put(Messages.CONTENT, bytes);
+                //values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
+                //values.put(Messages.CONTENT, bytes);
                 values.put(Messages.UNREAD, false);
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
                 //values.put(Messages.ENCRYPT_KEY, key);
-                values.put(Messages.LENGTH, bytes.length);
+                //values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = ctx.getContentResolver().insert(
                         Messages.CONTENT_URI, values);
                 if (newMsg != null) {

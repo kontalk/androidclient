@@ -56,7 +56,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     private byte[] decodedContent;
 
     protected ImageMessage(Context context) {
-        super(context, null, 0, null, null, null, false);
+        super(context, null, 0, null, false, null);
     }
 
     public ImageMessage(Context context, String mime, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
@@ -64,7 +64,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     }
 
     public ImageMessage(Context context, String mime, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
-        super(context, id, timestamp, sender, mime, null, encrypted, group);
+        super(context, id, timestamp, sender, encrypted, group);
         decodedContent = content;
     }
 
@@ -77,7 +77,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     private void loadPreview(File file) throws IOException {
         InputStream in = new FileInputStream(file);
         BitmapFactory.Options options = bitmapOptions();
-        content = BitmapFactory.decodeStream(in, null, options);
+        //content = BitmapFactory.decodeStream(in, null, options);
         in.close();
     }
 
@@ -91,7 +91,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
 
     @Override
     public String getTextContent() {
-        String s = "Image: " + mime;
+        String s = "Image: " + "ciao";
         if (encrypted)
             s += " " + mContext.getResources().getString(R.string.text_encrypted);
         return s;
@@ -133,7 +133,7 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
          * generated on the fly from local_uri - if possible.
          */
 
-        String _previewPath = c.getString(COLUMN_PREVIEW_PATH);
+        String _previewPath = null; //c.getString(COLUMN_PREVIEW_PATH);
         try {
             // preview path
             if (_previewPath != null && _previewPath.length() > 0) {

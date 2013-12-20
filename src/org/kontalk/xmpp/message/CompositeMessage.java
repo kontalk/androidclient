@@ -104,6 +104,8 @@ public class CompositeMessage {
 
     /** Creates a new composite message. */
     public CompositeMessage(Context context, String id, long timestamp, String sender, boolean encrypted, int securityFlags) {
+    	this();
+
         mContext = context;
 
         mId = id;
@@ -115,12 +117,11 @@ public class CompositeMessage {
 
         mEncrypted = encrypted;
         mSecurityFlags = securityFlags;
-
-        mComponents = new ArrayList<MessageComponent<?>>();
     }
 
     /** Empty constructor for local use. */
     private CompositeMessage() {
+    	mComponents = new ArrayList<MessageComponent<?>>();
     }
 
     public String getId() {
@@ -246,7 +247,31 @@ public class CompositeMessage {
             // we are the origin - no recipient
         }
 
-        // TODO groups??
+        byte[] body = c.getBlob(COLUMN_BODY_CONTENT);
+
+        // encrypted message - single raw encrypted component
+        if (mEncrypted) {
+        	RawComponent raw = new RawComponent(body, mEncrypted);
+        	addComponent(raw);
+        }
+
+        else {
+
+	        String mime = c.getString(COLUMN_BODY_MIME);
+
+	        // text data
+	        if (TextComponent.supportsMimeType(mime)) {
+	        	TextComponent txt = new TextComponent(new String(body));
+	        	addComponent(txt);
+	        }
+
+	        // unknown data
+	        else {
+	        	RawComponent raw = new RawComponent(body, false);
+	        	addComponent(raw);
+	        }
+
+        }
     }
 
     /** Clears all local fields for recycle. */

@@ -47,4 +47,8 @@ public abstract class MessageComponent<T> {
         return mLength;
     }
 
+	public boolean isEncrypted() {
+		return mEncrypted;
+	}
+
 }

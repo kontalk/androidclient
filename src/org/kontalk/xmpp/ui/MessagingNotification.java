@@ -69,14 +69,14 @@ public class MessagingNotification {
     {
         Messages.THREAD_ID,
         CommonColumns.PEER,
-        CommonColumns.CONTENT,
+        Messages.BODY_CONTENT,
     };
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {
         CommonColumns._ID,
         CommonColumns.PEER,
-        CommonColumns.CONTENT,
+        Threads.CONTENT,
         CommonColumns.UNREAD,
     };
 
