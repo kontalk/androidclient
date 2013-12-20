@@ -211,6 +211,16 @@ public class CompositeMessage {
     	mComponents.add(c);
     }
 
+    /** Returns the first component of the given type. */
+    public MessageComponent<?> getComponent(Class<? extends MessageComponent<?>> type) {
+        for (MessageComponent<?> cmp : mComponents) {
+            if (cmp.getClass() == type)
+                return cmp;
+        }
+
+        return null;
+    }
+
     private void populateFromCursor(Cursor c) {
         // be sure to stick to our projection array
         mDatabaseId = c.getLong(COLUMN_ID);

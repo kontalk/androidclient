@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2013 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,8 +96,8 @@ public class MessagesProvider extends ContentProvider {
             "status INTEGER," +
 
             // for text body or encrypted stanza
-            "body_mime TEXT," +
-            "body_content BLOB," +
+            "body_mime TEXT," + // if null couldn't be determined yet (e.g. encrypted message)
+            "body_content BLOB," + // message body or encrypted e2e content (if mime is null)
             "body_length INTEGER NOT NULL DEFAULT 0," +
 
             // for a single attachment
@@ -109,6 +109,7 @@ public class MessagesProvider extends ContentProvider {
             "att_encrypted INTEGER NOT NULL DEFAULT 0," +
             "att_security_flags INTEGER NOT NULL DEFAULT 0," +
 
+            // whole content encrypted
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             // security flags
             "security_flags INTEGER NOT NULL DEFAULT 0," +

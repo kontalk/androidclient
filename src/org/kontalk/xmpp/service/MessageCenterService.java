@@ -86,10 +86,11 @@ import org.kontalk.xmpp.crypto.DecryptException;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.X509Bridge;
-import org.kontalk.xmpp.message.AbstractMessage;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
-import org.kontalk.xmpp.message.VCardMessage;
+import org.kontalk.xmpp.message.RawComponent;
+import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
@@ -811,6 +812,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * receiving upload info (non-media messages will be filtered out)
      */
     private void resendPendingMessages(boolean retrying) {
+        /*
         StringBuilder filter = new StringBuilder()
             .append(Messages.DIRECTION)
             .append('=')
@@ -898,6 +900,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         c.close();
+        */
     }
 
     private void resendPendingReceipts() {
@@ -1121,18 +1124,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Process an incoming message. */
-    private Uri incoming(AbstractMessage<?> msg) {
+    private Uri incoming(CompositeMessage msg) {
         String sender = msg.getSender(true);
 
         // save to local storage
         ContentValues values = new ContentValues();
         values.put(Messages.MESSAGE_ID, msg.getId());
         values.put(Messages.PEER, sender);
-        values.put(Messages.MIME, msg.getMime());
 
-        // store to file if it's an image message
-        byte[] content = msg.getBinaryContent();
+        TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
 
+        byte[] content = txt.getContent().getBytes();
+
+        /*
         // message has a fetch url - store preview in cache (if any)
         // TODO abstract somehow
         if (msg.getFetchUrl() != null) {
@@ -1169,22 +1173,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 content = "(error)".getBytes();
             }
         }
+        */
 
-        values.put(Messages.CONTENT, content);
+        values.put(Messages.BODY_CONTENT, content);
+        values.put(Messages.BODY_LENGTH, txt.getLength());
+        values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
+
         values.put(Messages.ENCRYPTED, msg.isEncrypted());
         values.put(Messages.SECURITY_FLAGS, msg.getSecurityFlags());
+        /*
         values.put(Messages.FETCH_URL, msg.getFetchUrl());
 
         File previewFile = msg.getPreviewFile();
         if (previewFile != null)
             values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
+         */
 
         values.put(Messages.UNREAD, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
 
         values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
-        values.put(Messages.LENGTH, msg.getLength());
 
         Uri msgUri = null;
         try {
@@ -2027,6 +2036,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 List<DecryptException> errors = new LinkedList<DecryptException>();
                                 coder.decryptText(content, true, clearText, mimeFound, errors);
 
+                                mime = mimeFound.toString();
+
                                 String contentText;
 
                                 if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mimeFound.toString())) {
@@ -2088,41 +2099,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         }
                     }
 
-                    AbstractMessage<?> msg = null;
+                    CompositeMessage msg = new CompositeMessage(
+                        MessageCenterService.this,
+                        msgId,
+                        serverTimestamp,
+                        sender,
+                        isEncrypted,
+                        securityFlags
+                    );
 
-                    // plain text message
-                    if (mime == null || PlainTextMessage.supportsMimeType(mime)) {
-                        // TODO convert to global pool
-                        msg = new PlainTextMessage(MessageCenterService.this, msgId, serverTimestamp, sender, content, isEncrypted);
+                    // message is still encrypted, store raw component
+                    if (isEncrypted) {
+                        RawComponent raw = new RawComponent(content, true);
+                        msg.addComponent(raw);
                     }
 
-                    // image message
-                    else if (ImageMessage.supportsMimeType(mime)) {
-                        // extra argument: mime (first parameter)
-                        msg = new ImageMessage(MessageCenterService.this, mime, msgId, serverTimestamp, sender, content, isEncrypted);
-                    }
+                    // message decrypted, store components
+                    else {
 
-                    // vcard message
-                    else if (VCardMessage.supportsMimeType(mime)) {
-                        msg = new VCardMessage(MessageCenterService.this, msgId, serverTimestamp, sender, content, isEncrypted);
-                    }
+                        // TODO only text for now
 
-                    // TODO else other mime types
+                        if (TextComponent.supportsMimeType(mime)) {
+                            TextComponent txt = new TextComponent(new String(content));
+                        }
+
+                    }
 
                     if (msg != null) {
-                        // set length
-                        msg.setLength(length);
-
-                        // remember security flags
-                        msg.setSecurityFlags(securityFlags);
-
-                        // set the fetch url (if any)
-                        if (fetchUrl != null)
-                            msg.setFetchUrl(fetchUrl);
-
-                        // set preview path (if any)
-                        if (previewFile != null)
-                            msg.setPreviewFile(previewFile);
 
                         Uri msgUri = incoming(msg);
                         if (_ext != null) {

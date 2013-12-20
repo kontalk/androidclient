@@ -42,8 +42,10 @@ import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.message.AbstractMessage;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.PlainTextMessage;
+import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
@@ -477,14 +479,14 @@ public class ComposeMessageFragment extends ListFragment implements
                 // must supply a message ID...
                 values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
                 values.put(Messages.PEER, userId);
-                values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-                values.put(Messages.CONTENT, bytes);
+                values.put(Messages.BODY_MIME, PlainTextMessage.MIME_TYPE);
+                values.put(Messages.BODY_CONTENT, bytes);
+                values.put(Messages.BODY_LENGTH, bytes.length);
                 values.put(Messages.UNREAD, false);
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
                 values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
-                values.put(Messages.LENGTH, bytes.length);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);
                 if (newMsg != null) {
@@ -600,7 +602,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	@Override
 	public void onListItemClick(ListView listView, View view, int position, long id) {
 	    MessageListItem item = (MessageListItem) view;
-	    final AbstractMessage<?> msg = item.getMessage();
+	    final CompositeMessage msg = item.getMessage();
 	    if (msg.getFetchUrl() != null || msg.getLocalUri() != null) {
 	        // outgoing message or already fetched
 	        if (msg.getLocalUri() != null) {
@@ -892,7 +894,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 		MessageListItem v = (MessageListItem) info.targetView;
-		AbstractMessage<?> msg = v.getMessage();
+		CompositeMessage msg = v.getMessage();
 
 		switch (item.getItemId()) {
 			case MENU_SHARE: {
@@ -1796,8 +1798,9 @@ public class ComposeMessageFragment extends ListFragment implements
 				values.put(Messages.MESSAGE_ID,
 						"draft" + (new Random().nextInt()));
 				values.put(Messages.PEER, userId);
-				values.put(Messages.MIME, PlainTextMessage.MIME_TYPE);
-				values.put(Messages.CONTENT, new byte[0]);
+				values.put(Messages.BODY_CONTENT, new byte[0]);
+				values.put(Messages.BODY_LENGTH, 0);
+				values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
 				values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
 				values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 				values.put(Threads.DRAFT, text.toString());

@@ -5,18 +5,17 @@ package org.kontalk.xmpp.message;
  * Plain text message component.
  * @author Daniele Ricci
  */
-public class TextComponent extends MessageComponent<byte[]> {
+public class TextComponent extends MessageComponent<String> {
 
-	protected long mLength;
+    public static final String MIME_TYPE = "text/plain";
 
-	public TextComponent(String text, boolean encrypted) {
-		this(text.getBytes(), encrypted);
+	public TextComponent(String text) {
+		super(text, text.length(), false);
 	}
 
-	public TextComponent(byte[] text, boolean encrypted) {
-		super(text, encrypted);
+    public static boolean supportsMimeType(String mime) {
+        return MIME_TYPE.equalsIgnoreCase(mime);
+    }
 
-		mLength = text.length;
-	}
 
 }

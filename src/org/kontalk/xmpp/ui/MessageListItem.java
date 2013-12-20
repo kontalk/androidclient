@@ -26,6 +26,7 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.message.AbstractMessage;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.util.MessageUtils;
@@ -58,7 +59,7 @@ public class MessageListItem extends RelativeLayout {
     //private static final String TAG = MessageListItem.class.getSimpleName();
     static private Drawable sDefaultContactImage;
 
-    private AbstractMessage<?> mMessage;
+    private CompositeMessage mMessage;
     private SpannableStringBuilder formattedMessage;
     private MessageItemTextView mTextView;
     private ImageView mStatusIcon;
@@ -146,7 +147,7 @@ public class MessageListItem extends RelativeLayout {
         }
     }
 
-    public final void bind(Context context, final AbstractMessage<?> msg,
+    public final void bind(Context context, final CompositeMessage msg,
             final Contact contact, final Pattern highlight) {
         mMessage = msg;
 
@@ -335,7 +336,7 @@ public class MessageListItem extends RelativeLayout {
         mMessage = null;
     }
 
-    public AbstractMessage<?> getMessage() {
+    public CompositeMessage getMessage() {
         return mMessage;
     }
 }

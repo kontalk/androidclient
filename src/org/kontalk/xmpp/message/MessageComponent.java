@@ -26,10 +26,12 @@ package org.kontalk.xmpp.message;
 public abstract class MessageComponent<T> {
 
 	protected T mContent;
+    protected long mLength;
 	protected boolean mEncrypted;
 
-	public MessageComponent(T content, boolean encrypted) {
+	public MessageComponent(T content, long length, boolean encrypted) {
 		mContent = content;
+		mLength = length;
 		mEncrypted = encrypted;
 	}
 
@@ -40,5 +42,9 @@ public abstract class MessageComponent<T> {
 	public void setContent(T content) {
 		this.mContent = content;
 	}
+
+	public long getLength() {
+        return mLength;
+    }
 
 }
