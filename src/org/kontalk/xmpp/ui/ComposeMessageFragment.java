@@ -315,7 +315,8 @@ public class ComposeMessageFragment extends SherlockListFragment implements
         smileyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showSmileysPopup(v);
+                //showSmileysPopup(v);
+                  new AudioDialog(getActivity()).show();
             }
         });
 
