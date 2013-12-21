@@ -87,7 +87,9 @@ import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.X509Bridge;
 import org.kontalk.xmpp.message.CompositeMessage;
+import org.kontalk.xmpp.message.ImageComponent;
 import org.kontalk.xmpp.message.ImageMessage;
+import org.kontalk.xmpp.message.MessageComponent;
 import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.RawComponent;
 import org.kontalk.xmpp.message.TextComponent;
@@ -1132,6 +1134,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.MESSAGE_ID, msg.getId());
         values.put(Messages.PEER, sender);
 
+        // FIXME if decryption failed there will be no TextComponent !!!!
+
         TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
 
         byte[] content = txt.getContent().getBytes();
@@ -2001,14 +2005,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (msgId == null)
                         msgId = "incoming" + RandomString.generate(6);
 
-                    String mime = null;
                     String sender = StringUtils.parseName(from);
                     String body = m.getBody();
-                    byte[] content = body != null ? body.getBytes() : new byte[0];
-                    long length = content.length;
+                    //byte[] content = body != null ? body.getBytes() : new byte[0];
+                    //long length = content.length;
 
                     int securityFlags = Coder.SECURITY_CLEARTEXT;
                     boolean isEncrypted = false;
+
+                    // create message
+                    CompositeMessage msg = new CompositeMessage(
+                            MessageCenterService.this,
+                            msgId,
+                            serverTimestamp,
+                            sender,
+                            isEncrypted,
+                            securityFlags
+                        );
 
                     PacketExtension _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
@@ -2026,17 +2039,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 Coder coder = UsersProvider.getDecryptCoder(MessageCenterService.this,
                                 		mServer, key, from);
 
-                                // content is already base64-decoded
-                                content = encryptedData;
-                                // length of raw encrypted message
-                                length = content.length;
                                 // decrypt
                                 StringBuilder mimeFound = new StringBuilder();
                                 StringBuilder clearText = new StringBuilder();
                                 List<DecryptException> errors = new LinkedList<DecryptException>();
-                                coder.decryptText(content, true, clearText, mimeFound, errors);
-
-                                mime = mimeFound.toString();
+                                coder.decryptText(encryptedData, true, clearText, mimeFound, errors);
 
                                 String contentText;
 
@@ -2048,21 +2055,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 	contentText = clearText.toString();
                                 }
 
+                                // decrypted text
                                 Log.v(TAG, "contentText=" + contentText);
+                                msg.addComponent(new TextComponent(contentText));
 
-                                // decrypt was successful, convert back to byte array
-                                content = contentText.getBytes();
-                                length = content.length;
                                 isEncrypted = false;
                             }
 
-                            // decryption errors
-                            catch (GeneralSecurityException sec) {
-                            	// TODO
-                            }
-
-                            // XML parsing and other errors
                             catch (Exception exc) {
+
+                            	// raw component for encrypted data
+                            	msg.addComponent(new RawComponent(encryptedData, true, securityFlags));
+
+                            	// TODO
                                 // pass over the message even if encrypted
                                 // UI will warn the user about that and wait
                                 // for user decisions
@@ -2071,15 +2076,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         }
                     }
 
+                    else {
+
+                        // use message body
+                    	msg.addComponent(new TextComponent(body));
+
+                    }
+
                     // out of band data
-                    File previewFile = null;
-                    String fetchUrl = null;
                     PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
                     if (_media != null && _media instanceof OutOfBandData) {
+                        File previewFile = null;
+
                         OutOfBandData media = (OutOfBandData) _media;
-                        mime = media.getMime();
-                        fetchUrl = media.getUrl();
-                        length = media.getLength();
+                        String mime = media.getMime();
+                        String fetchUrl = media.getUrl();
+                        long length = media.getLength();
 
                         // bits-of-binary for preview
                         PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
@@ -2097,32 +2109,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 Log.w(TAG, "error storing thumbnail", e);
                             }
                         }
-                    }
 
-                    CompositeMessage msg = new CompositeMessage(
-                        MessageCenterService.this,
-                        msgId,
-                        serverTimestamp,
-                        sender,
-                        isEncrypted,
-                        securityFlags
-                    );
+                        MessageComponent<?> attachment = null;
 
-                    // message is still encrypted, store raw component
-                    if (isEncrypted) {
-                        RawComponent raw = new RawComponent(content, true);
-                        msg.addComponent(raw);
-                    }
-
-                    // message decrypted, store components
-                    else {
-
-                        // TODO only text for now
-
-                        if (TextComponent.supportsMimeType(mime)) {
-                            TextComponent txt = new TextComponent(new String(content));
-                            msg.addComponent(txt);
+                        if (ImageComponent.supportsMimeType(mime)) {
+                            // cleartext only for now
+                        	attachment = new ImageComponent(previewFile, null, fetchUrl, length, false, Coder.SECURITY_CLEARTEXT);
                         }
+
+                        if (attachment != null)
+                        	msg.addComponent(attachment);
 
                     }
 

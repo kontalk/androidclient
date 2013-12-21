@@ -8,8 +8,8 @@ package org.kontalk.xmpp.message;
  */
 public class RawComponent extends MessageComponent<byte[]> {
 
-	public RawComponent(byte[] text, boolean encrypted) {
-		super(text, text.length, encrypted);
+	public RawComponent(byte[] text, boolean encrypted, int securityFlags) {
+		super(text, text.length, encrypted, securityFlags);
 	}
 
 }

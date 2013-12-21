@@ -82,6 +82,14 @@ public final class MyMessages {
         public static final String BODY_CONTENT = "body_content";
         public static final String BODY_LENGTH = "body_length";
 
+        public static final String ATTACHMENT_MIME = "att_mime";
+        public static final String ATTACHMENT_PREVIEW_PATH = "att_preview_path";
+        public static final String ATTACHMENT_FETCH_URL = "att_fetch_url";
+        public static final String ATTACHMENT_LOCAL_URI = "att_local_uri";
+        public static final String ATTACHMENT_LENGTH = "att_length";
+        public static final String ATTACHMENT_ENCRYPTED = "att_encrypted";
+        public static final String ATTACHMENT_SECURITY_FLAGS = "att_security_flags";
+
         public static final String ENCRYPTED = "encrypted";
         public static final String SECURITY_FLAGS = "security_flags";
 

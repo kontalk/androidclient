@@ -18,6 +18,7 @@
 
 package org.kontalk.xmpp.message;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Parcelable;
 
 
@@ -45,7 +47,6 @@ public class CompositeMessage {
     private static final String[] MESSAGE_LIST_PROJECTION = {
         Messages._ID,
         Messages.MESSAGE_ID,
-        Messages.REAL_ID,
         Messages.PEER,
         Messages.DIRECTION,
         Messages.TIMESTAMP,
@@ -57,23 +58,37 @@ public class CompositeMessage {
         Messages.BODY_MIME,
         Messages.BODY_CONTENT,
         Messages.BODY_LENGTH,
+        Messages.ATTACHMENT_MIME,
+        Messages.ATTACHMENT_PREVIEW_PATH,
+        Messages.ATTACHMENT_LOCAL_URI,
+        Messages.ATTACHMENT_FETCH_URL,
+        Messages.ATTACHMENT_LENGTH,
+        Messages.ATTACHMENT_ENCRYPTED,
+        Messages.ATTACHMENT_SECURITY_FLAGS,
     };
 
     // these indexes matches MESSAGE_LIST_PROJECTION
     public static final int COLUMN_ID = 0;
     public static final int COLUMN_MESSAGE_ID = 1;
-    public static final int COLUMN_REAL_ID = 2;
-    public static final int COLUMN_PEER = 3;
-    public static final int COLUMN_DIRECTION = 4;
-    public static final int COLUMN_TIMESTAMP = 5;
-    public static final int COLUMN_SERVER_TIMESTAMP = 6;
-    public static final int COLUMN_STATUS_CHANGED = 7;
-    public static final int COLUMN_STATUS = 8;
-    public static final int COLUMN_ENCRYPTED = 9;
-    public static final int COLUMN_SECURITY = 10;
-    public static final int COLUMN_BODY_MIME = 11;
-    public static final int COLUMN_BODY_CONTENT = 12;
-    public static final int COLUMN_BODY_LENGTH = 13;
+    public static final int COLUMN_PEER = 2;
+    public static final int COLUMN_DIRECTION = 3;
+    public static final int COLUMN_TIMESTAMP = 4;
+    public static final int COLUMN_SERVER_TIMESTAMP = 5;
+    public static final int COLUMN_STATUS_CHANGED = 6;
+    public static final int COLUMN_STATUS = 7;
+    public static final int COLUMN_ENCRYPTED = 8;
+    public static final int COLUMN_SECURITY = 9;
+    public static final int COLUMN_BODY_MIME = 10;
+    public static final int COLUMN_BODY_CONTENT = 11;
+    public static final int COLUMN_BODY_LENGTH = 12;
+    public static final int COLUMN_ATTACHMENT_MIME = 13;
+    public static final int COLUMN_ATTACHMENT_PREVIEW_PATH = 14;
+    public static final int COLUMN_ATTACHMENT_LOCAL_URI = 15;
+    public static final int COLUMN_ATTACHMENT_FETCH_URL = 16;
+    public static final int COLUMN_ATTACHMENT_LENGTH = 17;
+    public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
+    public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
+
 
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
@@ -251,7 +266,7 @@ public class CompositeMessage {
 
         // encrypted message - single raw encrypted component
         if (mEncrypted) {
-        	RawComponent raw = new RawComponent(body, mEncrypted);
+        	RawComponent raw = new RawComponent(body, true, mSecurityFlags);
         	addComponent(raw);
         }
 
@@ -267,8 +282,35 @@ public class CompositeMessage {
 
 	        // unknown data
 	        else {
-	        	RawComponent raw = new RawComponent(body, false);
+	        	RawComponent raw = new RawComponent(body, false, mSecurityFlags);
 	        	addComponent(raw);
+	        }
+
+	        // attachment
+	        String attMime = c.getString(COLUMN_ATTACHMENT_MIME);
+	        if (attMime != null) {
+
+	        	String attPreview = c.getString(COLUMN_ATTACHMENT_PREVIEW_PATH);
+	        	String attLocal = c.getString(COLUMN_ATTACHMENT_LOCAL_URI);
+	        	String attFetch = c.getString(COLUMN_ATTACHMENT_FETCH_URL);
+	        	long attLength = c.getLong(COLUMN_ATTACHMENT_LENGTH);
+	        	boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
+	        	int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
+
+	        	MessageComponent<?> att = null;
+
+	        	if (ImageComponent.supportsMimeType(attMime)) {
+	        		att = new ImageComponent(new File(attPreview),
+	        				Uri.parse(attLocal), attFetch, attLength,
+	        				attEncrypted, attSecurityFlags);
+	        	}
+
+	        	// TODO other type of attachments
+
+
+	        	if (att != null)
+	        		addComponent(att);
+
 	        }
 
         }

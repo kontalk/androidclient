@@ -109,6 +109,8 @@ public class MessagesProvider extends ContentProvider {
             "att_encrypted INTEGER NOT NULL DEFAULT 0," +
             "att_security_flags INTEGER NOT NULL DEFAULT 0," +
 
+            // TODO geo_lat, geo_lon, ...
+
             // whole content encrypted
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             // security flags
@@ -1115,6 +1117,13 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.BODY_MIME, Messages.BODY_MIME);
         messagesProjectionMap.put(Messages.BODY_CONTENT, Messages.BODY_CONTENT);
         messagesProjectionMap.put(Messages.BODY_LENGTH, Messages.BODY_LENGTH);
+
+        messagesProjectionMap.put(Messages.ATTACHMENT_MIME, Messages.ATTACHMENT_MIME);
+        messagesProjectionMap.put(Messages.ATTACHMENT_FETCH_URL, Messages.ATTACHMENT_FETCH_URL);
+        messagesProjectionMap.put(Messages.ATTACHMENT_LOCAL_URI, Messages.ATTACHMENT_LOCAL_URI);
+        messagesProjectionMap.put(Messages.ATTACHMENT_LENGTH, Messages.ATTACHMENT_LENGTH);
+        messagesProjectionMap.put(Messages.ATTACHMENT_ENCRYPTED, Messages.ATTACHMENT_ENCRYPTED);
+        messagesProjectionMap.put(Messages.ATTACHMENT_SECURITY_FLAGS, Messages.ATTACHMENT_SECURITY_FLAGS);
 
         messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
         messagesProjectionMap.put(Messages.DIRECTION, Messages.DIRECTION);

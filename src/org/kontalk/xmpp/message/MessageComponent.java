@@ -28,11 +28,13 @@ public abstract class MessageComponent<T> {
 	protected T mContent;
     protected long mLength;
 	protected boolean mEncrypted;
+	protected int mSecurityFlags;
 
-	public MessageComponent(T content, long length, boolean encrypted) {
+	public MessageComponent(T content, long length, boolean encrypted, int securityFlags) {
 		mContent = content;
 		mLength = length;
 		mEncrypted = encrypted;
+		mSecurityFlags = securityFlags;
 	}
 
 	public T getContent() {
@@ -49,6 +51,10 @@ public abstract class MessageComponent<T> {
 
 	public boolean isEncrypted() {
 		return mEncrypted;
+	}
+
+	public int getSecurityFlags() {
+		return mSecurityFlags;
 	}
 
 }
