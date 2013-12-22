@@ -376,6 +376,7 @@ public class CompositeMessage {
     /** A sample text content from class name and mime type. */
     public static String getSampleTextContent(String mime) {
     	// TODO i18n
+    	// FIXME using reflection BAD BAD BAD !!!
     	for (Class<AttachmentComponent> klass : TRY_COMPONENTS) {
     		Boolean supported = null;
     		try {
