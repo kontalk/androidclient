@@ -5,7 +5,6 @@ import java.util.Random;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.data.Contact;
-import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 
 import android.app.Activity;

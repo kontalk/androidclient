@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Messages.Fulltext;
@@ -133,12 +132,14 @@ public class MessagesProvider extends ContentProvider {
             "direction INTEGER NOT NULL, " +
             "count INTEGER NOT NULL DEFAULT 0, " +
             "unread INTEGER NOT NULL DEFAULT 0, " +
+            "mime TEXT, " +
             "content TEXT, " +
             // this the sent/received timestamp
             "timestamp INTEGER NOT NULL," +
             // this the timestamp of the latest status change
             "status_changed INTEGER," +
             "status INTEGER," +
+            "encrypted INTEGER NOT NULL DEFAULT 0, " +
             "draft TEXT" +
             ")";
 
@@ -462,6 +463,35 @@ public class MessagesProvider extends ContentProvider {
         }
     }
 
+    /** Used to determine content and mime type for a thread. */
+    private void setThreadContent(byte[] bodyContent, String bodyMime, String attachmentMime, ContentValues values) {
+        String mime;
+        String content;
+
+        // use the binary content converted to string
+        if (bodyContent == null) {
+        	// try the attachment mime
+        	mime = attachmentMime;
+        	// no content
+        	content = null;
+        }
+        else {
+        	// use body data if there is indeed a mime
+        	if (bodyMime != null) {
+	        	mime = bodyMime;
+	        	content = new String(bodyContent);
+        	}
+        	// no mime and no data, nothing to do
+        	else {
+        		mime = null;
+        		content = null;
+        	}
+        }
+
+        values.put(Threads.CONTENT, content);
+        values.put(Threads.MIME, mime);
+    }
+
     /**
      * Updates the threads table, returning the thread id to associate with the new message.
      * A thread is created for the given message if not found.
@@ -470,36 +500,35 @@ public class MessagesProvider extends ContentProvider {
      * @return the thread id
      */
     private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications) {
-        ContentValues values = new ContentValues(initialValues);
-        String peer = values.getAsString(Threads.PEER);
+        ContentValues values = new ContentValues();
+        String peer = initialValues.getAsString(Threads.PEER);
 
         long threadId = -1;
-        if (values.containsKey(Messages.THREAD_ID)) {
-            threadId = values.getAsLong(Messages.THREAD_ID);
-            values.remove(Messages.THREAD_ID);
-        }
+        if (initialValues.containsKey(Messages.THREAD_ID))
+            threadId = initialValues.getAsLong(Messages.THREAD_ID);
 
-        // this will be calculated by the trigger
-        values.remove(Messages.UNREAD);
-        // remove some other column
-        values.remove(Messages.REAL_ID);
-        values.remove(Messages.BODY_MIME);
-        values.remove(Messages.BODY_LENGTH);
-        values.remove(Messages.ENCRYPTED);
-        values.remove(Messages.SECURITY_FLAGS);
-        values.remove(Messages.SERVER_TIMESTAMP);
+        values.put(Threads.MESSAGE_ID, initialValues.getAsString(Messages.MESSAGE_ID));
+        values.put(Threads.DIRECTION, initialValues.getAsInteger(Messages.DIRECTION));
+        values.put(Threads.PEER, peer);
+        values.put(Threads.TIMESTAMP, initialValues.getAsInteger(Messages.TIMESTAMP));
+        values.put(Threads.ENCRYPTED, initialValues.getAsBoolean(Messages.ENCRYPTED));
 
-        // use text content in threads instead of binary content
-        Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
-        if (encrypted != null && encrypted.booleanValue()) {
-            values.put(Threads.CONTENT, getContext().getResources().getString(R.string.text_encrypted));
-        }
-        else {
-            // use the binary content converted to string
-            byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
-            values.remove(Messages.BODY_CONTENT);
-            values.put(Threads.CONTENT, new String(content));
-        }
+        if (initialValues.containsKey(Messages.STATUS))
+        	values.put(Threads.STATUS, initialValues.getAsInteger(Messages.STATUS));
+        if (initialValues.containsKey(Messages.STATUS_CHANGED))
+        	values.put(Threads.STATUS_CHANGED, initialValues.getAsInteger(Messages.STATUS));
+        // this column is an exception
+        if (initialValues.containsKey(Threads.DRAFT))
+        	values.put(Threads.DRAFT, initialValues.getAsString(Threads.DRAFT));
+
+        // unread column will be calculated by the trigger
+
+        // thread content has a special behaviour
+        setThreadContent(
+    		initialValues.getAsByteArray(Messages.BODY_CONTENT),
+    		initialValues.getAsString(Messages.BODY_CONTENT),
+    		initialValues.getAsString(Messages.ATTACHMENT_MIME),
+    		values);
 
         // insert new thread
         try {
@@ -876,8 +905,9 @@ public class MessagesProvider extends ContentProvider {
                 Messages.DIRECTION,
                 Messages.STATUS,
                 Messages.BODY_CONTENT,
+                Messages.BODY_MIME,
+                Messages.ATTACHMENT_MIME,
                 Messages.TIMESTAMP,
-                Messages.ENCRYPTED
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
             null, null, Messages.INVERTED_SORT_ORDER, "1");
 
@@ -888,20 +918,10 @@ public class MessagesProvider extends ContentProvider {
                 v.put(Threads.MESSAGE_ID, c.getString(0));
                 v.put(Threads.DIRECTION, c.getInt(1));
                 v.put(Threads.STATUS, c.getInt(2));
-                int encrypted = c.getInt(5);
 
-                // check if message is encrypted
-                String content;
-                if (encrypted > 0)
-                    content = getContext().getResources().getString(R.string.text_encrypted);
-                else {
-                    // convert to string...
-                    byte[] buf = c.getBlob(3);
-                    content = new String(buf);
-                }
+                setThreadContent(c.getBlob(3), c.getString(4), c.getString(5), v);
 
-                v.put(Threads.CONTENT, content);
-                v.put(Threads.TIMESTAMP, c.getLong(4));
+                v.put(Threads.TIMESTAMP, c.getLong(6));
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
                 if (rc > 0) {
                     notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
@@ -1142,10 +1162,12 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DIRECTION, Threads.DIRECTION);
         threadsProjectionMap.put(Threads.COUNT, Threads.COUNT);
         threadsProjectionMap.put(Threads.UNREAD, Threads.UNREAD);
+        threadsProjectionMap.put(Threads.MIME, Threads.MIME);
         threadsProjectionMap.put(Threads.CONTENT, Threads.CONTENT);
         threadsProjectionMap.put(Threads.TIMESTAMP, Threads.TIMESTAMP);
         threadsProjectionMap.put(Threads.STATUS_CHANGED, Threads.STATUS_CHANGED);
         threadsProjectionMap.put(Threads.STATUS, Threads.STATUS);
+        threadsProjectionMap.put(Threads.ENCRYPTED, Threads.ENCRYPTED);
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
 
         fulltextProjectionMap = new HashMap<String, String>();

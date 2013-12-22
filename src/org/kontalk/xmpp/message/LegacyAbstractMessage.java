@@ -42,7 +42,7 @@ import android.os.Parcelable;
  * @author Daniele Ricci
  * @version 2.0
  */
-public abstract class AbstractMessage<T> {
+public abstract class LegacyAbstractMessage<T> {
 
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
@@ -124,12 +124,12 @@ public abstract class AbstractMessage<T> {
     /** Message components. */
     protected List<MessageComponent<?>> mComponents;
 
-    public AbstractMessage(Context context, String id, long timestamp, String sender, boolean encrypted, List<String> group) {
+    public LegacyAbstractMessage(Context context, String id, long timestamp, String sender, boolean encrypted, List<String> group) {
         this(context, id, timestamp, sender, encrypted);
         this.group = group;
     }
 
-    public AbstractMessage(Context context, String id, long timestamp, String sender, boolean encrypted) {
+    public LegacyAbstractMessage(Context context, String id, long timestamp, String sender, boolean encrypted) {
         this.mContext = context;
 
         this.id = id;
@@ -241,7 +241,7 @@ public abstract class AbstractMessage<T> {
     public abstract byte[] getBinaryContent();
 
     /** A sample text content from class name and mime type. */
-    public static String getSampleTextContent(Class<? extends AbstractMessage> klass,
+    public static String getSampleTextContent(Class<? extends LegacyAbstractMessage> klass,
             String mime) {
         String cname = klass.getSimpleName();
         return cname.substring(0, cname.length() - "Message".length()) +
@@ -358,7 +358,7 @@ public abstract class AbstractMessage<T> {
     /** Release this message for later use in the global pool. */
     public abstract void recycle();
 
-    public static AbstractMessage fromCursor(Context context, Cursor cursor) {
+    public static LegacyAbstractMessage fromCursor(Context context, Cursor cursor) {
     	// TODO
         return null;
     }
@@ -371,7 +371,7 @@ public abstract class AbstractMessage<T> {
                 MESSAGE_LIST_PROJECTION, null, null, Messages.DEFAULT_SORT_ORDER);
     }
 
-    public static String buildMediaFilename(AbstractMessage msg) {
+    public static String buildMediaFilename(LegacyAbstractMessage msg) {
     	// TODO
         return null;
     }

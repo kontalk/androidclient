@@ -1,15 +1,26 @@
 package org.kontalk.xmpp.message;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+import org.kontalk.xmpp.Kontalk;
+import org.kontalk.xmpp.util.MediaStorage;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Log;
 
 
 /**
  * Image component.
  * @author Daniele Ricci
  */
-public class ImageComponent extends MessageComponent<Attachment> {
+public class ImageComponent extends AttachmentComponent {
 
     private static final String[][] MIME_TYPES = {
         { "image/png", "png" },
@@ -19,8 +30,10 @@ public class ImageComponent extends MessageComponent<Attachment> {
         { "image/jpg", "jpg" }
     };
 
-	public ImageComponent(File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
-		super(new Attachment(previewFile, localUri, fetchUrl), length, encrypted, securityFlags);
+    private Bitmap mBitmap;
+
+	public ImageComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
+		super(mime, previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
 	}
 
     public static boolean supportsMimeType(String mime) {
@@ -31,16 +44,73 @@ public class ImageComponent extends MessageComponent<Attachment> {
         return false;
     }
 
-    public File getPreviewFile() {
-    	return mContent.getPreviewFile();
+    private BitmapFactory.Options bitmapOptions() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        return options;
     }
 
-    public Uri getLocalUri() {
-    	return mContent.getLocalUri();
+    private void loadPreview(File previewFile) throws IOException {
+        InputStream in = new FileInputStream(previewFile);
+        BitmapFactory.Options options = bitmapOptions();
+        mBitmap = BitmapFactory.decodeStream(in, null, options);
+        in.close();
     }
 
-    public String getFetchUrl() {
-    	return mContent.getFetchUrl();
+    public Bitmap getBitmap() {
+		return mBitmap;
+	}
+
+    @Override
+    protected void populateFromCursor(Context context, Cursor c) {
+
+        /*
+         * local_uri is used for referencing the original media.
+         * preview_uri is used to load the media thumbnail.
+         * If preview_uri is null or cannot be found, a thumbnail is
+         * generated on the fly from local_uri - if possible.
+         */
+
+    	File previewFile = mContent.getPreviewFile();
+    	Uri localUri = mContent.getLocalUri();
+        try {
+            // preview path
+            if (previewFile != null) {
+                // load from file - we know it's a file uri
+                loadPreview(previewFile);
+            }
+        }
+        catch (Exception e) {
+            Log.w(Kontalk.TAG, "unable to load thumbnail, generating one");
+
+            try {
+                /*
+                 * unable to load preview - generate thumbnail
+                 * Of course a thumbnail can be generated only if the image has
+                 * already been downloaded.
+                 */
+                if (previewFile != null && localUri != null) {
+                    MediaStorage.cacheThumbnail(context, localUri, previewFile);
+                    loadPreview(previewFile);
+                }
+            }
+            catch (Exception e1) {
+                Log.e(Kontalk.TAG, "unable to generate thumbnail", e1);
+            }
+        }
+    }
+
+    public static String buildMediaFilename(String id, String mime) {
+        return "image" + id.substring(id.length() - 5) + "." + getFileExtension(mime);
+    }
+
+    /** Returns the file extension from the mime type. */
+    private static String getFileExtension(String mime) {
+        for (int i = 0; i < MIME_TYPES.length; i++)
+            if (MIME_TYPES[i][0].equalsIgnoreCase(mime))
+                return MIME_TYPES[i][1];
+
+        return null;
     }
 
 }

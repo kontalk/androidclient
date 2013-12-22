@@ -36,30 +36,30 @@ import android.os.Message;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class PlainTextMessage extends AbstractMessage<byte[]> {
+public class LegacyPlainTextMessage extends LegacyAbstractMessage<byte[]> {
     //private static final String TAG = PlainTextMessage.class.getSimpleName();
 
     private static final Object sPoolSync = new Object();
-    private static PlainTextMessage sPool;
+    private static LegacyPlainTextMessage sPool;
     private static int sPoolSize = 0;
 
     /** Global pool max size. */
     private static final int MAX_POOL_SIZE = 10;
 
     /** Used for pooling. */
-    protected PlainTextMessage next;
+    protected LegacyPlainTextMessage next;
 
     public static final String MIME_TYPE = "text/plain";
 
-    protected PlainTextMessage(Context context) {
+    protected LegacyPlainTextMessage(Context context) {
         super(context, null, 0, null, false);
     }
 
-    public PlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
+    public LegacyPlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
         this(context, id, timestamp, sender, content, encrypted, null);
     }
 
-    public PlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
+    public LegacyPlainTextMessage(Context context, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
         super(context, id, timestamp, sender, encrypted, group);
     }
 
@@ -115,10 +115,10 @@ public class PlainTextMessage extends AbstractMessage<byte[]> {
      * Return a new Message instance from the global pool. Allows us to
      * avoid allocating new objects in many cases. Inspired by {@link Message}.
      */
-    public static PlainTextMessage obtain(Context context) {
+    public static LegacyPlainTextMessage obtain(Context context) {
         synchronized (sPoolSync) {
             if (sPool != null) {
-                PlainTextMessage m = sPool;
+            	LegacyPlainTextMessage m = sPool;
                 sPool = m.next;
                 m.next = null;
                 sPoolSize--;
@@ -126,7 +126,7 @@ public class PlainTextMessage extends AbstractMessage<byte[]> {
                 return m;
             }
         }
-        return new PlainTextMessage(context);
+        return new LegacyPlainTextMessage(context);
     }
 
 }

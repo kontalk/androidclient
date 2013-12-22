@@ -33,6 +33,7 @@ public final class MyMessages {
         public static final String STATUS_CHANGED = "status_changed";
         public static final String STATUS = "status";
         public static final String MESSAGE_ID = "msg_id";
+        public static final String ENCRYPTED = "encrypted";
     }
 
     public static final class Messages implements CommonColumns {
@@ -91,7 +92,6 @@ public final class MyMessages {
         public static final String ATTACHMENT_ENCRYPTED = "att_encrypted";
         public static final String ATTACHMENT_SECURITY_FLAGS = "att_security_flags";
 
-        public static final String ENCRYPTED = "encrypted";
         public static final String SECURITY_FLAGS = "security_flags";
 
         // not DESC here because the listview is reverse-stacked
@@ -125,6 +125,7 @@ public final class MyMessages {
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.thread";
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.thread";
 
+        public static final String MIME = "mime";
         public static final String CONTENT = "content";
         public static final String COUNT = "count";
         public static final String DRAFT = "draft";

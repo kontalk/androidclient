@@ -40,20 +40,24 @@ public class Conversation {
         Threads.PEER,
         Threads.COUNT,
         Threads.UNREAD,
+        Threads.MIME,
         Threads.CONTENT,
         Threads.TIMESTAMP,
         Threads.STATUS,
-        Threads.DRAFT
+        Threads.ENCRYPTED,
+        Threads.DRAFT,
     };
 
     private final int COLUMN_ID = 0;
     private final int COLUMN_PEER = 1;
     private final int COLUMN_COUNT = 2;
     private final int COLUMN_UNREAD = 3;
-    private final int COLUMN_CONTENT = 4;
-    private final int COLUMN_TIMESTAMP = 5;
-    private final int COLUMN_STATUS = 6;
-    private final int COLUMN_DRAFT = 7;
+    private final int COLUMN_MIME = 4;
+    private final int COLUMN_CONTENT = 5;
+    private final int COLUMN_TIMESTAMP = 6;
+    private final int COLUMN_STATUS = 7;
+    private final int COLUMN_ENCRYPTED = 8;
+    private final int COLUMN_DRAFT = 9;
 
     private final Context mContext;
 
@@ -63,11 +67,13 @@ public class Conversation {
     private String mRecipient;
     private long mDate;
     private int mMessageCount;
+    private String mMime;
     private String mSubject;
     private int mUnreadCount;
     private int mStatus;
     private String mDraft;
     private String mNumberHint;
+    private boolean mEncrypted;
 
     private Conversation(Context context) {
         mContext = context;
@@ -81,11 +87,13 @@ public class Conversation {
             mDate = c.getLong(COLUMN_TIMESTAMP);
 
             mRecipient = c.getString(COLUMN_PEER);
+            mMime = c.getString(COLUMN_MIME);
             mSubject = c.getString(COLUMN_CONTENT);
 
             mUnreadCount = c.getInt(COLUMN_UNREAD);
             mMessageCount = c.getInt(COLUMN_COUNT);
             mStatus = c.getInt(COLUMN_STATUS);
+            mEncrypted = c.getInt(COLUMN_ENCRYPTED) != 0;
             mDraft = c.getString(COLUMN_DRAFT);
 
             loadContact();
@@ -139,6 +147,10 @@ public class Conversation {
         this.mDate = mDate;
     }
 
+    public String getMime() {
+		return mMime;
+	}
+
     public String getSubject() {
         return mSubject;
     }
@@ -171,6 +183,10 @@ public class Conversation {
 
     public int getStatus() {
         return mStatus;
+    }
+
+    public boolean isEncrypted() {
+    	return mEncrypted;
     }
 
     public String getDraft() {

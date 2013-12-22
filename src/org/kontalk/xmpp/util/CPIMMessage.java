@@ -24,7 +24,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.xmpp.message.PlainTextMessage;
+import org.kontalk.xmpp.message.TextComponent;
 
 import android.text.TextUtils;
 
@@ -48,7 +48,7 @@ public class CPIMMessage {
 
     /** Constructs a new plain text message. */
     public CPIMMessage(String from, String to, Date date, String body) {
-        this(from, to, date, PlainTextMessage.MIME_TYPE, body);
+        this(from, to, date, TextComponent.MIME_TYPE, body);
     }
 
     public CPIMMessage(String from, String to, Date date, String mime, String body) {

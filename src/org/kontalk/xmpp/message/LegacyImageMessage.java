@@ -41,8 +41,8 @@ import android.util.Log;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ImageMessage extends AbstractMessage<Bitmap> {
-    private static final String TAG = ImageMessage.class.getSimpleName();
+public class LegacyImageMessage extends LegacyAbstractMessage<Bitmap> {
+    private static final String TAG = LegacyImageMessage.class.getSimpleName();
 
     private static final String[][] MIME_TYPES = {
         { "image/png", "png" },
@@ -55,15 +55,15 @@ public class ImageMessage extends AbstractMessage<Bitmap> {
     /** Used only for transporting thumbnail data from polling to storage. */
     private byte[] decodedContent;
 
-    protected ImageMessage(Context context) {
+    protected LegacyImageMessage(Context context) {
         super(context, null, 0, null, false, null);
     }
 
-    public ImageMessage(Context context, String mime, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
+    public LegacyImageMessage(Context context, String mime, String id, long timestamp, String sender, byte[] content, boolean encrypted) {
         this(context, mime, id, timestamp, sender, null, encrypted, null);
     }
 
-    public ImageMessage(Context context, String mime, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
+    public LegacyImageMessage(Context context, String mime, String id, long timestamp, String sender, byte[] content, boolean encrypted, List<String> group) {
         super(context, id, timestamp, sender, encrypted, group);
         decodedContent = content;
     }

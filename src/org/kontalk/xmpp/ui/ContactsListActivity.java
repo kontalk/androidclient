@@ -21,7 +21,7 @@ package org.kontalk.xmpp.ui;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.data.Contact;
-import org.kontalk.xmpp.message.PlainTextMessage;
+import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.sync.SyncAdapter;
@@ -116,7 +116,7 @@ public class ContactsListActivity extends ActionBarActivity
 
             case R.id.menu_invite:
                 Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType(PlainTextMessage.MIME_TYPE);
+                i.setType(TextComponent.MIME_TYPE);
                 i.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
                 startActivity(i);
                 return true;

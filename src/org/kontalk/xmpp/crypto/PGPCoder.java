@@ -38,7 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.kontalk.xmpp.client.EndpointServer;
-import org.kontalk.xmpp.message.PlainTextMessage;
+import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.util.CPIMMessage;
 import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.bcpg.HashAlgorithmTags;
@@ -354,7 +354,7 @@ public class PGPCoder implements Coder {
 	                    	// verify CPIM headers, including mime type must be either text or xml
 
 	                    	// check mime type
-	                    	if (!PlainTextMessage.MIME_TYPE.equalsIgnoreCase(msg.getMime()) &&
+	                    	if (!TextComponent.MIME_TYPE.equalsIgnoreCase(msg.getMime()) &&
 	                    			!XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(msg.getMime()))
 	                    		throw new DecryptException(
 	                    			DECRYPT_EXCEPTION_INTEGRITY_CHECK,

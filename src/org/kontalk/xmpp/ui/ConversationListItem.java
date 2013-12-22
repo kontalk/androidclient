@@ -21,6 +21,7 @@ package org.kontalk.xmpp.ui;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
@@ -137,12 +138,26 @@ public class ConversationListItem extends RelativeLayout implements Checkable {
         mFromView.setText(from);
         mDateView.setText(MessageUtils.formatTimeStampString(context, conv.getDate()));
 
+        CharSequence text;
+
         // last message or draft??
         String source = draft != null ? draft : conv.getSubject();
-        Spannable text = new SpannableString(source);
-        MessageUtils.convertSmileys(context, text, SmileyImageSpan.SIZE_LISTITEM);
-        if (conv.getUnreadCount() > 0)
-            text.setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+
+        if (source != null) {
+	        text = new SpannableString(source);
+	        MessageUtils.convertSmileys(context, (Spannable) text, SmileyImageSpan.SIZE_LISTITEM);
+	        if (conv.getUnreadCount() > 0)
+	            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+        }
+
+        else if (conv.isEncrypted()) {
+        	text = context.getString(R.string.text_encrypted);
+        }
+
+        else {
+        	// determine from mime type
+        	text = CompositeMessage.getSampleTextContent(conv.getMime());
+        }
 
         mSubjectView.setText(text);
 

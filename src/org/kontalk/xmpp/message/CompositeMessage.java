@@ -44,6 +44,12 @@ public class CompositeMessage {
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
 
+	@SuppressWarnings("unchecked")
+	private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
+		ImageComponent.class,
+		VCardComponent.class,
+	};
+
     private static final String[] MESSAGE_LIST_PROJECTION = {
         Messages._ID,
         Messages.MESSAGE_ID,
@@ -89,7 +95,6 @@ public class CompositeMessage {
     public static final int COLUMN_ATTACHMENT_ENCRYPTED = 18;
     public static final int COLUMN_ATTACHMENT_SECURITY_FLAGS = 19;
 
-
     public static final String MSG_ID = "org.kontalk.message.id";
     public static final String MSG_SENDER = "org.kontalk.message.sender";
     public static final String MSG_MIME = "org.kontalk.message.mime";
@@ -97,6 +102,8 @@ public class CompositeMessage {
     public static final String MSG_RECIPIENTS = "org.kontalk.message.recipients";
     public static final String MSG_GROUP = "org.kontalk.message.group";
     public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
+
+    private static final int SUFFIX_LENGTH = "Component".length();
 
     protected Context mContext;
     protected long mDatabaseId;
@@ -277,16 +284,19 @@ public class CompositeMessage {
 
 	        String mime = c.getString(COLUMN_BODY_MIME);
 
-	        // text data
-	        if (TextComponent.supportsMimeType(mime)) {
-	        	TextComponent txt = new TextComponent(new String(body));
-	        	addComponent(txt);
-	        }
+	        if (body != null) {
 
-	        // unknown data
-	        else {
-	        	RawComponent raw = new RawComponent(body, false, mSecurityFlags);
-	        	addComponent(raw);
+		        // text data
+		        if (TextComponent.supportsMimeType(mime)) {
+		        	TextComponent txt = new TextComponent(new String(body));
+		        	addComponent(txt);
+		        }
+
+		        // unknown data
+		        else {
+		        	RawComponent raw = new RawComponent(body, false, mSecurityFlags);
+		        	addComponent(raw);
+		        }
 	        }
 
 	        // attachment
@@ -300,12 +310,15 @@ public class CompositeMessage {
 	        	boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
 	        	int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
 
-	        	MessageComponent<?> att = null;
+	        	AttachmentComponent att = null;
+        		File previewFile = (attPreview != null) ? new File(attPreview) : null;
+        		Uri localUri = (attLocal != null) ? Uri.parse(attLocal) : null;
 
 	        	if (ImageComponent.supportsMimeType(attMime)) {
-	        		att = new ImageComponent(new File(attPreview),
-	        				Uri.parse(attLocal), attFetch, attLength,
+	        		att = new ImageComponent(attMime, previewFile,
+	        				localUri, attFetch, attLength,
 	        				attEncrypted, attSecurityFlags);
+	        		att.populateFromCursor(mContext, c);
 	        	}
 
 	        	// TODO other type of attachments
@@ -350,9 +363,17 @@ public class CompositeMessage {
                 MESSAGE_LIST_PROJECTION, null, null, Messages.DEFAULT_SORT_ORDER);
     }
 
-    public static String buildMediaFilename(CompositeMessage msg) {
-    	// TODO
-        return null;
+    /** A sample text content from class name and mime type. */
+    public static String getSampleTextContent(String mime) {
+    	// TODO i18n
+    	for (Class<AttachmentComponent> klass : TRY_COMPONENTS) {
+	        String cname = klass.getSimpleName();
+	        return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
+	            ": " + mime;
+    	}
+
+    	// no supporting component - return mime
+    	return "Unknown: " + mime;
     }
 
     /** Still unused.

@@ -26,9 +26,9 @@ import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.NumberValidator;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
-import org.kontalk.xmpp.message.ImageMessage;
-import org.kontalk.xmpp.message.PlainTextMessage;
-import org.kontalk.xmpp.message.VCardMessage;
+import org.kontalk.xmpp.message.ImageComponent;
+import org.kontalk.xmpp.message.TextComponent;
+import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
 import org.kontalk.xmpp.util.MediaStorage;
@@ -293,7 +293,7 @@ public class ComposeMessage extends ActionBarActivity {
     /** Creates an {@link Intent} for sending a text message. */
     public static Intent sendTextMessage(String text) {
         Intent i = new Intent(Intent.ACTION_SEND);
-        i.setType(PlainTextMessage.MIME_TYPE);
+        i.setType(TextComponent.MIME_TYPE);
         i.putExtra(Intent.EXTRA_TEXT, text);
         return i;
     }
@@ -318,13 +318,13 @@ public class ComposeMessage extends ActionBarActivity {
         String mime = MediaStorage.getType(this, uri);
         Log.d(TAG, "using detected mime type " + mime);
 
-        if (ImageMessage.supportsMimeType(mime)) {
+        if (ImageComponent.supportsMimeType(mime)) {
             // send image immediately
-            // TODO mFragment.sendBinaryMessage(uri, mime, true, ImageMessage.class);
+            mFragment.sendBinaryMessage(uri, mime, true, ImageComponent.class);
         }
 
-        else if (VCardMessage.supportsMimeType(mime)) {
-            // TODO mFragment.sendBinaryMessage(uri, mime, true, VCardMessage.class);
+        else if (VCardComponent.supportsMimeType(mime)) {
+            mFragment.sendBinaryMessage(uri, mime, true, VCardComponent.class);
         }
 
         else {
@@ -342,7 +342,7 @@ public class ComposeMessage extends ActionBarActivity {
         if (multi) {
             // multiple texts: take only the first one
             // FIXME this will not allow text file attachments
-            if (PlainTextMessage.supportsMimeType(mime)) {
+            if (TextComponent.supportsMimeType(mime)) {
                 ArrayList<CharSequence> texts = sendIntent.getCharSequenceArrayListExtra(Intent.EXTRA_TEXT);
                 if (texts != null && texts.size() > 0)
                     mFragment.setTextEntry(texts.get(0));
@@ -360,7 +360,7 @@ public class ComposeMessage extends ActionBarActivity {
 
         else {
             // FIXME this will not allow text file attachments
-            if (PlainTextMessage.supportsMimeType(mime)) {
+            if (TextComponent.supportsMimeType(mime)) {
                 CharSequence text = sendIntent.getCharSequenceExtra(Intent.EXTRA_TEXT);
                 mFragment.setTextEntry(text);
             }

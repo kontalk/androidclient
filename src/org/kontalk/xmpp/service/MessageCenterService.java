@@ -86,14 +86,15 @@ import org.kontalk.xmpp.crypto.DecryptException;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.X509Bridge;
+import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageComponent;
-import org.kontalk.xmpp.message.ImageMessage;
 import org.kontalk.xmpp.message.MessageComponent;
-import org.kontalk.xmpp.message.PlainTextMessage;
 import org.kontalk.xmpp.message.RawComponent;
 import org.kontalk.xmpp.message.TextComponent;
+import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
+import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -1134,8 +1135,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.MESSAGE_ID, msg.getId());
         values.put(Messages.PEER, sender);
 
-        byte[] content;
-        String mime;
+        byte[] content = null;
+        String mime = null;
         boolean checkAttachment;
 
         // message still encrypted - use whole body of raw component
@@ -1145,72 +1146,57 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         	// if raw it's null it's a bug
         	content = raw.getContent();
         	mime = null;
-        	checkAttachment = true;
+        	checkAttachment = false;
 
         }
 
         else {
 
         	TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
-        	// if txt is null it's a bug
-        	content = txt.getContent().getBytes();
-        	mime = TextComponent.MIME_TYPE;
+
+        	if (txt != null) {
+        		content = txt.getContent().getBytes();
+        		mime = TextComponent.MIME_TYPE;
+        	}
+
         	checkAttachment = true;
 
         }
 
         // selective components detection
 
-        if (checkAttachment && msg.getComponents().size() > 1) {
+        if (checkAttachment) {
 
-	        ImageComponent image = (ImageComponent) msg.getComponent(ImageComponent.class);
-	        if (image != null) {
+        	@SuppressWarnings("unchecked")
+			Class<AttachmentComponent>[] tryComponents = new Class[] {
+    			ImageComponent.class,
+    			VCardComponent.class,
+        	};
 
-	        	values.put(Messages.ATTACHMENT_FETCH_URL, image.getFetchUrl());
-	        	values.put(Messages.ATTACHMENT_LENGTH, image.getLength());
-	        	values.put(Messages.ATTACHMENT_ENCRYPTED, image.isEncrypted());
-	        	values.put(Messages.ATTACHMENT_SECURITY_FLAGS, image.getSecurityFlags());
+        	for (Class<AttachmentComponent> klass : tryComponents) {
+    	        AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
+    	        if (att != null) {
 
-	            File previewFile = image.getPreviewFile();
-	            if (previewFile != null)
-	                values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
+    	        	values.put(Messages.ATTACHMENT_MIME, att.getMime());
+    	        	values.put(Messages.ATTACHMENT_FETCH_URL, att.getFetchUrl());
+    	        	values.put(Messages.ATTACHMENT_LENGTH, att.getLength());
+    	        	values.put(Messages.ATTACHMENT_ENCRYPTED, att.isEncrypted());
+    	        	values.put(Messages.ATTACHMENT_SECURITY_FLAGS, att.getSecurityFlags());
 
-	        }
+    	            File previewFile = att.getPreviewFile();
+    	            if (previewFile != null)
+    	                values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
 
-	        else {
-	        	// TODO other types
-	        }
+    	            // only one attachment is supported
+    	            break;
+    	        }
+
+			}
 
         }
-
-        /*
-        // TODO abstract somehow
-        if (msg.getFetchUrl() == null && msg instanceof VCardMessage) {
-            String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
-            File file = null;
-            try {
-                file = MediaStorage.writeMedia(filename, content);
-            }
-            catch (IOException e) {
-                Log.e(TAG, "unable to write to media storage", e);
-            }
-            // update uri
-            if (file != null)
-                msg.setLocalUri(Uri.fromFile(file));
-
-            // use text content for database table
-            try {
-                content = msg.getTextContent().getBytes();
-            }
-            catch (Exception e) {
-                // TODO i18n
-                content = "(error)".getBytes();
-            }
-        }
-        */
 
         values.put(Messages.BODY_CONTENT, content);
-        values.put(Messages.BODY_LENGTH, content.length);
+        values.put(Messages.BODY_LENGTH, content != null ? content.length : 0);
         values.put(Messages.BODY_MIME, mime);
 
         values.put(Messages.ENCRYPTED, msg.isEncrypted());
@@ -1384,7 +1370,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
-        i.putExtra("org.kontalk.message.mime", PlainTextMessage.MIME_TYPE);
+        i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.toUser", userId);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
@@ -2098,7 +2084,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     else {
 
                         // use message body
-                    	msg.addComponent(new TextComponent(body));
+                    	if (body != null)
+                    		msg.addComponent(new TextComponent(body));
 
                     }
 
@@ -2120,9 +2107,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             if (previewMime == null)
                                 previewMime = MediaStorage.THUMBNAIL_MIME;
 
-                            String filename = ImageMessage.buildMediaFilename(msgId, previewMime);
+                            String filename = null;
+
+                            if (ImageComponent.supportsMimeType(mime)) {
+                            	filename = ImageComponent.buildMediaFilename(msgId, previewMime);
+                            }
+
+                            else if (VCardComponent.supportsMimeType(mime)) {
+                            	filename = VCardComponent.buildMediaFilename(msgId, previewMime);
+                            }
+
                             try {
-                                previewFile = MediaStorage.writeInternalMedia(MessageCenterService.this, filename, preview.getContents());
+                            	if (filename != null) previewFile =
+                            		MediaStorage.writeInternalMedia(MessageCenterService.this,
+                            			filename, preview.getContents());
                             }
                             catch (IOException e) {
                                 Log.w(TAG, "error storing thumbnail", e);
@@ -2133,11 +2131,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                         if (ImageComponent.supportsMimeType(mime)) {
                             // cleartext only for now
-                        	attachment = new ImageComponent(previewFile, null, fetchUrl, length, false, Coder.SECURITY_CLEARTEXT);
+                        	attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
+                        			false, Coder.SECURITY_CLEARTEXT);
                         }
+
+                        // TODO other types
 
                         if (attachment != null)
                         	msg.addComponent(attachment);
+
+                        // add a dummy body if none was found
+                        /*
+                        if (body == null) {
+                        	msg.addComponent(new TextComponent(CompositeMessage
+                        		.getSampleTextContent((Class<? extends MessageComponent<?>>)
+                        			attachment.getClass(), mime)));
+                        }
+                        */
 
                     }
 

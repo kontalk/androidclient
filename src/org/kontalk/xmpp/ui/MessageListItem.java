@@ -25,6 +25,7 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.message.CompositeMessage;
+import org.kontalk.xmpp.message.ImageComponent;
 import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.util.MessageUtils;
@@ -33,6 +34,7 @@ import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -284,29 +286,47 @@ public class MessageListItem extends RelativeLayout {
             buf = new SpannableStringBuilder(getResources().getString(R.string.text_encrypted));
         }
         else {
+            // this is used later to add \n at the end of the image placeholder
+            boolean thumbnailOnly;
+
             TextComponent txt = (TextComponent) mMessage.getComponent(TextComponent.class);
-            String textContent = txt.getContent();
+
+            String textContent = txt != null ? txt.getContent() : null;
 
             if (TextUtils.isEmpty(textContent)) {
             	buf = new SpannableStringBuilder();
+            	thumbnailOnly = true;
             }
 
             else {
 	            buf = new SpannableStringBuilder(textContent);
+	            thumbnailOnly = false;
+            }
 
-            /*
-            if (mMessage instanceof ImageMessage) {
-                ImageMessage image = (ImageMessage) mMessage;
-                Bitmap bitmap = image.getContent();
+            // convert smileys first
+            if (buf.length() > 0)
+            	MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
+
+            // image component: show image before text
+            ImageComponent img = (ImageComponent) mMessage
+            		.getComponent(ImageComponent.class);
+
+            if (img != null) {
+            	// prepend some text for the ImageSpan
+            	String placeholder = CompositeMessage.getSampleTextContent(img.getContent().getMime());
+            	buf.insert(0, placeholder);
+
+            	// add newline if there is some text after
+            	if (!thumbnailOnly)
+            		buf.insert(placeholder.length(), "\n");
+
+                Bitmap bitmap = img.getBitmap();
                 if (bitmap != null) {
-                    ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), image.getContent());
-                    buf.setSpan(imgSpan, 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), bitmap);
+                    buf.setSpan(imgSpan, 0, placeholder.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
-            else {*/
-                MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
-            //}
-            }
+
         }
 
         if (highlight != null) {

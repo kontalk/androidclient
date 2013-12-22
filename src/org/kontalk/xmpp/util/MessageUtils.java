@@ -25,10 +25,7 @@ import java.util.Locale;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
-import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.CompositeMessage;
-import org.kontalk.xmpp.message.ImageMessage;
-import org.kontalk.xmpp.message.VCardMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.ui.QuickAction;
 
@@ -457,16 +454,16 @@ public final class MessageUtils {
 
         // this is for avoiding a useless call to subSequence
         int l = userId.length();
-        if (l > AbstractMessage.USERID_LENGTH)
-            jid.append(userId.subSequence(0, AbstractMessage.USERID_LENGTH));
+        if (l > CompositeMessage.USERID_LENGTH)
+            jid.append(userId.subSequence(0, CompositeMessage.USERID_LENGTH));
         else
             jid.append(userId);
 
         jid.append('@');
         jid.append(network);
 
-        if (l > AbstractMessage.USERID_LENGTH)
-            jid.append(userId.subSequence(AbstractMessage.USERID_LENGTH, l));
+        if (l > CompositeMessage.USERID_LENGTH)
+            jid.append(userId.subSequence(CompositeMessage.USERID_LENGTH, l));
 
         return jid.toString();
     }
@@ -475,8 +472,8 @@ public final class MessageUtils {
         int aLen = a.length();
         int bLen = b.length();
         // validate :)
-        if ((aLen != AbstractMessage.USERID_LENGTH && aLen != AbstractMessage.USERID_LENGTH_RESOURCE) ||
-                (bLen != AbstractMessage.USERID_LENGTH && bLen != AbstractMessage.USERID_LENGTH_RESOURCE) ||
+        if ((aLen != CompositeMessage.USERID_LENGTH && aLen != CompositeMessage.USERID_LENGTH_RESOURCE) ||
+                (bLen != CompositeMessage.USERID_LENGTH && bLen != CompositeMessage.USERID_LENGTH_RESOURCE) ||
                 a.contains("@") || b.contains("@"))
             throw new IllegalArgumentException("either one or both parameters are not valid user id.");
 
@@ -485,8 +482,8 @@ public final class MessageUtils {
             return a.equalsIgnoreCase(b);
         else
             // user id comparison
-            return a.substring(0, AbstractMessage.USERID_LENGTH)
-                .equalsIgnoreCase(b.substring(0, AbstractMessage.USERID_LENGTH));
+            return a.substring(0, CompositeMessage.USERID_LENGTH)
+                .equalsIgnoreCase(b.substring(0, CompositeMessage.USERID_LENGTH));
     }
 
 }

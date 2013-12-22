@@ -33,8 +33,7 @@ import java.util.Map;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.ClientHTTPConnection;
-import org.kontalk.xmpp.message.AbstractMessage;
-import org.kontalk.xmpp.provider.MyMessages.Messages;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.ui.ConversationList;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.ProgressNotificationBuilder;
@@ -44,7 +43,6 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -136,8 +134,8 @@ public class DownloadService extends IntentService implements DownloadListener {
             // make sure storage directory is present
             MediaStorage.MEDIA_ROOT.mkdirs();
 
-            mMessageId = intent.getStringExtra(AbstractMessage.MSG_ID);
-            mPeer = intent.getStringExtra(AbstractMessage.MSG_SENDER);
+            mMessageId = intent.getStringExtra(CompositeMessage.MSG_ID);
+            mPeer = intent.getStringExtra(CompositeMessage.MSG_SENDER);
             queue.put(url, mMessageId);
 
             // download content

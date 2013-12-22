@@ -38,11 +38,11 @@ import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
-import org.kontalk.xmpp.message.AbstractMessage;
 import org.kontalk.xmpp.message.CompositeMessage;
-import org.kontalk.xmpp.message.ImageMessage;
-import org.kontalk.xmpp.message.PlainTextMessage;
+import org.kontalk.xmpp.message.ImageComponent;
+import org.kontalk.xmpp.message.MessageComponent;
 import org.kontalk.xmpp.message.TextComponent;
+import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
@@ -369,7 +369,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	/** Sends out a binary message. */
 	public void sendBinaryMessage(Uri uri, String mime, boolean media,
-			Class<? extends AbstractMessage> klass) {
+			Class<? extends MessageComponent<?>> klass) {
 		Log.v(TAG, "sending binary content: " + uri);
 		Uri newMsg = null;
         File previewFile = null;
@@ -381,33 +381,43 @@ public class ComposeMessageFragment extends ListFragment implements
 		    offlineModeWarning();
 
 			String msgId = "draft" + (new Random().nextInt());
-			String content = AbstractMessage.getSampleTextContent(klass, mime);
 
 			// generate thumbnail
 			// FIXME this is blocking!!!!
 			if (media) {
-				String filename = ImageMessage.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
+				// FIXME hard-coded to ImageComponent
+				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
 				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
 						filename);
 			}
 
-			// save to local storage
 			length = MediaStorage.getLength(getActivity(), uri);
+
+			// save to database
             ContentValues values = new ContentValues();
 			// must supply a message ID...
 			values.put(Messages.MESSAGE_ID, msgId);
 			values.put(Messages.PEER, userId);
-			//values.put(Messages.MIME, mime);
-			//values.put(Messages.CONTENT, content.getBytes());
+
+			/* TODO ask for a text to send with the image
+			values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
+			values.put(Messages.BODY_CONTENT, content.getBytes());
+			values.put(Messages.BODY_LENGTH, content.length());
+			 */
+
 			values.put(Messages.UNREAD, false);
+			values.put(Messages.ENCRYPTED, false);
 			values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
 			values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 			values.put(Messages.STATUS, Messages.STATUS_SENDING);
-			/*values.put(Messages.LOCAL_URI, uri.toString());
-            values.put(Messages.LENGTH, length);
+
 			if (previewFile != null)
-				values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
-			*/
+				values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
+
+			values.put(Messages.ATTACHMENT_MIME, mime);
+			values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
+			values.put(Messages.ATTACHMENT_LENGTH, length);
+
 			newMsg = getActivity().getContentResolver().insert(
 					Messages.CONTENT_URI, values);
 		}
@@ -474,13 +484,15 @@ public class ComposeMessageFragment extends ListFragment implements
                 // must supply a message ID...
                 values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
                 values.put(Messages.PEER, userId);
-                values.put(Messages.BODY_MIME, PlainTextMessage.MIME_TYPE);
+                values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
                 values.put(Messages.BODY_CONTENT, bytes);
                 values.put(Messages.BODY_LENGTH, bytes.length);
                 values.put(Messages.UNREAD, false);
                 values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
+                // of course outgoing messages are not encrypted in database
+                values.put(Messages.ENCRYPTED, false);
                 values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                 Uri newMsg = getActivity().getContentResolver().insert(
                         Messages.CONTENT_URI, values);
@@ -1073,15 +1085,13 @@ public class ComposeMessageFragment extends ListFragment implements
 						Log.v(TAG, "using detected mime type " + mime);
 					}
 
-					/*
-					if (ImageMessage.supportsMimeType(mime))
-					    sendBinaryMessage(uri, mime, true, ImageMessage.class);
-					else if (VCardMessage.supportsMimeType(mime))
-					    sendBinaryMessage(uri, mime, false, VCardMessage.class);
+					if (ImageComponent.supportsMimeType(mime))
+					    sendBinaryMessage(uri, mime, true, ImageComponent.class);
+					else if (VCardComponent.supportsMimeType(mime))
+					    sendBinaryMessage(uri, VCardComponent.MIME_TYPE, false, VCardComponent.class);
 					else
 			            Toast.makeText(getActivity(), R.string.send_mime_not_supported, Toast.LENGTH_LONG)
 		                    .show();
-		             */
 				}
 			}
             // operation aborted
@@ -1105,7 +1115,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		                    c.moveToFirst();
 		                    String lookupKey = c.getString(0);
 		                    Uri vcardUri = Uri.withAppendedPath(Contacts.CONTENT_VCARD_URI, lookupKey);
-		                    // TODO sendBinaryMessage(vcardUri, VCardMessage.MIME_TYPES[0], false, VCardMessage.class);
+		                    sendBinaryMessage(vcardUri, VCardComponent.MIME_TYPE, false, VCardComponent.class);
 		                }
 		                finally {
 		                    c.close();
@@ -1429,7 +1439,7 @@ public class ComposeMessageFragment extends ListFragment implements
                             String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
 
                             // we are receiving a presence from our peer, upgrade available resources
-                            if (from != null && from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
+                            if (from != null && from.substring(0, CompositeMessage.USERID_LENGTH).equals(userId)) {
                                 // our presence!!!
 
                                 if (Presence.Type.available.toString().equals(type)) {
@@ -1573,7 +1583,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         String chatState = intent.getStringExtra("org.kontalk.message.chatState");
 
                         // we are receiving a composing notification from our peer
-                        if (from != null && from.substring(0, AbstractMessage.USERID_LENGTH).equals(userId)) {
+                        if (from != null && from.substring(0, CompositeMessage.USERID_LENGTH).equals(userId)) {
                             if (chatState != null && ChatState.composing.toString().equals(chatState)) {
                                 mIsTyping = true;
                                 setStatusText(getString(R.string.seen_typing_label));
@@ -1936,7 +1946,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     							cursor.moveToPosition(-1);
     							while (cursor.moveToNext()) {
-    								long curId = cursor.getLong(AbstractMessage.COLUMN_ID);
+    								long curId = cursor.getLong(CompositeMessage.COLUMN_ID);
     								if (curId == msgId) {
     									newSelectionPos = cursor.getPosition();
     									break;
