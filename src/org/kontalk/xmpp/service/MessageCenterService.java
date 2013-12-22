@@ -2133,6 +2133,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         			false, Coder.SECURITY_CLEARTEXT);
                         }
 
+                        else if (VCardComponent.supportsMimeType(mime)) {
+                            // cleartext only for now
+                        	attachment = new VCardComponent(previewFile, null, fetchUrl, length,
+                        			false, Coder.SECURITY_CLEARTEXT);
+                        }
+
                         // TODO other types
 
                         if (attachment != null)

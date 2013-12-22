@@ -24,9 +24,11 @@ import java.util.regex.Pattern;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
+import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageComponent;
 import org.kontalk.xmpp.message.TextComponent;
+import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
@@ -308,23 +310,38 @@ public class MessageListItem extends RelativeLayout {
             	MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
 
             // image component: show image before text
-            ImageComponent img = (ImageComponent) mMessage
-            		.getComponent(ImageComponent.class);
+            AttachmentComponent attachment = (AttachmentComponent) mMessage
+            		.getComponent(AttachmentComponent.class);
 
-            if (img != null) {
-            	// prepend some text for the ImageSpan
-            	String placeholder = CompositeMessage.getSampleTextContent(img.getContent().getMime());
-            	buf.insert(0, placeholder);
+            if (attachment != null) {
 
-            	// add newline if there is some text after
-            	if (!thumbnailOnly)
-            		buf.insert(placeholder.length(), "\n");
+            	if (attachment instanceof ImageComponent) {
+            		ImageComponent img = (ImageComponent) attachment;
 
-                Bitmap bitmap = img.getBitmap();
-                if (bitmap != null) {
-                    ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), bitmap);
-                    buf.setSpan(imgSpan, 0, placeholder.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+	            	// prepend some text for the ImageSpan
+	            	String placeholder = CompositeMessage.getSampleTextContent(img.getContent().getMime());
+	            	buf.insert(0, placeholder);
+
+	            	// add newline if there is some text after
+	            	if (!thumbnailOnly)
+	            		buf.insert(placeholder.length(), "\n");
+
+	                Bitmap bitmap = img.getBitmap();
+	                if (bitmap != null) {
+	                    ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), bitmap);
+	                    buf.setSpan(imgSpan, 0, placeholder.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+	                }
+
+            	}
+
+                else {
+
+                	// other component: show sample content if no body was found
+                	if (txt == null)
+                		buf.append(CompositeMessage.getSampleTextContent(attachment.getMime()));
+
                 }
+
             }
 
         }

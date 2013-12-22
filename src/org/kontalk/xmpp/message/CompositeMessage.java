@@ -19,9 +19,12 @@
 package org.kontalk.xmpp.message;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
 
@@ -321,6 +324,13 @@ public class CompositeMessage {
 	        		att.populateFromCursor(mContext, c);
 	        	}
 
+	        	else if (VCardComponent.supportsMimeType(attMime)) {
+	        		att = new VCardComponent(previewFile,
+	        				localUri, attFetch, attLength,
+	        				attEncrypted, attSecurityFlags);
+	        		att.populateFromCursor(mContext, c);
+	        	}
+
 	        	// TODO other type of attachments
 
 
@@ -367,9 +377,20 @@ public class CompositeMessage {
     public static String getSampleTextContent(String mime) {
     	// TODO i18n
     	for (Class<AttachmentComponent> klass : TRY_COMPONENTS) {
-	        String cname = klass.getSimpleName();
-	        return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
-	            ": " + mime;
+    		Boolean supported = null;
+    		try {
+				Method m = klass.getMethod("supportsMimeType", new Class[] { String.class });
+				supported = (Boolean) m.invoke(klass, mime);
+			}
+    		catch (Exception e) {
+    			// ignored
+			}
+
+    		if (supported != null && supported.booleanValue()) {
+		        String cname = klass.getSimpleName();
+		        return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
+		            ": " + mime;
+    		}
     	}
 
     	// no supporting component - return mime
