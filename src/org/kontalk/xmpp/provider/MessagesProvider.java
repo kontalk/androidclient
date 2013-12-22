@@ -1119,6 +1119,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.BODY_LENGTH, Messages.BODY_LENGTH);
 
         messagesProjectionMap.put(Messages.ATTACHMENT_MIME, Messages.ATTACHMENT_MIME);
+        messagesProjectionMap.put(Messages.ATTACHMENT_PREVIEW_PATH, Messages.ATTACHMENT_PREVIEW_PATH);
         messagesProjectionMap.put(Messages.ATTACHMENT_FETCH_URL, Messages.ATTACHMENT_FETCH_URL);
         messagesProjectionMap.put(Messages.ATTACHMENT_LOCAL_URI, Messages.ATTACHMENT_LOCAL_URI);
         messagesProjectionMap.put(Messages.ATTACHMENT_LENGTH, Messages.ATTACHMENT_LENGTH);

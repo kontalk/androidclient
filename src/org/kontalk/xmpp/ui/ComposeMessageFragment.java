@@ -993,7 +993,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		    if (progress)
 		        getActivity().setProgressBarIndeterminateVisibility(true);
 
-			AbstractMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
+			CompositeMessage.startQuery(mQueryHandler, MESSAGE_LIST_QUERY_TOKEN,
 					threadId);
 
 			if (reloadConversation)

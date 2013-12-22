@@ -211,8 +211,8 @@ public class CompositeMessage {
         return mEncrypted;
     }
 
-    public void setEncrypted() {
-        mEncrypted = true;
+    public void setEncrypted(boolean encrypted) {
+        mEncrypted = encrypted;
     }
 
     public int getSecurityFlags() {
@@ -241,7 +241,6 @@ public class CompositeMessage {
         // be sure to stick to our projection array
         mDatabaseId = c.getLong(COLUMN_ID);
         mId = c.getString(COLUMN_MESSAGE_ID);
-        //realId = c.getString(COLUMN_REAL_ID);
         mTimestamp = c.getLong(COLUMN_TIMESTAMP);
         mStatusChanged = c.getLong(COLUMN_STATUS_CHANGED);
         mStatus = c.getInt(COLUMN_STATUS);

@@ -1134,11 +1134,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Messages.MESSAGE_ID, msg.getId());
         values.put(Messages.PEER, sender);
 
-        // FIXME if decryption failed there will be no TextComponent !!!!
+        byte[] content;
+        String mime;
 
-        TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
+        // message still encrypted - use whole body of raw component
+        if (msg.isEncrypted()) {
 
-        byte[] content = txt.getContent().getBytes();
+        	RawComponent raw = (RawComponent) msg.getComponent(RawComponent.class);
+        	// if raw it's null it's a bug
+        	content = raw.getContent();
+        	mime = null;
+
+        }
+
+        else {
+
+        	TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
+        	// if txt is null it's a bug
+        	content = txt.getContent().getBytes();
+        	mime = TextComponent.MIME_TYPE;
+
+        }
 
         /*
         // message has a fetch url - store preview in cache (if any)
@@ -1180,8 +1196,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         */
 
         values.put(Messages.BODY_CONTENT, content);
-        values.put(Messages.BODY_LENGTH, txt.getLength());
-        values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
+        values.put(Messages.BODY_LENGTH, content.length);
+        values.put(Messages.BODY_MIME, mime);
 
         values.put(Messages.ENCRYPTED, msg.isEncrypted());
         values.put(Messages.SECURITY_FLAGS, msg.getSecurityFlags());
@@ -2007,11 +2023,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     String sender = StringUtils.parseName(from);
                     String body = m.getBody();
-                    //byte[] content = body != null ? body.getBytes() : new byte[0];
-                    //long length = content.length;
-
-                    int securityFlags = Coder.SECURITY_CLEARTEXT;
-                    boolean isEncrypted = false;
 
                     // create message
                     CompositeMessage msg = new CompositeMessage(
@@ -2019,8 +2030,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             msgId,
                             serverTimestamp,
                             sender,
-                            isEncrypted,
-                            securityFlags
+                            false,
+                            Coder.SECURITY_CLEARTEXT
                         );
 
                     PacketExtension _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
@@ -2029,9 +2040,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     	E2EEncryption mEnc = (E2EEncryption) _encrypted;
                         byte[] encryptedData = mEnc.getData();
 
-                        // message decryption
-                        isEncrypted = true;
-                        securityFlags = Coder.SECURITY_BASIC;
+                        // encrypted message
+                        msg.setEncrypted(true);
+                        msg.setSecurityFlags(Coder.SECURITY_BASIC);
+
                         if (encryptedData != null) {
                             // decrypt message
                             try {
@@ -2059,13 +2071,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 Log.v(TAG, "contentText=" + contentText);
                                 msg.addComponent(new TextComponent(contentText));
 
-                                isEncrypted = false;
+                                msg.setEncrypted(false);
                             }
 
                             catch (Exception exc) {
 
                             	// raw component for encrypted data
-                            	msg.addComponent(new RawComponent(encryptedData, true, securityFlags));
+                            	msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
 
                             	// TODO
                                 // pass over the message even if encrypted
