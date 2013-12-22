@@ -614,10 +614,13 @@ public class ComposeMessageFragment extends ListFragment implements
 	    MessageListItem item = (MessageListItem) view;
 	    final CompositeMessage msg = item.getMessage();
 
-	    /*
-	    if (msg.getFetchUrl() != null || msg.getLocalUri() != null) {
+	    AttachmentComponent attachment = (AttachmentComponent) msg
+	    		.getComponent(AttachmentComponent.class);
+
+	    if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
+
 	        // outgoing message or already fetched
-	        if (msg.getLocalUri() != null) {
+	        if (attachment.getLocalUri() != null) {
 	            // open file
 	            openFile(msg);
 	        }
@@ -633,7 +636,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     .setNegativeButton(android.R.string.cancel, null)
                     .setCancelable(true);
 
-                if (!DownloadService.isQueued(msg.getFetchUrl())) {
+                if (!DownloadService.isQueued(attachment.getFetchUrl())) {
                     DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // start file download
@@ -655,7 +658,6 @@ public class ComposeMessageFragment extends ListFragment implements
                 builder.show();
 	        }
 	    }
-	    */
 	}
 
 	private void startDownload(CompositeMessage msg) {

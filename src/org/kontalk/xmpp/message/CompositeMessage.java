@@ -237,7 +237,7 @@ public class CompositeMessage {
     /** Returns the first component of the given type. */
     public MessageComponent<?> getComponent(Class<? extends MessageComponent<?>> type) {
         for (MessageComponent<?> cmp : mComponents) {
-            if (cmp.getClass() == type)
+            if (type.isInstance(cmp))
                 return cmp;
         }
 

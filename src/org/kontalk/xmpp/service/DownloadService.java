@@ -34,6 +34,7 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.ClientHTTPConnection;
 import org.kontalk.xmpp.message.CompositeMessage;
+import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.ui.ConversationList;
 import org.kontalk.xmpp.ui.MessagingNotification;
 import org.kontalk.xmpp.ui.ProgressNotificationBuilder;
@@ -43,6 +44,7 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -225,11 +227,9 @@ public class DownloadService extends IntentService implements DownloadListener {
         }
 
         // update messages.localUri
-        /* TODO
         ContentValues values = new ContentValues();
-        values.put(Messages.LOCAL_URI, uri.toString());
+        values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
         getContentResolver().update(Messages.getUri(mMessageId), values, null, null);
-         */
     }
 
     @Override
