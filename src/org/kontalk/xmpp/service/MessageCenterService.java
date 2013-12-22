@@ -1136,6 +1136,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         byte[] content;
         String mime;
+        boolean checkAttachment;
 
         // message still encrypted - use whole body of raw component
         if (msg.isEncrypted()) {
@@ -1144,6 +1145,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         	// if raw it's null it's a bug
         	content = raw.getContent();
         	mime = null;
+        	checkAttachment = true;
 
         }
 
@@ -1153,23 +1155,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         	// if txt is null it's a bug
         	content = txt.getContent().getBytes();
         	mime = TextComponent.MIME_TYPE;
+        	checkAttachment = true;
+
+        }
+
+        // selective components detection
+
+        if (checkAttachment && msg.getComponents().size() > 1) {
+
+	        ImageComponent image = (ImageComponent) msg.getComponent(ImageComponent.class);
+	        if (image != null) {
+
+	        	values.put(Messages.ATTACHMENT_FETCH_URL, image.getFetchUrl());
+	        	values.put(Messages.ATTACHMENT_LENGTH, image.getLength());
+	        	values.put(Messages.ATTACHMENT_ENCRYPTED, image.isEncrypted());
+	        	values.put(Messages.ATTACHMENT_SECURITY_FLAGS, image.getSecurityFlags());
+
+	            File previewFile = image.getPreviewFile();
+	            if (previewFile != null)
+	                values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
+
+	        }
+
+	        else {
+	        	// TODO other types
+	        }
 
         }
 
         /*
-        // message has a fetch url - store preview in cache (if any)
-        // TODO abstract somehow
-        if (msg.getFetchUrl() != null) {
-            // use text content for database table
-            try {
-                content = msg.getTextContent().getBytes();
-            }
-            catch (Exception e) {
-                // TODO i18n
-                content = "(error)".getBytes();
-            }
-        }
-
         // TODO abstract somehow
         if (msg.getFetchUrl() == null && msg instanceof VCardMessage) {
             String filename = VCardMessage.buildMediaFilename(msg.getId(), msg.getMime());
@@ -1201,13 +1215,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         values.put(Messages.ENCRYPTED, msg.isEncrypted());
         values.put(Messages.SECURITY_FLAGS, msg.getSecurityFlags());
-        /*
-        values.put(Messages.FETCH_URL, msg.getFetchUrl());
-
-        File previewFile = msg.getPreviewFile();
-        if (previewFile != null)
-            values.put(Messages.PREVIEW_PATH, previewFile.getAbsolutePath());
-         */
 
         values.put(Messages.UNREAD, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);

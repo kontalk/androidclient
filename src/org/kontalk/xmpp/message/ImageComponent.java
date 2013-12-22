@@ -31,4 +31,16 @@ public class ImageComponent extends MessageComponent<Attachment> {
         return false;
     }
 
+    public File getPreviewFile() {
+    	return mContent.getPreviewFile();
+    }
+
+    public Uri getLocalUri() {
+    	return mContent.getLocalUri();
+    }
+
+    public String getFetchUrl() {
+    	return mContent.getFetchUrl();
+    }
+
 }

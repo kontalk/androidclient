@@ -237,6 +237,10 @@ public class CompositeMessage {
         return null;
     }
 
+    public List<MessageComponent<?>> getComponents() {
+    	return mComponents;
+    }
+
     private void populateFromCursor(Cursor c) {
         // be sure to stick to our projection array
         mDatabaseId = c.getLong(COLUMN_ID);
