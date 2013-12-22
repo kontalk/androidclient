@@ -52,7 +52,7 @@ import android.util.Log;
 
 /**
  * The attachment download service.
- * TODO implement multiple downloads
+ * TODO implement multiple downloads in queue or in parallel
  * @author Daniele Ricci
  */
 public class DownloadService extends IntentService implements DownloadListener {

@@ -38,6 +38,7 @@ import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
+import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageComponent;
 import org.kontalk.xmpp.message.MessageComponent;
@@ -47,6 +48,7 @@ import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
+import org.kontalk.xmpp.service.DownloadService;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.sync.Syncer;
 import org.kontalk.xmpp.ui.IconContextMenu.IconContextMenuOnClickListener;
@@ -81,6 +83,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
+import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -656,14 +659,15 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void startDownload(CompositeMessage msg) {
-		/*
-	    String fetchUrl = msg.getFetchUrl();
-	    if (fetchUrl != null) {
+		AttachmentComponent attachment = (AttachmentComponent) msg
+				.getComponent(AttachmentComponent.class);
+
+		if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getActivity(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
-            i.putExtra(AbstractMessage.MSG_ID, msg.getId());
-            i.putExtra(AbstractMessage.MSG_SENDER, msg.getSender());
-            i.setData(Uri.parse(fetchUrl));
+            i.putExtra(CompositeMessage.MSG_ID, msg.getId());
+            i.putExtra(CompositeMessage.MSG_SENDER, msg.getSender());
+            i.setData(Uri.parse(attachment.getFetchUrl()));
             getActivity().startService(i);
 	    }
 	    else {
@@ -671,27 +675,29 @@ public class ComposeMessageFragment extends ListFragment implements
 	        Toast.makeText(getActivity(), R.string.err_attachment_corrupted,
 	            Toast.LENGTH_LONG).show();
 	    }
-	    */
 	}
 
 	private void stopDownload(CompositeMessage msg) {
-		/*
-        String fetchUrl = msg.getFetchUrl();
-        if (fetchUrl != null) {
+		AttachmentComponent attachment = (AttachmentComponent) msg
+				.getComponent(AttachmentComponent.class);
+
+		if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getActivity(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
-            i.setData(Uri.parse(fetchUrl));
+            i.setData(Uri.parse(attachment.getFetchUrl()));
             getActivity().startService(i);
         }
-        */
 	}
 
 	private void openFile(CompositeMessage msg) {
-		/*
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setDataAndType(msg.getLocalUri(), msg.getMime());
-        startActivity(i);
-        */
+		AttachmentComponent attachment = (AttachmentComponent) msg
+				.getComponent(AttachmentComponent.class);
+
+		if (attachment != null) {
+	        Intent i = new Intent(Intent.ACTION_VIEW);
+	        i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
+	        startActivity(i);
+		}
 	}
 
 	/** Listener for attachment type chooser. */
@@ -851,58 +857,68 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		menu.setHeaderTitle(R.string.title_message_options);
 
-		// message forwarding can be used only for unencrypted messages
+		// some commands be used only for unencrypted messages
 		if (!msg.isEncrypted()) {
+
+			AttachmentComponent attachment = (AttachmentComponent) msg
+					.getComponent(AttachmentComponent.class);
+			TextComponent text = (TextComponent) msg
+					.getComponent(TextComponent.class);
+
 			// sharing media messages has no purpose if media file hasn't been
 			// retrieved yet
-			/*
-			if (msg instanceof PlainTextMessage ? true : msg.getLocalUri() != null)
+			if (text != null || (attachment != null ? attachment.getLocalUri() != null : true)) {
 				menu.add(CONTEXT_MENU_GROUP_ID, MENU_SHARE, MENU_SHARE, R.string.share);
-			*/
-		}
+			}
 
-		/*
-		if (msg.getFetchUrl() != null || msg.getLocalUri() != null) {
-		    // message has a local uri - add open file entry
-		    if (msg.getLocalUri() != null) {
-		        int resId;
-		        if (msg instanceof ImageMessage)
-		            resId = R.string.view_image;
-		        else
-		            resId = R.string.open_file;
+			// non-empty text: copy text to clipboard
+			if (text != null && !TextUtils.isEmpty(text.getContent())) {
+				menu.add(CONTEXT_MENU_GROUP_ID, MENU_COPY_TEXT, MENU_COPY_TEXT,
+						R.string.copy_message_text);
+			}
 
-                menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN, resId);
-		    }
+			if (attachment != null) {
 
-		    // message has a fetch url - add download control entry
-		    if (msg.getDirection() == Messages.DIRECTION_IN && msg.getFetchUrl() != null) {
-		        int id, string;
-                if (!DownloadService.isQueued(msg.getFetchUrl())) {
-                    // already fetched
-                    if (msg.getLocalUri() != null)
-                        string = R.string.download_again;
-                    else
-                        string = R.string.download_file;
-                    id = MENU_DOWNLOAD;
-                }
-                else {
-                    string = R.string.download_cancel;
-                    id = MENU_CANCEL_DOWNLOAD;
-                }
-                menu.add(CONTEXT_MENU_GROUP_ID, id, id, string);
-		    }
+			    // message has a local uri - add open file entry
+			    if (attachment.getLocalUri() != null) {
+			        int resId;
+			        if (attachment instanceof ImageComponent)
+			            resId = R.string.view_image;
+			        else
+			            resId = R.string.open_file;
+
+	                menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN, resId);
+			    }
+
+			    // message has a fetch url - add download control entry
+			    if (msg.getDirection() == Messages.DIRECTION_IN && attachment.getFetchUrl() != null) {
+			        int id, string;
+	                if (!DownloadService.isQueued(attachment.getFetchUrl())) {
+	                    // already fetched
+	                    if (attachment.getLocalUri() != null)
+	                        string = R.string.download_again;
+	                    else
+	                        string = R.string.download_file;
+	                    id = MENU_DOWNLOAD;
+	                }
+	                else {
+	                    string = R.string.download_cancel;
+	                    id = MENU_CANCEL_DOWNLOAD;
+	                }
+	                menu.add(CONTEXT_MENU_GROUP_ID, id, id, string);
+			    }
+
+
+			}
+
 		}
 
 		else {
-			if (msg.isEncrypted())
-				menu.add(CONTEXT_MENU_GROUP_ID, MENU_DECRYPT, MENU_DECRYPT,
-						R.string.decrypt_message);
-			else
-				menu.add(CONTEXT_MENU_GROUP_ID, MENU_COPY_TEXT, MENU_COPY_TEXT,
-						R.string.copy_message_text);
-		}
 
-		*/
+			menu.add(CONTEXT_MENU_GROUP_ID, MENU_DECRYPT, MENU_DECRYPT,
+					R.string.decrypt_message);
+
+		}
 
 		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DETAILS, MENU_DETAILS, R.string.menu_message_details);
 		menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE, MENU_DELETE, R.string.delete_message);
@@ -921,17 +937,22 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		switch (item.getItemId()) {
 			case MENU_SHARE: {
-				/*
 				Intent i = null;
-				if (msg instanceof PlainTextMessage)
-                    try {
-                        i = ComposeMessage.sendTextMessage(msg.getTextContent());
-                    }
-                    catch (UnsupportedEncodingException e) {
-                        // TODO handle this
-                    }
-                else
-					i = ComposeMessage.sendMediaMessage(msg.getLocalUri(), msg.getMime());
+				AttachmentComponent attachment = (AttachmentComponent) msg
+						.getComponent(AttachmentComponent.class);
+
+				if (attachment != null) {
+					i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
+							attachment.getMime());
+				}
+
+				else {
+					TextComponent txt = (TextComponent) msg
+							.getComponent(TextComponent.class);
+
+					if (txt != null)
+						i = ComposeMessage.sendTextMessage(txt.getContent());
+				}
 
 				if (i != null)
 				    startActivity(i);
@@ -939,24 +960,21 @@ public class ComposeMessageFragment extends ListFragment implements
 				    // TODO ehm...
 				    Log.w(TAG, "error sharing message");
 
-				*/
 				return true;
 			}
 
 			case MENU_COPY_TEXT: {
-				/*
-			    try {
-    				ClipboardManager cpm = (ClipboardManager) getActivity()
-    						.getSystemService(Context.CLIPBOARD_SERVICE);
-    				cpm.setText(msg.getTextContent());
-			    }
-			    catch (UnsupportedEncodingException e) {
-			        // TODO handle this
-			    }
+				TextComponent txt = (TextComponent) msg
+						.getComponent(TextComponent.class);
+
+				String text = (txt != null) ? txt.getContent() : "";
+
+				ClipboardManager cpm = (ClipboardManager) getActivity()
+						.getSystemService(Context.CLIPBOARD_SERVICE);
+				cpm.setText(text);
 
 				Toast.makeText(getActivity(), R.string.message_text_copied,
 						Toast.LENGTH_SHORT).show();
-				 */
 				return true;
 			}
 
