@@ -42,6 +42,7 @@ import android.os.Parcelable;
  * @author Daniele Ricci
  * @version 2.0
  */
+@Deprecated
 public abstract class LegacyAbstractMessage<T> {
 
     public static final int USERID_LENGTH = 40;

@@ -36,6 +36,7 @@ import android.os.Message;
  * @author Daniele Ricci
  * @version 1.0
  */
+@Deprecated
 public class LegacyPlainTextMessage extends LegacyAbstractMessage<byte[]> {
     //private static final String TAG = PlainTextMessage.class.getSimpleName();
 

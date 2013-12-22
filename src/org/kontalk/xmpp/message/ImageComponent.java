@@ -61,6 +61,21 @@ public class ImageComponent extends AttachmentComponent {
 		return mBitmap;
 	}
 
+    /** FIXME not used yet */
+    public boolean isValidMedia(Context context) {
+    	Uri localUri = mContent.getLocalUri();
+        if (localUri != null) {
+            try {
+                return (MediaStorage.getLength(context, localUri) == mLength);
+            }
+            catch (Exception e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     protected void populateFromCursor(Context context, Cursor c) {
 
