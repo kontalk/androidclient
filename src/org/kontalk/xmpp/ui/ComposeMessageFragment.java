@@ -814,13 +814,16 @@ public class ComposeMessageFragment extends ListFragment implements
 		builder.create().show();
 	}
 
-	/** TODO */
 	private void decryptMessage(CompositeMessage msg) {
 		/*
 		try {
-	        PersonalKey key = ((Kontalk)getActivity().getApplicationContext())
+			Context ctx = getActivity();
+
+	        PersonalKey key = ((Kontalk)ctx.getApplicationContext())
 	            .getPersonalKey();
-	        Coder coder = null; // TODO MessagingPreferences.getDecryptCoder(key);
+	        EndpointServer server = MessagingPreferences.getEndpointServer(ctx);
+	        Coder coder = UsersProvider.getDecryptCoder(ctx, server, key, msg.getSender(true));
+
 			// decrypt the message
 			msg.decrypt(coder);
 			// update database
@@ -837,6 +840,9 @@ public class ComposeMessageFragment extends ListFragment implements
 					Toast.LENGTH_LONG).show();
 		}
 		*/
+		// TODO implement decrypt message
+		Toast.makeText(getActivity(), "Not implemented.",
+				Toast.LENGTH_LONG).show();
 	}
 
 	private static final int MENU_SHARE = 1;
@@ -857,7 +863,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		menu.setHeaderTitle(R.string.title_message_options);
 
-		// some commands be used only for unencrypted messages
+		// some commands can be used only on unencrypted messages
 		if (!msg.isEncrypted()) {
 
 			AttachmentComponent attachment = (AttachmentComponent) msg
