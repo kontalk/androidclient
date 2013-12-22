@@ -94,7 +94,6 @@ import org.kontalk.xmpp.message.RawComponent;
 import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
-import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -815,7 +814,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * receiving upload info (non-media messages will be filtered out)
      */
     private void resendPendingMessages(boolean retrying) {
-        /*
         StringBuilder filter = new StringBuilder()
             .append(Messages.DIRECTION)
             .append('=')
@@ -836,22 +834,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // filter out non-media non-uploaded messages
         if (retrying) filter
             .append(" AND ")
-            .append(Messages.FETCH_URL)
+            .append(Messages.ATTACHMENT_FETCH_URL)
             .append(" IS NULL AND ")
-            .append(Messages.LOCAL_URI)
+            .append(Messages.ATTACHMENT_LOCAL_URI)
             .append(" IS NOT NULL");
 
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,
                 Messages.PEER,
-                Messages.CONTENT,
-                Messages.MIME,
-                Messages.LOCAL_URI,
-                Messages.FETCH_URL,
-                Messages.PREVIEW_PATH,
-                Messages.LENGTH,
-                Messages.SECURITY_FLAGS
+                Messages.BODY_CONTENT,
+                Messages.SECURITY_FLAGS,
+                Messages.ATTACHMENT_MIME,
+                Messages.ATTACHMENT_LOCAL_URI,
+                Messages.ATTACHMENT_FETCH_URL,
+                Messages.ATTACHMENT_PREVIEW_PATH,
+                Messages.ATTACHMENT_LENGTH,
+                // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
             },
             filter.toString(),
             null, Messages._ID);
@@ -859,16 +858,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         while (c.moveToNext()) {
             long id = c.getLong(0);
             String userId = c.getString(1);
-            byte[] text = c.getBlob(2);
-            String mime = c.getString(3);
-            String fileUri = c.getString(4);
-            String fetchUrl = c.getString(5);
-            String previewPath = c.getString(6);
-            long length = c.getLong(7);
-            int securityFlags = c.getInt(8);
+            byte[] textContent = c.getBlob(2);
+            int securityFlags = c.getInt(3);
+            String attMime = c.getString(4);
+            String attFileUri = c.getString(5);
+            String attFetchUrl = c.getString(6);
+            String attPreviewPath = c.getString(7);
+            long attLength = c.getLong(8);
+            // TODO int attSecurityFlags = c.getInt(9);
 
             // media message encountered and no upload service available - delay message
-            if (fileUri != null && fetchUrl == null && getUploadService() == null && !retrying) {
+            if (attFileUri != null && attFetchUrl == null && getUploadService() == null && !retrying) {
                 Log.w(TAG, "no upload info received yet, delaying media message");
                 continue;
             }
@@ -876,26 +876,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
-            b.putString("org.kontalk.message.mime", mime);
             b.putString("org.kontalk.message.toUser", userId);
-            b.putLong("org.kontalk.message.length", length);
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
+            if (textContent != null)
+                b.putString("org.kontalk.message.body", new String(textContent));
+
             // message has already been uploaded - just send media
-            if (fetchUrl != null) {
-                b.putString("org.kontalk.message.fetch.url", fetchUrl);
-                b.putString("org.kontalk.message.preview.uri", fileUri);
-                b.putString("org.kontalk.message.preview.path", previewPath);
+            if (attFetchUrl != null) {
+                b.putString("org.kontalk.message.fetch.url", attFetchUrl);
+                b.putString("org.kontalk.message.preview.uri", attFileUri);
+                b.putString("org.kontalk.message.preview.path", attPreviewPath);
             }
             // check if the message contains some large file to be sent
-            else if (fileUri != null) {
-                b.putString("org.kontalk.message.media.uri", fileUri);
-                b.putString("org.kontalk.message.preview.path", previewPath);
-            }
-            // we have a simple boring plain text message :(
-            else {
-                b.putString("org.kontalk.message.body", new String(text));
+            else if (attFileUri != null) {
+                b.putString("org.kontalk.message.mime", attMime);
+                b.putString("org.kontalk.message.media.uri", attFileUri);
+                b.putString("org.kontalk.message.preview.path", attPreviewPath);
+                b.putLong("org.kontalk.message.length", attLength);
             }
 
             Log.v(TAG, "resending pending message " + id);
@@ -903,7 +902,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         c.close();
-        */
     }
 
     private void resendPendingReceipts() {
