@@ -25,6 +25,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.data.Contact;
+import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.provider.MyMessages.CommonColumns;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
@@ -70,13 +71,17 @@ public class MessagingNotification {
         Messages.THREAD_ID,
         CommonColumns.PEER,
         Messages.BODY_CONTENT,
+        Messages.ATTACHMENT_MIME,
+        CommonColumns.ENCRYPTED,
     };
 
     private static final String[] THREADS_UNREAD_PROJECTION =
     {
         CommonColumns._ID,
         CommonColumns.PEER,
+        Threads.MIME,
         Threads.CONTENT,
+        CommonColumns.ENCRYPTED,
         CommonColumns.UNREAD,
     };
 
@@ -202,6 +207,7 @@ public class MessagingNotification {
                 id = c.getLong(0);
                 peer = c.getString(1);
                 byte[] content = c.getBlob(2);
+                String attMime = c.getString(3);
 
                 CharSequence[] b = convs.get(peer);
                 if (b == null) {
@@ -214,9 +220,21 @@ public class MessagingNotification {
                     ((StringBuilder) b[0]).append('\n');
                 }
 
-                String line = new String(content);
-                ((StringBuilder) b[0]).append(line);
-                b[1] = line;
+                String textContent;
+
+                boolean encrypted = c.getInt(4) != 0;
+                if (encrypted) {
+                	textContent = context.getString(R.string.text_encrypted);
+                }
+                else if (content == null && attMime != null) {
+                	textContent = CompositeMessage.getSampleTextContent(attMime);
+                }
+                else {
+                	textContent = content != null ? new String(content) : "";
+                }
+
+                ((StringBuilder) b[0]).append(textContent);
+                b[1] = textContent;
             }
             c.close();
 
@@ -347,12 +365,19 @@ public class MessagingNotification {
             // loop all threads and accumulate them
             MessageAccumulator accumulator = new MessageAccumulator(context);
             while (c.moveToNext()) {
-                String content = c.getString(2);
+                String content = c.getString(3);
+                boolean encrypted = c.getInt(4) != 0;
+
+                if (encrypted)
+                	content = context.getString(R.string.text_encrypted);
+                else if (content == null)
+                	content = CompositeMessage.getSampleTextContent(c.getString(2));
+
                 accumulator.accumulate(
                     c.getLong(0),
                     c.getString(1),
                     content,
-                    c.getInt(3)
+                    c.getInt(5)
                 );
             }
             c.close();
