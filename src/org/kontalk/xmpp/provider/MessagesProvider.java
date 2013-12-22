@@ -82,7 +82,6 @@ public class MessagesProvider extends ContentProvider {
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "thread_id INTEGER NOT NULL, " +
             "msg_id TEXT NOT NULL, " +  // UNIQUE
-            "real_id TEXT, " +
             "peer TEXT NOT NULL, " +
             "direction INTEGER NOT NULL, " +
             "unread INTEGER NOT NULL DEFAULT 0, " +
@@ -123,9 +122,7 @@ public class MessagesProvider extends ContentProvider {
         private static final String SCHEMA_MESSAGES =
             "CREATE TABLE " + TABLE_MESSAGES + " " + _SCHEMA_MESSAGES;
 
-        /** This table will contain the latest message from each conversation. */
-        private static final String SCHEMA_THREADS =
-            "CREATE TABLE " + TABLE_THREADS + " (" +
+        private static final String _SCHEMA_THREADS = "(" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "msg_id TEXT NOT NULL, " +  // UNIQUE
             "peer TEXT NOT NULL UNIQUE, " +
@@ -142,6 +139,10 @@ public class MessagesProvider extends ContentProvider {
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             "draft TEXT" +
             ")";
+
+        /** This table will contain the latest message from each conversation. */
+        private static final String SCHEMA_THREADS =
+            "CREATE TABLE " + TABLE_THREADS + " " + _SCHEMA_THREADS;
 
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
@@ -222,28 +223,18 @@ public class MessagesProvider extends ContentProvider {
             // create temporary messages tables without msg_id UNIQUE constraint
             "CREATE TABLE " + TABLE_MESSAGES + "_new " + _SCHEMA_MESSAGES,
             // create temporary threads tables without msg_id UNIQUE constraint
-            "CREATE TABLE " + TABLE_THREADS + "_new (" +
-            "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "msg_id TEXT NOT NULL, " +
-            "peer TEXT NOT NULL UNIQUE, " +
-            "direction INTEGER NOT NULL, " +
-            "count INTEGER NOT NULL DEFAULT 0, " +
-            "unread INTEGER NOT NULL DEFAULT 0, " +
-            "mime TEXT NOT NULL, " +
-            "content TEXT, " +
-            "timestamp INTEGER NOT NULL," +
-            "status_changed INTEGER," +
-            "status INTEGER," +
-            "draft TEXT" +
-            ")",
+            "CREATE TABLE " + TABLE_THREADS + "_new " + _SCHEMA_THREADS,
             // copy contents of messages table
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
-            "_id, thread_id, msg_id, real_id, peer, mime, content, direction, unread, timestamp, status_changed, status, fetch_url, " +
-            "local_uri, encrypted, CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED +
-            " ELSE " + Coder.SECURITY_CLEARTEXT + " END AS security_flags, preview_path, datetime(server_timestamp), length"
-                + " FROM " + TABLE_MESSAGES,
+            "_id, thread_id, msg_id, peer, direction, unread, timestamp, status_changed, status, 'text/plain', content, length(content), " +
+            "CASE WHEN mime <> 'plain/text' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, encrypted, " +
+            "CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED + " ELSE " + Coder.SECURITY_CLEARTEXT + " END, "+
+            "datetime(server_timestamp)" +
+                " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
             // copy contents of threads table
-            "INSERT INTO " + TABLE_THREADS + "_new SELECT * FROM " + TABLE_THREADS,
+            "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
+            "_id, msg_id, peer, direction, count, unread, 'text/plain', content, timestamp, status_changed, status, 0, draft" +
+            	" FROM " + TABLE_THREADS,
             // drop table messages
             "DROP TABLE " + TABLE_MESSAGES,
             // drop table threads
@@ -1060,6 +1051,7 @@ public class MessagesProvider extends ContentProvider {
         return context.getContentResolver().update(uri, values, Messages.DIRECTION + "=" + direction, null);
     }
 
+    /*
     public static int changeMessageStatus(Context context, String id, int direction, boolean realId, int status) {
         return changeMessageStatus(context, id, direction, realId, status, -1, -1);
     }
@@ -1073,8 +1065,10 @@ public class MessagesProvider extends ContentProvider {
                 Messages.DIRECTION + "=" + direction,
                 new String[] { id });
     }
+    */
 
     /** Update a message status if old status == whereStatus. */
+    /*
     public static int changeMessageStatusWhere(Context context,
             boolean notEquals, int whereStatus, String id, boolean realId,
             int status, long timestamp, long statusChanged) {
@@ -1086,6 +1080,7 @@ public class MessagesProvider extends ContentProvider {
                 field + " = ? AND " + Messages.STATUS + op + whereStatus,
                 new String[] { id });
     }
+    */
 
     public static long getConversationByMessage(Context context, long msgId) {
         // TODO
@@ -1127,7 +1122,6 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages._ID, Messages._ID);
         messagesProjectionMap.put(Messages.THREAD_ID, Messages.THREAD_ID);
         messagesProjectionMap.put(Messages.MESSAGE_ID, Messages.MESSAGE_ID);
-        messagesProjectionMap.put(Messages.REAL_ID, Messages.REAL_ID);
         messagesProjectionMap.put(Messages.PEER, Messages.PEER);
 
         messagesProjectionMap.put(Messages.BODY_MIME, Messages.BODY_MIME);

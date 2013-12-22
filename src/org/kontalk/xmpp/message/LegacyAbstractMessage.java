@@ -51,7 +51,6 @@ public abstract class LegacyAbstractMessage<T> {
     private static final String[] MESSAGE_LIST_PROJECTION = {
         Messages._ID,
         Messages.MESSAGE_ID,
-        Messages.REAL_ID,
         Messages.PEER,
         Messages.DIRECTION,
         Messages.TIMESTAMP,

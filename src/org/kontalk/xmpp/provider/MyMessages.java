@@ -77,7 +77,6 @@ public final class MyMessages {
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.xmpp.message";
 
         public static final String THREAD_ID = "thread_id";
-        public static final String REAL_ID = "real_id";
         public static final String SERVER_TIMESTAMP = "server_timestamp";
 
         public static final String BODY_MIME = "body_mime";
