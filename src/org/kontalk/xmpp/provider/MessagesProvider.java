@@ -230,7 +230,7 @@ public class MessagesProvider extends ContentProvider {
              */
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
             "_id, thread_id, msg_id, peer, direction, unread, timestamp, status_changed, status, 'text/plain', content, length(content), " +
-            "CASE WHEN mime <> 'plain/text' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, encrypted, " +
+            "CASE WHEN mime <> 'text/plain' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, encrypted, " +
             "CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED + " ELSE " + Coder.SECURITY_CLEARTEXT + " END, "+
             "strftime('%s', server_timestamp)" +
                 " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
