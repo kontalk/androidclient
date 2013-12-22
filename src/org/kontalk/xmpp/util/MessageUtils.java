@@ -25,7 +25,11 @@ import java.util.Locale;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
+import org.kontalk.xmpp.message.ImageComponent;
+import org.kontalk.xmpp.message.TextComponent;
+import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.ui.QuickAction;
 
@@ -285,26 +289,41 @@ public final class MessageUtils {
         details.append('\n');
         details.append(res.getString(R.string.message_type_label));
 
-        int resId;
-        /* TODO
-        if (msg instanceof ImageMessage)
-            resId = R.string.image_message;
-        else if (msg instanceof VCardMessage)
-            resId = R.string.vcard_message;
-        else
-        */
-            resId = R.string.text_message;
+        int resId = R.string.text_message;
+        AttachmentComponent attachment = (AttachmentComponent) msg
+        		.getComponent(AttachmentComponent.class);
+
+        if (attachment != null) {
+        	if (attachment instanceof ImageComponent)
+        		resId = R.string.image_message;
+        	else if (attachment instanceof VCardComponent)
+        		resId = R.string.vcard_message;
+        }
 
         details.append(res.getString(resId));
 
         // Message length
-        /*
         details.append('\n');
         details.append(res.getString(R.string.size_label));
-        details.append((msg.getLength() >= 0) ?
-            humanReadableByteCount(msg.getLength(), false) :
+
+        long length = -1;
+        if (attachment != null) {
+            // attachment length
+        	length = attachment.getLength();
+        }
+        else {
+        	// text content length (if found)
+        	TextComponent txt = (TextComponent) msg
+        			.getComponent(TextComponent.class);
+
+        	if (txt != null)
+        		length = txt.getLength();
+        }
+        // otherwise unknown length
+
+        details.append(length >= 0 ?
+            humanReadableByteCount(length, false) :
                 res.getString(R.string.size_unknown));
-		 */
 
         return details.toString();
     }
@@ -317,15 +336,16 @@ public final class MessageUtils {
         // Message type
         details.append(res.getString(R.string.message_type_label));
 
-        int resId;
-        /*
-        if (msg instanceof ImageMessage)
-            resId = R.string.image_message;
-        else if (msg instanceof VCardMessage)
-        	resId = R.string.vcard_message;
-        else
-         */
-            resId = R.string.text_message;
+        int resId = R.string.text_message;
+        AttachmentComponent attachment = (AttachmentComponent) msg
+        		.getComponent(AttachmentComponent.class);
+
+        if (attachment != null) {
+        	if (attachment instanceof ImageComponent)
+        		resId = R.string.image_message;
+        	else if (attachment instanceof VCardComponent)
+        		resId = R.string.vcard_message;
+        }
 
         details.append(res.getString(resId));
 
@@ -353,13 +373,27 @@ public final class MessageUtils {
         }
 
         // Message length
-        /* TODO
         details.append('\n');
         details.append(res.getString(R.string.size_label));
-        details.append((msg.getLength() >= 0) ?
-            humanReadableByteCount(msg.getLength(), false) :
+
+        long length = -1;
+        if (attachment != null) {
+            // attachment length
+        	length = attachment.getLength();
+        }
+        else {
+        	// text content length (if found)
+        	TextComponent txt = (TextComponent) msg
+        			.getComponent(TextComponent.class);
+
+        	if (txt != null)
+        		length = txt.getLength();
+        }
+        // otherwise unknown length
+
+        details.append(length >= 0 ?
+            humanReadableByteCount(length, false) :
                 res.getString(R.string.size_unknown));
-         */
 
         // Date
         int status = msg.getStatus();
