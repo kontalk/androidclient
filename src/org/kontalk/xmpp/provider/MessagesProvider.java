@@ -225,11 +225,14 @@ public class MessagesProvider extends ContentProvider {
             // create temporary threads tables without msg_id UNIQUE constraint
             "CREATE TABLE " + TABLE_THREADS + "_new " + _SCHEMA_THREADS,
             // copy contents of messages table
+            /*
+            "server_timestamp INTEGER" +
+             */
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
             "_id, thread_id, msg_id, peer, direction, unread, timestamp, status_changed, status, 'text/plain', content, length(content), " +
             "CASE WHEN mime <> 'plain/text' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, encrypted, " +
             "CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED + " ELSE " + Coder.SECURITY_CLEARTEXT + " END, "+
-            "datetime(server_timestamp)" +
+            "strftime('%s', server_timestamp)" +
                 " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
