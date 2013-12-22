@@ -1092,15 +1092,11 @@ public class MessagesProvider extends ContentProvider {
         return 0;
     }
 
-    // FIXME hard-coded to IMAGE_
     public static void uploaded(Context context, long msgId, String fetchUrl) {
-    	// TODO
-    	/*
         ContentValues values = new ContentValues(1);
-        values.put(Messages.IMAGE_FETCH_URL, fetchUrl);
+        values.put(Messages.ATTACHMENT_FETCH_URL, fetchUrl);
         context.getContentResolver().update(Messages.CONTENT_URI, values,
                 Messages._ID + " = " + msgId, null);
-         */
     }
 
     public static boolean exists(Context context, long msgId) {
