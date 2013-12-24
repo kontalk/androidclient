@@ -503,7 +503,7 @@ public class MessagesProvider extends ContentProvider {
         values.put(Threads.MESSAGE_ID, initialValues.getAsString(Messages.MESSAGE_ID));
         values.put(Threads.DIRECTION, initialValues.getAsInteger(Messages.DIRECTION));
         values.put(Threads.PEER, peer);
-        values.put(Threads.TIMESTAMP, initialValues.getAsInteger(Messages.TIMESTAMP));
+        values.put(Threads.TIMESTAMP, initialValues.getAsLong(Messages.TIMESTAMP));
         values.put(Threads.ENCRYPTED, initialValues.getAsBoolean(Messages.ENCRYPTED));
 
         if (initialValues.containsKey(Messages.STATUS))
