@@ -512,6 +512,18 @@ public final class MessagingPreferences extends PreferenceActivity {
         return (nval < defaultValue) ? defaultValue : nval;
     }
 
+    public static int getWakeupTimeMillis(Context context, int defaultValue) {
+        String val = getString(context, "pref_wakeup_time", null);
+        int nval;
+        try {
+            nval = Integer.valueOf(val);
+        }
+        catch (Exception e) {
+            nval = defaultValue;
+        }
+        return (nval < defaultValue) ? defaultValue : nval;
+    }
+
     /** Recent statuses database helper. */
     private static final class RecentStatusDbHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "status.db";

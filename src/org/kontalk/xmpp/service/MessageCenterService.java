@@ -109,6 +109,8 @@ import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -130,6 +132,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue.IdleHandler;
 import android.os.Process;
+import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -278,6 +281,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         /** How much time to wait to idle the message center. */
         private final static int DEFAULT_IDLE_TIME = 60000;
 
+        /** How much time before a wakeup alarm triggers. */
+        private final static int DEFAULT_WAKEUP_TIME = 900000;
+
         /** A reference to the message center. */
         private WeakReference<MessageCenterService> s;
         /** Reference counter. */
@@ -314,11 +320,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         private boolean handleMessage(MessageCenterService service, Message msg) {
             if (msg.what == MSG_IDLE) {
-                // we registered push notification - shutdown message center
-                if (service.mPushRegistrationId != null) {
-                    Log.d(TAG, "shutting down message center due to inactivity");
-                    service.stopSelf();
+            	// push notifications unavailable: set up an alarm for next time
+                if (service.mPushRegistrationId == null) {
+
+                	AlarmManager am = (AlarmManager) service
+                			.getSystemService(Context.ALARM_SERVICE);
+
+                	long delay = MessagingPreferences.getIdleTimeMillis(service, DEFAULT_WAKEUP_TIME);
+
+                	// start message center pending intent
+                	PendingIntent pi = PendingIntent.getService(service
+                			.getApplicationContext(), 0, getStartIntent(service), 0);
+
+                	am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                			SystemClock.elapsedRealtime() + delay, pi);
+
                 }
+
+                Log.d(TAG, "shutting down message center due to inactivity");
+                service.stopSelf();
+
                 return true;
             }
 
@@ -1280,6 +1301,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return MessagingPreferences.getOfflineMode(context);
     }
 
+    private static Intent getStartIntent(Context context) {
+    	final Intent intent = new Intent(context, MessageCenterService.class);
+        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        intent.putExtra(EndpointServer.class.getName(), server.toString());
+        return intent;
+    }
+
     public static void start(Context context) {
         // check for offline mode
         if (isOfflineMode(context)) {
@@ -1290,11 +1318,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // check for network state
         if (isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");
-            final Intent intent = new Intent(context, MessageCenterService.class);
+            final Intent intent = getStartIntent(context);
 
-            // get the URI from the preferences
-            EndpointServer server = MessagingPreferences.getEndpointServer(context);
-            intent.putExtra(EndpointServer.class.getName(), server.toString());
             context.startService(intent);
         }
         else

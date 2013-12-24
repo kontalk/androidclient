@@ -87,6 +87,8 @@
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
     <string name="pref_idle_time">Disconnect when idle</string>
     <string name="pref_title_idle_time">Works only if push notifications are enabled and supported by server</string>
+    <string name="pref_wakeup_time">Reconnect to server</string>
+    <string name="pref_title_wakeup_time">How much to wait before reconnecting to the server after an inactivity period. Works only if push notifications are off</string>
     <string name="pref_maintenance">Maintenance</string>
     <string name="pref_regenerate_keypair">Regenerate key pair</string>
     <string name="pref_title_regenerate_keypair">Use this in case your personal key pair has been compromised</string>
