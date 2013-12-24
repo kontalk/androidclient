@@ -55,8 +55,10 @@ import android.widget.ImageView;
 
 
 public final class MessageUtils {
+	// TODO convert these to XML styles
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
+    private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
     private MessageUtils() {}
 
@@ -359,10 +361,69 @@ public final class MessageUtils {
         details.append(decodedPeer);
 
         // Encrypted
+        int securityFlags = msg.getSecurityFlags();
         details.append('\n');
         details.append(res.getString(R.string.encrypted_label));
-        if (msg.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) {
+        if (securityFlags != Coder.SECURITY_CLEARTEXT) {
             details.append(res.getString(R.string.yes));
+
+            // Security flags (verification status)
+        	details.append('\n');
+        	details.append(res.getString(R.string.security_label));
+
+        	boolean securityError = Coder.isError(securityFlags);
+        	// save start position for spans
+    		int startPos = details.length();
+
+        	if (securityError) {
+        		details.append(res.getString(R.string.security_status_bad));
+
+        		int stringId = 0;
+
+            	if ((securityFlags & Coder.SECURITY_ERROR_INVALID_SIGNATURE) != 0) {
+            		stringId = R.string.security_error_invalid_signature;
+            	}
+
+            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_SENDER) != 0) {
+            		stringId = R.string.security_error_invalid_sender;
+            	}
+
+            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_RECIPIENT) != 0) {
+            		stringId = R.string.security_error_invalid_recipient;
+            	}
+
+            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_TIMESTAMP) != 0) {
+            		stringId = R.string.security_error_invalid_timestamp;
+            	}
+
+            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_DATA) != 0) {
+            		stringId = R.string.security_error_invalid_data;
+            	}
+
+            	else if ((securityFlags & Coder.SECURITY_ERROR_DECRYPT_FAILED) != 0) {
+            		stringId = R.string.security_error_decrypt_failed;
+            	}
+
+            	else if ((securityFlags & Coder.SECURITY_ERROR_INTEGRITY_CHECK) != 0) {
+            		stringId = R.string.security_error_integrity_check;
+            	}
+
+            	else if ((securityFlags & Coder.SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0) {
+            		stringId = R.string.security_error_public_key_unavail;
+            	}
+
+            	if (stringId > 0)
+            		details.append(res.getString(stringId));
+        	}
+
+        	else {
+        		details.append(res.getString(R.string.security_status_good));
+        	}
+
+            details.setSpan(STYLE_BOLD, startPos, details.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            details.setSpan(securityError ? STYLE_RED : STYLE_GREEN, startPos, details.length(),
+            		Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
         }
         else {
             CharSequence noText = res.getString(R.string.no);

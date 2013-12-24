@@ -67,7 +67,7 @@ public abstract class Coder {
     public static final int SECURITY_ERROR_DECRYPT_FAILED = 1 << 21;
     /** Data integrity check failed. */
     public static final int SECURITY_ERROR_INTEGRITY_CHECK = 1 << 22;
-    /** User's public key not available. */
+    /** User's public key not available (for encryption and/or verification). */
     public static final int SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE = 1 << 23;
 
     /* Quick flags combinations. */

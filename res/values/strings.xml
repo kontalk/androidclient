@@ -79,6 +79,7 @@
     <string name="notdelivered_label">Not delivered:\u0020</string>
     <string name="delivered_label">Delivered:\u0020</string>
     <string name="encrypted_label">Encrypted:\u0020</string>
+    <string name="security_label">Security:\u0020</string>
     <string name="size_label">Size:\u0020</string>
     <string name="size_unknown">(unknown)</string>
     <string name="title_file_info">File information</string>
@@ -247,5 +248,17 @@
     <string name="notify_gen_keypair_ticker">Generating key pair&#8230;</string>
     <string name="notify_gen_keypair_title">Generating key pair</string>
     <string name="notify_gen_keypair_text">You can continue to work normally.</string>
+
+    <string name="security_status_good">good</string>
+    <string name="security_status_bad">bad</string>
+
+    <string name="security_error_invalid_signature">\u0020(invalid signature)</string>
+    <string name="security_error_invalid_sender">\u0020(invalid sender)</string>
+    <string name="security_error_invalid_recipient">\u0020(invalid recipient)</string>
+    <string name="security_error_invalid_timestamp">\u0020(invalid timestamp)</string>
+    <string name="security_error_invalid_data">\u0020(invalid data)</string>
+    <string name="security_error_decrypt_failed">\u0020(decryption failed)</string>
+    <string name="security_error_integrity_check">\u0020(integrity check)</string>
+    <string name="security_error_public_key_unavail">\u0020(public key unavailable)</string>
 
 </resources>
