@@ -14,8 +14,8 @@ import org.spongycastle.asn1.DERBitString;
  */
 public class SubjectPGPPublicKeyInfo extends ASN1Object {
 
-    // FIXME just for testing
-    public static final String OID = "1.2.3.4.5";
+    // based on UUID 24e844a0-6cbc-11e3-8997-0002a5d5c51b
+    public static final String OID = "2.25.49058212633447845622587297037800555803";
 
     private DERBitString            keyData;
 
