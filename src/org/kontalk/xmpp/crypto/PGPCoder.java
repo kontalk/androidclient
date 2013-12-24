@@ -71,7 +71,7 @@ import org.spongycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenera
  * PGP coder implementation.
  * @author Daniele Ricci
  */
-public class PGPCoder implements Coder {
+public class PGPCoder extends Coder {
 
     /** Buffer size. It should always be a power of 2. */
     private static final int BUFFER_SIZE = 1 << 8;

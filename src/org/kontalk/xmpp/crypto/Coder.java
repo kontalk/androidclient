@@ -27,7 +27,7 @@ import java.util.List;
  * Generic coder interface.
  * @author Daniele Ricci
  */
-public interface Coder {
+public abstract class Coder {
 
     /*
      * Security flags for encryption features.
@@ -77,21 +77,34 @@ public interface Coder {
 
 
     /** Encrypts a string. */
-    public byte[] encryptText(String text) throws GeneralSecurityException;
+    public abstract byte[] encryptText(String text) throws GeneralSecurityException;
 
     /** Encrypts a stanza. */
-    public byte[] encryptStanza(String xml) throws GeneralSecurityException;
+    public abstract byte[] encryptStanza(String xml) throws GeneralSecurityException;
 
     /** Decrypts a byte array which should content text. */
-    public void decryptText(byte[] encrypted, boolean verify,
+    public abstract void decryptText(byte[] encrypted, boolean verify,
     		StringBuilder out, StringBuilder mime, List<DecryptException> errors)
     				throws GeneralSecurityException;
 
 
-    public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
+    public abstract InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
 
-    public OutputStream wrapOutputStream(OutputStream outputStream) throws GeneralSecurityException;
+    public abstract OutputStream wrapOutputStream(OutputStream outputStream) throws GeneralSecurityException;
 
-    public long getEncryptedLength(long decryptedLength);
+    public abstract long getEncryptedLength(long decryptedLength);
+
+
+    /** Returns true if the given security flags has some error bit on. */
+    public static boolean isError(int securityFlags) {
+    	return (securityFlags & SECURITY_ERROR_INVALID_SIGNATURE) != 0 ||
+    		(securityFlags & SECURITY_ERROR_INVALID_SENDER) != 0 ||
+    		(securityFlags & SECURITY_ERROR_INVALID_RECIPIENT) != 0 ||
+    		(securityFlags & SECURITY_ERROR_INVALID_TIMESTAMP) != 0 ||
+    		(securityFlags & SECURITY_ERROR_INVALID_DATA) != 0 ||
+    		(securityFlags & SECURITY_ERROR_DECRYPT_FAILED) != 0 ||
+    		(securityFlags & SECURITY_ERROR_INTEGRITY_CHECK) != 0 ||
+    		(securityFlags & SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0;
+    }
 
 }

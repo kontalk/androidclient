@@ -28,7 +28,6 @@ import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageComponent;
 import org.kontalk.xmpp.message.TextComponent;
-import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
@@ -186,7 +185,16 @@ public class MessageListItem extends RelativeLayout {
         int resId = 0;
         int statusId = 0;
 
-        mWarningIcon.setVisibility((mMessage.getSecurityFlags() != Coder.SECURITY_CLEARTEXT) ? GONE : VISIBLE);
+        int securityFlags = mMessage.getSecurityFlags();
+
+        if (Coder.isError(securityFlags)) {
+        	mWarningIcon.setImageResource(R.drawable.ic_msg_security);
+            mWarningIcon.setVisibility(VISIBLE);
+        }
+        else {
+        	mWarningIcon.setImageResource(R.drawable.ic_msg_warning);
+        	mWarningIcon.setVisibility((securityFlags != Coder.SECURITY_CLEARTEXT) ? GONE : VISIBLE);
+        }
 
         if (mMessage.getSender() != null) {
             if (mBalloonView != null) {
