@@ -237,6 +237,10 @@ public class CompositeMessage {
     	mComponents.add(c);
     }
 
+    public void clearComponents() {
+    	mComponents.clear();
+    }
+
     /** Returns the first component of the given type. */
     public MessageComponent<?> getComponent(Class<? extends MessageComponent<?>> type) {
         for (MessageComponent<?> cmp : mComponents) {
