@@ -2036,6 +2036,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         msg.setSecurityFlags(Coder.SECURITY_BASIC);
 
                         if (encryptedData != null) {
+
                             // decrypt message
                             try {
                                 PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
@@ -2059,23 +2060,83 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 }
 
                                 // decrypted text
-                                Log.v(TAG, "contentText=" + contentText);
                                 msg.addComponent(new TextComponent(contentText));
+
+                                if (errors.size() > 0) {
+
+                                	int securityFlags = msg.getSecurityFlags();
+
+                                	for (DecryptException err : errors) {
+
+                                		int code = err.getCode();
+                                		switch (code) {
+
+                                			case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
+                                				securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                                				break;
+
+                                			case DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED:
+                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
+                                				break;
+
+                                			case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
+                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                                				break;
+
+                                			case DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER:
+                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_SENDER;
+                                				break;
+
+                                			case DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT:
+                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_RECIPIENT;
+                                				break;
+
+                                		}
+
+									}
+
+                                	msg.setSecurityFlags(securityFlags);
+                                }
 
                                 msg.setEncrypted(false);
                             }
 
                             catch (Exception exc) {
-
-                            	// raw component for encrypted data
-                            	msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
-
-                            	// TODO
                                 // pass over the message even if encrypted
                                 // UI will warn the user about that and wait
                                 // for user decisions
                                 Log.e(TAG, "decryption failed", exc);
+
+                            	int securityFlags = msg.getSecurityFlags();
+
+                                if (exc instanceof DecryptException) {
+
+                                	int code = ((DecryptException) exc).getCode();
+                                	switch (code) {
+
+	                        			case DecryptException.DECRYPT_EXCEPTION_DECRYPT_FAILED:
+                            			case DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND:
+	                        				securityFlags |= Coder.SECURITY_ERROR_DECRYPT_FAILED;
+	                        				break;
+
+                            			case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
+                            				securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                            				break;
+
+                            			case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
+                            				securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                            				break;
+
+                                	}
+
+                                	msg.setSecurityFlags(securityFlags);
+                                }
+
+                            	// raw component for encrypted data
+                            	// reuse security flags
+                            	msg.addComponent(new RawComponent(encryptedData, true, securityFlags));
                             }
+
                         }
                     }
 
