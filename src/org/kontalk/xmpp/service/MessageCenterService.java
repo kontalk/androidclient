@@ -130,7 +130,9 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.MessageQueue.IdleHandler;
+import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
@@ -248,6 +250,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Flag marking a currently ongoing GCM registration cycle (unregister/register) */
     private boolean mPushRegistrationCycle;
 
+    private WakeLock mWakeLock;	// created in onCreate
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
     /** Cached last used server. */
@@ -384,6 +387,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         SmackAndroid.init(getApplicationContext());
         configure(ProviderManager.getInstance());
 
+        // create the global wake lock...
+        PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
+        // ...and acquire it!
+        mWakeLock.acquire();
+
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         // create idle handler
@@ -442,6 +451,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void onDestroy() {
         Log.d(TAG, "destroying message center");
         quit(false);
+
+        // release the wake lock
+        mWakeLock.release();
     }
 
     private synchronized void quit(boolean restarting) {
