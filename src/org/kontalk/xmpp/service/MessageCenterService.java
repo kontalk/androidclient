@@ -1521,7 +1521,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     	AlarmManager am = (AlarmManager) context
     			.getSystemService(Context.ALARM_SERVICE);
 
-    	long delay = MessagingPreferences.getIdleTimeMillis(context,
+    	long delay = MessagingPreferences.getWakeupTimeMillis(context,
     			IdleConnectionHandler.DEFAULT_WAKEUP_TIME);
 
     	// start message center pending intent

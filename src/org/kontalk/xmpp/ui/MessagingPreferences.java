@@ -288,6 +288,11 @@ public final class MessagingPreferences extends PreferenceActivity {
         return prefs.getInt(key, defaultValue);
     }
 
+    private static int getIntMinValue(Context context, String key, int defaultValue) {
+        int nval = getInt(context, "pref_idle_time", defaultValue);
+        return (nval < defaultValue) ? defaultValue : nval;
+    }
+
     private static long getLong(Context context, String key, long defaultValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getLong(key, defaultValue);
@@ -500,27 +505,11 @@ public final class MessagingPreferences extends PreferenceActivity {
     }
 
     public static int getIdleTimeMillis(Context context, int defaultValue) {
-        String val = getString(context, "pref_idle_time", null);
-        int nval;
-        try {
-            nval = Integer.valueOf(val);
-        }
-        catch (Exception e) {
-            nval = defaultValue;
-        }
-        return (nval < defaultValue) ? defaultValue : nval;
+        return getIntMinValue(context, "pref_idle_time", defaultValue);
     }
 
     public static int getWakeupTimeMillis(Context context, int defaultValue) {
-        String val = getString(context, "pref_wakeup_time", null);
-        int nval;
-        try {
-            nval = Integer.valueOf(val);
-        }
-        catch (Exception e) {
-            nval = defaultValue;
-        }
-        return (nval < defaultValue) ? defaultValue : nval;
+        return getIntMinValue(context, "pref_wakeup_time", defaultValue);
     }
 
     /** Recent statuses database helper. */
