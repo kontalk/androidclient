@@ -69,7 +69,6 @@ import android.widget.Toast;
 public final class MessagingPreferences extends PreferenceActivity {
     private static final String TAG = MessagingPreferences.class.getSimpleName();
 
-    private static final String USERDATA_CRYPT_PREFIX = "crypt:";
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
 
     private static Drawable customBackground;
