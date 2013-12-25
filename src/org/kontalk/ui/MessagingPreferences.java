@@ -287,7 +287,14 @@ public final class MessagingPreferences extends PreferenceActivity {
     }
 
     private static int getIntMinValue(Context context, String key, int defaultValue) {
-        int nval = getInt(context, "pref_idle_time", defaultValue);
+        String val = getString(context, key, null);
+        int nval;
+        try {
+            nval = Integer.valueOf(val);
+        }
+        catch (Exception e) {
+            nval = defaultValue;
+        }
         return (nval < defaultValue) ? defaultValue : nval;
     }
 
