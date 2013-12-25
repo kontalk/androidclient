@@ -138,8 +138,9 @@
     <string name="peer_unknown">(unknown)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
-    <string name="button_validate">Verify</string>
-    <string name="button_validation_code">Verification code</string>
+    <string name="button_validate">Request verification code</string>
+    <string name="button_validation_code">I already have a verification code</string>
+    <string name="button_validation_register">Verify</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>
     <string name="notify_text_download_completed">Attachment download completed</string>
