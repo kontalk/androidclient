@@ -356,11 +356,13 @@ public class RequestWorker extends HandlerThread implements ParentThread {
 
             // idle message
             else if (msg.what == MSG_IDLE) {
-                // we registered push notification - shutdown message center
-                if (w.mPushRegistrationId != null) {
-                    Log.d(TAG, "shutting down message center due to inactivity");
-                    MessageCenterService.idleMessageCenter(w.mContext);
+            	// push notifications unavailable: set up an alarm for next time
+                if (w.mPushRegistrationId == null) {
+                	MessageCenterService.setWakeupAlarm(w.mContext);
                 }
+
+                Log.d(TAG, "shutting down message center due to inactivity");
+                MessageCenterService.idleMessageCenter(w.mContext);
             }
 
             else

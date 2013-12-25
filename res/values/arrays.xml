@@ -50,4 +50,20 @@
         <item>@string/balloons_iphone</item>
     </string-array>
 
+    <string-array name="wakeup_time_values">
+        <item>300000</item>
+        <item>900000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+        <item>10800000</item>
+    </string-array>
+
+    <string-array name="wakeup_time_labels">
+        <item>5 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+    </string-array>
+
 </resources>

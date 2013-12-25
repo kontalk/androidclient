@@ -84,6 +84,8 @@
     <string name="title_file_info">File information</string>
     <string name="pref_restart_msgcenter">Restart message center</string>
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
+    <string name="pref_wakeup_time">Reconnect to server</string>
+    <string name="pref_title_wakeup_time">How much to wait before reconnecting to the server after an inactivity period. Works only if push notifications are off</string>
     <string name="pref_maintainance">Maintenance</string>
     <string name="contacts_list_title">Choose a contact</string>
     <string name="pref_messaging_settings">Messaging settings</string>

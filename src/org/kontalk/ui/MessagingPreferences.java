@@ -286,6 +286,11 @@ public final class MessagingPreferences extends PreferenceActivity {
         return prefs.getInt(key, defaultValue);
     }
 
+    private static int getIntMinValue(Context context, String key, int defaultValue) {
+        int nval = getInt(context, "pref_idle_time", defaultValue);
+        return (nval < defaultValue) ? defaultValue : nval;
+    }
+
     private static long getLong(Context context, String key, long defaultValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getLong(key, defaultValue);
@@ -533,6 +538,10 @@ public final class MessagingPreferences extends PreferenceActivity {
         return prefs.edit()
             .putBoolean("offline_mode_used", true)
             .commit();
+    }
+
+    public static int getWakeupTimeMillis(Context context, int defaultValue) {
+        return getIntMinValue(context, "pref_wakeup_time", defaultValue);
     }
 
     /** Combines various settings into a group of UserStatus flags. */

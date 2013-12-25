@@ -74,6 +74,7 @@ import org.kontalk.util.MediaStorage;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -90,6 +91,9 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -111,6 +115,9 @@ public class MessageCenterService extends Service
         implements MessageListener, TxListener, RequestListener, ClientListener {
 
     private static final String TAG = MessageCenterService.class.getSimpleName();
+
+    /** How much time before a wakeup alarm triggers. */
+    private final static int DEFAULT_WAKEUP_TIME = 900000;
 
     public static final String ACTION_RESTART = "org.kontalk.RESTART";
     public static final String ACTION_IDLE = "org.kontalk.IDLE";
@@ -182,6 +189,7 @@ public class MessageCenterService extends Service
         }
     };
 
+    private WakeLock mWakeLock;	// created in onCreate
     private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
     private MessageRequestListener mMessageRequestListener; // created in onCreate
 
@@ -420,6 +428,13 @@ public class MessageCenterService extends Service
 
     @Override
     public void onCreate() {
+
+        // create the global wake lock...
+        PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Kontalk");
+        // ...and acquire it!
+        mWakeLock.acquire();
+
         mMessageRequestListener = new MessageRequestListener(this, this);
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
     }
@@ -446,6 +461,8 @@ public class MessageCenterService extends Service
     @Override
     public void onDestroy() {
         stop();
+        // release the wake lock
+        mWakeLock.release();
     }
 
     @Override
@@ -892,15 +909,20 @@ public class MessageCenterService extends Service
         // check for network state
         if (isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");
-            final Intent intent = new Intent(context, MessageCenterService.class);
-
-            // get the URI from the preferences
-            EndpointServer server = MessagingPreferences.getEndpointServer(context);
-            intent.putExtra(EndpointServer.class.getName(), server.toString());
-            context.startService(intent);
+            context.startService(getStartIntent(context));
         }
         else
             Log.d(TAG, "network not available or background data disabled - abort service start");
+    }
+
+    private static Intent getStartIntent(Context context) {
+        final Intent intent = new Intent(context, MessageCenterService.class);
+
+        // get the URI from the preferences
+        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        intent.putExtra(EndpointServer.class.getName(), server.toString());
+
+        return intent;
     }
 
     public static void updateStatus(final Context context) {
@@ -1155,6 +1177,22 @@ public class MessageCenterService extends Service
 
     public static String getPushSenderId() {
         return mPushSenderId;
+    }
+
+    public static void setWakeupAlarm(Context context) {
+    	AlarmManager am = (AlarmManager) context
+    			.getSystemService(Context.ALARM_SERVICE);
+
+    	long delay = MessagingPreferences.getWakeupTimeMillis(context,
+    			DEFAULT_WAKEUP_TIME);
+
+    	// start message center pending intent
+    	PendingIntent pi = PendingIntent.getService(context
+    			.getApplicationContext(), 0, getStartIntent(context),
+    			PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+
+    	am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+    			SystemClock.elapsedRealtime() + delay, pi);
     }
 
 }
