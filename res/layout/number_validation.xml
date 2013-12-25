@@ -36,6 +36,13 @@
             android:gravity="center_horizontal"
             android:text="@string/number_validation_intro1" />
 
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_validation_name"
+            android:inputType="textPersonName" />
+
         <Spinner android:id="@+id/phone_cc"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -45,6 +52,7 @@
             android:id="@+id/phone_number"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/hint_validation_number"
             android:inputType="phone" />
 
         <Button

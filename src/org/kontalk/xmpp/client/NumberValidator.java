@@ -74,6 +74,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static final int STEP_AUTH_TOKEN = 2;
 
     private final EndpointServer mServer;
+    private final String mName;
     private final String mPhone;
     private PersonalKey mKey;
     private PGPKeyPairRing mKeyRing;
@@ -90,9 +91,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private HandlerThread mServiceHandler;
     private Handler mInternalHandler;
 
-    public NumberValidator(Context context, EndpointServer server, String phone, PersonalKey key) {
+    public NumberValidator(Context context, EndpointServer server, String name, String phone, PersonalKey key) {
         mContext = context.getApplicationContext();
         mServer = server;
+        mName = name;
         mPhone = phone;
         mKey = key;
 
@@ -377,7 +379,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             try {
                 String userId = MessageUtils.sha1(mPhone);
                 // TODO what in name and comment fields here?
-                mKeyRing = mKey.store(userId, mServer.getNetwork(),
+                mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(), mName,
                     // TODO should we ask passphrase to the user?
                     ((Kontalk)mContext.getApplicationContext()).getCachedPassphrase());
                 publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);

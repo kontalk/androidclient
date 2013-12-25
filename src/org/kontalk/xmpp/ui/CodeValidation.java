@@ -50,6 +50,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private Button mButton;
     private NumberValidator mValidator;
     private PersonalKey mKey;
+    private String mName;
     private String mPhone;
 
     private static final class RetainData {
@@ -88,6 +89,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         }
 
         mKey = getIntent().getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
+        mName = getIntent().getStringExtra("name");
         mPhone = getIntent().getStringExtra("phone");
     }
 
@@ -150,7 +152,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         // send the code
         EndpointServer server = MessagingPreferences.getEndpointServer(this);
-        mValidator = new NumberValidator(this, server, mPhone, mKey);
+        mValidator = new NumberValidator(this, server, mName, mPhone, mKey);
         mValidator.setListener(this);
 
         mValidator.manualInput(code);

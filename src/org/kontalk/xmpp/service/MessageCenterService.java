@@ -109,6 +109,7 @@ import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -130,8 +131,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.PowerManager;
 import android.os.MessageQueue.IdleHandler;
+import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.SystemClock;
@@ -2388,9 +2389,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                         // store the key
                         try {
-                            Account acc = Authenticator.getDefaultAccount(MessageCenterService.this);
+                        	AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
+                            Account acc = Authenticator.getDefaultAccount(am);
+                            String name = am.getUserData(acc, Authenticator.DATA_NAME);
+
                             String userId = MessageUtils.sha1(acc.name);
-                            mKeyRing = key.store(userId, mServer.getNetwork(),
+                            mKeyRing = key.storeNetwork(userId, mServer.getNetwork(), name,
                                 // TODO should we ask passphrase to the user?
                                 ((Kontalk)getApplicationContext()).getCachedPassphrase());
 

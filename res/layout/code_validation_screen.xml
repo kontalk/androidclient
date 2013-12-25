@@ -38,18 +38,13 @@
             android:id="@+id/code_validation_intro"
             android:text="@string/code_validation_intro" />
 
-        <LinearLayout
-            android:gravity="center_vertical"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
-
-            <EditText
-                android:id="@+id/validation_code"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="phone" />
-
-        </LinearLayout>
+        <EditText
+            android:id="@+id/validation_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dip"
+            android:hint="@string/hint_validation_code"
+            android:inputType="phone" />
 
         <Button
             android:id="@+id/send_button"

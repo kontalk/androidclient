@@ -34,10 +34,13 @@
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
-    <string name="number_validation_intro1">Please select your country code and input your mobile phone number. A SMS with a verification code will be sent to you. Your phone number will be used once and then discarded.</string>
+    <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. A SMS with a verification code will be sent to you. Your phone number will be used once and then discarded.</string>
     <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the verification code you will receive via SMS.</string>
     <string name="code_validation_intro">You shall receive a SMS to the number you input briefly. Please insert the code you receive below.</string>
     <string name="code_validation_intro2">Please insert a verification code you received. Please note that a verification code can be used only once.</string>
+    <string name="hint_validation_name">Your name</string>
+    <string name="hint_validation_number">Your number</string>
+    <string name="hint_validation_code">Verification code</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
     <string name="msg_validating_phone">Requesting verification code SMS&#8230;</string>
     <string name="msg_initializing">Registering to the Kontalk network&#8230;</string>
@@ -156,6 +159,8 @@
     <string name="msg_invalid_cc">Please insert a valid country code.</string>
     <string name="title_invalid_code">Invalid code</string>
     <string name="msg_invalid_code">Please insert a valid code.</string>
+    <string name="title_no_name">Your name</string>
+    <string name="msg_no_name">Please insert a name.</string>
     <string name="menu_refresh">Refresh</string>
     <string name="menu_invite">Invite users</string>
     <string name="title_error">Error</string>

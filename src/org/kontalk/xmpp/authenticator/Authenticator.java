@@ -55,6 +55,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
+    public static final String DATA_NAME = "org.kontalk.key.name";
 
     private final Context mContext;
     private final Handler mHandler;

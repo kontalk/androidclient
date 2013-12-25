@@ -100,6 +100,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
 
     private AccountManager mAccountManager;
+    private EditText mNameText;
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
@@ -111,6 +112,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private String mAuthtokenType;
     private String mPhoneNumber;
+    private String mName;
 
     private PersonalKey mKey;
     private LocalBroadcastManager lbm;
@@ -125,6 +127,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private static final class RetainData {
         NumberValidator validator;
         CharSequence progressMessage;
+        String name;
         String phoneNumber;
         PersonalKey key;
         boolean syncing;
@@ -175,6 +178,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
+        mNameText = (EditText) findViewById(R.id.name);
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
@@ -230,6 +234,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     delayedSync();
                 }
 
+                mName = data.name;
                 mPhoneNumber = data.phoneNumber;
                 mValidator = data.validator;
                 mKey = data.key;
@@ -242,6 +247,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         }
 
         if (savedInstanceState != null) {
+        	mName = savedInstanceState.getString("name");
             mPhoneNumber = savedInstanceState.getString("phoneNumber");
             mKey = savedInstanceState.getParcelable("key");
         }
@@ -250,6 +256,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
+        state.putString("name", mName);
         state.putString("phoneNumber", mPhoneNumber);
         state.putParcelable("key", mKey);
     }
@@ -259,6 +266,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public Object onRetainCustomNonConfigurationInstance() {
         RetainData data = new RetainData();
         data.validator = mValidator;
+        data.name = mName;
         data.phoneNumber = mPhoneNumber;
         data.key = mKey;
         if (mProgress != null) data.progressMessage = mProgressMessage;
@@ -380,6 +388,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mPhoneNumber = null;
         String phoneStr = null;
 
+        // check name first
+        mName = mNameText.getText().toString().trim();
+        if (mName.length() == 0) {
+        	error(R.string.title_no_name, R.string.msg_no_name);
+        	return false;
+        }
+
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
         if (!BuildConfig.DEBUG) {
@@ -432,7 +447,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
             // key generation finished, start immediately
             EndpointServer server = MessagingPreferences.getEndpointServer(this);
-            mValidator = new NumberValidator(this, server, mPhoneNumber, mKey);
+            mValidator = new NumberValidator(this, server, mName, mPhoneNumber, mKey);
             mValidator.setListener(this);
             mValidator.start();
         }
@@ -623,7 +638,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // procedure will continue in removeAccount callback
         mAccountManager.removeAccount(account,
             new AccountRemovalCallback(this, account, token,
-                privateKeyData, publicKeyData, bridgeCertData),
+                privateKeyData, publicKeyData, bridgeCertData, mName),
             mHandler);
     }
 
@@ -688,6 +703,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private void startValidationCode(int requestCode) {
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
+        i.putExtra("name", mName);
         i.putExtra("phone", mPhoneNumber);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
@@ -700,16 +716,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final byte[] privateKeyData;
         private final byte[] publicKeyData;
         private final byte[] bridgeCertData;
+        private final String name;
 
         public AccountRemovalCallback(NumberValidation activity, Account account,
                 String token, byte[] privateKeyData, byte[] publicKeyData,
-                byte[] bridgeCertData) {
+                byte[] bridgeCertData, String name) {
             this.a = new WeakReference<NumberValidation>(activity);
             this.account = account;
             this.token = token;
             this.privateKeyData = privateKeyData;
             this.publicKeyData = publicKeyData;
             this.bridgeCertData = bridgeCertData;
+            this.name = name;
         }
 
         @Override
@@ -724,6 +742,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 data.putString(Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
                 data.putString(Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
                 data.putString(Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
+                data.putString(Authenticator.DATA_NAME, name);
 
                 // the password is actually the auth token
                 am.addAccountExplicitly(account, token, data);
