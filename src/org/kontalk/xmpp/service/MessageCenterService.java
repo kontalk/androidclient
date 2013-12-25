@@ -322,19 +322,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (msg.what == MSG_IDLE) {
             	// push notifications unavailable: set up an alarm for next time
                 if (service.mPushRegistrationId == null) {
-
-                	AlarmManager am = (AlarmManager) service
-                			.getSystemService(Context.ALARM_SERVICE);
-
-                	long delay = MessagingPreferences.getIdleTimeMillis(service, DEFAULT_WAKEUP_TIME);
-
-                	// start message center pending intent
-                	PendingIntent pi = PendingIntent.getService(service
-                			.getApplicationContext(), 0, getStartIntent(service), 0);
-
-                	am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                			SystemClock.elapsedRealtime() + delay, pi);
-
+                	setWakeupAlarm(service);
                 }
 
                 Log.d(TAG, "shutting down message center due to inactivity");
@@ -1515,6 +1503,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static String getPushSenderId() {
         return mPushSenderId;
+    }
+
+    public static void setWakeupAlarm(Context context) {
+    	AlarmManager am = (AlarmManager) context
+    			.getSystemService(Context.ALARM_SERVICE);
+
+    	long delay = MessagingPreferences.getIdleTimeMillis(context,
+    			IdleConnectionHandler.DEFAULT_WAKEUP_TIME);
+
+    	// start message center pending intent
+    	PendingIntent pi = PendingIntent.getService(context
+    			.getApplicationContext(), 0, getStartIntent(context),
+    			PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+
+    	am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+    			SystemClock.elapsedRealtime() + delay, pi);
     }
 
     private final class PingListener implements PacketListener {
