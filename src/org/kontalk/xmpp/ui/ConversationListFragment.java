@@ -22,6 +22,7 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MessagesProvider;
+import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 import org.kontalk.xmpp.service.MessageCenterService;
 
 import android.app.AlertDialog;
@@ -348,14 +349,44 @@ public class ConversationListFragment extends ListFragment {
         MessageCenterService.release(getActivity());
     }
 
+	// TODO i18n and polite
+    private void showRequestSubscription(Conversation conv) {
+    	ConversationList parent = getParentActivity();
+
+    	String display;
+    	Contact c = conv.getContact();
+    	if (c != null)
+    		display = c.getName() + " (" + c.getNumber() + ")";
+    	else
+    		display = conv.getRecipient();
+
+    	new AlertDialog.Builder(parent)
+    		.setPositiveButton("Accept", null)
+    		.setNeutralButton("Cancel", null)
+    		.setNegativeButton("Block", null)
+    		.setTitle("Chat invitation")
+    		.setMessage("Request by \n" + display)
+    		.show();
+    }
+
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
 
         ConversationList parent = getParentActivity();
-        if (parent != null)
-            parent.openConversation(conv, position);
+        if (parent != null) {
+
+        	// subscription request - show dialog
+        	if (Requests.MIME_TYPE.equals(conv.getMime())) {
+        		showRequestSubscription(conv);
+        	}
+
+        	// normal conversation - open it
+        	else {
+        		parent.openConversation(conv, position);
+        	}
+        }
     }
 
     /** Used only in fragment contexts. */

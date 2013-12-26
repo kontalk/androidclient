@@ -43,6 +43,7 @@ public class MyUsers {
         public static final String STATUS = "status";
         public static final String LAST_SEEN = "last_seen";
         public static final String PUBLIC_KEY = "public_key";
+        public static final String FINGERPRINT = "fingerprint";
 
         // uri parameter for update: triggers a complete resync
         public static final String RESYNC = "resync";
@@ -54,5 +55,8 @@ public class MyUsers {
         public static final String COMMIT = "commit";
         // uri parameter for select: use offline table
         public static final String OFFLINE = "offline";
+        // uri parameter for insert: discard name when updating
+        // (e.g. insert from a new public key)
+        public static final String DISCARD_NAME = "discardName";
     }
 }

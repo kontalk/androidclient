@@ -83,7 +83,8 @@ public class UsersProvider extends ContentProvider {
             "registered INTEGER NOT NULL DEFAULT 0," +
             "status TEXT," +
             "last_seen INTEGER," +
-            "public_key BLOB" +
+            "public_key BLOB," +
+            "fingerprint TEXT" +
             ")";
 
         /** This table will contain all the users in contact list .*/
@@ -107,10 +108,12 @@ public class UsersProvider extends ContentProvider {
             "DROP TABLE IF EXISTS " + TABLE_USERS_OFFLINE,
             SCHEMA_USERS_OFFLINE
         };
-        // version 5 - add public_key column
+        // version 5 - add public_key and fingerprint columns
         private static final String[] SCHEMA_V4_TO_V5 = {
             "ALTER TABLE " + TABLE_USERS + " ADD COLUMN public_key BLOB",
-            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN public_key BLOB"
+            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN fingerprint TEXT",
+            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN public_key BLOB",
+            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN fingerprint TEXT",
         };
 
         private Context mContext;
@@ -507,7 +510,26 @@ public class UsersProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
-        long id = db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, values);
+
+        String table = offline ? TABLE_USERS_OFFLINE : TABLE_USERS;
+        long id = 0;
+
+        try {
+	        id = db.insertOrThrow(table, null, values);
+        }
+        catch (SQLException e) {
+        	String hash = values.getAsString(Users.HASH);
+        	if (hash != null) {
+        		// discard display_name if requested
+        		boolean discardName = Boolean.parseBoolean(uri
+        				.getQueryParameter(Users.DISCARD_NAME));
+        		if (discardName)
+        			values.remove(Users.DISPLAY_NAME);
+
+        		db.update(table, values, "hash=?", new String[] { hash });
+        	}
+        }
+
         if (id >= 0)
             return ContentUris.withAppendedId(Users.CONTENT_URI, id);
         return null;
@@ -630,6 +652,7 @@ public class UsersProvider extends ContentProvider {
         usersProjectionMap.put(Users.STATUS, Users.STATUS);
         usersProjectionMap.put(Users.LAST_SEEN, Users.LAST_SEEN);
         usersProjectionMap.put(Users.PUBLIC_KEY, Users.PUBLIC_KEY);
+        usersProjectionMap.put(Users.FINGERPRINT, Users.FINGERPRINT);
     }
 
 }

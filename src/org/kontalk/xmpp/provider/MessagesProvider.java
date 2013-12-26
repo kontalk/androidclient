@@ -23,10 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.kontalk.xmpp.crypto.Coder;
+import org.kontalk.xmpp.provider.MyMessages.CommonColumns;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
+import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -69,6 +71,7 @@ public class MessagesProvider extends ContentProvider {
     private static final int CONVERSATIONS_ID = 7;
     private static final int CONVERSATIONS_ALL_ID = 8;
     private static final int FULLTEXT_ID = 9;
+    private static final int REQUESTS = 10;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -356,11 +359,12 @@ public class MessagesProvider extends ContentProvider {
 
     @Override
     public synchronized Uri insert(Uri uri, ContentValues initialValues) {
-        // only messages table can be inserted
-        if (sUriMatcher.match(uri) != MESSAGES) { throw new IllegalArgumentException("Unknown URI " + uri); }
+        // only messages and requests virtual table can be inserted
+    	int match = sUriMatcher.match(uri);
+        if (match != MESSAGES && match != REQUESTS) { throw new IllegalArgumentException("Unknown URI " + uri); }
         if (initialValues == null) { throw new IllegalArgumentException("No data"); }
 
-        // if this flag is true, we'll insert the thread only
+        // if this column is present, we'll insert the thread only
         String draft = initialValues.getAsString(Threads.DRAFT);
 
         ContentValues values = new ContentValues(initialValues);
@@ -373,16 +377,24 @@ public class MessagesProvider extends ContentProvider {
             beginTransaction(db);
 
             // create the thread first
-            long threadId = updateThreads(db, values, notifications);
+            long threadId = updateThreads(db, values, notifications, match == REQUESTS);
 
-            if (draft != null) {
+            if (draft != null || match == REQUESTS) {
                 // notify thread change
                 notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
                 // notify conversation change
                 notifications.add(ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
 
                 success = setTransactionSuccessful(db);
-                return null;
+
+                // request only - return conversation
+                if (match == REQUESTS)
+                	return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
+
+                // draft only - no uri
+                else
+                	return null;
+
             }
 
             values.put(Messages.THREAD_ID, threadId);
@@ -492,36 +504,51 @@ public class MessagesProvider extends ContentProvider {
      * @param values
      * @return the thread id
      */
-    private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications) {
+    private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications, boolean requestOnly) {
         ContentValues values = new ContentValues();
-        String peer = initialValues.getAsString(Threads.PEER);
+        String peer = initialValues.getAsString(CommonColumns.PEER);
 
         long threadId = -1;
         if (initialValues.containsKey(Messages.THREAD_ID))
             threadId = initialValues.getAsLong(Messages.THREAD_ID);
 
-        values.put(Threads.MESSAGE_ID, initialValues.getAsString(Messages.MESSAGE_ID));
-        values.put(Threads.DIRECTION, initialValues.getAsInteger(Messages.DIRECTION));
         values.put(Threads.PEER, peer);
         values.put(Threads.TIMESTAMP, initialValues.getAsLong(Messages.TIMESTAMP));
-        values.put(Threads.ENCRYPTED, initialValues.getAsBoolean(Messages.ENCRYPTED));
 
-        if (initialValues.containsKey(Messages.STATUS))
-        	values.put(Threads.STATUS, initialValues.getAsInteger(Messages.STATUS));
-        if (initialValues.containsKey(Messages.STATUS_CHANGED))
-        	values.put(Threads.STATUS_CHANGED, initialValues.getAsInteger(Messages.STATUS));
-        // this column is an exception
-        if (initialValues.containsKey(Threads.DRAFT))
-        	values.put(Threads.DRAFT, initialValues.getAsString(Threads.DRAFT));
+        if (requestOnly) {
 
-        // unread column will be calculated by the trigger
+	        values.put(Threads.MESSAGE_ID, "");
+	        values.put(Threads.DIRECTION, Messages.DIRECTION_IN);
+	        values.put(Threads.ENCRYPTED, false);
+	        values.put(Threads.STATUS, Messages.STATUS_INCOMING);
+	        values.put(Threads.CONTENT, "");
+	        values.put(Threads.MIME, Requests.MIME_TYPE);
 
-        // thread content has a special behaviour
-        setThreadContent(
-    		initialValues.getAsByteArray(Messages.BODY_CONTENT),
-    		initialValues.getAsString(Messages.BODY_CONTENT),
-    		initialValues.getAsString(Messages.ATTACHMENT_MIME),
-    		values);
+        }
+
+        else {
+
+        	values.put(Threads.MESSAGE_ID, initialValues.getAsString(Messages.MESSAGE_ID));
+	        values.put(Threads.DIRECTION, initialValues.getAsInteger(Messages.DIRECTION));
+	        values.put(Threads.ENCRYPTED, initialValues.getAsBoolean(Messages.ENCRYPTED));
+
+	        if (initialValues.containsKey(Messages.STATUS))
+	        	values.put(Threads.STATUS, initialValues.getAsInteger(Messages.STATUS));
+	        if (initialValues.containsKey(Messages.STATUS_CHANGED))
+	        	values.put(Threads.STATUS_CHANGED, initialValues.getAsInteger(Messages.STATUS_CHANGED));
+	        // this column is an exception
+	        if (initialValues.containsKey(Threads.DRAFT))
+	        	values.put(Threads.DRAFT, initialValues.getAsString(Threads.DRAFT));
+
+	        // unread column will be calculated by the trigger
+
+	        // thread content has a special behaviour
+	        setThreadContent(
+	    		initialValues.getAsByteArray(Messages.BODY_CONTENT),
+	    		initialValues.getAsString(Messages.BODY_CONTENT),
+	    		initialValues.getAsString(Messages.ATTACHMENT_MIME),
+	    		values);
+        }
 
         // insert new thread
         try {
@@ -1119,6 +1146,7 @@ public class MessagesProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, "conversations", CONVERSATIONS_ALL_ID);
         sUriMatcher.addURI(AUTHORITY, "conversations/#", CONVERSATIONS_ID);
         sUriMatcher.addURI(AUTHORITY, TABLE_FULLTEXT, FULLTEXT_ID);
+        sUriMatcher.addURI(AUTHORITY, "requests", REQUESTS);
 
         messagesProjectionMap = new HashMap<String, String>();
         messagesProjectionMap.put(Messages._ID, Messages._ID);

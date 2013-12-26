@@ -83,9 +83,11 @@ import org.kontalk.xmpp.client.UploadInfo;
 import org.kontalk.xmpp.client.VCard4;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.crypto.DecryptException;
+import org.kontalk.xmpp.crypto.PGP;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.X509Bridge;
+import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageComponent;
@@ -93,7 +95,10 @@ import org.kontalk.xmpp.message.MessageComponent;
 import org.kontalk.xmpp.message.RawComponent;
 import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.message.VCardComponent;
+import org.kontalk.xmpp.provider.MyMessages.CommonColumns;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
+import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
+import org.kontalk.xmpp.provider.MyUsers.Users;
 import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.KeyGeneratedReceiver;
 import org.kontalk.xmpp.service.KeyPairGeneratorService.PersonalKeyRunnable;
@@ -1857,6 +1862,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 		 *  - refuse: send signed key with refusal notation back
                 		 */
 
+                		String from = StringUtils.parseName(p.getFrom());
+
+                		// extract public key
+                		String name = null;
+                		byte[] publicKey = null;
+                        PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+                        if (_pkey instanceof SubscribePublicKey) {
+                            SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
+                            publicKey = pkey.getKey();
+                            // extract the name from the uid
+                            name = PGP.getUserId(publicKey, mServer.getNetwork());
+                        }
+
+                		ContentResolver cr = getContentResolver();
+                		ContentValues values = new ContentValues(2);
+
+                		// insert public key into the users table
+                		values.put(Users.HASH, from);
+                		values.put(Users.PUBLIC_KEY, publicKey);
+                		values.put(Users.DISPLAY_NAME, name);
+                		cr.insert(Users.CONTENT_URI, values);
+
+                		// insert request into the database
+                		values.clear();
+                		values.put(CommonColumns.PEER, from);
+                		values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
+
+                		Uri req = cr.insert(Requests.CONTENT_URI, values);
+                		Log.v(TAG, "request created " + req);
                 	}
 
                 }

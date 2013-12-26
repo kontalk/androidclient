@@ -246,6 +246,12 @@ public class PGP {
         return (String) key.getUserIDs().next();
     }
 
+    /** Returns the first user ID on the key that matches the given hostname. */
+    public static String getUserId(byte[] publicKeyring, String host) {
+    	// TODO
+    	return null;
+    }
+
     /** Returns the first master key found in the given public keyring. */
     @SuppressWarnings("unchecked")
     public static PGPPublicKey getMasterKey(byte[] publicKeyring) throws IOException, PGPException {
