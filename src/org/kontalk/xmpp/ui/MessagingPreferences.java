@@ -343,6 +343,10 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBoolean(context, "pref_encrypt", true);
     }
 
+    public static boolean getAutoAcceptSubscriptions(Context context) {
+    	return getBoolean(context, "pref_auto_accept_subscriptions", false);
+    }
+
     public static boolean getPushNotificationsEnabled(Context context) {
         return getBoolean(context, "pref_push_notifications", true);
     }

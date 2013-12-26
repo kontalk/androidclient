@@ -104,6 +104,8 @@
     <string name="pref_encrypt_userdata">Encrypt personal data</string>
     <string name="pref_title_on_encrypt_userdata">Status message will be visible only to users having your phone number</string>
     <string name="pref_title_off_encrypt_userdata">Status message will be visible to anyone</string>
+    <string name="pref_auto_accept_subscriptions">Automatically accept invitations</string>
+    <string name="pref_title_auto_accept_subscriptions">Automatically accept chat invitations by other users</string>
     <string name="pref_send_typing">Send typing notification</string>
     <string name="pref_hide_presence">Hide presence</string>
     <string name="pref_title_on_hide_presence">Users will not see you online</string>

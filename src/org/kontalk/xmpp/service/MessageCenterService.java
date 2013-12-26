@@ -1824,7 +1824,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
-            // no public key extension: accept subscription anyway?
+            // TODO no public key extension: accept subscription anyway?
             return null;
         }
 
@@ -1835,9 +1835,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // presence subscription request
                 if (p.getType() == Presence.Type.subscribe) {
-                    Packet r = subscribe(p);
-                    if (r != null)
-                        mConnection.sendPacket(r);
+
+                	// auto-accept subscription
+                	if (MessagingPreferences.getAutoAcceptSubscriptions(MessageCenterService.this)) {
+
+	                    Packet r = subscribe(p);
+	                    if (r != null)
+	                        mConnection.sendPacket(r);
+
+                	}
+
+                	// ask the user
+                	else {
+
+                		/*
+                		 * TODO subscription procedure:
+                		 * 1. update (or insert) users table with the public key just received
+                		 * 2. update (or insert) threads table with a special subscription record
+                		 * 3. user will either accept or refuse
+                		 *  - accept: send signed key back
+                		 *  - refuse: send signed key with refusal notation back
+                		 */
+
+                	}
+
                 }
 
                 // presence subscription response
