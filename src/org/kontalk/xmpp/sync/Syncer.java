@@ -10,9 +10,11 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.client.NumberValidator;
+import org.kontalk.xmpp.crypto.PGP;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.provider.MyUsers.Users;
 import org.kontalk.xmpp.service.MessageCenterService;
+import org.kontalk.xmpp.util.MessageUtils;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -399,8 +401,18 @@ public class Syncer {
                         else
                             registeredValues.putNull(Users.LAST_SEEN);
 
-                        if (entry.publicKey != null)
+                        if (entry.publicKey != null) {
                             registeredValues.put(Users.PUBLIC_KEY, entry.publicKey);
+
+                            try {
+	                            byte[] fp = PGP.getMasterKey(entry.publicKey).getFingerprint();
+	                            registeredValues.put(Users.FINGERPRINT, MessageUtils.bytesToHex(fp));
+                            }
+                            catch (Exception e) {
+                            	Log.w(TAG, "unable to parse public key", e);
+                            	registeredValues.putNull(Users.FINGERPRINT);
+                            }
+                        }
                         else
                             registeredValues.putNull(Users.PUBLIC_KEY);
 

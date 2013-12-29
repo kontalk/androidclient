@@ -247,27 +247,36 @@ public class PGP {
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
-    public static String getUserId(byte[] publicKeyring, String host) {
-    	// TODO
-    	return null;
+    public static String getUserId(byte[] publicKeyring, String host) throws IOException, PGPException {
+    	PGPPublicKey pk = getMasterKey(publicKeyring);
+    	return getUserId(pk, host);
     }
 
     /** Returns the first master key found in the given public keyring. */
     @SuppressWarnings("unchecked")
+    public static PGPPublicKey getMasterKey(PGPPublicKeyRing publicKeyring) {
+        Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
+            if (pk.isMasterKey())
+                return pk;
+        }
+
+        return null;
+    }
+
+    /** Returns the first master key found in the given public keyring. */
     public static PGPPublicKey getMasterKey(byte[] publicKeyring) throws IOException, PGPException {
+    	return getMasterKey(readPublicKeyring(publicKeyring));
+    }
+
+    public static PGPPublicKeyRing readPublicKeyring(byte[] publicKeyring) throws IOException, PGPException {
         PGPObjectFactory reader = new PGPObjectFactory(publicKeyring);
         Object o = reader.nextObject();
         while (o != null) {
-            Log.v("PersonalKey", o.toString());
-            if (o instanceof PGPPublicKeyRing) {
-                PGPPublicKeyRing pubRing = (PGPPublicKeyRing) o;
-                Iterator<PGPPublicKey> iter = pubRing.getPublicKeys();
-                while (iter.hasNext()) {
-                    PGPPublicKey pk = iter.next();
-                    if (pk.isMasterKey())
-                        return pk;
-                }
-            }
+            if (o instanceof PGPPublicKeyRing)
+            	return (PGPPublicKeyRing) o;
+
             o = reader.nextObject();
         }
 

@@ -60,6 +60,8 @@ public final class MessageUtils {
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
     private MessageUtils() {}
 
     public static void convertSmileys(Context context, Spannable text, int size) {
@@ -581,4 +583,14 @@ public final class MessageUtils {
                 .equalsIgnoreCase(b.substring(0, CompositeMessage.USERID_LENGTH));
     }
 
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        int v;
+        for ( int j = 0; j < bytes.length; j++ ) {
+            v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
 }

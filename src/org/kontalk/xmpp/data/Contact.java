@@ -21,7 +21,9 @@ package org.kontalk.xmpp.data;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.kontalk.xmpp.crypto.PGP;
 import org.kontalk.xmpp.provider.MyUsers.Users;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -58,6 +60,7 @@ public class Contact {
         Users.HASH,
         Users.REGISTERED,
         Users.STATUS,
+        Users.PUBLIC_KEY,
     };
 
     public static final int COLUMN_ID = 0;
@@ -68,6 +71,7 @@ public class Contact {
     public static final int COLUMN_HASH = 5;
     public static final int COLUMN_REGISTERED = 6;
     public static final int COLUMN_STATUS = 7;
+    public static final int COLUMN_PUBLICKEY = 8;
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
@@ -83,6 +87,8 @@ public class Contact {
 
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
+
+    private PGPPublicKeyRing mKeyRing;
 
     /**
      * Contact cache.
@@ -183,6 +189,10 @@ public class Contact {
         return mStatus;
     }
 
+    public PGPPublicKeyRing getPublicKeyRing() {
+    	return mKeyRing;
+    }
+
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
         if (mAvatar == null) {
             if (mAvatarData == null)
@@ -217,10 +227,19 @@ public class Contact {
             final String number = cursor.getString(COLUMN_NUMBER);
             final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
             final String status = cursor.getString(COLUMN_STATUS);
+            final byte[] keyring = cursor.getBlob(COLUMN_PUBLICKEY);
 
             c = new Contact(contactId, key, name, number, hash);
             c.mRegistered = registered;
             c.mStatus = status;
+            try {
+				c.mKeyRing = PGP.readPublicKeyring(keyring);
+			}
+            catch (Exception e) {
+            	// ignored for now
+            	Log.w(TAG, "unable to load public keyring", e);
+			}
+
             cache.put(hash, c);
         }
         return c;
@@ -262,7 +281,8 @@ public class Contact {
                 Users.LOOKUP_KEY,
                 Users.CONTACT_ID,
                 Users.REGISTERED,
-                Users.STATUS
+                Users.STATUS,
+                Users.PUBLIC_KEY,
             }, null, null, null);
 
         if (c.moveToFirst()) {
@@ -272,11 +292,20 @@ public class Contact {
             final long cid = c.getLong(3);
             final boolean registered = (c.getInt(4) != 0);
             final String status = c.getString(5);
+            final byte[] keyring = c.getBlob(6);
             c.close();
 
             Contact contact = new Contact(cid, key, name, number, userId);
             contact.mRegistered = registered;
             contact.mStatus = status;
+            try {
+				contact.mKeyRing = PGP.readPublicKeyring(keyring);
+			}
+            catch (Exception e) {
+            	// ignored for now
+            	Log.w(TAG, "unable to load public keyring", e);
+			}
+
             return contact;
         }
         c.close();

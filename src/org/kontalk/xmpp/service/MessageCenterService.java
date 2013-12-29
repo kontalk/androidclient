@@ -87,7 +87,6 @@ import org.kontalk.xmpp.crypto.PGP;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.X509Bridge;
-import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageComponent;
@@ -111,7 +110,6 @@ import org.kontalk.xmpp.util.RandomString;
 import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -202,6 +200,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
 
+    /** Send this intent to accept a presence subscription. */
+    public static final String ACTION_SUBSCRIBED = "org.kontalk.action.SUBSCRIBED";
+
     /**
      * Broadcasted when receiving a vCard.
      * Send this intent to update your own vCard.
@@ -219,7 +220,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PACKET_GROUP = "org.kontalk.packet.group";
     public static final String EXTRA_STAMP = "org.kontalk.packet.delay";
 
-    // use with org.kontalk.action.PRESENCE
+    // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
     public static final String EXTRA_FROM_USERID = "org.kontalk.stanza.from.userId";
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
@@ -682,6 +683,49 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     sendPacket(p);
                 }
+            }
+
+            else if (ACTION_SUBSCRIBED.equals(action)) {
+            	if (canConnect && isConnected) {
+            		Presence p = new Presence(Presence.Type.subscribed);
+
+                    String to;
+                    String toUserid = intent.getStringExtra(EXTRA_TO_USERID);
+                    if (toUserid != null)
+                        to = MessageUtils.toJID(toUserid, mServer.getNetwork());
+                    else
+                        to = intent.getStringExtra(EXTRA_TO);
+
+                    p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
+            		p.setTo(to);
+
+            		byte[] publicKey = intent.getByteArrayExtra(EXTRA_PUBLIC_KEY);
+            		if (publicKey != null) {
+
+            			try {
+	                        PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+
+	                        PGPPublicKey pk = PGP.getMasterKey(publicKey);
+	                        String uid = PGP.getUserId(pk, mServer.getHost());
+
+	                        PGPPublicKey signedKey = key.signPublicKey(pk, uid);
+	                        byte[] keydata = signedKey.getEncoded();
+
+	                        // store to users table
+	                        String userId = StringUtils.parseName(p.getFrom());
+	                        UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
+
+	            			p.addExtension(new SubscribePublicKey(publicKey));
+            			}
+
+            			catch (Exception e) {
+            				Log.e(TAG, "unable to sign public key", e);
+            				// TODO warn user
+            			}
+            		}
+
+            		sendPacket(p);
+            	}
             }
 
             else {
@@ -1436,6 +1480,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    /** Accepts a presence subscription request. */
+    public static void acceptSubscription(final Context context, String userId, byte[] publicKey) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
+        i.putExtra(EXTRA_TO_USERID, userId);
+        i.putExtra(EXTRA_PUBLIC_KEY, publicKey);
+        context.startService(i);
+    }
+
     public static void regenerateKeyPair(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
@@ -1806,14 +1859,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 try {
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
-                    PGPPublicKeyRing signedKey = key.signPublicKey(pkey.getKey(), pkey.getUid());
-                    byte[] _keydata = signedKey.getEncoded();
+                    PGPPublicKey publicKey = PGP.getMasterKey(pkey.getKey());
+                    String uid = PGP.getUserId(publicKey, mServer.getHost());
+
+                    PGPPublicKey signedKey = key.signPublicKey(publicKey, uid);
+                    byte[] keydata = signedKey.getEncoded();
 
                     // store to users table
                     String userId = StringUtils.parseName(p.getFrom());
-                    UsersProvider.setUserKey(MessageCenterService.this, userId, _keydata);
-
-                    String keydata = Base64.encodeToString(_keydata, Base64.NO_WRAP);
+                    UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
 
                     SubscribePublicKey pk = new SubscribePublicKey(keydata);
                     Presence p2 = new Presence(Presence.Type.subscribed);
@@ -1854,7 +1908,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 	else {
 
                 		/*
-                		 * TODO subscription procedure:
+                		 * Subscription procedure:
                 		 * 1. update (or insert) users table with the public key just received
                 		 * 2. update (or insert) threads table with a special subscription record
                 		 * 3. user will either accept or refuse
@@ -1876,13 +1930,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         }
 
                 		ContentResolver cr = getContentResolver();
-                		ContentValues values = new ContentValues(2);
+                		ContentValues values = new ContentValues(3);
 
                 		// insert public key into the users table
                 		values.put(Users.HASH, from);
                 		values.put(Users.PUBLIC_KEY, publicKey);
                 		values.put(Users.DISPLAY_NAME, name);
-                		cr.insert(Users.CONTENT_URI, values);
+                		cr.insert(Users.CONTENT_URI.buildUpon()
+                				.appendQueryParameter(Users.DISCARD_NAME, "true")
+                				.build(), values);
 
                 		// insert request into the database
                 		values.clear();

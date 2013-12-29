@@ -18,12 +18,17 @@
 
 package org.kontalk.xmpp.ui;
 
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
+import org.kontalk.xmpp.crypto.PGP;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 import org.kontalk.xmpp.service.MessageCenterService;
+import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -351,19 +356,43 @@ public class ConversationListFragment extends ListFragment {
 
 	// TODO i18n and polite
     private void showRequestSubscription(Conversation conv) {
-    	ConversationList parent = getParentActivity();
+    	final ConversationList parent = getParentActivity();
 
     	String display;
-    	Contact c = conv.getContact();
+    	final Contact c = conv.getContact();
     	if (c != null)
     		display = c.getName() + " (" + c.getNumber() + ")";
     	else
     		display = conv.getRecipient();
 
+    	DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				switch (which) {
+					case AlertDialog.BUTTON_POSITIVE:
+						// TODO this must ensure a connection is available
+
+						try {
+							PGPPublicKey pk = PGP.getMasterKey(c.getPublicKeyRing());
+							MessageCenterService.acceptSubscription(parent, c.getHash(), pk.getEncoded());
+						}
+						catch (Exception e) {
+							// TODO shouldn't we notify the user about this?
+							Log.w(TAG, "unable to accept subscription", e);
+						}
+
+						break;
+
+					case AlertDialog.BUTTON_NEGATIVE:
+						// TODO unsubscribe?
+						break;
+				}
+			}
+		};
+
     	new AlertDialog.Builder(parent)
-    		.setPositiveButton("Accept", null)
+    		.setPositiveButton("Accept", listener)
     		.setNeutralButton("Cancel", null)
-    		.setNegativeButton("Block", null)
+    		.setNegativeButton("Block", listener)
     		.setTitle("Chat invitation")
     		.setMessage("Request by \n" + display)
     		.show();
