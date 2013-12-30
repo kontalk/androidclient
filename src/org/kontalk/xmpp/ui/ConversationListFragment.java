@@ -18,17 +18,12 @@
 
 package org.kontalk.xmpp.ui;
 
-import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
-import org.kontalk.xmpp.crypto.PGP;
-import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 import org.kontalk.xmpp.service.MessageCenterService;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -372,8 +367,7 @@ public class ConversationListFragment extends ListFragment {
 						// TODO this must ensure a connection is available
 
 						try {
-							PGPPublicKey pk = PGP.getMasterKey(c.getPublicKeyRing());
-							MessageCenterService.acceptSubscription(parent, c.getHash(), pk.getEncoded());
+							MessageCenterService.acceptSubscription(parent, c.getHash(), c.getPublicKeyRing().getEncoded());
 						}
 						catch (Exception e) {
 							// TODO shouldn't we notify the user about this?

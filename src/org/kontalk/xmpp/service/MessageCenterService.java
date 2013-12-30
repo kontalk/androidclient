@@ -87,6 +87,7 @@ import org.kontalk.xmpp.crypto.PGP;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.crypto.X509Bridge;
+import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.message.AttachmentComponent;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.message.ImageComponent;
@@ -110,6 +111,7 @@ import org.kontalk.xmpp.util.RandomString;
 import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -705,17 +707,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             			try {
 	                        PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
-	                        PGPPublicKey pk = PGP.getMasterKey(publicKey);
+	                        PGPPublicKeyRing pubRing = PGP.readPublicKeyring(publicKey);
+	                        PGPPublicKey pk = PGP.getMasterKey(pubRing);
 	                        String uid = PGP.getUserId(pk, mServer.getHost());
 
-	                        PGPPublicKey signedKey = key.signPublicKey(pk, uid);
+	                        PGPPublicKey _signedKey = key.signPublicKey(pk, uid);
+	                        PGPPublicKeyRing signedKey = PGPPublicKeyRing.insertPublicKey(pubRing, _signedKey);
 	                        byte[] keydata = signedKey.getEncoded();
 
 	                        // store to users table
 	                        String userId = StringUtils.parseName(p.getFrom());
 	                        UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
 
-	            			p.addExtension(new SubscribePublicKey(publicKey));
+	            			p.addExtension(new SubscribePublicKey(keydata));
             			}
 
             			catch (Exception e) {
@@ -1859,10 +1863,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 try {
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
-                    PGPPublicKey publicKey = PGP.getMasterKey(pkey.getKey());
+                    PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
+                    PGPPublicKey publicKey = PGP.getMasterKey(pubRing);
                     String uid = PGP.getUserId(publicKey, mServer.getHost());
 
-                    PGPPublicKey signedKey = key.signPublicKey(publicKey, uid);
+                    PGPPublicKey _signedKey = key.signPublicKey(publicKey, uid);
+                    PGPPublicKeyRing signedKey = PGPPublicKeyRing.insertPublicKey(pubRing, _signedKey);
                     byte[] keydata = signedKey.getEncoded();
 
                     // store to users table
@@ -1919,14 +1925,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 		String from = StringUtils.parseName(p.getFrom());
 
                 		// extract public key
-                		String name = null;
+                		String name = null, fingerprint = null;
                 		byte[] publicKey = null;
                         PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
                         if (_pkey instanceof SubscribePublicKey) {
                             SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
-                            publicKey = pkey.getKey();
+                            byte[] _publicKey = pkey.getKey();
                             // extract the name from the uid
-                            name = PGP.getUserId(publicKey, mServer.getNetwork());
+                            PGPPublicKeyRing ring = PGP.readPublicKeyring(_publicKey);
+                            if (ring != null) {
+                            	PGPPublicKey pk = PGP.getMasterKey(ring);
+                            	if (pk != null) {
+                            		// set all parameters
+		                            name = PGP.getUserId(pk, mServer.getNetwork());
+		                            fingerprint = MessageUtils.bytesToHex(pk.getFingerprint());
+		                            publicKey = _publicKey;
+                            	}
+                            }
                         }
 
                 		ContentResolver cr = getContentResolver();
@@ -1935,10 +1950,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 		// insert public key into the users table
                 		values.put(Users.HASH, from);
                 		values.put(Users.PUBLIC_KEY, publicKey);
+                		values.put(Users.FINGERPRINT, fingerprint);
                 		values.put(Users.DISPLAY_NAME, name);
                 		cr.insert(Users.CONTENT_URI.buildUpon()
                 				.appendQueryParameter(Users.DISCARD_NAME, "true")
                 				.build(), values);
+
+                		// invalidate cache for this user
+                		Contact.invalidate(from);
 
                 		// insert request into the database
                 		values.clear();

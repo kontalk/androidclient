@@ -53,7 +53,6 @@ import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
-import android.util.Log;
 
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
