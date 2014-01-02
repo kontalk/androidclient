@@ -22,7 +22,6 @@ import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -1202,13 +1201,7 @@ public class ComposeMessageFragment extends ListFragment implements
 					userPhone = c.getString(1);
 
 					// FIXME should it be retrieved from RawContacts.SYNC3 ??
-					try {
-						userId = MessageUtils.sha1(userPhone);
-					} catch (NoSuchAlgorithmException e) {
-						// fatal error - shouldn't happen
-						Log.e(TAG, "sha1 digest failed", e);
-						throw new RuntimeException(e);
-					}
+					userId = MessageUtils.sha1(userPhone);
 
 					Cursor cp = cres.query(Messages.CONTENT_URI,
 							new String[] { Messages.THREAD_ID }, Messages.PEER

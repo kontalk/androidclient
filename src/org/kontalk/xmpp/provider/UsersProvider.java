@@ -18,7 +18,6 @@
 
 package org.kontalk.xmpp.provider;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import org.jivesoftware.smack.util.StringUtils;
@@ -414,9 +413,6 @@ public class UsersProvider extends ContentProvider {
                         stm.executeInsert();
                         count++;
                     }
-                    catch (NoSuchAlgorithmException e) {
-                        Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
-                    }
                     catch (SQLiteConstraintException sqe) {
                         // skip duplicate number
                     }
@@ -484,9 +480,6 @@ public class UsersProvider extends ContentProvider {
                             stm.bindLong(5, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
                             stm.executeInsert();
                             count++;
-                        }
-                        catch (NoSuchAlgorithmException e) {
-                            Log.e(TAG, "unable to generate SHA-1 hash for " + number + " - skipping", e);
                         }
                         catch (SQLiteConstraintException sqe) {
                             // skip duplicate number

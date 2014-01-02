@@ -113,7 +113,7 @@ public class X509Bridge {
         return createCertificate(pubKey, secKey.extractPrivateKey(decryptor), subjectAltName);
     }
 
-    private static X509Certificate createCertificate(PGPPublicKey publicKey, PGPPrivateKey privateKey, String subjectAltName)
+    public static X509Certificate createCertificate(PGPPublicKey publicKey, PGPPrivateKey privateKey, String subjectAltName)
             throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException,
                 SignatureException, CertificateException, NoSuchProviderException, PGPException, IOException {
 
@@ -127,7 +127,7 @@ public class X509Bridge {
         x509NameOids.add(X509Name.O);
         x509NameValues.add(DN_COMMON_PART_O);
 
-        for (@SuppressWarnings("unchecked") Iterator<Object> it = (Iterator<Object>) publicKey.getUserIDs(); it.hasNext();) {
+        for (@SuppressWarnings("unchecked") Iterator<Object> it = publicKey.getUserIDs(); it.hasNext();) {
             Object attrib = it.next();
             x509NameOids.add(X509Name.CN);
             x509NameValues.add(attrib.toString());

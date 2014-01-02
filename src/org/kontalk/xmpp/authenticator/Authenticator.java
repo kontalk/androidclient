@@ -121,7 +121,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData, byte[] bridgeCertData) {
         AccountManager am = AccountManager.get(ctx);
         Account acc = getDefaultAccount(am);
-        am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+
+        // private key data is optional when updating just the public key
+        if (privateKeyData != null)
+        	am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+
         am.setUserData(acc, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
         am.setUserData(acc, Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
     }

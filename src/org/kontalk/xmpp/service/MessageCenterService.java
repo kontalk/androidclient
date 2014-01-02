@@ -112,6 +112,7 @@ import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.spongycastle.openpgp.PGPSignature;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -701,6 +702,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
             		p.setTo(to);
 
+            		boolean sendSubscribe = false;
             		byte[] publicKey = intent.getByteArrayExtra(EXTRA_PUBLIC_KEY);
             		if (publicKey != null) {
 
@@ -720,6 +722,27 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 	                        UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
 
 	            			p.addExtension(new SubscribePublicKey(keydata));
+
+	            			// check if our key is already signed by this user
+	            			// if not, we will send a subscription request too
+
+	            			// TODO move all of this into PGP/PersonalKey
+
+	            			sendSubscribe = true;
+	            			String myUserId = key.getUserId(mServer.getNetwork());
+
+	            			@SuppressWarnings("unchecked")
+							Iterator<PGPSignature> sigs = key.getSignKeyPair()
+								.getPublicKey().getSignaturesForID(myUserId);
+
+	            			while (sigs.hasNext()) {
+	            				PGPSignature s = sigs.next();
+
+	            				if (s.getKeyID() == pk.getKeyID()) {
+	            					sendSubscribe = false;
+	            					break;
+	            				}
+	            			}
             			}
 
             			catch (Exception e) {
@@ -728,7 +751,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             			}
             		}
 
+            		// send the subscribed response
             		sendPacket(p);
+
+            		// send subscription request if needed
+            		if (sendSubscribe) {
+                		Log.d(TAG, "sending subscription request back to requester");
+                		p = new Presence(Presence.Type.subscribe);
+                		p.setTo(to);
+
+                		sendPacket(p);
+            		}
             	}
             }
 
@@ -1809,6 +1842,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         @Override
         public void processPacket(Packet packet) {
             VCard4 p = (VCard4) packet;
+            // will be true if it's our card
+            boolean myCard = false;
 
             Intent i = new Intent(ACTION_VCARD);
             i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
@@ -1818,7 +1853,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // our network - convert to userId
             if (network.equalsIgnoreCase(mServer.getNetwork())) {
                 StringBuilder b = new StringBuilder();
-                b.append(StringUtils.parseName(from));
+
+                // is this our vCard?
+                String userId = StringUtils.parseName(from);
+                String hash = MessageUtils.sha1(mMyUsername);
+                if (userId.equalsIgnoreCase(hash))
+                	myCard = true;
+
+                b.append(userId);
                 b.append(StringUtils.parseResource(from));
                 i.putExtra(EXTRA_FROM_USERID, b.toString());
             }
@@ -1829,6 +1871,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             Log.v(TAG, "broadcasting vcard: " + i);
             mLocalBroadcastManager.sendBroadcast(i);
+
+            byte[] _publicKey = p.getPGPKey();
+
+            if (myCard && _publicKey != null) {
+                byte[] bridgeCertData;
+                try {
+                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+
+                    PGPPublicKey publicKey = PGP.getMasterKey(_publicKey);
+
+                    // TODO subjectAltName?
+                    bridgeCertData = X509Bridge.createCertificate(publicKey,
+                        key.getSignKeyPair().getPrivateKey(), null).getEncoded();
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "error decoding key data", e);
+                    bridgeCertData = null;
+                }
+
+                if (bridgeCertData != null) {
+                    // store key data in AccountManager
+                    Authenticator.setDefaultPersonalKey(MessageCenterService.this,
+                        _publicKey, null, bridgeCertData);
+                    // invalidate cached personal key
+                    ((Kontalk)getApplicationContext()).invalidatePersonalKey();
+
+                    Log.v(TAG, "personal key updated.");
+                }
+            }
 
             /*
             byte[] keydata = p.getPGPKey();

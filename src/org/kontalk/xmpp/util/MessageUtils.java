@@ -264,16 +264,20 @@ public final class MessageUtils {
         return buf.toString();
     }
 
-    public static String sha1(String text)
-            throws NoSuchAlgorithmException {
+    public static String sha1(String text) {
+    	try {
+	        MessageDigest md;
+	        md = MessageDigest.getInstance("SHA-1");
+	        byte[] sha1hash = new byte[40];
+	        md.update(text.getBytes(), 0, text.length());
+	        sha1hash = md.digest();
 
-        MessageDigest md;
-        md = MessageDigest.getInstance("SHA-1");
-        byte[] sha1hash = new byte[40];
-        md.update(text.getBytes(), 0, text.length());
-        sha1hash = md.digest();
-
-        return convertToHex(sha1hash);
+	        return convertToHex(sha1hash);
+    	}
+    	catch (NoSuchAlgorithmException e) {
+    		// no SHA-1?? WWWHHHHAAAAAATTTT???!?!?!?!?!
+    		throw new RuntimeException("no SHA-1 available. What the crap of a device do you have?");
+    	}
     }
 
     public static CharSequence getFileInfoMessage(Context context, CompositeMessage msg, String decodedPeer) {
