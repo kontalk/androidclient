@@ -23,6 +23,7 @@ import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
+import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.kontalk.xmpp.util.MessageUtils.SmileyImageSpan;
 
@@ -141,7 +142,7 @@ public class ConversationListItem extends RelativeLayout implements Checkable {
         CharSequence text;
 
         // last message or draft??
-        if (conv.isRequest()) {
+        if (conv.getRequestStatus() == Threads.REQUEST_WAITING) {
         	// TODO i18n and italic (?)
         	text = "(chat invitation)";
         }

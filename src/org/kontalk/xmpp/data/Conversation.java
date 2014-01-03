@@ -46,7 +46,7 @@ public class Conversation {
         Threads.STATUS,
         Threads.ENCRYPTED,
         Threads.DRAFT,
-        Threads.REQUEST,
+        Threads.REQUEST_STATUS,
     };
 
     private final int COLUMN_ID = 0;
@@ -59,7 +59,7 @@ public class Conversation {
     private final int COLUMN_STATUS = 7;
     private final int COLUMN_ENCRYPTED = 8;
     private final int COLUMN_DRAFT = 9;
-    private final int COLUMN_REQUEST = 10;
+    private final int COLUMN_REQUEST_STATUS = 10;
 
     private final Context mContext;
 
@@ -76,7 +76,7 @@ public class Conversation {
     private String mDraft;
     private String mNumberHint;
     private boolean mEncrypted;
-    private boolean mRequest;
+    private int mRequestStatus;
 
     private Conversation(Context context) {
         mContext = context;
@@ -98,7 +98,7 @@ public class Conversation {
             mStatus = c.getInt(COLUMN_STATUS);
             mEncrypted = c.getInt(COLUMN_ENCRYPTED) != 0;
             mDraft = c.getString(COLUMN_DRAFT);
-            mRequest = c.getInt(COLUMN_REQUEST) != 0;
+            mRequestStatus = c.getInt(COLUMN_REQUEST_STATUS);
 
             loadContact();
         }
@@ -197,8 +197,8 @@ public class Conversation {
         return mDraft;
     }
 
-    public boolean isRequest() {
-    	return mRequest;
+    public int getRequestStatus() {
+    	return mRequestStatus;
     }
 
     public String getNumberHint() {

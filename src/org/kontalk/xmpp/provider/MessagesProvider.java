@@ -140,7 +140,7 @@ public class MessagesProvider extends ContentProvider {
             "status INTEGER," +
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
             "draft TEXT," +
-            "request INTEGER NOT NULL DEFAULT 0" +
+            "request_status INTEGER NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -520,7 +520,7 @@ public class MessagesProvider extends ContentProvider {
 	        values.put(Threads.MESSAGE_ID, "");
 	        values.put(Threads.DIRECTION, Messages.DIRECTION_IN);
 	        values.put(Threads.ENCRYPTED, false);
-        	values.put(Threads.REQUEST, true);
+        	values.put(Threads.REQUEST_STATUS, Threads.REQUEST_WAITING);
 
         }
 
@@ -587,6 +587,7 @@ public class MessagesProvider extends ContentProvider {
         String where;
         String[] args;
         String messageId = null;
+        boolean requestOnly = false;
 
         switch (sUriMatcher.match(uri)) {
             case MESSAGES:
@@ -629,6 +630,14 @@ public class MessagesProvider extends ContentProvider {
                 break;
             }
 
+            case REQUESTS: {
+                table = TABLE_THREADS;
+                where = selection;
+                args = selectionArgs;
+                requestOnly = true;
+                break;
+            }
+
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
@@ -663,6 +672,9 @@ public class MessagesProvider extends ContentProvider {
 
             // notify change only if rows are actually affected
             if (rows > 0) {
+            	if (requestOnly)
+            		uri = Threads.CONTENT_URI;
+
                 notifications.add(uri);
 
                 if (table.equals(TABLE_MESSAGES)) {
@@ -707,6 +719,19 @@ public class MessagesProvider extends ContentProvider {
 
                         c.close();
                     }
+                }
+
+            	// delete thread if no messages are found
+                else if (requestOnly) {
+
+                    Cursor th = db.query(TABLE_THREADS, new String[] { Threads.COUNT },
+                            where, args, null, null, null);
+
+                    if (th.moveToFirst() && th.getInt(0) == 0)
+                    	db.delete(TABLE_THREADS, where, args);
+
+                    th.close();
+
                 }
             }
 
@@ -1193,7 +1218,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.STATUS, Threads.STATUS);
         threadsProjectionMap.put(Threads.ENCRYPTED, Threads.ENCRYPTED);
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
-        threadsProjectionMap.put(Threads.REQUEST, Threads.REQUEST);
+        threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);

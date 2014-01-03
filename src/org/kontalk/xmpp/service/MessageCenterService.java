@@ -235,6 +235,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
     public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
     public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
+    public static final String EXTRA_ACCEPTED = "org.kontalk.presence.accepted";
 
     // use with org.kontalk.action.ROSTER
     public static final String EXTRA_USERLIST = "org.kontalk.roster.userList";
@@ -691,78 +692,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_SUBSCRIBED.equals(action)) {
             	if (canConnect && isConnected) {
-            		Presence p = new Presence(Presence.Type.subscribed);
 
-                    String to;
+            		String to;
                     String toUserid = intent.getStringExtra(EXTRA_TO_USERID);
                     if (toUserid != null)
                         to = MessageUtils.toJID(toUserid, mServer.getNetwork());
                     else
                         to = intent.getStringExtra(EXTRA_TO);
 
-                    p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
-            		p.setTo(to);
-
-            		boolean sendSubscribe = false;
-            		byte[] publicKey = intent.getByteArrayExtra(EXTRA_PUBLIC_KEY);
-            		if (publicKey != null) {
-
-            			try {
-	                        PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-
-	                        PGPPublicKeyRing pubRing = PGP.readPublicKeyring(publicKey);
-	                        PGPPublicKey pk = PGP.getMasterKey(pubRing);
-	                        String uid = PGP.getUserId(pk, mServer.getHost());
-
-	                        PGPPublicKey _signedKey = key.signPublicKey(pk, uid);
-	                        PGPPublicKeyRing signedKey = PGPPublicKeyRing.insertPublicKey(pubRing, _signedKey);
-	                        byte[] keydata = signedKey.getEncoded();
-
-	                        // store to users table
-	                        String userId = StringUtils.parseName(p.getFrom());
-	                        UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
-
-	            			p.addExtension(new SubscribePublicKey(keydata));
-
-	            			// check if our key is already signed by this user
-	            			// if not, we will send a subscription request too
-
-	            			// TODO move all of this into PGP/PersonalKey
-
-	            			sendSubscribe = true;
-	            			String myUserId = key.getUserId(mServer.getNetwork());
-
-	            			@SuppressWarnings("unchecked")
-							Iterator<PGPSignature> sigs = key.getSignKeyPair()
-								.getPublicKey().getSignaturesForID(myUserId);
-
-	            			while (sigs.hasNext()) {
-	            				PGPSignature s = sigs.next();
-
-	            				if (s.getKeyID() == pk.getKeyID()) {
-	            					sendSubscribe = false;
-	            					break;
-	            				}
-	            			}
-            			}
-
-            			catch (Exception e) {
-            				Log.e(TAG, "unable to sign public key", e);
-            				// TODO warn user
-            			}
-            		}
-
-            		// send the subscribed response
-            		sendPacket(p);
-
-            		// send subscription request if needed
-            		if (sendSubscribe) {
-                		Log.d(TAG, "sending subscription request back to requester");
-                		p = new Presence(Presence.Type.subscribe);
-                		p.setTo(to);
-
-                		sendPacket(p);
-            		}
+                    // FIXME taking toUserid for granted
+                    sendSubscriptionReply(toUserid,
+                    		intent.getStringExtra(EXTRA_PACKET_ID),
+                    		intent.getBooleanExtra(EXTRA_ACCEPTED, true));
             	}
             }
 
@@ -880,6 +821,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         resendPendingMessages(false);
         // resend failed and pending received receipts
         resendPendingReceipts();
+        // send pending subscription replies
+        sendPendingSubscriptionReplies();
 
         // helper is not needed any more
         mHelper = null;
@@ -1040,7 +983,106 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         c.close();
+    }
 
+    private void sendPendingSubscriptionReplies() {
+        Cursor c = getContentResolver().query(Threads.CONTENT_URI,
+                new String[] {
+                    Threads.PEER,
+                    Threads.REQUEST_STATUS,
+                },
+                Threads.REQUEST_STATUS + "=" + Threads.REQUEST_REPLY_PENDING_ACCEPT + " OR " +
+                Threads.REQUEST_STATUS + "=" + Threads.REQUEST_REPLY_PENDING_BLOCK,
+                null, Threads._ID);
+
+        while (c.moveToNext()) {
+            String userId = c.getString(0);
+            int reqStatus = c.getInt(1);
+
+            sendSubscriptionReply(userId, null, reqStatus == Threads.REQUEST_REPLY_PENDING_ACCEPT);
+        }
+
+        c.close();
+    }
+
+    private void sendSubscriptionReply(String userId, String packetId, boolean accepted) {
+		Presence p = new Presence(Presence.Type.subscribed);
+
+        String to = MessageUtils.toJID(userId, mServer.getNetwork());
+
+        p.setPacketID(packetId);
+		p.setTo(to);
+
+		boolean sendSubscribe = false;
+
+		Contact contact = Contact.findByUserId(this, userId);
+		PGPPublicKeyRing pubRing = contact.getPublicKeyRing();
+
+		if (pubRing != null) {
+
+			try {
+                PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+
+                PGPPublicKey pk = PGP.getMasterKey(pubRing);
+                String uid = PGP.getUserId(pk, mServer.getHost());
+
+                // TODO handle accept == false
+
+                PGPPublicKey _signedKey = key.signPublicKey(pk, uid);
+                PGPPublicKeyRing signedKey = PGPPublicKeyRing.insertPublicKey(pubRing, _signedKey);
+                byte[] keydata = signedKey.getEncoded();
+
+                // store to users table
+                UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
+
+    			p.addExtension(new SubscribePublicKey(keydata));
+
+    			// check if our key is already signed by this user
+    			// if not, we will send a subscription request too
+
+    			// TODO move all of this into PGP/PersonalKey
+
+    			sendSubscribe = true;
+    			String myUserId = key.getUserId(mServer.getNetwork());
+
+    			@SuppressWarnings("unchecked")
+				Iterator<PGPSignature> sigs = key.getSignKeyPair()
+					.getPublicKey().getSignaturesForID(myUserId);
+
+    			while (sigs.hasNext()) {
+    				PGPSignature s = sigs.next();
+
+    				if (s.getKeyID() == pk.getKeyID()) {
+    					sendSubscribe = false;
+    					break;
+    				}
+    			}
+			}
+
+			catch (Exception e) {
+				Log.e(TAG, "unable to sign public key", e);
+				// TODO warn user
+			}
+		}
+
+		// send the subscribed response
+		sendPacket(p);
+
+		// send subscription request if needed
+		if (sendSubscribe) {
+    		Log.d(TAG, "sending subscription request back to requester");
+    		p = new Presence(Presence.Type.subscribe);
+    		p.setTo(to);
+
+    		sendPacket(p);
+		}
+
+		// clear the request status
+		ContentValues values = new ContentValues(1);
+		values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
+
+		getContentResolver().update(Requests.CONTENT_URI,
+			values, CommonColumns.PEER + "=?", new String[] { userId });
     }
 
     private void sendMessage(Bundle data) {
@@ -1519,11 +1561,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Accepts a presence subscription request. */
-    public static void acceptSubscription(final Context context, String userId, byte[] publicKey) {
+    public static void acceptSubscription(final Context context, String userId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
         i.putExtra(EXTRA_TO_USERID, userId);
-        i.putExtra(EXTRA_PUBLIC_KEY, publicKey);
         context.startService(i);
     }
 
@@ -1927,6 +1968,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class PresenceListener implements PacketListener {
 
         private Packet subscribe(Presence p) {
+        	// FIXME duplicated code (from ACTION_SUBSCRIBED)
             PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
             if (_pkey instanceof SubscribePublicKey) {
                 SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
@@ -2035,7 +2077,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 		values.clear();
                 		values.put(CommonColumns.PEER, from);
                 		values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
-                		values.put(Threads.REQUEST, true);
 
                 		Uri req = cr.insert(Requests.CONTENT_URI, values);
                 		Log.v(TAG, "request created " + req);

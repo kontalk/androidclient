@@ -22,11 +22,15 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MessagesProvider;
+import org.kontalk.xmpp.provider.MyMessages.CommonColumns;
+import org.kontalk.xmpp.provider.MyMessages.Threads;
+import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 import org.kontalk.xmpp.service.MessageCenterService;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -349,7 +353,7 @@ public class ConversationListFragment extends ListFragment {
     }
 
 	// TODO i18n and polite
-    private void showRequestSubscription(Conversation conv) {
+    private void showRequestSubscription(final Conversation conv) {
     	final ConversationList parent = getParentActivity();
 
     	String display;
@@ -363,15 +367,17 @@ public class ConversationListFragment extends ListFragment {
 			public void onClick(DialogInterface dialog, int which) {
 				switch (which) {
 					case AlertDialog.BUTTON_POSITIVE:
-						// TODO this must ensure a connection is available
 
-						try {
-							MessageCenterService.acceptSubscription(parent, c.getHash(), c.getPublicKeyRing().getEncoded());
-						}
-						catch (Exception e) {
-							// TODO shouldn't we notify the user about this?
-							Log.w(TAG, "unable to accept subscription", e);
-						}
+						// mark request as pending accepted
+						ContentValues values = new ContentValues(1);
+						values.put(Threads.REQUEST_STATUS, Threads.REQUEST_REPLY_PENDING_ACCEPT);
+
+						parent.getContentResolver().update(Requests.CONTENT_URI,
+							values, CommonColumns.PEER + "=?",
+								new String[] { c.getHash() });
+
+						// send command to message center
+						MessageCenterService.acceptSubscription(parent, c.getHash());
 
 						break;
 
@@ -405,7 +411,7 @@ public class ConversationListFragment extends ListFragment {
         if (parent != null) {
 
         	// subscription request - show dialog
-        	if (conv.isRequest()) {
+        	if (conv.getRequestStatus() == Threads.REQUEST_WAITING) {
         		showRequestSubscription(conv);
         	}
 

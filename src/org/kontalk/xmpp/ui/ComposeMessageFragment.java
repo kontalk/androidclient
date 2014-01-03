@@ -1949,7 +1949,7 @@ public class ComposeMessageFragment extends ListFragment implements
     							// no draft
     							(mConversation.getDraft() == null &&
     							// no subscription request
-    							!mConversation.isRequest() &&
+    							mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
     							// no text in compose entry
     							mTextEntry.getText().length() == 0))) {
 

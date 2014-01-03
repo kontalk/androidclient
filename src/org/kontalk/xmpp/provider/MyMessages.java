@@ -105,6 +105,15 @@ public final class MyMessages {
         public static final Uri CONTENT_URI = Uri.parse("content://"
                 + MessagesProvider.AUTHORITY + "/threads");
 
+        /** No subscription request whatsoever. */
+        public static final int REQUEST_NONE = 0;
+        /** An incoming subscription request is waiting to be approved. */
+        public static final int REQUEST_WAITING = 1;
+        /** Positive subscription response is waiting to be sent. */
+        public static final int REQUEST_REPLY_PENDING_ACCEPT = 2;
+        /** Negative subscription response is waiting to be sent. */
+        public static final int REQUEST_REPLY_PENDING_BLOCK = 3;
+
         /** Conversation represents a message group for a given thread. */
         public static final class Conversations implements BaseColumns {
             public static final Uri CONTENT_URI = Uri
@@ -134,7 +143,7 @@ public final class MyMessages {
         public static final String CONTENT = "content";
         public static final String COUNT = "count";
         public static final String DRAFT = "draft";
-        public static final String REQUEST = "request";
+        public static final String REQUEST_STATUS = "request_status";
 
         public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
         public static final String INVERTED_SORT_ORDER = "timestamp";
