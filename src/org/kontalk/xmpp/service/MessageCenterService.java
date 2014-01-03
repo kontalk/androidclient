@@ -1560,11 +1560,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    /** Accepts a presence subscription request. */
-    public static void acceptSubscription(final Context context, String userId) {
+    /** Replies to a presence subscription request. */
+    public static void replySubscription(final Context context, String userId, boolean accepted) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
         i.putExtra(EXTRA_TO_USERID, userId);
+        i.putExtra(EXTRA_ACCEPTED, accepted);
         context.startService(i);
     }
 

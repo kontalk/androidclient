@@ -367,22 +367,23 @@ public class ConversationListFragment extends ListFragment {
 			public void onClick(DialogInterface dialog, int which) {
 				switch (which) {
 					case AlertDialog.BUTTON_POSITIVE:
+					case AlertDialog.BUTTON_NEGATIVE:
+
+						boolean accepted = (which == AlertDialog.BUTTON_POSITIVE);
+						int status = accepted ? Threads.REQUEST_REPLY_PENDING_ACCEPT :
+							Threads.REQUEST_REPLY_PENDING_BLOCK;
 
 						// mark request as pending accepted
 						ContentValues values = new ContentValues(1);
-						values.put(Threads.REQUEST_STATUS, Threads.REQUEST_REPLY_PENDING_ACCEPT);
+						values.put(Threads.REQUEST_STATUS, status);
 
 						parent.getContentResolver().update(Requests.CONTENT_URI,
 							values, CommonColumns.PEER + "=?",
 								new String[] { c.getHash() });
 
 						// send command to message center
-						MessageCenterService.acceptSubscription(parent, c.getHash());
+						MessageCenterService.replySubscription(parent, c.getHash(), accepted);
 
-						break;
-
-					case AlertDialog.BUTTON_NEGATIVE:
-						// TODO unsubscribe?
 						break;
 				}
 			}
