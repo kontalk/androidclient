@@ -97,6 +97,7 @@ import org.kontalk.xmpp.message.TextComponent;
 import org.kontalk.xmpp.message.VCardComponent;
 import org.kontalk.xmpp.provider.MyMessages.CommonColumns;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
+import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 import org.kontalk.xmpp.provider.MyUsers.Users;
 import org.kontalk.xmpp.provider.UsersProvider;
@@ -2034,6 +2035,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 		values.clear();
                 		values.put(CommonColumns.PEER, from);
                 		values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
+                		values.put(Threads.REQUEST, true);
 
                 		Uri req = cr.insert(Requests.CONTENT_URI, values);
                 		Log.v(TAG, "request created " + req);

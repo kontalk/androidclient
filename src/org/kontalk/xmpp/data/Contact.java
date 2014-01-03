@@ -233,7 +233,8 @@ public class Contact {
             c.mRegistered = registered;
             c.mStatus = status;
             try {
-				c.mKeyRing = PGP.readPublicKeyring(keyring);
+            	if (keyring != null)
+            		c.mKeyRing = PGP.readPublicKeyring(keyring);
 			}
             catch (Exception e) {
             	// ignored for now
@@ -299,7 +300,8 @@ public class Contact {
             contact.mRegistered = registered;
             contact.mStatus = status;
             try {
-				contact.mKeyRing = PGP.readPublicKeyring(keyring);
+            	if (keyring != null)
+            		contact.mKeyRing = PGP.readPublicKeyring(keyring);
 			}
             catch (Exception e) {
             	// ignored for now

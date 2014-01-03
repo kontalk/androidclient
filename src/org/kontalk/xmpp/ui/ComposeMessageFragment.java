@@ -1945,13 +1945,19 @@ public class ComposeMessageFragment extends ListFragment implements
 
     				// no messages to show - exit
     				if (cursor.getCount() == 0
-    						&& (mConversation == null
-    								|| mConversation.getDraft() == null || mTextEntry
-    								.getText().length() == 0)) {
+    						&& (mConversation == null ||
+    							// no draft
+    							(mConversation.getDraft() == null &&
+    							// no subscription request
+    							!mConversation.isRequest() &&
+    							// no text in compose entry
+    							mTextEntry.getText().length() == 0))) {
+
     					Log.i(TAG, "no data to view - exit");
 
     					// close conversation
     					closeConversation();
+
     				}
     				else {
     					// see if we have to scroll to a specific message

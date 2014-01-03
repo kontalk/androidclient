@@ -22,7 +22,6 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MessagesProvider;
-import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 import org.kontalk.xmpp.service.MessageCenterService;
 
 import android.app.AlertDialog;
@@ -383,6 +382,11 @@ public class ConversationListFragment extends ListFragment {
 			}
 		};
 
+		/*
+		 * TODO include an "Open" button on the dialog to ignore the request
+		 * and go on with the compose window.
+		 */
+
     	new AlertDialog.Builder(parent)
     		.setPositiveButton("Accept", listener)
     		.setNeutralButton("Cancel", null)
@@ -401,7 +405,7 @@ public class ConversationListFragment extends ListFragment {
         if (parent != null) {
 
         	// subscription request - show dialog
-        	if (Requests.MIME_TYPE.equals(conv.getMime())) {
+        	if (conv.isRequest()) {
         		showRequestSubscription(conv);
         	}
 

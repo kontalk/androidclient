@@ -141,22 +141,28 @@ public class ConversationListItem extends RelativeLayout implements Checkable {
         CharSequence text;
 
         // last message or draft??
-        String source = draft != null ? draft : conv.getSubject();
-
-        if (source != null) {
-	        text = new SpannableString(source);
-	        MessageUtils.convertSmileys(context, (Spannable) text, SmileyImageSpan.SIZE_LISTITEM);
-	        if (conv.getUnreadCount() > 0)
-	            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+        if (conv.isRequest()) {
+        	// TODO i18n and italic (?)
+        	text = "(chat invitation)";
         }
-
-        else if (conv.isEncrypted()) {
-        	text = context.getString(R.string.text_encrypted);
-        }
-
         else {
-        	// determine from mime type
-        	text = CompositeMessage.getSampleTextContent(conv.getMime());
+        	String source = (draft != null) ? draft : conv.getSubject();
+
+	        if (source != null) {
+		        text = new SpannableString(source);
+		        MessageUtils.convertSmileys(context, (Spannable) text, SmileyImageSpan.SIZE_LISTITEM);
+		        if (conv.getUnreadCount() > 0)
+		            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+	        }
+
+	        else if (conv.isEncrypted()) {
+	        	text = context.getString(R.string.text_encrypted);
+	        }
+
+	        else {
+	        	// determine from mime type
+	        	text = CompositeMessage.getSampleTextContent(conv.getMime());
+	        }
         }
 
         mSubjectView.setText(text);

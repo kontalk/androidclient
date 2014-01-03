@@ -28,7 +28,6 @@ import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
 import org.kontalk.xmpp.provider.MyMessages.Threads.Conversations;
-import org.kontalk.xmpp.provider.MyMessages.Threads.Requests;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -140,7 +139,8 @@ public class MessagesProvider extends ContentProvider {
             "status_changed INTEGER," +
             "status INTEGER," +
             "encrypted INTEGER NOT NULL DEFAULT 0, " +
-            "draft TEXT" +
+            "draft TEXT," +
+            "request INTEGER NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain the latest message from each conversation. */
@@ -238,7 +238,7 @@ public class MessagesProvider extends ContentProvider {
                 " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
-            "_id, msg_id, peer, direction, count, unread, 'text/plain', content, timestamp, status_changed, status, 0, draft" +
+            "_id, msg_id, peer, direction, count, unread, 'text/plain', content, timestamp, status_changed, status, 0, draft, 0" +
             	" FROM " + TABLE_THREADS,
             // drop table messages
             "DROP TABLE " + TABLE_MESSAGES,
@@ -520,9 +520,7 @@ public class MessagesProvider extends ContentProvider {
 	        values.put(Threads.MESSAGE_ID, "");
 	        values.put(Threads.DIRECTION, Messages.DIRECTION_IN);
 	        values.put(Threads.ENCRYPTED, false);
-	        values.put(Threads.STATUS, Messages.STATUS_INCOMING);
-	        values.put(Threads.CONTENT, "");
-	        values.put(Threads.MIME, Requests.MIME_TYPE);
+        	values.put(Threads.REQUEST, true);
 
         }
 
@@ -561,6 +559,12 @@ public class MessagesProvider extends ContentProvider {
         catch (SQLException e) {
             // clear draft (since we are inserting a new message here)
             values.putNull(Threads.DRAFT);
+            // remove other stuff coming from subscription request entry
+            if (requestOnly) {
+            	values.remove(Threads.MESSAGE_ID);
+            	values.remove(Threads.ENCRYPTED);
+            	values.remove(Threads.DIRECTION);
+            }
 
             db.update(TABLE_THREADS, values, "peer = ?", new String[] { peer });
             // the client did not pass the thread id, query for it manually
@@ -1189,6 +1193,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.STATUS, Threads.STATUS);
         threadsProjectionMap.put(Threads.ENCRYPTED, Threads.ENCRYPTED);
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
+        threadsProjectionMap.put(Threads.REQUEST, Threads.REQUEST);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);

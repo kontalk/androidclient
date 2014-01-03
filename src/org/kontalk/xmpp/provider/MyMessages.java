@@ -115,8 +115,6 @@ public final class MyMessages {
         public static final class Requests implements BaseColumns {
             public static final Uri CONTENT_URI = Uri
             	.parse("content://" + MessagesProvider.AUTHORITY + "/requests");
-
-            public static final String MIME_TYPE = "request:subscribe";
         }
 
         /**
@@ -136,6 +134,7 @@ public final class MyMessages {
         public static final String CONTENT = "content";
         public static final String COUNT = "count";
         public static final String DRAFT = "draft";
+        public static final String REQUEST = "request";
 
         public static final String DEFAULT_SORT_ORDER = "timestamp DESC";
         public static final String INVERTED_SORT_ORDER = "timestamp";
