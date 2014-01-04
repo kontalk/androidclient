@@ -217,6 +217,13 @@ public class PersonalKey implements Parcelable {
         }
     }
 
+    /**
+     * Searches for the master (signing) key in the given public keyring and
+     * signs it with our master key.
+     * @return the same public keyring with the signed key. This is suitable to
+     * be imported directly into GnuPG.
+     * @see #signPublicKey(PGPPublicKey, String)
+     */
     @SuppressWarnings("unchecked")
     public PGPPublicKeyRing signPublicKey(byte[] publicKeyring, String id)
             throws PGPException, IOException, SignatureException {
@@ -224,7 +231,6 @@ public class PersonalKey implements Parcelable {
         PGPObjectFactory reader = new PGPObjectFactory(publicKeyring);
         Object o = reader.nextObject();
         while (o != null) {
-            Log.v("PersonalKey", o.toString());
             if (o instanceof PGPPublicKeyRing) {
                 PGPPublicKeyRing pubRing = (PGPPublicKeyRing) o;
                 Iterator<PGPPublicKey> iter = pubRing.getPublicKeys();
@@ -242,6 +248,13 @@ public class PersonalKey implements Parcelable {
         throw new PGPException("invalid keyring data.");
     }
 
+    /**
+     * Signs the given public key uid using our master (signing) key.<br>
+     * WARNING use this method along with {@link PGPPublicKeyRing#insertPublicKey()}
+     * to make this effective, otherwise GnuPG will not accept the new signature.
+     * @see PGPPublicKeyRing#insertPublicKey(PGPPublicKeyRing, PGPPublicKey)
+     * @see #signPublicKey(byte[], String)
+     */
     public PGPPublicKey signPublicKey(PGPPublicKey keyToBeSigned, String id)
             throws PGPException, IOException, SignatureException {
 

@@ -161,13 +161,20 @@ public class PGP {
     public static PGPPublicKey signPublicKey(PGPKeyPair secret, PGPPublicKey keyToBeSigned, String id)
             throws PGPException, IOException, SignatureException {
 
+    	return signPublicKey(secret, keyToBeSigned, id, PGPSignature.CASUAL_CERTIFICATION);
+    }
+
+    /** Signs a public key with the given secret key. */
+    public static PGPPublicKey signPublicKey(PGPKeyPair secret, PGPPublicKey keyToBeSigned, String id, int certification)
+            throws PGPException, IOException, SignatureException {
+
         PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
 
         PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
             new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
                 PGPUtil.SHA1).setProvider(PROVIDER));
 
-        sGen.init(PGPSignature.CASUAL_CERTIFICATION, pgpPrivKey);
+        sGen.init(certification, pgpPrivKey);
 
         return PGPPublicKey.addCertification(keyToBeSigned, id, sGen.generateCertification(id, keyToBeSigned));
     }
