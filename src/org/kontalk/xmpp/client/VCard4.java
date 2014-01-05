@@ -53,11 +53,12 @@ public class VCard4 extends IQ {
 
     @Override
     public String getChildElementXML() {
-        StringBuilder b = new StringBuilder('<')
+        StringBuilder b = new StringBuilder()
+        	.append('<')
             .append(ELEMENT_NAME)
             .append(" xmlns='")
             .append(NAMESPACE)
-            .append("'");
+            .append('\'');
 
         if (mPGPKey != null) b
             .append("><key><uri>")

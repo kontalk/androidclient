@@ -19,6 +19,8 @@
 package org.kontalk.xmpp.crypto;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchProviderException;
@@ -26,11 +28,16 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
+import org.spongycastle.openpgp.PGPCustomUserAttributeSubpacketVectorGenerator;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPObjectFactory;
@@ -83,6 +90,17 @@ public class PersonalKey implements Parcelable {
 
     public X509Certificate getBridgeCertificate() {
         return mBridgeCert;
+    }
+
+    public PGPPublicKeyRing getPublicKeyRing() throws IOException {
+    	return new PGPPublicKeyRing(getEncodedPublicKeyRing(), new BcKeyFingerprintCalculator());
+    }
+
+    public byte[] getEncodedPublicKeyRing() throws IOException {
+    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+    	mPair.signKey.getPublicKey().encode(out);
+    	mPair.encryptKey.getPublicKey().encode(out);
+    	return out.toByteArray();
     }
 
     /** Returns the first user ID on the key that matches the given network. */
@@ -179,7 +197,7 @@ public class PersonalKey implements Parcelable {
         InputStream in = new ByteArrayInputStream(bridgeCertData);
         X509Certificate bridgeCert = (X509Certificate) certFactory.generateCertificate(in);
 
-        /* TEST
+        /* TEST */
         X500Principal subject = bridgeCert.getSubjectX500Principal();
         Log.d(Kontalk.TAG, "subject <" + subject.toString() + "> (" + subject.getName() + ")");
 
@@ -194,7 +212,6 @@ public class PersonalKey implements Parcelable {
         fout = new FileOutputStream("/sdcard/public.key");
         fout.write(publicKeyData);
         fout.close();
-         */
 
         if (encPriv != null && encPub != null && signPriv != null && signPub != null && bridgeCert != null) {
             signKp = new PGPKeyPair(signPub, signPriv);
@@ -275,6 +292,50 @@ public class PersonalKey implements Parcelable {
 			mPair.signKey = new PGPKeyPair(revoked, mPair.signKey.getPrivateKey());
 
 		return revoked;
+	}
+
+	public PGPPublicKey addToBlacklist(String item)
+			throws SignatureException, PGPException {
+
+		return addToPrivacyList(item, PrivacyListAttribute.BLACKLIST, true);
+	}
+
+	public PGPPublicKey addToWhitelist(String item)
+			throws SignatureException, PGPException {
+
+		return addToPrivacyList(item, PrivacyListAttribute.WHITELIST, true);
+	}
+
+	private PGPPublicKey addToPrivacyList(String item, int type, boolean store)
+			throws SignatureException, PGPException {
+
+		// retrieve the old blacklist (if any)
+		PGPPublicKey pubKey = mPair.signKey.getPublicKey();
+
+		PrivacyListAttribute oldAttr = PGP.getPrivacyListAttribute(pubKey, type);
+
+		List<String> newList = new ArrayList<String>();
+
+		// restore old items...
+		if (oldAttr != null)
+			newList.addAll(oldAttr.getList());
+
+		// ...and add the new one
+		if (!newList.contains(item))
+			newList.add(item);
+
+		// back to subpacket vector
+		PGPCustomUserAttributeSubpacketVectorGenerator vGen =
+			new PGPCustomUserAttributeSubpacketVectorGenerator();
+		vGen.setPrivacyListAttribute(type, newList);
+
+		PGPPublicKey signed = PGP.signUserAttributes(mPair.signKey,
+			mPair.signKey.getPublicKey(), vGen.generate());
+
+		if (store)
+			mPair.signKey = new PGPKeyPair(signed, mPair.signKey.getPrivateKey());
+
+		return signed;
 	}
 
     @Override

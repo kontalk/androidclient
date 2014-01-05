@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -1976,24 +1977,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // sign key and send it back
                 try {
-                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
                     PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
                     PGPPublicKey publicKey = PGP.getMasterKey(pubRing);
-                    String uid = PGP.getUserId(publicKey, mServer.getHost());
+                    String fingerprint = MessageUtils.bytesToHex(publicKey.getFingerprint());
 
-                    PGPPublicKey _signedKey = key.signPublicKey(publicKey, uid);
-                    PGPPublicKeyRing signedKey = PGPPublicKeyRing.insertPublicKey(pubRing, _signedKey);
-                    byte[] keydata = signedKey.getEncoded();
-
-                    // store to users table
+                    // store key to users table
                     String userId = StringUtils.parseName(p.getFrom());
-                    UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
+                    UsersProvider.setUserKey(MessageCenterService.this, userId, pkey.getKey());
 
-                    SubscribePublicKey pk = new SubscribePublicKey(keydata);
+                    // add user to whitelist
+                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+                    key.addToWhitelist(StringUtils.parseBareAddress(p.getFrom())
+                    		.toLowerCase(Locale.US) + "|" + fingerprint);
+
+                    // send updated public key to server
+                    VCard4 vcard = new VCard4();
+                    vcard.setPGPKey(key.getEncodedPublicKeyRing());
+                    vcard.setType(IQ.Type.SET);
+
+                    sendPacket(vcard);
+
                     Presence p2 = new Presence(Presence.Type.subscribed);
                     p2.setTo(p.getFrom());
-                    p2.addExtension(pk);
                     return p2;
                 }
                 catch (Exception e) {
