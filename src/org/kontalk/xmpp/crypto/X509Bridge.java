@@ -76,7 +76,19 @@ public class X509Bridge {
     private X509Bridge() {
     }
 
-    public static X509Certificate createCertificate(PGPSecretKey secretKey, String passphrase, String subjectAltName)
+    public static X509Certificate createCertificate(byte[] publicKeyData, PGPSecretKey secretKey, String passphrase, String subjectAltName)
+            throws PGPException, InvalidKeyException, IllegalStateException,
+            NoSuchAlgorithmException, SignatureException, CertificateException,
+            NoSuchProviderException, IOException {
+
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+
+        return createCertificate(pubRing, secretKey, passphrase, subjectAltName);
+
+    }
+
+    public static X509Certificate createCertificate(PGPPublicKeyRing publicKeyring, PGPSecretKey secretKey, String passphrase, String subjectAltName)
             throws PGPException, InvalidKeyException, IllegalStateException,
             NoSuchAlgorithmException, SignatureException, CertificateException,
             NoSuchProviderException, IOException {
@@ -88,7 +100,7 @@ public class X509Bridge {
             .build(passphrase.toCharArray());
 
         PGPPrivateKey privateKey = secretKey.extractPrivateKey(decryptor);
-        return createCertificate(secretKey.getPublicKey(), privateKey, subjectAltName);
+        return createCertificate(publicKeyring, privateKey, subjectAltName);
 
     }
 
@@ -105,15 +117,23 @@ public class X509Bridge {
             .setProvider(PGP.PROVIDER)
             .build(passphrase.toCharArray());
 
-        // public key
-        PGPPublicKey pubKey = pubRing.getPublicKey();
         // secret key
         PGPSecretKey secKey = secRing.getSecretKey();
 
-        return createCertificate(pubKey, secKey.extractPrivateKey(decryptor), subjectAltName);
+        return createCertificate(pubRing, secKey.extractPrivateKey(decryptor), subjectAltName);
     }
 
-    public static X509Certificate createCertificate(PGPPublicKey publicKey, PGPPrivateKey privateKey, String subjectAltName)
+    public static X509Certificate createCertificate(byte[] publicKeyData, PGPPrivateKey privateKey, String subjectAltName)
+            throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException,
+                SignatureException, CertificateException, NoSuchProviderException, PGPException, IOException {
+
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+
+        return createCertificate(pubRing, privateKey, subjectAltName);
+    }
+
+    public static X509Certificate createCertificate(PGPPublicKeyRing publicKeyRing, PGPPrivateKey privateKey, String subjectAltName)
             throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException,
                 SignatureException, CertificateException, NoSuchProviderException, PGPException, IOException {
 
@@ -126,6 +146,8 @@ public class X509Bridge {
 
         x509NameOids.add(X509Name.O);
         x509NameValues.add(DN_COMMON_PART_O);
+
+        PGPPublicKey publicKey = publicKeyRing.getPublicKey();
 
         for (@SuppressWarnings("unchecked") Iterator<Object> it = publicKey.getUserIDs(); it.hasNext();) {
             Object attrib = it.next();
@@ -154,7 +176,7 @@ public class X509Bridge {
                 publicKey.getKey(PGP.PROVIDER), privateKey.getKey(), x509name,
                 creationTime, validTo,
                 subjectAltName,
-                publicKey.getEncoded());
+                publicKeyRing.getEncoded());
     }
 
     /**

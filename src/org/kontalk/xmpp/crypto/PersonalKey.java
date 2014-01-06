@@ -22,8 +22,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -359,14 +362,26 @@ public class PersonalKey implements Parcelable {
 	}
 
 	/** Stores the public keyring to the system {@link AccountManager}. */
-	public void updateAccountManager(Context context) throws IOException {
+	public void updateAccountManager(Context context)
+			throws IOException, CertificateEncodingException, InvalidKeyException,
+			IllegalStateException, NoSuchAlgorithmException, SignatureException,
+			CertificateException, NoSuchProviderException, PGPException {
+
 		AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
 		Account account = Authenticator.getDefaultAccount(am);
 
 		if (account != null) {
-			byte[] pubRing = getEncodedPublicKeyRing();
+			PGPPublicKeyRing pubRing = getPublicKeyRing();
+
+			// regenerate bridge certificate
+            byte[] bridgeCertData = X509Bridge.createCertificate(pubRing,
+                    mPair.signKey.getPrivateKey(), null).getEncoded();
+			byte[] publicKeyData = pubRing.getEncoded();
+
 			am.setUserData(account, Authenticator.DATA_PUBLICKEY,
-				Base64.encodeToString(pubRing, Base64.NO_WRAP));
+				Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+			am.setUserData(account, Authenticator.DATA_BRIDGECERT,
+					Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
 		}
 	}
 

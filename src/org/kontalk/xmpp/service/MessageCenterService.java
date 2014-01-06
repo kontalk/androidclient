@@ -1907,10 +1907,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 try {
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
-                    PGPPublicKey publicKey = PGP.getMasterKey(_publicKey);
-
                     // TODO subjectAltName?
-                    bridgeCertData = X509Bridge.createCertificate(publicKey,
+                    bridgeCertData = X509Bridge.createCertificate(_publicKey,
                         key.getSignKeyPair().getPrivateKey(), null).getEncoded();
                 }
                 catch (Exception e) {
@@ -1954,14 +1952,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private final class PresenceListener implements PacketListener {
 
         private Packet subscribe(Presence p) {
-        	// FIXME duplicated code (from ACTION_SUBSCRIBED)
             PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
-            if (_pkey instanceof SubscribePublicKey) {
-                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
 
-                // TODO handle also a case where the public key is not included
-                // e.g. do not include the fingerprint
-                try {
+            try {
+
+            	String jidFrom = StringUtils.parseBareAddress(p.getFrom());
+
+	            if (_pkey instanceof SubscribePublicKey) {
+	                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
 
                     PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
                     PGPPublicKey publicKey = PGP.getMasterKey(pubRing);
@@ -1972,10 +1970,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     UsersProvider.setUserKey(MessageCenterService.this, userId, pkey.getKey());
 
                     // add user to whitelist
-                    Log.v(TAG, "auto-accepting user " + StringUtils.parseBareAddress(p.getFrom()) + " (" + fingerprint + ")");
+                    Log.v(TAG, "auto-accepting user " + jidFrom + " (" + fingerprint + ")");
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                    key.addToWhitelist(StringUtils.parseBareAddress(p.getFrom())
-                    		.toLowerCase(Locale.US) + "|" + fingerprint);
+                    key.addToWhitelist(jidFrom.toLowerCase(Locale.US) + "|" + fingerprint);
 
                     // store key in account manager
                     key.updateAccountManager(MessageCenterService.this);
@@ -1987,20 +1984,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     sendPacket(vcard);
 
-                    Presence p2 = new Presence(Presence.Type.subscribed);
-                    p2.setTo(p.getFrom());
-                    return p2;
-                }
-                catch (Exception e) {
-                    Log.w(TAG, "unable add user to whitelist", e);
-                    // TODO should we notify the user about this?
-                    // TODO throw new PGPException(...)
-                    return null;
-                }
-            }
+	            }
 
-            // TODO no public key extension: accept subscription anyway?
-            return null;
+	            else {
+
+                    // add user to whitelist
+                    Log.v(TAG, "auto-accepting user " + jidFrom);
+                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+                    key.addToWhitelist(jidFrom.toLowerCase(Locale.US));
+
+	            }
+
+                Presence p2 = new Presence(Presence.Type.subscribed);
+                p2.setTo(p.getFrom());
+                return p2;
+
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable add user to whitelist", e);
+                // TODO should we notify the user about this?
+                // TODO throw new PGPException(...)
+                return null;
+            }
         }
 
         @Override
@@ -2725,8 +2730,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                             String passphrase = ((Kontalk) getApplicationContext()).getCachedPassphrase();
                             // TODO subjectAltName?
-                            bridgeCertData = X509Bridge.createCertificate(mKeyRing.secretKey.getSecretKey(),
-                                passphrase, null).getEncoded();
+                            bridgeCertData = X509Bridge.createCertificate(publicKeyData,
+                            	mKeyRing.secretKey.getSecretKey(), passphrase, null).getEncoded();
                         }
                         catch (Exception e) {
                             Log.e(TAG, "error decoding key data", e);
