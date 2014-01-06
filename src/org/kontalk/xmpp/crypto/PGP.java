@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.kontalk.xmpp.util.MessageUtils;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.bcpg.UserAttributeSubpacket;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
@@ -334,6 +335,10 @@ public class PGP {
         dest.writeInt(algoEnc);
         dest.writeLong(dateEnc.getTime());
 
+    }
+
+    public static String getFingerprint(PGPPublicKey publicKey) {
+    	return MessageUtils.bytesToHex(publicKey.getFingerprint());
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */

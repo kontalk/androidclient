@@ -114,7 +114,6 @@ import org.kontalk.xmpp.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
-import org.spongycastle.openpgp.PGPSignature;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -1014,54 +1013,42 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         p.setPacketID(packetId);
 		p.setTo(to);
 
-		boolean sendSubscribe = false;
-
 		Contact contact = Contact.findByUserId(this, userId);
 		PGPPublicKeyRing pubRing = contact.getPublicKeyRing();
 
 		if (pubRing != null) {
 
 			try {
-                PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
                 PGPPublicKey pk = PGP.getMasterKey(pubRing);
-                String uid = PGP.getUserId(pk, mServer.getHost());
+                String fingerprint = PGP.getFingerprint(pk);
 
-                // TODO handle accept == false
+                // add user to whitelist
+                PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
 
-                PGPPublicKey _signedKey = key.signPublicKey(pk, uid);
-                PGPPublicKeyRing signedKey = PGPPublicKeyRing.insertPublicKey(pubRing, _signedKey);
-                byte[] keydata = signedKey.getEncoded();
+                String listItem = to.toLowerCase(Locale.US) + "|" + fingerprint;
+                if (accepted) {
+                    Log.v(TAG, "accepting user " + to + " (" + fingerprint + ")");
+                	key.addToWhitelist(listItem);
+                }
+                else {
+                    Log.v(TAG, "blocking user " + to + " (" + fingerprint + ")");
+                	key.addToBlacklist(listItem);
+                }
 
-                // store to users table
-                UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
+                // store key in account manager
+                key.updateAccountManager(MessageCenterService.this);
 
-    			p.addExtension(new SubscribePublicKey(keydata));
+                // send updated public key to server
+                VCard4 vcard = new VCard4();
+                vcard.setPGPKey(key.getEncodedPublicKeyRing());
+                vcard.setType(IQ.Type.SET);
 
-    			// check if our key is already signed by this user
-    			// if not, we will send a subscription request too
-
-    			// TODO move all of this into PGP/PersonalKey
-
-    			sendSubscribe = true;
-    			String myUserId = key.getUserId(mServer.getNetwork());
-
-    			@SuppressWarnings("unchecked")
-				Iterator<PGPSignature> sigs = key.getSignKeyPair()
-					.getPublicKey().getSignaturesForID(myUserId);
-
-    			while (sigs.hasNext()) {
-    				PGPSignature s = sigs.next();
-
-    				if (s.getKeyID() == pk.getKeyID()) {
-    					sendSubscribe = false;
-    					break;
-    				}
-    			}
+                sendPacket(vcard);
 			}
 
 			catch (Exception e) {
-				Log.e(TAG, "unable to sign public key", e);
+				Log.e(TAG, "unable to add user to whitelist", e);
 				// TODO warn user
 			}
 		}
@@ -1069,14 +1056,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 		// send the subscribed response
 		sendPacket(p);
 
-		// send subscription request if needed
-		if (sendSubscribe) {
-    		Log.d(TAG, "sending subscription request back to requester");
-    		p = new Presence(Presence.Type.subscribe);
-    		p.setTo(to);
+		// send a subscription request anyway
+		p = new Presence(Presence.Type.subscribe);
+		p.setTo(to);
 
-    		sendPacket(p);
-		}
+		sendPacket(p);
 
 		// clear the request status
 		ContentValues values = new ContentValues(1);
@@ -1975,7 +1959,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (_pkey instanceof SubscribePublicKey) {
                 SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
 
-                // sign key and send it back
+                // TODO handle also a case where the public key is not included
+                // e.g. do not include the fingerprint
                 try {
 
                     PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
@@ -1987,9 +1972,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     UsersProvider.setUserKey(MessageCenterService.this, userId, pkey.getKey());
 
                     // add user to whitelist
+                    Log.v(TAG, "auto-accepting user " + StringUtils.parseBareAddress(p.getFrom()) + " (" + fingerprint + ")");
                     PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
                     key.addToWhitelist(StringUtils.parseBareAddress(p.getFrom())
                     		.toLowerCase(Locale.US) + "|" + fingerprint);
+
+                    // store key in account manager
+                    key.updateAccountManager(MessageCenterService.this);
 
                     // send updated public key to server
                     VCard4 vcard = new VCard4();
@@ -2003,7 +1992,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     return p2;
                 }
                 catch (Exception e) {
-                    Log.w(TAG, "unable to sign public key", e);
+                    Log.w(TAG, "unable add user to whitelist", e);
                     // TODO should we notify the user about this?
                     // TODO throw new PGPException(...)
                     return null;
@@ -2039,8 +2028,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 		 * 1. update (or insert) users table with the public key just received
                 		 * 2. update (or insert) threads table with a special subscription record
                 		 * 3. user will either accept or refuse
-                		 *  - accept: send signed key back
-                		 *  - refuse: send signed key with refusal notation back
                 		 */
 
                 		String from = StringUtils.parseName(p.getFrom());

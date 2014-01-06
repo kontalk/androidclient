@@ -20,7 +20,6 @@ package org.kontalk.xmpp.crypto;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchProviderException;
@@ -32,11 +31,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.kontalk.xmpp.Kontalk;
+import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
+import org.kontalk.xmpp.util.MessageUtils;
 import org.spongycastle.openpgp.PGPCustomUserAttributeSubpacketVectorGenerator;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
@@ -53,8 +52,12 @@ import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Base64;
 import android.util.Log;
 
 
@@ -108,6 +111,10 @@ public class PersonalKey implements Parcelable {
         return PGP.getUserId(mPair.signKey.getPublicKey(), network);
     }
 
+    public String getFingerprint() {
+    	return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint());
+    }
+
     public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {
     	// FIXME dummy values
         return store(name,
@@ -138,6 +145,7 @@ public class PersonalKey implements Parcelable {
      */
     public PGPPublicKeyRing update(byte[] keyData) throws IOException {
         PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, new BcKeyFingerprintCalculator());
+        // FIXME should loop through the ring and check for master/subkey
         mPair.signKey = new PGPKeyPair(ring.getPublicKey(), mPair.signKey.getPrivateKey());
         return ring;
     }
@@ -197,7 +205,7 @@ public class PersonalKey implements Parcelable {
         InputStream in = new ByteArrayInputStream(bridgeCertData);
         X509Certificate bridgeCert = (X509Certificate) certFactory.generateCertificate(in);
 
-        /* TEST */
+        /* TEST
         X500Principal subject = bridgeCert.getSubjectX500Principal();
         Log.d(Kontalk.TAG, "subject <" + subject.toString() + "> (" + subject.getName() + ")");
 
@@ -212,6 +220,7 @@ public class PersonalKey implements Parcelable {
         fout = new FileOutputStream("/sdcard/public.key");
         fout.write(publicKeyData);
         fout.close();
+        */
 
         if (encPriv != null && encPub != null && signPriv != null && signPub != null && bridgeCert != null) {
             signKp = new PGPKeyPair(signPub, signPriv);
@@ -329,6 +338,8 @@ public class PersonalKey implements Parcelable {
 			new PGPCustomUserAttributeSubpacketVectorGenerator();
 		vGen.setPrivacyListAttribute(type, newList);
 
+		// TODO shouldn't we revoke the old user attribute?
+
 		PGPPublicKey signed = PGP.signUserAttributes(mPair.signKey,
 			mPair.signKey.getPublicKey(), vGen.generate());
 
@@ -336,6 +347,18 @@ public class PersonalKey implements Parcelable {
 			mPair.signKey = new PGPKeyPair(signed, mPair.signKey.getPrivateKey());
 
 		return signed;
+	}
+
+	/** Stores the public keyring to the system {@link AccountManager}. */
+	public void updateAccountManager(Context context) throws IOException {
+		AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+		Account account = Authenticator.getDefaultAccount(am);
+
+		if (account != null) {
+			byte[] pubRing = getEncodedPublicKeyRing();
+			am.setUserData(account, Authenticator.DATA_PUBLICKEY,
+				Base64.encodeToString(pubRing, Base64.NO_WRAP));
+		}
 	}
 
     @Override
