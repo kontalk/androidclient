@@ -28,6 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -320,16 +321,27 @@ public class PersonalKey implements Parcelable {
 
 		// retrieve the old blacklist (if any)
 		PGPPublicKey pubKey = mPair.signKey.getPublicKey();
+		PGPPublicKey signed = pubKey;
 
 		PrivacyListAttribute oldAttr = PGP.getPrivacyListAttribute(pubKey, type);
 
 		List<String> newList = new ArrayList<String>();
 
-		// restore old items...
-		if (oldAttr != null)
-			newList.addAll(oldAttr.getList());
+		if (oldAttr != null) {
+			Collection<String> oldList = oldAttr.getList();
 
-		// ...and add the new one
+			// restore old items
+			newList.addAll(oldList);
+
+			// revoke old user attribute
+			PGPCustomUserAttributeSubpacketVectorGenerator vRev =
+				new PGPCustomUserAttributeSubpacketVectorGenerator();
+			vRev.setPrivacyListAttribute(type, oldList);
+
+			signed = PGP.revokeUserAttributes(mPair.signKey, signed, vRev.generate());
+		}
+
+		// add new item
 		if (!newList.contains(item))
 			newList.add(item);
 
@@ -338,10 +350,7 @@ public class PersonalKey implements Parcelable {
 			new PGPCustomUserAttributeSubpacketVectorGenerator();
 		vGen.setPrivacyListAttribute(type, newList);
 
-		// TODO shouldn't we revoke the old user attribute?
-
-		PGPPublicKey signed = PGP.signUserAttributes(mPair.signKey,
-			mPair.signKey.getPublicKey(), vGen.generate());
+		signed = PGP.signUserAttributes(mPair.signKey, signed, vGen.generate());
 
 		if (store)
 			mPair.signKey = new PGPKeyPair(signed, mPair.signKey.getPrivateKey());

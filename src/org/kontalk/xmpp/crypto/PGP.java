@@ -191,16 +191,30 @@ public class PGP {
     public static PGPPublicKey signUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
     		throws PGPException, SignatureException {
 
+        return signUserAttributes(secret, keyToBeSigned, attributes, PGPSignature.POSITIVE_CERTIFICATION);
+    }
+
+    /** Signs and add the given user attributes to the given public key. */
+    public static PGPPublicKey signUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes, int certification)
+    		throws PGPException, SignatureException {
+
         PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
 
         PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
             new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
                 PGPUtil.SHA1).setProvider(PROVIDER));
 
-        sGen.init(PGPSignature.POSITIVE_CERTIFICATION, pgpPrivKey);
+        sGen.init(certification, pgpPrivKey);
 
         return PGPPublicKey.addCertification(keyToBeSigned, attributes,
         		sGen.generateCertification(attributes, keyToBeSigned));
+    }
+
+    public static PGPPublicKey revokeUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
+    		throws SignatureException, PGPException {
+
+		return PGP.signUserAttributes(secret, keyToBeSigned, attributes,
+				PGPSignature.CERTIFICATION_REVOCATION);
     }
 
     /** Searches for the first valid privacy list attribute subpacket with a valid signature. */
