@@ -17,31 +17,13 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<resources>
-  <!-- default light-to-dark theme selector -->
-  <style name="Theme.Light2" parent="android:Theme.Holo.Light"/>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
   <!-- default theme selector -->
   <style name="Theme.Light" parent="Theme.Sherlock.Light">
       <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue.Bold</item>
-  </style>
-
-  <style name="Theme.Light.Subtitle" parent="Theme.Light">
-      <item name="android:actionBarStyle">@style/Widget.Sherlock.Light.ActionBar.Blue</item>
-  </style>
-
-  <style name="Widget.Sherlock.Light.ActionBar.Blue" parent="Widget.Sherlock.Light.ActionBar.Solid">
-    <item name="background">@drawable/titlebar_bg</item>
-    <item name="android:background">@drawable/titlebar_bg</item>
-
-    <item name="android:titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse</item>
-
-    <item name="android:subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
-
-  </style>
-
-  <style name="Widget.Sherlock.Light.ActionBar.Blue.Bold" parent="Widget.Sherlock.Light.ActionBar.Blue">
-    <item name="android:titleTextStyle">@style/TextAppearance.Sherlock.Widget.ActionBar.Title.Inverse.Bold</item>
+      <item name="android:actionBarSize">@dimen/actionbar_height</item>
+      <item name="android:actionButtonStyle">@style/Widget.Sherlock.Light.ActionButton.LowDensity</item>
   </style>
 
 </resources>
