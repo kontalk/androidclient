@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Kontalk Android client
-     Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+<!--
+     Kontalk Android client
+     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -30,7 +31,7 @@
 
     <!-- other colors -->
     <color name="highlight_color">#fffffC57</color>
-    
+
     <!-- compose message list view background -->
     <color name="compose_message_list_background">#fff5f8fa</color>
     <!-- contacts list grayed out text -->

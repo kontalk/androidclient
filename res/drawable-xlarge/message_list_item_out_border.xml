@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Kontalk Android client
-     Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+<!--
+     Kontalk Android client
+     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -16,10 +17,10 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<shape xmlns:android="http://schemas.android.com/apk/res/android"> 
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
     <stroke android:width="4dp" android:color="@drawable/border_outgoing_background" />
-    <solid android:color="@drawable/light_blue_background" /> 
-    <padding android:left="4dp" android:top="4dp" 
-            android:right="4dp" android:bottom="4dp" /> 
-    <corners android:radius="4dp" /> 
-</shape> 
+    <solid android:color="@drawable/light_blue_background" />
+    <padding android:left="4dp" android:top="4dp"
+            android:right="4dp" android:bottom="4dp" />
+    <corners android:radius="4dp" />
+</shape>
