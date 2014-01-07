@@ -1,3 +1,21 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.kontalk.xmpp.ui;
 
 import java.io.File;
@@ -5,11 +23,6 @@ import java.io.IOException;
 
 import org.kontalk.xmpp.R;
 
-import android.animation.Animator;
-import android.animation.Animator.AnimatorListener;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
-import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -24,7 +37,20 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.Animator.AnimatorListener;
+import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.ValueAnimator;
+import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
+
 import de.passsy.holocircularprogressbar.HoloCircularProgressBar;
+
+/**
+ * AudioDialog Attachments.
+ * @author Andrea Cappelli & Daniele Ricci
+ */
+
 
 public class AudioDialog extends AlertDialog {
     private MediaRecorder recorder = new MediaRecorder();
@@ -44,8 +70,9 @@ public class AudioDialog extends AlertDialog {
     private static final int STATUS_PAUSED=4;
     private static final int MAX_DURATE=10000;
     private static final int COLOR_RECORD = Color.rgb(0xDD, 0x18, 0x12);
-    private static final int COLOR_PLAY = Color.rgb(0x76, 0xCC, 0x1E);
+    private static final int COLOR_PLAY = Color.rgb(0x00, 0xAC, 0xEC);
 
+    // TODO Aggiungere colori, stringhe agli xml.
 
     public AudioDialog(Context context) {
         super(context);
@@ -227,7 +254,6 @@ public class AudioDialog extends AlertDialog {
         //mProgressBarAnimator.reverse();
         mProgressBarAnimator.addUpdateListener(new AnimatorUpdateListener() {
 
-            @Override
             public void onAnimationUpdate(final ValueAnimator animation) {
                 progressBar.setProgress((Float) animation.getAnimatedValue());
                 long time = animation.getCurrentPlayTime();
