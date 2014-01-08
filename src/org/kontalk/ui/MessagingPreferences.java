@@ -286,7 +286,7 @@ public final class MessagingPreferences extends PreferenceActivity {
         return prefs.getInt(key, defaultValue);
     }
 
-    private static int getIntMinValue(Context context, String key, int defaultValue) {
+    private static int getIntMinValue(Context context, String key, int minValue, int defaultValue) {
         String val = getString(context, key, null);
         int nval;
         try {
@@ -295,7 +295,7 @@ public final class MessagingPreferences extends PreferenceActivity {
         catch (Exception e) {
             nval = defaultValue;
         }
-        return (nval < defaultValue) ? defaultValue : nval;
+        return (nval < minValue) ? minValue : nval;
     }
 
     private static long getLong(Context context, String key, long defaultValue) {
@@ -547,8 +547,8 @@ public final class MessagingPreferences extends PreferenceActivity {
             .commit();
     }
 
-    public static int getWakeupTimeMillis(Context context, int defaultValue) {
-        return getIntMinValue(context, "pref_wakeup_time", defaultValue);
+    public static int getWakeupTimeMillis(Context context, int minValue, int defaultValue) {
+        return getIntMinValue(context, "pref_wakeup_time", minValue, defaultValue);
     }
 
     /** Combines various settings into a group of UserStatus flags. */

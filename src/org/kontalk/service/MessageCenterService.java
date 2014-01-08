@@ -118,6 +118,8 @@ public class MessageCenterService extends Service
 
     /** How much time before a wakeup alarm triggers. */
     private final static int DEFAULT_WAKEUP_TIME = 900000;
+    /** Minimal wakeup time. */
+    private final static int MIN_WAKEUP_TIME = 300000;
 
     public static final String ACTION_RESTART = "org.kontalk.RESTART";
     public static final String ACTION_IDLE = "org.kontalk.IDLE";
@@ -1184,7 +1186,7 @@ public class MessageCenterService extends Service
     			.getSystemService(Context.ALARM_SERVICE);
 
     	long delay = MessagingPreferences.getWakeupTimeMillis(context,
-    			DEFAULT_WAKEUP_TIME);
+    	        MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
 
     	// start message center pending intent
     	PendingIntent pi = PendingIntent.getService(context
