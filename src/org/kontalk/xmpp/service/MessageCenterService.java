@@ -295,9 +295,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
         private final static int DEFAULT_IDLE_TIME = 60000;
+        /** Minimal idle time. */
+        private final static int MIN_IDLE_TIME = DEFAULT_IDLE_TIME;
 
         /** How much time before a wakeup alarm triggers. */
         private final static int DEFAULT_WAKEUP_TIME = 900000;
+        /** Minimal wakeup time. */
+        private final static int MIN_WAKEUP_TIME = 300000;
 
         /** A reference to the message center. */
         private WeakReference<MessageCenterService> s;
@@ -357,7 +361,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 int time;
                 MessageCenterService service = s.get();
                 if (service != null)
-                    time = MessagingPreferences.getIdleTimeMillis(service, DEFAULT_IDLE_TIME);
+                    time = MessagingPreferences.getIdleTimeMillis(service, MIN_IDLE_TIME, DEFAULT_IDLE_TIME);
                 else
                     time = DEFAULT_IDLE_TIME;
 
@@ -1646,6 +1650,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     			.getSystemService(Context.ALARM_SERVICE);
 
     	long delay = MessagingPreferences.getWakeupTimeMillis(context,
+    			IdleConnectionHandler.MIN_WAKEUP_TIME,
     			IdleConnectionHandler.DEFAULT_WAKEUP_TIME);
 
     	// start message center pending intent
