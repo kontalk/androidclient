@@ -95,9 +95,6 @@
     <string name="pref_encrypt">Encrypt messages</string>
     <string name="pref_title_on_encrypt">All messages will be encrypted from now on</string>
     <string name="pref_title_off_encrypt">All messages will be sent in cleartext from now on</string>
-    <string name="pref_passphrase">Passphrase</string>
-    <string name="pref_prompt_passphrase">Leave empty to use the recipient phone number.</string>
-    <string name="pref_title_passphrase">Password will also be used for decryption when necessary</string>
     <string name="pref_encrypt_userdata">Encrypt personal data</string>
     <string name="pref_title_on_encrypt_userdata">Status message will be visible only to users having your phone number</string>
     <string name="pref_title_off_encrypt_userdata">Status message will be visible to anyone</string>
