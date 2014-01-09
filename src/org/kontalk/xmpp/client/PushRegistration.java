@@ -5,7 +5,7 @@ import org.jivesoftware.smack.packet.PacketExtension;
 
 /** Capability extension for registering to push notifications. */
 public class PushRegistration implements PacketExtension {
-    public static final String NAMESPACE = "http://www.kontalk.org/extensions/presence#push";
+    public static final String NAMESPACE = "http://kontalk.org/extensions/presence#push";
     public static final String ELEMENT_NAME = "c";
 
     private final String mRegId;
