@@ -50,7 +50,7 @@ public class ContactsListActivity extends ActionBarActivity
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list_screen);
 
-        setSupportProgressBarIndeterminate(true);
+        //setSupportProgressBarIndeterminate(true);
         // HACK this is for crappy honeycomb :)
         setSupportProgressBarIndeterminateVisibility(false);
 
