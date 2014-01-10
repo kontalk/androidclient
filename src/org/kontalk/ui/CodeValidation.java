@@ -62,7 +62,7 @@ public class CodeValidation extends SherlockAccountAuthenticatorActivity
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.code_validation_screen);
 
-        setSupportProgressBarIndeterminate(true);
+        //setSupportProgressBarIndeterminate(true);
         // HACK this is for crappy honeycomb :)
         setSupportProgressBarIndeterminateVisibility(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

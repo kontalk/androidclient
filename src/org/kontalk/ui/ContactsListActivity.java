@@ -62,7 +62,7 @@ public class ContactsListActivity extends SherlockListActivity
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list);
 
-        setSupportProgressBarIndeterminate(true);
+        //setSupportProgressBarIndeterminate(true);
         // HACK this is for crappy honeycomb :)
         setSupportProgressBarIndeterminateVisibility(false);
 
