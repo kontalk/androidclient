@@ -23,5 +23,4 @@
     <dimen name="actionbar_height">42dp</dimen>
     <dimen name="actionbar_item_width">42dp</dimen>
     <dimen name="message_text_width">200dp</dimen>
-    <dimen name="message_text_margin_right">2dp</dimen>
 </resources>

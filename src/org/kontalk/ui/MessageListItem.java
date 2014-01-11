@@ -172,7 +172,8 @@ public class MessageListItem extends RelativeLayout {
          */
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
                 android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
-            formattedMessage.append("\u2060");
+        	// from http://stackoverflow.com/a/12303155/1045199
+        	formattedMessage.append("\u200b"); // was: \u2060
 
         if (linksFound)
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
