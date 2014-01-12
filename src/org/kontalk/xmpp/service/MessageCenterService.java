@@ -204,7 +204,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
 
-    /** Send this intent to accept a presence subscription. */
+    /**
+     * Broadcasted when a presence subscription has been accepted.
+     * Send this intent to accept a presence subscription.
+     */
     public static final String ACTION_SUBSCRIBED = "org.kontalk.action.SUBSCRIBED";
 
     /**
@@ -2101,7 +2104,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         sendPacket(vcard);
                 	}
 
-                    // TODO broadcast this
+                    // send a broadcast
+                    Intent i = new Intent(ACTION_SUBSCRIBED);
+                    i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
+                    i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+
+                    from = p.getFrom();
+                    String network = StringUtils.parseServer(from);
+                    // our network - convert to userId
+                    if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                        StringBuilder b = new StringBuilder();
+                        b.append(StringUtils.parseName(from));
+                        b.append(StringUtils.parseResource(from));
+                        i.putExtra(EXTRA_FROM_USERID, b.toString());
+                    }
+
+                    i.putExtra(EXTRA_FROM, from);
+                    i.putExtra(EXTRA_TO, p.getTo());
+
+                    mLocalBroadcastManager.sendBroadcast(i);
                 }
 
                 /*
