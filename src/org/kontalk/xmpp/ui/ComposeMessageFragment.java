@@ -1613,6 +1613,20 @@ public class ComposeMessageFragment extends ListFragment implements
                             }
                         }
                     }
+
+                    else if (MessageCenterService.ACTION_SUBSCRIBED.equals(action)) {
+                    	/*
+                    	 * Subscription was accepted. If public key was not available,
+                    	 * it means that we need to subscribe again.
+                    	 */
+
+                    	if (mConversation.getContact() == null || mConversation
+                    			.getContact().getPublicKeyRing() == null) {
+
+                    		presenceSubscribe();
+
+                    	}
+                    }
                 }
             };
 
@@ -1621,6 +1635,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	        filter.addAction(MessageCenterService.ACTION_PRESENCE);
 	        filter.addAction(MessageCenterService.ACTION_CONNECTED);
 	        filter.addAction(MessageCenterService.ACTION_MESSAGE);
+	        filter.addAction(MessageCenterService.ACTION_SUBSCRIBED);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
