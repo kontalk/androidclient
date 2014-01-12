@@ -1875,81 +1875,78 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         @Override
         public void processPacket(Packet packet) {
             VCard4 p = (VCard4) packet;
+
             // will be true if it's our card
             boolean myCard = false;
-
-            Intent i = new Intent(ACTION_VCARD);
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-            String from = p.getFrom();
-            String network = StringUtils.parseServer(from);
-            // our network - convert to userId
-            if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                StringBuilder b = new StringBuilder();
-
-                // is this our vCard?
-                String userId = StringUtils.parseName(from);
-                String hash = MessageUtils.sha1(mMyUsername);
-                if (userId.equalsIgnoreCase(hash))
-                	myCard = true;
-
-                b.append(userId);
-                b.append(StringUtils.parseResource(from));
-                i.putExtra(EXTRA_FROM_USERID, b.toString());
-            }
-
-            i.putExtra(EXTRA_FROM, from);
-            i.putExtra(EXTRA_TO, p.getTo());
-            i.putExtra(EXTRA_PUBLIC_KEY, p.getPGPKey());
-
-            Log.v(TAG, "broadcasting vcard: " + i);
-            mLocalBroadcastManager.sendBroadcast(i);
-
             byte[] _publicKey = p.getPGPKey();
 
-            if (myCard && _publicKey != null) {
-                byte[] bridgeCertData;
-                try {
-                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+            // vcard was requested, store but do not broadcast
+            if (p.getType() == IQ.Type.RESULT) {
 
-                    // TODO subjectAltName?
-                    bridgeCertData = X509Bridge.createCertificate(_publicKey,
-                        key.getSignKeyPair().getPrivateKey(), null).getEncoded();
-                }
-                catch (Exception e) {
-                    Log.e(TAG, "error decoding key data", e);
-                    bridgeCertData = null;
+                if (_publicKey != null) {
+
+    	            if (myCard) {
+    	                byte[] bridgeCertData;
+    	                try {
+    	                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
+
+    	                    // TODO subjectAltName?
+    	                    bridgeCertData = X509Bridge.createCertificate(_publicKey,
+    	                        key.getSignKeyPair().getPrivateKey(), null).getEncoded();
+    	                }
+    	                catch (Exception e) {
+    	                    Log.e(TAG, "error decoding key data", e);
+    	                    bridgeCertData = null;
+    	                }
+
+    	                if (bridgeCertData != null) {
+    	                    // store key data in AccountManager
+    	                    Authenticator.setDefaultPersonalKey(MessageCenterService.this,
+    	                        _publicKey, null, bridgeCertData);
+    	                    // invalidate cached personal key
+    	                    ((Kontalk)getApplicationContext()).invalidatePersonalKey();
+
+    	                    Log.v(TAG, "personal key updated.");
+    	                }
+    	            }
+
+    	            String userId = StringUtils.parseName(p.getFrom());
+    	            UsersProvider.setUserKey(MessageCenterService.this, userId, _publicKey);
                 }
 
-                if (bridgeCertData != null) {
-                    // store key data in AccountManager
-                    Authenticator.setDefaultPersonalKey(MessageCenterService.this,
-                        _publicKey, null, bridgeCertData);
-                    // invalidate cached personal key
-                    ((Kontalk)getApplicationContext()).invalidatePersonalKey();
-
-                    Log.v(TAG, "personal key updated.");
-                }
             }
 
-            /*
-            byte[] keydata = p.getPGPKey();
-            if (keydata != null) {
-                Log.i(TAG, "vcard has key (" + keydata.length + " bytes)");
+            // vcard coming from sync, send a broadcast but do not store
+            else if (p.getType() == IQ.Type.SET) {
 
-                String userId = StringUtils.parseName(vcard.getFrom());
-                // TODO this should be moved into Syncer
-                Uri offlineUri = Users.CONTENT_URI.buildUpon()
-                    .appendQueryParameter(Users.OFFLINE, "true").build();
+                Intent i = new Intent(ACTION_VCARD);
+                i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-                ContentValues values = new ContentValues(1);
-                values.put(Users.PUBLIC_KEY, keydata);
-                getContentResolver().update(offlineUri, values,
-                    Users.HASH + "=?", new String[] { userId });
+                String from = p.getFrom();
+                String network = StringUtils.parseServer(from);
+                // our network - convert to userId
+                if (network.equalsIgnoreCase(mServer.getNetwork())) {
+                    StringBuilder b = new StringBuilder();
 
-                //UsersProvider.setUserKey(MessageCenterService.this, userId, keydata);
+                    // is this our vCard?
+                    String userId = StringUtils.parseName(from);
+                    String hash = MessageUtils.sha1(mMyUsername);
+                    if (userId.equalsIgnoreCase(hash))
+                    	myCard = true;
+
+                    b.append(userId);
+                    b.append(StringUtils.parseResource(from));
+                    i.putExtra(EXTRA_FROM_USERID, b.toString());
+                }
+
+                i.putExtra(EXTRA_FROM, from);
+                i.putExtra(EXTRA_TO, p.getTo());
+                i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
+
+                Log.v(TAG, "broadcasting vcard: " + i);
+                mLocalBroadcastManager.sendBroadcast(i);
+
             }
-            */
         }
     }
 
@@ -2089,11 +2086,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 // presence subscription response
-                /*
                 else if (p.getType() == Presence.Type.subscribed) {
+
+            		String from = StringUtils.parseName(p.getFrom());
+
+                	if (UsersProvider.getPublicKey(MessageCenterService.this, from) == null) {
+                		// public key not found
+                		// assuming the user has allowed us, request it
+
+                        VCard4 vcard = new VCard4();
+                        vcard.setType(IQ.Type.GET);
+                        vcard.setTo(StringUtils.parseBareAddress(p.getFrom()));
+
+                        sendPacket(vcard);
+                	}
+
                     // TODO broadcast this
                 }
 
+                /*
                 else if (p.getType() == Presence.Type.unsubscribed) {
                     // TODO can this even happen?
                 }

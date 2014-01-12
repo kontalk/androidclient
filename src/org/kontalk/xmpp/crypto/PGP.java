@@ -368,8 +368,8 @@ public class PGP {
     }
 
     /** Returns the first master key found in the given public keyring. */
-    @SuppressWarnings("unchecked")
     public static PGPPublicKey getMasterKey(PGPPublicKeyRing publicKeyring) {
+        @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
@@ -383,6 +383,18 @@ public class PGP {
     /** Returns the first master key found in the given public keyring. */
     public static PGPPublicKey getMasterKey(byte[] publicKeyring) throws IOException, PGPException {
     	return getMasterKey(readPublicKeyring(publicKeyring));
+    }
+
+    public static PGPPublicKey getEncryptionKey(PGPPublicKeyRing publicKeyring) {
+        @SuppressWarnings("unchecked")
+		Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
+            if (pk.isEncryptionKey())
+                return pk;
+        }
+
+        return null;
     }
 
     public static PGPPublicKeyRing readPublicKeyring(byte[] publicKeyring) throws IOException, PGPException {

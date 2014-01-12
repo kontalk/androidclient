@@ -34,6 +34,7 @@ import org.kontalk.xmpp.sync.SyncAdapter;
 import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.MessageUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -554,8 +555,12 @@ public class UsersProvider extends ContentProvider {
         for (int i = 0; i < recipients.length; i++) {
             String rcpt = StringUtils.parseName(recipients[i]);
 
-            keys[i] = getPublicKey(context, rcpt);
-            if (keys[i] == null)
+            PGPPublicKeyRing ring = getPublicKey(context, rcpt);
+            if (ring == null)
+                throw new IllegalArgumentException("public key not found for user " + rcpt);
+
+        	keys[i] = PGP.getEncryptionKey(ring);
+        	if (keys[i] == null)
                 throw new IllegalArgumentException("public key not found for user " + rcpt);
         }
 
@@ -566,15 +571,19 @@ public class UsersProvider extends ContentProvider {
     public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
         String rcpt = StringUtils.parseName(sender);
 
-        PGPPublicKey senderKey = getPublicKey(context, rcpt);
-        if (senderKey == null)
+        PGPPublicKeyRing ring = getPublicKey(context, rcpt);
+        if (ring == null)
+            throw new IllegalArgumentException("public key not found for user " + rcpt);
+
+    	PGPPublicKey senderKey = PGP.getMasterKey(ring);
+    	if (senderKey == null)
             throw new IllegalArgumentException("public key not found for user " + rcpt);
 
         return new PGPCoder(server, key, senderKey);
     }
 
     /** Retrieves the public key for a user. */
-    public static PGPPublicKey getPublicKey(Context context, String userId) {
+    public static PGPPublicKeyRing getPublicKey(Context context, String userId) {
         byte[] keydata = null;
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(Users.CONTENT_URI,
@@ -589,7 +598,7 @@ public class UsersProvider extends ContentProvider {
         c.close();
 
         try {
-            return PGP.getMasterKey(keydata);
+            return PGP.readPublicKeyring(keydata);
         }
         catch (Exception e) {
             // ignored
@@ -598,6 +607,7 @@ public class UsersProvider extends ContentProvider {
         return null;
     }
 
+    /** Updates a user public key. */
     public static void setUserKey(Context context, String userId, byte[] keydata) {
         ContentValues values = new ContentValues(1);
         values.put(Users.PUBLIC_KEY, keydata);
