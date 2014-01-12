@@ -376,6 +376,7 @@ public class UsersProvider extends ContentProvider {
 
             try {
                 // query for phone numbers
+            	// FIXME this might return null on some devices
                 phones = cr.query(Phone.CONTENT_URI,
                     new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
                     null, null, null);
