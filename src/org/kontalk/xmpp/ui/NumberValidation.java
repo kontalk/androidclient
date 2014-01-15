@@ -126,10 +126,20 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private static final class RetainData {
         NumberValidator validator;
+        /** @derpecated Use saved instance state. */
+        @Deprecated
         CharSequence progressMessage;
+        /** @derpecated Use saved instance state. */
+        @Deprecated
         String name;
+        /** @derpecated Use saved instance state. */
+        @Deprecated
         String phoneNumber;
+        /** @derpecated Use saved instance state. */
+        @Deprecated
         PersonalKey key;
+        /** @derpecated Use saved instance state. */
+        @Deprecated
         boolean syncing;
     }
 
@@ -245,12 +255,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 setProgressMessage(data.progressMessage, true);
             }
         }
-
-        if (savedInstanceState != null) {
-        	mName = savedInstanceState.getString("name");
-            mPhoneNumber = savedInstanceState.getString("phoneNumber");
-            mKey = savedInstanceState.getParcelable("key");
-        }
     }
 
     @Override
@@ -259,6 +263,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         state.putString("name", mName);
         state.putString("phoneNumber", mPhoneNumber);
         state.putParcelable("key", mKey);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        mName = savedInstanceState.getString("name");
+        mPhoneNumber = savedInstanceState.getString("phoneNumber");
+        mKey = savedInstanceState.getParcelable("key");
     }
 
     /** Returning the validator thread. */
