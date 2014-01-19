@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -1020,46 +1019,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         p.setPacketID(packetId);
 		p.setTo(to);
 
-		Contact contact = Contact.findByUserId(this, userId);
-		PGPPublicKeyRing pubRing = contact.getPublicKeyRing();
-
-		if (pubRing != null) {
-
-			try {
-
-                PGPPublicKey pk = PGP.getMasterKey(pubRing);
-                String fingerprint = PGP.getFingerprint(pk);
-
-                // add user to whitelist
-                PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-
-                String listItem = to.toLowerCase(Locale.US) + "|" + fingerprint;
-                if (accepted) {
-                    Log.v(TAG, "accepting user " + to + " (" + fingerprint + ")");
-                	key.addToWhitelist(listItem);
-                }
-                else {
-                    Log.v(TAG, "blocking user " + to + " (" + fingerprint + ")");
-                	key.addToBlacklist(listItem);
-                }
-
-                // store key in account manager
-                key.updateAccountManager(MessageCenterService.this);
-
-                // send updated public key to server
-                VCard4 vcard = new VCard4();
-                vcard.setPGPKey(key.getEncodedPublicKeyRing());
-                vcard.setType(IQ.Type.SET);
-
-                sendPacket(vcard);
-			}
-
-			catch (Exception e) {
-				Log.e(TAG, "unable to add user to whitelist", e);
-				// TODO warn user
-			}
-		}
-
 		// send the subscribed response
 		sendPacket(p);
 
@@ -1913,8 +1872,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     	                }
     	            }
 
-    	            String userId = StringUtils.parseName(p.getFrom());
-    	            UsersProvider.setUserKey(MessageCenterService.this, userId, _publicKey);
+    	            try {
+	    	            String userId = StringUtils.parseName(p.getFrom());
+	    	            String fingerprint = PGP.getFingerprint(_publicKey);
+	    	            UsersProvider.setUserKey(MessageCenterService.this, userId,
+	    	            	_publicKey, fingerprint);
+    	            }
+    	            catch (Exception e) {
+    	            	// TODO warn user
+    	            	Log.e(TAG, "unable to update user key", e);
+    	            }
                 }
 
             }
@@ -1961,8 +1928,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             try {
 
-            	String jidFrom = StringUtils.parseBareAddress(p.getFrom());
-
 	            if (_pkey instanceof SubscribePublicKey) {
 	                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
 
@@ -1972,32 +1937,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     // store key to users table
                     String userId = StringUtils.parseName(p.getFrom());
-                    UsersProvider.setUserKey(MessageCenterService.this, userId, pkey.getKey());
-
-                    // add user to whitelist
-                    Log.v(TAG, "auto-accepting user " + jidFrom + " (" + fingerprint + ")");
-                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                    key.addToWhitelist(jidFrom.toLowerCase(Locale.US) + "|" + fingerprint);
-
-                    // store key in account manager
-                    key.updateAccountManager(MessageCenterService.this);
-
-                    // send updated public key to server
-                    VCard4 vcard = new VCard4();
-                    vcard.setPGPKey(key.getEncodedPublicKeyRing());
-                    vcard.setType(IQ.Type.SET);
-
-                    sendPacket(vcard);
-
-	            }
-
-	            else {
-
-                    // add user to whitelist
-                    Log.v(TAG, "auto-accepting user " + jidFrom);
-                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                    key.addToWhitelist(jidFrom.toLowerCase(Locale.US));
-
+                    UsersProvider.setUserKey(MessageCenterService.this, userId,
+                    	pkey.getKey(), fingerprint);
 	            }
 
                 Presence p2 = new Presence(Presence.Type.subscribed);
@@ -2056,7 +1997,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             	if (pk != null) {
                             		// set all parameters
 		                            name = PGP.getUserId(pk, mServer.getNetwork());
-		                            fingerprint = MessageUtils.bytesToHex(pk.getFingerprint());
+		                            fingerprint = PGP.getFingerprint(pk);
 		                            publicKey = _publicKey;
                             	}
                             }

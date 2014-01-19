@@ -30,17 +30,13 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.util.MessageUtils;
-import org.spongycastle.openpgp.PGPCustomUserAttributeSubpacketVectorGenerator;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPObjectFactory;
@@ -305,60 +301,6 @@ public class PersonalKey implements Parcelable {
 			mPair.signKey = new PGPKeyPair(revoked, mPair.signKey.getPrivateKey());
 
 		return revoked;
-	}
-
-	public PGPPublicKey addToBlacklist(String item)
-			throws SignatureException, PGPException {
-
-		return addToPrivacyList(item, PrivacyListAttribute.BLACKLIST, true);
-	}
-
-	public PGPPublicKey addToWhitelist(String item)
-			throws SignatureException, PGPException {
-
-		return addToPrivacyList(item, PrivacyListAttribute.WHITELIST, true);
-	}
-
-	private PGPPublicKey addToPrivacyList(String item, int type, boolean store)
-			throws SignatureException, PGPException {
-
-		// retrieve the old blacklist (if any)
-		PGPPublicKey pubKey = mPair.signKey.getPublicKey();
-		PGPPublicKey signed = pubKey;
-
-		PrivacyListAttribute oldAttr = PGP.getPrivacyListAttribute(pubKey, type);
-
-		List<String> newList = new ArrayList<String>();
-
-		if (oldAttr != null) {
-			Collection<String> oldList = oldAttr.getList();
-
-			// restore old items
-			newList.addAll(oldList);
-
-			// revoke old user attribute
-			PGPCustomUserAttributeSubpacketVectorGenerator vRev =
-				new PGPCustomUserAttributeSubpacketVectorGenerator();
-			vRev.setPrivacyListAttribute(type, oldList);
-
-			signed = PGP.revokeUserAttributes(mPair.signKey, signed, vRev.generate());
-		}
-
-		// add new item
-		if (!newList.contains(item))
-			newList.add(item);
-
-		// back to subpacket vector
-		PGPCustomUserAttributeSubpacketVectorGenerator vGen =
-			new PGPCustomUserAttributeSubpacketVectorGenerator();
-		vGen.setPrivacyListAttribute(type, newList);
-
-		signed = PGP.signUserAttributes(mPair.signKey, signed, vGen.generate());
-
-		if (store)
-			mPair.signKey = new PGPKeyPair(signed, mPair.signKey.getPrivateKey());
-
-		return signed;
 	}
 
 	/** Stores the public keyring to the system {@link AccountManager}. */

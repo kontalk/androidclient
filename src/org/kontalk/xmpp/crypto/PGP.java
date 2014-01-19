@@ -28,16 +28,12 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import org.kontalk.xmpp.util.MessageUtils;
 import org.spongycastle.bcpg.HashAlgorithmTags;
-import org.spongycastle.bcpg.UserAttributeSubpacket;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
-import org.spongycastle.openpgp.PGPCustomUserAttributeSubpacketVector;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
@@ -45,7 +41,6 @@ import org.spongycastle.openpgp.PGPKeyRingGenerator;
 import org.spongycastle.openpgp.PGPObjectFactory;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyHack;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
@@ -53,7 +48,6 @@ import org.spongycastle.openpgp.PGPSignatureGenerator;
 import org.spongycastle.openpgp.PGPUserAttributeSubpacketVector;
 import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.PGPDigestCalculator;
-import org.spongycastle.openpgp.operator.bc.BcPGPContentVerifierBuilderProvider;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
@@ -217,73 +211,6 @@ public class PGP {
 				PGPSignature.CERTIFICATION_REVOCATION);
     }
 
-    /** Searches for the first valid privacy list attribute subpacket with a valid signature. */
-    public static PrivacyListAttribute getPrivacyListAttribute(PGPPublicKey publicKey, int type)
-    		throws PGPException, SignatureException {
-
-    	// retrieve all privacy list attributes
-		@SuppressWarnings("unchecked")
-		Iterator<PGPUserAttributeSubpacketVector> packets = publicKey.getUserAttributes();
-
-		List<PrivacyListAttribute> attributes = new ArrayList<PrivacyListAttribute>();
-		while (packets.hasNext()) {
-			PGPUserAttributeSubpacketVector vector = packets.next();
-			UserAttributeSubpacket pkt = vector.getSubpacket(PrivacyListAttribute.ATTRIBUTE_TYPE);
-
-			if (pkt != null)
-				attributes.add(new PrivacyListAttribute(pkt.getData()));
-		}
-
-		long maxTimestamp = 0;
-		PrivacyListAttribute validAttribute = null;
-
-		// iterate the attributes checking for the latest valid signature
-		for (PrivacyListAttribute attr : attributes) {
-	    	PGPCustomUserAttributeSubpacketVector attrFilter =
-        		new PGPCustomUserAttributeSubpacketVector(new UserAttributeSubpacket[] { attr });
-
-			List<Iterator<PGPSignature>> sigs = PGPPublicKeyHack.getSignaturesForUserAttribute(publicKey, attrFilter);
-			for (Iterator<PGPSignature> iter : sigs) {
-				boolean revoked = false;
-				PGPSignature positive = null;
-
-				while (iter.hasNext()) {
-					PGPSignature sig = iter.next();
-
-					// verify signature
-					sig.init(new BcPGPContentVerifierBuilderProvider(), publicKey);
-
-					if (sig.verifyCertification(attrFilter, publicKey)) {
-
-						if (sig.getSignatureType() == PGPSignature.CERTIFICATION_REVOCATION) {
-							// signature revoked - don't waste more time
-							revoked = true;
-							break;
-						}
-
-						if (sig.getSignatureType() == PGPSignature.POSITIVE_CERTIFICATION) {
-							positive = sig;
-						}
-
-					}
-				}
-
-				if (!revoked && positive != null) {
-					// verify greater timestamp
-					long created = positive.getCreationTime().getTime();
-
-					if (created > maxTimestamp) {
-						maxTimestamp = created;
-						validAttribute = attr;
-					}
-				}
-			}
-
-		}
-
-		return validAttribute;
-    }
-
     /** Revokes the given key. */
     public static PGPPublicKey revokeKey(PGPKeyPair secret)
             throws PGPException, IOException, SignatureException {
@@ -353,6 +280,11 @@ public class PGP {
 
     public static String getFingerprint(PGPPublicKey publicKey) {
     	return MessageUtils.bytesToHex(publicKey.getFingerprint());
+    }
+
+    public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {
+    	PGPPublicKey pk = getMasterKey(publicKeyring);
+    	return MessageUtils.bytesToHex(pk.getFingerprint());
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
