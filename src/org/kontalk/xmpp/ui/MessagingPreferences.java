@@ -20,10 +20,12 @@ package org.kontalk.xmpp.ui;
 
 import java.io.InputStream;
 
+import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.ServerList;
+import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
 import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.service.ServerListUpdater;
@@ -48,6 +50,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -126,6 +129,37 @@ public final class MessagingPreferences extends PreferenceActivity {
                     Toast.LENGTH_LONG).show();
 
                 MessageCenterService.regenerateKeyPair(getApplicationContext());
+                return true;
+            }
+        });
+
+        // export key pair
+        final Preference exportKeyPair = findPreference("pref_export_keypair");
+        exportKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+        		// TODO check for external storage presence
+
+            	try {
+
+            		((Kontalk)getApplicationContext()).exportPersonalKey();
+
+                    Toast.makeText(MessagingPreferences.this,
+                    	// TODO i18n
+                		"Personal key pair exported to external storage.",
+                        Toast.LENGTH_LONG).show();
+
+            	}
+            	catch (Exception e) {
+
+                    Toast.makeText(MessagingPreferences.this,
+                    	// TODO i18n
+                		"Unable to export personal key.",
+                        Toast.LENGTH_LONG).show();
+
+            	}
+
                 return true;
             }
         });

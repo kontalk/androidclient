@@ -208,6 +208,12 @@ public class Kontalk extends Application {
         return mDefaultKey;
     }
 
+    public void exportPersonalKey()
+    		throws CertificateException, PGPException, IOException, NoSuchProviderException {
+
+    	Authenticator.exportDefaultPersonalKey(this, getCachedPassphrase(), true);
+    }
+
     /** Invalidates the cached personal key. */
     public void invalidatePersonalKey() {
         mDefaultKey = null;

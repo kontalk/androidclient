@@ -18,6 +18,8 @@
 
 package org.kontalk.xmpp.authenticator;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
@@ -35,6 +37,7 @@ import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
@@ -56,6 +59,9 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
     public static final String DATA_NAME = "org.kontalk.key.name";
+
+    public static final String PUBLIC_KEY_FILENAME = "kontalk-public.pgp";
+    public static final String PRIVATE_KEY_FILENAME = "kontalk-private.pgp";
 
     private final Context mContext;
     private final Handler mHandler;
@@ -116,6 +122,48 @@ public class Authenticator extends AbstractAccountAuthenticator {
                   passphrase,
                   Base64.decode(bridgeCertData, Base64.DEFAULT)
             );
+    }
+
+    public static void exportDefaultPersonalKey(Context ctx, String passphrase, boolean bridgeCertificate)
+    		throws CertificateException, NoSuchProviderException, PGPException, IOException {
+
+    	AccountManager m = AccountManager.get(ctx);
+	    Account acc = getDefaultAccount(m);
+
+        String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
+        String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
+        String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
+
+        File path = Environment.getExternalStorageDirectory();
+        FileOutputStream out;
+
+        byte[] publicKey = Base64.decode(pubKeyData, Base64.DEFAULT);
+        byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
+
+        if (bridgeCertificate) {
+            // this is needed to export a PKCS#12 file with the bridge certificate
+        	/*
+            PersonalKey key  = PersonalKey
+    	        .load(privateKey,
+    	              publicKey,
+    	              passphrase,
+    	              Base64.decode(bridgeCertData, Base64.DEFAULT)
+    	        );
+
+        	// TODO
+        	 */
+        }
+
+        // export public key
+        out = new FileOutputStream(new File(path, PUBLIC_KEY_FILENAME));
+        out.write(publicKey);
+        out.close();
+
+        // export private key
+        out = new FileOutputStream(new File(path, PRIVATE_KEY_FILENAME));
+        out.write(privateKey);
+        out.close();
+
     }
 
     public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData, byte[] bridgeCertData) {

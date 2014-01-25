@@ -140,6 +140,9 @@
         <Preference android:key="pref_regenerate_keypair"
             android:summary="@string/pref_title_regenerate_keypair"
             android:title="@string/pref_regenerate_keypair"/>
+        <Preference android:key="pref_export_keypair"
+            android:summary="@string/pref_title_export_keypair"
+            android:title="@string/pref_export_keypair"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"
