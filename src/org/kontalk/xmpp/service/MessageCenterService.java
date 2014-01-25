@@ -64,6 +64,7 @@ import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.AckServerReceipt;
 import org.kontalk.xmpp.client.BitsOfBinary;
+import org.kontalk.xmpp.client.BlockingCommand;
 import org.kontalk.xmpp.client.E2EEncryption;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
@@ -1012,21 +1013,34 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendSubscriptionReply(String userId, String packetId, boolean accepted) {
-		Presence p = new Presence(Presence.Type.subscribed);
-
         String to = MessageUtils.toJID(userId, mServer.getNetwork());
 
-        p.setPacketID(packetId);
-		p.setTo(to);
+    	if (accepted) {
+    		// standard response: subscribed
+			Presence p = new Presence(Presence.Type.subscribed);
 
-		// send the subscribed response
-		sendPacket(p);
 
-		// send a subscription request anyway
-		p = new Presence(Presence.Type.subscribe);
-		p.setTo(to);
+	        p.setPacketID(packetId);
+			p.setTo(to);
 
-		sendPacket(p);
+			// send the subscribed response
+			sendPacket(p);
+
+			// send a subscription request anyway
+			p = new Presence(Presence.Type.subscribe);
+			p.setTo(to);
+
+			sendPacket(p);
+    	}
+
+    	else {
+    		// blocking command: block
+    		IQ p = BlockingCommand.block(to);
+
+    		sendPacket(p);
+
+    		// TODO mark user as blocked
+    	}
 
 		// clear the request status
 		ContentValues values = new ContentValues(1);
