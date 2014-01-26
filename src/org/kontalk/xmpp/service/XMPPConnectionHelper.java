@@ -27,6 +27,7 @@ import org.kontalk.xmpp.client.ClientHTTPConnection;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
 import org.kontalk.xmpp.crypto.PersonalKey;
+import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
 import android.util.Log;
@@ -101,7 +102,7 @@ public class XMPPConnectionHelper extends Thread {
         connect();
     }
 
-    public void connectOnce(PersonalKey key) throws XMPPException {
+    public void connectOnce(PersonalKey key) throws XMPPException, PGPException {
         Log.d(TAG, "using server " + mServer.toString());
 
         if (mServerDirty) {
@@ -121,7 +122,7 @@ public class XMPPConnectionHelper extends Thread {
                 mConn = new KontalkConnection(mServer);
             else
                 mConn = new KontalkConnection(mServer,
-                    key.getSignKeyPair().getPrivateKey().getKey(),
+                    key.getBridgePrivateKey(),
                     key.getBridgeCertificate());
             if (mListener != null)
                 mListener.created();

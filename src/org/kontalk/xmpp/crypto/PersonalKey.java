@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -93,6 +94,10 @@ public class PersonalKey implements Parcelable {
 
     public X509Certificate getBridgeCertificate() {
         return mBridgeCert;
+    }
+
+    public PrivateKey getBridgePrivateKey() throws PGPException {
+    	return PGP.convertPrivateKey(mPair.signKey.getPrivateKey());
     }
 
     public PGPPublicKeyRing getPublicKeyRing() throws IOException {

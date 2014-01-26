@@ -40,6 +40,7 @@ import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.service.XMPPConnectionHelper;
 import org.kontalk.xmpp.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.xmpp.util.MessageUtils;
+import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
 import android.os.Handler;
@@ -329,7 +330,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return mStep;
     }
 
-    private void initConnection() throws XMPPException {
+    private void initConnection() throws XMPPException, PGPException {
         if (!mConnector.isConnected()) {
             mConnector.setListener(this);
             mConnector.connectOnce(null);

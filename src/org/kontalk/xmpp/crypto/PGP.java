@@ -72,6 +72,9 @@ public class PGP {
     // temporary flag for ECC experimentation
     private static final boolean EXPERIMENTAL_ECC = false;
 
+    /** Singleton for converting a PGP key to a JCA key. */
+    private static JcaPGPKeyConverter sKeyConverter;
+
     private PGP() {
     }
 
@@ -255,14 +258,13 @@ public class PGP {
     public static void toParcel(PGPDecryptedKeyPairRing pair, Parcel dest)
             throws NoSuchProviderException, PGPException {
 
-        // FIXME using deprecated methods
-        PrivateKey privSign = pair.signKey.getPrivateKey().getKey();
-        PublicKey pubSign = pair.signKey.getPublicKey().getKey(PROVIDER);
+        PrivateKey privSign = convertPrivateKey(pair.signKey.getPrivateKey());
+        PublicKey pubSign = convertPublicKey(pair.signKey.getPublicKey());
         int algoSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
         Date dateSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getTime();
 
-        PrivateKey privEnc = pair.encryptKey.getPrivateKey().getKey();
-        PublicKey pubEnc = pair.encryptKey.getPublicKey().getKey(PROVIDER);
+        PrivateKey privEnc = convertPrivateKey(pair.encryptKey.getPrivateKey());
+        PublicKey pubEnc = convertPublicKey(pair.encryptKey.getPublicKey());
         int algoEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
         Date dateEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getTime();
 
@@ -340,6 +342,21 @@ public class PGP {
         }
 
         throw new PGPException("invalid keyring data.");
+    }
+
+    private static void ensureKeyConverter() {
+    	if (sKeyConverter == null)
+    		sKeyConverter = new JcaPGPKeyConverter().setProvider(PGP.PROVIDER);
+    }
+
+    public static PrivateKey convertPrivateKey(PGPPrivateKey key) throws PGPException {
+    	ensureKeyConverter();
+    	return sKeyConverter.getPrivateKey(key);
+    }
+
+    public static PublicKey convertPublicKey(PGPPublicKey key) throws PGPException {
+    	ensureKeyConverter();
+    	return sKeyConverter.getPublicKey(key);
     }
 
 }
