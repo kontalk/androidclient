@@ -47,6 +47,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -70,8 +71,10 @@ public class Kontalk extends Application {
      * This should be asked to the user and stored in memory - otherwise use
      * a dummy password if user doesn't want to remember it (or optionally do
      * not encrypt the private key).
+     * For the moment, this is random-generated and stored as the account
+     * password in Android Account Manager.
      */
-    private String mKeyPassphrase = "test";
+    private String mKeyPassphrase;
 
     static {
         // register provider
@@ -142,7 +145,18 @@ public class Kontalk extends Application {
                     }
                 }
             };
-            AccountManager.get(this).addOnAccountsUpdatedListener(listener, mHandler, true);
+
+            AccountManager am = AccountManager.get(this);
+
+            // register listener to handle account removal
+            am.addOnAccountsUpdatedListener(listener, mHandler, true);
+
+            // cache passphrase from account
+            mKeyPassphrase = am.getPassword(account);
+
+            // HACK for testing with an already created key
+            am.setPassword(account, "test");
+            mKeyPassphrase = "test";
         }
 
         // enable/disable components

@@ -34,7 +34,6 @@ import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.packet.DataForm;
 import org.jivesoftware.smackx.provider.DataFormProvider;
-import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.service.XMPPConnectionHelper;
@@ -79,6 +78,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private final String mPhone;
     private PersonalKey mKey;
     private PGPKeyPairRing mKeyRing;
+    private String mPassphrase;
     private volatile Object mKeyLock = new Object();
 
     private final XMPPConnectionHelper mConnector;
@@ -92,12 +92,13 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private HandlerThread mServiceHandler;
     private Handler mInternalHandler;
 
-    public NumberValidator(Context context, EndpointServer server, String name, String phone, PersonalKey key) {
+    public NumberValidator(Context context, EndpointServer server, String name, String phone, PersonalKey key, String passphrase) {
         mContext = context.getApplicationContext();
         mServer = server;
         mName = name;
         mPhone = phone;
         mKey = key;
+        mPassphrase = passphrase;
 
         mConnector = new XMPPConnectionHelper(mContext, mServer, true);
         mConnector.setRetryEnabled(false);
@@ -380,9 +381,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             try {
                 String userId = MessageUtils.sha1(mPhone);
                 // TODO what in name and comment fields here?
-                mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(), mName,
-                    // TODO should we ask passphrase to the user?
-                    ((Kontalk)mContext.getApplicationContext()).getCachedPassphrase());
+                mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(),
+                    mName, mPassphrase);
                 publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
             }
             catch (Exception e) {

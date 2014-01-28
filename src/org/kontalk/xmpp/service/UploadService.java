@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.kontalk.xmpp.R;
-import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.provider.MessagesProvider;
 import org.kontalk.xmpp.ui.ConversationList;
 import org.kontalk.xmpp.ui.ProgressNotificationBuilder;
@@ -147,7 +146,7 @@ public class UploadService extends IntentService implements ProgressListener {
             mCanceled = false;
 
             if (mConn == null) {
-                String token = Authenticator.getDefaultAccountToken(this);
+                String token = null; //Authenticator.getDefaultAccountToken(this);
                 // TODO used class here should be decided by the caller
                 mConn = new KontalkBoxUploadConnection(this, url, token);
             }

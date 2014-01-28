@@ -31,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.kontalk.xmpp.R;
-import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.ClientHTTPConnection;
 import org.kontalk.xmpp.message.CompositeMessage;
 import org.kontalk.xmpp.provider.MyMessages.Messages;
@@ -121,7 +120,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         mCanceled = false;
 
         if (mDownloadClient == null) {
-            String token = Authenticator.getDefaultAccountToken(this);
+            String token = null; //Authenticator.getDefaultAccountToken(this);
             mDownloadClient = new ClientHTTPConnection(this, token);
         }
 

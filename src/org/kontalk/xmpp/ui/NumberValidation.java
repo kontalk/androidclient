@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.xmpp.BuildConfig;
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.R;
@@ -92,10 +93,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
 
-    public static final String PARAM_AUTHTOKEN_TYPE = "org.kontalk.authtokenType";
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
-    public static final String PARAM_AUTHTOKEN = "org.kontalk.authtoken";
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
 
@@ -110,11 +109,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private NumberValidator mValidator;
     private Handler mHandler;
 
-    private String mAuthtokenType;
     private String mPhoneNumber;
     private String mName;
 
     private PersonalKey mKey;
+    private String mPassphrase;
     private LocalBroadcastManager lbm;
 
     private boolean mFromInternal;
@@ -129,15 +128,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         /** @derpecated Use saved instance state. */
         @Deprecated
         CharSequence progressMessage;
-        /** @derpecated Use saved instance state. */
-        @Deprecated
-        String name;
-        /** @derpecated Use saved instance state. */
-        @Deprecated
-        String phoneNumber;
-        /** @derpecated Use saved instance state. */
-        @Deprecated
-        PersonalKey key;
         /** @derpecated Use saved instance state. */
         @Deprecated
         boolean syncing;
@@ -185,7 +175,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         lbm = LocalBroadcastManager.getInstance(getApplicationContext());
 
         final Intent intent = getIntent();
-        mAuthtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
         mFromInternal = intent.getBooleanExtra(PARAM_FROM_INTERNAL, false);
 
         mNameText = (EditText) findViewById(R.id.name);
@@ -244,10 +233,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     delayedSync();
                 }
 
-                mName = data.name;
-                mPhoneNumber = data.phoneNumber;
                 mValidator = data.validator;
-                mKey = data.key;
                 if (mValidator != null)
                     mValidator.setListener(this);
             }
@@ -263,6 +249,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         state.putString("name", mName);
         state.putString("phoneNumber", mPhoneNumber);
         state.putParcelable("key", mKey);
+        state.putString("passphrase", mPassphrase);
     }
 
     @Override
@@ -272,6 +259,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mName = savedInstanceState.getString("name");
         mPhoneNumber = savedInstanceState.getString("phoneNumber");
         mKey = savedInstanceState.getParcelable("key");
+        mPassphrase = savedInstanceState.getString("passphrase");
     }
 
     /** Returning the validator thread. */
@@ -279,9 +267,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public Object onRetainCustomNonConfigurationInstance() {
         RetainData data = new RetainData();
         data.validator = mValidator;
-        data.name = mName;
-        data.phoneNumber = mPhoneNumber;
-        data.key = mKey;
         if (mProgress != null) data.progressMessage = mProgressMessage;
         data.syncing = mSyncing;
         return data;
@@ -324,6 +309,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
             };
 
+            // random passphrase (40 characters!!!!)
+            mPassphrase = StringUtils.randomString(40);
+
             mKeyReceiver = new KeyGeneratedReceiver(mHandler, action);
 
             IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
@@ -364,7 +352,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
-            finishLogin(data.getStringExtra(PARAM_AUTHTOKEN), data.getByteArrayExtra(PARAM_PRIVATEKEY), data.getByteArrayExtra(PARAM_PUBLICKEY));
+            finishLogin(data.getByteArrayExtra(PARAM_PRIVATEKEY), data.getByteArrayExtra(PARAM_PUBLICKEY));
         }
     }
 
@@ -460,7 +448,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
             // key generation finished, start immediately
             EndpointServer server = MessagingPreferences.getEndpointServer(this);
-            mValidator = new NumberValidator(this, server, mName, mPhoneNumber, mKey);
+            mValidator = new NumberValidator(this, server, mName, mPhoneNumber, mKey, mPassphrase);
             mValidator.setListener(this);
             mValidator.start();
         }
@@ -616,7 +604,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
-    protected void finishLogin(final String token, final byte[] privateKeyData, final byte[] publicKeyData) {
+    protected void finishLogin(final byte[] privateKeyData, final byte[] publicKeyData) {
         Log.v(TAG, "finishing login");
 
         // update public key
@@ -636,11 +624,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
 
         // generate the bridge certificate
-        String passphrase = ((Kontalk) getApplicationContext()).getCachedPassphrase();
         byte[] bridgeCertData;
         try {
             // TODO subjectAltName?
-            bridgeCertData = X509Bridge.createCertificate(privateKeyData, publicKeyData, passphrase, null).getEncoded();
+            bridgeCertData = X509Bridge.createCertificate(privateKeyData, publicKeyData, mPassphrase, null).getEncoded();
         }
         catch (Exception e) {
             // abort
@@ -650,7 +637,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // workaround for bug in AccountManager (http://stackoverflow.com/a/11698139/1045199)
         // procedure will continue in removeAccount callback
         mAccountManager.removeAccount(account,
-            new AccountRemovalCallback(this, account, token,
+            new AccountRemovalCallback(this, account, mPassphrase,
                 privateKeyData, publicKeyData, bridgeCertData, mName),
             mHandler);
     }
@@ -718,6 +705,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("requestCode", requestCode);
         i.putExtra("name", mName);
         i.putExtra("phone", mPhoneNumber);
+        i.putExtra("passphrase", mPassphrase);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }
@@ -725,18 +713,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private static class AccountRemovalCallback implements AccountManagerCallback<Boolean> {
         private WeakReference<NumberValidation> a;
         private final Account account;
-        private final String token;
+        private final String passphrase;
         private final byte[] privateKeyData;
         private final byte[] publicKeyData;
         private final byte[] bridgeCertData;
         private final String name;
 
         public AccountRemovalCallback(NumberValidation activity, Account account,
-                String token, byte[] privateKeyData, byte[] publicKeyData,
+                String passphrase, byte[] privateKeyData, byte[] publicKeyData,
                 byte[] bridgeCertData, String name) {
             this.a = new WeakReference<NumberValidation>(activity);
             this.account = account;
-            this.token = token;
+            this.passphrase = passphrase;
             this.privateKeyData = privateKeyData;
             this.publicKeyData = publicKeyData;
             this.bridgeCertData = bridgeCertData;
@@ -757,8 +745,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 data.putString(Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
                 data.putString(Authenticator.DATA_NAME, name);
 
-                // the password is actually the auth token
-                am.addAccountExplicitly(account, token, data);
+                // this is the password to the private key
+                am.addAccountExplicitly(account, passphrase, data);
 
                 // Set contacts sync for this account.
                 ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
@@ -768,10 +756,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 final Intent intent = new Intent();
                 intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
                 intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE);
-                if (ctx.mAuthtokenType != null
-                    && ctx.mAuthtokenType.equals(Authenticator.AUTHTOKEN_TYPE)) {
-                    intent.putExtra(AccountManager.KEY_AUTHTOKEN, token);
-                }
+
                 ctx.setAccountAuthenticatorResult(intent.getExtras());
                 ctx.setResult(RESULT_OK, intent);
 

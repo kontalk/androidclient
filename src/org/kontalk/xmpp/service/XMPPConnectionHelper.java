@@ -22,7 +22,6 @@ import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.XMPPException;
 import org.kontalk.xmpp.Kontalk;
-import org.kontalk.xmpp.authenticator.Authenticator;
 import org.kontalk.xmpp.client.ClientHTTPConnection;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
@@ -46,7 +45,6 @@ public class XMPPConnectionHelper extends Thread {
     private final Context mContext;
     private EndpointServer mServer;
     private boolean mServerDirty;
-    private String mAuthToken;
 
     /** Connection retry count for exponential backoff. */
     private int mRetryCount;
@@ -74,8 +72,8 @@ public class XMPPConnectionHelper extends Thread {
      * @param context
      * @param server server to connect to.
      * @param limited if true connection will be carried out even when there is
-     * no token; connection will be available for unauthenticated operations
-     * only (e.g. registration).
+     * no personal key; connection will be available for unauthenticated
+     * operations only (e.g. registration).
      */
     public XMPPConnectionHelper(Context context, EndpointServer server, boolean limited) {
         super("XMPPConnector");
@@ -137,29 +135,29 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // login
-        if (mAuthToken != null)
-            mConn.login("dummy", mAuthToken);
+        if (key != null)
+            // the dummy values are not actually used
+            mConn.login("dummy", "dummy");
 
         if (mListener != null)
             mListener.authenticated();
     }
 
     public void connect() {
-        mAuthToken = Authenticator.getDefaultAccountToken(mContext);
-        if (mAuthToken == null && !mLimited) {
-            Log.w(TAG, "invalid token - exiting");
-            // unrecoverable error
-            if (mListener != null)
-                mListener.aborted(null);
-            return;
-        }
-
         PersonalKey key = null;
         try {
             key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
         }
         catch (Exception e) {
             Log.e(Kontalk.TAG, "unable to retrieve personal key - not using SSL", e);
+        }
+
+        if (key == null && !mLimited) {
+            Log.w(TAG, "no personal key found - exiting");
+            // unrecoverable error
+            if (mListener != null)
+                mListener.aborted(null);
+            return;
         }
 
         while (mConnecting) {

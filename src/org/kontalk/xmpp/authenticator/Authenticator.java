@@ -54,7 +54,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
     private static final String TAG = Authenticator.class.getSimpleName();
 
     public static final String ACCOUNT_TYPE = "org.kontalk.xmpp.account";
-    public static final String AUTHTOKEN_TYPE = "org.kontalk.token";
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
@@ -70,21 +69,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
         super(context);
         mContext = context;
         mHandler = new Handler(Looper.getMainLooper());
-    }
-
-    public static String getDefaultAccountToken(Context ctx) {
-        Account a = getDefaultAccount(ctx);
-        if (a != null) {
-            try {
-                AccountManager m = AccountManager.get(ctx);
-                return m.blockingGetAuthToken(a, AUTHTOKEN_TYPE, true);
-            }
-            catch (Exception e) {
-                Log.e(TAG, "unable to retrieve default account token", e);
-            }
-        }
-        Log.e(TAG, "default account NOT FOUND!");
-        return null;
     }
 
     public static Account getDefaultAccount(Context ctx) {
@@ -197,7 +181,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
         }
         else {
             final Intent intent = new Intent(mContext, NumberValidation.class);
-            intent.putExtra(NumberValidation.PARAM_AUTHTOKEN_TYPE, authTokenType);
             intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
             bundle.putParcelable(AccountManager.KEY_INTENT, intent);
         }
@@ -235,39 +218,14 @@ public class Authenticator extends AbstractAccountAuthenticator {
             Account account, String authTokenType, Bundle options)
             throws NetworkErrorException {
 
-        //Log.v(TAG, "auth token requested");
-        if (!authTokenType.equals(AUTHTOKEN_TYPE)) {
-            final Bundle result = new Bundle();
-            result.putString(AccountManager.KEY_ERROR_MESSAGE,
-                "invalid authTokenType");
-            return result;
-        }
-        final AccountManager am = AccountManager.get(mContext);
-        final String password = am.getPassword(account);
-        if (password != null && password.length() > 0) {
-            // exposing sensitive data - Log.v(TAG, "returning configured password: " + password);
-            final Bundle result = new Bundle();
-            result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-            result.putString(AccountManager.KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
-            result.putString(AccountManager.KEY_AUTHTOKEN, password);
-            return result;
-        }
-
-        Log.w(TAG, "token not found, deleting account");
-        // incorrect or missing password - remove account
-        AccountManager man = AccountManager.get(mContext);
-        man.removeAccount(account, null, null);
-
         final Bundle bundle = new Bundle();
-        bundle.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
+        bundle.putInt(AccountManager.KEY_ERROR_CODE, AccountManager.ERROR_CODE_UNSUPPORTED_OPERATION);
+        bundle.putString(AccountManager.KEY_ERROR_MESSAGE, "This authenticator does not support authentication tokens.");
         return bundle;
     }
 
     @Override
     public String getAuthTokenLabel(String authTokenType) {
-        if (authTokenType.equals(AUTHTOKEN_TYPE)) {
-            return mContext.getString(R.string.app_name);
-        }
         return null;
     }
 
