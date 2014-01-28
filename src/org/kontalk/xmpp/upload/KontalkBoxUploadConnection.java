@@ -21,9 +21,7 @@ import org.apache.http.util.EntityUtils;
 import org.kontalk.xmpp.Kontalk;
 import org.kontalk.xmpp.crypto.Coder;
 import org.kontalk.xmpp.crypto.PersonalKey;
-import org.kontalk.xmpp.provider.UsersProvider;
 import org.kontalk.xmpp.service.ProgressListener;
-import org.kontalk.xmpp.ui.MessagingPreferences;
 import org.kontalk.xmpp.util.ProgressInputStreamEntity;
 
 import android.content.Context;
