@@ -20,10 +20,10 @@ package org.kontalk.xmpp.ui;
 
 import org.kontalk.xmpp.R;
 import org.kontalk.xmpp.authenticator.Authenticator;
+import org.kontalk.xmpp.authenticator.LegacyAuthentication;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
-import org.kontalk.xmpp.service.MessageCenterService;
 import org.kontalk.xmpp.sync.SyncAdapter;
 
 import android.accounts.Account;
@@ -95,7 +95,8 @@ public class ConversationList extends ActionBarActivity
                 Toast.makeText(this, R.string.msg_generating_keypair,
                     Toast.LENGTH_LONG).show();
 
-                MessageCenterService.regenerateKeyPair(getApplicationContext());
+                // upgrade account
+                LegacyAuthentication.doUpgrade(getApplicationContext());
             }
         }
     }

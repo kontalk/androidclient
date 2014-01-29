@@ -22,6 +22,7 @@ import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.XMPPException;
 import org.kontalk.xmpp.Kontalk;
+import org.kontalk.xmpp.authenticator.LegacyAuthentication;
 import org.kontalk.xmpp.client.ClientHTTPConnection;
 import org.kontalk.xmpp.client.EndpointServer;
 import org.kontalk.xmpp.client.KontalkConnection;
@@ -101,6 +102,10 @@ public class XMPPConnectionHelper extends Thread {
     }
 
     public void connectOnce(PersonalKey key) throws XMPPException, PGPException {
+        connectOnce(key, null);
+    }
+
+    private void connectOnce(PersonalKey key, String token) throws XMPPException, PGPException {
         Log.d(TAG, "using server " + mServer.toString());
 
         if (mServerDirty) {
@@ -137,7 +142,7 @@ public class XMPPConnectionHelper extends Thread {
         // login
         if (key != null)
             // the dummy values are not actually used
-            mConn.login("dummy", "dummy");
+            mConn.login("dummy", token != null ? token : "dummy");
 
         if (mListener != null)
             mListener.authenticated();
@@ -152,7 +157,9 @@ public class XMPPConnectionHelper extends Thread {
             Log.e(Kontalk.TAG, "unable to retrieve personal key - not using SSL", e);
         }
 
-        if (key == null && !mLimited) {
+        String token = LegacyAuthentication.getAuthToken(mContext);
+
+        if (key == null && token == null && !mLimited) {
             Log.w(TAG, "no personal key found - exiting");
             // unrecoverable error
             if (mListener != null)
@@ -162,7 +169,7 @@ public class XMPPConnectionHelper extends Thread {
 
         while (mConnecting) {
             try {
-                connectOnce(key);
+                connectOnce(key, token);
 
                 // this should be the right moment
                 mRetryCount = 0;

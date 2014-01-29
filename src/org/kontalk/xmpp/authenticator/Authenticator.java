@@ -59,6 +59,10 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
     public static final String DATA_NAME = "org.kontalk.key.name";
 
+    /** @deprecated This was obviously deprecated from the beginning. */
+    @Deprecated
+    public static final String DATA_AUTHTOKEN = "org.kontalk.token";
+
     public static final String PUBLIC_KEY_FILENAME = "kontalk-public.pgp";
     public static final String PRIVATE_KEY_FILENAME = "kontalk-private.pgp";
 
