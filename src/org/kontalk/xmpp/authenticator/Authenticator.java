@@ -22,9 +22,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 
 import org.kontalk.xmpp.R;
+import org.kontalk.xmpp.crypto.PGP;
 import org.kontalk.xmpp.crypto.PersonalKey;
 import org.kontalk.xmpp.ui.NumberValidation;
 import org.spongycastle.openpgp.PGPException;
@@ -65,6 +67,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     public static final String PUBLIC_KEY_FILENAME = "kontalk-public.pgp";
     public static final String PRIVATE_KEY_FILENAME = "kontalk-private.pgp";
+    public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
+    public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
 
     private final Context mContext;
     private final Handler mHandler;
@@ -120,7 +124,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
         String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
-        String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
 
         File path = Environment.getExternalStorageDirectory();
         FileOutputStream out;
@@ -129,17 +132,20 @@ public class Authenticator extends AbstractAccountAuthenticator {
         byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
 
         if (bridgeCertificate) {
-            // this is needed to export a PKCS#12 file with the bridge certificate
-        	/*
-            PersonalKey key  = PersonalKey
-    	        .load(privateKey,
-    	              publicKey,
-    	              passphrase,
-    	              Base64.decode(bridgeCertData, Base64.DEFAULT)
-    	        );
+        	// bridge certificate is just plain data
+            String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
+            byte[] bridgeCert = Base64.decode(bridgeCertData, Base64.DEFAULT);
 
-        	// TODO
-        	 */
+            // export bridge certificate
+            out = new FileOutputStream(new File(path, BRIDGE_CERT_FILENAME));
+            out.write(bridgeCert);
+            out.close();
+
+            // export bridge private key
+        	PrivateKey bridgeKey = PGP.convertPrivateKey(privateKey, passphrase);
+            out = new FileOutputStream(new File(path, BRIDGE_KEY_FILENAME));
+            out.write(bridgeKey.getEncoded());
+            out.close();
         }
 
         // export public key
@@ -151,7 +157,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
         out = new FileOutputStream(new File(path, PRIVATE_KEY_FILENAME));
         out.write(privateKey);
         out.close();
-
     }
 
     public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData, byte[] bridgeCertData) {

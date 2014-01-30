@@ -42,16 +42,22 @@ import org.spongycastle.openpgp.PGPObjectFactory;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.spongycastle.openpgp.PGPSecretKey;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
 import org.spongycastle.openpgp.PGPUserAttributeSubpacketVector;
 import org.spongycastle.openpgp.PGPUtil;
+import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
+import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculator;
+import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
+import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
@@ -354,9 +360,37 @@ public class PGP {
     	return sKeyConverter.getPrivateKey(key);
     }
 
+    @SuppressWarnings("unchecked")
+	public static PrivateKey convertPrivateKey(byte[] privateKeyData, String passphrase)
+    		throws PGPException, IOException {
+
+        PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
+            .setProvider(PGP.PROVIDER)
+            .build(passphrase.toCharArray());
+
+        // load the secret key ring
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+
+        // search and decrypt the master (signing key)
+        // secret keys
+        Iterator<PGPSecretKey> skeys = secRing.getSecretKeys();
+        while (skeys.hasNext()) {
+            PGPSecretKey key = skeys.next();
+            PGPSecretKey sec = secRing.getSecretKey();
+
+            if (key.isMasterKey())
+                return convertPrivateKey(sec.extractPrivateKey(decryptor));
+        }
+
+        throw new PGPException("no suitable private key found.");
+    }
+
     public static PublicKey convertPublicKey(PGPPublicKey key) throws PGPException {
     	ensureKeyConverter();
     	return sKeyConverter.getPublicKey(key);
     }
+
 
 }

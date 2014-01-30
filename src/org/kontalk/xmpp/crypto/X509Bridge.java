@@ -18,15 +18,21 @@
 
 package org.kontalk.xmpp.crypto;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
@@ -340,6 +346,26 @@ public class X509Bridge {
     public static X509Certificate fromParcel(Parcel in) throws PGPException {
         // TODO
         return null;
+    }
+
+    public static X509Certificate load(byte[] certData)
+    		throws CertificateException, NoSuchProviderException {
+
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509", PGP.PROVIDER);
+        InputStream in = new ByteArrayInputStream(certData);
+        return (X509Certificate) certFactory.generateCertificate(in);
+    }
+
+    public static KeyStore exportCertificate(X509Certificate certificate, PrivateKey privateKey)
+    		throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
+
+        KeyStore store = KeyStore.getInstance("PKCS12", PGP.PROVIDER);
+
+        store.load(null, null);
+
+        store.setKeyEntry("Kontalk Personal Key", privateKey, null, new Certificate[] { certificate });
+
+        return store;
     }
 
 }

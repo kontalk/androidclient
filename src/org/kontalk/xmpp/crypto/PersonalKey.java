@@ -18,10 +18,8 @@
 
 package org.kontalk.xmpp.crypto;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -29,7 +27,6 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
@@ -206,9 +203,7 @@ public class PersonalKey implements Parcelable {
         }
 
         // X.509 bridge certificate
-        CertificateFactory certFactory = CertificateFactory.getInstance("X.509", PGP.PROVIDER);
-        InputStream in = new ByteArrayInputStream(bridgeCertData);
-        X509Certificate bridgeCert = (X509Certificate) certFactory.generateCertificate(in);
+        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
 
         /* TEST
         X500Principal subject = bridgeCert.getSubjectX500Principal();
