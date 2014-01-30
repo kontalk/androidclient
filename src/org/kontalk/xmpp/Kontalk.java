@@ -47,7 +47,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -150,69 +149,16 @@ public class Kontalk extends Application {
 
             // register listener to handle account removal
             am.addOnAccountsUpdatedListener(listener, mHandler, true);
-
-            // cache passphrase from account
-            mKeyPassphrase = am.getPassword(account);
-
-            // HACK for testing with an already created key
-            am.setPassword(account, "test");
-            mKeyPassphrase = "test";
         }
 
         // enable/disable components
         setServicesEnabled(this, account != null);
-
-        /* TEST encryption
-        try {
-            byte[] data = "TESTDATA".getBytes();
-
-            PersonalKey key = getPersonalKey();
-            PGPKeyPair enc = key.getEncryptKeyPair();
-
-            // will contain encrypted data
-            ByteArrayOutputStream eOut = new ByteArrayOutputStream();
-            ArmoredOutputStream aOut = new ArmoredOutputStream(eOut);
-
-            BcPGPDataEncryptorBuilder builder = new BcPGPDataEncryptorBuilder(PGPEncryptedData.TRIPLE_DES);
-            PGPEncryptedDataGenerator eg = new PGPEncryptedDataGenerator(builder.setSecureRandom(new SecureRandom()));
-            eg.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(enc.getPublicKey()));
-
-            OutputStream cOut = eg.open(aOut, 1024);
-
-            PGPLiteralDataGenerator litgen = new PGPLiteralDataGenerator();
-            OutputStream fOut = litgen.open(cOut, PGPLiteralDataGenerator.UTF8, "", new Date(), new byte[1024]);
-            fOut.write(data);
-            fOut.close();
-
-            cOut.close();
-            aOut.close();
-
-            byte[] encrypted = eOut.toByteArray();
-            Log.v(TAG, "data = " + data.length + " bytes, encrypted data = " + encrypted.length + " bytes");
-            OutputStream out = new FileOutputStream(new File(Environment.getExternalStorageDirectory(), "enc.pgp"));
-            out.write(encrypted);
-            out.close();
-        }
-        catch (Exception e) {
-            Log.e(TAG, "key test error", e);
-        }
-        */
-
-        /* TEST delete key data :D
-        AccountManager am = AccountManager.get(this);
-        Account acc = Authenticator.getDefaultAccount(am);
-        if (acc != null) {
-            am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, null);
-            am.setUserData(acc, Authenticator.DATA_PUBLICKEY, null);
-            am.setUserData(acc, Authenticator.DATA_BRIDGECERT, null);
-        }
-        */
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {
         try {
             if (mDefaultKey == null)
-                mDefaultKey = Authenticator.loadDefaultPersonalKey(this, mKeyPassphrase);
+                mDefaultKey = Authenticator.loadDefaultPersonalKey(this, getCachedPassphrase());
         }
         catch (NoSuchProviderException e) {
             // this shouldn't happen, so crash the application
@@ -233,7 +179,17 @@ public class Kontalk extends Application {
         mDefaultKey = null;
     }
 
+    private void ensureCachedPassphrase() {
+    	if (mKeyPassphrase == null) {
+            AccountManager am = AccountManager.get(this);
+            Account account = Authenticator.getDefaultAccount(am);
+            // cache passphrase from account
+            mKeyPassphrase = am.getPassword(account);
+    	}
+    }
+
     public String getCachedPassphrase()  {
+    	ensureCachedPassphrase();
         return mKeyPassphrase;
     }
 

@@ -237,7 +237,7 @@ public class PGP {
     }
 
     public static PGPDecryptedKeyPairRing fromParcel(Parcel in) throws PGPException {
-        JcaPGPKeyConverter conv = new JcaPGPKeyConverter().setProvider(PROVIDER);
+    	ensureKeyConverter();
 
         // TODO read byte data
         PrivateKey privSign = (PrivateKey) in.readSerializable();
@@ -245,8 +245,8 @@ public class PGP {
         int algoSign = in.readInt();
         Date dateSign = new Date(in.readLong());
 
-        PGPPublicKey pubKeySign = conv.getPGPPublicKey(algoSign, pubSign, dateSign);
-        PGPPrivateKey privKeySign = conv.getPGPPrivateKey(pubKeySign, privSign);
+        PGPPublicKey pubKeySign = sKeyConverter.getPGPPublicKey(algoSign, pubSign, dateSign);
+        PGPPrivateKey privKeySign = sKeyConverter.getPGPPrivateKey(pubKeySign, privSign);
         PGPKeyPair signKp = new PGPKeyPair(pubKeySign, privKeySign);
 
         PrivateKey privEnc = (PrivateKey) in.readSerializable();
@@ -254,8 +254,8 @@ public class PGP {
         int algoEnc = in.readInt();
         Date dateEnc = new Date(in.readLong());
 
-        PGPPublicKey pubKeyEnc = conv.getPGPPublicKey(algoEnc, pubEnc, dateEnc);
-        PGPPrivateKey privKeyEnc = conv.getPGPPrivateKey(pubKeyEnc, privEnc);
+        PGPPublicKey pubKeyEnc = sKeyConverter.getPGPPublicKey(algoEnc, pubEnc, dateEnc);
+        PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
         PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
 
         return new PGPDecryptedKeyPairRing(signKp, encryptKp);
