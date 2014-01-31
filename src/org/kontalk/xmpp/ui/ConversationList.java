@@ -29,12 +29,15 @@ import org.kontalk.xmpp.sync.SyncAdapter;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
+import android.text.InputType;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.Toast;
@@ -90,15 +93,50 @@ public class ConversationList extends ActionBarActivity
         AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
-            if (!Authenticator.hasPersonalKey(am, account)) {
+            if (!Authenticator.hasPersonalKey(am, account))
+            	askForPersonalName();
+        }
+    }
+
+    private void askForPersonalName() {
+    	DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
                 // no key pair found, generate a new one
-                Toast.makeText(this, R.string.msg_generating_keypair,
-                    Toast.LENGTH_LONG).show();
+                Toast.makeText(ConversationList.this,
+                	R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
+
+                String name = ((InputDialog) dialog).getText().toString();
 
                 // upgrade account
-                LegacyAuthentication.doUpgrade(getApplicationContext());
-            }
-        }
+                LegacyAuthentication.doUpgrade(getApplicationContext(), name);
+
+			}
+		};
+
+		DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
+			public void onCancel(DialogInterface dialog) {
+				new AlertDialog.Builder(ConversationList.this)
+					// TODO i18n
+					.setTitle("No personal key")
+					.setMessage("A personal key is currently unavailable (probably because you just upgraded). You will not be able to login into the Kontalk network if you don't generate a personal key. Please insert your name by closing Kontalk and opening it again.")
+					.setPositiveButton(android.R.string.ok, null)
+					.show();
+			}
+		};
+
+    	new InputDialog.Builder(this,
+    			InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
+    		// TODO i18n
+    		.setTitle("Your name")
+    		.setMessage("Please insert your name.")
+    		.setPositiveButton(android.R.string.ok, okListener)
+    		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			})
+    		.setOnCancelListener(cancelListener)
+    		.show();
     }
 
     /** Called when a new intent is sent to the activity (if already started). */

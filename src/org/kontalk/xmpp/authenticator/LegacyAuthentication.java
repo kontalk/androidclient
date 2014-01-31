@@ -40,7 +40,7 @@ public class LegacyAuthentication {
      * Upgrades the default account for XMPP.
      * Account password is moved to an account user data attribute.
      */
-    public static void doUpgrade(Context context) {
+    public static void doUpgrade(Context context, String name) {
         AccountManager am = AccountManager.get(context);
         Account account = Authenticator.getDefaultAccount(am);
 
@@ -49,6 +49,9 @@ public class LegacyAuthentication {
 
             // save auth token for later use
             am.setUserData(account, Authenticator.DATA_AUTHTOKEN, token);
+
+            // save uid name
+            am.setUserData(account, Authenticator.DATA_NAME, name);
 
             // start key pair generation
             MessageCenterService.regenerateKeyPair(context);
