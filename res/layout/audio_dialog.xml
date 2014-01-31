@@ -3,9 +3,10 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"  xmlns:app="http://schemas.android.com/apk/res/org.kontalk.xmpp">
-<FrameLayout 
+<FrameLayout
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" >
+
     <ImageView
         android:id="@+id/image_audio"
         android:layout_width="wrap_content"
@@ -13,14 +14,12 @@
         android:layout_gravity="center"
         android:src="@drawable/mic" />
 
-    
-    <de.passsy.holocircularprogressbar.HoloCircularProgressBar
-        android:id="@+id/holoCircularProgressBar1"
-        android:layout_width="181dp"
+    <org.kontalk.xmpp.ui.CircularSeekBar
+		android:id="@+id/circularSeekBar"
+	    android:layout_width="181dp"
         android:layout_height="188dp"
         android:layout_gravity="center|center_vertical"
-        app:progress_background_color="@android:color/transparent"
-        app:progress_color="@android:color/transparent" />
+        app:move_outside_circle="false"/>
 
 </FrameLayout>
 
@@ -32,4 +31,5 @@
         android:textAppearance="@android:style/TextAppearance.Large"
         android:layout_marginBottom="10dp"
         android:text="0:00"/>
+
 </LinearLayout>
