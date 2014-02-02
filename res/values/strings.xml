@@ -89,12 +89,12 @@
     <string name="pref_restart_msgcenter">Restart message center</string>
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
     <string name="pref_idle_time">Disconnect when idle</string>
-    <string name="pref_title_idle_time">Works only if push notifications are enabled and supported by server</string>
+    <string name="pref_title_idle_time">How long to wait before disconnecting for inactivity</string>
     <string name="pref_wakeup_time">Reconnect to server</string>
     <string name="pref_title_wakeup_time">How long to wait before reconnecting to the server after an inactivity period. Works only if push notifications are off</string>
     <string name="pref_maintenance">Maintenance</string>
-    <string name="pref_regenerate_keypair">Regenerate key pair</string>
-    <string name="pref_title_regenerate_keypair">Use this in case your personal key pair has been compromised</string>
+    <string name="pref_regenerate_keypair">Regenerate personal key</string>
+    <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
     <string name="contacts_list_title">Choose a contact</string>
     <string name="pref_messaging_settings">Messaging settings</string>
     <string name="pref_privacy_settings">Privacy settings</string>
@@ -206,7 +206,7 @@
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
     <string name="pref_export_keypair">Export personal key</string>
-    <string name="pref_title_export_keypair">Export key pair data to external storage</string>
+    <string name="pref_title_export_keypair">Export personal key and login certificate to external storage</string>
 
     <string name="msg_status_sending">Sending</string>
     <string name="msg_status_sent">Sent</string>
@@ -252,11 +252,14 @@
 
     <string name="donate_text">Kontalk needs money to keep running. Please consider a donation, even a small one.</string>
 
-    <string name="msg_generating_keypair">Generating keypair in the background.</string>
-    <string name="msg_gen_keypair_complete">Key pair regeneration completed.</string>
-    <string name="notify_gen_keypair_ticker">Generating key pair&#8230;</string>
-    <string name="notify_gen_keypair_title">Generating key pair</string>
+    <string name="msg_generating_keypair">Generating personal key in the background.</string>
+    <string name="msg_gen_keypair_complete">Personal key regeneration completed.</string>
+    <string name="notify_gen_keypair_ticker">Generating personal key&#8230;</string>
+    <string name="notify_gen_keypair_title">Generating personal key</string>
     <string name="notify_gen_keypair_text">You can continue to work normally.</string>
+
+    <string name="title_no_personal_key">No personal key</string>
+    <string name="msg_no_personal_key">A personal key is currently unavailable (probably because you just upgraded). You will not be able to login into the Kontalk network if you don\'t generate a personal key. Please insert your name by closing Kontalk and opening it again.</string>
 
     <string name="security_status_good">good</string>
     <string name="security_status_bad">bad</string>

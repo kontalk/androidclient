@@ -116,9 +116,8 @@ public class ConversationList extends ActionBarActivity
 		DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
 			public void onCancel(DialogInterface dialog) {
 				new AlertDialog.Builder(ConversationList.this)
-					// TODO i18n
-					.setTitle("No personal key")
-					.setMessage("A personal key is currently unavailable (probably because you just upgraded). You will not be able to login into the Kontalk network if you don't generate a personal key. Please insert your name by closing Kontalk and opening it again.")
+					.setTitle(R.string.title_no_personal_key)
+					.setMessage(R.string.msg_no_personal_key)
 					.setPositiveButton(android.R.string.ok, null)
 					.show();
 			}
@@ -126,9 +125,8 @@ public class ConversationList extends ActionBarActivity
 
     	new InputDialog.Builder(this,
     			InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
-    		// TODO i18n
-    		.setTitle("Your name")
-    		.setMessage("Please insert your name.")
+    		.setTitle(R.string.title_no_name)
+    		.setMessage(R.string.msg_no_name)
     		.setPositiveButton(android.R.string.ok, okListener)
     		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
