@@ -1632,11 +1632,21 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	/** Sends a subscription request for the current peer. */
 	private void presenceSubscribe() {
+		// pre-approve our presence if we don't have contact's key
+		Contact c = mConversation.getContact();
+		if (c == null || c.getPublicKeyRing() == null) {
+	        Intent i = new Intent(getActivity(), MessageCenterService.class);
+	        i.setAction(MessageCenterService.ACTION_PRESENCE);
+	        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
+	        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+	        getActivity().startService(i);
+		}
+
         // send subscription request
         Intent i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, "subscribe");
+        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
         getActivity().startService(i);
 	}
 
