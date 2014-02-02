@@ -260,6 +260,7 @@
 
     <string name="title_no_personal_key">No personal key</string>
     <string name="msg_no_personal_key">A personal key is currently unavailable (probably because you just upgraded). You will not be able to login into the Kontalk network if you don\'t generate a personal key. Please insert your name by closing Kontalk and opening it again.</string>
+    <string name="msg_keypair_exported">Personal key and login certificate exported to external storage.</string>
 
     <string name="security_status_good">good</string>
     <string name="security_status_bad">bad</string>

@@ -144,8 +144,7 @@ public final class MessagingPreferences extends PreferenceActivity {
             		((Kontalk)getApplicationContext()).exportPersonalKey();
 
                     Toast.makeText(MessagingPreferences.this,
-                    	// TODO i18n
-                		"Personal key pair exported to external storage.",
+                		R.string.msg_keypair_exported,
                         Toast.LENGTH_LONG).show();
 
             	}
