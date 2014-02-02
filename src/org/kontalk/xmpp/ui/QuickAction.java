@@ -40,7 +40,10 @@ import android.widget.PopupWindow.OnDismissListener;
  *
  * Contributors:
  * - Kevin Peck <kevinwpeck@gmail.com>
+ *
+ * @deprecated to be replaced by the bottom popup window
  */
+@Deprecated
 public class QuickAction extends PopupWindows implements OnDismissListener {
 	private View mRootView;
 	private ImageView mArrowUp;

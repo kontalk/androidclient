@@ -35,7 +35,9 @@ import android.content.Context;
  *
  * @author Lorensius W. L. T <lorenz@londatiga.net>
  *
+ * @deprecated to be replaced by the bottom popup window
  */
+@Deprecated
 public class PopupWindows {
 	protected Context mContext;
 	protected PopupWindow mWindow;

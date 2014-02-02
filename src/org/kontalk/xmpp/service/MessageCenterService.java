@@ -77,7 +77,6 @@ import org.kontalk.xmpp.client.SentServerReceipt;
 import org.kontalk.xmpp.client.ServerReceipt;
 import org.kontalk.xmpp.client.ServerReceiptRequest;
 import org.kontalk.xmpp.client.StanzaGroupExtension;
-import org.kontalk.xmpp.client.StanzaGroupExtensionProvider;
 import org.kontalk.xmpp.client.SubscribePublicKey;
 import org.kontalk.xmpp.client.UploadExtension;
 import org.kontalk.xmpp.client.UploadInfo;
@@ -442,7 +441,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
         pm.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
         pm.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
-        pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtensionProvider());
+        pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
         pm.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());

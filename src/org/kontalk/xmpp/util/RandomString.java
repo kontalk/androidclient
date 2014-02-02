@@ -20,7 +20,13 @@ package org.kontalk.xmpp.util;
 
 import java.util.Random;
 
+import org.jivesoftware.smack.util.StringUtils;
 
+
+/**
+ * @deprecated Use {@link StringUtils#randomString(int)}
+ */
+@Deprecated
 public class RandomString {
     private static final char[] symbols = new char[36];
 
