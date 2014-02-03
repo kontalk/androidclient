@@ -242,9 +242,7 @@ public class Conversation {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    if (MessagesProvider.getThreadUnreadCount(mContext, mThreadId) > 0) {
-                        MessagesProvider.markThreadAsRead(mContext, mThreadId);
-                    }
+                    MessagesProvider.markThreadAsRead(mContext, mThreadId);
 
                     MessagingNotification.updateMessagesNotification(mContext.getApplicationContext(), false);
                 }
