@@ -57,10 +57,17 @@ import android.widget.TextView;
  */
 public class MessageListItem extends RelativeLayout {
     //private static final String TAG = MessageListItem.class.getSimpleName();
+
+	/**
+	 * Maximum affordable size of a text message to make complex stuff
+	 * (e.g. emoji, linkify, etc.)
+	 */
+	private static final int MAX_AFFORDABLE_SIZE = 10240;	// 10 KB
+
     static private Drawable sDefaultContactImage;
 
     private CompositeMessage mMessage;
-    private SpannableStringBuilder formattedMessage;
+    private SpannableStringBuilder mFormattedMessage;
     private MessageItemTextView mTextView;
     private ImageView mStatusIcon;
     private ImageView mWarningIcon;
@@ -151,7 +158,7 @@ public class MessageListItem extends RelativeLayout {
             final Contact contact, final Pattern highlight) {
         mMessage = msg;
 
-        formattedMessage = formatMessage(contact, highlight);
+        mFormattedMessage = formatMessage(contact, highlight);
         String size = MessagingPreferences.getFontSize(context);
         int sizeId;
         if (size.equals("small"))
@@ -163,7 +170,9 @@ public class MessageListItem extends RelativeLayout {
         mTextView.setTextAppearance(context, sizeId);
 
         // linkify!
-        boolean linksFound = Linkify.addLinks(formattedMessage, Linkify.ALL);
+        boolean linksFound = false;
+        if (mFormattedMessage.length() < MAX_AFFORDABLE_SIZE)
+        	linksFound = Linkify.addLinks(mFormattedMessage, Linkify.ALL);
 
         /*
          * workaround for bugs:
@@ -174,14 +183,14 @@ public class MessageListItem extends RelativeLayout {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
                 android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
         	// from http://stackoverflow.com/a/12303155/1045199
-        	formattedMessage.append("\u200b"); // was: \u2060
+        	mFormattedMessage.append("\u200b"); // was: \u2060
 
         if (linksFound)
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
         else
             mTextView.setMovementMethod(null);
 
-        mTextView.setText(formattedMessage);
+        mTextView.setText(mFormattedMessage);
 
         int resId = 0;
         int statusId = 0;
@@ -315,7 +324,8 @@ public class MessageListItem extends RelativeLayout {
             }
 
             // convert smileys first
-            if (buf.length() > 0)
+            int c = buf.length();
+            if (c > 0 && c < MAX_AFFORDABLE_SIZE)
             	MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
 
             // image component: show image before text
