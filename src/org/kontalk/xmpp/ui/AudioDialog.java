@@ -56,7 +56,7 @@ public class AudioDialog extends AlertDialog {
     private MediaRecorder recorder = new MediaRecorder();
     private MediaPlayer player=new MediaPlayer();
     private CircularSeekBar mHoloCircularProgressBar;
-    private ObjectAnimator mProgressBarAnimator=null;
+    private ObjectAnimator mProgressBarAnimator;
     private ImageView img;
     private TextView timetxt;
     protected boolean mAnimationHasEnded = false;
@@ -64,20 +64,17 @@ public class AudioDialog extends AlertDialog {
     private int check_flags;
     private float timeCircle;
     private int playerSeekTo;
-    private int[] locationImg = new int [2];
-
+    private int checkSeek;
     private static final int STATUS_IDLE=0;
     private static final int STATUS_RECORDING=1;
     private static final int STATUS_STOPPED=2;
     private static final int STATUS_PLAYING=3;
     private static final int STATUS_PAUSED=4;
     private static final int STATUS_ENDED = 5;
-    private static final int MAX_DURATE=10000;
+    private static final int MAX_DURATE=120000;
     private static final int MAX_PROGRESS=100;
     private static final int COLOR_RECORD = Color.rgb(0xDD, 0x18, 0x12);
     private static final int COLOR_PLAY = Color.rgb(0x00, 0xAC, 0xEC);
-
-    // TODO Aggiungere colori, stringhe agli xml.
 
     public AudioDialog(Context context) {
         super(context);
@@ -99,9 +96,13 @@ public class AudioDialog extends AlertDialog {
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-        img.getLocationOnScreen(locationImg);
-        Log.d("Posizione", "X: "+locationImg[0]+"Y: "+locationImg[1]);
-        Log.d("Posizione", "X: "+img.getX()+"Y: "+img.getY());
+        if (!hasFocus) {
+            if (check_flags == STATUS_RECORDING)
+                cancel();
+
+            else if (check_flags == STATUS_PLAYING)
+                pauseAudio();
+        }
     }
 
     private void init() {
@@ -109,7 +110,6 @@ public class AudioDialog extends AlertDialog {
         View v=inflater.inflate(R.layout.audio_dialog, null);
         setView(v);
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
             @Override
             public void onCompletion(MediaPlayer mp) {
                 img.setImageResource(R.drawable.play);
@@ -266,7 +266,6 @@ public class AudioDialog extends AlertDialog {
 
             @Override
             public void onAnimationCancel(final Animator animation) {
-                //animation.end();
             }
 
             @Override
@@ -284,25 +283,26 @@ public class AudioDialog extends AlertDialog {
                 progressBar.setOnTouchListener(new OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
-                        if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && check_flags==STATUS_PLAYING) {
-                            Log.d("TouchTest", "Touch down");
-                            mProgressBarAnimator.cancel();
-                            player.pause();
+                        if (check_flags== STATUS_RECORDING) {
+                            return true;
+                        }
+                        if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && (check_flags==STATUS_PLAYING || check_flags==STATUS_PAUSED)) {
+                            progressBar.setPointerAlpha(135);
+                            progressBar.setPointerAlphaOnTouch(100);
+                            checkSeek=check_flags;
+                            pauseAudio();
                           }
                         else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
+                            progressBar.setPointerAlpha(0);
+                            progressBar.setPointerAlphaOnTouch(0);
                             player.seekTo(playerSeekTo);
-                            mProgressBarAnimator.start();
-                            mProgressBarAnimator.setCurrentPlayTime(playerSeekTo);
-                            player.start();
-                            Log.d("TouchTest", "Touch up");
+                            if (checkSeek==STATUS_PLAYING)
+                                resumeAudio();
                           }
-                          else if (event.getAction() == android.view.MotionEvent.ACTION_MOVE) {
-                            Log.d("Prova","Progress: "+progressBar.getProgress());
+                          else if (event.getAction() == android.view.MotionEvent.ACTION_MOVE && (check_flags==STATUS_PLAYING || check_flags==STATUS_PAUSED)) {
                             playerSeekTo = (int) (progressBar.getProgress()/timeCircle);
                             timetxt.setText(DateUtils.formatElapsedTime(playerSeekTo / 1000));
-                            Log.d("Prova","Tempo: "+playerSeekTo);
                           }
-
                         return false;
                     }
                 });
