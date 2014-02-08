@@ -24,7 +24,6 @@ import org.kontalk.xmpp.authenticator.LegacyAuthentication;
 import org.kontalk.xmpp.data.Contact;
 import org.kontalk.xmpp.data.Conversation;
 import org.kontalk.xmpp.provider.MyMessages.Threads;
-import org.kontalk.xmpp.sync.SyncAdapter;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -64,8 +63,7 @@ public class ConversationList extends ActionBarActivity
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        checkBigUpgrade1();
-        checkBigUpgrade2();
+        xmppUpgrade();
     }
 
     public void titleComposeMessage(View view) {
@@ -76,20 +74,8 @@ public class ConversationList extends ActionBarActivity
         onSearchRequested();
     }
 
-    /**
-     * Checks for the first big database upgrade - manually triggering a sync
-     * if necessary.
-     */
-    private void checkBigUpgrade1() {
-        Boolean oldSync = (Boolean) getLastCustomNonConfigurationInstance();
-        if (!MessagingPreferences.getBigUpgrade1(this) || (oldSync != null && oldSync.booleanValue())) {
-            SyncAdapter.requestSync(getApplicationContext(), true);
-            // TODO we need to requery the list when sync has finished
-        }
-    }
-
-    /** Second big upgrade: asymmetric key encryption. */
-    private void checkBigUpgrade2() {
+    /** Big upgrade: asymmetric key encryption (for XMPP). */
+    private void xmppUpgrade() {
         AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
