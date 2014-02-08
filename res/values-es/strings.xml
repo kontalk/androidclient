@@ -17,7 +17,7 @@
  -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Kontalk XMPP</string>
+    <string name="app_name">Kontalk</string>
     <string name="service_name">Centro Mensajes</string>
     <string name="authenticator_name">Servicio Autenticación</string>
     <string name="sync_service_name">Sinc Contactos</string>

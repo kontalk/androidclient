@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<fragment android:name="org.kontalk.xmpp.ui.ContactsListFragment"
+<fragment android:name="org.kontalk.ui.ContactsListFragment"
     android:id="@+id/fragment_contacts_list"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"

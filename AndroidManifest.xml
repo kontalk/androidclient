@@ -17,7 +17,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.kontalk.xmpp"
+      package="org.kontalk"
       android:versionCode="99"
       android:versionName="3.0"
       android:installLocation="internalOnly">
@@ -42,9 +42,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <!-- internal permissions -->
-    <permission android:name="org.kontalk.xmpp.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
 
-    <uses-permission android:name="org.kontalk.xmpp.permission.C2D_MESSAGE" />
+    <uses-permission android:name="org.kontalk.permission.C2D_MESSAGE" />
 
     <!-- do not make telephony and touchscreen mandatory -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
@@ -85,11 +85,11 @@
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
             android:exported="false"
-            android:authorities="org.kontalk.xmpp.messages"/>
+            android:authorities="org.kontalk.messages"/>
 
         <provider android:name=".provider.UsersProvider"
             android:exported="false"
-            android:authorities="org.kontalk.xmpp.users"/>
+            android:authorities="org.kontalk.users"/>
 
         <!-- Broadcast receivers -->
         <receiver android:name=".service.SystemBootStartup"
@@ -109,7 +109,7 @@
           <intent-filter>
             <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-            <category android:name="org.kontalk.xmpp" />
+            <category android:name="org.kontalk" />
           </intent-filter>
         </receiver>
 
@@ -147,7 +147,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.item/org.kontalk.xmpp.user"
+                <data android:mimeType="vnd.android.cursor.item/org.kontalk.user"
                     android:host="com.android.contacts"/>
             </intent-filter>
             <intent-filter>

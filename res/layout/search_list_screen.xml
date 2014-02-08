@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<fragment android:name="org.kontalk.xmpp.ui.SearchFragment"
+<fragment android:name="org.kontalk.ui.SearchFragment"
     android:id="@+id/fragment_search_list"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"

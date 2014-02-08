@@ -17,7 +17,7 @@
  -->
 
 <resources>
-    <string name="app_name">Kontalk XMPP</string>
+    <string name="app_name">Kontalk</string>
     <string name="service_name">Centro messaggi</string>
     <string name="authenticator_name">Servizio di autenticazione</string>
     <string name="sync_service_name">Sincronizzazione contatti</string>
