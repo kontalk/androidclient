@@ -221,7 +221,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onAuthTokenReceived(final NumberValidator v, final CharSequence token, final byte[] privateKeyData, final byte[] publicKeyData) {
+    public void onAuthTokenReceived(final NumberValidator v, final byte[] privateKeyData, final byte[] publicKeyData) {
         Log.d(TAG, "got authentication token!");
 
         runOnUiThread(new Runnable() {

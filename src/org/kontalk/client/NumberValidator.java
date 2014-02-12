@@ -29,6 +29,7 @@ import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Registration;
+import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.FormField;
@@ -72,6 +73,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static final int STEP_VALIDATION = 1;
     /** Requesting authentication token */
     public static final int STEP_AUTH_TOKEN = 2;
+
+    public static final int ERROR_THROTTLING = 1;
 
     private final EndpointServer mServer;
     private final String mName;
@@ -184,7 +187,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 Connection conn = mConnector.getConnection();
                 conn.addPacketListener(new PacketListener() {
                     public void processPacket(Packet packet) {
+                    	int reason = 0;
                         IQ iq = (IQ) packet;
+
                         if (iq.getType() == IQ.Type.RESULT) {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
@@ -204,10 +209,31 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             }
                         }
 
+                        else if (iq.getType() == IQ.Type.ERROR) {
+                        	XMPPError error = iq.getError();
+
+                        	if (XMPPError.Condition.service_unavailable.toString()
+                        			.equals(error.getCondition())) {
+
+                        		if (error.getType() == XMPPError.Type.WAIT) {
+                        			reason = ERROR_THROTTLING;
+
+                        		}
+
+                        		else {
+                        			mListener.onServerCheckFailed(NumberValidator.this);
+                        			// onValidationFailed will not be called
+                        			reason = -1;
+
+                        		}
+                        	}
+
+                        }
+
                         // validation failed :(
-                        // TODO check for service-unavailable errors (meaning
-                        // we must call onServerCheckFailed()
-                        mListener.onValidationFailed(NumberValidator.this, -1);
+                        if (reason >= 0)
+                        	mListener.onValidationFailed(NumberValidator.this, reason);
+
                         mStep = STEP_INIT;
                         return;
                     }
@@ -231,21 +257,18 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         if (iq.getType() == IQ.Type.RESULT) {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
-                                String token = null, publicKey = null;
+                                String publicKey = null;
 
                                 // ok! message will be sent
                                 Iterator<FormField> iter = response.getFields();
                                 while (iter.hasNext()) {
                                     FormField field = iter.next();
-                                    if ("token".equals(field.getVariable())) {
-                                        token = field.getValues().next();
-                                    }
-                                    else if ("publickey".equals(field.getVariable())) {
+                                    if ("publickey".equals(field.getVariable())) {
                                         publicKey = field.getValues().next();
                                     }
                                 }
 
-                                if (!TextUtils.isEmpty(token)) {
+                                if (!TextUtils.isEmpty(publicKey)) {
                                     byte[] publicKeyData;
                                     byte[] privateKeyData;
                                     try {
@@ -258,7 +281,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                         privateKeyData = null;
                                     }
 
-                                    mListener.onAuthTokenReceived(NumberValidator.this, token, privateKeyData, publicKeyData);
+                                    mListener.onAuthTokenReceived(NumberValidator.this, privateKeyData, publicKeyData);
 
                                     // prevent error handling
                                     return;
@@ -422,7 +445,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         public void onValidationFailed(NumberValidator v, int reason);
 
         /** Called on receiving of authentication token. */
-        public void onAuthTokenReceived(NumberValidator v, CharSequence token, byte[] privateKey, byte[] publicKey);
+        public void onAuthTokenReceived(NumberValidator v, byte[] privateKey, byte[] publicKey);
 
         /** Called if validation code has not been verified. */
         public void onAuthTokenFailed(NumberValidator v, int reason);

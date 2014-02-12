@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
@@ -40,7 +41,6 @@ import org.kontalk.service.KeyPairGeneratorService.KeyGeneratedReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.CountryCodesAdapter.CountryCode;
-import org.kontalk.R;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -586,7 +586,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     /** @deprecated {@link CodeValidation} handles this now. */
     @Override
     @Deprecated
-    public void onAuthTokenReceived(NumberValidator v, CharSequence token, byte[] privateKey, byte[] publicKey) {
+    public void onAuthTokenReceived(NumberValidator v, byte[] privateKey, byte[] publicKey) {
     }
 
     @Override
@@ -672,12 +672,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationFailed(NumberValidator v, int reason) {
+    public void onValidationFailed(NumberValidator v, final int reason) {
         Log.e(TAG, "phone number validation failed (" + reason + ")");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(NumberValidation.this, R.string.err_validation_failed, Toast.LENGTH_LONG).show();
+            	int msg;
+                if (reason == NumberValidator.ERROR_THROTTLING)
+                    msg = R.string.err_validation_retry_later;
+                else
+                    msg = R.string.err_validation_failed;
+
+                Toast.makeText(NumberValidation.this, msg, Toast.LENGTH_LONG).show();
                 abort();
             }
         });
