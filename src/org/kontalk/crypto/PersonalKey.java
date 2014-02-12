@@ -19,7 +19,6 @@
 package org.kontalk.crypto;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -30,8 +29,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.kontalk.Kontalk;
 import org.kontalk.authenticator.Authenticator;
@@ -159,20 +156,6 @@ public class PersonalKey implements Parcelable {
     @SuppressWarnings("unchecked")
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
             throws PGPException, IOException, CertificateException, NoSuchProviderException {
-
-        /* TEST */
-        FileOutputStream fout = new FileOutputStream("/sdcard/bridge.crt");
-        fout.write(bridgeCertData);
-        fout.close();
-
-        fout = new FileOutputStream("/sdcard/private.key");
-        fout.write(privateKeyData);
-        fout.close();
-
-        fout = new FileOutputStream("/sdcard/public.key");
-        fout.write(publicKeyData);
-        fout.close();
-        /**/
 
         KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
