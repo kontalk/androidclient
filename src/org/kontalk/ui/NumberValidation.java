@@ -712,6 +712,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("name", mName);
         i.putExtra("phone", mPhoneNumber);
         i.putExtra("passphrase", mPassphrase);
+
+        // validator might be null if we are skipping verification code request
+        if (mValidator != null)
+            i.putExtra("server", mValidator.getServer().toString());
+
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }

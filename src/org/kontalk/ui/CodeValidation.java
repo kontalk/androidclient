@@ -53,6 +53,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private String mName;
     private String mPhone;
     private String mPassphrase;
+    private EndpointServer mServer;
 
     private static final class RetainData {
         NumberValidator validator;
@@ -89,10 +90,23 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 .setText(R.string.code_validation_intro2);
         }
 
-        mKey = getIntent().getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
-        mName = getIntent().getStringExtra("name");
-        mPhone = getIntent().getStringExtra("phone");
-        mPassphrase = getIntent().getStringExtra("passphrase");
+        Intent i = getIntent();
+        mKey = i.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
+        mName = i.getStringExtra("name");
+        mPhone = i.getStringExtra("phone");
+        mPassphrase = i.getStringExtra("passphrase");
+
+        String server = i.getStringExtra("server");
+        if (server != null)
+            mServer = new EndpointServer(server);
+        else
+            /*
+             * FIXME HUGE problem here. If we already have a verification code,
+             * how are we supposed to know from what server it came from??
+             * @see issue 184.
+             * http://code.google.com/p/kontalk/issues/detail?id=184
+             */
+            mServer = MessagingPreferences.getEndpointServer(this);
     }
 
     @Override
@@ -153,8 +167,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         startProgress();
 
         // send the code
-        EndpointServer server = MessagingPreferences.getEndpointServer(this);
-        mValidator = new NumberValidator(this, server, mName, mPhone, mKey, mPassphrase);
+        mValidator = new NumberValidator(this, mServer, mName, mPhone, mKey, mPassphrase);
         mValidator.setListener(this);
 
         mValidator.manualInput(code);

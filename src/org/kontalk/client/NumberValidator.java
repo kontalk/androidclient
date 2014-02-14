@@ -126,6 +126,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return mKey;
     }
 
+    public EndpointServer getServer() {
+        return mServer;
+    }
+
     public synchronized void start() {
         if (mThread != null) throw new IllegalArgumentException("already started");
 
