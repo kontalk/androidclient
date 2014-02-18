@@ -21,6 +21,8 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,20 +50,17 @@ public class ClientHTTPConnection {
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
             .compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
 
+    private final Context mContext;
+    private final PrivateKey mPrivateKey;
+    private final X509Certificate mCertificate;
 
-    /** The authentication token header. */
-    private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
-    private static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
+    private HttpRequestBase currentRequest;
+    private HttpClient mConnection;
 
-    protected final Context mContext;
-    protected final String mAuthToken;
-
-    protected HttpRequestBase currentRequest;
-    protected HttpClient mConnection;
-
-    public ClientHTTPConnection(Context context, String token) {
+    public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
         mContext = context;
-        mAuthToken = token;
+        mPrivateKey = privateKey;
+        mCertificate = bridgeCert;
     }
 
     public void abort() {
@@ -70,19 +69,13 @@ public class ClientHTTPConnection {
     }
 
     /**
-     * A generic download request, with optional authentication token.
-     * @param token the authentication token
+     * A generic download request.
      * @param url URL to download
      * @return the request object
      * @throws IOException
      */
-    private HttpRequestBase prepareURLDownload(String token, String url) throws IOException {
+    private HttpRequestBase prepareURLDownload(String url) throws IOException {
         HttpGet req = new HttpGet(url);
-
-        if (token != null)
-            req.addHeader(HEADER_NAME_AUTHORIZATION,
-                    HEADER_VALUE_AUTHORIZATION + token);
-
         return req;
     }
 
@@ -101,6 +94,7 @@ public class ClientHTTPConnection {
                 mConnection.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
                 // HttpClient bug caused by Lighttpd
                 mConnection.getParams().setBooleanParameter("http.protocol.expect-continue", false);
+                // TODO setup SSL context
             }
             return mConnection.execute(request);
         }
@@ -119,7 +113,7 @@ public class ClientHTTPConnection {
     }
 
     private void _download(String url, File base, DownloadListener listener) throws IOException {
-        currentRequest = prepareURLDownload(mAuthToken, url);
+        currentRequest = prepareURLDownload(url);
         HttpResponse response = execute(currentRequest);
 
         int code = response.getStatusLine().getStatusCode();
