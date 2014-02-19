@@ -27,14 +27,11 @@ import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERRO
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
 
 import java.io.File;
-import java.security.PrivateKey;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
-import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.ui.ConversationList;
@@ -122,23 +119,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         startForeground(0);
         mCanceled = false;
 
-        if (mDownloadClient == null) {
-        	PersonalKey key;
-        	PrivateKey privateKey;
-        	try {
-				key = ((Kontalk) getApplication()).getPersonalKey();
-				privateKey = key.getBridgePrivateKey();
-			}
-        	catch (Exception e) {
-        		// TODO i18n :)
-                errorNotification("ERROR", "NAUGHTY BOY/GIRL!");
-        		return;
-			}
-
-            mDownloadClient = new ClientHTTPConnection(this,
-        		privateKey,
-        		key.getBridgeCertificate());
-        }
+        if (mDownloadClient == null)
+            mDownloadClient = new ClientHTTPConnection();
 
         try {
             // check if external storage is available

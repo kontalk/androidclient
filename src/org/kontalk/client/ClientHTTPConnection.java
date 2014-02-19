@@ -21,8 +21,6 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,10 +37,13 @@ import org.apache.http.util.EntityUtils;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
-import android.content.Context;
 import android.util.Log;
 
 
+/**
+ * A generic HTTP client.
+ * @author Daniele Ricci
+ */
 public class ClientHTTPConnection {
     private static final String TAG = ClientHTTPConnection.class.getSimpleName();
 
@@ -50,18 +51,8 @@ public class ClientHTTPConnection {
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
             .compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
 
-    private final Context mContext;
-    private final PrivateKey mPrivateKey;
-    private final X509Certificate mCertificate;
-
     private HttpRequestBase currentRequest;
     private HttpClient mConnection;
-
-    public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
-        mContext = context;
-        mPrivateKey = privateKey;
-        mCertificate = bridgeCert;
-    }
 
     public void abort() {
         if (currentRequest != null)
@@ -94,7 +85,6 @@ public class ClientHTTPConnection {
                 mConnection.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
                 // HttpClient bug caused by Lighttpd
                 mConnection.getParams().setBooleanParameter("http.protocol.expect-continue", false);
-                // TODO setup SSL context
             }
             return mConnection.execute(request);
         }
