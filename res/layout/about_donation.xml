@@ -56,5 +56,23 @@
             android:autoLink="all"
             android:text="@string/netsite" />
 
+        <TextView
+            style="@android:style/TextAppearance.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:autoLink="all"
+            android:gravity="center_horizontal"
+            android:text="Or Donate with Google Play:" />
+        <Button
+            android:id="@+id/donate1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/donation_wallet"
+            />
+
     </LinearLayout>
 </ScrollView>
