@@ -135,9 +135,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         		return;
 			}
 
-            mDownloadClient = new ClientHTTPConnection(this,
-        		privateKey,
-        		key.getBridgeCertificate());
+            mDownloadClient = new ClientHTTPConnection(
+        		privateKey, key.getBridgeCertificate());
         }
 
         try {
