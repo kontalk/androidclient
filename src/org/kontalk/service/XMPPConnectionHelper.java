@@ -23,6 +23,7 @@ import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.XMPPException;
 import org.kontalk.Kontalk;
 import org.kontalk.authenticator.LegacyAuthentication;
+import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.crypto.PersonalKey;
@@ -54,6 +55,9 @@ public class XMPPConnectionHelper extends Thread {
 
     /** Client listener. */
     private ConnectionHelperListener mListener;
+
+    /** HTTP connection to server. */
+    protected ClientHTTPConnection mHttpConn;
 
     /** Limited connection flag. */
     protected boolean mLimited;
@@ -232,6 +236,13 @@ public class XMPPConnectionHelper extends Thread {
 
     public Connection getConnection() {
         return mConn;
+    }
+
+    public ClientHTTPConnection getHttpConnection() {
+        // TODO
+        /*if (mHttpConn == null)
+            mHttpConn = new ClientHTTPConnection(this, mContext, mServer, mAuthToken);*/
+        return mHttpConn;
     }
 
     public boolean isConnected() {
