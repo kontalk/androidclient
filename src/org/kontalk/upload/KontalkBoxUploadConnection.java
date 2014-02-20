@@ -20,6 +20,15 @@ package org.kontalk.upload;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.apache.http.HttpException;
@@ -33,8 +42,15 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.kontalk.Kontalk;
 import org.kontalk.crypto.Coder;
@@ -65,14 +81,18 @@ public class KontalkBoxUploadConnection implements UploadConnection {
 
     protected HttpRequestBase currentRequest;
     protected HttpClient mConnection;
-    protected final String mAuthToken;
+
+    private final PrivateKey mPrivateKey;
+    private final X509Certificate mCertificate;
 
     private final String mBaseUrl;
 
-    public KontalkBoxUploadConnection(Context context, String url, String token) {
+    public KontalkBoxUploadConnection(Context context, String url,
+            PrivateKey privateKey, X509Certificate bridgeCert) {
         mContext = context;
         mBaseUrl = url;
-        mAuthToken = token;
+        mPrivateKey = privateKey;
+        mCertificate = bridgeCert;
     }
 
     @Override
@@ -116,7 +136,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             }
 
             // http request!
-            currentRequest = prepareMessage(listener, mAuthToken,
+            currentRequest = prepareMessage(listener,
                 mime, toMessage, toLength, encrypted);
             response = execute(currentRequest);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
@@ -151,8 +171,6 @@ public class KontalkBoxUploadConnection implements UploadConnection {
      *            request path
      * @param params
      *            additional GET parameters
-     * @param token
-     *            the autentication token (if needed)
      * @param mime
      *            if null will use <code>application/x-google-protobuf</code>
      * @param content
@@ -164,7 +182,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
      * @throws IOException
      */
     public HttpRequestBase prepare(List<NameValuePair> params,
-        String token, String mime, byte[] content, boolean forcePost)
+        String mime, byte[] content, boolean forcePost)
         throws IOException {
 
         HttpRequestBase req;
@@ -185,11 +203,6 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         else
             req = new HttpGet(uri.toString());
 
-        // token
-        if (token != null)
-            req.setHeader(HEADER_NAME_AUTHORIZATION, HEADER_VALUE_AUTHORIZATION
-                + token);
-
         return req;
     }
 
@@ -198,8 +211,6 @@ public class KontalkBoxUploadConnection implements UploadConnection {
      *
      * @param listener
      *            the uploading listener
-     * @param token
-     *            the autentication token
      * @param group
      *            the recipients
      * @param mime
@@ -212,16 +223,28 @@ public class KontalkBoxUploadConnection implements UploadConnection {
      * @throws IOException
      */
     private HttpRequestBase prepareMessage(ProgressListener listener,
-        String token, String mime, InputStream data, long length, boolean encrypted)
+        String mime, InputStream data, long length, boolean encrypted)
             throws IOException {
 
-        HttpPost req = (HttpPost) prepare(null, token, mime, null, true);
+        HttpPost req = (HttpPost) prepare(null, mime, null, true);
         req.setEntity(new ProgressInputStreamEntity(data, length, this, listener));
 
         if (encrypted)
             req.addHeader(HEADER_MESSAGE_FLAGS, "encrypted");
 
         return req;
+    }
+
+    private SSLSocketFactory setupSSLSocketFactory()
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
+            IOException, KeyManagementException, UnrecoverableKeyException {
+
+        // in-memory keystore
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keystore.load(null, null);
+        keystore.setKeyEntry("private", mPrivateKey, null, new Certificate[] { mCertificate });
+
+        return new SSLSocketFactory(keystore);
     }
 
     /**
@@ -236,13 +259,26 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         // execute!
         try {
             if (mConnection == null) {
-                mConnection = new DefaultHttpClient();
+                SchemeRegistry registry = new SchemeRegistry();
+                try {
+                    registry.register(new Scheme("https", setupSSLSocketFactory(), 443));
+                }
+                catch (Exception e) {
+                    IOException ie = new IOException("unable to create keystore");
+                    ie.initCause(e);
+                    throw ie;
+                }
+
+                HttpParams params = new BasicHttpParams();
                 // handle redirects :)
-                mConnection.getParams().setBooleanParameter(
-                    ClientPNames.HANDLE_REDIRECTS, true);
+                params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
                 // HttpClient bug caused by Lighttpd
-                mConnection.getParams().setBooleanParameter(
-                    "http.protocol.expect-continue", false);
+                params.setBooleanParameter("http.protocol.expect-continue", false);
+
+                // create connection manager
+                ClientConnectionManager connMgr = new ThreadSafeClientConnManager(params, registry);
+
+                mConnection = new DefaultHttpClient(connMgr, params);
             }
             return mConnection.execute(request);
         }

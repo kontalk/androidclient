@@ -53,7 +53,6 @@ import org.apache.http.util.EntityUtils;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
-import android.content.Context;
 import android.util.Log;
 
 
@@ -117,7 +116,6 @@ public class ClientHTTPConnection {
         // execute!
         try {
             if (mConnection == null) {
-
                 SchemeRegistry registry = new SchemeRegistry();
                 try {
                     registry.register(new Scheme("https", setupSSLSocketFactory(), 443));
