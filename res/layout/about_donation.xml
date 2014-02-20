@@ -47,31 +47,44 @@
             android:gravity="center_horizontal"
             android:text="@string/donate_text" />
 
-        <TextView
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:autoLink="all"
-            android:text="@string/netsite" />
-
-        <TextView
-            style="@android:style/TextAppearance.Medium"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:autoLink="all"
-            android:gravity="center_horizontal"
-            android:text="Or Donate with Google Play:" />
         <Button
             android:id="@+id/donate1"
-            android:layout_width="wrap_content"
+            android:text="GOOGLE WALLET"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
-            android:background="@drawable/donation_wallet"
+            android:drawableLeft="@drawable/donate_wallet"
+            />
+
+        <Button
+            android:id="@+id/donate3"
+            android:text="PAYPAL"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:drawableLeft="@drawable/donate_paypal"
+            />
+
+        <Button
+            android:id="@+id/donate2"
+            android:text="BITCOIN"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:drawableLeft="@drawable/donate_bitcoin"
+            />
+
+        <Button
+            android:id="@+id/donate4"
+            android:text="FLATTR"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:drawableLeft="@drawable/donate_flattr"
             />
 
     </LinearLayout>

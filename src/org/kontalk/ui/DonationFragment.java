@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.util.BitcoinIntegration;
 import org.kontalk.util.IabHelper;
 import org.kontalk.util.IabResult;
 import org.kontalk.util.Inventory;
@@ -27,6 +28,7 @@ import org.kontalk.util.Purchase;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -35,6 +37,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 
 /**
@@ -43,16 +46,24 @@ import android.widget.Button;
  * @author Andrea Cappelli
  */
 public class DonationFragment extends Fragment {
-    Button mDonateBtn;
+    private Button mDonateBtn;
+    private Button mDonateBtn2;
+    private Button mDonateBtn3;
+    private Button mDonateBtn4;
     static final String TAG = "Kontalk Billing";
     IabHelper mHelper;
     private final CharSequence[] mDonation={"Donate 1 Euro","Donate 2 Euro","Donate 5 Euro"};
     static final int RC_REQUEST = 10001;
+    private static final String DONATION_ADDRESS = "14vipppSvCG7VdvoYmbhKZ8DbTfv9U1QfS";
+    private static final int REQUEST_CODE = 0;
 
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 	    View view = inflater.inflate(R.layout.about_donation, container, false);
         mDonateBtn = (Button) view.findViewById(R.id.donate1);
+        mDonateBtn2 = (Button) view.findViewById(R.id.donate2);
+        mDonateBtn3 = (Button) view.findViewById(R.id.donate3);
+        mDonateBtn4 = (Button) view.findViewById(R.id.donate4);
         String base64EncodedPublicKey ="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwoAb6+u76Qo98J8lKvhk/7e0MxBmeqowuopXKMLckPHkoaeogZrjVbtnV80XAZSpaugCnV5LXNGBP9gVO2yLi7pvCOUokLDFR1YJEQ98/xWNGQvwOKZPm31EtJBieTIQX8ld40rztav/oK3MkxtkdAKHMAqXNkKN00Z5xrWZ9UoeRRKdMFbJtHnTa/0I63FElaH7TXvVf4mtYFvCgsYlRuEsSDXeOXh5gf6uD6XHWJcCHzlOeLEAezuNit2Fwor4WILjP01lG3rCenGgu6ViyBbrDnLW68hwJhQ3bhSpqxXM6dhGOzvtpCdezv7ZRFPUWqaIoyUGnnz/ASvp9GQujwIDAQAB";
         Log.d(TAG, "Creating IAB helper.");
         mHelper = new IabHelper(getActivity(), base64EncodedPublicKey);
@@ -107,6 +118,30 @@ public class DonationFragment extends Fragment {
                 alert.show();
              }
         });
+
+        mDonateBtn2.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BitcoinIntegration.requestForResult(getActivity(), REQUEST_CODE, DONATION_ADDRESS);
+            }
+        });
+
+        mDonateBtn3.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NVEF4PQ92HJ6N")));
+            }
+        });
+
+        mDonateBtn4.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://flattr.com/thing/1194909/Kontalk-network")));
+            }
+        });
+
     }
     IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
@@ -171,6 +206,22 @@ public class DonationFragment extends Fragment {
         else {
             Log.i(TAG, "onActivityResult handled by IABUtil.");
         }
+        if (requestCode == REQUEST_CODE)
+        {
+            if (resultCode == getActivity().RESULT_OK)
+            {
+                Toast.makeText(getActivity(), "Thank you!", Toast.LENGTH_LONG).show();
+            }
+            else if (resultCode == getActivity().RESULT_CANCELED)
+            {
+                Toast.makeText(getActivity(), "Cancelled.", Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+                Toast.makeText(getActivity(), "Unknown result.", Toast.LENGTH_LONG).show();
+            }
+        }
+
     }
 
 	@Override
