@@ -20,14 +20,7 @@ package org.kontalk.upload;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -43,16 +36,17 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.kontalk.Kontalk;
+import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.ProgressListener;
@@ -235,18 +229,6 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         return req;
     }
 
-    private SSLSocketFactory setupSSLSocketFactory()
-            throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
-            IOException, KeyManagementException, UnrecoverableKeyException {
-
-        // in-memory keystore
-        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keystore.load(null, null);
-        keystore.setKeyEntry("private", mPrivateKey, null, new Certificate[] { mCertificate });
-
-        return new SSLSocketFactory(keystore);
-    }
-
     /**
      * Executes the given request.
      *
@@ -261,7 +243,9 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             if (mConnection == null) {
                 SchemeRegistry registry = new SchemeRegistry();
                 try {
-                    registry.register(new Scheme("https", setupSSLSocketFactory(), 443));
+                    registry.register(new Scheme("http",  PlainSocketFactory.getSocketFactory(), 80));
+                    registry.register(new Scheme("https", ClientHTTPConnection
+                        .setupSSLSocketFactory(mContext, mPrivateKey, mCertificate), 443));
                 }
                 catch (Exception e) {
                     IOException ie = new IOException("unable to create keystore");
@@ -276,7 +260,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
                 params.setBooleanParameter("http.protocol.expect-continue", false);
 
                 // create connection manager
-                ClientConnectionManager connMgr = new ThreadSafeClientConnManager(params, registry);
+                ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
 
                 mConnection = new DefaultHttpClient(connMgr, params);
             }

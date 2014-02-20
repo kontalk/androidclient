@@ -21,10 +21,12 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -42,17 +44,21 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.kontalk.R;
+import org.kontalk.crypto.PGP;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
+import android.content.Context;
 import android.util.Log;
 
 
@@ -67,13 +73,16 @@ public class ClientHTTPConnection {
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
             .compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
 
+    private final Context mContext;
+
     private final PrivateKey mPrivateKey;
     private final X509Certificate mCertificate;
 
     private HttpRequestBase currentRequest;
     private HttpClient mConnection;
 
-    public ClientHTTPConnection(PrivateKey privateKey, X509Certificate bridgeCert) {
+    public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
+        mContext = context;
         mPrivateKey = privateKey;
         mCertificate = bridgeCert;
     }
@@ -94,16 +103,24 @@ public class ClientHTTPConnection {
         return req;
     }
 
-    private SSLSocketFactory setupSSLSocketFactory()
+    public static SSLSocketFactory setupSSLSocketFactory(Context context,
+                PrivateKey privateKey, X509Certificate certificate)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
-            IOException, KeyManagementException, UnrecoverableKeyException {
+                IOException, KeyManagementException, UnrecoverableKeyException,
+                NoSuchProviderException {
 
         // in-memory keystore
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(null, null);
-        keystore.setKeyEntry("private", mPrivateKey, null, new Certificate[] { mCertificate });
+        keystore.setKeyEntry("private", privateKey, null, new Certificate[] { certificate });
 
-        return new SSLSocketFactory(keystore);
+        // load truststore from file
+        KeyStore truststore = KeyStore.getInstance("BKS", PGP.PROVIDER);
+        InputStream in = context.getResources()
+                .openRawResource(R.raw.truststore);
+        truststore.load(in, "changeit".toCharArray());
+
+        return new SSLSocketFactory(keystore, null, truststore);
     }
 
     /**
@@ -118,7 +135,8 @@ public class ClientHTTPConnection {
             if (mConnection == null) {
                 SchemeRegistry registry = new SchemeRegistry();
                 try {
-                    registry.register(new Scheme("https", setupSSLSocketFactory(), 443));
+                    registry.register(new Scheme("http",  PlainSocketFactory.getSocketFactory(), 80));
+                    registry.register(new Scheme("https", setupSSLSocketFactory(mContext, mPrivateKey, mCertificate), 443));
                 }
                 catch (Exception e) {
                     IOException ie = new IOException("unable to create keystore");
@@ -133,7 +151,7 @@ public class ClientHTTPConnection {
                 params.setBooleanParameter("http.protocol.expect-continue", false);
 
                 // create connection manager
-                ClientConnectionManager connMgr = new ThreadSafeClientConnManager(params, registry);
+                ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
 
                 mConnection = new DefaultHttpClient(connMgr, params);
             }
