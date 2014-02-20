@@ -1837,6 +1837,8 @@ public class ComposeMessageFragment extends ListFragment implements
         // resume notifications
         MessagingNotification.setPaused(null);
 
+        // TODO saving an empty draft will leave a zombie thread
+
 		// save last message as draft
 		if (threadId > 0) {
 			ContentValues values = new ContentValues(1);
@@ -1860,6 +1862,7 @@ public class ComposeMessageFragment extends ListFragment implements
 				values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
 				values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
 				values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+				values.put(Messages.ENCRYPTED, false);
 				values.put(Threads.DRAFT, text.toString());
 				getActivity().getContentResolver().insert(Messages.CONTENT_URI,
 						values);

@@ -543,7 +543,7 @@ public class MessagesProvider extends ContentProvider {
 	        // thread content has a special behaviour
 	        setThreadContent(
 	    		initialValues.getAsByteArray(Messages.BODY_CONTENT),
-	    		initialValues.getAsString(Messages.BODY_CONTENT),
+	    		initialValues.getAsString(Messages.BODY_MIME),
 	    		initialValues.getAsString(Messages.ATTACHMENT_MIME),
 	    		values);
         }
