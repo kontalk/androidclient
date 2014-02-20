@@ -357,7 +357,9 @@ public class ConversationListFragment extends ListFragment {
     	final ConversationList parent = getParentActivity();
 
     	String display;
-    	final Contact c = conv.getContact();
+    	Contact c = conv.getContact();
+    	final String userId = conv.getRecipient();
+
     	if (c != null)
     		display = c.getName() + " (" + c.getNumber() + ")";
     	else
@@ -379,10 +381,10 @@ public class ConversationListFragment extends ListFragment {
 
 						parent.getContentResolver().update(Requests.CONTENT_URI,
 							values, CommonColumns.PEER + "=?",
-								new String[] { c.getHash() });
+								new String[] { userId });
 
 						// send command to message center
-						MessageCenterService.replySubscription(parent, c.getHash(), accepted);
+						MessageCenterService.replySubscription(parent, userId, accepted);
 
 						break;
 				}
