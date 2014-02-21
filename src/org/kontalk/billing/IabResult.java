@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.kontalk.util;
+package org.kontalk.billing;
 
 /**
  * Represents the result of an in-app billing operation.

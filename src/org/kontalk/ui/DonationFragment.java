@@ -22,11 +22,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.kontalk.R;
-import org.kontalk.util.BitcoinIntegration;
-import org.kontalk.util.IabHelper;
-import org.kontalk.util.IabResult;
-import org.kontalk.util.Inventory;
-import org.kontalk.util.Purchase;
+import org.kontalk.billing.BitcoinIntegration;
+import org.kontalk.billing.IabHelper;
+import org.kontalk.billing.IabResult;
+import org.kontalk.billing.Inventory;
+import org.kontalk.billing.Purchase;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -39,7 +39,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 
 /**
@@ -47,25 +46,21 @@ import android.widget.Button;
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class DonationFragment extends Fragment {
-    private Button mDonateBtn;
-    private Button mDonateBtn2;
-    private Button mDonateBtn3;
-    private Button mDonateBtn4;
-    static final String TAG = "Kontalk Billing";
-    IabHelper mHelper;
+public class DonationFragment extends Fragment implements OnClickListener{
+    private static final String TAG = "Kontalk Billing";
+    private IabHelper mHelper;
     private String[] mItems=new String[3];
     private final List additionalSkuList= new LinkedList();
-    static final int RC_REQUEST = 10001;
+    private static final int RC_REQUEST = 10001;
     private static final int REQUEST_CODE = 0;
 
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 	    View view = inflater.inflate(R.layout.about_donation, container, false);
-        mDonateBtn = (Button) view.findViewById(R.id.donate1);
-        mDonateBtn2 = (Button) view.findViewById(R.id.donate2);
-        mDonateBtn3 = (Button) view.findViewById(R.id.donate3);
-        mDonateBtn4 = (Button) view.findViewById(R.id.donate4);
+        view.findViewById(R.id.donate1).setOnClickListener(this);
+        view.findViewById(R.id.donate2).setOnClickListener(this);
+        view.findViewById(R.id.donate3).setOnClickListener(this);
+        view.findViewById(R.id.donate4).setOnClickListener(this);
         Log.d(TAG, "Creating IAB helper.");
         mHelper = new IabHelper(getActivity(), getString(R.string.gwallet_key));
         mHelper.enableDebugLogging(true);
@@ -79,7 +74,6 @@ public class DonationFragment extends Fragment {
                    return;
                }
                if (mHelper == null) return;
-               if (result.isSuccess()) init();
                Log.d(TAG, "Setup successful. Querying inventory.");
                additionalSkuList.add("donation_1");
                additionalSkuList.add("donation_2");
@@ -90,63 +84,68 @@ public class DonationFragment extends Fragment {
         return view;
 	}
 
-    void init() {
-        mDonateBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder donationDialog = new AlertDialog.Builder(getActivity());
-                donationDialog.setTitle("Donate");
-                donationDialog.setItems(mItems, new DialogInterface.OnClickListener() {
-                 public void onClick(DialogInterface dialog, int which) {
-                    if (which==0) {
-                        if (mHelper !=null) mHelper.flagEndAsync();
-                        mHelper.launchPurchaseFlow(getActivity(), "donation_1", RC_REQUEST, mPurchaseFinishedListener);
-                    }
-                    if (which==1) {
-                        if (mHelper !=null) mHelper.flagEndAsync();
-                        mHelper.launchPurchaseFlow(getActivity(), "donation_2", RC_REQUEST, mPurchaseFinishedListener);
-                    }
-                    if (which==2) {
-                        if (mHelper !=null) mHelper.flagEndAsync();
-                        mHelper.launchPurchaseFlow(getActivity(), "donation_5", RC_REQUEST, mPurchaseFinishedListener);
-                    }
-                 }
-                });
-                donationDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                     dialog.dismiss();
-                 }
-                });
-                AlertDialog alert = donationDialog.create();
-                alert.show();
-             }
-        });
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.donate1:
+                donateGoogle();
+                break;
 
-        mDonateBtn2.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                BitcoinIntegration.requestForResult(getActivity(), REQUEST_CODE, getString(R.string.bitcoin_address));
-            }
-        });
+            case R.id.donate2:
+                donatePaypal();
+                break;
 
-        mDonateBtn3.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NVEF4PQ92HJ6N")));
-            }
-        });
+            case R.id.donate3:
+                donateBitcoin();
+                break;
 
-        mDonateBtn4.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://flattr.com/thing/1194909/Kontalk-network")));
-            }
-        });
-
+            case R.id.donate4:
+                donateFlattr();
+                break;
+        }
     }
+
+    private void donateFlattr() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.flattr_url))));
+    }
+
+    private void donateBitcoin() {
+        BitcoinIntegration.requestForResult(getActivity(), REQUEST_CODE, getString(R.string.bitcoin_address));
+    }
+
+    private void donatePaypal() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.paypal_url))));
+    }
+
+    private void donateGoogle() {
+        AlertDialog.Builder donationDialog = new AlertDialog.Builder(getActivity());
+        donationDialog.setTitle(R.string.donate_dialog);
+        donationDialog.setItems(mItems, new DialogInterface.OnClickListener() {
+         public void onClick(DialogInterface dialog, int which) {
+            if (which==0) {
+                if (mHelper !=null) mHelper.flagEndAsync();
+                mHelper.launchPurchaseFlow(getActivity(), "donation_1", RC_REQUEST, mPurchaseFinishedListener);
+            }
+            if (which==1) {
+                if (mHelper !=null) mHelper.flagEndAsync();
+                mHelper.launchPurchaseFlow(getActivity(), "donation_2", RC_REQUEST, mPurchaseFinishedListener);
+            }
+            if (which==2) {
+                if (mHelper !=null) mHelper.flagEndAsync();
+                mHelper.launchPurchaseFlow(getActivity(), "donation_5", RC_REQUEST, mPurchaseFinishedListener);
+            }
+         }
+        });
+        donationDialog.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+             dialog.dismiss();
+         }
+        });
+        AlertDialog alert = donationDialog.create();
+        alert.show();
+    }
+
     IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
             Log.d(TAG, "Query inventory finished.");

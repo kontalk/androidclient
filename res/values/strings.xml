@@ -145,6 +145,7 @@
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Request verification code</string>
+    <string name="button_cancel">Cancel</string>
     <string name="button_validation_code">I already have a verification code</string>
     <string name="button_validation_register">Verify</string>
     <string name="notify_ticker_download_completed">Download completed</string>
@@ -252,6 +253,8 @@
     <string name="social_identica">Identi.ca</string>
 
     <string name="donate_text">Kontalk needs money to keep running. Please consider a donation, even a small one.</string>
+    <string name="donate_dialog">Donate</string>
+    <string name="bitcoin_dialog">Bitcoin Address:</string>
     <string name="donate_wallet">GOOGLE WALLET</string>
     <string name="donate_paypal">PAYPAL</string>
     <string name="donate_bitcoin">BITCOIN</string>

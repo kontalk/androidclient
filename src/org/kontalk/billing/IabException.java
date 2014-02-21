@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.kontalk.util;
+package org.kontalk.billing;
 
 /**
  * Exception thrown when something went wrong with in-app billing.

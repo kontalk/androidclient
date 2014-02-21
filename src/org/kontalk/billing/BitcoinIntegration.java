@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kontalk.util;
+package org.kontalk.billing;
 
 import org.kontalk.R;
 
@@ -187,8 +187,8 @@ public final class BitcoinIntegration
 		// else out of luck
 		 */
 	    AlertDialog.Builder bitcoin = new AlertDialog.Builder(context);
-        bitcoin.setTitle("Bitcoin Address:");
-        bitcoin.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+        bitcoin.setTitle(R.string.bitcoin_address);
+        bitcoin.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

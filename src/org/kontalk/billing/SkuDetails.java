@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.kontalk.util;
+package org.kontalk.billing;
 
 import org.json.JSONException;
 import org.json.JSONObject;
