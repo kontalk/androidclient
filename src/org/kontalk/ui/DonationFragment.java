@@ -18,6 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.kontalk.R;
 import org.kontalk.util.BitcoinIntegration;
 import org.kontalk.util.IabHelper;
@@ -37,7 +40,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 
 /**
@@ -52,9 +54,9 @@ public class DonationFragment extends Fragment {
     private Button mDonateBtn4;
     static final String TAG = "Kontalk Billing";
     IabHelper mHelper;
-    private final CharSequence[] mDonation={"Donate 1 Euro","Donate 2 Euro","Donate 5 Euro"};
+    private String[] mItems=new String[3];
+    private final List additionalSkuList= new LinkedList();
     static final int RC_REQUEST = 10001;
-    private static final String DONATION_ADDRESS = "14vipppSvCG7VdvoYmbhKZ8DbTfv9U1QfS";
     private static final int REQUEST_CODE = 0;
 
     @Override
@@ -64,9 +66,8 @@ public class DonationFragment extends Fragment {
         mDonateBtn2 = (Button) view.findViewById(R.id.donate2);
         mDonateBtn3 = (Button) view.findViewById(R.id.donate3);
         mDonateBtn4 = (Button) view.findViewById(R.id.donate4);
-        String base64EncodedPublicKey ="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwoAb6+u76Qo98J8lKvhk/7e0MxBmeqowuopXKMLckPHkoaeogZrjVbtnV80XAZSpaugCnV5LXNGBP9gVO2yLi7pvCOUokLDFR1YJEQ98/xWNGQvwOKZPm31EtJBieTIQX8ld40rztav/oK3MkxtkdAKHMAqXNkKN00Z5xrWZ9UoeRRKdMFbJtHnTa/0I63FElaH7TXvVf4mtYFvCgsYlRuEsSDXeOXh5gf6uD6XHWJcCHzlOeLEAezuNit2Fwor4WILjP01lG3rCenGgu6ViyBbrDnLW68hwJhQ3bhSpqxXM6dhGOzvtpCdezv7ZRFPUWqaIoyUGnnz/ASvp9GQujwIDAQAB";
         Log.d(TAG, "Creating IAB helper.");
-        mHelper = new IabHelper(getActivity(), base64EncodedPublicKey);
+        mHelper = new IabHelper(getActivity(), getString(R.string.gwallet_key));
         mHelper.enableDebugLogging(true);
         Log.d(TAG, "Starting setup.");
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
@@ -80,7 +81,10 @@ public class DonationFragment extends Fragment {
                if (mHelper == null) return;
                if (result.isSuccess()) init();
                Log.d(TAG, "Setup successful. Querying inventory.");
-               mHelper.queryInventoryAsync(mGotInventoryListener);
+               additionalSkuList.add("donation_1");
+               additionalSkuList.add("donation_2");
+               additionalSkuList.add("donation_5");
+               mHelper.queryInventoryAsync(true,additionalSkuList,mGotInventoryListener);
           }
         });
         return view;
@@ -92,19 +96,19 @@ public class DonationFragment extends Fragment {
             public void onClick(View v) {
                 AlertDialog.Builder donationDialog = new AlertDialog.Builder(getActivity());
                 donationDialog.setTitle("Donate");
-                donationDialog.setItems(mDonation, new DialogInterface.OnClickListener() {
+                donationDialog.setItems(mItems, new DialogInterface.OnClickListener() {
                  public void onClick(DialogInterface dialog, int which) {
                     if (which==0) {
                         if (mHelper !=null) mHelper.flagEndAsync();
-                        mHelper.launchPurchaseFlow(getActivity(), "donation1", RC_REQUEST, mPurchaseFinishedListener);
+                        mHelper.launchPurchaseFlow(getActivity(), "donation_1", RC_REQUEST, mPurchaseFinishedListener);
                     }
                     if (which==1) {
                         if (mHelper !=null) mHelper.flagEndAsync();
-                        mHelper.launchPurchaseFlow(getActivity(), "donation2", RC_REQUEST, mPurchaseFinishedListener);
+                        mHelper.launchPurchaseFlow(getActivity(), "donation_2", RC_REQUEST, mPurchaseFinishedListener);
                     }
                     if (which==2) {
                         if (mHelper !=null) mHelper.flagEndAsync();
-                        mHelper.launchPurchaseFlow(getActivity(), "donation5", RC_REQUEST, mPurchaseFinishedListener);
+                        mHelper.launchPurchaseFlow(getActivity(), "donation_5", RC_REQUEST, mPurchaseFinishedListener);
                     }
                  }
                 });
@@ -122,7 +126,7 @@ public class DonationFragment extends Fragment {
         mDonateBtn2.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                BitcoinIntegration.requestForResult(getActivity(), REQUEST_CODE, DONATION_ADDRESS);
+                BitcoinIntegration.requestForResult(getActivity(), REQUEST_CODE, getString(R.string.bitcoin_address));
             }
         });
 
@@ -155,17 +159,21 @@ public class DonationFragment extends Fragment {
                 Log.d(TAG, "Query inventory was successful.");
                 if (inventory.hasPurchase("donation1"))
                 {
-                mHelper.consumeAsync(inventory.getPurchase("donation1"), mConsumeFinishedListener);
+                mHelper.consumeAsync(inventory.getPurchase("donation_1"), mConsumeFinishedListener);
                 }
                 if (inventory.hasPurchase("donation2"))
                 {
-                mHelper.consumeAsync(inventory.getPurchase("donation2"), mConsumeFinishedListener);
+                mHelper.consumeAsync(inventory.getPurchase("donation_2"), mConsumeFinishedListener);
                 }
                 if (inventory.hasPurchase("donation5"))
                 {
-                mHelper.consumeAsync(inventory.getPurchase("donation5"), mConsumeFinishedListener);
+                mHelper.consumeAsync(inventory.getPurchase("donation_5"), mConsumeFinishedListener);
                 }
             }
+
+            mItems[0]=inventory.getSkuDetails("donation_1").getDescription()+"   "+inventory.getSkuDetails("donation_1").getPrice();
+            mItems[1]=inventory.getSkuDetails("donation_2").getDescription()+"   "+inventory.getSkuDetails("donation_2").getPrice();
+            mItems[2]=inventory.getSkuDetails("donation_5").getDescription()+"   "+inventory.getSkuDetails("donation_5").getPrice();
         }
     };
 
@@ -206,22 +214,6 @@ public class DonationFragment extends Fragment {
         else {
             Log.i(TAG, "onActivityResult handled by IABUtil.");
         }
-        if (requestCode == REQUEST_CODE)
-        {
-            if (resultCode == getActivity().RESULT_OK)
-            {
-                Toast.makeText(getActivity(), "Thank you!", Toast.LENGTH_LONG).show();
-            }
-            else if (resultCode == getActivity().RESULT_CANCELED)
-            {
-                Toast.makeText(getActivity(), "Cancelled.", Toast.LENGTH_LONG).show();
-            }
-            else
-            {
-                Toast.makeText(getActivity(), "Unknown result.", Toast.LENGTH_LONG).show();
-            }
-        }
-
     }
 
 	@Override

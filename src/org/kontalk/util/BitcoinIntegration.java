@@ -16,6 +16,8 @@
 
 package org.kontalk.util;
 
+import org.kontalk.R;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -192,7 +194,7 @@ public final class BitcoinIntegration
                 dialog.dismiss();
             }
         });
-        bitcoin.setMessage("14vipppSvCG7VdvoYmbhKZ8DbTfv9U1QfS");
+        bitcoin.setMessage(R.string.bitcoin_address);
         AlertDialog alert = bitcoin.create();
         alert.show();
 	}
