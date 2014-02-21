@@ -19,13 +19,17 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.MessageCenterService;
+import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -352,18 +356,10 @@ public class ConversationListFragment extends ListFragment {
         MessageCenterService.release(getActivity());
     }
 
-	// TODO i18n and polite
     private void showRequestSubscription(final Conversation conv) {
     	final ConversationList parent = getParentActivity();
 
-    	String display;
-    	Contact c = conv.getContact();
     	final String userId = conv.getRecipient();
-
-    	if (c != null)
-    		display = c.getName() + " (" + c.getNumber() + ")";
-    	else
-    		display = conv.getRecipient();
 
     	DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
@@ -391,17 +387,42 @@ public class ConversationListFragment extends ListFragment {
 			}
 		};
 
-		/*
-		 * TODO include an "Open" button on the dialog to ignore the request
-		 * and go on with the compose window.
-		 */
+		String fingerprint;
+		String uid;
 
+		PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), userId);
+		if (publicKey != null) {
+		    PGPPublicKey pk = PGP.getMasterKey(publicKey);
+		    fingerprint = PGP.getFingerprint(pk);
+		    uid = PGP.getUserId(pk, null);    // TODO server!!!
+		}
+		else {
+		    // FIXME using another string
+		    fingerprint = uid = getString(R.string.peer_unknown);
+		}
+
+		String text;
+
+        Contact c = conv.getContact();
+        if (c != null)
+            text = getString(R.string.text_invitation_known,
+                c.getName(),
+                c.getNumber(),
+                uid, fingerprint);
+        else
+            text = getString(R.string.text_invitation_unknown,
+                uid, fingerprint);
+
+        /*
+         * TODO include an "Open" button on the dialog to ignore the request
+         * and go on with the compose window.
+         */
     	new AlertDialog.Builder(parent)
-    		.setPositiveButton("Accept", listener)
-    		.setNeutralButton("Cancel", null)
-    		.setNegativeButton("Block", listener)
-    		.setTitle("Chat invitation")
-    		.setMessage("Request by \n" + display)
+    		.setPositiveButton(R.string.button_accept, listener)
+    		.setNeutralButton(android.R.string.cancel, null)
+    		.setNegativeButton(R.string.button_block, listener)
+    		.setTitle(R.string.title_invitation)
+    		.setMessage(text)
     		.show();
     }
 
