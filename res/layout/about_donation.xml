@@ -58,7 +58,7 @@
             />
 
         <Button
-            android:id="@+id/donate3"
+            android:id="@+id/donate2"
             android:text="@string/donate_paypal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -68,7 +68,7 @@
             />
 
         <Button
-            android:id="@+id/donate2"
+            android:id="@+id/donate3"
             android:text="@string/donate_bitcoin"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
