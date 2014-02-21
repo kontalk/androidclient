@@ -1837,15 +1837,23 @@ public class ComposeMessageFragment extends ListFragment implements
         // resume notifications
         MessagingNotification.setPaused(null);
 
-        // TODO saving an empty draft will leave a zombie thread
-
 		// save last message as draft
 		if (threadId > 0) {
-			ContentValues values = new ContentValues(1);
-			values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
-			getActivity().getContentResolver().update(
-					ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
-					values, null, null);
+
+		    // no draft and no messages - delete conversation
+		    if (len == 0 && mConversation.getMessageCount() == 0) {
+		        // FIXME shouldn't be faster to just delete the thread?
+		        MessagesProvider.deleteThread(getActivity(), threadId);
+		    }
+
+		    // update draft
+		    else {
+    			ContentValues values = new ContentValues(1);
+    			values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
+    			getActivity().getContentResolver().update(
+    					ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+    					values, null, null);
+		    }
 		}
 
 		// new thread, create empty conversation
