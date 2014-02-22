@@ -56,7 +56,7 @@ public class EndpointServer {
 
     @Override
     public String toString() {
-        return mNetwork + "/" + mHost + ":" + mPort;
+        return mNetwork + "|" + mHost + ":" + mPort;
     }
 
     public String getHost() {
