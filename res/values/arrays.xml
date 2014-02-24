@@ -86,4 +86,10 @@
         <item>3 hours</item>
     </string-array>
 
+    <string-array name="iab_items">
+        <item>donation_1</item>
+        <item>donation_2</item>
+        <item>donation_5</item>
+    </string-array>
+
 </resources>

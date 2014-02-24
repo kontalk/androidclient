@@ -48,7 +48,7 @@
             android:text="@string/donate_text" />
 
         <Button
-            android:id="@+id/donate1"
+            android:id="@+id/donate_google"
             android:text="@string/donate_wallet"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -58,7 +58,7 @@
             />
 
         <Button
-            android:id="@+id/donate2"
+            android:id="@+id/donate_paypal"
             android:text="@string/donate_paypal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -68,7 +68,7 @@
             />
 
         <Button
-            android:id="@+id/donate3"
+            android:id="@+id/donate_bitcoin"
             android:text="@string/donate_bitcoin"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -78,7 +78,7 @@
             />
 
         <Button
-            android:id="@+id/donate4"
+            android:id="@+id/donate_flattr"
             android:text="@string/donate_flattr"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

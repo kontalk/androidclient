@@ -253,12 +253,12 @@
     <string name="social_identica">Identi.ca</string>
 
     <string name="donate_text">Kontalk needs money to keep running. Please consider a donation, even a small one.</string>
-    <string name="donate_dialog">Donate</string>
-    <string name="bitcoin_dialog">Bitcoin Address:</string>
-    <string name="donate_wallet">GOOGLE WALLET</string>
-    <string name="donate_paypal">PAYPAL</string>
-    <string name="donate_bitcoin">BITCOIN</string>
-    <string name="donate_flattr">FLATTR</string>
+    <string name="title_bitcoin_dialog">Bitcoin</string>
+    <string name="text_bitcoin_dialog">Bitcoin address:\n%s</string>
+    <string name="donate_wallet">Google Play</string>
+    <string name="donate_paypal">Paypal</string>
+    <string name="donate_bitcoin">Bitcoin</string>
+    <string name="donate_flattr">Flattr</string>
 
     <string name="msg_generating_keypair">Generating personal key in the background.</string>
     <string name="msg_gen_keypair_complete">Personal key regeneration completed.</string>
@@ -287,5 +287,14 @@
     <string name="text_invitation_unknown">Request by\n%1$s\nFingerprint: %2$s</string>
     <string name="button_accept">Accept</string>
     <string name="button_block">Block</string>
+
+    <string name="msg_connecting_iab">Connecting to Google Play&#8230;</string>
+    <string name="msg_iab_thankyou">Thank you!</string>
+
+    <string name="iab_error_setup">Error during in-app billing setup (%d)</string>
+    <string name="iab_error_query">Failed to query in-app billing inventory (%d)</string>
+
+    <string name="copy_clipboard">Copy to clipboard</string>
+    <string name="bitcoin_clipboard_copied">Bitcoin address copied to clipboard.</string>
 
 </resources>

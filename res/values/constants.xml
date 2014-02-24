@@ -26,7 +26,6 @@
 	<string name="twitter_link">https://twitter.com/kontalknet</string>
 	<string name="identica_link">https://identi.ca/kontalknet</string>
     <string name="netsite">www.kontalk.net</string>
-    <string name="gwallet_key">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwoAb6+u76Qo98J8lKvhk/7e0MxBmeqowuopXKMLckPHkoaeogZrjVbtnV80XAZSpaugCnV5LXNGBP9gVO2yLi7pvCOUokLDFR1YJEQ98/xWNGQvwOKZPm31EtJBieTIQX8ld40rztav/oK3MkxtkdAKHMAqXNkKN00Z5xrWZ9UoeRRKdMFbJtHnTa/0I63FElaH7TXvVf4mtYFvCgsYlRuEsSDXeOXh5gf6uD6XHWJcCHzlOeLEAezuNit2Fwor4WILjP01lG3rCenGgu6ViyBbrDnLW68hwJhQ3bhSpqxXM6dhGOzvtpCdezv7ZRFPUWqaIoyUGnnz/ASvp9GQujwIDAQAB</string>
     <string name="bitcoin_address">14vipppSvCG7VdvoYmbhKZ8DbTfv9U1QfS</string>
     <string name="flattr_url">http://flattr.com/thing/1194909/Kontalk-network</string>
     <string name="paypal_url">https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=NVEF4PQ92HJ6N</string>

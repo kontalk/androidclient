@@ -18,8 +18,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.kontalk"
-      android:versionCode="29"
-      android:versionName="3.0a3"
+      android:versionCode="30"
+      android:versionName="3.0a4"
       android:installLocation="internalOnly">
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="19"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -41,6 +41,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="com.android.vending.BILLING" />
+
     <!-- internal permissions -->
     <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
 
