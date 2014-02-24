@@ -234,7 +234,7 @@ public class MessagesProvider extends ContentProvider {
             "CASE WHEN mime <> 'text/plain' THEN 0 ELSE length(content) END, " +
             "CASE WHEN mime <> 'text/plain' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, encrypted, " +
             "CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED + " ELSE " + Coder.SECURITY_CLEARTEXT + " END, "+
-            "strftime('%s', server_timestamp)" +
+            "strftime('%s', server_timestamp)*1000" +
                 " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
@@ -543,7 +543,7 @@ public class MessagesProvider extends ContentProvider {
 	        // thread content has a special behaviour
 	        setThreadContent(
 	    		initialValues.getAsByteArray(Messages.BODY_CONTENT),
-	    		initialValues.getAsString(Messages.BODY_CONTENT),
+	    		initialValues.getAsString(Messages.BODY_MIME),
 	    		initialValues.getAsString(Messages.ATTACHMENT_MIME),
 	    		values);
         }

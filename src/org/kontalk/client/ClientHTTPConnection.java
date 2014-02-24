@@ -21,6 +21,17 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,8 +43,18 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.kontalk.R;
+import org.kontalk.crypto.PGP;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
@@ -41,6 +62,10 @@ import android.content.Context;
 import android.util.Log;
 
 
+/**
+ * FIXME this is actually specific to Kontalk Dropbox server.
+ * @author Daniele Ricci
+ */
 public class ClientHTTPConnection {
     private static final String TAG = ClientHTTPConnection.class.getSimpleName();
 
@@ -48,20 +73,18 @@ public class ClientHTTPConnection {
     private static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern
             .compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
 
+    private final Context mContext;
 
-    /** The authentication token header. */
-    private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
-    private static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
+    private final PrivateKey mPrivateKey;
+    private final X509Certificate mCertificate;
 
-    protected final Context mContext;
-    protected final String mAuthToken;
+    private HttpRequestBase currentRequest;
+    private HttpClient mConnection;
 
-    protected HttpRequestBase currentRequest;
-    protected HttpClient mConnection;
-
-    public ClientHTTPConnection(Context context, String token) {
+    public ClientHTTPConnection(Context context, PrivateKey privateKey, X509Certificate bridgeCert) {
         mContext = context;
-        mAuthToken = token;
+        mPrivateKey = privateKey;
+        mCertificate = bridgeCert;
     }
 
     public void abort() {
@@ -70,20 +93,34 @@ public class ClientHTTPConnection {
     }
 
     /**
-     * A generic download request, with optional authentication token.
-     * @param token the authentication token
+     * A generic download request.
      * @param url URL to download
      * @return the request object
      * @throws IOException
      */
-    private HttpRequestBase prepareURLDownload(String token, String url) throws IOException {
+    private HttpRequestBase prepareURLDownload(String url) throws IOException {
         HttpGet req = new HttpGet(url);
-
-        if (token != null)
-            req.addHeader(HEADER_NAME_AUTHORIZATION,
-                    HEADER_VALUE_AUTHORIZATION + token);
-
         return req;
+    }
+
+    public static SSLSocketFactory setupSSLSocketFactory(Context context,
+                PrivateKey privateKey, X509Certificate certificate)
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
+                IOException, KeyManagementException, UnrecoverableKeyException,
+                NoSuchProviderException {
+
+        // in-memory keystore
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keystore.load(null, null);
+        keystore.setKeyEntry("private", privateKey, null, new Certificate[] { certificate });
+
+        // load truststore from file
+        KeyStore truststore = KeyStore.getInstance("BKS", PGP.PROVIDER);
+        InputStream in = context.getResources()
+                .openRawResource(R.raw.truststore);
+        truststore.load(in, "changeit".toCharArray());
+
+        return new SSLSocketFactory(keystore, null, truststore);
     }
 
     /**
@@ -96,11 +133,27 @@ public class ClientHTTPConnection {
         // execute!
         try {
             if (mConnection == null) {
-                mConnection = new DefaultHttpClient();
+                SchemeRegistry registry = new SchemeRegistry();
+                try {
+                    registry.register(new Scheme("http",  PlainSocketFactory.getSocketFactory(), 80));
+                    registry.register(new Scheme("https", setupSSLSocketFactory(mContext, mPrivateKey, mCertificate), 443));
+                }
+                catch (Exception e) {
+                    IOException ie = new IOException("unable to create keystore");
+                    ie.initCause(e);
+                    throw ie;
+                }
+
+                HttpParams params = new BasicHttpParams();
                 // handle redirects :)
-                mConnection.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+                params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
                 // HttpClient bug caused by Lighttpd
-                mConnection.getParams().setBooleanParameter("http.protocol.expect-continue", false);
+                params.setBooleanParameter("http.protocol.expect-continue", false);
+
+                // create connection manager
+                ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
+
+                mConnection = new DefaultHttpClient(connMgr, params);
             }
             return mConnection.execute(request);
         }
@@ -119,7 +172,7 @@ public class ClientHTTPConnection {
     }
 
     private void _download(String url, File base, DownloadListener listener) throws IOException {
-        currentRequest = prepareURLDownload(mAuthToken, url);
+        currentRequest = prepareURLDownload(url);
         HttpResponse response = execute(currentRequest);
 
         int code = response.getStatusLine().getStatusCode();

@@ -29,7 +29,9 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
+import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.ProgressNotificationBuilder;
@@ -146,9 +148,10 @@ public class UploadService extends IntentService implements ProgressListener {
             mCanceled = false;
 
             if (mConn == null) {
-                String token = null; //Authenticator.getDefaultAccountToken(this);
+                PersonalKey key = ((Kontalk) getApplication()).getPersonalKey();
                 // TODO used class here should be decided by the caller
-                mConn = new KontalkBoxUploadConnection(this, url, token);
+                mConn = new KontalkBoxUploadConnection(this, url,
+                    key.getBridgePrivateKey(), key.getBridgeCertificate());
             }
 
             mMessageId = msgId;

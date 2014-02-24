@@ -1839,11 +1839,21 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		// save last message as draft
 		if (threadId > 0) {
-			ContentValues values = new ContentValues(1);
-			values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
-			getActivity().getContentResolver().update(
-					ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
-					values, null, null);
+
+		    // no draft and no messages - delete conversation
+		    if (len == 0 && mConversation.getMessageCount() == 0) {
+		        // FIXME shouldn't be faster to just delete the thread?
+		        MessagesProvider.deleteThread(getActivity(), threadId);
+		    }
+
+		    // update draft
+		    else {
+    			ContentValues values = new ContentValues(1);
+    			values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
+    			getActivity().getContentResolver().update(
+    					ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
+    					values, null, null);
+		    }
 		}
 
 		// new thread, create empty conversation
@@ -1860,6 +1870,7 @@ public class ComposeMessageFragment extends ListFragment implements
 				values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
 				values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
 				values.put(Messages.TIMESTAMP, System.currentTimeMillis());
+				values.put(Messages.ENCRYPTED, false);
 				values.put(Threads.DRAFT, text.toString());
 				getActivity().getContentResolver().insert(Messages.CONTENT_URI,
 						values);
