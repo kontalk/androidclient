@@ -54,21 +54,25 @@ import android.widget.Toast;
 public class DonationFragment extends Fragment implements OnClickListener {
 
     // for Google Play
-    private IabHelper mHelper;
+    private IabHelper mIabHelper;
     private static final int IAB_REQUEST_CODE = 10001;
 
     IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
 
         public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            if (mHelper == null) return;
+            if (mIabHelper == null) return;
 
             // end async operation
-            mHelper.flagEndAsync();
+            mIabHelper.flagEndAsync();
 
             if (result.isSuccess())
                 Toast.makeText(getActivity(), R.string.msg_iab_thankyou, Toast.LENGTH_LONG).show();
         }
     };
+
+    public IabHelper getIabHelper() {
+		return mIabHelper;
+	}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -140,69 +144,78 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void setupGoogle(final ProgressDialog progress) {
-    	// FIXME maybe not recreating the helper everytime... :)
-        mHelper = new IabHelper(getActivity());
-        mHelper.enableDebugLogging(BuildConfig.DEBUG);
+    	if (mIabHelper == null) {
+	        mIabHelper = new IabHelper(getActivity());
+	        mIabHelper.enableDebugLogging(BuildConfig.DEBUG);
 
-        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            public void onIabSetupFinished(IabResult result) {
+	        mIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+	            public void onIabSetupFinished(IabResult result) {
 
-                if (!result.isSuccess()) {
-                    alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
-                    mHelper = null;
-                    return;
+	                if (!result.isSuccess()) {
+	                    alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
+	                    mIabHelper = null;
+	                    return;
+	                }
+
+	                queryInventory(progress);
+	            }
+	        });
+    	}
+
+    	else {
+    		queryInventory(progress);
+    	}
+    }
+
+    private void queryInventory(final ProgressDialog progress) {
+        final String[] iabItems = getResources().getStringArray(R.array.iab_items);
+
+        IabHelper.QueryInventoryFinishedListener gotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+            public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+                if (mIabHelper == null) return;
+
+                if (result.isFailure()) {
+                    alert(R.string.title_error, getString(R.string.iab_error_query, result.getResponse()));
                 }
 
-                final String[] iabItems = getResources().getStringArray(R.array.iab_items);
+                else {
 
-                IabHelper.QueryInventoryFinishedListener gotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
-                    public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-                        if (mHelper == null) return;
+                    // end async operation and dismiss progress
+                    mIabHelper.flagEndAsync();
+                	progress.dismiss();
 
-                        if (result.isFailure()) {
-                            alert(R.string.title_error, getString(R.string.iab_error_query, result.getResponse()));
-                        }
+                    // prepare items for the dialog
+                    String[] dialogItems = new String[iabItems.length];
 
-                        else {
-
-                            // end async operation and dismiss progress
-                            mHelper.flagEndAsync();
-                            progress.dismiss();
-
-                            // prepare items for the dialog
-                            String[] dialogItems = new String[iabItems.length];
-
-                            for (int i = 0; i < iabItems.length; i++) {
-                                SkuDetails sku = inventory.getSkuDetails(iabItems[i]);
-                                if (sku != null)
-                                    dialogItems[i] = sku.getDescription();
-                                else
-                                    dialogItems[i] = iabItems[i];
-                            }
-
-                            // show dialog with choices
-                            new AlertDialog.Builder(getActivity())
-                                .setTitle(R.string.title_donation)
-                                .setItems(dialogItems, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        // start the purchase
-                                        String itemId = iabItems[which];
-                                        mHelper.launchPurchaseFlow(getActivity(), itemId,
-                                            IAB_REQUEST_CODE, mPurchaseFinishedListener);
-                                    }
-                                })
-                                .setNegativeButton(R.string.button_cancel, null)
-                                .show();
-                        }
+                    for (int i = 0; i < iabItems.length; i++) {
+                        SkuDetails sku = inventory.getSkuDetails(iabItems[i]);
+                        if (sku != null)
+                            dialogItems[i] = sku.getDescription();
+                        else
+                            dialogItems[i] = iabItems[i];
                     }
-                };
 
-
-                if (mHelper != null)
-                    mHelper.queryInventoryAsync(true, Arrays
-                        .asList(iabItems), gotInventoryListener);
+                    // show dialog with choices
+                    new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.title_donation)
+                        .setItems(dialogItems, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // start the purchase
+                                String itemId = iabItems[which];
+                                mIabHelper.launchPurchaseFlow(getActivity(), itemId,
+                                    IAB_REQUEST_CODE, mPurchaseFinishedListener);
+                            }
+                        })
+                        .setNegativeButton(R.string.button_cancel, null)
+                        .show();
+                }
             }
-        });
+        };
+
+
+        if (mIabHelper != null)
+            mIabHelper.queryInventoryAsync(true, Arrays
+                .asList(iabItems), gotInventoryListener);
     }
 
     private void donateGoogle() {
@@ -212,9 +225,9 @@ public class DonationFragment extends Fragment implements OnClickListener {
             new DialogInterface.OnCancelListener() {
                 public void onCancel(DialogInterface dialog) {
                 	// FIXME this doesn't seem to work in some cases
-                    if (mHelper != null) {
-                    	mHelper.dispose();
-                    	mHelper = null;
+                    if (mIabHelper != null) {
+                    	mIabHelper.dispose();
+                    	mIabHelper = null;
                     }
                 }
             });
@@ -223,18 +236,12 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (!mHelper.handleActivityResult(requestCode, resultCode, data))
-            super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if (mHelper != null) {
-            mHelper.dispose();
-            mHelper = null;
+        if (mIabHelper != null) {
+            mIabHelper.dispose();
+            mIabHelper = null;
         }
     }
 

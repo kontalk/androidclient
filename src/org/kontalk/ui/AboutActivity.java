@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.billing.IabHelper;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,8 +29,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar.Tab;
+import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 
 
@@ -143,7 +144,19 @@ public class AboutActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		DonationFragment fragment = mAdapter.getDonationFragment();
+		IabHelper iabHelper = fragment.getIabHelper();
+
+        if (iabHelper == null || !iabHelper.handleActivityResult(requestCode, resultCode, data))
+            super.onActivityResult(requestCode, resultCode, data);
+	}
+
 	private static class AboutPagerAdapter extends FragmentPagerAdapter {
+
+		// this is for IabHelper
+		private DonationFragment mDonationFragment;
 
         public AboutPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -161,7 +174,8 @@ public class AboutActivity extends ActionBarActivity {
                     return new AboutFragment();
 
                 case ABOUT_DONATION:
-                    return new DonationFragment();
+                	mDonationFragment = new DonationFragment();
+                    return mDonationFragment;
 
                 case ABOUT_CREDITS:
                     return new CreditsFragment();
@@ -170,6 +184,11 @@ public class AboutActivity extends ActionBarActivity {
             // shouldn't happen, but just in case
             return new AboutFragment();
         }
+
+        public DonationFragment getDonationFragment() {
+			return mDonationFragment;
+		}
+
 	}
 
 }
