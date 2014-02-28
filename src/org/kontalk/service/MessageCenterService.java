@@ -1860,6 +1860,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 if (_publicKey != null) {
 
+                    // FIXME always false LOL
     	            if (myCard) {
     	                byte[] bridgeCertData;
     	                try {
