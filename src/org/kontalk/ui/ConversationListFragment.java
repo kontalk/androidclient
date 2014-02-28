@@ -214,6 +214,10 @@ public class ConversationListFragment extends ListFragment {
                 deleteAll();
                 return true;
 
+            case R.id.menu_donate:
+                launchDonate();
+                return true;
+
             case R.id.menu_settings: {
                 MessagingPreferences.start(getActivity());
                 return true;
@@ -277,6 +281,12 @@ public class ConversationListFragment extends ListFragment {
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    private void launchDonate() {
+        Intent i = new Intent(getActivity(), AboutActivity.class);
+        i.setAction(AboutActivity.ACTION_DONATION);
+        startActivity(i);
     }
 
     private void deleteThread(final long threadId) {
