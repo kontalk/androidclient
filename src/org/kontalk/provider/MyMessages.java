@@ -53,6 +53,8 @@ public final class MyMessages {
         public static final int STATUS_RECEIVED = 5;
         public static final int STATUS_CONFIRMED = 6;
         public static final int STATUS_NOTDELIVERED = 7;
+        /** Pending user review (e.g. unencryptable message). */
+        public static final int STATUS_PENDING = 8;
 
         /**
          * Builds a message {@link Uri}.

@@ -887,7 +887,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(" AND ")
             .append(Messages.STATUS)
             .append("<>")
-            .append(Messages.STATUS_NOTDELIVERED);
+            .append(Messages.STATUS_NOTDELIVERED)
+            .append(" AND ")
+            .append(Messages.STATUS)
+            .append("<>")
+            .append(Messages.STATUS_PENDING);
 
         // filter out non-media non-uploaded messages
         if (retrying) filter
@@ -1180,7 +1184,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (PGPException pgpe) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to load personal key. Message will be sent in cleartext.",
+                		// TODO i18n
+                		Toast.makeText(this, "Unable to load personal key. Disable encryption from preferences to send it anyway.",
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1188,7 +1193,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (IOException io) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to load personal key. Message will be sent in cleartext.",
+                		// TODO i18n
+                		Toast.makeText(this, "Unable to load personal key. Disable encryption from preferences to send it anyway.",
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1196,7 +1202,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (IllegalArgumentException noPublicKey) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to find a public key for this user. Message will be sent in cleartext.",
+                		// TODO i18n
+                		Toast.makeText(this, "Unable to find a public key for this user. Try refreshing your contact list or disable encryption from preferences to send it anyway.",
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1204,17 +1211,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (GeneralSecurityException e) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to encrypt message. Message will be sent in cleartext.",
+                		// TODO i18n
+                		Toast.makeText(this, "Unable to encrypt message. Disable encryption from preferences to send it anyway.",
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
 
                 if (toMessage == null) {
+                	// message was not encrypted for some reason, mark it pending user review
+                    ContentValues values = new ContentValues(1);
+                    values.put(Messages.STATUS, Messages.STATUS_PENDING);
+                    getContentResolver().update(ContentUris.withAppendedId
+                    		(Messages.CONTENT_URI, msgId), values, null, null);
+
                 	// update message security flags
+                    /*
                     ContentValues values = new ContentValues(1);
                     values.put(Messages.SECURITY_FLAGS, Coder.SECURITY_CLEARTEXT);
                     getContentResolver().update(ContentUris.withAppendedId
                     		(Messages.CONTENT_URI, msgId), values, null, null);
+                     */
                 }
             }
 

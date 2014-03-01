@@ -854,6 +854,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	private static final int MENU_CANCEL_DOWNLOAD = 6;
 	private static final int MENU_DETAILS = 7;
 	private static final int MENU_DELETE = 8;
+	private static final int MENU_RETRY = 9;
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
@@ -863,6 +864,12 @@ public class ComposeMessageFragment extends ListFragment implements
 		CompositeMessage msg = vitem.getMessage();
 
 		menu.setHeaderTitle(R.string.title_message_options);
+
+		// message waiting for user review
+		if (msg.getStatus() == Messages.STATUS_PENDING) {
+			// TODO i18n
+			menu.add(CONTEXT_MENU_GROUP_ID, MENU_RETRY, MENU_RETRY, "Send again");
+		}
 
 		// some commands can be used only on unencrypted messages
 		if (!msg.isEncrypted()) {
@@ -987,6 +994,11 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			case MENU_DECRYPT: {
 				decryptMessage(msg);
+				return true;
+			}
+
+			case MENU_RETRY: {
+				// TODO
 				return true;
 			}
 

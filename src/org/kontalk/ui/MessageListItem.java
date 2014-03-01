@@ -248,6 +248,7 @@ public class MessageListItem extends RelativeLayout {
                 case Messages.STATUS_SENDING:
                 // use pending icon even for errors
                 case Messages.STATUS_ERROR:
+                case Messages.STATUS_PENDING:
                     resId = R.drawable.ic_msg_pending;
                     statusId = R.string.msg_status_sending;
                     break;
