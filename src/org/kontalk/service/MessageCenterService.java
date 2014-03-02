@@ -215,6 +215,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
 
+    /**
+     * Send this intent to retry to send a pending-user-review message.
+     */
+    public static final String ACTION_RETRY = "org.kontalk.action.RETRY";
+
     // common parameters
     /** connect to custom server -- TODO not used yet */
     public static final String EXTRA_SERVER = "org.kontalk.server";
@@ -248,6 +253,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.VCARD
     public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
+
+    /** Message URI. */
+    public static final String EXTRA_MESSAGE = "org.kontalk.message";
 
     // other
     public static final String GCM_REGISTRATION_ID = "org.kontalk.GCM_REGISTRATION_ID";
@@ -711,6 +719,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     		intent.getStringExtra(EXTRA_PACKET_ID),
                     		intent.getBooleanExtra(EXTRA_ACCEPTED, true));
             	}
+            }
+
+            else if (ACTION_RETRY.equals(action)) {
+
+            	Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
+
+                ContentValues values = new ContentValues(1);
+                values.put(Messages.STATUS, Messages.STATUS_SENDING);
+                getContentResolver().update(msgUri, values, null, null);
+
+                // FIXME shouldn't we resend just the above message?
+
+            	// already connected: resend pending messages
+            	if (isConnected)
+            		resendPendingMessages(false);
             }
 
             else {
@@ -1224,13 +1247,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     getContentResolver().update(ContentUris.withAppendedId
                     		(Messages.CONTENT_URI, msgId), values, null, null);
 
-                	// update message security flags
-                    /*
-                    ContentValues values = new ContentValues(1);
-                    values.put(Messages.SECURITY_FLAGS, Coder.SECURITY_CLEARTEXT);
-                    getContentResolver().update(ContentUris.withAppendedId
-                    		(Messages.CONTENT_URI, msgId), values, null, null);
-                     */
+                    // do not send the message
+                    return;
                 }
             }
 
