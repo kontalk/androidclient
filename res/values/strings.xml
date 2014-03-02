@@ -146,7 +146,6 @@
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Request verification code</string>
-    <string name="button_cancel">Cancel</string>
     <string name="button_validation_code">I already have a verification code</string>
     <string name="button_validation_register">Verify</string>
     <string name="notify_ticker_download_completed">Download completed</string>
