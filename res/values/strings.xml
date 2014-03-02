@@ -46,6 +46,7 @@
     <string name="msg_initializing">Registering to the Kontalk network&#8230;</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="share">Share</string>
+    <string name="resend">Send again</string>
     <string name="copy_message_text">Copy message text</string>
     <string name="delete_message">Delete message</string>
     <string name="confirm_delete_all">Delete all threads</string>
@@ -296,5 +297,9 @@
 
     <string name="copy_clipboard">Copy to clipboard</string>
     <string name="bitcoin_clipboard_copied">Bitcoin address copied to clipboard.</string>
+
+    <string name="warn_no_personal_key">Unable to load personal key. Disable encryption from preferences to send it anyway.</string>
+    <string name="warn_no_public_key">Unable to find a public key for this user. Try refreshing your contact list or disable encryption from preferences to send it anyway.</string>
+    <string name="warn_encryption_failed">Unable to encrypt message. Disable encryption from preferences to send it anyway.</string>
 
 </resources>

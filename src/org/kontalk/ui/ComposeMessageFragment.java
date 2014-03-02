@@ -875,8 +875,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 		// message waiting for user review
 		if (msg.getStatus() == Messages.STATUS_PENDING) {
-			// TODO i18n
-			menu.add(CONTEXT_MENU_GROUP_ID, MENU_RETRY, MENU_RETRY, "Send again");
+			menu.add(CONTEXT_MENU_GROUP_ID, MENU_RETRY, MENU_RETRY, R.string.resend);
 		}
 
 		// some commands can be used only on unencrypted messages

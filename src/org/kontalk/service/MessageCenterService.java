@@ -1207,8 +1207,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (PGPException pgpe) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		// TODO i18n
-                		Toast.makeText(this, "Unable to load personal key. Disable encryption from preferences to send it anyway.",
+                		Toast.makeText(this, R.string.warn_no_personal_key,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1216,8 +1215,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (IOException io) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		// TODO i18n
-                		Toast.makeText(this, "Unable to load personal key. Disable encryption from preferences to send it anyway.",
+                		Toast.makeText(this, R.string.warn_no_personal_key,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1225,8 +1223,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (IllegalArgumentException noPublicKey) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		// TODO i18n
-                		Toast.makeText(this, "Unable to find a public key for this user. Try refreshing your contact list or disable encryption from preferences to send it anyway.",
+                		Toast.makeText(this, R.string.warn_no_public_key,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1234,8 +1231,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (GeneralSecurityException e) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		// TODO i18n
-                		Toast.makeText(this, "Unable to encrypt message. Disable encryption from preferences to send it anyway.",
+                		Toast.makeText(this, R.string.warn_encryption_failed,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
