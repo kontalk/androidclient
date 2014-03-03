@@ -3,6 +3,6 @@ host = https://www.transifex.com
 
 [kontalk-android-client.strings-master]
 file_filter = res/values-<lang>/strings.xml
+source_file = res/values/strings.xml
 source_lang = en
 type = ANDROID
-
