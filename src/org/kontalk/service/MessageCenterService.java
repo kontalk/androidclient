@@ -215,6 +215,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
 
+    /**
+     * Send this intent to retry to send a pending-user-review message.
+     */
+    public static final String ACTION_RETRY = "org.kontalk.action.RETRY";
+
     // common parameters
     /** connect to custom server -- TODO not used yet */
     public static final String EXTRA_SERVER = "org.kontalk.server";
@@ -248,6 +253,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.VCARD
     public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
+
+    /** Message URI. */
+    public static final String EXTRA_MESSAGE = "org.kontalk.message";
 
     // other
     public static final String GCM_REGISTRATION_ID = "org.kontalk.GCM_REGISTRATION_ID";
@@ -713,6 +721,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             	}
             }
 
+            else if (ACTION_RETRY.equals(action)) {
+
+            	Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
+
+                ContentValues values = new ContentValues(1);
+                values.put(Messages.STATUS, Messages.STATUS_SENDING);
+                getContentResolver().update(msgUri, values, null, null);
+
+                // FIXME shouldn't we resend just the above message?
+
+            	// already connected: resend pending messages
+            	if (isConnected)
+            		resendPendingMessages(false);
+            }
+
             else {
                 // no command means normal service start, connect if not connected
                 doConnect = true;
@@ -887,7 +910,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(" AND ")
             .append(Messages.STATUS)
             .append("<>")
-            .append(Messages.STATUS_NOTDELIVERED);
+            .append(Messages.STATUS_NOTDELIVERED)
+            .append(" AND ")
+            .append(Messages.STATUS)
+            .append("<>")
+            .append(Messages.STATUS_PENDING);
 
         // filter out non-media non-uploaded messages
         if (retrying) filter
@@ -1180,7 +1207,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (PGPException pgpe) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to load personal key. Message will be sent in cleartext.",
+                		Toast.makeText(this, R.string.warn_no_personal_key,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1188,7 +1215,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (IOException io) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to load personal key. Message will be sent in cleartext.",
+                		Toast.makeText(this, R.string.warn_no_personal_key,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1196,7 +1223,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (IllegalArgumentException noPublicKey) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to find a public key for this user. Message will be sent in cleartext.",
+                		Toast.makeText(this, R.string.warn_no_public_key,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
@@ -1204,17 +1231,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 catch (GeneralSecurityException e) {
                 	// warn user: message will be sent cleartext
                 	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, "Unable to encrypt message. Message will be sent in cleartext.",
+                		Toast.makeText(this, R.string.warn_encryption_failed,
                 			Toast.LENGTH_LONG).show();
                 	}
                 }
 
                 if (toMessage == null) {
-                	// update message security flags
+                	// message was not encrypted for some reason, mark it pending user review
                     ContentValues values = new ContentValues(1);
-                    values.put(Messages.SECURITY_FLAGS, Coder.SECURITY_CLEARTEXT);
+                    values.put(Messages.STATUS, Messages.STATUS_PENDING);
                     getContentResolver().update(ContentUris.withAppendedId
                     		(Messages.CONTENT_URI, msgId), values, null, null);
+
+                    // do not send the message
+                    return;
                 }
             }
 

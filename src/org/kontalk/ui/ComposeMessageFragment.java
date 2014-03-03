@@ -846,14 +846,23 @@ public class ComposeMessageFragment extends ListFragment implements
 				Toast.LENGTH_LONG).show();
 	}
 
-	private static final int MENU_SHARE = 1;
-	private static final int MENU_COPY_TEXT = 2;
-	private static final int MENU_DECRYPT = 3;
-	private static final int MENU_OPEN = 4;
-	private static final int MENU_DOWNLOAD = 5;
-	private static final int MENU_CANCEL_DOWNLOAD = 6;
-	private static final int MENU_DETAILS = 7;
-	private static final int MENU_DELETE = 8;
+	private void retryMessage(CompositeMessage msg) {
+        Intent i = new Intent(getActivity(), MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_RETRY);
+        i.putExtra(MessageCenterService.EXTRA_MESSAGE, ContentUris.withAppendedId
+        		(Messages.CONTENT_URI, msg.getDatabaseId()));
+        getActivity().startService(i);
+	}
+
+	private static final int MENU_RETRY = 1;
+	private static final int MENU_SHARE = 2;
+	private static final int MENU_COPY_TEXT = 3;
+	private static final int MENU_DECRYPT = 4;
+	private static final int MENU_OPEN = 5;
+	private static final int MENU_DOWNLOAD = 6;
+	private static final int MENU_CANCEL_DOWNLOAD = 7;
+	private static final int MENU_DETAILS = 8;
+	private static final int MENU_DELETE = 9;
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
@@ -863,6 +872,11 @@ public class ComposeMessageFragment extends ListFragment implements
 		CompositeMessage msg = vitem.getMessage();
 
 		menu.setHeaderTitle(R.string.title_message_options);
+
+		// message waiting for user review
+		if (msg.getStatus() == Messages.STATUS_PENDING) {
+			menu.add(CONTEXT_MENU_GROUP_ID, MENU_RETRY, MENU_RETRY, R.string.resend);
+		}
 
 		// some commands can be used only on unencrypted messages
 		if (!msg.isEncrypted()) {
@@ -987,6 +1001,11 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			case MENU_DECRYPT: {
 				decryptMessage(msg);
+				return true;
+			}
+
+			case MENU_RETRY: {
+				retryMessage(msg);
 				return true;
 			}
 
