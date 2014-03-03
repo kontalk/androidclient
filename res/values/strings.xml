@@ -297,8 +297,8 @@
     <string name="copy_clipboard">Copy to clipboard</string>
     <string name="bitcoin_clipboard_copied">Bitcoin address copied to clipboard.</string>
 
-    <string name="warn_no_personal_key">Unable to load personal key. Disable encryption from preferences to send it anyway.</string>
-    <string name="warn_no_public_key">Unable to find a public key for this user. Try refreshing your contact list or disable encryption from preferences to send it anyway.</string>
-    <string name="warn_encryption_failed">Unable to encrypt message. Disable encryption from preferences to send it anyway.</string>
+    <string name="warn_no_personal_key">Unable to load personal key. Disable encryption from preferences to send message anyway.</string>
+    <string name="warn_no_public_key">Unable to find a public key for this user. Try refreshing your contact list or disable encryption from preferences to send message anyway.</string>
+    <string name="warn_encryption_failed">Unable to encrypt message. Disable encryption from preferences to send message anyway.</string>
 
 </resources>
