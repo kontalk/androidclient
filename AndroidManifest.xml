@@ -55,8 +55,7 @@
         android:label="@string/app_name"
         android:icon="@drawable/ic_launcher"
         android:theme="@style/Theme.Light"
-        android:allowBackup="true"
-        android:debuggable="true">
+        android:allowBackup="true">
 
         <!-- Services -->
         <service android:name=".service.MessageCenterService"
