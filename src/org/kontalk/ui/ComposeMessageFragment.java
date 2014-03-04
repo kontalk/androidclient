@@ -1651,8 +1651,18 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	/** Sends a subscription request for the current peer. */
 	private void presenceSubscribe() {
+	    Contact c;
+	    /*
+	     * conversation might be null if we are sending an attachment on a new
+	     * conversation. This means that the conversation was created from the
+	     * new message, but it still hasn't been loaded yet.
+	     */
+	    if (mConversation != null)
+            c = mConversation.getContact();
+	    else
+            c = Contact.findByUserId(getActivity(), userId, userPhone);
+
 		// pre-approve our presence if we don't have contact's key
-		Contact c = mConversation.getContact();
 		if (c == null || c.getPublicKeyRing() == null) {
 	        Intent i = new Intent(getActivity(), MessageCenterService.class);
 	        i.setAction(MessageCenterService.ACTION_PRESENCE);
