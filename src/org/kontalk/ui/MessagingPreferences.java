@@ -381,6 +381,10 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getBoolean(context, "pref_encrypt", true);
     }
 
+    public static boolean getSyncSIMContacts(Context context) {
+        return getBoolean(context, "pref_sync_sim_contacts", false);
+    }
+
     public static boolean getAutoAcceptSubscriptions(Context context) {
     	return getBoolean(context, "pref_auto_accept_subscriptions", false);
     }

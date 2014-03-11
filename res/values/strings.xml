@@ -301,4 +301,8 @@
     <string name="warn_no_public_key">Unable to find a public key for this user. Try refreshing your contact list or disable encryption from preferences to send message anyway.</string>
     <string name="warn_encryption_failed">Unable to encrypt message. Disable encryption from preferences to send message anyway.</string>
 
+    <string name="pref_sync_sim_contacts">Sync from SIM contacts</string>
+    <string name="pref_title_off_sync_sim_contacts">Do not include SIM contacts when checking for registered users</string>
+    <string name="pref_title_on_sync_sim_contacts">SIM contacts are also included when checking for registered users</string>
+
 </resources>

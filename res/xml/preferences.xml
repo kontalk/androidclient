@@ -73,6 +73,11 @@
             android:title="@string/pref_remove_prefix"
             android:summary="@string/pref_title_remove_prefix"
             android:singleLine="true" android:inputType="phone"/>
+        <CheckBoxPreference android:key="pref_sync_sim_contacts"
+            android:summaryOff="@string/pref_title_off_sync_sim_contacts"
+            android:summaryOn="@string/pref_title_on_sync_sim_contacts"
+            android:title="@string/pref_sync_sim_contacts"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_appearance_settings"
