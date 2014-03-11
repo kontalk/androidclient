@@ -385,6 +385,11 @@ public class UsersProvider extends ContentProvider {
 
                 while (phones.moveToNext()) {
                     String number = phones.getString(0);
+                    String name = phones.getString(1);
+
+                    // buggy provider - skip entry
+                    if (name == null || number == null)
+                        continue;
 
                     // remove dial prefix first
                     if (dialPrefix != null && number.startsWith(dialPrefix))
@@ -411,7 +416,7 @@ public class UsersProvider extends ContentProvider {
                         stm.clearBindings();
                         stm.bindString(1, hash);
                         stm.bindString(2, number);
-                        stm.bindString(3, phones.getString(1));
+                        stm.bindString(3, name);
                         stm.bindString(4, phones.getString(2));
                         stm.bindLong(5, phones.getLong(3));
                         stm.executeInsert();
