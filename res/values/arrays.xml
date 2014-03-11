@@ -18,7 +18,7 @@
 
 <resources>
 
-    <string-array name="vibrate_values">
+    <string-array name="vibrate_values" translate="false">
         <item>always</item>
         <item>silent_only</item>
         <item>never</item>
@@ -30,7 +30,7 @@
         <item>Never</item>
     </string-array>
 
-    <string-array name="fontsize_values">
+    <string-array name="fontsize_values" translate="false">
         <item>small</item>
         <item>medium</item>
         <item>large</item>
@@ -42,7 +42,7 @@
         <item>Large</item>
     </string-array>
 
-    <string-array name="balloons_values">
+    <string-array name="balloons_values" translate="false">
         <item>classic</item>
         <item>old_classic</item>
         <item>iphone</item>
@@ -54,7 +54,7 @@
         <item>iPhone</item>
     </string-array>
 
-    <string-array name="idle_time_values">
+    <string-array name="idle_time_values" translate="false">
         <item>60000</item>
         <item>120000</item>
         <item>180000</item>
@@ -70,7 +70,7 @@
         <item>5 minutes</item>
     </string-array>
 
-    <string-array name="wakeup_time_values">
+    <string-array name="wakeup_time_values" translate="false">
         <item>300000</item>
         <item>900000</item>
         <item>1800000</item>
@@ -86,7 +86,7 @@
         <item>3 hours</item>
     </string-array>
 
-    <string-array name="iab_items">
+    <string-array name="iab_items" translate="false">
         <item>donation_1</item>
         <item>donation_2</item>
         <item>donation_5</item>
