@@ -53,6 +53,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
 
 
@@ -379,7 +380,8 @@ public class UsersProvider extends ContentProvider {
             	// FIXME this might return null on some devices
                 phones = cr.query(Phone.CONTENT_URI,
                     new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
-                    null, null, null);
+                    // this will filter out RawContacts from Kontalk
+                    RawContacts.ACCOUNT_TYPE + "<> ?", new String[] { Authenticator.ACCOUNT_TYPE }, null);
 
                 while (phones.moveToNext()) {
                     String number = phones.getString(0);
