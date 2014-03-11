@@ -586,6 +586,8 @@ public class Syncer {
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
             .withValueBackReference(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID, index * NUM_OPS)
             .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+            // not including phone type will crash on HTC devices
+            .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_OTHER)
             .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phone);
         operations.add(builder.build());
 
