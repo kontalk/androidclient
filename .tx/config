@@ -1,8 +1,14 @@
 [main]
 host = https://www.transifex.com
 
-[kontalk-android-client.strings-master]
+[kontalk-android-client.strings]
 file_filter = res/values-<lang>/strings.xml
 source_file = res/values/strings.xml
+source_lang = en
+type = ANDROID
+
+[kontalk-android-client.arrays]
+file_filter = res/values-<lang>/arrays.xml
+source_file = res/values/arrays.xml
 source_lang = en
 type = ANDROID
