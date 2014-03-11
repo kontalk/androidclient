@@ -20,6 +20,8 @@ package org.kontalk.ui;
 
 import java.io.InputStream;
 
+import org.kontalk.Kontalk;
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
@@ -27,8 +29,6 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.MessageUtils;
-import org.kontalk.Kontalk;
-import org.kontalk.R;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
@@ -60,6 +60,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.google.android.gcm.GCMRegistrar;
 
 
 /**
@@ -194,6 +196,15 @@ public final class MessagingPreferences extends PreferenceActivity {
                 return true;
             }
         });
+
+        // disable push notifications if GCM is not available on the device
+        try {
+            GCMRegistrar.checkDevice(this);
+        }
+        catch (UnsupportedOperationException unsupported) {
+            final Preference push = findPreference("pref_push_notifications");
+            push.setEnabled(false);
+        }
 
         // manual server address is handled in Application context
 

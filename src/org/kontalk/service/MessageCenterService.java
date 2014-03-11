@@ -60,6 +60,7 @@ import org.jivesoftware.smackx.packet.LastActivity;
 import org.kontalk.BuildConfig;
 import org.kontalk.GCMIntentService;
 import org.kontalk.Kontalk;
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.AckServerReceipt;
 import org.kontalk.client.BitsOfBinary;
@@ -83,9 +84,9 @@ import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
-import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.data.Contact;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
@@ -94,12 +95,12 @@ import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
-import org.kontalk.provider.UsersProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratedReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
@@ -109,7 +110,6 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.RandomString;
 import org.kontalk.util.XMPPUtils;
-import org.kontalk.R;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -1622,8 +1622,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // already registered - send registration id to server
                     setPushRegistrationId(mPushRegistrationId);
             }
+            catch (UnsupportedOperationException unsupported) {
+                // GCM not supported
+            }
             catch (Exception e) {
-                // nothing happens...
+                // this exception should be reported
+                Log.w(TAG, "error setting up GCM", e);
             }
 
         }
