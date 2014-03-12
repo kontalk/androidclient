@@ -725,8 +725,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             	Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
 
-                ContentValues values = new ContentValues(1);
+            	boolean encrypted = MessagingPreferences.getEncryptionEnabled(this);
+
+                ContentValues values = new ContentValues(2);
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
+                values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                 getContentResolver().update(msgUri, values, null, null);
 
                 // FIXME shouldn't we resend just the above message?
