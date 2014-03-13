@@ -21,6 +21,10 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
+    <include layout="@layout/invitation_bar"
+        android:id="@+id/invitation_bar"
+        android:visibility="gone"/>
+
     <ListView android:id="@android:id/list"
         style="?android:attr/listViewWhiteStyle"
         android:background="@color/compose_message_list_background"

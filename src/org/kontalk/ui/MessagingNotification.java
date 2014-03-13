@@ -65,6 +65,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_DOWNLOAD_ERROR  = 106;
     public static final int NOTIFICATION_ID_QUICK_REPLY     = 107;
     public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 108;
+    public static final int NOTIFICATION_ID_INVITATION      = 109;
 
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
@@ -425,6 +426,37 @@ public class MessagingNotification {
             context.startActivity(i);
         }
         */
+    }
+
+    /** Triggers a notification for a chat invitation. */
+    public static void chatInvitation(Context context, String userId) {
+        // find the contact for the userId
+        Contact contact = Contact.findByUserId(context, userId);
+
+        String title = (contact != null) ? contact.getName() :
+            context.getString(R.string.peer_unknown);
+
+        // build the notification
+        NotificationCompat.Builder builder = new NotificationCompat
+            .Builder(context.getApplicationContext())
+            .setSmallIcon(R.drawable.stat_notify)
+            .setTicker(context.getString(R.string.title_invitation))
+            .setContentTitle(title)
+            // TODO i18n
+            .setContentText("has invited you to chat");
+
+        // include an avatar if any
+        if (contact != null) {
+            BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+            if (avatar != null)
+                builder.setLargeIcon(avatar.getBitmap());
+        }
+
+        // fire it up!
+        NotificationManager nm = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+
+        nm.notify(NOTIFICATION_ID_INVITATION, builder.build());
     }
 
     /**

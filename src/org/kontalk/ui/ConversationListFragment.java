@@ -19,22 +19,14 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages.CommonColumns;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyMessages.Threads.Requests;
-import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.MessageCenterService;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -366,94 +358,14 @@ public class ConversationListFragment extends ListFragment {
         MessageCenterService.release(getActivity());
     }
 
-    private void showRequestSubscription(final Conversation conv) {
-    	final ConversationList parent = getParentActivity();
-
-    	final String userId = conv.getRecipient();
-
-    	DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				switch (which) {
-					case AlertDialog.BUTTON_POSITIVE:
-					case AlertDialog.BUTTON_NEGATIVE:
-
-						boolean accepted = (which == AlertDialog.BUTTON_POSITIVE);
-						int status = accepted ? Threads.REQUEST_REPLY_PENDING_ACCEPT :
-							Threads.REQUEST_REPLY_PENDING_BLOCK;
-
-						// mark request as pending accepted
-						ContentValues values = new ContentValues(1);
-						values.put(Threads.REQUEST_STATUS, status);
-
-						parent.getContentResolver().update(Requests.CONTENT_URI,
-							values, CommonColumns.PEER + "=?",
-								new String[] { userId });
-
-						// send command to message center
-						MessageCenterService.replySubscription(parent, userId, accepted);
-
-						break;
-				}
-			}
-		};
-
-		String fingerprint;
-		String uid;
-
-		PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), userId);
-		if (publicKey != null) {
-		    PGPPublicKey pk = PGP.getMasterKey(publicKey);
-		    fingerprint = PGP.getFingerprint(pk);
-		    uid = PGP.getUserId(pk, null);    // TODO server!!!
-		}
-		else {
-		    // FIXME using another string
-		    fingerprint = uid = getString(R.string.peer_unknown);
-		}
-
-		String text;
-
-        Contact c = conv.getContact();
-        if (c != null)
-            text = getString(R.string.text_invitation_known,
-                c.getName(),
-                c.getNumber(),
-                uid, fingerprint);
-        else
-            text = getString(R.string.text_invitation_unknown,
-                uid, fingerprint);
-
-        /*
-         * TODO include an "Open" button on the dialog to ignore the request
-         * and go on with the compose window.
-         */
-    	new AlertDialog.Builder(parent)
-    		.setPositiveButton(R.string.button_accept, listener)
-    		.setNeutralButton(android.R.string.cancel, null)
-    		.setNegativeButton(R.string.button_block, listener)
-    		.setTitle(R.string.title_invitation)
-    		.setMessage(text)
-    		.show();
-    }
-
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
 
         ConversationList parent = getParentActivity();
-        if (parent != null) {
-
-        	// subscription request - show dialog
-        	if (conv.getRequestStatus() == Threads.REQUEST_WAITING) {
-        		showRequestSubscription(conv);
-        	}
-
-        	// normal conversation - open it
-        	else {
-        		parent.openConversation(conv, position);
-        	}
-        }
+        if (parent != null)
+    		parent.openConversation(conv, position);
     }
 
     /** Used only in fragment contexts. */

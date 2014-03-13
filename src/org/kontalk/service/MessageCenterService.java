@@ -2055,7 +2055,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         }
 
                 		ContentResolver cr = getContentResolver();
-                		ContentValues values = new ContentValues(3);
+                		ContentValues values = new ContentValues(4);
 
                 		// insert public key into the users table
                 		values.put(Users.HASH, from);
@@ -2073,9 +2073,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 		values.clear();
                 		values.put(CommonColumns.PEER, from);
                 		values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
+                		cr.insert(Requests.CONTENT_URI, values);
 
-                		Uri req = cr.insert(Requests.CONTENT_URI, values);
-                		Log.v(TAG, "request created " + req);
+                		// fire up a notification
+                		MessagingNotification.chatInvitation(MessageCenterService.this, from);
                 	}
 
                 }
