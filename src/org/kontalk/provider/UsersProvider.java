@@ -379,9 +379,11 @@ public class UsersProvider extends ContentProvider {
                 // query for phone numbers
             	// FIXME this might return null on some devices
                 phones = cr.query(Phone.CONTENT_URI,
-                    new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID },
+                    new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE },
                     // this will filter out RawContacts from Kontalk
-                    RawContacts.ACCOUNT_TYPE + "<> ?", new String[] { Authenticator.ACCOUNT_TYPE }, null);
+                    RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
+                    RawContacts.ACCOUNT_TYPE + "<> ?",
+                    new String[] { Authenticator.ACCOUNT_TYPE }, null);
 
                 while (phones.moveToNext()) {
                     String number = phones.getString(0);
