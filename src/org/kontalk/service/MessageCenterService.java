@@ -883,12 +883,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (status != null)
             p.setStatus(status);
 
-        if (mPushNotifications) {
-            String pushRegId = GCMRegistrar.getRegistrationId(this);
-            if (!TextUtils.isEmpty(pushRegId))
-                p.addExtension(new PushRegistration(pushRegId));
-        }
-
         sendPacket(p);
     }
 
