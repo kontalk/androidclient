@@ -1928,6 +1928,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 	    	            String fingerprint = PGP.getFingerprint(_publicKey);
 	    	            UsersProvider.setUserKey(MessageCenterService.this, userId,
 	    	            	_publicKey, fingerprint);
+
+                		// invalidate cache for this user
+                		Contact.invalidate(userId);
     	            }
     	            catch (Exception e) {
     	            	// TODO warn user
