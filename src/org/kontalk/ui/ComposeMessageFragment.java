@@ -328,9 +328,9 @@ public class ComposeMessageFragment extends ListFragment implements
 		Configuration config = getResources().getConfiguration();
 		onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
 
-		processArguments(savedInstanceState);
-
 		mLocalBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
+
+		processArguments(savedInstanceState);
 	}
 
 	@Override
@@ -1382,6 +1382,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	/** Called when the {@link Conversation} object has been created. */
 	private void onConversationCreated() {
+        // subscribe to presence notifications
+        subscribePresence();
+
         mTextEntry.removeTextChangedListener(mChatStateListener);
 
 		// restore draft (if any and only if user hasn't inserted text)
@@ -1416,10 +1419,11 @@ public class ComposeMessageFragment extends ListFragment implements
 		// setup invitation bar
 		boolean visible = (mConversation.getRequestStatus() == Threads.REQUEST_WAITING);
 
-		if (mInvitationBar == null) {
-		    mInvitationBar = (ViewGroup) getView().findViewById(R.id.invitation_bar);
+		if (visible) {
 
-	        if (visible) {
+			if (mInvitationBar == null) {
+				mInvitationBar = (ViewGroup) getView().findViewById(R.id.invitation_bar);
+
 	            // setup listeners and show button bar
 	            View.OnClickListener listener = new View.OnClickListener() {
 	                public void onClick(View v) {
@@ -1443,13 +1447,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	            );
 
 	        }
-
-	        else {
-	            mInvitationBar.setVisibility(View.GONE);
-	        }
 		}
 
-        mInvitationBar.setVisibility(visible ? View.VISIBLE : View.GONE);
+		if (mInvitationBar != null)
+			mInvitationBar.setVisibility(visible ? View.VISIBLE : View.GONE);
 
 		updateUI();
 	}
@@ -1745,40 +1746,36 @@ public class ComposeMessageFragment extends ListFragment implements
 	        filter.addAction(MessageCenterService.ACTION_MESSAGE);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
-
-            // send presence subscription request
-            presenceSubscribe();
 	    }
+
+        // request connection status
+        MessageCenterService.requestConnectionStatus(getActivity());
 	}
 
 	/** Sends a subscription request for the current peer. */
 	private void presenceSubscribe() {
-	    Contact c;
-	    /*
-	     * conversation might be null if we are sending an attachment on a new
-	     * conversation. This means that the conversation was created from the
-	     * new message, but it still hasn't been loaded yet.
-	     */
-	    if (mConversation != null)
-            c = mConversation.getContact();
-	    else
-            c = Contact.findByUserId(getActivity(), userId, userPhone);
+		// all of this shall be done only if there isn't a request from the other contact
+		if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
 
-		// pre-approve our presence if we don't have contact's key
-		if (c == null || c.getPublicKeyRing() == null) {
+		    Contact c = mConversation.getContact();
+
+			// pre-approve our presence if we don't have contact's key
+			if (c == null || c.getPublicKeyRing() == null) {
+		        Intent i = new Intent(getActivity(), MessageCenterService.class);
+		        i.setAction(MessageCenterService.ACTION_PRESENCE);
+		        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
+		        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+		        getActivity().startService(i);
+			}
+
+	        // send subscription request
 	        Intent i = new Intent(getActivity(), MessageCenterService.class);
 	        i.setAction(MessageCenterService.ACTION_PRESENCE);
 	        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
-	        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+	        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
 	        getActivity().startService(i);
-		}
 
-        // send subscription request
-        Intent i = new Intent(getActivity(), MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-        getActivity().startService(i);
+		}
 	}
 
 	private void unsubcribePresence() {
@@ -1951,11 +1948,16 @@ public class ComposeMessageFragment extends ListFragment implements
 		// mConversation = null;
 		processStart(true);
 		if (userId != null) {
-            // set notifications on pause
+			// TODO use some method to generate the JID
 			EndpointServer server = MessagingPreferences.getEndpointServer(getActivity());
-            MessagingNotification.setPaused(userId + '@' + server.getNetwork());
-            // subscribe to presence notifications
-            subscribePresence();
+			String jid = userId + '@' + server.getNetwork();
+
+            // set notifications on pause
+            MessagingNotification.setPaused(jid);
+
+            // clear chat invitation (if any)
+            // TODO use jid here
+            MessagingNotification.clearChatInvitation(getActivity(), userId);
 		}
 	}
 

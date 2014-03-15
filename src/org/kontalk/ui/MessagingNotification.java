@@ -96,6 +96,9 @@ public class MessagingNotification {
     /** Peer to NOT be notified for new messages. */
     private static volatile String mPaused;
 
+    /** Peer of last notified chat invitation. */
+    private static volatile String mLastInvitation;
+
     /** This class is not instanciable. */
     private MessagingNotification() {}
 
@@ -398,19 +401,7 @@ public class MessagingNotification {
         }
 
         if (isNew) {
-            int defaults = Notification.DEFAULT_LIGHTS;
-
-            String ringtone = MessagingPreferences.getNotificationRingtone(context);
-            if (ringtone != null && ringtone.length() > 0)
-                builder.setSound(Uri.parse(ringtone));
-
-            String vibrate = MessagingPreferences.getNotificationVibrate(context);
-            if ("always".equals(vibrate) || ("silent_only".equals(vibrate) &&
-                    ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
-                        .getRingerMode() != AudioManager.RINGER_MODE_NORMAL))
-                defaults |= Notification.DEFAULT_VIBRATE;
-
-            builder.setDefaults(defaults);
+        	setDefaults(context, builder);
         }
 
         nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
@@ -428,22 +419,50 @@ public class MessagingNotification {
         */
     }
 
+    private static void setDefaults(Context context, NotificationCompat.Builder builder) {
+        int defaults = Notification.DEFAULT_LIGHTS;
+
+        String ringtone = MessagingPreferences.getNotificationRingtone(context);
+        if (ringtone != null && ringtone.length() > 0)
+            builder.setSound(Uri.parse(ringtone));
+
+        String vibrate = MessagingPreferences.getNotificationVibrate(context);
+        if ("always".equals(vibrate) || ("silent_only".equals(vibrate) &&
+                ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
+                    .getRingerMode() != AudioManager.RINGER_MODE_NORMAL))
+            defaults |= Notification.DEFAULT_VIBRATE;
+
+
+        builder.setDefaults(defaults);
+    }
+
     /** Triggers a notification for a chat invitation. */
     public static void chatInvitation(Context context, String userId) {
+    	// open conversation, do not send notification
+    	if (userId.equalsIgnoreCase(StringUtils.parseName(mPaused)))
+    		return;
+
         // find the contact for the userId
         Contact contact = Contact.findByUserId(context, userId);
 
         String title = (contact != null) ? contact.getName() :
             context.getString(R.string.peer_unknown);
 
+        // notification will open the conversation
+        Intent ni = ComposeMessage.fromUserId(context, userId);
+        PendingIntent pi = PendingIntent.getActivity(context,
+        	NOTIFICATION_ID_INVITATION, ni, 0);
+
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(context.getApplicationContext())
+        	.setAutoCancel(true)
             .setSmallIcon(R.drawable.stat_notify)
             .setTicker(context.getString(R.string.title_invitation))
             .setContentTitle(title)
             // TODO i18n
-            .setContentText("has invited you to chat");
+            .setContentText("is inviting you to chat")
+            .setContentIntent(pi);
 
         // include an avatar if any
         if (contact != null) {
@@ -452,11 +471,27 @@ public class MessagingNotification {
                 builder.setLargeIcon(avatar.getBitmap());
         }
 
+        // defaults (sound, vibration, lights)
+        setDefaults(context, builder);
+
         // fire it up!
         NotificationManager nm = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
 
         nm.notify(NOTIFICATION_ID_INVITATION, builder.build());
+
+        // this is for clearChatInvitation()
+        mLastInvitation = userId;
+    }
+
+    /** Cancel a chat invitation notification. */
+    public static void clearChatInvitation(Context context, String userId) {
+    	if (userId.equalsIgnoreCase(mLastInvitation)) {
+            NotificationManager nm = (NotificationManager) context
+                    .getSystemService(Context.NOTIFICATION_SERVICE);
+
+            nm.cancel(NOTIFICATION_ID_INVITATION);
+    	}
     }
 
     /**
