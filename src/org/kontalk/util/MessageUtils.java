@@ -494,7 +494,8 @@ public final class MessageUtils {
                 case Messages.STATUS_RECEIVED:
                 case Messages.STATUS_NOTDELIVERED:
                     resId = R.string.sent_label;
-                    timestamp = msg.getTimestamp();
+                    long serverTime = msg.getServerTimestamp();
+                    timestamp = serverTime > 0 ? serverTime : msg.getTimestamp();
                     break;
                 default:
                     resId = -1;
