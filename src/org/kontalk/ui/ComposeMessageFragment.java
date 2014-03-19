@@ -1974,7 +1974,9 @@ public class ComposeMessageFragment extends ListFragment implements
 		if (threadId > 0) {
 
 		    // no draft and no messages - delete conversation
-		    if (len == 0 && mConversation.getMessageCount() == 0) {
+		    if (len == 0 && mConversation.getMessageCount() == 0 &&
+		            mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+
 		        // FIXME shouldn't be faster to just delete the thread?
 		        MessagesProvider.deleteThread(getActivity(), threadId);
 		    }
