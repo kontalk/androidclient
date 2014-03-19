@@ -18,8 +18,11 @@
 
 package org.kontalk.service;
 
-import org.jivesoftware.smack.Connection;
+import java.io.IOException;
+
 import org.jivesoftware.smack.ConnectionListener;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.kontalk.Kontalk;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -50,7 +53,7 @@ public class XMPPConnectionHelper extends Thread {
     private int mRetryCount;
 
     /** Connection is re-created on demand if necessary. */
-    protected Connection mConn;
+    protected XMPPConnection mConn;
 
     /** Client listener. */
     private ConnectionHelperListener mListener;
@@ -97,11 +100,15 @@ public class XMPPConnectionHelper extends Thread {
         connect();
     }
 
-    public void connectOnce(PersonalKey key) throws XMPPException, PGPException {
+    public void connectOnce(PersonalKey key)
+            throws XMPPException, PGPException, IOException, SmackException {
+
         connectOnce(key, null);
     }
 
-    private void connectOnce(PersonalKey key, String token) throws XMPPException, PGPException {
+    private void connectOnce(PersonalKey key, String token)
+            throws XMPPException, PGPException, IOException, SmackException {
+
         Log.d(TAG, "using server " + mServer.toString());
 
         if (mServerDirty) {
@@ -124,7 +131,7 @@ public class XMPPConnectionHelper extends Thread {
                     key.getBridgePrivateKey(),
                     key.getBridgeCertificate());
             if (mListener != null)
-                mListener.created();
+                mListener.created(mConn);
         }
 
         // connect
@@ -132,7 +139,7 @@ public class XMPPConnectionHelper extends Thread {
 
         if (mListener != null) {
             mConn.addConnectionListener(mListener);
-            mListener.connected();
+            mListener.connected(mConn);
         }
 
         // login
@@ -141,7 +148,7 @@ public class XMPPConnectionHelper extends Thread {
             mConn.login("dummy", token != null ? token : "dummy");
 
         if (mListener != null)
-            mListener.authenticated();
+            mListener.authenticated(mConn);
     }
 
     public void connect() {
@@ -230,7 +237,7 @@ public class XMPPConnectionHelper extends Thread {
         mConnecting = false;
     }
 
-    public Connection getConnection() {
+    public XMPPConnection getConnection() {
         return mConn;
     }
 
@@ -264,9 +271,7 @@ public class XMPPConnectionHelper extends Thread {
 
 
     public interface ConnectionHelperListener extends ConnectionListener {
-        public void created();
-        public void connected();
-        public void authenticated();
+        public void created(XMPPConnection connection);
 
         public void aborted(Exception e);
     }

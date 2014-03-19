@@ -18,30 +18,27 @@
 
 package org.kontalk.client;
 
-import java.io.File;
-
 import org.jivesoftware.smack.ConnectionConfiguration;
-
-import android.os.Build;
 
 
 public class AndroidConnectionConfiguration extends ConnectionConfiguration {
 
     public AndroidConnectionConfiguration(String serviceName) {
         super(serviceName);
-        AndroidInit();
+        //AndroidInit();
     }
 
     public AndroidConnectionConfiguration(String host, int port) {
         super(host, port);
-        AndroidInit();
+        //AndroidInit();
     }
 
     public AndroidConnectionConfiguration(String host, int port, String name) {
         super(host, port, name);
-	    AndroidInit();
+	    //AndroidInit();
     }
 
+    /* TODO move to custom SSL context
     private void AndroidInit() {
     	// API 14 is Ice Cream Sandwich
         if (Build.VERSION.SDK_INT >= 14) {
@@ -58,5 +55,6 @@ public class AndroidConnectionConfiguration extends ConnectionConfiguration {
             setTruststorePath(path);
         }
     }
+    */
 
 }

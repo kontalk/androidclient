@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
 import org.jivesoftware.smack.SmackAndroid;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -47,16 +47,16 @@ import org.jivesoftware.smack.packet.Registration;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smackx.ChatState;
-import org.jivesoftware.smackx.Form;
-import org.jivesoftware.smackx.FormField;
-import org.jivesoftware.smackx.packet.ChatStateExtension;
-import org.jivesoftware.smackx.packet.DataForm;
-import org.jivesoftware.smackx.packet.DelayInfo;
-import org.jivesoftware.smackx.packet.DelayInformation;
-import org.jivesoftware.smackx.packet.DiscoverInfo;
-import org.jivesoftware.smackx.packet.DiscoverItems;
-import org.jivesoftware.smackx.packet.LastActivity;
+import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
+import org.jivesoftware.smackx.delay.packet.DelayInfo;
+import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
+import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jivesoftware.smackx.xdata.Form;
+import org.jivesoftware.smackx.xdata.FormField;
+import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.BuildConfig;
 import org.kontalk.GCMIntentService;
 import org.kontalk.Kontalk;
@@ -162,7 +162,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
-        Connection.DEBUG_ENABLED = BuildConfig.DEBUG;
+        XMPPConnection.DEBUG_ENABLED = BuildConfig.DEBUG;
     }
 
     public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
@@ -531,8 +531,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static final class DisconnectThread extends Thread {
-        private final Connection mConn;
-        public DisconnectThread(Connection conn) {
+        private final XMPPConnection mConn;
+        public DisconnectThread(XMPPConnection conn) {
             mConn = conn;
         }
 
@@ -809,9 +809,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public synchronized void created() {
+    public synchronized void created(XMPPConnection connection) {
         Log.v(TAG, "connection created.");
-        mConnection = (KontalkConnection) mHelper.getConnection();
+        mConnection = (KontalkConnection) connection;
 
         // we want to manually handle roster stuff
         mConnection.getRoster().setSubscriptionMode(SubscriptionMode.manual);
@@ -838,12 +838,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public void connected() {
+    public void connected(XMPPConnection connection) {
         // not used.
     }
 
     @Override
-    public void authenticated() {
+    public void authenticated(XMPPConnection connection) {
         Log.v(TAG, "authenticated!");
         // discovery
         discovery();

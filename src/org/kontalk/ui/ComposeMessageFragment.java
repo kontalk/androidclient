@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smackx.ChatState;
+import org.jivesoftware.smackx.chatstates.ChatState;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;

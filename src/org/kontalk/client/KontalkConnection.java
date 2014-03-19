@@ -32,7 +32,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
-import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.TCPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 import org.kontalk.Kontalk;
@@ -40,20 +40,19 @@ import org.kontalk.Kontalk;
 import android.util.Log;
 
 
-public class KontalkConnection extends XMPPConnection {
+public class KontalkConnection extends TCPConnection {
 
     protected EndpointServer mServer;
 
     public KontalkConnection(EndpointServer server) throws XMPPException {
-        super(new AndroidConnectionConfiguration(server.getHost(), server.getPort()));
+        super(new AndroidConnectionConfiguration
+                (server.getHost(),
+                 server.getPort(),
+                 server.getNetwork()));
 
         mServer = server;
-        // network name
-        config.setServiceName(server.getNetwork());
         // disable reconnection
         config.setReconnectionAllowed(false);
-        // enable SASL
-        config.setSASLAuthenticationEnabled(true);
         // we don't need the roster
         config.setRosterLoadedAtLogin(false);
         // enable compression
