@@ -18,8 +18,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.kontalk"
-      android:versionCode="31"
-      android:versionName="3.0a5"
+      android:versionCode="32"
+      android:versionName="3.0a6"
       android:installLocation="internalOnly">
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="19"/>
     <uses-permission android:name="android.permission.INTERNET"/>
