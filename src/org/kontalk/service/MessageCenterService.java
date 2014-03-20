@@ -27,8 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,7 +80,6 @@ import org.kontalk.client.UploadExtension;
 import org.kontalk.client.UploadInfo;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
@@ -109,7 +106,6 @@ import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.RandomString;
-import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -2351,102 +2347,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                             // decrypt message
                             try {
-                                PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-                                Coder coder = UsersProvider.getDecryptCoder(MessageCenterService.this,
-                                		mServer, key, from);
-
-                                // decrypt
-                                StringBuilder mimeFound = new StringBuilder();
-                                StringBuilder clearText = new StringBuilder();
-                                List<DecryptException> errors = new LinkedList<DecryptException>();
-                                coder.decryptText(encryptedData, true, clearText, mimeFound, errors);
-
-                                String contentText;
-
-                                if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mimeFound.toString())) {
-                                	m = XMPPUtils.parseMessageStanza(clearText.toString());
-                                	contentText = m.getBody() != null ? m.getBody() : "";
-                                }
-                                else {
-                                	contentText = clearText.toString();
-                                }
-
-                                // decrypted text
-                                msg.addComponent(new TextComponent(contentText));
-
-                                if (errors.size() > 0) {
-
-                                	int securityFlags = msg.getSecurityFlags();
-
-                                	for (DecryptException err : errors) {
-
-                                		int code = err.getCode();
-                                		switch (code) {
-
-                                			case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
-                                				securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                                				break;
-
-                                			case DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED:
-                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
-                                				break;
-
-                                			case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
-                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
-                                				break;
-
-                                			case DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER:
-                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_SENDER;
-                                				break;
-
-                                			case DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT:
-                                				securityFlags |= Coder.SECURITY_ERROR_INVALID_RECIPIENT;
-                                				break;
-
-                                		}
-
-									}
-
-                                	msg.setSecurityFlags(securityFlags);
-                                }
-
-                                msg.setEncrypted(false);
+                                MessageUtils.decryptMessage(MessageCenterService.this,
+                                        mServer, msg, encryptedData);
                             }
 
                             catch (Exception exc) {
-                                // pass over the message even if encrypted
-                                // UI will warn the user about that and wait
-                                // for user decisions
                                 Log.e(TAG, "decryption failed", exc);
-
-                            	int securityFlags = msg.getSecurityFlags();
-
-                                if (exc instanceof DecryptException) {
-
-                                	int code = ((DecryptException) exc).getCode();
-                                	switch (code) {
-
-	                        			case DecryptException.DECRYPT_EXCEPTION_DECRYPT_FAILED:
-                            			case DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND:
-	                        				securityFlags |= Coder.SECURITY_ERROR_DECRYPT_FAILED;
-	                        				break;
-
-                            			case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
-                            				securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
-                            				break;
-
-                            			case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
-                            				securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
-                            				break;
-
-                                	}
-
-                                	msg.setSecurityFlags(securityFlags);
-                                }
 
                             	// raw component for encrypted data
                             	// reuse security flags
-                            	msg.addComponent(new RawComponent(encryptedData, true, securityFlags));
+                                msg.clearComponents();
+                            	msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
                             }
 
                         }

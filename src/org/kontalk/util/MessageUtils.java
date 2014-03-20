@@ -18,19 +18,34 @@
 
 package org.kontalk.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.PacketExtension;
+import org.kontalk.Kontalk;
 import org.kontalk.R;
+import org.kontalk.client.BitsOfBinary;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.OutOfBandData;
 import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.DecryptException;
+import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.MessageComponent;
+import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.UsersProvider;
+import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.ui.QuickAction;
 
 import android.content.Context;
@@ -598,4 +613,198 @@ public final class MessageUtils {
         }
         return new String(hexChars);
     }
+
+    /** Decrypts a message, modifying the object <b>in place</b>. */
+    public static void decryptMessage(Context context, EndpointServer server, CompositeMessage msg) throws Exception {
+        // encrypted messages have a single encrypted raw component
+        RawComponent raw = (RawComponent) msg
+                .getComponent(RawComponent.class);
+
+        if (raw != null)
+            decryptMessage(context, server, msg, raw.getContent());
+    }
+
+    /** Decrypts a message, modifying the object <b>in place</b>. */
+    public static void decryptMessage(Context context, EndpointServer server, CompositeMessage msg, byte[] encryptedData)
+            throws Exception {
+
+        // message stanza
+        Message m = null;
+
+        try {
+            PersonalKey key = ((Kontalk)context.getApplicationContext())
+                .getPersonalKey();
+
+            if (server == null)
+                server = MessagingPreferences.getEndpointServer(context);
+
+            String from = msg.getSender(true) + "@" + server.getNetwork();
+            Coder coder = UsersProvider.getDecryptCoder(context, server, key, from);
+
+            // decrypt
+            StringBuilder mimeFound = new StringBuilder();
+            StringBuilder clearText = new StringBuilder();
+            List<DecryptException> errors = new LinkedList<DecryptException>();
+            coder.decryptText(encryptedData, true, clearText, mimeFound, errors);
+
+            String contentText;
+
+            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mimeFound.toString())) {
+                m = XMPPUtils.parseMessageStanza(clearText.toString());
+                contentText = m.getBody() != null ? m.getBody() : "";
+            }
+            else {
+                contentText = clearText.toString();
+            }
+
+            // clear componenets (we are adding new ones)
+            msg.clearComponents();
+            // decrypted text
+            msg.addComponent(new TextComponent(contentText));
+
+            if (errors.size() > 0) {
+
+                int securityFlags = msg.getSecurityFlags();
+
+                for (DecryptException err : errors) {
+
+                    int code = err.getCode();
+                    switch (code) {
+
+                        case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
+                            securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SIGNATURE;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_SENDER;
+                            break;
+
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_RECIPIENT;
+                            break;
+
+                    }
+
+                }
+
+                msg.setSecurityFlags(securityFlags);
+            }
+
+            msg.setEncrypted(false);
+
+        }
+        catch (Exception exc) {
+            // pass over the message even if encrypted
+            // UI will warn the user about that and wait
+            // for user decisions
+            int securityFlags = msg.getSecurityFlags();
+
+            if (exc instanceof DecryptException) {
+
+                int code = ((DecryptException) exc).getCode();
+                switch (code) {
+
+                    case DecryptException.DECRYPT_EXCEPTION_DECRYPT_FAILED:
+                    case DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND:
+                        securityFlags |= Coder.SECURITY_ERROR_DECRYPT_FAILED;
+                        break;
+
+                    case DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK:
+                        securityFlags |= Coder.SECURITY_ERROR_INTEGRITY_CHECK;
+                        break;
+
+                    case DecryptException.DECRYPT_EXCEPTION_INVALID_DATA:
+                        securityFlags |= Coder.SECURITY_ERROR_INVALID_DATA;
+                        break;
+
+                }
+
+                msg.setSecurityFlags(securityFlags);
+            }
+
+            throw exc;
+        }
+
+        // we have a decrypted message stanza, process it
+        if (m != null) {
+
+            // out of band data
+            PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+            if (_media != null && _media instanceof OutOfBandData) {
+                File previewFile = null;
+
+                OutOfBandData media = (OutOfBandData) _media;
+                String mime = media.getMime();
+                String fetchUrl = media.getUrl();
+                long length = media.getLength();
+
+                // bits-of-binary for preview
+                PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                if (_preview != null && _preview instanceof BitsOfBinary) {
+                    BitsOfBinary preview = (BitsOfBinary) _preview;
+                    String previewMime = preview.getType();
+                    if (previewMime == null)
+                        previewMime = MediaStorage.THUMBNAIL_MIME;
+
+                    String filename = null;
+
+                    if (ImageComponent.supportsMimeType(mime)) {
+                        filename = ImageComponent.buildMediaFilename(msg.getId(), previewMime);
+                    }
+
+                    else if (VCardComponent.supportsMimeType(mime)) {
+                        filename = VCardComponent.buildMediaFilename(msg.getId(), previewMime);
+                    }
+
+                    try {
+                        if (filename != null) previewFile =
+                            MediaStorage.writeInternalMedia(context,
+                                filename, preview.getContents());
+                    }
+                    catch (IOException e) {
+                        Log.w(Kontalk.TAG, "error storing thumbnail", e);
+                    }
+                }
+
+                MessageComponent<?> attachment = null;
+
+                if (ImageComponent.supportsMimeType(mime)) {
+                    // cleartext only for now
+                    attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
+                            false, Coder.SECURITY_CLEARTEXT);
+                }
+
+                else if (VCardComponent.supportsMimeType(mime)) {
+                    // cleartext only for now
+                    attachment = new VCardComponent(previewFile, null, fetchUrl, length,
+                            false, Coder.SECURITY_CLEARTEXT);
+                }
+
+                // TODO other types
+
+                if (attachment != null)
+                    msg.addComponent(attachment);
+
+                // add a dummy body if none was found
+                /*
+                if (body == null) {
+                    msg.addComponent(new TextComponent(CompositeMessage
+                        .getSampleTextContent((Class<? extends MessageComponent<?>>)
+                            attachment.getClass(), mime)));
+                }
+                */
+
+            }
+
+        }
+    }
+
 }
