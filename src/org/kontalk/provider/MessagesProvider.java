@@ -711,7 +711,7 @@ public class MessagesProvider extends ContentProvider {
                             // update fulltext if necessary
                             if (doUpdateFulltext) {
                                 int direction = c.getInt(2);
-                                int encrypted = c.getInt(4);
+                                int encrypted = c.getInt(3);
                                 if ((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true)
                                     updateFulltext(db, c.getLong(1), threadId, c.getBlob(4));
                             }
