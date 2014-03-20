@@ -830,9 +830,16 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	private void decryptMessage(CompositeMessage msg) {
 	    try {
-            MessageUtils.decryptMessage(getActivity(), null, msg);
+	    	Context ctx = getActivity();
 
-            // TODO write updated data to the database
+            MessageUtils.decryptMessage(ctx, null, msg);
+
+            // write updated data to the database
+            ContentValues values = new ContentValues();
+            MessageUtils.fillContentValues(values, msg);
+
+            ctx.getContentResolver().update(Messages.getUri(msg.getId()),
+            		values, null, null);
         }
         catch (Exception e) {
             Log.e(TAG, "decryption failed", e);

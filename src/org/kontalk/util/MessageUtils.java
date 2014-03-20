@@ -48,6 +48,7 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.ui.QuickAction;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -805,6 +806,78 @@ public final class MessageUtils {
             }
 
         }
+    }
+
+    /** Fills in a {@link ContentValues} object from the given message. */
+    public static void fillContentValues(ContentValues values, CompositeMessage msg) {
+        byte[] content = null;
+        String mime = null;
+        boolean checkAttachment;
+
+        // message still encrypted - use whole body of raw component
+        if (msg.isEncrypted()) {
+
+        	RawComponent raw = (RawComponent) msg.getComponent(RawComponent.class);
+        	// if raw it's null it's a bug
+        	content = raw.getContent();
+        	mime = null;
+        	checkAttachment = false;
+
+        }
+
+        else {
+
+        	TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
+
+        	if (txt != null) {
+        		content = txt.getContent().getBytes();
+        		mime = TextComponent.MIME_TYPE;
+        	}
+
+        	checkAttachment = true;
+
+        }
+
+        // selective components detection
+
+        if (checkAttachment) {
+
+        	@SuppressWarnings("unchecked")
+			Class<AttachmentComponent>[] tryComponents = new Class[] {
+    			ImageComponent.class,
+    			VCardComponent.class,
+        	};
+
+        	for (Class<AttachmentComponent> klass : tryComponents) {
+    	        AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
+    	        if (att != null) {
+
+    	        	values.put(Messages.ATTACHMENT_MIME, att.getMime());
+    	        	values.put(Messages.ATTACHMENT_FETCH_URL, att.getFetchUrl());
+    	        	values.put(Messages.ATTACHMENT_LENGTH, att.getLength());
+    	        	values.put(Messages.ATTACHMENT_ENCRYPTED, att.isEncrypted());
+    	        	values.put(Messages.ATTACHMENT_SECURITY_FLAGS, att.getSecurityFlags());
+
+    	            File previewFile = att.getPreviewFile();
+    	            if (previewFile != null)
+    	                values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
+
+    	            // only one attachment is supported
+    	            break;
+    	        }
+
+			}
+
+        }
+
+        values.put(Messages.BODY_CONTENT, content);
+        values.put(Messages.BODY_LENGTH, content != null ? content.length : 0);
+        values.put(Messages.BODY_MIME, mime);
+
+        values.put(Messages.ENCRYPTED, msg.isEncrypted());
+        values.put(Messages.SECURITY_FLAGS, msg.getSecurityFlags());
+
+        values.put(Messages.SERVER_TIMESTAMP, msg.getServerTimestamp());
     }
 
 }
