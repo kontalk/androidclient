@@ -49,7 +49,7 @@ public abstract class Coder {
 
     /*
      * Security flags for encryption status.
-     * These flags, together with the ones above, help clarifying wether the
+     * These flags, together with the ones above, help clarifying whether the
      * security features found in a message are verified and safe.
      */
 

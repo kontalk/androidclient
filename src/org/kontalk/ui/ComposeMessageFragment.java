@@ -823,34 +823,25 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void decryptMessage(CompositeMessage msg) {
-		/*
-		try {
-			Context ctx = getActivity();
+	    try {
+	    	Context ctx = getActivity();
 
-	        PersonalKey key = ((Kontalk)ctx.getApplicationContext())
-	            .getPersonalKey();
-	        EndpointServer server = MessagingPreferences.getEndpointServer(ctx);
-	        Coder coder = UsersProvider.getDecryptCoder(ctx, server, key, msg.getSender(true));
+            MessageUtils.decryptMessage(ctx, null, msg);
 
-			// decrypt the message
-			msg.decrypt(coder);
-			// update database
-			final byte[] content = msg.getBinaryContent();
-			ContentValues values = new ContentValues();
-			values.put(Messages.CONTENT, content);
-			values.put(Messages.ENCRYPTED, false);
-			values.put(Messages.LENGTH, content.length);
-			getActivity().getContentResolver().update(
-					Messages.getUri(msg.getId()), values, null, null);
-		} catch (Exception e) {
-			Log.e(TAG, "unable to decrypt message", e);
-			Toast.makeText(getActivity(), "Decryption failed!",
-					Toast.LENGTH_LONG).show();
-		}
-		*/
-		// TODO implement decrypt message
-		Toast.makeText(getActivity(), "Not implemented.",
-				Toast.LENGTH_LONG).show();
+            // write updated data to the database
+            ContentValues values = new ContentValues();
+            MessageUtils.fillContentValues(values, msg);
+
+            ctx.getContentResolver().update(Messages.getUri(msg.getId()),
+            		values, null, null);
+        }
+        catch (Exception e) {
+            Log.e(TAG, "decryption failed", e);
+
+            // TODO i18n
+            Toast.makeText(getActivity(), "Decryption failed!",
+                    Toast.LENGTH_LONG).show();
+        }
 	}
 
 	private void retryMessage(CompositeMessage msg) {
