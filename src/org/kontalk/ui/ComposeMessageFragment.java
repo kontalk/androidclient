@@ -614,6 +614,11 @@ public class ComposeMessageFragment extends ListFragment implements
             case R.id.block_user:
                 blockUser();
                 return true;
+
+            case R.id.unblock_user:
+                unblockUser();
+                return true;
+
 		}
 
 		return super.onOptionsItemSelected(item);
@@ -827,8 +832,12 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void blockUser() {
-	    replySubscription(false);
+	    setPrivacy(MessageCenterService.PRIVACY_BLOCK);
 	}
+
+    private void unblockUser() {
+        setPrivacy(MessageCenterService.PRIVACY_UNBLOCK);
+    }
 
 	private void decryptMessage(CompositeMessage msg) {
 	    try {
@@ -1427,7 +1436,14 @@ public class ComposeMessageFragment extends ListFragment implements
 	            View.OnClickListener listener = new View.OnClickListener() {
 	                public void onClick(View v) {
 	                    mInvitationBar.setVisibility(View.GONE);
-	                    replySubscription((v.getId() == R.id.button_accept));
+
+	                    int action;
+	                    if (v.getId() == R.id.button_accept)
+	                        action = MessageCenterService.PRIVACY_ACCEPT;
+	                    else
+	                        action = MessageCenterService.PRIVACY_BLOCK;
+
+	                    setPrivacy(action);
 	                }
 	            };
 
@@ -1454,11 +1470,27 @@ public class ComposeMessageFragment extends ListFragment implements
 		updateUI();
 	}
 
-	private void replySubscription(boolean accepted) {
-        Context ctx = getActivity();
+	private void setPrivacy(int action) {
+        int status;
 
-        int status = accepted ? Threads.REQUEST_REPLY_PENDING_ACCEPT :
-            Threads.REQUEST_REPLY_PENDING_BLOCK;
+        switch (action) {
+            case MessageCenterService.PRIVACY_ACCEPT:
+                status = Threads.REQUEST_REPLY_PENDING_ACCEPT;
+                break;
+
+            case MessageCenterService.PRIVACY_BLOCK:
+                status = Threads.REQUEST_REPLY_PENDING_BLOCK;
+                break;
+
+            case MessageCenterService.PRIVACY_UNBLOCK:
+                status = Threads.REQUEST_REPLY_PENDING_UNBLOCK;
+                break;
+
+            default:
+                return;
+        }
+
+        Context ctx = getActivity();
 
         // mark request as pending accepted
         ContentValues values = new ContentValues(1);
@@ -1471,7 +1503,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 new String[] { userId });
 
         // send command to message center
-        MessageCenterService.replySubscription(ctx, userId, accepted);
+        MessageCenterService.replySubscription(ctx, userId, action);
 	}
 
 	private void showIdentityDialog() {

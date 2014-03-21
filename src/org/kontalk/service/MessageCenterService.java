@@ -237,7 +237,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
     public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
     public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
-    public static final String EXTRA_ACCEPTED = "org.kontalk.presence.accepted";
+    public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
 
     // use with org.kontalk.action.ROSTER
     public static final String EXTRA_USERLIST = "org.kontalk.roster.userList";
@@ -248,6 +248,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.VCARD
     public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
+
+    // use for org.kontalk.presence.privacy.action extra
+    public static final int PRIVACY_ACCEPT = 0;
+    public static final int PRIVACY_BLOCK = 1;
+    public static final int PRIVACY_UNBLOCK = 2;
 
     /** Message URI. */
     public static final String EXTRA_MESSAGE = "org.kontalk.message";
@@ -712,7 +717,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // FIXME taking toUserid for granted
                     sendSubscriptionReply(toUserid,
                     		intent.getStringExtra(EXTRA_PACKET_ID),
-                    		intent.getBooleanExtra(EXTRA_ACCEPTED, true));
+                    		intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
             	}
             }
 
@@ -1024,16 +1029,36 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String userId = c.getString(0);
             int reqStatus = c.getInt(1);
 
-            sendSubscriptionReply(userId, null, reqStatus == Threads.REQUEST_REPLY_PENDING_ACCEPT);
+            int action;
+
+            switch (reqStatus) {
+                case Threads.REQUEST_REPLY_PENDING_ACCEPT:
+                    action = PRIVACY_ACCEPT;
+                    break;
+
+                case Threads.REQUEST_REPLY_PENDING_BLOCK:
+                    action = PRIVACY_BLOCK;
+                    break;
+
+                case Threads.REQUEST_REPLY_PENDING_UNBLOCK:
+                    action = PRIVACY_UNBLOCK;
+                    break;
+
+                default:
+                    // skip this one
+                    continue;
+            }
+
+            sendSubscriptionReply(userId, null, action);
         }
 
         c.close();
     }
 
-    private void sendSubscriptionReply(String userId, String packetId, boolean accepted) {
+    private void sendSubscriptionReply(String userId, String packetId, int action) {
         String to = MessageUtils.toJID(userId, mServer.getNetwork());
 
-    	if (accepted) {
+    	if (action == PRIVACY_ACCEPT) {
     		// standard response: subscribed
 			Presence p = new Presence(Presence.Type.subscribed);
 
@@ -1051,7 +1076,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 			sendPacket(p);
     	}
 
-    	else {
+    	else if (action == PRIVACY_BLOCK) {
     		// blocking command: block
     		IQ p = BlockingCommand.block(to);
 
@@ -1059,6 +1084,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     		// TODO mark user as blocked
     	}
+
+        else if (action == PRIVACY_UNBLOCK) {
+            // blocking command: block
+            IQ p = BlockingCommand.unblock(to);
+
+            sendPacket(p);
+
+            // TODO mark user as unblocked
+        }
 
 		// clear the request status
 		ContentValues values = new ContentValues(1);
@@ -1480,11 +1514,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Replies to a presence subscription request. */
-    public static void replySubscription(final Context context, String userId, boolean accepted) {
+    public static void replySubscription(final Context context, String userId, int action) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
         i.putExtra(EXTRA_TO_USERID, userId);
-        i.putExtra(EXTRA_ACCEPTED, accepted);
+        i.putExtra(EXTRA_PRIVACY, action);
         context.startService(i);
     }
 
