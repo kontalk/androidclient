@@ -37,7 +37,7 @@ import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.service.KeyPairGeneratorService;
-import org.kontalk.service.KeyPairGeneratorService.KeyGeneratedReceiver;
+import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.CountryCodesAdapter.CountryCode;
@@ -121,7 +121,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Runnable mSyncStart;
     private boolean mSyncing;
 
-    private KeyGeneratedReceiver mKeyReceiver;
+    private KeyGeneratorReceiver mKeyReceiver;
 
     private static final class RetainData {
         NumberValidator validator;
@@ -302,23 +302,30 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         if (mKey == null) {
             PersonalKeyRunnable action = new PersonalKeyRunnable() {
                 public void run(PersonalKey key) {
-                    mKey = key;
-                    if (mValidator != null)
-                        // this will release the waiting lock
-                        mValidator.setKey(mKey);
+                    if (key != null) {
+                        mKey = key;
+                        if (mValidator != null)
+                            // this will release the waiting lock
+                            mValidator.setKey(mKey);
+                    }
+
+                    // no key, key pair generation started
+                    else {
+                        Toast.makeText(NumberValidation.this,
+                            R.string.msg_generating_keypair,
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
             };
 
             // random passphrase (40 characters!!!!)
             mPassphrase = StringUtils.randomString(40);
 
-            mKeyReceiver = new KeyGeneratedReceiver(mHandler, action);
+            mKeyReceiver = new KeyGeneratorReceiver(mHandler, action);
 
             IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
+            filter.addAction(KeyPairGeneratorService.ACTION_STARTED);
             lbm.registerReceiver(mKeyReceiver, filter);
-
-            Toast.makeText(this, R.string.msg_generating_keypair,
-                Toast.LENGTH_LONG).show();
 
             Intent i = new Intent(this, KeyPairGeneratorService.class);
             i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
