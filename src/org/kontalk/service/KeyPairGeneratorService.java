@@ -44,7 +44,17 @@ import android.util.Log;
 /** Generates a key pair in the background. */
 public class KeyPairGeneratorService extends Service {
 
+    /**
+     * Broadcasted when key pair generation has finished.
+     * Send this intent to start generating a new key pair or broadcast back
+     * the one just created.
+     */
     public static final String ACTION_GENERATE = "org.kontalk.keypair.GENERATE";
+    /**
+     * Broadcasted if, after sending an {@link #ACTION_GENERATE}, the key pair
+     * generator thread has started.
+     */
+    public static final String ACTION_STARTED = "org.kontalk.keypair.STARTED";
 
     public static final String EXTRA_KEY = "org.kontalk.keypair.KEY";
     public static final String EXTRA_FOREGROUND = "org.kontalk.keypair.FOREGROUND";
@@ -68,6 +78,8 @@ public class KeyPairGeneratorService extends Service {
 
                 mThread = new GeneratorThread(this);
                 mThread.start();
+
+                broadcastStarted();
             }
             else {
                 if (mKey != null) {
@@ -112,6 +124,11 @@ public class KeyPairGeneratorService extends Service {
         lbm.sendBroadcast(i);
     }
 
+    private void broadcastStarted() {
+        Intent i = new Intent(ACTION_STARTED);
+        lbm.sendBroadcast(i);
+    }
+
     private void keypairGenerated(PersonalKey key) {
         mKey = key;
         broadcastKey();
@@ -150,17 +167,19 @@ public class KeyPairGeneratorService extends Service {
         public void run(PersonalKey key);
     }
 
-    public final static class KeyGeneratedReceiver extends BroadcastReceiver {
+    public final static class KeyGeneratorReceiver extends BroadcastReceiver {
         private final Handler handler;
         private final PersonalKeyRunnable action;
 
-        public KeyGeneratedReceiver(Handler handler, PersonalKeyRunnable action) {
+        public KeyGeneratorReceiver(Handler handler, PersonalKeyRunnable action) {
             this.handler = handler;
             this.action = action;
         }
 
         @Override
         public void onReceive(Context context, final Intent intent) {
+
+            // key has been generated
             if (KeyPairGeneratorService.ACTION_GENERATE.equals(intent.getAction())) {
                 // we can stop the service now
                 context.stopService(new Intent(context, KeyPairGeneratorService.class));
@@ -169,6 +188,16 @@ public class KeyPairGeneratorService extends Service {
                     public void run() {
                         PersonalKey key = intent.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
                         action.run(key);
+                    }
+                });
+            }
+
+            // key generation has started
+            else if (KeyPairGeneratorService.ACTION_STARTED.equals(intent.getAction())) {
+                // simply run the action with null key
+                handler.post(new Runnable() {
+                    public void run() {
+                        action.run(null);
                     }
                 });
             }

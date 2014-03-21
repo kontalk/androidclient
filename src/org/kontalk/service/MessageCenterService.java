@@ -97,7 +97,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
-import org.kontalk.service.KeyPairGeneratorService.KeyGeneratedReceiver;
+import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingNotification;
@@ -2528,7 +2528,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                 };
 
-                mKeyReceiver = new KeyGeneratedReceiver(mIdleHandler, action);
+                mKeyReceiver = new KeyGeneratorReceiver(mIdleHandler, action);
 
                 IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
                 mLocalBroadcastManager.registerReceiver(mKeyReceiver, filter);
