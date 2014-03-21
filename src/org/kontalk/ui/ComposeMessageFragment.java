@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -32,21 +31,17 @@ import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.ChatState;
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
-import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MessagesProvider;
@@ -62,7 +57,6 @@ import org.kontalk.sync.Syncer;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
-import org.kontalk.util.XMPPUtils;
 import org.kontalk.util.MessageUtils.SmileyImageSpan;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -616,6 +610,10 @@ public class ComposeMessageFragment extends ListFragment implements
     				deleteThread();
 
     			return true;
+
+            case R.id.block_user:
+                blockUser();
+                return true;
 		}
 
 		return super.onOptionsItemSelected(item);
@@ -826,6 +824,10 @@ public class ComposeMessageFragment extends ListFragment implements
 				});
 		builder.setNegativeButton(android.R.string.cancel, null);
 		builder.create().show();
+	}
+
+	private void blockUser() {
+	    replySubscription(false);
 	}
 
 	private void decryptMessage(CompositeMessage msg) {
@@ -1461,6 +1463,8 @@ public class ComposeMessageFragment extends ListFragment implements
         // mark request as pending accepted
         ContentValues values = new ContentValues(1);
         values.put(Threads.REQUEST_STATUS, status);
+
+        // FIXME this won't work on new threads
 
         ctx.getContentResolver().update(Requests.CONTENT_URI,
             values, CommonColumns.PEER + "=?",
