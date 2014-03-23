@@ -18,6 +18,8 @@
 
 package org.kontalk.service;
 
+import org.kontalk.ui.MessagingPreferences;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -66,6 +68,13 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             final NetworkInfo info = cm.getActiveNetworkInfo();
             if (info != null) {
                 Log.w(TAG, "network state changed!");
+
+                if (info.getType() == ConnectivityManager.TYPE_MOBILE &&
+                		!shouldReconnect(context)) {
+                	Log.w(TAG, "throttling on mobile network");
+                	return;
+                }
+
                 switch (info.getState()) {
                     case CONNECTED:
                         serviceAction = ACTION_START;
@@ -87,6 +96,21 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         else if (serviceAction == ACTION_STOP)
             // stop the message center
             MessageCenterService.stop(context);
+    }
+
+    private boolean shouldReconnect(Context context) {
+    	long lastConnect = MessagingPreferences.getLastConnection(context);
+
+    	// no last connection registered
+    	if (lastConnect < 0)
+    		return true;
+
+    	long now = System.currentTimeMillis();
+    	long diff = MessagingPreferences.getWakeupTimeMillis(context,
+			MessageCenterService.MIN_WAKEUP_TIME,
+			MessageCenterService.DEFAULT_WAKEUP_TIME);
+
+    	return (now - lastConnect) >= diff;
     }
 
 }
