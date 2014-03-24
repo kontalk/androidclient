@@ -263,6 +263,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Idle signal. */
     private static final int MSG_IDLE = 1;
 
+    /** How much time before a wakeup alarm triggers. */
+    public final static int DEFAULT_WAKEUP_TIME = 900000;
+    /** Minimal wakeup time. */
+    public final static int MIN_WAKEUP_TIME = 300000;
+
     /** Push notifications enabled flag. */
     private boolean mPushNotifications;
     /** Server push sender id. This is static so {@link GCMIntentService} can see it. */
@@ -307,11 +312,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private final static int DEFAULT_IDLE_TIME = 60000;
         /** Minimal idle time. */
         private final static int MIN_IDLE_TIME = DEFAULT_IDLE_TIME;
-
-        /** How much time before a wakeup alarm triggers. */
-        private final static int DEFAULT_WAKEUP_TIME = 900000;
-        /** Minimal wakeup time. */
-        private final static int MIN_WAKEUP_TIME = 300000;
 
         /** A reference to the message center. */
         private WeakReference<MessageCenterService> s;
@@ -1618,8 +1618,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     			.getSystemService(Context.ALARM_SERVICE);
 
     	long delay = MessagingPreferences.getWakeupTimeMillis(context,
-    			IdleConnectionHandler.MIN_WAKEUP_TIME,
-    			IdleConnectionHandler.DEFAULT_WAKEUP_TIME);
+    		MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
 
     	// start message center pending intent
     	PendingIntent pi = PendingIntent.getService(context

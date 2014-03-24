@@ -576,6 +576,17 @@ public final class MessagingPreferences extends PreferenceActivity {
         return getIntMinValue(context, "pref_wakeup_time", minValue, defaultValue);
     }
 
+    public static long getLastConnection(Context context) {
+    	return getLong(context, "pref_last_connection", -1);
+    }
+
+    public static boolean setLastConnection(Context context) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putLong("pref_last_connection", System.currentTimeMillis())
+            .commit();
+    }
+
     /** Recent statuses database helper. */
     private static final class RecentStatusDbHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "status.db";
