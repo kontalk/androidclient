@@ -21,7 +21,6 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -53,9 +52,8 @@ import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-import org.kontalk.R;
-import org.kontalk.crypto.PGP;
 import org.kontalk.service.DownloadListener;
+import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
 import android.content.Context;
@@ -114,11 +112,8 @@ public class ClientHTTPConnection {
         keystore.load(null, null);
         keystore.setKeyEntry("private", privateKey, null, new Certificate[] { certificate });
 
-        // load truststore from file
-        KeyStore truststore = KeyStore.getInstance("BKS", PGP.PROVIDER);
-        InputStream in = context.getResources()
-                .openRawResource(R.raw.truststore);
-        truststore.load(in, "changeit".toCharArray());
+        // load merged truststore (system + internal)
+        KeyStore truststore = InternalTrustStore.getTrustStore(context);
 
         return new SSLSocketFactory(keystore, null, truststore);
     }
