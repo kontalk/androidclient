@@ -1743,10 +1743,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	        filter.addAction(MessageCenterService.ACTION_MESSAGE);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
-	    }
 
-        // request connection status
-        MessageCenterService.requestConnectionStatus(getActivity());
+            // request connection status
+            MessageCenterService.requestConnectionStatus(getActivity());
+	    }
 	}
 
 	/** Sends a subscription request for the current peer. */
