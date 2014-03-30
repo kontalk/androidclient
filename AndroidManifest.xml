@@ -141,7 +141,6 @@
 
         <activity android:name=".ui.ComposeMessage"
             android:theme="@style/Theme.Light.Subtitle"
-            android:launchMode="singleTop"
             android:configChanges="keyboardHidden"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
