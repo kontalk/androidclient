@@ -413,11 +413,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         SmackAndroid.init(getApplicationContext());
         configure(ProviderManager.getInstance());
 
-        // create the global wake lock...
+        // create the global wake lock
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
-        // ...and acquire it!
-        mWakeLock.acquire();
+        mWakeLock.setReferenceCounted(false);
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
 
@@ -477,9 +476,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void onDestroy() {
         Log.d(TAG, "destroying message center");
         quit(false);
-
-        // release the wake lock
-        mWakeLock.release();
     }
 
     private synchronized void quit(boolean restarting) {
@@ -511,6 +507,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // stop any key pair regeneration service
         endKeyPairRegeneration();
+
+        // release the wakelock
+        mWakeLock.release();
     }
 
     private static final class AbortThread extends Thread {
@@ -757,6 +756,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mConnection == null && mHelper == null) {
             mConnection = null;
 
+            // acquire the wakelock
+            mWakeLock.acquire();
+
             // reset push notification variable
             mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
             // reset waiting messages
@@ -860,6 +862,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mHelper = null;
 
         broadcast(ACTION_CONNECTED);
+
+        // release the wakelock
+        mWakeLock.release();
     }
 
     private void broadcast(String action) {
