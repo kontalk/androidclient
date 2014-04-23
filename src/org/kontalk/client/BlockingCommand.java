@@ -32,9 +32,13 @@ import org.jivesoftware.smack.packet.IQ;
 public class BlockingCommand extends IQ {
 	public static final String NAMESPACE = "urn:xmpp:blocking";
 
+	public static final String BLOCKLIST = "blocklist";
 	public static final String BLOCK = "block";
 	public static final String UNBLOCK = "unblock";
 	public static final String UNALLOW = "unallow";
+
+	// might be used often, better keeping a cache of it
+	private static BlockingCommand sBlocklist;
 
 	private final String mCommand;
 	private List<String> mJidList;
@@ -95,6 +99,15 @@ public class BlockingCommand extends IQ {
 
 	public static BlockingCommand unallow(String jid) {
 		return new BlockingCommand(UNALLOW, jid);
+	}
+
+	public static BlockingCommand blocklist() {
+		if (sBlocklist == null) {
+			sBlocklist = new BlockingCommand(BLOCKLIST);
+			sBlocklist.setType(IQ.Type.GET);
+		}
+
+		return sBlocklist;
 	}
 
 }

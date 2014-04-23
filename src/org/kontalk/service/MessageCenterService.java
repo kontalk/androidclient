@@ -215,6 +215,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_RETRY = "org.kontalk.action.RETRY";
 
+    /**
+     * Broadcasted when the blocklist is received.
+     * Send this intent to request the blocklist.
+     */
+    public static final String ACTION_BLOCKLIST = "org.kontalk.action.BLOCKLIST";
+
     // common parameters
     /** connect to custom server -- TODO not used yet */
     public static final String EXTRA_SERVER = "org.kontalk.server";
@@ -249,7 +255,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // use with org.kontalk.action.VCARD
     public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
 
-    // use for org.kontalk.presence.privacy.action extra
+    // used with org.kontalk.action.BLOCKLIST
+    public static final String EXTRA_BLOCKLIST = "org.kontalk.blocklist";
+
+    // used for org.kontalk.presence.privacy.action extra
     public static final int PRIVACY_ACCEPT = 0;
     public static final int PRIVACY_BLOCK = 1;
     public static final int PRIVACY_UNBLOCK = 2;
@@ -738,6 +747,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             		resendPendingMessages(false);
             }
 
+            else if (ACTION_BLOCKLIST.equals(action)) {
+            	if (isConnected)
+            		requestBlocklist();
+            }
+
             else {
                 // no command means normal service start, connect if not connected
                 doConnect = true;
@@ -1067,7 +1081,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     		// standard response: subscribed
 			Presence p = new Presence(Presence.Type.subscribed);
 
-
 	        p.setPacketID(packetId);
 			p.setTo(to);
 
@@ -1087,7 +1100,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     		sendPacket(p);
 
-    		// TODO mark user as blocked
+    		// TODO mark user as blocked if iq result received
+    		//UsersProvider.setBlockStatus(userId, true);
     	}
 
         else if (action == PRIVACY_UNBLOCK) {
@@ -1096,7 +1110,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             sendPacket(p);
 
-            // TODO mark user as unblocked
+            // TODO mark user as unblocked if iq result received
+            //UsersProvider.setBlockStatus(userId, false);
         }
 
 		// clear the request status
@@ -1105,6 +1120,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
 		getContentResolver().update(Requests.CONTENT_URI,
 			values, CommonColumns.PEER + "=?", new String[] { userId });
+    }
+
+    private void requestBlocklist() {
+    	Packet p = BlockingCommand.blocklist();
+    	String packetId = p.getPacketID();
+
+    	// TODO listen for response (cache the listener, it shouldn't change)
+    	PacketFilter idFilter = new PacketIDFilter(packetId);
+    	mConnection.addPacketListener(new PacketListener() {
+			public void processPacket(Packet packet) {
+			}
+		}, idFilter);
+
+    	sendPacket(p);
     }
 
     private void sendMessage(Bundle data) {
