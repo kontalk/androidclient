@@ -44,6 +44,7 @@ public class MyUsers {
         public static final String LAST_SEEN = "last_seen";
         public static final String PUBLIC_KEY = "public_key";
         public static final String FINGERPRINT = "fingerprint";
+        public static final String BLOCKED = "blocked";
 
         // uri parameter for update: triggers a complete resync
         public static final String RESYNC = "resync";

@@ -61,7 +61,7 @@ public class UsersProvider extends ContentProvider {
     private static final String TAG = UsersProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.users";
 
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
@@ -85,7 +85,8 @@ public class UsersProvider extends ContentProvider {
             "status TEXT," +
             "last_seen INTEGER," +
             "public_key BLOB," +
-            "fingerprint TEXT" +
+            "fingerprint TEXT," +
+            "blocked INTEGER NOT NULL DEFAULT 0" +
             ")";
 
         /** This table will contain all the users in contact list .*/
@@ -115,6 +116,10 @@ public class UsersProvider extends ContentProvider {
             "ALTER TABLE " + TABLE_USERS + " ADD COLUMN fingerprint TEXT",
             "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN public_key BLOB",
             "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN fingerprint TEXT",
+        };
+        // version 6 - add blocked status
+        private static final String[] SCHEMA_V5_TO_V6 = {
+            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0",
         };
 
         private Context mContext;
@@ -156,12 +161,21 @@ public class UsersProvider extends ContentProvider {
             else if (oldVersion == 3) {
                 for (String sql : SCHEMA_V3_TO_V4)
                     db.execSQL(sql);
-                // upgrade for version 4 too
+                // upgrade for versions 4 and 5 too
                 for (String sql : SCHEMA_V4_TO_V5)
+                    db.execSQL(sql);
+                for (String sql : SCHEMA_V5_TO_V6)
                     db.execSQL(sql);
             }
             else if (oldVersion == 4) {
                 for (String sql : SCHEMA_V4_TO_V5)
+                    db.execSQL(sql);
+                // upgrade for version 5 too
+                for (String sql : SCHEMA_V5_TO_V6)
+                    db.execSQL(sql);
+            }
+            else if (oldVersion == 5) {
+                for (String sql : SCHEMA_V5_TO_V6)
                     db.execSQL(sql);
             }
         }
