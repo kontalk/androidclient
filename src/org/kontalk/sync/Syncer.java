@@ -90,6 +90,7 @@ public class Syncer {
         public String status;
         public long timestamp;
         public byte[] publicKey;
+        public boolean blocked;
     }
 
     // FIXME this class should handle most recent/available presence stanzas
@@ -433,6 +434,9 @@ public class Syncer {
                         }
                         else
                             registeredValues.putNull(Users.PUBLIC_KEY);
+
+                        // blocked status
+                        registeredValues.put(Users.BLOCKED, entry.blocked);
 
                         usersProvider.update(offlineUri, registeredValues,
                             Users.HASH + " = ?", new String[] { userId });
