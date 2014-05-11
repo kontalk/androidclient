@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -457,6 +458,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
         pm.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
         pm.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
+        pm.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
         pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
@@ -1126,10 +1128,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     	Packet p = BlockingCommand.blocklist();
     	String packetId = p.getPacketID();
 
-    	// TODO listen for response (cache the listener, it shouldn't change)
+    	// listen for response (TODO cache the listener, it shouldn't change)
     	PacketFilter idFilter = new PacketIDFilter(packetId);
     	mConnection.addPacketListener(new PacketListener() {
 			public void processPacket(Packet packet) {
+
+				if (packet instanceof BlockingCommand) {
+					BlockingCommand blocklist = (BlockingCommand) packet;
+
+					Intent i = new Intent(ACTION_BLOCKLIST);
+
+					List<String> _list = blocklist.getItems();
+					if (_list != null) {
+						String[] list = new String[_list.size()];
+						i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
+					}
+
+					mLocalBroadcastManager.sendBroadcast(i);
+				}
+
 			}
 		}, idFilter);
 

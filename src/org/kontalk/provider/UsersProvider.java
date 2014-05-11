@@ -120,6 +120,7 @@ public class UsersProvider extends ContentProvider {
         // version 6 - add blocked status
         private static final String[] SCHEMA_V5_TO_V6 = {
             "ALTER TABLE " + TABLE_USERS + " ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0",
         };
 
         private Context mContext;
@@ -683,6 +684,7 @@ public class UsersProvider extends ContentProvider {
         usersProjectionMap.put(Users.LAST_SEEN, Users.LAST_SEEN);
         usersProjectionMap.put(Users.PUBLIC_KEY, Users.PUBLIC_KEY);
         usersProjectionMap.put(Users.FINGERPRINT, Users.FINGERPRINT);
+        usersProjectionMap.put(Users.BLOCKED, Users.BLOCKED);
     }
 
 }
