@@ -636,9 +636,16 @@ public class UsersProvider extends ContentProvider {
 
     /** Updates a user public key. */
     public static void setUserKey(Context context, String userId, byte[] keydata, String fingerprint) {
-        ContentValues values = new ContentValues(1);
+        ContentValues values = new ContentValues(2);
         values.put(Users.PUBLIC_KEY, keydata);
         values.put(Users.FINGERPRINT, fingerprint);
+        context.getContentResolver().update(Users.CONTENT_URI, values,
+            Users.HASH + "=?", new String[] { userId });
+    }
+
+    public static void setBlockStatus(Context context, String userId, boolean blocked) {
+        ContentValues values = new ContentValues(1);
+        values.put(Users.BLOCKED, blocked);
         context.getContentResolver().update(Users.CONTENT_URI, values,
             Users.HASH + "=?", new String[] { userId });
     }

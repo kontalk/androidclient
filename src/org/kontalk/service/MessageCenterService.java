@@ -1077,9 +1077,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendSubscriptionReply(String userId, String packetId, int action) {
-        String to = MessageUtils.toJID(userId, mServer.getNetwork());
 
     	if (action == PRIVACY_ACCEPT) {
+            String to = MessageUtils.toJID(userId, mServer.getNetwork());
+
     		// standard response: subscribed
 			Presence p = new Presence(Presence.Type.subscribed);
 
@@ -1096,25 +1097,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 			sendPacket(p);
     	}
 
-    	else if (action == PRIVACY_BLOCK) {
-    		// blocking command: block
-    		IQ p = BlockingCommand.block(to);
-
-    		sendPacket(p);
-
-    		// TODO mark user as blocked if iq result received
-    		//UsersProvider.setBlockStatus(userId, true);
+    	else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+    	    sendPrivacyListCommand(userId, action);
     	}
-
-        else if (action == PRIVACY_UNBLOCK) {
-            // blocking command: block
-            IQ p = BlockingCommand.unblock(to);
-
-            sendPacket(p);
-
-            // TODO mark user as unblocked if iq result received
-            //UsersProvider.setBlockStatus(userId, false);
-        }
 
 		// clear the request status
 		ContentValues values = new ContentValues(1);
@@ -1122,6 +1107,48 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
 		getContentResolver().update(Requests.CONTENT_URI,
 			values, CommonColumns.PEER + "=?", new String[] { userId });
+    }
+
+    private void sendPrivacyListCommand(final String userId, final int action) {
+        String to = MessageUtils.toJID(userId, mServer.getNetwork());
+        IQ p;
+
+        if (action == PRIVACY_BLOCK) {
+            // blocking command: block
+            p = BlockingCommand.block(to);
+        }
+
+        else if (action == PRIVACY_UNBLOCK) {
+            // blocking command: block
+            p = BlockingCommand.unblock(to);
+        }
+
+        else {
+            // unsupported action
+            throw new IllegalArgumentException("unsupported action: " + action);
+        }
+
+        // setup packet filter for response
+        PacketFilter filter = new PacketIDFilter(p.getPacketID());
+        PacketListener listener = new PacketListener() {
+            public void processPacket(Packet packet) {
+
+                if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.RESULT) {
+                    UsersProvider.setBlockStatus(MessageCenterService.this,
+                        userId, action == PRIVACY_BLOCK);
+
+                    // invalidate cached contact
+                    Contact.invalidate(userId);
+
+                    // TODO broadcast intent for toast notification and presence subscription
+                }
+
+            }
+        };
+        mConnection.addPacketListener(listener, filter);
+
+        // send IQ
+        sendPacket(p);
     }
 
     private void requestBlocklist() {
