@@ -86,9 +86,9 @@ public class BlockingCommand extends IQ {
 		if (mJidList != null && mJidList.size() > 0) {
 			b.append('>');
 			for (String jid: mJidList) {
-				b.append("<item>")
+				b.append("<item jid='")
 					.append(jid)
-					.append("</item>");
+					.append("'/>");
 			}
 
 			b.append("</")
