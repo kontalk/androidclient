@@ -146,6 +146,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private MenuItem mDeleteThreadMenu;
     private MenuItem mViewContactMenu;
     private MenuItem mCallMenu;
+    private MenuItem mBlockMenu;
+    private MenuItem mUnblockMenu;
 
 	/** The thread id. */
 	private long threadId = -1;
@@ -586,6 +588,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
 		mViewContactMenu = menu.findItem(R.id.view_contact);
 		mCallMenu = menu.findItem(R.id.call_contact);
+		mBlockMenu = menu.findItem(R.id.block_user);
+		mUnblockMenu = menu.findItem(R.id.unblock_user);
 	}
 
 	@Override
@@ -2090,8 +2094,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
     private void updateUI() {
-        boolean contactEnabled = (mConversation != null) ? mConversation
-            .getContact() != null : false;
+        Contact contact = (mConversation != null) ? mConversation
+                .getContact() : null;
+
+        boolean contactEnabled = contact != null;
         boolean threadEnabled = (threadId > 0);
 
         if (mCallMenu != null) {
@@ -2106,6 +2112,14 @@ public class ComposeMessageFragment extends ListFragment implements
             }
             mViewContactMenu.setEnabled(contactEnabled);
             mDeleteThreadMenu.setEnabled(threadEnabled);
+        }
+
+        if (mBlockMenu != null && contactEnabled) {
+            // block/unblock
+            boolean blocked = contact.isBlocked();
+
+            mBlockMenu.setVisible(!blocked);
+            mUnblockMenu.setVisible(blocked);
         }
     }
 
