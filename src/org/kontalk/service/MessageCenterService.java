@@ -222,6 +222,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_BLOCKLIST = "org.kontalk.action.BLOCKLIST";
 
+    /** Broadcasted when a block request has ben accepted by the server. */
+    public static final String ACTION_BLOCKED = "org.kontalk.action.BLOCKED";
+
+    /** Broadcasted when an unblock request has ben accepted by the server. */
+    public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
+
     // common parameters
     /** connect to custom server -- TODO not used yet */
     public static final String EXTRA_SERVER = "org.kontalk.server";
@@ -884,7 +890,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void broadcast(String action) {
-        mLocalBroadcastManager.sendBroadcast(new Intent(action));
+        broadcast(action, null, null);
+    }
+
+    private void broadcast(String action, String extraName, String extraValue) {
+        Intent i = new Intent(action);
+        if (extraName != null)
+        	i.putExtra(extraName, extraValue);
+
+        mLocalBroadcastManager.sendBroadcast(i);
     }
 
     /** Discovers info and items. */
@@ -1140,7 +1154,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // invalidate cached contact
                     Contact.invalidate(userId);
 
-                    // TODO broadcast intent for toast notification and presence subscription
+                    // broadcast result
+                    broadcast(action == PRIVACY_BLOCK ?
+                    	ACTION_BLOCKED : ACTION_UNBLOCKED,
+                    	EXTRA_FROM_USERID, userId);
                 }
 
             }

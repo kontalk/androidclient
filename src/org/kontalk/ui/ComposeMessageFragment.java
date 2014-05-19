@@ -19,6 +19,9 @@
 package org.kontalk.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
+import static org.kontalk.service.MessageCenterService.PRIVACY_BLOCK;
+import static org.kontalk.service.MessageCenterService.PRIVACY_UNBLOCK;
+import static org.kontalk.service.MessageCenterService.PRIVACY_ACCEPT;
 
 import java.io.File;
 import java.io.IOException;
@@ -171,6 +174,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	private LocalBroadcastManager mLocalBroadcastManager;
     private BroadcastReceiver mPresenceReceiver;
+    private BroadcastReceiver mPrivacyListener;
 
     private QuickAction mSmileyPopup;
     private boolean mOfflineModeWarned;
@@ -836,11 +840,11 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void blockUser() {
-	    setPrivacy(MessageCenterService.PRIVACY_BLOCK);
+	    setPrivacy(PRIVACY_BLOCK);
 	}
 
     private void unblockUser() {
-        setPrivacy(MessageCenterService.PRIVACY_UNBLOCK);
+        setPrivacy(PRIVACY_UNBLOCK);
     }
 
 	private void decryptMessage(CompositeMessage msg) {
@@ -1443,9 +1447,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	                    int action;
 	                    if (v.getId() == R.id.button_accept)
-	                        action = MessageCenterService.PRIVACY_ACCEPT;
+	                        action = PRIVACY_ACCEPT;
 	                    else
-	                        action = MessageCenterService.PRIVACY_BLOCK;
+	                        action = PRIVACY_BLOCK;
 
 	                    setPrivacy(action);
 	                }
@@ -1478,15 +1482,15 @@ public class ComposeMessageFragment extends ListFragment implements
         int status;
 
         switch (action) {
-            case MessageCenterService.PRIVACY_ACCEPT:
+            case PRIVACY_ACCEPT:
                 status = Threads.REQUEST_REPLY_PENDING_ACCEPT;
                 break;
 
-            case MessageCenterService.PRIVACY_BLOCK:
+            case PRIVACY_BLOCK:
                 status = Threads.REQUEST_REPLY_PENDING_BLOCK;
                 break;
 
-            case MessageCenterService.PRIVACY_UNBLOCK:
+            case PRIVACY_UNBLOCK:
                 status = Threads.REQUEST_REPLY_PENDING_UNBLOCK;
                 break;
 
@@ -1505,6 +1509,38 @@ public class ComposeMessageFragment extends ListFragment implements
         ctx.getContentResolver().update(Requests.CONTENT_URI,
             values, CommonColumns.PEER + "=?",
                 new String[] { userId });
+
+        // setup broadcast receiver for block/unblock reply
+        if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+        	if (mPrivacyListener == null) {
+        		mPrivacyListener = new BroadcastReceiver() {
+					public void onReceive(Context context, Intent intent) {
+						String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
+
+						if (userId.equals(from)) {
+							// this will trigger a Contact reload
+							mConversation.setRecipient(userId);
+							// this will update block/unblock menu items
+							updateUI();
+							// request presence subscription if unblocking
+							if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction()))
+								presenceSubscribe();
+							else
+								Toast.makeText(getActivity(),
+									R.string.msg_user_blocked,
+									Toast.LENGTH_LONG).show();
+
+							// we don't need this receiver anymore
+							mLocalBroadcastManager.unregisterReceiver(this);
+						}
+					}
+				};
+        	}
+
+        	IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_BLOCKED);
+        	filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
+        	mLocalBroadcastManager.registerReceiver(mPrivacyListener, filter);
+        }
 
         // send command to message center
         MessageCenterService.replySubscription(ctx, userId, action);
