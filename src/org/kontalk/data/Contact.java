@@ -155,6 +155,7 @@ public class Contact {
         mName = name;
         mNumber = number;
         mHash = hash;
+        mBlocked = blocked;
     }
 
     /** Returns the {@link Contacts} {@link Uri} identified by this object. */
