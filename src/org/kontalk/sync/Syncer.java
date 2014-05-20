@@ -90,6 +90,7 @@ public class Syncer {
         public String status;
         public long timestamp;
         public byte[] publicKey;
+        public boolean blocked;
     }
 
     // FIXME this class should handle most recent/available presence stanzas
@@ -101,6 +102,7 @@ public class Syncer {
         private int presenceCount = -1;
         private int vCardCount = -1;
         private int rosterCount = -1;
+        private boolean blocklistReceived;
 
         public PresenceBroadcastReceiver(String iq, List<String> hashList, Syncer notifyTo) {
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
@@ -133,8 +135,9 @@ public class Syncer {
                         }
                     }
 
-                    // done with presence data
-                    if (rosterCount >= 0 && presenceCount >= rosterCount && vCardCount >= presenceCount)
+                    // done with presence data and blocklist
+                    if (rosterCount >= 0 && presenceCount >= rosterCount &&
+                    		vCardCount >= presenceCount && blocklistReceived)
                         finish();
                 }
             }
@@ -178,11 +181,38 @@ public class Syncer {
                         }
                     }
 
-                    // done with presence data
-                    if (rosterCount >= 0 && presenceCount >= rosterCount && vCardCount >= presenceCount)
+                    // done with presence data and blocklist
+                    if (rosterCount >= 0 && presenceCount >= rosterCount &&
+                    		vCardCount >= presenceCount && blocklistReceived)
                         finish();
                 }
 
+            }
+
+            else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
+            	blocklistReceived = true;
+
+            	String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
+            	if (list != null) {
+
+            		for (String jid : list) {
+                        // see if bare JID is present in roster response
+                        String compare = StringUtils.parseBareAddress(jid);
+                        for (PresenceItem item : response) {
+                            if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            	item.blocked = true;
+
+                                break;
+                            }
+                        }
+            		}
+
+            	}
+
+                // done with presence data and blocklist
+                if (rosterCount >= 0 && presenceCount >= rosterCount &&
+                		vCardCount >= presenceCount)
+                    finish();
             }
 
             // connected! Retry...
@@ -200,8 +230,10 @@ public class Syncer {
                  * case.
                  */
                 Syncer w = notifyTo.get();
-                if (w != null)
+                if (w != null) {
                     w.sendRoster(iq, hashList);
+                    w.requestBlocklist();
+                }
             }
         }
 
@@ -346,6 +378,7 @@ public class Syncer {
             f.addAction(MessageCenterService.ACTION_ROSTER);
             f.addAction(MessageCenterService.ACTION_CONNECTED);
             f.addAction(MessageCenterService.ACTION_VCARD);
+            f.addAction(MessageCenterService.ACTION_BLOCKLIST);
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
             // request current connection status
@@ -434,6 +467,9 @@ public class Syncer {
                         else
                             registeredValues.putNull(Users.PUBLIC_KEY);
 
+                        // blocked status
+                        registeredValues.put(Users.BLOCKED, entry.blocked);
+
                         usersProvider.update(offlineUri, registeredValues,
                             Users.HASH + " = ?", new String[] { userId });
                     }
@@ -498,6 +534,12 @@ public class Syncer {
         i.setAction(MessageCenterService.ACTION_ROSTER);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         i.putExtra(MessageCenterService.EXTRA_USERLIST, list.toArray(new String[0]));
+        mContext.startService(i);
+    }
+
+    private void requestBlocklist() {
+        Intent i = new Intent(mContext, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_BLOCKLIST);
         mContext.startService(i);
     }
 

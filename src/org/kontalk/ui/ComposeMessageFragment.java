@@ -19,6 +19,9 @@
 package org.kontalk.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
+import static org.kontalk.service.MessageCenterService.PRIVACY_ACCEPT;
+import static org.kontalk.service.MessageCenterService.PRIVACY_BLOCK;
+import static org.kontalk.service.MessageCenterService.PRIVACY_UNBLOCK;
 
 import java.io.File;
 import java.io.IOException;
@@ -146,6 +149,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private MenuItem mDeleteThreadMenu;
     private MenuItem mViewContactMenu;
     private MenuItem mCallMenu;
+    private MenuItem mBlockMenu;
+    private MenuItem mUnblockMenu;
 
 	/** The thread id. */
 	private long threadId = -1;
@@ -169,6 +174,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 	private LocalBroadcastManager mLocalBroadcastManager;
     private BroadcastReceiver mPresenceReceiver;
+    private BroadcastReceiver mPrivacyListener;
 
     private QuickAction mSmileyPopup;
     private boolean mOfflineModeWarned;
@@ -586,6 +592,8 @@ public class ComposeMessageFragment extends ListFragment implements
 		mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
 		mViewContactMenu = menu.findItem(R.id.view_contact);
 		mCallMenu = menu.findItem(R.id.call_contact);
+		mBlockMenu = menu.findItem(R.id.block_user);
+		mUnblockMenu = menu.findItem(R.id.unblock_user);
 	}
 
 	@Override
@@ -610,6 +618,15 @@ public class ComposeMessageFragment extends ListFragment implements
     				deleteThread();
 
     			return true;
+
+            case R.id.block_user:
+                blockUser();
+                return true;
+
+            case R.id.unblock_user:
+                unblockUser();
+                return true;
+
 		}
 
 		return super.onOptionsItemSelected(item);
@@ -821,6 +838,14 @@ public class ComposeMessageFragment extends ListFragment implements
 		builder.setNegativeButton(android.R.string.cancel, null);
 		builder.create().show();
 	}
+
+	private void blockUser() {
+	    setPrivacy(PRIVACY_BLOCK);
+	}
+
+    private void unblockUser() {
+        setPrivacy(PRIVACY_UNBLOCK);
+    }
 
 	private void decryptMessage(CompositeMessage msg) {
 	    try {
@@ -1419,7 +1444,14 @@ public class ComposeMessageFragment extends ListFragment implements
 	            View.OnClickListener listener = new View.OnClickListener() {
 	                public void onClick(View v) {
 	                    mInvitationBar.setVisibility(View.GONE);
-	                    replySubscription((v.getId() == R.id.button_accept));
+
+	                    int action;
+	                    if (v.getId() == R.id.button_accept)
+	                        action = PRIVACY_ACCEPT;
+	                    else
+	                        action = PRIVACY_BLOCK;
+
+	                    setPrivacy(action);
 	                }
 	            };
 
@@ -1446,22 +1478,72 @@ public class ComposeMessageFragment extends ListFragment implements
 		updateUI();
 	}
 
-	private void replySubscription(boolean accepted) {
-        Context ctx = getActivity();
+	private void setPrivacy(int action) {
+        int status;
 
-        int status = accepted ? Threads.REQUEST_REPLY_PENDING_ACCEPT :
-            Threads.REQUEST_REPLY_PENDING_BLOCK;
+        switch (action) {
+            case PRIVACY_ACCEPT:
+                status = Threads.REQUEST_REPLY_PENDING_ACCEPT;
+                break;
+
+            case PRIVACY_BLOCK:
+                status = Threads.REQUEST_REPLY_PENDING_BLOCK;
+                break;
+
+            case PRIVACY_UNBLOCK:
+                status = Threads.REQUEST_REPLY_PENDING_UNBLOCK;
+                break;
+
+            default:
+                return;
+        }
+
+        Context ctx = getActivity();
 
         // mark request as pending accepted
         ContentValues values = new ContentValues(1);
         values.put(Threads.REQUEST_STATUS, status);
 
+        // FIXME this won't work on new threads
+
         ctx.getContentResolver().update(Requests.CONTENT_URI,
             values, CommonColumns.PEER + "=?",
                 new String[] { userId });
 
+        // setup broadcast receiver for block/unblock reply
+        if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+        	if (mPrivacyListener == null) {
+        		mPrivacyListener = new BroadcastReceiver() {
+					public void onReceive(Context context, Intent intent) {
+						String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
+
+						if (userId.equals(from)) {
+							// this will trigger a Contact reload
+							mConversation.setRecipient(userId);
+							// this will update block/unblock menu items
+							updateUI();
+							// request presence subscription if unblocking
+							if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction()))
+								presenceSubscribe();
+							else
+								Toast.makeText(getActivity(),
+									R.string.msg_user_blocked,
+									Toast.LENGTH_LONG).show();
+
+							// we don't need this receiver anymore
+							mLocalBroadcastManager.unregisterReceiver(this);
+						}
+					}
+				};
+        	}
+
+        	IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_BLOCKED);
+        	filter.addAction(MessageCenterService.ACTION_UNBLOCKED);
+        	mLocalBroadcastManager.registerReceiver(mPrivacyListener, filter);
+        }
+
         // send command to message center
-        MessageCenterService.replySubscription(ctx, userId, accepted);
+        MessageCenterService.replySubscription(ctx, userId, action);
 	}
 
 	private void showIdentityDialog() {
@@ -2048,8 +2130,10 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
     private void updateUI() {
-        boolean contactEnabled = (mConversation != null) ? mConversation
-            .getContact() != null : false;
+        Contact contact = (mConversation != null) ? mConversation
+                .getContact() : null;
+
+        boolean contactEnabled = contact != null;
         boolean threadEnabled = (threadId > 0);
 
         if (mCallMenu != null) {
@@ -2064,6 +2148,14 @@ public class ComposeMessageFragment extends ListFragment implements
             }
             mViewContactMenu.setEnabled(contactEnabled);
             mDeleteThreadMenu.setEnabled(threadEnabled);
+        }
+
+        if (mBlockMenu != null && contactEnabled) {
+            // block/unblock
+            boolean blocked = contact.isBlocked();
+
+            mBlockMenu.setVisible(!blocked);
+            mUnblockMenu.setVisible(blocked);
         }
     }
 

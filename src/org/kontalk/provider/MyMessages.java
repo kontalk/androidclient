@@ -113,8 +113,10 @@ public final class MyMessages {
         public static final int REQUEST_WAITING = 1;
         /** Positive subscription response is waiting to be sent. */
         public static final int REQUEST_REPLY_PENDING_ACCEPT = 2;
-        /** Negative subscription response is waiting to be sent. */
+        /** Block request is waiting to be sent. */
         public static final int REQUEST_REPLY_PENDING_BLOCK = 3;
+        /** Unblock request is waiting to be sent. */
+        public static final int REQUEST_REPLY_PENDING_UNBLOCK = 4;
 
         /** Conversation represents a message group for a given thread. */
         public static final class Conversations implements BaseColumns {

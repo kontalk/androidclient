@@ -46,7 +46,6 @@ import android.util.Log;
 /**
  * A simple contact.
  * @author Daniele Ricci
- * @version 1.0
  */
 public class Contact {
     private final static String TAG = Contact.class.getSimpleName();
@@ -61,6 +60,7 @@ public class Contact {
         Users.REGISTERED,
         Users.STATUS,
         Users.PUBLIC_KEY,
+        Users.BLOCKED,
     };
 
     public static final int COLUMN_ID = 0;
@@ -72,6 +72,7 @@ public class Contact {
     public static final int COLUMN_REGISTERED = 6;
     public static final int COLUMN_STATUS = 7;
     public static final int COLUMN_PUBLICKEY = 8;
+    public static final int COLUMN_BLOCKED = 9;
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
@@ -84,6 +85,8 @@ public class Contact {
     private Uri mContactUri;
     private boolean mRegistered;
     private String mStatus;
+
+    private boolean mBlocked;
 
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
@@ -124,7 +127,7 @@ public class Contact {
                         String lookupKey = cur.getString(1);
                         long cid = cur.getLong(2);
 
-                        c = new Contact(cid, lookupKey, name, numberHint, userId);
+                        c = new Contact(cid, lookupKey, name, numberHint, userId, false);
                         put(userId, c);
 
                         // insert result into users database immediately
@@ -146,12 +149,13 @@ public class Contact {
 
     private final static ContactCache cache = new ContactCache();
 
-    private Contact(long contactId, String lookupKey, String name, String number, String hash) {
+    private Contact(long contactId, String lookupKey, String name, String number, String hash, boolean blocked) {
         mContactId = contactId;
         mLookupKey = lookupKey;
         mName = name;
         mNumber = number;
         mHash = hash;
+        mBlocked = blocked;
     }
 
     /** Returns the {@link Contacts} {@link Uri} identified by this object. */
@@ -187,6 +191,10 @@ public class Contact {
 
     public String getStatus() {
         return mStatus;
+    }
+
+    public boolean isBlocked() {
+    	return mBlocked;
     }
 
     public PGPPublicKeyRing getPublicKeyRing() {
@@ -228,8 +236,9 @@ public class Contact {
             final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
             final String status = cursor.getString(COLUMN_STATUS);
             final byte[] keyring = cursor.getBlob(COLUMN_PUBLICKEY);
+            final boolean blocked = (cursor.getInt(COLUMN_BLOCKED) != 0);
 
-            c = new Contact(contactId, key, name, number, hash);
+            c = new Contact(contactId, key, name, number, hash, blocked);
             c.mRegistered = registered;
             c.mStatus = status;
             try {
@@ -284,6 +293,7 @@ public class Contact {
                 Users.REGISTERED,
                 Users.STATUS,
                 Users.PUBLIC_KEY,
+                Users.BLOCKED,
             }, null, null, null);
 
         if (c.moveToFirst()) {
@@ -294,9 +304,10 @@ public class Contact {
             final boolean registered = (c.getInt(4) != 0);
             final String status = c.getString(5);
             final byte[] keyring = c.getBlob(6);
+            final boolean blocked = (c.getInt(7) != 0);
             c.close();
 
-            Contact contact = new Contact(cid, key, name, number, userId);
+            Contact contact = new Contact(cid, key, name, number, userId, blocked);
             contact.mRegistered = registered;
             contact.mStatus = status;
             try {

@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -215,6 +216,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      */
     public static final String ACTION_RETRY = "org.kontalk.action.RETRY";
 
+    /**
+     * Broadcasted when the blocklist is received.
+     * Send this intent to request the blocklist.
+     */
+    public static final String ACTION_BLOCKLIST = "org.kontalk.action.BLOCKLIST";
+
+    /** Broadcasted when a block request has ben accepted by the server. */
+    public static final String ACTION_BLOCKED = "org.kontalk.action.BLOCKED";
+
+    /** Broadcasted when an unblock request has ben accepted by the server. */
+    public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
+
     // common parameters
     /** connect to custom server -- TODO not used yet */
     public static final String EXTRA_SERVER = "org.kontalk.server";
@@ -237,7 +250,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
     public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
     public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
-    public static final String EXTRA_ACCEPTED = "org.kontalk.presence.accepted";
+    public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
 
     // use with org.kontalk.action.ROSTER
     public static final String EXTRA_USERLIST = "org.kontalk.roster.userList";
@@ -248,6 +261,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.VCARD
     public static final String EXTRA_PUBLIC_KEY = "org.kontalk.vcard.publicKey";
+
+    // used with org.kontalk.action.BLOCKLIST
+    public static final String EXTRA_BLOCKLIST = "org.kontalk.blocklist";
+
+    // used for org.kontalk.presence.privacy.action extra
+    public static final int PRIVACY_ACCEPT = 0;
+    public static final int PRIVACY_BLOCK = 1;
+    public static final int PRIVACY_UNBLOCK = 2;
 
     /** Message URI. */
     public static final String EXTRA_MESSAGE = "org.kontalk.message";
@@ -443,6 +464,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         pm.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
         pm.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
         pm.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
+        pm.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
         pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
         pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
@@ -711,7 +733,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     // FIXME taking toUserid for granted
                     sendSubscriptionReply(toUserid,
                     		intent.getStringExtra(EXTRA_PACKET_ID),
-                    		intent.getBooleanExtra(EXTRA_ACCEPTED, true));
+                    		intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
             	}
             }
 
@@ -731,6 +753,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             	// already connected: resend pending messages
             	if (isConnected)
             		resendPendingMessages(false);
+            }
+
+            else if (ACTION_BLOCKLIST.equals(action)) {
+            	if (isConnected)
+            		requestBlocklist();
             }
 
             else {
@@ -863,7 +890,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void broadcast(String action) {
-        mLocalBroadcastManager.sendBroadcast(new Intent(action));
+        broadcast(action, null, null);
+    }
+
+    private void broadcast(String action, String extraName, String extraValue) {
+        Intent i = new Intent(action);
+        if (extraName != null)
+        	i.putExtra(extraName, extraValue);
+
+        mLocalBroadcastManager.sendBroadcast(i);
     }
 
     /** Discovers info and items. */
@@ -1029,19 +1064,39 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String userId = c.getString(0);
             int reqStatus = c.getInt(1);
 
-            sendSubscriptionReply(userId, null, reqStatus == Threads.REQUEST_REPLY_PENDING_ACCEPT);
+            int action;
+
+            switch (reqStatus) {
+                case Threads.REQUEST_REPLY_PENDING_ACCEPT:
+                    action = PRIVACY_ACCEPT;
+                    break;
+
+                case Threads.REQUEST_REPLY_PENDING_BLOCK:
+                    action = PRIVACY_BLOCK;
+                    break;
+
+                case Threads.REQUEST_REPLY_PENDING_UNBLOCK:
+                    action = PRIVACY_UNBLOCK;
+                    break;
+
+                default:
+                    // skip this one
+                    continue;
+            }
+
+            sendSubscriptionReply(userId, null, action);
         }
 
         c.close();
     }
 
-    private void sendSubscriptionReply(String userId, String packetId, boolean accepted) {
-        String to = MessageUtils.toJID(userId, mServer.getNetwork());
+    private void sendSubscriptionReply(String userId, String packetId, int action) {
 
-    	if (accepted) {
+    	if (action == PRIVACY_ACCEPT) {
+            String to = MessageUtils.toJID(userId, mServer.getNetwork());
+
     		// standard response: subscribed
 			Presence p = new Presence(Presence.Type.subscribed);
-
 
 	        p.setPacketID(packetId);
 			p.setTo(to);
@@ -1056,13 +1111,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 			sendPacket(p);
     	}
 
-    	else {
-    		// blocking command: block
-    		IQ p = BlockingCommand.block(to);
-
-    		sendPacket(p);
-
-    		// TODO mark user as blocked
+    	else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+    	    sendPrivacyListCommand(userId, action);
     	}
 
 		// clear the request status
@@ -1071,6 +1121,80 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
 		getContentResolver().update(Requests.CONTENT_URI,
 			values, CommonColumns.PEER + "=?", new String[] { userId });
+    }
+
+    private void sendPrivacyListCommand(final String userId, final int action) {
+        String to = MessageUtils.toJID(userId, mServer.getNetwork());
+        IQ p;
+
+        if (action == PRIVACY_BLOCK) {
+            // blocking command: block
+            p = BlockingCommand.block(to);
+        }
+
+        else if (action == PRIVACY_UNBLOCK) {
+            // blocking command: block
+            p = BlockingCommand.unblock(to);
+        }
+
+        else {
+            // unsupported action
+            throw new IllegalArgumentException("unsupported action: " + action);
+        }
+
+        // setup packet filter for response
+        PacketFilter filter = new PacketIDFilter(p.getPacketID());
+        PacketListener listener = new PacketListener() {
+            public void processPacket(Packet packet) {
+
+                if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.RESULT) {
+                    UsersProvider.setBlockStatus(MessageCenterService.this,
+                        userId, action == PRIVACY_BLOCK);
+
+                    // invalidate cached contact
+                    Contact.invalidate(userId);
+
+                    // broadcast result
+                    broadcast(action == PRIVACY_BLOCK ?
+                    	ACTION_BLOCKED : ACTION_UNBLOCKED,
+                    	EXTRA_FROM_USERID, userId);
+                }
+
+            }
+        };
+        mConnection.addPacketListener(listener, filter);
+
+        // send IQ
+        sendPacket(p);
+    }
+
+    private void requestBlocklist() {
+    	Packet p = BlockingCommand.blocklist();
+    	String packetId = p.getPacketID();
+
+    	// listen for response (TODO cache the listener, it shouldn't change)
+    	PacketFilter idFilter = new PacketIDFilter(packetId);
+    	mConnection.addPacketListener(new PacketListener() {
+			public void processPacket(Packet packet) {
+
+				if (packet instanceof BlockingCommand) {
+					BlockingCommand blocklist = (BlockingCommand) packet;
+
+					Intent i = new Intent(ACTION_BLOCKLIST);
+
+					List<String> _list = blocklist.getItems();
+					if (_list != null) {
+						String[] list = new String[_list.size()];
+						i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
+					}
+
+					mLocalBroadcastManager.sendBroadcast(i);
+				}
+
+			}
+		}, idFilter);
+
+    	sendPacket(p);
     }
 
     private void sendMessage(Bundle data) {
@@ -1485,11 +1609,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Replies to a presence subscription request. */
-    public static void replySubscription(final Context context, String userId, boolean accepted) {
+    public static void replySubscription(final Context context, String userId, int action) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
         i.putExtra(EXTRA_TO_USERID, userId);
-        i.putExtra(EXTRA_ACCEPTED, accepted);
+        i.putExtra(EXTRA_PRIVACY, action);
         context.startService(i);
     }
 

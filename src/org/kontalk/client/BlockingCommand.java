@@ -22,6 +22,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.provider.IQProvider;
+import org.xmlpull.v1.XmlPullParser;
+
+import android.text.TextUtils;
 
 
 /**
@@ -32,9 +36,13 @@ import org.jivesoftware.smack.packet.IQ;
 public class BlockingCommand extends IQ {
 	public static final String NAMESPACE = "urn:xmpp:blocking";
 
+	public static final String BLOCKLIST = "blocklist";
 	public static final String BLOCK = "block";
 	public static final String UNBLOCK = "unblock";
 	public static final String UNALLOW = "unallow";
+
+	// might be used often, better keeping a cache of it
+	private static BlockingCommand sBlocklist;
 
 	private final String mCommand;
 	private List<String> mJidList;
@@ -51,11 +59,20 @@ public class BlockingCommand extends IQ {
 		mJidList.add(jid);
 	}
 
+	private BlockingCommand(String command, List<String> jidList) {
+		this(command);
+		mJidList = jidList;
+	}
+
 	/* TODO
 	public BlockingCommand(IQ iq) {
 		super(iq);
 	}
 	*/
+
+	public List<String> getItems() {
+		return mJidList;
+	}
 
 	@Override
 	public String getChildElementXML() {
@@ -69,9 +86,9 @@ public class BlockingCommand extends IQ {
 		if (mJidList != null && mJidList.size() > 0) {
 			b.append('>');
 			for (String jid: mJidList) {
-				b.append("<item>")
+				b.append("<item jid='")
 					.append(jid)
-					.append("</item>");
+					.append("'/>");
 			}
 
 			b.append("</")
@@ -96,5 +113,54 @@ public class BlockingCommand extends IQ {
 	public static BlockingCommand unallow(String jid) {
 		return new BlockingCommand(UNALLOW, jid);
 	}
+
+	public static BlockingCommand blocklist() {
+		if (sBlocklist == null) {
+			sBlocklist = new BlockingCommand(BLOCKLIST);
+			sBlocklist.setType(IQ.Type.GET);
+		}
+
+		return sBlocklist;
+	}
+
+    public static final class Provider implements IQProvider {
+
+        @Override
+        public IQ parseIQ(XmlPullParser parser) throws Exception {
+        	List<String> jidList = null;
+            boolean in_blocklist = false, done = false;
+
+            while (!done)
+            {
+                int eventType = parser.next();
+
+                if (eventType == XmlPullParser.START_TAG)
+                {
+                    if ("blocklist".equals(parser.getName())) {
+                        in_blocklist = true;
+                    }
+                    else if (in_blocklist && "item".equals(parser.getName())) {
+                    	String jid = parser.getAttributeValue(null, "jid");
+                    	if (!TextUtils.isEmpty(jid)) {
+                        	if (jidList == null)
+                        		jidList = new LinkedList<String>();
+
+                    		jidList.add(jid);
+                    	}
+                    }
+
+                }
+                else if (eventType == XmlPullParser.END_TAG)
+                {
+                    if ("blocklist".equals(parser.getName())) {
+                        done = true;
+                    }
+                }
+            }
+
+            return new BlockingCommand(BLOCKLIST, jidList);
+        }
+
+    }
 
 }
