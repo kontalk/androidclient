@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.kontalk.Kontalk;
@@ -261,7 +262,7 @@ public class XMPPConnectionHelper extends Thread {
     }
 
     /** Shuts down this client thread gracefully. */
-    public void shutdown() {
+    public void shutdown() throws NotConnectedException {
         mConnecting = false;
         interrupt();
 

@@ -42,16 +42,16 @@ public class CPIMMessage {
     private final String mTo;
     private final Date mDate;
     private final String mMime;
-    private final String mBody;
+    private final CharSequence mBody;
 
     private StringBuilder mBuf;
 
     /** Constructs a new plain text message. */
-    public CPIMMessage(String from, String to, Date date, String body) {
+    public CPIMMessage(String from, String to, Date date, CharSequence body) {
         this(from, to, date, TextComponent.MIME_TYPE, body);
     }
 
-    public CPIMMessage(String from, String to, Date date, String mime, String body) {
+    public CPIMMessage(String from, String to, Date date, String mime, CharSequence body) {
         mFrom = from;
         mTo = to;
         mDate = date;
@@ -75,7 +75,7 @@ public class CPIMMessage {
 		return mMime;
 	}
 
-    public String getBody() {
+    public CharSequence getBody() {
 		return mBody;
 	}
 

@@ -19,7 +19,7 @@
 package org.kontalk.client;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 import org.jivesoftware.smack.PacketListener;
@@ -109,12 +109,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mConnector.setRetryEnabled(false);
 
         SmackAndroid.init(context.getApplicationContext());
-        configure(ProviderManager.getInstance());
+        configure();
     }
 
-    private void configure(ProviderManager pm) {
-        pm.addIQProvider("query", "jabber:iq:register", new RegistrationFormProvider());
-        pm.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
+    private void configure() {
+        ProviderManager.addIQProvider("query", "jabber:iq:register", new RegistrationFormProvider());
+        ProviderManager.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
     }
 
     public void setKey(PersonalKey key) {
@@ -200,11 +200,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 // ok! message will be sent
-                                Iterator<FormField> iter = response.getFields();
-                                while (iter.hasNext()) {
-                                    FormField field = iter.next();
+                                List<FormField> iter = response.getFields();
+                                for (FormField field : iter) {
                                     if (field.getVariable().equals("from")) {
-                                        String smsFrom = field.getValues().next();
+                                        String smsFrom = field.getValues().get(0);
                                         Log.d(TAG, "using sms sender id: " + smsFrom);
                                         mListener.onValidationRequested(NumberValidator.this);
 
@@ -266,11 +265,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 String publicKey = null;
 
                                 // ok! message will be sent
-                                Iterator<FormField> iter = response.getFields();
-                                while (iter.hasNext()) {
-                                    FormField field = iter.next();
+                                List<FormField> iter = response.getFields();
+                                for (FormField field : iter) {
                                     if ("publickey".equals(field.getVariable())) {
-                                        publicKey = field.getValues().next();
+                                        publicKey = field.getValues().get(0);
                                     }
                                 }
 

@@ -32,7 +32,8 @@ import javax.net.ssl.X509TrustManager;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
-import org.jivesoftware.smack.TCPConnection;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 import org.kontalk.Kontalk;
@@ -40,7 +41,7 @@ import org.kontalk.Kontalk;
 import android.util.Log;
 
 
-public class KontalkConnection extends TCPConnection {
+public class KontalkConnection extends XMPPTCPConnection {
 
     protected EndpointServer mServer;
 
@@ -125,13 +126,13 @@ public class KontalkConnection extends TCPConnection {
     }
 
     @Override
-    public void disconnect() {
+    public void disconnect() throws NotConnectedException {
         Log.v("KontalkConnection", "disconnecting (no presence)");
         super.disconnect();
     }
 
     @Override
-    public synchronized void disconnect(Presence presence) {
+    public synchronized void disconnect(Presence presence) throws NotConnectedException {
         Log.v("KontalkConnection", "disconnecting ("+presence+")");
         super.disconnect(presence);
     }

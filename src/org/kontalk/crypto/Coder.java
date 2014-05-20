@@ -77,10 +77,10 @@ public abstract class Coder {
 
 
     /** Encrypts a string. */
-    public abstract byte[] encryptText(String text) throws GeneralSecurityException;
+    public abstract byte[] encryptText(CharSequence text) throws GeneralSecurityException;
 
     /** Encrypts a stanza. */
-    public abstract byte[] encryptStanza(String xml) throws GeneralSecurityException;
+    public abstract byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException;
 
     /** Decrypts a byte array which should content text. */
     public abstract void decryptText(byte[] encrypted, boolean verify,
