@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
+import org.apache.http.impl.conn.IdleConnectionHandler;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
@@ -74,6 +75,18 @@ public class Kontalk extends Application {
      * password in Android Account Manager.
      */
     private String mKeyPassphrase;
+
+    /**
+     * Keep-alive reference counter.
+     * This is used throughout the activities to keep track of application
+     * usage. Please note that this is not to be confused with
+     * {@link IdleConnectionHandler} reference counter, since this counter here
+     * is used only by {@link NetworkStateReceiver} and a few others to start
+     * the check if the Message Center should be started or not.<br>
+     * Call {@link #hold} to increment the counter, {@link #release} to
+     * decrement it.
+     */
+    private int mRefCounter;
 
     static {
         // register provider
@@ -210,4 +223,21 @@ public class Kontalk extends Application {
             enabled ? PackageManager.COMPONENT_ENABLED_STATE_DEFAULT : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
     }
+
+    /** Increments the reference counter. */
+    public void hold() {
+        mRefCounter++;
+    }
+
+    /** Decrements the reference counter. */
+    public void release() {
+        if (mRefCounter > 0)
+            mRefCounter--;
+    }
+
+    /** Returns true if the reference counter is greater than zero. */
+    public boolean hasReference() {
+        return mRefCounter > 0;
+    }
+
 }

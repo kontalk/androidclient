@@ -1524,6 +1524,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * inactivity.
      */
     public static void hold(final Context context) {
+        // increment the application counter
+        ((Kontalk) context.getApplicationContext()).hold();
+
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_HOLD);
         // include server uri if server needs to be started
@@ -1537,6 +1540,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * inactivity.
      */
     public static void release(final Context context) {
+        // decrement the application counter
+        ((Kontalk) context.getApplicationContext()).release();
+
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_RELEASE);
         context.startService(i);

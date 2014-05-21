@@ -18,6 +18,7 @@
 
 package org.kontalk.service;
 
+import org.kontalk.Kontalk;
 import org.kontalk.ui.MessagingPreferences;
 
 import android.content.BroadcastReceiver;
@@ -99,6 +100,10 @@ public class NetworkStateReceiver extends BroadcastReceiver {
     }
 
     private boolean shouldReconnect(Context context) {
+        // check if some activity is holding to the message center
+        if (((Kontalk) context.getApplicationContext()).hasReference())
+            return true;
+
     	long lastConnect = MessagingPreferences.getLastConnection(context);
 
     	// no last connection registered
