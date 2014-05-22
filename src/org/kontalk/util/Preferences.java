@@ -16,27 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.util;
 
 import java.io.InputStream;
 
-import org.kontalk.Kontalk;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
-import org.kontalk.util.MessageUtils;
 
-import android.annotation.TargetApi;
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -47,274 +40,30 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.MenuItem;
-import android.widget.Toast;
-
-import com.google.android.gcm.GCMRegistrar;
 
 
 /**
- * Preferences activity.
- * TODO convert to fragments layout
+ * Access to application preferences.
  * @author Daniele Ricci
  */
-public final class MessagingPreferences extends PreferenceActivity {
-    private static final String TAG = MessagingPreferences.class.getSimpleName();
+public final class Preferences {
 
-    private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
+    private static Drawable sCustomBackground;
+    private static String sBalloonTheme;
 
-    private static Drawable customBackground;
-    private static String balloonTheme;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // no account - redirect to bootstrap preferences
-        if (Authenticator.getDefaultAccount(this) == null) {
-            startActivity(new Intent(this, BootstrapPreferences.class));
-            finish();
-            return;
-        }
-
-        addPreferencesFromResource(R.xml.preferences);
-
-        setupActivity();
-
-        // push notifications checkbox
-        final Preference pushNotifications = findPreference("pref_push_notifications");
-        pushNotifications.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                CheckBoxPreference pref = (CheckBoxPreference) preference;
-                if (pref.isChecked())
-                    MessageCenterService.enablePushNotifications(getApplicationContext());
-                else
-                    MessageCenterService.disablePushNotifications(getApplicationContext());
-
-                return true;
-            }
-        });
-
-        // message center restart
-        final Preference restartMsgCenter = findPreference("pref_restart_msgcenter");
-        restartMsgCenter.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Log.w(TAG, "manual message center restart requested");
-                MessageCenterService.restart(getApplicationContext());
-                Toast.makeText(MessagingPreferences.this, R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-
-        // regenerate key pair
-        final Preference regenKeyPair = findPreference("pref_regenerate_keypair");
-        regenKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-
-                Toast.makeText(MessagingPreferences.this, R.string.msg_generating_keypair,
-                    Toast.LENGTH_LONG).show();
-
-                MessageCenterService.regenerateKeyPair(getApplicationContext());
-                return true;
-            }
-        });
-
-        // export key pair
-        final Preference exportKeyPair = findPreference("pref_export_keypair");
-        exportKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-
-        		// TODO check for external storage presence
-
-            	try {
-
-            		((Kontalk)getApplicationContext()).exportPersonalKey();
-
-                    Toast.makeText(MessagingPreferences.this,
-                		R.string.msg_keypair_exported,
-                        Toast.LENGTH_LONG).show();
-
-            	}
-            	catch (Exception e) {
-
-                    Toast.makeText(MessagingPreferences.this,
-                    	// TODO i18n
-                		"Unable to export personal key.",
-                        Toast.LENGTH_LONG).show();
-
-            	}
-
-                return true;
-            }
-        });
-
-        // use custom background
-        final Preference customBg = findPreference("pref_custom_background");
-        customBg.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                // discard reference to custom background drawable
-                customBackground = null;
-                return false;
-            }
-        });
-
-        // set background
-        final Preference setBackground = findPreference("pref_background_uri");
-        setBackground.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                final Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("image/*");
-                startActivityForResult(i, REQUEST_PICK_BACKGROUND);
-                return true;
-            }
-        });
-
-        //
-        final Preference balloons = findPreference("pref_balloons");
-        balloons.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                balloonTheme = (String) newValue;
-                return true;
-            }
-        });
-
-        // disable push notifications if GCM is not available on the device
-        try {
-            GCMRegistrar.checkDevice(this);
-        }
-        catch (UnsupportedOperationException unsupported) {
-            final Preference push = findPreference("pref_push_notifications");
-            push.setEnabled(false);
-        }
-
-        // manual server address is handled in Application context
-
-        // server list last update timestamp
-        final Preference updateServerList = findPreference("pref_update_server_list");
-        updateServerList.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                final ServerListUpdater updater = new ServerListUpdater(MessagingPreferences.this);
-
-                final ProgressDialog diag = new ProgressDialog(MessagingPreferences.this);
-                diag.setCancelable(true);
-                diag.setMessage(getString(R.string.serverlist_updating));
-                diag.setIndeterminate(true);
-                diag.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        updater.cancel();
-                    }
-                });
-
-                updater.setListener(new ServerListUpdater.UpdaterListener() {
-                    @Override
-                    public void error(Throwable e) {
-                        diag.cancel();
-                        MessagingPreferences.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MessagingPreferences.this, R.string.serverlist_update_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void nodata() {
-                        diag.cancel();
-                        MessagingPreferences.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MessagingPreferences.this, R.string.serverlist_update_nodata,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void updated(final ServerList list) {
-                        diag.dismiss();
-                        MessagingPreferences.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateServerListLastUpdate(updateServerList, list);
-                                // restart message center
-                                MessageCenterService.restart(getApplicationContext());
-                            }
-                        });
-                    }
-                });
-
-                diag.show();
-                updater.start();
-                return true;
-            }
-        });
-
-        // update 'last update' string
-        ServerList list = ServerListUpdater.getCurrentList(this);
-        if (list != null)
-            updateServerListLastUpdate(updateServerList, list);
+    public static void setCachedCustomBackground(Drawable customBackground) {
+        sCustomBackground = customBackground;
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void setupActivity() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            ActionBar bar = getActionBar();
-            bar.setDisplayShowHomeEnabled(true);
-            bar.setDisplayHomeAsUpEnabled(true);
-        }
+    public static void setCachedBalloonTheme(String balloonTheme) {
+        sBalloonTheme = balloonTheme;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                startActivity(new Intent(this, ConversationList.class));
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_PICK_BACKGROUND) {
-            if (resultCode == RESULT_OK) {
-                // invalidate any previous reference
-                customBackground = null;
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                prefs.edit()
-                    .putString("pref_background_uri", data.getDataString())
-                    .commit();
-            }
-        }
-        else
-            super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private static void updateServerListLastUpdate(Preference pref, ServerList list) {
+    public static void updateServerListLastUpdate(Preference pref, ServerList list) {
         Context context = pref.getContext();
         String timestamp = MessageUtils.formatTimeStampString(context, list.getDate().getTime(), true);
         pref.setSummary(context.getString(R.string.server_list_last_update, timestamp));
@@ -448,14 +197,14 @@ public final class MessagingPreferences extends PreferenceActivity {
     }
 
     public static int getBalloonResource(Context context, int direction) {
-        if (balloonTheme == null)
-            balloonTheme = getString(context, "pref_balloons", "classic");
+        if (sBalloonTheme == null)
+            sBalloonTheme = getString(context, "pref_balloons", "classic");
 
-        if ("iphone".equals(balloonTheme))
+        if ("iphone".equals(sBalloonTheme))
             return direction == Messages.DIRECTION_IN ?
                 R.drawable.balloon_iphone_incoming :
                     R.drawable.balloon_iphone_outgoing;
-        else if ("old_classic".equals(balloonTheme))
+        else if ("old_classic".equals(sBalloonTheme))
             return direction == Messages.DIRECTION_IN ?
                 R.drawable.balloon_old_classic_incoming :
                     R.drawable.balloon_old_classic_outgoing;
@@ -481,16 +230,16 @@ public final class MessagingPreferences extends PreferenceActivity {
         InputStream in = null;
         try {
             if (getBoolean(context, "pref_custom_background", false)) {
-                if (customBackground == null) {
+                if (sCustomBackground == null) {
                     String _customBg = getString(context, "pref_background_uri", null);
                     in = context.getContentResolver().openInputStream(Uri.parse(_customBg));
 
                     BitmapFactory.Options opt = new BitmapFactory.Options();
                     opt.inSampleSize = 4;
                     Bitmap bmap = BitmapFactory.decodeStream(in, null, opt);
-                    customBackground = new BitmapDrawable(context.getResources(), bmap);
+                    sCustomBackground = new BitmapDrawable(context.getResources(), bmap);
                 }
-                return customBackground;
+                return sCustomBackground;
             }
         }
         catch (Exception e) {
@@ -649,11 +398,6 @@ public final class MessagingPreferences extends PreferenceActivity {
         _recentStatusDbHelper(context);
         recentStatusDb.insert(status);
         recentStatusDb.close();
-    }
-
-    public static void start(Activity context) {
-        Intent intent = new Intent(context, MessagingPreferences.class);
-        context.startActivityIfNeeded(intent, -1);
     }
 
 }

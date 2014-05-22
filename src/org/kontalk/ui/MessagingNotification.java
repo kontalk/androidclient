@@ -29,6 +29,7 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.util.Preferences;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -117,7 +118,7 @@ public class MessagingNotification {
     /** Starts messages notification updates in another thread. */
     public static void delayedUpdateMessagesNotification(final Context context, final boolean isNew) {
         // notifications are disabled
-        if (!MessagingPreferences.getNotificationsEnabled(context))
+        if (!Preferences.getNotificationsEnabled(context))
             return;
 
         if (!mPending) {
@@ -139,7 +140,7 @@ public class MessagingNotification {
      */
     public static void updateMessagesNotification(Context context, boolean isNew) {
         // notifications are disabled
-        if (!MessagingPreferences.getNotificationsEnabled(context))
+        if (!Preferences.getNotificationsEnabled(context))
             return;
 
         // if notifying new messages, wait a little bit
@@ -422,11 +423,11 @@ public class MessagingNotification {
     private static void setDefaults(Context context, NotificationCompat.Builder builder) {
         int defaults = Notification.DEFAULT_LIGHTS;
 
-        String ringtone = MessagingPreferences.getNotificationRingtone(context);
+        String ringtone = Preferences.getNotificationRingtone(context);
         if (ringtone != null && ringtone.length() > 0)
             builder.setSound(Uri.parse(ringtone));
 
-        String vibrate = MessagingPreferences.getNotificationVibrate(context);
+        String vibrate = Preferences.getNotificationVibrate(context);
         if ("always".equals(vibrate) || ("silent_only".equals(vibrate) &&
                 ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
                     .getRingerMode() != AudioManager.RINGER_MODE_NORMAL))

@@ -60,6 +60,7 @@ import org.kontalk.sync.Syncer;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.MessageUtils.SmileyImageSpan;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -234,7 +235,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		registerForContextMenu(list);
 
 		// set custom background (if any)
-		Drawable bg = MessagingPreferences.getConversationBackground(getActivity());
+		Drawable bg = Preferences.getConversationBackground(getActivity());
 		if (bg != null) {
 		    list.setCacheColorHint(Color.TRANSPARENT);
 		    list.setBackgroundDrawable(bg);
@@ -275,7 +276,7 @@ public class ComposeMessageFragment extends ListFragment implements
         });
 		mChatStateListener = new TextWatcher() {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (MessagingPreferences.getSendTyping(getActivity())) {
+                if (Preferences.getSendTyping(getActivity())) {
                     // send typing notification if necessary
                     if (!mComposeSent && mAvailableResources.size() > 0) {
                         MessageCenterService.sendChatState(getActivity(), userId, ChatState.composing);
@@ -484,7 +485,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	    @Override
 	    public void run() {
 	        try {
-	            boolean encrypted = MessagingPreferences.getEncryptionEnabled(getActivity());
+	            boolean encrypted = Preferences.getEncryptionEnabled(getActivity());
 
                 /* TODO maybe this hack could work...?
                 MessageListItem v = (MessageListItem) LayoutInflater.from(getActivity())
@@ -531,7 +532,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
                     // send message!
                     MessageCenterService.sendTextMessage(getActivity(),
-                        userId, mText, MessagingPreferences
+                        userId, mText, Preferences
                             .getEncryptionEnabled(getActivity()),
                         ContentUris.parseId(newMsg));
                 }
@@ -1898,7 +1899,7 @@ public class ComposeMessageFragment extends ListFragment implements
                             if (!TextUtils.isEmpty(afterText)) {
                                 Contact c = getContact();
                                 if (c != null)
-                                    afterText = MessagingPreferences
+                                    afterText = Preferences
                                         .decryptUserdata(getActivity(), afterText, c.getNumber());
                             }
 
@@ -2022,7 +2023,7 @@ public class ComposeMessageFragment extends ListFragment implements
 		processStart(true);
 		if (userId != null) {
 			// TODO use some method to generate the JID
-			EndpointServer server = MessagingPreferences.getEndpointServer(getActivity());
+			EndpointServer server = Preferences.getEndpointServer(getActivity());
 			String jid = userId + '@' + server.getNetwork();
 
             // set notifications on pause
@@ -2090,7 +2091,7 @@ public class ComposeMessageFragment extends ListFragment implements
 					Toast.LENGTH_LONG).show();
 		}
 
-		if (MessagingPreferences.getSendTyping(getActivity())) {
+		if (Preferences.getSendTyping(getActivity())) {
     		// send inactive state notification
 		    if (mAvailableResources.size() > 0)
 		        MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
@@ -2286,7 +2287,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void offlineModeWarning() {
-	    if (MessagingPreferences.getOfflineMode(getActivity()) && !mOfflineModeWarned) {
+	    if (Preferences.getOfflineMode(getActivity()) && !mOfflineModeWarned) {
 	        mOfflineModeWarned = true;
 	        Toast.makeText(getActivity(), R.string.warning_offline_mode,
 	            Toast.LENGTH_LONG).show();

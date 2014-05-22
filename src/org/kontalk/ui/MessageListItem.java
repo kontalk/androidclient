@@ -30,6 +30,7 @@ import org.kontalk.message.ImageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.MessageUtils.SmileyImageSpan;
 
 import android.content.Context;
@@ -159,7 +160,7 @@ public class MessageListItem extends RelativeLayout {
         mMessage = msg;
 
         mFormattedMessage = formatMessage(contact, highlight);
-        String size = MessagingPreferences.getFontSize(context);
+        String size = Preferences.getFontSize(context);
         int sizeId;
         if (size.equals("small"))
             sizeId = android.R.style.TextAppearance_Small;
@@ -208,7 +209,7 @@ public class MessageListItem extends RelativeLayout {
 
         if (mMessage.getSender() != null) {
             if (mBalloonView != null) {
-	            mBalloonView.setBackgroundResource(MessagingPreferences
+	            mBalloonView.setBackgroundResource(Preferences
 	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
             }
             else {
@@ -226,7 +227,7 @@ public class MessageListItem extends RelativeLayout {
         }
         else {
             if (mBalloonView != null) {
-            	mBalloonView.setBackgroundResource(MessagingPreferences
+            	mBalloonView.setBackgroundResource(Preferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
             }
             else {

@@ -23,6 +23,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -178,15 +179,15 @@ public class ConversationListFragment extends ListFragment {
 
             case R.id.menu_offline:
                 final Context ctx = getActivity();
-                final boolean currentMode = MessagingPreferences.getOfflineMode(ctx);
-                if (!currentMode && !MessagingPreferences.getOfflineModeUsed(ctx)) {
+                final boolean currentMode = Preferences.getOfflineMode(ctx);
+                if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
                     // show offline mode warning
                     new AlertDialog.Builder(ctx)
                         .setTitle(R.string.title_offline_mode_warning)
                         .setMessage(R.string.message_offline_mode_warning)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                MessagingPreferences.setOfflineModeUsed(ctx);
+                                Preferences.setOfflineModeUsed(ctx);
                                 switchOfflineMode();
                             }
                         })
@@ -212,7 +213,7 @@ public class ConversationListFragment extends ListFragment {
                 return true;
 
             case R.id.menu_settings: {
-                MessagingPreferences.start(getActivity());
+                PreferencesActivity.start(getActivity());
                 return true;
             }
         }
@@ -399,7 +400,7 @@ public class ConversationListFragment extends ListFragment {
     /** Updates offline mode menu. */
     private void updateOffline() {
         if (mOfflineMenu != null) {
-            boolean offlineMode = MessagingPreferences.getOfflineMode(getActivity());
+            boolean offlineMode = Preferences.getOfflineMode(getActivity());
             int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
                 android.R.drawable.ic_menu_close_clear_cancel;
             int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;
@@ -410,8 +411,8 @@ public class ConversationListFragment extends ListFragment {
 
     private void switchOfflineMode() {
         Context ctx = getActivity();
-        boolean currentMode = MessagingPreferences.getOfflineMode(ctx);
-        MessagingPreferences.switchOfflineMode(ctx);
+        boolean currentMode = Preferences.getOfflineMode(ctx);
+        Preferences.switchOfflineMode(ctx);
         updateOffline();
         // notify the user about the change
         int text = (currentMode) ? R.string.going_online : R.string.going_offline;

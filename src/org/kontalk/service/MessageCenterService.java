@@ -102,9 +102,9 @@ import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingNotification;
-import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.RandomString;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -387,7 +387,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 int time;
                 MessageCenterService service = s.get();
                 if (service != null)
-                    time = MessagingPreferences.getIdleTimeMillis(service, MIN_IDLE_TIME, DEFAULT_IDLE_TIME);
+                    time = Preferences.getIdleTimeMillis(service, MIN_IDLE_TIME, DEFAULT_IDLE_TIME);
                 else
                     time = DEFAULT_IDLE_TIME;
 
@@ -741,7 +741,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             	Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
 
-            	boolean encrypted = MessagingPreferences.getEncryptionEnabled(this);
+            	boolean encrypted = Preferences.getEncryptionEnabled(this);
 
                 ContentValues values = new ContentValues(2);
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
@@ -782,7 +782,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mWakeLock.acquire();
 
             // reset push notification variable
-            mPushNotifications = MessagingPreferences.getPushNotificationsEnabled(this);
+            mPushNotifications = Preferences.getPushNotificationsEnabled(this);
             // reset waiting messages
             mWaitingReceipt.clear();
 
@@ -791,7 +791,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mMyUsername = (acc != null) ? acc.name : null;
 
             // get server from preferences
-            mServer = MessagingPreferences.getEndpointServer(this);
+            mServer = Preferences.getEndpointServer(this);
 
             mHelper = new XMPPConnectionHelper(this, mServer, false);
             mHelper.setListener(this);
@@ -913,7 +913,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Sends our initial presence. */
     private void sendPresence() {
-        String status = MessagingPreferences.getStatusMessage(this);
+        String status = Preferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
             p.setStatus(status);
@@ -1476,12 +1476,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static boolean isOfflineMode(Context context) {
-        return MessagingPreferences.getOfflineMode(context);
+        return Preferences.getOfflineMode(context);
     }
 
     private static Intent getStartIntent(Context context) {
     	final Intent intent = new Intent(context, MessageCenterService.class);
-        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        EndpointServer server = Preferences.getEndpointServer(context);
         intent.putExtra(EndpointServer.class.getName(), server.toString());
         return intent;
     }
@@ -1514,7 +1514,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_RESTART);
         // include server uri if server needs to be started
-        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        EndpointServer server = Preferences.getEndpointServer(context);
         i.putExtra(EXTRA_SERVER, server.toString());
         context.startService(i);
     }
@@ -1530,7 +1530,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_HOLD);
         // include server uri if server needs to be started
-        EndpointServer server = MessagingPreferences.getEndpointServer(context);
+        EndpointServer server = Preferences.getEndpointServer(context);
         i.putExtra(EXTRA_SERVER, server.toString());
         context.startService(i);
     }
@@ -1557,7 +1557,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // FIXME this is what sendPresence already does
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
-        i.putExtra(EXTRA_STATUS, MessagingPreferences.getStatusMessage(context));
+        i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage(context));
         i.putExtra(EXTRA_PUSH_REGID, pushRegistrationId);
         context.startService(i);
     }
@@ -1718,7 +1718,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     	AlarmManager am = (AlarmManager) context
     			.getSystemService(Context.ALARM_SERVICE);
 
-    	long delay = MessagingPreferences.getWakeupTimeMillis(context,
+    	long delay = Preferences.getWakeupTimeMillis(context,
     		MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
 
     	// start message center pending intent
@@ -1853,10 +1853,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     mPushSenderId = item.getNode();
 
                     if (mPushNotifications) {
-                        String oldSender = MessagingPreferences.getPushSenderId(MessageCenterService.this);
+                        String oldSender = Preferences.getPushSenderId(MessageCenterService.this);
 
                         // store the new sender id
-                        MessagingPreferences.setPushSenderId(MessageCenterService.this, mPushSenderId);
+                        Preferences.setPushSenderId(MessageCenterService.this, mPushSenderId);
 
                         // begin a registration cycle if senderId is different
                         if (oldSender != null && !oldSender.equals(mPushSenderId)) {
@@ -2073,7 +2073,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (p.getType() == Presence.Type.subscribe) {
 
                 	// auto-accept subscription
-                	if (MessagingPreferences.getAutoAcceptSubscriptions(MessageCenterService.this)) {
+                	if (Preferences.getAutoAcceptSubscriptions(MessageCenterService.this)) {
 
 	                    Packet r = subscribe(p);
 	                    if (r != null)

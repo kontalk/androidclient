@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 import android.app.Activity;
 import android.database.Cursor;
@@ -59,7 +60,7 @@ public class StatusFragment extends ListFragment implements View.OnClickListener
 
         mStatus = (EditText) view.findViewById(android.R.id.input);
         // TODO retrieve current status from server?
-        mStatus.setText(MessagingPreferences.getStatusMessage(getActivity()));
+        mStatus.setText(Preferences.getStatusMessage(getActivity()));
 
         view.findViewById(R.id.button_ok).setOnClickListener(this);
         view.findViewById(R.id.button_cancel).setOnClickListener(this);
@@ -72,7 +73,7 @@ public class StatusFragment extends ListFragment implements View.OnClickListener
         super.onResume();
 
         // TODO async query
-        Cursor c = MessagingPreferences.getRecentStatusMessages(getActivity());
+        Cursor c = Preferences.getRecentStatusMessages(getActivity());
         mAdapter.changeCursor(c);
     }
 
@@ -97,8 +98,8 @@ public class StatusFragment extends ListFragment implements View.OnClickListener
         if (parent != null) {
             if (text.trim().length() <= 0)
                 text = text.trim();
-            MessagingPreferences.setStatusMessage(parent, text);
-            MessagingPreferences.addRecentStatusMessage(parent, text);
+            Preferences.setStatusMessage(parent, text);
+            Preferences.addRecentStatusMessage(parent, text);
 
             // start the message center to push the status message
             MessageCenterService.updateStatus(parent);

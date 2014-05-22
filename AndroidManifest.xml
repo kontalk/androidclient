@@ -182,7 +182,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.MessagingPreferences" android:theme="@style/Theme.Light2">
+        <activity android:name=".ui.PreferencesActivity" android:theme="@style/Theme.Light2">
             <intent-filter>
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
                 <category android:name="android.intent.category.DEFAULT" />

@@ -41,6 +41,7 @@ import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.CountryCodesAdapter.CountryCode;
+import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -454,7 +455,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             startProgress();
 
             // key generation finished, start immediately
-            EndpointServer server = MessagingPreferences.getEndpointServer(this);
+            EndpointServer server = Preferences.getEndpointServer(this);
             mValidator = new NumberValidator(this, server, mName, mPhoneNumber, mKey, mPassphrase);
             mValidator.setListener(this);
             mValidator.start();

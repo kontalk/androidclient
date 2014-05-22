@@ -20,7 +20,7 @@ package org.kontalk.sync;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.UsersProvider;
-import org.kontalk.ui.MessagingPreferences;
+import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -73,13 +73,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 
             // do not start if offline
-            if (MessagingPreferences.getOfflineMode(mContext)) {
+            if (Preferences.getOfflineMode(mContext)) {
                 Log.d(TAG, "not requesting sync - offline mode");
                 return;
             }
 
             if (!force) {
-                long lastSync = MessagingPreferences.getLastSyncTimestamp(mContext);
+                long lastSync = Preferences.getLastSyncTimestamp(mContext);
                 long diff = (System.currentTimeMillis() - lastSync) / 1000;
                 if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
                     Log.d(TAG, "not starting sync - throttling");
@@ -90,7 +90,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             Log.i(TAG, "sync started (authority=" + authority + ")");
             // avoid other syncs to get scheduled in the meanwhile
-            MessagingPreferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
+            Preferences.setLastSyncTimestamp(mContext, System.currentTimeMillis());
 
             ContentProviderClient usersProvider = getContext().getContentResolver()
                 .acquireContentProviderClient(UsersProvider.AUTHORITY);
@@ -106,7 +106,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             finally {
                 usersProvider.release();
                 long endTime = System.currentTimeMillis();
-                MessagingPreferences.setLastSyncTimestamp(mContext, endTime);
+                Preferences.setLastSyncTimestamp(mContext, endTime);
                 Log.d(TAG, String.format("sync took %.5f seconds", ((float)(endTime - startTime)) / 1000));
             }
         }
@@ -128,7 +128,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public static boolean requestSync(Context context, boolean force) {
         if (!force) {
-            long lastSync = MessagingPreferences.getLastSyncTimestamp(context);
+            long lastSync = Preferences.getLastSyncTimestamp(context);
             float diff = (System.currentTimeMillis() - lastSync) / 1000;
             if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
                 Log.d(TAG, "not requesting sync - throttling");
@@ -137,7 +137,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         // do not start if offline
-        if (MessagingPreferences.getOfflineMode(context)) {
+        if (Preferences.getOfflineMode(context)) {
             Log.d(TAG, "not requesting sync - offline mode");
             return false;
         }
