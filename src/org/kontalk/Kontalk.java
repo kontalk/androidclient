@@ -81,15 +81,15 @@ public class Kontalk extends Application {
      * This is used throughout the activities to keep track of application
      * usage. Please note that this is not to be confused with
      * {@link IdleConnectionHandler} reference counter, since this counter here
-     * is used only by {@link NetworkStateReceiver} and a few others to start
-     * the check if the Message Center should be started or not.<br>
+     * is used only by {@link NetworkStateReceiver} and a few others to check
+     * if the Message Center should be started or not.<br>
      * Call {@link #hold} to increment the counter, {@link #release} to
      * decrement it.
      */
     private int mRefCounter;
 
     static {
-        // register provider
+        // register security provider
         PGP.registerProvider();
     }
 
