@@ -27,10 +27,8 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -315,6 +313,10 @@ public final class Preferences {
         return prefs.edit()
             .putString("pref_push_sender", senderId)
             .commit();
+    }
+
+    public static boolean getAcceptAnyCertificate(Context context) {
+    	return getBoolean(context, "pref_accept_any_certificate", false);
     }
 
     public static int getIdleTimeMillis(Context context, int minValue, int defaultValue) {

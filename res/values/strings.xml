@@ -307,6 +307,8 @@
     <string name="pref_title_off_sync_sim_contacts">Do not include SIM contacts when checking for registered users</string>
     <string name="pref_title_on_sync_sim_contacts">SIM contacts are also included when checking for registered users</string>
 
+    <string name="pref_accept_any_certificate">Accept any SSL certificate</string>
+
     <string name="msg_user_blocked">User has been blocked.</string>
 
 </resources>

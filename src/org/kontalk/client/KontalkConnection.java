@@ -28,6 +28,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
@@ -64,13 +65,16 @@ public class KontalkConnection extends XMPPConnection {
         config.setSendPresence(false);
     }
 
-    public KontalkConnection(EndpointServer server, PrivateKey privateKey, X509Certificate bridgeCert) throws XMPPException {
+    public KontalkConnection(EndpointServer server,
+    		PrivateKey privateKey, X509Certificate bridgeCert,
+    		boolean acceptAnyCertificate, KeyStore trustStore) throws XMPPException {
+
         this(server);
 
-        setupSSL(privateKey, bridgeCert);
+        setupSSL(privateKey, bridgeCert, acceptAnyCertificate, trustStore);
     }
 
-    private void setupSSL(PrivateKey privateKey, X509Certificate bridgeCert) {
+    private void setupSSL(PrivateKey privateKey, X509Certificate bridgeCert, boolean acceptAnyCertificate, KeyStore trustStore) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
 
@@ -87,31 +91,37 @@ public class KontalkConnection extends XMPPConnection {
             km = kmFactory.getKeyManagers();
 
             // trust managers
-            TrustManager[] tm = new TrustManager[] {
-                new X509TrustManager() {
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
+            TrustManager[] tm;
 
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType)
-                        throws CertificateException {
-                    }
+            if (acceptAnyCertificate) {
+	            tm = new TrustManager[] {
+	                new X509TrustManager() {
+	                    @Override
+	                    public X509Certificate[] getAcceptedIssuers() {
+	                        return null;
+	                    }
 
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType)
-                        throws CertificateException {
-                    }
-                }
-            };
-            /*
-            TODO builtin keystore
-            TrustManagerFactory tmFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmFactory.init((KeyStore) null);
+	                    @Override
+	                    public void checkServerTrusted(X509Certificate[] chain, String authType)
+	                        throws CertificateException {
+	                    }
 
-            tm = tmFactory.getTrustManagers();
-            */
+	                    @Override
+	                    public void checkClientTrusted(X509Certificate[] chain, String authType)
+	                        throws CertificateException {
+	                    }
+	                }
+	            };
+            }
+
+            else {
+                // builtin keystore
+	            TrustManagerFactory tmFactory = TrustManagerFactory
+	            		.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+	            tmFactory.init(trustStore);
+
+	            tm = tmFactory.getTrustManagers();
+            }
 
             ctx.init(km, tm, null);
             config.setCustomSSLContext(ctx);
