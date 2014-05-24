@@ -45,7 +45,6 @@ import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
-import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.ui.QuickAction;
 
 import android.content.ContentValues;
@@ -637,7 +636,7 @@ public final class MessageUtils {
                 .getPersonalKey();
 
             if (server == null)
-                server = MessagingPreferences.getEndpointServer(context);
+                server = Preferences.getEndpointServer(context);
 
             String from = msg.getSender(true) + "@" + server.getNetwork();
             Coder coder = UsersProvider.getDecryptCoder(context, server, key, from);

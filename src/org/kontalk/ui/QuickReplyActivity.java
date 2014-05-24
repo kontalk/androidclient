@@ -24,6 +24,7 @@ import java.util.Random;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.util.Preferences;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -142,7 +143,7 @@ public class QuickReplyActivity extends Activity {
             try {
                 // get encryption key if needed
                 String key = null;
-                if (MessagingPreferences.getEncryptionEnabled(ctx)) {
+                if (Preferences.getEncryptionEnabled(ctx)) {
                     // use recipient phone number
                     key = Contact.numberByUserId(ctx, userId);
                 }

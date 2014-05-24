@@ -27,6 +27,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.ServerListUpdater;
+import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -84,14 +85,14 @@ public class ConversationList extends ActionBarActivity
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
         	// adjust manual server address if any
-        	String manualServer = MessagingPreferences.getServerURI(this);
+        	String manualServer = Preferences.getServerURI(this);
         	if (!TextUtils.isEmpty(manualServer) && manualServer.indexOf('|') < 0) {
         		ServerList list = ServerListUpdater.getCurrentList(this);
         		if (list != null) {
         			EndpointServer server = list.random();
         			String newServer = server.getNetwork() + "|" + manualServer;
 
-        			MessagingPreferences.setServerURI(this, newServer);
+        			Preferences.setServerURI(this, newServer);
         		}
         	}
 

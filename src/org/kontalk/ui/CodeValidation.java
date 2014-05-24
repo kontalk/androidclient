@@ -26,6 +26,7 @@ import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.util.Preferences;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -106,7 +107,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
              * @see issue 184.
              * http://code.google.com/p/kontalk/issues/detail?id=184
              */
-            mServer = MessagingPreferences.getEndpointServer(this);
+            mServer = Preferences.getEndpointServer(this);
     }
 
     @Override

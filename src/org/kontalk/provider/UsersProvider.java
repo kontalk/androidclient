@@ -31,8 +31,8 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.ui.MessagingPreferences;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -387,7 +387,7 @@ public class UsersProvider extends ContentProvider {
                 " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
 
             Cursor phones = null;
-            String dialPrefix = MessagingPreferences.getDialPrefix(context);
+            String dialPrefix = Preferences.getDialPrefix(context);
             int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
 
             try {
@@ -446,7 +446,7 @@ public class UsersProvider extends ContentProvider {
 
                 phones.close();
 
-                if (MessagingPreferences.getSyncSIMContacts(getContext())) {
+                if (Preferences.getSyncSIMContacts(getContext())) {
                     // query for SIM contacts
                     // column selection doesn't work because of a bug in Android
                     // TODO this is a bit unclear...

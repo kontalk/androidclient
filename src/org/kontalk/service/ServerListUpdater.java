@@ -31,7 +31,7 @@ import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
-import org.kontalk.ui.MessagingPreferences;
+import org.kontalk.util.Preferences;
 
 import android.content.Context;
 import android.util.Log;
@@ -75,7 +75,7 @@ public class ServerListUpdater extends Thread {
          * We have a server list - either builtin or cached. Now pick a random
          * server from the list and contact it for the latest server list.
          */
-        EndpointServer random = MessagingPreferences.getEndpointServer(mContext);
+        EndpointServer random = Preferences.getEndpointServer(mContext);
 
         /** no server found -- notify to user */
         if (random == null) {

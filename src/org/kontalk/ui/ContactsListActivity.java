@@ -25,6 +25,7 @@ import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
+import org.kontalk.util.Preferences;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -60,7 +61,7 @@ public class ContactsListActivity extends ActionBarActivity
         if (!getIntent().getBooleanExtra("picker", false))
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (!MessagingPreferences.getContactsListVisited(this))
+        if (!Preferences.getContactsListVisited(this))
             Toast.makeText(this, R.string.msg_do_refresh,
                     Toast.LENGTH_LONG).show();
     }
