@@ -96,8 +96,8 @@ public final class MyMessages {
         public static final String SECURITY_FLAGS = "security_flags";
 
         // not DESC here because the listview is reverse-stacked
-        public static final String DEFAULT_SORT_ORDER = "timestamp";
-        public static final String INVERTED_SORT_ORDER = "timestamp DESC";
+        public static final String DEFAULT_SORT_ORDER = _ID;
+        public static final String INVERTED_SORT_ORDER = _ID + " DESC";
     }
 
     /** Threads are just for conversations metadata. */
