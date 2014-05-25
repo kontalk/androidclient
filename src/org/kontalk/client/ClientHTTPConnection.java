@@ -36,6 +36,8 @@ import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -255,7 +257,13 @@ public class ClientHTTPConnection {
                 }
             };
 
-            sslContext.init(null, new TrustManager[] { tm }, null);
+            // key managers
+            KeyManager[] km;
+            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmFactory.init(keystore, null);
+            km = kmFactory.getKeyManagers();
+
+            sslContext.init(km, new TrustManager[] { tm }, null);
         }
 
         @Override
