@@ -255,7 +255,7 @@ public class PGPCoder extends Coder {
 
             Object message = plainFact.nextObject();
 
-            String msgData = null;
+            CharSequence msgData = null;
 
             if (message instanceof PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
