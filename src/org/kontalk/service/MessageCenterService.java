@@ -1239,6 +1239,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         else {
+            // hold on to message center meanwhile we send the message
+            mIdleHandler.hold();
+
             // message stanza
             org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
             m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
@@ -2349,6 +2352,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                     values, selectionOutgoing, null);
 
                                 mWaitingReceipt.remove(id);
+
+                                // we can now release the message center. Hopefully
+                                // there will be one hold and one matching release.
+                                mIdleHandler.release();
                             }
                             else {
                                 Uri msg = Messages.getUri(ext.getId());
@@ -2545,6 +2552,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             values, selectionOutgoing, null);
 
                         mWaitingReceipt.remove(id);
+
+                        // we can now release the message center. Hopefully
+                        // there will be one hold and one matching release.
+                        mIdleHandler.release();
                     }
                 }
             }
