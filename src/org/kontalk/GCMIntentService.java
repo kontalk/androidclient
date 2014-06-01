@@ -19,6 +19,7 @@
 package org.kontalk;
 
 import org.kontalk.service.MessageCenterService;
+import org.kontalk.util.Preferences;
 
 import android.content.Context;
 import android.content.Intent;
@@ -43,29 +44,35 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     @Override
     protected void onRegistered(Context context, String registrationId) {
-        Log.i(TAG, "registered to GCM - " + registrationId);
+        Log.d(TAG, "registered to GCM - " + registrationId);
         MessageCenterService.registerPushNotifications(context, registrationId);
     }
 
     @Override
     protected void onUnregistered(Context context, String registrationId) {
-        Log.i(TAG, "unregistered from GCM");
+        Log.d(TAG, "unregistered from GCM");
         MessageCenterService.registerPushNotifications(context, null);
     }
 
     @Override
     protected void onError(Context context, String errorId) {
-        Log.e(TAG, "error registering to GCM service: " + errorId);
+        Log.w(TAG, "error registering to GCM service: " + errorId);
     }
 
     @Override
     protected void onMessage(Context context, Intent intent) {
         String dataAction = intent.getStringExtra("action");
-        Log.i(TAG, "cloud message received: " + dataAction);
+        Log.v(TAG, "cloud message received: " + dataAction);
 
         // new messages - start message center
-        if (ACTION_CHECK_MESSAGES.equals(dataAction))
+        if (ACTION_CHECK_MESSAGES.equals(dataAction)) {
+        	// remember we just received a push notifications
+        	// this means that there are really messages waiting for us
+        	Preferences.setLastPushNotification(context, System.currentTimeMillis());
+
+        	// start message center
             MessageCenterService.start(context.getApplicationContext());
+        }
     }
 
 }

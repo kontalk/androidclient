@@ -885,6 +885,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         broadcast(ACTION_CONNECTED);
 
+        // we can now release any pending push notification
+        Preferences.setLastPushNotification(this, -1);
+
         // release the wakelock
         mWakeLock.release();
     }

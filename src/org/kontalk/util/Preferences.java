@@ -94,6 +94,15 @@ public final class Preferences {
         return prefs.getLong(key, defaultValue);
     }
 
+    /** Retrieves a long and if >= 0 it sets it to -1. */
+    private static long getLongOnce(Context context, String key) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        long value = prefs.getLong(key, -1);
+        if (value >= 0)
+            prefs.edit().putLong(key, -1).commit();
+        return value;
+    }
+
     private static boolean getBoolean(Context context, String key, boolean defaultValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(key, defaultValue);
@@ -187,6 +196,17 @@ public final class Preferences {
         return prefs.edit()
             .putLong("pref_last_sync", timestamp)
             .commit();
+    }
+
+    public static boolean setLastPushNotification(Context context, long timestamp) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putLong("pref_last_push_notification", timestamp)
+            .commit();
+    }
+
+    public static long getLastPushNotification(Context context) {
+    	return getLongOnce(context, "pref_last_push_notification");
     }
 
     /** TODO cache value */
