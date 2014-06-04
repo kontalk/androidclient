@@ -1005,6 +1005,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // message has already been uploaded - just send media
             if (attFetchUrl != null) {
+                b.putString("org.kontalk.message.mime", attMime);
                 b.putString("org.kontalk.message.fetch.url", attFetchUrl);
                 b.putString("org.kontalk.message.preview.uri", attFileUri);
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
@@ -1242,7 +1243,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         else {
-            // hold on to message center meanwhile we send the message
+            // hold on to message center while we send the message
             mIdleHandler.hold();
 
             // message stanza
