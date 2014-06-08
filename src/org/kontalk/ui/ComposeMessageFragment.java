@@ -2134,7 +2134,7 @@ public class ComposeMessageFragment extends ListFragment implements
         Contact contact = (mConversation != null) ? mConversation
                 .getContact() : null;
 
-        boolean contactEnabled = contact != null;
+        boolean contactEnabled = contact != null && contact.getId() > 0;
         boolean threadEnabled = (threadId > 0);
 
         if (mCallMenu != null) {
@@ -2151,7 +2151,7 @@ public class ComposeMessageFragment extends ListFragment implements
             mDeleteThreadMenu.setEnabled(threadEnabled);
         }
 
-        if (mBlockMenu != null && contactEnabled) {
+        if (mBlockMenu != null && contact != null) {
             // block/unblock
             boolean blocked = contact.isBlocked();
 
