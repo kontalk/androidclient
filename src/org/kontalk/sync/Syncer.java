@@ -102,6 +102,7 @@ public class Syncer {
         private int presenceCount = -1;
         private int vCardCount = -1;
         private int rosterCount = -1;
+        private boolean allPresenceReceived;
         private boolean blocklistReceived;
 
         public PresenceBroadcastReceiver(String iq, List<String> hashList, Syncer notifyTo) {
@@ -115,30 +116,41 @@ public class Syncer {
             String action = intent.getAction();
 
             if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+
                 // consider only presences received *after* roster response
                 if (response != null) {
-                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    // see if bare JID is present in roster response
-                    String compare = StringUtils.parseBareAddress(jid);
-                    for (PresenceItem item : response) {
-                        if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
-                            item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                            item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
 
-                            // increment presence count
-                            if (presenceCount < 0)
-                                presenceCount = 1;
-                            else
-                                presenceCount++;
+                    // consider only presences with our group ID
+                    String gid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
+                    if (iq.equals(gid)) {
 
-                            break;
+                        String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        // see if bare JID is present in roster response
+                        String compare = StringUtils.parseBareAddress(jid);
+                        for (PresenceItem item : response) {
+                            if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                                item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                                item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+
+                                // increment presence count
+                                if (presenceCount < 0)
+                                    presenceCount = 1;
+                                else
+                                    presenceCount++;
+
+                                break;
+                            }
                         }
-                    }
 
-                    // done with presence data and blocklist
-                    if (rosterCount >= 0 && presenceCount >= rosterCount &&
-                    		vCardCount >= presenceCount && blocklistReceived)
-                        finish();
+                        // done with presence data and blocklist
+                        int groupCount = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
+                        allPresenceReceived = (groupCount <= 1);
+
+                        if (rosterCount >= 0 && allPresenceReceived &&
+                                vCardCount >= presenceCount && blocklistReceived)
+                            finish();
+
+                    }
                 }
             }
 
@@ -157,8 +169,10 @@ public class Syncer {
                     }
 
                     // all presence data already received (WHATT???)
-                    if (rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount))
+                    if ((rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount) || allPresenceReceived)
+                    		&& blocklistReceived)
                         finish();
+
                 }
             }
 
@@ -182,9 +196,10 @@ public class Syncer {
                     }
 
                     // done with presence data and blocklist
-                    if (rosterCount >= 0 && presenceCount >= rosterCount &&
+                    if (rosterCount >= 0 && allPresenceReceived &&
                     		vCardCount >= presenceCount && blocklistReceived)
-                        finish();
+                    	finish();
+
                 }
 
             }
@@ -210,7 +225,7 @@ public class Syncer {
             	}
 
                 // done with presence data and blocklist
-                if (rosterCount >= 0 && presenceCount >= rosterCount &&
+                if (rosterCount >= 0 && allPresenceReceived &&
                 		vCardCount >= presenceCount)
                     finish();
             }
