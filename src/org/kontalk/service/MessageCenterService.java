@@ -1180,6 +1180,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     	PacketFilter idFilter = new PacketIDFilter(packetId);
     	mConnection.addPacketListener(new PacketListener() {
 			public void processPacket(Packet packet) {
+				// we don't need this listener anymore
+				mConnection.removePacketListener(this);
 
 				if (packet instanceof BlockingCommand) {
 					BlockingCommand blocklist = (BlockingCommand) packet;
@@ -1192,6 +1194,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 						i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
 					}
 
+					Log.v(TAG, "broadcasting blocklist: " + i);
 					mLocalBroadcastManager.sendBroadcast(i);
 				}
 
