@@ -21,6 +21,7 @@ package org.kontalk.provider;
 import java.util.HashMap;
 
 import org.jivesoftware.smack.util.StringUtils;
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
@@ -338,7 +339,20 @@ public class UsersProvider extends ContentProvider {
         // simple update
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
-        return db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
+
+        int rc = db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
+        if (rc == 0) {
+        	// insert new record
+        	values.put(Users.HASH, selectionArgs[0]);
+        	values.put(Users.NUMBER, selectionArgs[0]);
+        	values.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
+        	values.put(Users.REGISTERED, true);
+
+        	db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, values);
+        	return 1;
+        }
+
+        return rc;
     }
 
     /** Triggers a complete resync of the users database. */
@@ -547,7 +561,7 @@ public class UsersProvider extends ContentProvider {
         		if (discardName)
         			values.remove(Users.DISPLAY_NAME);
 
-        		db.update(table, values, "hash=?", new String[] { hash });
+        		db.update(table, values, Users.HASH + "=?", new String[] { hash });
         	}
         }
 

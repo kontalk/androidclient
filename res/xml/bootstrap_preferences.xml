@@ -84,6 +84,25 @@
             android:defaultValue="false"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:key="pref_maintenance"
+        android:title="@string/pref_maintenance">
+        <ListPreference android:key="pref_idle_time"
+            android:title="@string/pref_idle_time"
+            android:summary="@string/pref_title_idle_time"
+            android:entries="@array/idle_time_labels"
+            android:entryValues="@array/idle_time_values"
+            android:defaultValue="60000"/>
+        <ListPreference android:key="pref_wakeup_time"
+            android:title="@string/pref_wakeup_time"
+            android:summary="@string/pref_title_wakeup_time"
+            android:entries="@array/wakeup_time_labels"
+            android:entryValues="@array/wakeup_time_values"
+            android:defaultValue="900000"/>
+        <CheckBoxPreference android:key="pref_accept_any_certificate"
+            android:title="@string/pref_accept_any_certificate"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
         <Preference android:key="pref_donate"

@@ -240,7 +240,7 @@ public class ConversationListFragment extends ListFragment {
 
             menu.setHeaderTitle(title);
             menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN_THREAD, MENU_OPEN_THREAD, R.string.view_conversation);
-            if (contact != null)
+            if (contact != null && contact.getId() > 0)
                 menu.add(CONTEXT_MENU_GROUP_ID, MENU_VIEW_CONTACT, MENU_VIEW_CONTACT, R.string.view_contact);
             menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE_THREAD, MENU_DELETE_THREAD, R.string.delete_thread);
         }
