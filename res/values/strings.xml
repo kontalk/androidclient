@@ -64,7 +64,6 @@
     <string name="new_messages">New messages</string>
     <string name="unread_messages">%d unread messages</string>
     <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
-    <string name="send">Send</string>
     <string name="hint_enter_text">Enter your text here</string>
     <string name="hint_type_to_compose">Type to compose</string>
     <string name="hint_open_kbd_to_compose">Open keyboard to compose message</string>
@@ -226,7 +225,8 @@
 
     <string name="attachment_picture">Picture</string>
     <string name="attachment_contact">Contact</string>
-
+    <string name="attachment_audio">Audio</string>
+    
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
 

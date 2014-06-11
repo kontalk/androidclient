@@ -19,9 +19,9 @@
 package org.kontalk.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
+import static org.kontalk.service.MessageCenterService.PRIVACY_ACCEPT;
 import static org.kontalk.service.MessageCenterService.PRIVACY_BLOCK;
 import static org.kontalk.service.MessageCenterService.PRIVACY_UNBLOCK;
-import static org.kontalk.service.MessageCenterService.PRIVACY_ACCEPT;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,8 +60,8 @@ import org.kontalk.sync.Syncer;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
-import org.kontalk.util.Preferences;
 import org.kontalk.util.MessageUtils.SmileyImageSpan;
+import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -140,6 +140,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int CONTEXT_MENU_ATTACHMENT = 1;
     private static final int ATTACHMENT_ACTION_PICTURE = 1;
     private static final int ATTACHMENT_ACTION_CONTACT = 2;
+    private static final int ATTACHMENT_ACTION_AUDIO = 3;
     private IconContextMenu attachmentMenu;
 
 	private MessageListQueryHandler mQueryHandler;
@@ -328,8 +329,7 @@ public class ComposeMessageFragment extends ListFragment implements
         smileyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //showSmileysPopup(v);
-                  new AudioDialog(getActivity()).show();
+                showSmileysPopup(v);
             }
         });
 
@@ -737,6 +737,9 @@ public class ComposeMessageFragment extends ListFragment implements
             case ATTACHMENT_ACTION_CONTACT:
                 selectContactAttachment();
                 break;
+            case ATTACHMENT_ACTION_AUDIO:
+                selectAudioAttachment();
+                break;
         }
     }
 
@@ -755,6 +758,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
 	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
 	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
+	        attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
 	        attachmentMenu.setOnClickListener(this);
 	    }
 	    attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
@@ -799,6 +803,10 @@ public class ComposeMessageFragment extends ListFragment implements
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
 	}
+
+    private void selectAudioAttachment() {
+        new AudioDialog(getActivity()).show();
+    }
 
 	private void showSmileysPopup(View anchor) {
         if (mSmileyPopup == null)
