@@ -29,6 +29,7 @@
   <string name="msg_initializing">S\'està fent el registre a la xàrcia Kontalk...</string>
   <string name="msg_authenticated">S\'ha registrat a la xarxa!</string>
   <string name="share">Comparteix</string>
+  <string name="resend">Torna a enviar</string>
   <string name="copy_message_text">Copia el text del missatge</string>
   <string name="delete_message">Esborra el missatge</string>
   <string name="confirm_delete_all">Elimina totes les converses</string>
@@ -222,6 +223,12 @@
   <string name="social_facebook">Facebook</string>
   <string name="social_identica">identi.ca</string>
   <string name="donate_text">Kontalk necessita diners per a continuar donant-vos servei. Si podeu, feu una donació;  encara que siga petita.</string>
+  <string name="title_bitcoin_dialog">Bitcoin</string>
+  <string name="text_bitcoin_dialog">Adreça bitcoin:\n%s</string>
+  <string name="donate_wallet">Google Play</string>
+  <string name="donate_paypal">Paypal</string>
+  <string name="donate_bitcoin">Bitcoin</string>
+  <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">S\'està generant la clau personal en segon pla</string>
   <string name="msg_gen_keypair_complete">S\'ha completat la regeneració de la clau personal</string>
   <string name="notify_gen_keypair_ticker">S\'està generant la clau personal...</string>
@@ -240,4 +247,18 @@
   <string name="security_error_decrypt_failed">\u0020(el desxiframent ha fallat)</string>
   <string name="security_error_integrity_check">\u0020(verificació de la integritat)</string>
   <string name="security_error_public_key_unavail">\u0020(la clau pública no està disponible)</string>
+  <string name="title_invitation">Invitació a un xat</string>
+  <string name="text_invitation_known">Sol·licitud de\n%1$s &lt;%2$s&gt;\n(%3$s)\nemprempta digital: %4$s</string>
+  <string name="text_invitation_unknown">Sol·licitud de\n%1$s\nEmprempta digital: %2$s</string>
+  <string name="button_accept">Accepta</string>
+  <string name="button_block">Bloca</string>
+  <string name="msg_connecting_iab">S\'està connectant amb Google Play...</string>
+  <string name="msg_iab_thankyou">Gràcies!</string>
+  <string name="iab_error_setup">S\'ha produït un error durant la configuració del pagament (%d)</string>
+  <string name="iab_error_query">La consulta a la llista de pagaments ha fallat (%d)</string>
+  <string name="copy_clipboard">Copia al porta-retalls</string>
+  <string name="bitcoin_clipboard_copied">L\'adreça bitcoin ha estat copiada al porta-retalls</string>
+  <string name="pref_sync_sim_contacts">Sincronitza amb els contactes de la SIM</string>
+  <string name="pref_title_off_sync_sim_contacts">Exclou els contactes de la SIM en la recerca d\'usuaris registrats</string>
+  <string name="pref_title_on_sync_sim_contacts">Els contactes de la SIM s\'inclouen en la recerca d\'usuaris registrats</string>
 </resources>

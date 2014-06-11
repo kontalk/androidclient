@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
-  <string name="app_description">Opensource chatovací program zdarma vytvořený dobrovolníky</string>
+  <string name="app_description">Chatovací program vytvořený dobrovolníky - opensource a zdarma</string>
   <string name="service_name">Centrum zpráv</string>
   <string name="authenticator_name">Autentizační služba</string>
   <string name="sync_service_name">Synchronizovat kontakty</string>
@@ -25,7 +25,7 @@
   <string name="hint_validation_number">Vaše číslo</string>
   <string name="hint_validation_code">Ověřovací kód</string>
   <string name="warn_invalid_number">Zadejte prosím platné telefonní číslo.</string>
-  <string name="msg_validating_phone">Požadavek na SMS s ověřovacím kódem...</string>
+  <string name="msg_validating_phone">Odesílám požadavek na SMS s ověřovacím kódem...</string>
   <string name="msg_initializing">Probíhá registrace do Kontalk sítě...</string>
   <string name="msg_authenticated">Byli jste zaregistrováni do sítě!</string>
   <string name="share">Sdílet</string>
@@ -74,7 +74,7 @@
   <string name="pref_title_restart_msgcenter">Použijte, pokud centrum zpráv nefunguje správně</string>
   <string name="pref_idle_time">Odpojit při nečinnosti</string>
   <string name="pref_title_idle_time">Jak dlouho čekat před odpojením pro nečinnost</string>
-  <string name="pref_wakeup_time">Znovu připojit k serveru</string>
+  <string name="pref_wakeup_time">Znovu se připojit k serveru</string>
   <string name="pref_title_wakeup_time">Jak dlouho čekat před opětovným připojením k serveru po období nečinnosti. Použije se pouze v případě, kdy nejsou k dispozici push notifikace.</string>
   <string name="pref_maintenance">Údržba</string>
   <string name="pref_regenerate_keypair">Vygenerovat nový osobní klíč</string>
@@ -156,19 +156,21 @@
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
   <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk na Google Play, aplikaci pro posílání zpráv zdarma! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.&lt;br/&gt;&lt;br/&gt;Použijte &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Pozvat uživatele&lt;/b&gt; a pošlete někomu zvací zprávu.</string>
+  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.&lt;br/&gt;&lt;br/&gt;Použijte &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Pozvat uživatele&lt;/b&gt; a pošlete někomu pozvánku.</string>
   <string name="text_conversations_empty">Pokud chcete začít psát zprávu, použijte ikonu &lt;b&gt;nová zpráva&lt;/b&gt; výše.</string>
   <string name="notify_ticker_external_storage">Externí úložiště není dostupné</string>
   <string name="notify_text_external_storage">Nepodařilo se zapsat do externího úložiště.</string>
   <string name="title_user_not_found">Uživatel nebyl nalezen</string>
-  <string name="message_user_not_found">Vypadá to, že tento kontakt není zaregistrován u Kontalku. Můžete ho přesto zkusit kontaktovat nebo mu poslat zvací zprávu.</string>
+  <string name="message_user_not_found">Vypadá to, že tento kontakt není zaregistrován u Kontalku. Můžete ho přesto zkusit kontaktovat nebo mu poslat pozvánku.</string>
   <string name="yes_user_not_found">Kontaktovat uživatele přesto</string>
   <string name="no_user_not_found">Odeslat pozvánku</string>
   <string name="pref_appearance_settings">Nastavení vzhledu</string>
   <string name="pref_font_size">Velikost písma</string>
-  <string name="menu_status">Stav</string>
+  <string name="menu_status">Stavová zpráva</string>
   <string name="menu_attachment">Připojit</string>
   <string name="menu_smileys">Smajlíky</string>
+  <string name="menu_block_user">Blokovat</string>
+  <string name="menu_unblock_user">Odblokovat</string>
   <string name="vcard_message">vCard zpráva</string>
   <string name="open_file">Otevřít soubor</string>
   <string name="msg_msgcenter_restarted">Centrum zpráv bylo restartováno.</string>
@@ -178,10 +180,10 @@
   <string name="seen_moment_ago_label">před chvilkou</string>
   <string name="seen_online_label">online</string>
   <string name="seen_typing_label">píše...</string>
-  <string name="pref_custom_background">Uživatelské pozadí</string>
+  <string name="pref_custom_background">Vlastní pozadí</string>
   <string name="pref_background_uri">Pozadí</string>
-  <string name="pref_title_background_uri">Nastavit uživatelský obrázek pozadí konverzace</string>
-  <string name="pref_title_off_custom_background">Používá se výchozí pozadí</string>
+  <string name="pref_title_background_uri">Nastavit vlastní obrázek pozadí konverzace</string>
+  <string name="pref_title_off_custom_background">Je použito výchozí pozadí</string>
   <string name="pref_title_on_custom_background">Vyberte pozadí pomocí volby níže</string>
   <string name="err_attachment_corrupted">Nepodařilo se stáhnout přílohu. Zpráva může být narušená.</string>
   <string name="serverlist_updating">Aktualizuji seznam serverů...</string>
@@ -248,7 +250,7 @@
   <string name="security_error_integrity_check">\u0020(test integrity)</string>
   <string name="security_error_public_key_unavail">\u0020(veřejný klíč nedostupný)</string>
   <string name="title_invitation">Pozvánka ke konverzaci</string>
-  <string name="text_invitation_known">Požadavek od\n%1$s &lt;%2$s&gt;\n(%3$s)\nOtisk: %2$s</string>
+  <string name="text_invitation_known">Požadavek od\n%1$s &lt;%2$s&gt;\n(%3$s)\nOtisk: %4$s</string>
   <string name="text_invitation_unknown">Požadavek od\n%1$s\nOtisk: %2$s</string>
   <string name="button_accept">Přijmout</string>
   <string name="button_block">Blokovat</string>
@@ -258,4 +260,12 @@
   <string name="iab_error_query">Došlo k chybě při práci se systémem placení uvnitř aplikace (%d)</string>
   <string name="copy_clipboard">Zkopírovat do schránky</string>
   <string name="bitcoin_clipboard_copied">Bitcoin adresa byla zkopírována do schránky</string>
+  <string name="warn_no_personal_key">Nepodařilo se načíst osobní klíč. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
+  <string name="warn_no_public_key">Nepodařilo se najít veřejný klíč pro tohoto uživatele. Zkuste aktualizovat váš seznam kontaktů nebo vypněte šifrování v nastavení.</string>
+  <string name="warn_encryption_failed">Nepodařilo se zašifrovat zprávu. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
+  <string name="pref_sync_sim_contacts">Synchronizovat SIM kontakty</string>
+  <string name="pref_title_off_sync_sim_contacts">Při zjišťování registrovaných uživatelů se nepoužijí kontakty na kartě SIM</string>
+  <string name="pref_title_on_sync_sim_contacts">Při zjišťování registrovaných uživatelů se použijí i kontakty na kartě SIM</string>
+  <string name="pref_accept_any_certificate">Akceptovat jakýkoliv SSL certifikát</string>
+  <string name="msg_user_blocked">Uživatel byl zablokován.</string>
 </resources>

@@ -82,10 +82,10 @@
   <string name="contacts_list_title">Elija un contacto</string>
   <string name="pref_messaging_settings">Ajustes de mensajes</string>
   <string name="pref_privacy_settings">Ajustes de privacidad</string>
-  <string name="pref_encrypt">Encriptar mensajes</string>
-  <string name="pref_title_on_encrypt">Todos los mensajes se encriptarán a partir de ahora</string>
+  <string name="pref_encrypt">Cifrar mensajes</string>
+  <string name="pref_title_on_encrypt">Todos los mensajes se cifrarán a partir de ahora</string>
   <string name="pref_title_off_encrypt">A partir de ahora, todos los mensajes serán enviados sin cifrar</string>
-  <string name="pref_encrypt_userdata">Encriptar los datos personales</string>
+  <string name="pref_encrypt_userdata">Cifrar los datos personales</string>
   <string name="pref_title_on_encrypt_userdata">El mensaje de estado solo será visible para aquellos que tengan su número de teléfono</string>
   <string name="pref_title_off_encrypt_userdata">El mensaje de estado será visible para cualquiera</string>
   <string name="pref_auto_accept_subscriptions">Aceptar invitaciones automáticamente</string>
@@ -96,7 +96,7 @@
   <string name="pref_title_off_hide_presence">Los usuarios podrán saber cuando está conectado y la última vez que lo hizo</string>
   <string name="contact_not_registered">El contacto no parece estar registrado en Kontalk.</string>
   <string name="error_store_outbox">No se pudo guardar el mensaje en la bandeja de salida.</string>
-  <string name="decrypt_message">Desencriptar mensaje</string>
+  <string name="decrypt_message">Descifrar mensaje</string>
   <string name="download_file">Descargar archivo</string>
   <string name="download_again">Descargar de nuevo</string>
   <string name="download">Descargar</string>
@@ -124,7 +124,7 @@
   <string name="err_validation_error">Ocurrió un error durante la verificación. Por favor, inténtelo más tarde.</string>
   <string name="err_validation_network_error">No se pudo conectar con el servidor. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="err_validation_server_not_supported">El servidor seleccionado no permite la autentificación. Configure otro en la pantalla de configuración.</string>
-  <string name="text_encrypted">(encriptado)</string>
+  <string name="text_encrypted">(cifrado)</string>
   <string name="peer_unknown">(desconocido)</string>
   <string name="msg_draft_saved">Mensaje guardado como borrador.</string>
   <string name="send_mime_not_supported">Tipo de archivo no soportado.</string>
@@ -169,6 +169,8 @@
   <string name="menu_status">Estado</string>
   <string name="menu_attachment">Adjuntar</string>
   <string name="menu_smileys">Smileys</string>
+  <string name="menu_block_user">Bloquear</string>
+  <string name="menu_unblock_user">Desbloquear</string>
   <string name="vcard_message">Mensaje con vCard</string>
   <string name="open_file">Abrir el archivo</string>
   <string name="msg_msgcenter_restarted">Centro de mensajería reiniciado.</string>
@@ -196,7 +198,7 @@
   <string name="msg_status_notaccepted">Rechazado</string>
   <string name="msg_status_notdelivered">No entregado</string>
   <string name="msg_status_delivered">Entregado</string>
-  <string name="msg_status_encrypted">Encriptado</string>
+  <string name="msg_status_encrypted">Cifrado</string>
   <string name="pref_balloons">Tema de los globos de texto</string>
   <string name="pref_title_balloons">Escoger un tema de globos de conversación</string>
   <string name="attachment_picture">Imagen</string>
@@ -248,7 +250,7 @@
   <string name="security_error_integrity_check">\u0020(comprobación de integridad)</string>
   <string name="security_error_public_key_unavail">\u0020(clave pública no disponible)</string>
   <string name="title_invitation">Invitación a un chat</string>
-  <string name="text_invitation_known">Solicitada por\n%1$s &lt;%2$s&gt;\n(%3$s)\nHuella digital: %2$s</string>
+  <string name="text_invitation_known">Solicitud de\n%1$s &lt;%2$s&gt;\n(%3$s)\nHuella digital: %4$s</string>
   <string name="text_invitation_unknown">Solicitada por\n%1$s\nHuella digital: %2$s</string>
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
@@ -258,4 +260,9 @@
   <string name="iab_error_query">Falló la consulta del inventario de facturación desde la app (%d)</string>
   <string name="copy_clipboard">Copiar al portapapeles</string>
   <string name="bitcoin_clipboard_copied">Dirección Bitcoin copiada al portapapeles.</string>
+  <string name="pref_sync_sim_contacts">Sincronizar contactos de la SIM</string>
+  <string name="pref_title_off_sync_sim_contacts">No incluir los contactos de la SIM al comprobar los usuarios registrados</string>
+  <string name="pref_title_on_sync_sim_contacts">Los contactos de la SIM se incluyen al comprobar usuarios registrados</string>
+  <string name="pref_accept_any_certificate">Aceptar cualquier certificado SSL</string>
+  <string name="msg_user_blocked">El usuario ha sido bloqueado</string>
 </resources>

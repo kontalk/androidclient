@@ -169,6 +169,8 @@
   <string name="menu_status">Stato</string>
   <string name="menu_attachment">Allega</string>
   <string name="menu_smileys">Smiley</string>
+  <string name="menu_block_user">Blocca</string>
+  <string name="menu_unblock_user">Sblocca</string>
   <string name="vcard_message">Messaggio vCard</string>
   <string name="open_file">Apri file</string>
   <string name="msg_msgcenter_restarted">Centro messaggi riavviato.</string>
@@ -247,8 +249,8 @@
   <string name="security_error_decrypt_failed">\u0020(decifratura fallita)</string>
   <string name="security_error_integrity_check">\u0020(controllo integrità)</string>
   <string name="security_error_public_key_unavail">\u0020(chiave pubblica non disponibile)</string>
-  <string name="title_invitation">Invito a chattare</string>
-  <string name="text_invitation_known">Richiesta da\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %2$s</string>
+  <string name="title_invitation">Invito in chat</string>
+  <string name="text_invitation_known">Richiesta da\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %4$s</string>
   <string name="text_invitation_unknown">Richiesta da\n%1$s\nFingerprint: %2$s</string>
   <string name="button_accept">Accetta</string>
   <string name="button_block">Blocca</string>
@@ -261,4 +263,9 @@
   <string name="warn_no_personal_key">Impossibile caricare la chiave personale. Disabilita la cifratura dalle impostazioni per inviare comunque il messaggio.</string>
   <string name="warn_no_public_key">Impossibile trovare una chiave pubblica per questo utente. Prova ad aggiornare la lista contatti o disabilita la cifratura dalle impostazioni per inviare comunque il messaggio.</string>
   <string name="warn_encryption_failed">Impossibile cifrare il messaggio. Disabilita la cifratura dalle impostazioni per inviare comunque il messaggio.</string>
+  <string name="pref_sync_sim_contacts">Leggi contatti su SIM</string>
+  <string name="pref_title_off_sync_sim_contacts">Non includere i contatti dalla SIM durante il controllo degli utenti registrati</string>
+  <string name="pref_title_on_sync_sim_contacts">I contatti dalla SIM saranno inclusi nel controllo degli utenti registrati</string>
+  <string name="pref_accept_any_certificate">Accetta qualsiasi certificato SSL</string>
+  <string name="msg_user_blocked">L\'utente è stato bloccato.</string>
 </resources>

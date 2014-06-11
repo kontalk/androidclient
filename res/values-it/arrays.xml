@@ -1,46 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
-
-     This program is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
-     the Free Software Foundation, either version 3 of the License, or
-     (at your option) any later version.
-
-     This program is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- -->
-
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
-    <string-array name="vibrate_labels">
-        <item>Sempre</item>
-        <item>Solo in modalità silenziosa</item>
-        <item>Mai</item>
-    </string-array>
-
-    <string-array name="fontsize_labels">
-        <item>Piccolo</item>
-        <item>Medio</item>
-        <item>Grande</item>
-    </string-array>
-
-    <string-array name="balloons_labels">
-        <item>Classico</item>
-        <item>Classico (vecchio)</item>
-        <item>iPhone</item>
-    </string-array>
-
-    <string-array name="idle_time_labels">
-        <item>1 minuto</item>
-        <item>2 minuti</item>
-        <item>3 minuti</item>
-        <item>4 minuti</item>
-        <item>5 minuti</item>
-    </string-array>
-
+  <string-array name="vibrate_labels">
+    <item>Sempre</item>
+    <item>Solo in modalità silenziosa</item>
+    <item>Mai</item>
+  </string-array>
+  <string-array name="fontsize_labels">
+    <item>Piccolo</item>
+    <item>Medio</item>
+    <item>Grande</item>
+  </string-array>
+  <string-array name="balloons_labels">
+    <item>Classico</item>
+    <item>Classico (vecchio)</item>
+    <item>iPhone</item>
+  </string-array>
+  <string-array name="idle_time_labels">
+    <item>1 minuto</item>
+    <item>2 minuti</item>
+    <item>3 minuti</item>
+    <item>4 minuti</item>
+    <item>5 minuti</item>
+  </string-array>
+  <string-array name="wakeup_time_labels">
+    <item>5 minuti</item>
+    <item>15 minuti</item>
+    <item>30 minuti</item>
+    <item>1 ora</item>
+    <item>3 ore</item>
+  </string-array>
 </resources>

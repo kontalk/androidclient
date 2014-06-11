@@ -241,7 +241,6 @@
   <string name="security_error_integrity_check">\u0020(verificação de integridade)</string>
   <string name="security_error_public_key_unavail">\u0020(chave pública não disponível)</string>
   <string name="title_invitation">Convite de conversa</string>
-  <string name="text_invitation_known">Pedido por\n%1$s &lt;%2$s&gt;\n(%3$s)\nImpressão digital: %2$s</string>
   <string name="text_invitation_unknown">Pedido por\n%1$s\nImpressão digital: %2$s</string>
   <string name="button_accept">Aceitar</string>
   <string name="button_block">Bloquear</string>

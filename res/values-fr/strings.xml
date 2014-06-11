@@ -7,7 +7,7 @@
   <string name="sync_service_name">Synchronisation des Contacts</string>
   <string name="download_service">Service de téléchargement</string>
   <string name="yes">Oui</string>
-  <string name="no">No</string>
+  <string name="no">Non</string>
   <string name="menu_compose">Ecrire</string>
   <string name="menu_delete_all">Supprimer la conversation</string>
   <string name="menu_search">Rechercher</string>
@@ -18,7 +18,7 @@
   <string name="pref_network_uri">Éditer l\'adresse du serveur </string>
   <string name="pref_title_network_uri">Ceci annulera la gestion automatique des serveurs</string>
   <string name="number_validation_intro1">Veuillez entrer votre nom, sélectionner votre code de pays et entrez votre numéro de téléphone portable. Un SMS avec un code de vérification vous sera envoyé. Votre numéro de téléphone ne sera utilisé qu\'une seule fois et sera ensuite ignoré.</string>
-  <string name="number_validation_intro2">Si vous ne pouvez pas recevoir des SMS sur cet appareil, entrez un numéro de téléphone que vous possédez et entrez un code de vérification que vous recevrez par SMS.</string>
+  <string name="number_validation_intro2">Si vous ne pouvez pas recevoir des SMS sur cet appareil, entrez un numéro de téléphone que vous possédez et entrez le code de vérification reçus par SMS.</string>
   <string name="code_validation_intro">Vous aller recevoir un SMS sur votre numéro d\'ici peu. Introduisez le code reçus ci-dessous, merci.</string>
   <string name="code_validation_intro2">Veuillez entrer le code de vérification que vous avez reçu. Veuillez noter qu\'un code de vérification ne peut être utilisé qu\'une seule fois.</string>
   <string name="hint_validation_name">Votre nom</string>
@@ -168,6 +168,8 @@
   <string name="menu_status">Statuts</string>
   <string name="menu_attachment">Attache</string>
   <string name="menu_smileys">Frimousses</string>
+  <string name="menu_block_user">Bloquer</string>
+  <string name="menu_unblock_user">Débloquer</string>
   <string name="vcard_message">vCard message</string>
   <string name="open_file">Ouvrir le fichier</string>
   <string name="msg_msgcenter_restarted">Messagerie redémarrée</string>
@@ -204,9 +206,9 @@
   <string name="chooser_error_no_camera">Stockage externe non disponible. La prise de photo avec l\'appareil ne sera pas actif.</string>
   <string name="status_activity_title">Message de statut</string>
   <string name="hint_status_entry">Ecrivez votre statut ici</string>
-  <string name="header_recent_status">Précédent status</string>
+  <string name="header_recent_status">Précédent statut</string>
   <string name="title_offline_mode_warning">Hors-ligne</string>
-  <string name="message_offline_mode_warning">En mode hors ligne, Kontalk ne se connectera pas au serveur tant que vous ne vous désactivez pas le mode hors ligne. Vous ne pourrez ni envoyer ni recevoir de messages et les utilisateurs vous verront comme hors ligne.</string>
+  <string name="message_offline_mode_warning">En mode hors ligne, Kontalk ne se connectera pas au serveur tant que vous ne vous désactivez pas le mode hors ligne. Vous ne pourrez ni envoyer ni recevoir de messages. Les utilisateurs vous verront comme hors ligne.</string>
   <string name="warning_offline_mode">Le mode hors ligne est actif. Les messages seront envoyés lorsque vous serez en ligne.</string>
   <string name="going_offline">Aller hors-ligne</string>
   <string name="going_online">Aller en-ligne</string>
@@ -247,14 +249,14 @@
   <string name="security_error_integrity_check">\u0020(vérification d\'intégrité)</string>
   <string name="security_error_public_key_unavail">\u0020(clé publique indisponible)</string>
   <string name="title_invitation">Invitation au tchat</string>
-  <string name="text_invitation_known">Demade par\n%1$s &lt;%2$s&gt;\n(%3$s)\nEmpreinte : %2$s</string>
   <string name="text_invitation_unknown">Demande par\n%1$s\nEmpreinte : %2$s</string>
   <string name="button_accept">Accepte</string>
-  <string name="button_block">Bloque</string>
+  <string name="button_block">Bloquer</string>
   <string name="msg_connecting_iab">Connexion à Google Play...</string>
   <string name="msg_iab_thankyou">Merci !</string>
   <string name="iab_error_setup">Erreur pendant la configuration de la facturation in-app (%d)</string>
   <string name="iab_error_query">N\'a pas pu demander l\'inventaire de la facturation in-app (%d)</string>
   <string name="copy_clipboard">Copier dans le presse-papiers</string>
   <string name="bitcoin_clipboard_copied">Adresse Bitcoin copiée dans le presse-papiers.</string>
+  <string name="msg_user_blocked">L\'utilisateur est bloqué.</string>
 </resources>
