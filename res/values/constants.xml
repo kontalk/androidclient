@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -25,4 +25,8 @@
 	<string name="googleplus_link">https://plus.google.com/u/0/102201749813756709299</string>
 	<string name="twitter_link">https://twitter.com/kontalknet</string>
 	<string name="identica_link">https://identi.ca/kontalknet</string>
+    <string name="netsite">www.kontalk.net</string>
+    <string name="bitcoin_address">14vipppSvCG7VdvoYmbhKZ8DbTfv9U1QfS</string>
+    <string name="flattr_url">http://flattr.com/thing/1194909/Kontalk-network</string>
+    <string name="paypal_url">https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=VU57LMG64GATN</string>
 </resources>

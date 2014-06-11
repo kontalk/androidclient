@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -35,5 +35,7 @@
     <color name="compose_message_list_background">#fff5f8fa</color>
     <!-- grayed out text -->
     <color name="grayed_out">#ff999999</color>
+
+    <color name="conversation_active_background">#ff229DC9</color>
 </resources>
 

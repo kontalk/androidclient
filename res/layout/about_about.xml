@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#cccccc"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.AboutActivity"
+    android:id="@+id/scroller"
+    android:layout_alignParentTop="true"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentRight="true"
+    android:isScrollContainer="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="16dp" >
+
+        <ImageView android:id="@+id/icon"
+            android:contentDescription="@string/app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_launcher" />
+
+        <TextView android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:text="@string/app_name"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView android:id="@+id/version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:text="@string/about_version" />
+
+        <TextView android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="center_horizontal"
+            android:text="@string/app_description" />
+
+        <TextView android:id="@+id/website"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:autoLink="all"
+            android:text="@string/website" />
+
+        <TextView android:id="@+id/mailto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:autoLink="all"
+            android:text="@string/mailto" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton android:id="@+id/button_twitter"
+                android:contentDescription="@string/social_twitter"
+                android:layout_height="48dp"
+                android:layout_width="48dp"
+                android:background="@android:drawable/list_selector_background"
+                android:layout_marginRight="10dp"
+                android:longClickable="false"
+                android:src="@drawable/social_twitter"/>
+
+            <ImageButton android:id="@+id/button_googleplus"
+                android:contentDescription="@string/social_googleplus"
+                android:layout_height="48dp"
+                android:layout_width="48dp"
+                android:background="@android:drawable/list_selector_background"
+                android:layout_marginRight="10dp"
+                android:longClickable="false"
+                android:src="@drawable/social_googleplus"/>
+
+            <ImageButton android:id="@+id/button_facebook"
+                android:contentDescription="@string/social_facebook"
+                android:layout_height="48dp"
+                android:layout_width="48dp"
+                android:background="@android:drawable/list_selector_background"
+                android:layout_marginRight="10dp"
+                android:longClickable="false"
+                android:src="@drawable/social_facebook"/>
+
+            <ImageButton android:id="@+id/button_identica"
+                android:contentDescription="@string/social_identica"
+                android:layout_height="48dp"
+                android:layout_width="48dp"
+                android:background="@android:drawable/list_selector_background"
+                android:layout_marginRight="10dp"
+                android:longClickable="false"
+                android:src="@drawable/social_identica"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

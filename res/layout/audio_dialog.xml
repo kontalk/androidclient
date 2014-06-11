@@ -2,12 +2,12 @@
     xmlns:ProgressWheel="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"  xmlns:app="http://schemas.android.com/apk/res/org.kontalk.xmpp">
+    android:layout_height="fill_parent"  xmlns:app="http://schemas.android.com/apk/res/org.kontalk">
 <FrameLayout
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" >
 
-    <org.kontalk.xmpp.ui.CircularSeekBar
+    <org.kontalk.ui.CircularSeekBar
 		android:id="@+id/circularSeekBar"
 	    android:layout_width="181dp"
         android:layout_height="188dp"

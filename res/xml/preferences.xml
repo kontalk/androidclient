@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -44,19 +44,27 @@
                 android:summaryOn="@string/pref_title_on_encrypt"
                 android:title="@string/pref_encrypt"
                 android:defaultValue="true"/>
+            <!--
             <CheckBoxPreference android:key="pref_encrypt_userdata"
                 android:summaryOff="@string/pref_title_off_encrypt_userdata"
                 android:summaryOn="@string/pref_title_on_encrypt_userdata"
                 android:title="@string/pref_encrypt_userdata"
                 android:defaultValue="true"/>
+             -->
+            <CheckBoxPreference android:key="pref_auto_accept_subscriptions"
+                android:title="@string/pref_auto_accept_subscriptions"
+                android:summary="@string/pref_title_auto_accept_subscriptions"
+                android:defaultValue="false"/>
             <CheckBoxPreference android:key="pref_send_typing"
                 android:title="@string/pref_send_typing"
                 android:defaultValue="true"/>
+            <!--
             <CheckBoxPreference android:key="pref_hide_presence"
                 android:summaryOff="@string/pref_title_off_hide_presence"
                 android:summaryOn="@string/pref_title_on_hide_presence"
                 android:title="@string/pref_hide_presence"
                 android:defaultValue="false"/>
+             -->
         </PreferenceScreen>
         <EditTextPreference android:key="pref_remove_prefix"
             android:dialogTitle="@string/pref_remove_prefix"
@@ -65,6 +73,11 @@
             android:title="@string/pref_remove_prefix"
             android:summary="@string/pref_title_remove_prefix"
             android:singleLine="true" android:inputType="phone"/>
+        <CheckBoxPreference android:key="pref_sync_sim_contacts"
+            android:summaryOff="@string/pref_title_off_sync_sim_contacts"
+            android:summaryOn="@string/pref_title_on_sync_sim_contacts"
+            android:title="@string/pref_sync_sim_contacts"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_appearance_settings"
@@ -112,27 +125,48 @@
             android:defaultValue="always"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:key="pref_maintainance"
-        android:title="@string/pref_maintainance">
+    <PreferenceCategory android:key="pref_maintenance"
+        android:title="@string/pref_maintenance">
         <ListPreference android:key="pref_idle_time"
             android:title="@string/pref_idle_time"
             android:summary="@string/pref_title_idle_time"
             android:entries="@array/idle_time_labels"
             android:entryValues="@array/idle_time_values"
             android:defaultValue="60000"/>
+        <ListPreference android:key="pref_wakeup_time"
+            android:title="@string/pref_wakeup_time"
+            android:summary="@string/pref_title_wakeup_time"
+            android:entries="@array/wakeup_time_labels"
+            android:entryValues="@array/wakeup_time_values"
+            android:defaultValue="900000"/>
         <Preference android:key="pref_restart_msgcenter"
             android:summary="@string/pref_title_restart_msgcenter"
             android:title="@string/pref_restart_msgcenter"/>
+        <Preference android:key="pref_regenerate_keypair"
+            android:summary="@string/pref_title_regenerate_keypair"
+            android:title="@string/pref_regenerate_keypair"/>
+        <Preference android:key="pref_export_keypair"
+            android:summary="@string/pref_title_export_keypair"
+            android:title="@string/pref_export_keypair"/>
+        <CheckBoxPreference android:key="pref_accept_any_certificate"
+            android:title="@string/pref_accept_any_certificate"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
-        <Preference
-            android:key="pref_about"
+        <Preference android:key="pref_donate"
+            android:title="@string/pref_donate">
+            <intent
+             android:targetClass="org.kontalk.ui.AboutActivity"
+             android:targetPackage="org.kontalk"
+             android:action="org.kontalk.DONATION" />
+        </Preference>
+        <Preference android:key="pref_about"
             android:title="@string/pref_about">
             <intent
-             android:targetClass="org.kontalk.xmpp.ui.AboutActivity"
-             android:targetPackage="org.kontalk.xmpp" />
+             android:targetClass="org.kontalk.ui.AboutActivity"
+             android:targetPackage="org.kontalk" />
         </Preference>
     </PreferenceCategory>
 
