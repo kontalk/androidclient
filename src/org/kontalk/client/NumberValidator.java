@@ -19,6 +19,10 @@
 package org.kontalk.client;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.Locale;
 
@@ -358,8 +362,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return mStep;
     }
 
-    private void initConnection()
-            throws SmackException, PGPException, XMPPException, IOException {
+    private void initConnection() throws XMPPException, SmackException,
+            PGPException, KeyStoreException, NoSuchProviderException,
+    		NoSuchAlgorithmException, CertificateException,
+    		IOException {
 
         if (!mConnector.isConnected()) {
             mConnector.setListener(this);

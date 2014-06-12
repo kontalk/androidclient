@@ -893,6 +893,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         broadcast(ACTION_CONNECTED);
 
+        // we can now release any pending push notification
+        Preferences.setLastPushNotification(this, -1);
+
         // release the wakelock
         mWakeLock.release();
     }
@@ -1010,6 +1013,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // message has already been uploaded - just send media
             if (attFetchUrl != null) {
+                b.putString("org.kontalk.message.mime", attMime);
                 b.putString("org.kontalk.message.fetch.url", attFetchUrl);
                 b.putString("org.kontalk.message.preview.uri", attFileUri);
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
@@ -1184,6 +1188,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     	PacketFilter idFilter = new PacketIDFilter(packetId);
     	mConnection.addPacketListener(new PacketListener() {
 			public void processPacket(Packet packet) {
+				// we don't need this listener anymore
+				mConnection.removePacketListener(this);
 
 				if (packet instanceof BlockingCommand) {
 					BlockingCommand blocklist = (BlockingCommand) packet;
@@ -1196,6 +1202,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 						i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
 					}
 
+					Log.v(TAG, "broadcasting blocklist: " + i);
 					mLocalBroadcastManager.sendBroadcast(i);
 				}
 
@@ -1247,6 +1254,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         else {
+            // hold on to message center while we send the message
+            mIdleHandler.hold();
+
             // message stanza
             org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
             m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
@@ -2354,6 +2364,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                     values, selectionOutgoing, null);
 
                                 mWaitingReceipt.remove(id);
+
+                                // we can now release the message center. Hopefully
+                                // there will be one hold and one matching release.
+                                mIdleHandler.release();
                             }
                             else {
                                 Uri msg = Messages.getUri(ext.getId());
@@ -2550,6 +2564,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             values, selectionOutgoing, null);
 
                         mWaitingReceipt.remove(id);
+
+                        // we can now release the message center. Hopefully
+                        // there will be one hold and one matching release.
+                        mIdleHandler.release();
                     }
                 }
             }

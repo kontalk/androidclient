@@ -21,6 +21,8 @@ package org.kontalk.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -33,6 +35,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -54,6 +62,7 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.InternalTrustStore;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
 import android.content.Context;
@@ -102,7 +111,8 @@ public class ClientHTTPConnection {
     }
 
     public static SSLSocketFactory setupSSLSocketFactory(Context context,
-                PrivateKey privateKey, X509Certificate certificate)
+                PrivateKey privateKey, X509Certificate certificate,
+                boolean acceptAnyCertificate)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
                 IOException, KeyManagementException, UnrecoverableKeyException,
                 NoSuchProviderException {
@@ -115,7 +125,11 @@ public class ClientHTTPConnection {
         // load merged truststore (system + internal)
         KeyStore truststore = InternalTrustStore.getTrustStore(context);
 
-        return new SSLSocketFactory(keystore, null, truststore);
+    	if (acceptAnyCertificate)
+    		return new BlackholeSSLSocketFactory(keystore, null, truststore);
+
+    	else
+	        return new SSLSocketFactory(keystore, null, truststore);
     }
 
     /**
@@ -131,7 +145,10 @@ public class ClientHTTPConnection {
                 SchemeRegistry registry = new SchemeRegistry();
                 try {
                     registry.register(new Scheme("http",  PlainSocketFactory.getSocketFactory(), 80));
-                    registry.register(new Scheme("https", setupSSLSocketFactory(mContext, mPrivateKey, mCertificate), 443));
+
+                    boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
+                    registry.register(new Scheme("https", setupSSLSocketFactory(mContext,
+                    	mPrivateKey, mCertificate, acceptAnyCertificate), 443));
                 }
                 catch (Exception e) {
                     IOException ie = new IOException("unable to create keystore");
@@ -218,6 +235,46 @@ public class ClientHTTPConnection {
             // This function is defined as returning null when it can't parse the header
         }
         return null;
+    }
+
+    /** A socket factory for accepting any SSL certificate. */
+    private static final class BlackholeSSLSocketFactory extends SSLSocketFactory {
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+
+        public BlackholeSSLSocketFactory(KeyStore keystore, String keystorePassword, KeyStore truststore)
+        		throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
+            super(keystore, keystorePassword, truststore);
+
+            TrustManager tm = new X509TrustManager() {
+                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+            };
+
+            // key managers
+            KeyManager[] km;
+            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmFactory.init(keystore, null);
+            km = kmFactory.getKeyManagers();
+
+            sslContext.init(km, new TrustManager[] { tm }, null);
+        }
+
+        @Override
+        public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
+            return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
+        }
+
+        @Override
+        public Socket createSocket() throws IOException {
+            return sslContext.getSocketFactory().createSocket();
+        }
     }
 
 }

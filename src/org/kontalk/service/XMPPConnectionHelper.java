@@ -19,6 +19,11 @@
 package org.kontalk.service;
 
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
 
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.SmackException;
@@ -30,6 +35,8 @@ import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.util.InternalTrustStore;
+import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
@@ -101,14 +108,16 @@ public class XMPPConnectionHelper extends Thread {
         connect();
     }
 
-    public void connectOnce(PersonalKey key)
-            throws XMPPException, PGPException, IOException, SmackException {
+    public void connectOnce(PersonalKey key) throws XMPPException, SmackException,
+    		PGPException, KeyStoreException, NoSuchProviderException,
+    		NoSuchAlgorithmException, CertificateException, IOException {
 
         connectOnce(key, null);
     }
 
-    private void connectOnce(PersonalKey key, String token)
-            throws XMPPException, PGPException, IOException, SmackException {
+    private void connectOnce(PersonalKey key, String token) throws XMPPException,
+            SmackException, PGPException, IOException, KeyStoreException,
+    		NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 
         Log.d(TAG, "using server " + mServer.toString());
 
@@ -118,19 +127,36 @@ public class XMPPConnectionHelper extends Thread {
 
             // destroy connection
             if (mConn != null) {
-                mConn.disconnect();
+                try {
+                    mConn.disconnect();
+                }
+                catch (NotConnectedException e) {
+                    // ignored
+                }
+
                 mConn = null;
             }
         }
 
         // recreate connection if closed
         if (mConn == null || !mConn.isConnected()) {
-            if (key == null)
+            if (key == null) {
                 mConn = new KontalkConnection(mServer);
-            else
+            }
+
+            else {
+            	KeyStore trustStore = null;
+            	boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
+            	if (!acceptAnyCertificate)
+            		trustStore = InternalTrustStore.getTrustStore(mContext);
+
                 mConn = new KontalkConnection(mServer,
                     key.getBridgePrivateKey(),
-                    key.getBridgeCertificate());
+                    key.getBridgeCertificate(),
+                    acceptAnyCertificate,
+                    trustStore);
+            }
+
             if (mListener != null)
                 mListener.created(mConn);
         }

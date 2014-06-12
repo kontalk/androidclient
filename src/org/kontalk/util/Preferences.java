@@ -27,10 +27,8 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -94,6 +92,15 @@ public final class Preferences {
     private static long getLong(Context context, String key, long defaultValue) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getLong(key, defaultValue);
+    }
+
+    /** Retrieves a long and if >= 0 it sets it to -1. */
+    private static long getLongOnce(Context context, String key) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        long value = prefs.getLong(key, -1);
+        if (value >= 0)
+            prefs.edit().putLong(key, -1).commit();
+        return value;
     }
 
     private static boolean getBoolean(Context context, String key, boolean defaultValue) {
@@ -189,6 +196,17 @@ public final class Preferences {
         return prefs.edit()
             .putLong("pref_last_sync", timestamp)
             .commit();
+    }
+
+    public static boolean setLastPushNotification(Context context, long timestamp) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.edit()
+            .putLong("pref_last_push_notification", timestamp)
+            .commit();
+    }
+
+    public static long getLastPushNotification(Context context) {
+    	return getLongOnce(context, "pref_last_push_notification");
     }
 
     /** TODO cache value */
@@ -315,6 +333,10 @@ public final class Preferences {
         return prefs.edit()
             .putString("pref_push_sender", senderId)
             .commit();
+    }
+
+    public static boolean getAcceptAnyCertificate(Context context) {
+    	return getBoolean(context, "pref_accept_any_certificate", false);
     }
 
     public static int getIdleTimeMillis(Context context, int minValue, int defaultValue) {

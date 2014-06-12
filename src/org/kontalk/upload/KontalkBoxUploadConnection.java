@@ -50,6 +50,7 @@ import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.ProgressListener;
+import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressInputStreamEntity;
 
 import android.content.Context;
@@ -244,8 +245,10 @@ public class KontalkBoxUploadConnection implements UploadConnection {
                 SchemeRegistry registry = new SchemeRegistry();
                 try {
                     registry.register(new Scheme("http",  PlainSocketFactory.getSocketFactory(), 80));
+
+                    boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
                     registry.register(new Scheme("https", ClientHTTPConnection
-                        .setupSSLSocketFactory(mContext, mPrivateKey, mCertificate), 443));
+                        .setupSSLSocketFactory(mContext, mPrivateKey, mCertificate, acceptAnyCertificate), 443));
                 }
                 catch (Exception e) {
                     IOException ie = new IOException("unable to create keystore");
