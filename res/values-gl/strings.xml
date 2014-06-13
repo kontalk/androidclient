@@ -29,6 +29,7 @@
   <string name="msg_initializing">Rexistrándose na rede Kontalk...</string>
   <string name="msg_authenticated">Rexistrado na rede!</string>
   <string name="share">Compartir</string>
+  <string name="resend">Enviar outra vez</string>
   <string name="copy_message_text">Copiar o texto da mensaxe</string>
   <string name="delete_message">Eliminar a mensaxe</string>
   <string name="confirm_delete_all">Eliminar todas as conversas</string>
@@ -64,7 +65,7 @@
   <string name="refused_label">Rexeitada:\u0020</string>
   <string name="notdelivered_label">Non recibida:\u0020</string>
   <string name="delivered_label">Recibida:\u0020</string>
-  <string name="encrypted_label">Criptografado:\u0020</string>
+  <string name="encrypted_label">Cifrado:\u0020</string>
   <string name="security_label">Seguranza:\u0020</string>
   <string name="size_label">Tamaño:\u0020</string>
   <string name="size_unknown">(descoñecido)</string>
@@ -81,10 +82,10 @@
   <string name="contacts_list_title">Escolla un contacto</string>
   <string name="pref_messaging_settings">Configuración de mensaxe</string>
   <string name="pref_privacy_settings">Configuración de privacidade</string>
-  <string name="pref_encrypt">Criptografar mensaxes</string>
-  <string name="pref_title_on_encrypt">Todas as mensaxes serán criptografadas a partir deste momento</string>
+  <string name="pref_encrypt">Cifrar mensaxes</string>
+  <string name="pref_title_on_encrypt">Todas as mensaxes serán cifradas a partir deste momento</string>
   <string name="pref_title_off_encrypt">Todas as mensaxes serán enviadas sen criptografar a partir deste momento</string>
-  <string name="pref_encrypt_userdata">Criptografar os dados persoais</string>
+  <string name="pref_encrypt_userdata">Cifrar os dados persoais</string>
   <string name="pref_title_on_encrypt_userdata">A mensaxe de estado será visible apenas cando os usuarios/as teñan o teu número de teléfono</string>
   <string name="pref_title_off_encrypt_userdata">A mensaxe de estado será visible para calquera</string>
   <string name="pref_auto_accept_subscriptions">Aceptar os convites automaticamente</string>
@@ -95,7 +96,7 @@
   <string name="pref_title_off_hide_presence">Os usuarios/as verán se estás conectado e cando foi a túa última conexión</string>
   <string name="contact_not_registered">O contacto parece non estar rexistrado no Kontalk.</string>
   <string name="error_store_outbox">Non foi posible almacenar a mensaxe na caixa de saída.</string>
-  <string name="decrypt_message">Descriptografar mensaxe</string>
+  <string name="decrypt_message">Descifrar mensaxe</string>
   <string name="download_file">Descargar o ficheiro</string>
   <string name="download_again">Descargar novamente</string>
   <string name="download">Descargar</string>
@@ -123,7 +124,7 @@
   <string name="err_validation_error">Houbo un erro durante a verificación. Por favor, téntao máis tarde.</string>
   <string name="err_validation_network_error">Non foi posible conectar ao servidor. Por favor, téntao novamente.</string>
   <string name="err_validation_server_not_supported">O servidor seleccionado non soporta rexistro. Por favor, configura outro na pantalla de configuración.</string>
-  <string name="text_encrypted">(criptografado)</string>
+  <string name="text_encrypted">(cifrado)</string>
   <string name="peer_unknown">(descoñecido)</string>
   <string name="msg_draft_saved">Mensaxe gardada como borrador.</string>
   <string name="send_mime_not_supported">Tipo de ficheiro non soportado.</string>
@@ -195,7 +196,7 @@
   <string name="msg_status_notaccepted">Rexeitado</string>
   <string name="msg_status_notdelivered">Non recibido</string>
   <string name="msg_status_delivered">Recibido</string>
-  <string name="msg_status_encrypted">Criptografado</string>
+  <string name="msg_status_encrypted">Cifrado</string>
   <string name="pref_balloons">Tema dos globos das conversas</string>
   <string name="pref_title_balloons">Escolle un tema para os globos das conversas</string>
   <string name="attachment_picture">Imaxe</string>
@@ -222,6 +223,12 @@
   <string name="social_facebook">Facebook</string>
   <string name="social_identica">Identi.ca</string>
   <string name="donate_text">Kontalk precisa de diñeiro para seguir a súa andaina. Por favor, considera facer unha doazón, aínda que sexa pequena.</string>
+  <string name="title_bitcoin_dialog">Bitcoin</string>
+  <string name="text_bitcoin_dialog">Enderezo de Bitcoin:\n%s</string>
+  <string name="donate_wallet">Google Play</string>
+  <string name="donate_paypal">Paypal</string>
+  <string name="donate_bitcoin">Bitcoin</string>
+  <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Xerando a clave persoal en segundo plano.</string>
   <string name="msg_gen_keypair_complete">Rexeneración de clave persoal rematada.</string>
   <string name="notify_gen_keypair_ticker">Xerando a clave persoal...</string>
@@ -237,12 +244,17 @@
   <string name="security_error_invalid_recipient">\u0020(destinatario non válido)</string>
   <string name="security_error_invalid_timestamp">\u0020(timestamp non válido)</string>
   <string name="security_error_invalid_data">\u0020(datos non válidos)</string>
-  <string name="security_error_decrypt_failed">\u0020(o descriptografado fallou)</string>
+  <string name="security_error_decrypt_failed">\u0020(o descifrado fallou)</string>
   <string name="security_error_integrity_check">\u0020(verificación de integridade)</string>
   <string name="security_error_public_key_unavail">\u0020(clave pública non dispoñible)</string>
   <string name="title_invitation">Convite de conversa</string>
-  <string name="text_invitation_known">Solicitado por\n%1$s &lt;%2$s&gt;\n(%3$s)\nPegada dixital: %2$s</string>
   <string name="text_invitation_unknown">Solicitado por\n%1$s\nPegada dixital: %2$s</string>
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
+  <string name="msg_connecting_iab">Conectando a Google Play…</string>
+  <string name="msg_iab_thankyou">Grazas!</string>
+  <string name="iab_error_setup">Erro durante a instalación da facturación \"in-app\" (%d)</string>
+  <string name="iab_error_query">Non foi posible consultar o inventario de facturación \"in-app\" (%d)</string>
+  <string name="copy_clipboard">Copiar ao portapapeis</string>
+  <string name="bitcoin_clipboard_copied">Enderezo de Bitcoin copiado ao portapapeis.</string>
 </resources>

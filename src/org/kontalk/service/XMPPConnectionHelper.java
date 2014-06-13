@@ -25,8 +25,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
-import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionListener;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.kontalk.Kontalk;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -59,7 +61,7 @@ public class XMPPConnectionHelper extends Thread {
     private int mRetryCount;
 
     /** Connection is re-created on demand if necessary. */
-    protected Connection mConn;
+    protected XMPPConnection mConn;
 
     /** Client listener. */
     private ConnectionHelperListener mListener;
@@ -106,7 +108,7 @@ public class XMPPConnectionHelper extends Thread {
         connect();
     }
 
-    public void connectOnce(PersonalKey key) throws XMPPException,
+    public void connectOnce(PersonalKey key) throws XMPPException, SmackException,
     		PGPException, KeyStoreException, NoSuchProviderException,
     		NoSuchAlgorithmException, CertificateException, IOException {
 
@@ -114,7 +116,7 @@ public class XMPPConnectionHelper extends Thread {
     }
 
     private void connectOnce(PersonalKey key, String token) throws XMPPException,
-    		PGPException, IOException, KeyStoreException,
+            SmackException, PGPException, IOException, KeyStoreException,
     		NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 
         Log.d(TAG, "using server " + mServer.toString());
@@ -125,7 +127,13 @@ public class XMPPConnectionHelper extends Thread {
 
             // destroy connection
             if (mConn != null) {
-                mConn.disconnect();
+                try {
+                    mConn.disconnect();
+                }
+                catch (NotConnectedException e) {
+                    // ignored
+                }
+
                 mConn = null;
             }
         }
@@ -150,7 +158,7 @@ public class XMPPConnectionHelper extends Thread {
             }
 
             if (mListener != null)
-                mListener.created();
+                mListener.created(mConn);
         }
 
         // connect
@@ -158,7 +166,7 @@ public class XMPPConnectionHelper extends Thread {
 
         if (mListener != null) {
             mConn.addConnectionListener(mListener);
-            mListener.connected();
+            mListener.connected(mConn);
         }
 
         // login
@@ -167,7 +175,7 @@ public class XMPPConnectionHelper extends Thread {
             mConn.login("dummy", token != null ? token : "dummy");
 
         if (mListener != null)
-            mListener.authenticated();
+            mListener.authenticated(mConn);
     }
 
     public void connect() {
@@ -256,7 +264,7 @@ public class XMPPConnectionHelper extends Thread {
         mConnecting = false;
     }
 
-    public Connection getConnection() {
+    public XMPPConnection getConnection() {
         return mConn;
     }
 
@@ -280,7 +288,7 @@ public class XMPPConnectionHelper extends Thread {
     }
 
     /** Shuts down this client thread gracefully. */
-    public void shutdown() {
+    public void shutdown() throws NotConnectedException {
         mConnecting = false;
         interrupt();
 
@@ -290,9 +298,7 @@ public class XMPPConnectionHelper extends Thread {
 
 
     public interface ConnectionHelperListener extends ConnectionListener {
-        public void created();
-        public void connected();
-        public void authenticated();
+        public void created(XMPPConnection connection);
 
         public void aborted(Exception e);
     }

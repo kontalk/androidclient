@@ -99,7 +99,7 @@ public class PGPCoder extends Coder {
     }
 
     @Override
-    public byte[] encryptText(String text) throws GeneralSecurityException {
+    public byte[] encryptText(CharSequence text) throws GeneralSecurityException {
         try {
         	// consider plain text
             return encryptData("text/plain", text);
@@ -115,7 +115,7 @@ public class PGPCoder extends Coder {
     }
 
     @Override
-    public byte[] encryptStanza(String xml) throws GeneralSecurityException {
+    public byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException {
         try {
             // prepare XML wrapper
             StringBuilder xmlWrapper = new StringBuilder(
@@ -135,7 +135,7 @@ public class PGPCoder extends Coder {
         }
     }
 
-    private byte[] encryptData(String mime, String data)
+    private byte[] encryptData(String mime, CharSequence data)
     		throws PGPException, IOException, SignatureException {
 
         String from = mKey.getUserId(mServer.getNetwork());

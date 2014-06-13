@@ -23,12 +23,13 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
-import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackAndroid;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
@@ -36,12 +37,12 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Registration;
 import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smackx.Form;
-import org.jivesoftware.smackx.FormField;
-import org.jivesoftware.smackx.packet.DataForm;
-import org.jivesoftware.smackx.provider.DataFormProvider;
-import org.kontalk.crypto.PersonalKey;
+import org.jivesoftware.smackx.xdata.Form;
+import org.jivesoftware.smackx.xdata.FormField;
+import org.jivesoftware.smackx.xdata.packet.DataForm;
+import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
+import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.util.MessageUtils;
@@ -112,12 +113,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mConnector.setRetryEnabled(false);
 
         SmackAndroid.init(context.getApplicationContext());
-        configure(ProviderManager.getInstance());
+        configure();
     }
 
-    private void configure(ProviderManager pm) {
-        pm.addIQProvider("query", "jabber:iq:register", new RegistrationFormProvider());
-        pm.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
+    private void configure() {
+        ProviderManager.addIQProvider("query", "jabber:iq:register", new RegistrationFormProvider());
+        ProviderManager.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
     }
 
     public void setKey(PersonalKey key) {
@@ -193,7 +194,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 Packet form = createRegistrationForm();
 
                 // setup listener for form response
-                Connection conn = mConnector.getConnection();
+                XMPPConnection conn = mConnector.getConnection();
                 conn.addPacketListener(new PacketListener() {
                     public void processPacket(Packet packet) {
                     	int reason = 0;
@@ -203,11 +204,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 // ok! message will be sent
-                                Iterator<FormField> iter = response.getFields();
-                                while (iter.hasNext()) {
-                                    FormField field = iter.next();
+                                List<FormField> iter = response.getFields();
+                                for (FormField field : iter) {
                                     if (field.getVariable().equals("from")) {
-                                        String smsFrom = field.getValues().next();
+                                        String smsFrom = field.getValues().get(0);
                                         Log.d(TAG, "using sms sender id: " + smsFrom);
                                         mListener.onValidationRequested(NumberValidator.this);
 
@@ -259,7 +259,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 initConnection();
                 Packet form = createValidationForm();
 
-                Connection conn = mConnector.getConnection();
+                XMPPConnection conn = mConnector.getConnection();
                 conn.addPacketListener(new PacketListener() {
                     public void processPacket(Packet packet) {
                         IQ iq = (IQ) packet;
@@ -269,11 +269,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 String publicKey = null;
 
                                 // ok! message will be sent
-                                Iterator<FormField> iter = response.getFields();
-                                while (iter.hasNext()) {
-                                    FormField field = iter.next();
+                                List<FormField> iter = response.getFields();
+                                for (FormField field : iter) {
                                     if ("publickey".equals(field.getVariable())) {
-                                        publicKey = field.getValues().next();
+                                        publicKey = field.getValues().get(0);
                                     }
                                 }
 
@@ -363,8 +362,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return mStep;
     }
 
-    private void initConnection() throws XMPPException, PGPException,
-    		KeyStoreException, NoSuchProviderException,
+    private void initConnection() throws XMPPException, SmackException,
+            PGPException, KeyStoreException, NoSuchProviderException,
     		NoSuchAlgorithmException, CertificateException,
     		IOException {
 
@@ -529,32 +528,27 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     @Override
     public void connectionClosed() {
-        // TODO Auto-generated method stub
-
+        // not used
     }
 
     @Override
-    public void connectionClosedOnError(Exception arg0) {
-        // TODO Auto-generated method stub
-
+    public void connectionClosedOnError(Exception e) {
+        // not used
     }
 
     @Override
-    public void reconnectingIn(int arg0) {
-        // TODO Auto-generated method stub
-
+    public void reconnectingIn(int seconds) {
+        // not used
     }
 
     @Override
-    public void reconnectionFailed(Exception arg0) {
-        // TODO Auto-generated method stub
-
+    public void reconnectionFailed(Exception e) {
+        // not used
     }
 
     @Override
     public void reconnectionSuccessful() {
-        // TODO Auto-generated method stub
-
+        // not used
     }
 
     @Override
@@ -564,20 +558,17 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     @Override
-    public void created() {
-        // TODO Auto-generated method stub
-
+    public void created(XMPPConnection conn) {
+        // not used
     }
 
     @Override
-    public void connected() {
-        // TODO Auto-generated method stub
-
+    public void connected(XMPPConnection conn) {
+        // not used
     }
 
     @Override
-    public void authenticated() {
-        // TODO Auto-generated method stub
-
+    public void authenticated(XMPPConnection conn) {
+        // not used
     }
 }

@@ -31,10 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
 import org.jivesoftware.smack.SmackAndroid;
+import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -46,16 +48,16 @@ import org.jivesoftware.smack.packet.Registration;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smackx.ChatState;
-import org.jivesoftware.smackx.Form;
-import org.jivesoftware.smackx.FormField;
-import org.jivesoftware.smackx.packet.ChatStateExtension;
-import org.jivesoftware.smackx.packet.DataForm;
-import org.jivesoftware.smackx.packet.DelayInfo;
-import org.jivesoftware.smackx.packet.DelayInformation;
-import org.jivesoftware.smackx.packet.DiscoverInfo;
-import org.jivesoftware.smackx.packet.DiscoverItems;
-import org.jivesoftware.smackx.packet.LastActivity;
+import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
+import org.jivesoftware.smackx.delay.packet.DelayInfo;
+import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
+import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jivesoftware.smackx.xdata.Form;
+import org.jivesoftware.smackx.xdata.FormField;
+import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.BuildConfig;
 import org.kontalk.GCMIntentService;
 import org.kontalk.Kontalk;
@@ -105,7 +107,6 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.RandomString;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -158,7 +159,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
-        Connection.DEBUG_ENABLED = BuildConfig.DEBUG;
+        SmackConfiguration.DEBUG_ENABLED = BuildConfig.DEBUG;
     }
 
     public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
@@ -427,7 +428,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void onCreate() {
         SmackAndroid.init(getApplicationContext());
-        configure(ProviderManager.getInstance());
+        configure();
 
         // create the global wake lock
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -456,24 +457,31 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // reset idler if requested
         if (bumpIdle) mIdleHandler.reset();
 
-        if (mConnection != null && mConnection.isConnected())
-            mConnection.sendPacket(packet);
+        if (mConnection != null) {
+            try {
+                mConnection.sendPacket(packet);
+            }
+            catch (NotConnectedException e) {
+                // ignored
+                Log.v(TAG, "not connected. Dropping packet " + packet);
+            }
+        }
     }
 
-    private void configure(ProviderManager pm) {
-        pm.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
-        pm.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
-        pm.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
-        pm.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
-        pm.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
-        pm.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
-        pm.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
-        pm.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
-        pm.addExtensionProvider(AckServerReceipt.ELEMENT_NAME, AckServerReceipt.NAMESPACE, new AckServerReceipt.Provider());
-        pm.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
-        pm.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
-        pm.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
-        pm.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
+    private void configure() {
+        ProviderManager.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
+        ProviderManager.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
+        ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
+        ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
+        ProviderManager.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
+        ProviderManager.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
+        ProviderManager.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
+        ProviderManager.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
+        ProviderManager.addExtensionProvider(AckServerReceipt.ELEMENT_NAME, AckServerReceipt.NAMESPACE, new AckServerReceipt.Provider());
+        ProviderManager.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
+        ProviderManager.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
+        ProviderManager.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
+        ProviderManager.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
     }
 
     @Override
@@ -547,8 +555,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static final class DisconnectThread extends Thread {
-        private final Connection mConn;
-        public DisconnectThread(Connection conn) {
+        private final XMPPConnection mConn;
+        public DisconnectThread(XMPPConnection conn) {
             mConn = conn;
         }
 
@@ -833,9 +841,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public synchronized void created() {
+    public synchronized void created(XMPPConnection connection) {
         Log.v(TAG, "connection created.");
-        mConnection = (KontalkConnection) mHelper.getConnection();
+        mConnection = (KontalkConnection) connection;
 
         // we want to manually handle roster stuff
         mConnection.getRoster().setSubscriptionMode(SubscriptionMode.manual);
@@ -862,12 +870,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public void connected() {
+    public void connected(XMPPConnection connection) {
         // not used.
     }
 
     @Override
-    public void authenticated() {
+    public void authenticated(XMPPConnection connection) {
         Log.v(TAG, "authenticated!");
         // discovery
         discovery();
@@ -1754,9 +1762,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mConnection.removePacketListener(this);
 
             DiscoverInfo query = (DiscoverInfo) packet;
-            Iterator<DiscoverInfo.Feature> features = query.getFeatures();
-            while (features.hasNext()) {
-                DiscoverInfo.Feature feat = features.next();
+            List<DiscoverInfo.Feature> features = query.getFeatures();
+            for (DiscoverInfo.Feature feat : features) {
 
                 /*
                  * TODO do not request info about push if disabled by user.
@@ -1812,9 +1819,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // store available services
             DiscoverItems query = (DiscoverItems) packet;
-            Iterator<DiscoverItems.Item> items = query.getItems();
-            while (items.hasNext()) {
-                DiscoverItems.Item item = items.next();
+            List<DiscoverItems.Item> items = query.getItems();
+            for (DiscoverItems.Item item : items) {
                 String jid = item.getEntityID();
                 if ((mServer.getNetwork()).equals(jid)) {
                     mUploadServices.put(item.getNode(), null);
@@ -1854,9 +1860,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mConnection.removePacketListener(this);
 
             DiscoverItems query = (DiscoverItems) packet;
-            Iterator<DiscoverItems.Item> items = query.getItems();
-            while (items.hasNext()) {
-                DiscoverItems.Item item = items.next();
+            List<DiscoverItems.Item> items = query.getItems();
+            for (DiscoverItems.Item item : items) {
                 String jid = item.getEntityID();
                 // google push notifications
                 if (("gcm.push." + mServer.getNetwork()).equals(jid)) {
@@ -2398,7 +2403,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
 
                     if (msgId == null)
-                        msgId = "incoming" + RandomString.generate(6);
+                        msgId = "incoming" + StringUtils.randomString(6);
 
                     String sender = StringUtils.parseName(from);
                     String body = m.getBody();
@@ -2737,11 +2742,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     String publicKey = null;
 
                     // ok! message will be sent
-                    Iterator<FormField> iter = response.getFields();
-                    while (iter.hasNext()) {
-                        FormField field = iter.next();
+                    List<FormField> fields = response.getFields();
+                    for (FormField field : fields) {
                         if ("publickey".equals(field.getVariable())) {
-                            publicKey = field.getValues().next();
+                            publicKey = field.getValues().get(0);
                             break;
                         }
                     }
