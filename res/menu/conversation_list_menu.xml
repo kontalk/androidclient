@@ -16,16 +16,17 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<menu
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_compose" android:title="@string/menu_compose" android:icon="@drawable/ic_menu_compose"/>
-    <item android:id="@+id/menu_search" android:title="@string/menu_search" android:icon="@android:drawable/ic_menu_search"/>
-    <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- actions -->
+    <item android:id="@+id/menu_search" android:title="@string/menu_search" android:icon="@drawable/ic_menu_search" app:showAsAction="always"/>
+    <item android:id="@+id/menu_compose" android:title="@string/menu_compose" android:icon="@drawable/ic_menu_compose" app:showAsAction="always"/>
+
+    <!-- menu -->
     <item android:id="@+id/menu_offline" android:title="@string/menu_offline" android:icon="@android:drawable/ic_menu_close_clear_cancel"/>
+    <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
     <item android:id="@+id/menu_delete_all" android:title="@string/menu_delete_all" android:icon="@android:drawable/ic_menu_delete"/>
     <item android:id="@+id/menu_donate" android:title="@string/pref_donate" android:icon="@android:drawable/ic_menu_info_details"/>
     <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@android:drawable/ic_menu_preferences"/>
-
-    <item android:id="@+id/menu_search2" android:title="@string/menu_search" android:icon="@drawable/ic_title_search"/>
-    <item android:id="@+id/menu_compose2" android:title="@string/menu_compose" android:icon="@drawable/ic_title_compose"/>
 </menu>
