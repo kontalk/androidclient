@@ -50,8 +50,13 @@ import android.text.TextUtils;
  */
 public final class Preferences {
 
+	private static SharedPreferences sPreferences;
     private static Drawable sCustomBackground;
     private static String sBalloonTheme;
+
+    public static void init(Context context) {
+    	sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    }
 
     public static void setCachedCustomBackground(Drawable customBackground) {
         sCustomBackground = customBackground;
@@ -68,13 +73,11 @@ public final class Preferences {
     }
 
     private static String getString(Context context, String key, String defaultValue) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(key, defaultValue);
+        return sPreferences.getString(key, defaultValue);
     }
 
     private static int getInt(Context context, String key, int defaultValue) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getInt(key, defaultValue);
+        return sPreferences.getInt(key, defaultValue);
     }
 
     private static int getIntMinValue(Context context, String key, int minValue, int defaultValue) {
@@ -90,30 +93,26 @@ public final class Preferences {
     }
 
     private static long getLong(Context context, String key, long defaultValue) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getLong(key, defaultValue);
+        return sPreferences.getLong(key, defaultValue);
     }
 
     /** Retrieves a long and if >= 0 it sets it to -1. */
     private static long getLongOnce(Context context, String key) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        long value = prefs.getLong(key, -1);
+        long value = sPreferences.getLong(key, -1);
         if (value >= 0)
-            prefs.edit().putLong(key, -1).commit();
+        	sPreferences.edit().putLong(key, -1).commit();
         return value;
     }
 
     private static boolean getBoolean(Context context, String key, boolean defaultValue) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean(key, defaultValue);
+        return sPreferences.getBoolean(key, defaultValue);
     }
 
     /** Retrieve a boolean and if false set it to true. */
     private static boolean getBooleanOnce(Context context, String key) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = prefs.getBoolean(key, false);
+        boolean value = sPreferences.getBoolean(key, false);
         if (!value)
-            prefs.edit().putBoolean(key, true).commit();
+        	sPreferences.edit().putBoolean(key, true).commit();
         return value;
     }
 
@@ -122,8 +121,7 @@ public final class Preferences {
     }
 
     public static boolean setServerURI(Context context, String serverURI) {
-    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    	return prefs.edit()
+    	return sPreferences.edit()
     		.putString("pref_network_uri", serverURI)
     		.commit();
     }
@@ -173,8 +171,7 @@ public final class Preferences {
     }
 
     public static boolean setLastCountryCode(Context context, int countryCode) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
+        return sPreferences.edit()
             .putInt("pref_countrycode", countryCode)
             .commit();
     }
@@ -192,15 +189,13 @@ public final class Preferences {
     }
 
     public static boolean setLastSyncTimestamp(Context context, long timestamp) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
+        return sPreferences.edit()
             .putLong("pref_last_sync", timestamp)
             .commit();
     }
 
     public static boolean setLastPushNotification(Context context, long timestamp) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
+        return sPreferences.edit()
             .putLong("pref_last_push_notification", timestamp)
             .commit();
     }
@@ -238,8 +233,7 @@ public final class Preferences {
     }
 
     public static boolean setStatusMessage(Context context, String message) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
+        return sPreferences.edit()
             .putString("pref_status_message", message)
             .commit();
     }
@@ -283,11 +277,10 @@ public final class Preferences {
      * @return offline mode status before the switch
      */
     public static boolean switchOfflineMode(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean old = prefs.getBoolean("offline_mode", false);
+        boolean old = sPreferences.getBoolean("offline_mode", false);
         // set flag again!
         boolean offline = !old;
-        prefs.edit().putBoolean("offline_mode", offline).commit();
+        sPreferences.edit().putBoolean("offline_mode", offline).commit();
 
         if (offline) {
             // stop the message center and never start it again
@@ -309,8 +302,7 @@ public final class Preferences {
     }
 
     public static boolean setOfflineModeUsed(Context context) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
+        return sPreferences.edit()
             .putBoolean("offline_mode_used", true)
             .commit();
     }
@@ -329,8 +321,7 @@ public final class Preferences {
     }
 
     public static boolean setPushSenderId(Context context, String senderId) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
+        return sPreferences.edit()
             .putString("pref_push_sender", senderId)
             .commit();
     }
@@ -352,8 +343,7 @@ public final class Preferences {
     }
 
     public static boolean setLastConnection(Context context) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.edit()
+        return sPreferences.edit()
             .putLong("pref_last_connection", System.currentTimeMillis())
             .commit();
     }

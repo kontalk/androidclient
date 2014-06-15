@@ -91,7 +91,6 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.MenuItemCompat;
 import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -586,10 +585,6 @@ public class ComposeMessageFragment extends ListFragment implements
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.compose_message_menu, menu);
-		MenuItem item = menu.findItem(R.id.menu_attachment2);
-
-		if (item != null) MenuItemCompat
-		    .setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
 
 		mDeleteThreadMenu = menu.findItem(R.id.delete_thread);
 		mViewContactMenu = menu.findItem(R.id.view_contact);
@@ -611,7 +606,6 @@ public class ComposeMessageFragment extends ListFragment implements
     			return true;
 
     		case R.id.menu_attachment:
-            case R.id.menu_attachment2:
     		    selectAttachment();
     			return true;
 
@@ -2150,10 +2144,10 @@ public class ComposeMessageFragment extends ListFragment implements
             // FIXME what about VoIP?
             if (!getActivity().getPackageManager().hasSystemFeature(
                     PackageManager.FEATURE_TELEPHONY)) {
-                mCallMenu.setVisible(false);
+                mCallMenu.setVisible(false).setEnabled(false);
             }
             else {
-                mCallMenu.setVisible(true);
+                mCallMenu.setVisible(true).setEnabled(true);
                 mCallMenu.setEnabled(contactEnabled);
             }
             mViewContactMenu.setEnabled(contactEnabled);

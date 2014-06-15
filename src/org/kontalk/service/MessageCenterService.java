@@ -327,8 +327,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
         private final static int DEFAULT_IDLE_TIME = 60000;
-        /** Minimal idle time. */
-        private final static int MIN_IDLE_TIME = DEFAULT_IDLE_TIME;
 
         /** A reference to the message center. */
         private WeakReference<MessageCenterService> s;
@@ -388,11 +386,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 int time;
                 MessageCenterService service = s.get();
                 if (service != null)
-                    time = Preferences.getIdleTimeMillis(service, MIN_IDLE_TIME, DEFAULT_IDLE_TIME);
+                    time = Preferences.getIdleTimeMillis(service, 0, DEFAULT_IDLE_TIME);
                 else
                     time = DEFAULT_IDLE_TIME;
 
-                sendMessageDelayed(obtainMessage(MSG_IDLE), time);
+                // zero means no idle (keep-alive forever)
+                if (time > 0)
+                	sendMessageDelayed(obtainMessage(MSG_IDLE), time);
             }
         }
 

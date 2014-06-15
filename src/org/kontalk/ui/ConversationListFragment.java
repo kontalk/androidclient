@@ -66,10 +66,8 @@ public class ConversationListFragment extends ListFragment {
     private ConversationListAdapter mListAdapter;
     private boolean mDualPane;
 
-    /** Search menu item (might not exist). */
+    /** Search menu item. */
     private MenuItem mSearchMenu;
-    /** Search menu action bar item. */
-    private MenuItem mSearchMenuAction;
     private MenuItem mDeleteAllMenu;
     /** Offline mode menu item. */
     private MenuItem mOfflineMenu;
@@ -146,15 +144,15 @@ public class ConversationListFragment extends ListFragment {
         inflater.inflate(R.menu.conversation_list_menu, menu);
 
         // compose message
-        MenuItem item = menu.findItem(R.id.menu_compose2);
+        /*
+        MenuItem item = menu.findItem(R.id.menu_compose);
         MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+        */
 
         // search
-        mSearchMenuAction = menu.findItem(R.id.menu_search2);
-        MenuItemCompat.setShowAsAction(mSearchMenuAction, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-
-        // search (might not exist)
         mSearchMenu = menu.findItem(R.id.menu_search);
+        //MenuItemCompat.setShowAsAction(mSearchMenu, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+
         mDeleteAllMenu = menu.findItem(R.id.menu_delete_all);
 
         // offline mode
@@ -169,7 +167,6 @@ public class ConversationListFragment extends ListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_compose:
-            case R.id.menu_compose2:
                 chooseContact();
                 return true;
 
@@ -200,7 +197,6 @@ public class ConversationListFragment extends ListFragment {
                 return true;
 
             case R.id.menu_search:
-            case R.id.menu_search2:
                 getActivity().onSearchRequested();
                 return true;
 
@@ -385,15 +381,12 @@ public class ConversationListFragment extends ListFragment {
     private void onDatabaseChanged() {
         boolean visible = (mListAdapter != null && !mListAdapter.isEmpty());
         if (mSearchMenu != null) {
-            mSearchMenu.setEnabled(visible);
-            mSearchMenu.setVisible(visible);
+            mSearchMenu.setEnabled(visible).setVisible(visible);
         }
         // if it's null it hasn't gone through onCreateOptionsMenu() yet
-        if (mSearchMenuAction != null) {
-            mSearchMenuAction.setEnabled(visible);
-            mSearchMenuAction.setVisible(visible);
-            mDeleteAllMenu.setEnabled(visible);
-            mDeleteAllMenu.setVisible(visible);
+        if (mSearchMenu != null) {
+            mSearchMenu.setEnabled(visible).setVisible(visible);
+            mDeleteAllMenu.setEnabled(visible).setVisible(visible);
         }
     }
 

@@ -36,6 +36,7 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
+import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -97,6 +98,9 @@ public class Kontalk extends Application {
     public void onCreate() {
         super.onCreate();
         mHandler = new Handler();
+
+        // init preferences
+        Preferences.init(this);
 
         // update notifications from locally unread messages
         MessagingNotification.updateMessagesNotification(this, false);
