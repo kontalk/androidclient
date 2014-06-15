@@ -154,6 +154,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
 	                if (!result.isSuccess()) {
 	                    alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
 	                    mIabHelper = null;
+	                    progress.dismiss();
 	                    return;
 	                }
 
@@ -174,15 +175,17 @@ public class DonationFragment extends Fragment implements OnClickListener {
             public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
                 if (mIabHelper == null) return;
 
+                // dismiss progress
+                progress.dismiss();
+
                 if (result.isFailure()) {
                     alert(R.string.title_error, getString(R.string.iab_error_query, result.getResponse()));
                 }
 
                 else {
 
-                    // end async operation and dismiss progress
+                    // end async operation
                     mIabHelper.flagEndAsync();
-                	progress.dismiss();
 
                     // prepare items for the dialog
                     String[] dialogItems = new String[iabItems.length];
