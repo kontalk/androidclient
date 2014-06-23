@@ -140,16 +140,18 @@ public class XMPPConnectionHelper extends Thread {
 
         // recreate connection if closed
         if (mConn == null || !mConn.isConnected()) {
+
+        	KeyStore trustStore = null;
+        	boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
+        	if (!acceptAnyCertificate)
+        		trustStore = InternalTrustStore.getTrustStore(mContext);
+
             if (key == null) {
-                mConn = new KontalkConnection(mServer);
+                mConn = new KontalkConnection(mServer,
+                	acceptAnyCertificate, trustStore);
             }
 
             else {
-            	KeyStore trustStore = null;
-            	boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
-            	if (!acceptAnyCertificate)
-            		trustStore = InternalTrustStore.getTrustStore(mContext);
-
                 mConn = new KontalkConnection(mServer,
                     key.getBridgePrivateKey(),
                     key.getBridgeCertificate(),

@@ -46,7 +46,17 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     protected EndpointServer mServer;
 
-    public KontalkConnection(EndpointServer server) throws XMPPException {
+    public KontalkConnection(EndpointServer server,
+    	boolean acceptAnyCertificate, KeyStore trustStore)
+    		throws XMPPException {
+
+        this(server, null, null, acceptAnyCertificate, trustStore);
+    }
+
+    public KontalkConnection(EndpointServer server,
+    		PrivateKey privateKey, X509Certificate bridgeCert,
+    		boolean acceptAnyCertificate, KeyStore trustStore) throws XMPPException {
+
         super(new AndroidConnectionConfiguration
                 (server.getHost(),
                  server.getPort(),
@@ -63,13 +73,6 @@ public class KontalkConnection extends XMPPTCPConnection {
         config.setSecurityMode(SecurityMode.enabled);
         // we will send a custom presence
         config.setSendPresence(false);
-    }
-
-    public KontalkConnection(EndpointServer server,
-    		PrivateKey privateKey, X509Certificate bridgeCert,
-    		boolean acceptAnyCertificate, KeyStore trustStore) throws XMPPException {
-
-        this(server);
 
         setupSSL(privateKey, bridgeCert, acceptAnyCertificate, trustStore);
     }
@@ -78,17 +81,19 @@ public class KontalkConnection extends XMPPTCPConnection {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
 
-            // in-memory keystore
-            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keystore.load(null, null);
-            keystore.setKeyEntry("private", privateKey, null, new Certificate[] { bridgeCert });
+            KeyManager[] km = null;
+            if (privateKey != null && bridgeCert != null) {
+	            // in-memory keystore
+	            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+	            keystore.load(null, null);
+	            keystore.setKeyEntry("private", privateKey, null, new Certificate[] { bridgeCert });
 
-            // key managers
-            KeyManager[] km;
-            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmFactory.init(keystore, null);
+	            // key managers
+	            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+	            kmFactory.init(keystore, null);
 
-            km = kmFactory.getKeyManagers();
+	            km = kmFactory.getKeyManagers();
+            }
 
             // trust managers
             TrustManager[] tm;
