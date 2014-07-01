@@ -42,6 +42,7 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.AttachmentComponent;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -57,6 +58,7 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -122,7 +124,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnLongClickListener, IconContextMenuOnClickListener {
+		View.OnLongClickListener, IconContextMenuOnClickListener, OnAudioDialogResult {
 	private static final String TAG = ComposeMessageFragment.class
 			.getSimpleName();
 
@@ -400,7 +402,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
 			// generate thumbnail
 			// FIXME this is blocking!!!!
-			if (media) {
+			if (media && klass == ImageComponent.class) {
 				// FIXME hard-coded to ImageComponent
 				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
 				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
@@ -799,7 +801,7 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
     private void selectAudioAttachment() {
-        new AudioDialog(getActivity()).show();
+        new AudioDialog(getActivity(), this).show();
     }
 
 	private void showSmileysPopup(View anchor) {
@@ -2297,4 +2299,15 @@ public class ComposeMessageFragment extends ListFragment implements
 	    }
 	}
 
+    @Override
+    public void onResult(String path) {
+
+        if (path != null) {
+            Uri uri = Uri.fromFile(new File(path));
+            //TODO
+            String mime = "audio/3gpp";
+            sendBinaryMessage(uri, mime, true, AudioComponent.class);
+        }
+
+    }
 }

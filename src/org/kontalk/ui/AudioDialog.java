@@ -22,9 +22,11 @@ import java.io.File;
 import java.io.IOException;
 
 import org.kontalk.R;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -64,6 +66,7 @@ public class AudioDialog extends AlertDialog {
     private float timeCircle;
     private int playerSeekTo;
     private int checkSeek;
+    private OnAudioDialogResult mResult;
     private static final int STATUS_IDLE=0;
     private static final int STATUS_RECORDING=1;
     private static final int STATUS_STOPPED=2;
@@ -75,8 +78,9 @@ public class AudioDialog extends AlertDialog {
     private static final int COLOR_RECORD = Color.rgb(0xDD, 0x18, 0x12);
     private static final int COLOR_PLAY = Color.rgb(0x00, 0xAC, 0xEC);
 
-    public AudioDialog(Context context) {
+    public AudioDialog(Context context, OnAudioDialogResult result) {
         super(context);
+        mResult = result;
         init();
     }
 
@@ -137,8 +141,27 @@ public class AudioDialog extends AlertDialog {
             }
         });
 
-        setButton(Dialog.BUTTON_POSITIVE, "Send", (OnClickListener) null);
-        setButton(Dialog.BUTTON_NEGATIVE, "Cancel", (OnClickListener) null);
+        setButton(Dialog.BUTTON_POSITIVE, "Send", new OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (path != null)
+                    mResult.onResult(path);
+            }
+        });
+        setButton(Dialog.BUTTON_NEGATIVE, "Cancel", new OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.w("Kontalk","File Cancellato");
+                File audio = new File(path);
+                audio.delete();
+            }
+        });
+    }
+
+    public interface OnAudioDialogResult  {
+        public void onResult (String path);
     }
 
     @Override
@@ -157,11 +180,11 @@ public class AudioDialog extends AlertDialog {
             player.release();
         }
 
-        if (check_flags==STATUS_STOPPED || check_flags== STATUS_PAUSED) {
+        /*if (check_flags==STATUS_STOPPED || check_flags== STATUS_PAUSED) {
             Log.w("Kontalk","File Cancellato");
             File audio = new File(path);
             audio.delete();
-        }
+        }*/
     }
 
     private void startRecord() {
