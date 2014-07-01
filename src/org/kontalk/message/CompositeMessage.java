@@ -48,6 +48,7 @@ public class CompositeMessage {
 	@SuppressWarnings("unchecked")
 	private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
 		ImageComponent.class,
+		AudioComponent.class,
 		VCardComponent.class,
 	};
 
