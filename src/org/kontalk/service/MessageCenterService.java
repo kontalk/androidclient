@@ -778,6 +778,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
         else {
             Log.v(TAG, "restarting after service crash");
+            start(getApplicationContext());
         }
     }
 
