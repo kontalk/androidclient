@@ -93,6 +93,7 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -835,11 +836,29 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	private void blockUser() {
-	    setPrivacy(PRIVACY_BLOCK);
+		new AlertDialog.Builder(getActivity())
+			.setTitle(R.string.menu_block_user)
+			.setMessage(Html.fromHtml(getString(R.string.msg_block_user_warning)))
+			.setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+				    setPrivacy(PRIVACY_BLOCK);
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, null)
+			.show();
 	}
 
     private void unblockUser() {
-        setPrivacy(PRIVACY_UNBLOCK);
+		new AlertDialog.Builder(getActivity())
+		.setTitle(R.string.menu_unblock_user)
+		.setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
+		.setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+		        setPrivacy(PRIVACY_UNBLOCK);
+			}
+		})
+		.setNegativeButton(android.R.string.cancel, null)
+		.show();
     }
 
 	private void decryptMessage(CompositeMessage msg) {
@@ -1518,12 +1537,18 @@ public class ComposeMessageFragment extends ListFragment implements
 							// this will update block/unblock menu items
 							updateUI();
 							// request presence subscription if unblocking
-							if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction()))
+							if (MessageCenterService.ACTION_UNBLOCKED.equals(intent.getAction())) {
+								Toast.makeText(getActivity(),
+										R.string.msg_user_unblocked,
+										Toast.LENGTH_LONG).show();
+
 								presenceSubscribe();
-							else
+							}
+							else {
 								Toast.makeText(getActivity(),
 									R.string.msg_user_blocked,
 									Toast.LENGTH_LONG).show();
+							}
 
 							// we don't need this receiver anymore
 							mLocalBroadcastManager.unregisterReceiver(this);
