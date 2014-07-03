@@ -1366,6 +1366,12 @@ public class ComposeMessageFragment extends ListFragment implements
 	        parent.setTitle(title);
 	}
 
+	public void setActivityStatusUpdating() {
+	    Activity parent = getActivity();
+	    if (parent instanceof ComposeMessage)
+	    	((ComposeMessage) parent).setUpdatingSubtitle();
+	}
+
 	public ComposeMessage getParentActivity() {
 		Activity _activity = getActivity();
 		return (_activity instanceof ComposeMessage) ? (ComposeMessage) _activity
@@ -2036,6 +2042,9 @@ public class ComposeMessageFragment extends ListFragment implements
 			getActivity().finish();
 			return;
 		}
+
+		// we are updating the status now
+		setActivityStatusUpdating();
 
 		// cursor was previously destroyed -- reload everything
 		// mConversation = null;

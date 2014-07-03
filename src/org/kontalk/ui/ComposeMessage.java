@@ -38,11 +38,15 @@ import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -151,6 +155,19 @@ public class ComposeMessage extends ActionBarActivity {
 
             getSupportActionBar().setIcon(avatar);
         }
+    }
+
+    public void setUpdatingSubtitle() {
+    	CharSequence current = mSubtitleView.getText();
+    	// no need to set updating status if no text is displayed
+    	if (current.length() > 0) {
+    		// we call toString() to strip any existing span
+			SpannableString status = new SpannableString(current.toString());
+			status.setSpan(new StyleSpan(Typeface.ITALIC),
+				0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+			mSubtitleView.setText(status);
+    	}
     }
 
     private void onAvatarClick() {
