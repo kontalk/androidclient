@@ -821,6 +821,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
+    public void authenticationFailed() {
+    	// fire up a notification explaining the situation
+    	MessagingNotification.authenticationError(this);
+    }
+
+    @Override
     public void reconnectingIn(int seconds) {
         Log.v(TAG, "reconnecting in " + seconds + " seconds");
     }

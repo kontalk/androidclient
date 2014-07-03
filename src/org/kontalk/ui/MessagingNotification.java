@@ -67,6 +67,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_QUICK_REPLY     = 107;
     public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 108;
     public static final int NOTIFICATION_ID_INVITATION      = 109;
+    public static final int NOTIFICATION_ID_AUTH_ERROR		= 110;
 
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
@@ -493,6 +494,40 @@ public class MessagingNotification {
 
             nm.cancel(NOTIFICATION_ID_INVITATION);
     	}
+    }
+
+    /** Fires an authentication error notification. */
+    public static void authenticationError(Context context) {
+        // notification will open the conversation
+        Intent ni = ConversationList.authenticationErrorWarning(context);
+        PendingIntent pi = PendingIntent.getActivity(context,
+        	NOTIFICATION_ID_AUTH_ERROR, ni, 0);
+
+        // build the notification
+        NotificationCompat.Builder builder = new NotificationCompat
+            .Builder(context.getApplicationContext())
+        	.setAutoCancel(true)
+            .setSmallIcon(R.drawable.stat_notify)
+            .setTicker(context.getString(R.string.title_auth_error))
+            .setContentTitle(context.getString(R.string.title_auth_error))
+            .setContentText(context.getString(R.string.notification_text_more))
+            .setContentIntent(pi);
+
+        // defaults (sound, vibration, lights)
+        setDefaults(context, builder);
+
+        // fire it up!
+        NotificationManager nm = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+
+        nm.notify(NOTIFICATION_ID_AUTH_ERROR, builder.build());
+    }
+
+    public static void clearAuthenticationError(Context context) {
+        NotificationManager nm = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+
+        nm.cancel(NOTIFICATION_ID_AUTH_ERROR);
     }
 
     /**

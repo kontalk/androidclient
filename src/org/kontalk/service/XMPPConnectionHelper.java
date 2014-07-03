@@ -30,6 +30,8 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.sasl.SASLError;
+import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.kontalk.Kontalk;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.EndpointServer;
@@ -52,6 +54,9 @@ public class XMPPConnectionHelper extends Thread {
 
     /** Max connection retry count if idle. */
     private static final int MAX_IDLE_BACKOFF = 10;
+
+    /** Max retries after for authentication error. */
+    private static final int MAX_AUTH_ERRORS = 3;
 
     private final Context mContext;
     private EndpointServer mServer;
@@ -224,6 +229,19 @@ public class XMPPConnectionHelper extends Thread {
                     // EXTERMINATE!!
                     mConn = null;
 
+                    // SASL: not-authorized
+                    if (ie instanceof SASLErrorException && ((SASLErrorException) ie)
+                    	.getSASLFailure().getSASLError() == SASLError.not_authorized &&
+                    	mRetryCount >= MAX_AUTH_ERRORS) {
+
+                    	if (mListener != null) {
+                    		mListener.authenticationFailed();
+
+                    		// this ends here.
+                    		break;
+                    	}
+                    }
+
                     if (mRetryEnabled) {
                         try {
                             // max reconnections - idle message center
@@ -303,5 +321,7 @@ public class XMPPConnectionHelper extends Thread {
         public void created(XMPPConnection connection);
 
         public void aborted(Exception e);
+
+        public void authenticationFailed();
     }
 }

@@ -571,4 +571,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public void authenticated(XMPPConnection conn) {
         // not used
     }
+
+    @Override
+    public void authenticationFailed() {
+    	// not used
+    }
+
 }

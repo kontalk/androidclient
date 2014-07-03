@@ -33,6 +33,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -40,6 +41,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Html;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
@@ -60,6 +62,10 @@ public class ConversationList extends ActionBarActivity
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
 
+    private static final int DIALOG_AUTH_ERROR_WARNING = 1;
+
+    private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +74,8 @@ public class ConversationList extends ActionBarActivity
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        xmppUpgrade();
+        if (!xmppUpgrade())
+        	handleIntent(getIntent());
     }
 
     public void titleComposeMessage(View view) {
@@ -80,7 +87,7 @@ public class ConversationList extends ActionBarActivity
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */
-    private void xmppUpgrade() {
+    private boolean xmppUpgrade() {
         AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
@@ -96,9 +103,13 @@ public class ConversationList extends ActionBarActivity
         		}
         	}
 
-            if (!Authenticator.hasPersonalKey(am, account))
+            if (!Authenticator.hasPersonalKey(am, account)) {
             	askForPersonalName();
+            	return true;
+            }
         }
+
+        return false;
     }
 
     private void askForPersonalName() {
@@ -145,8 +156,31 @@ public class ConversationList extends ActionBarActivity
     /** Called when a new intent is sent to the activity (if already started). */
     @Override
     protected void onNewIntent(Intent intent) {
+    	handleIntent(intent);
+
         ConversationListFragment fragment = getListFragment();
         fragment.startQuery();
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id, Bundle args) {
+    	if (id == DIALOG_AUTH_ERROR_WARNING) {
+
+    		return new AlertDialog.Builder(this)
+				.setTitle(R.string.title_auth_error)
+				.setMessage(Html.fromHtml(getString(R.string.msg_auth_error)))
+				.setPositiveButton(android.R.string.ok, null)
+				.create();
+
+    	}
+
+    	return super.onCreateDialog(id, args);
+    }
+
+    private void handleIntent(Intent intent) {
+    	if (intent != null && ACTION_AUTH_ERROR_WARNING.equals(intent.getAction())) {
+    		showDialog(DIALOG_AUTH_ERROR_WARNING);
+    	}
     }
 
     @Override
@@ -274,6 +308,12 @@ public class ConversationList extends ActionBarActivity
                 Toast.makeText(this, R.string.contact_not_registered, Toast.LENGTH_LONG)
                     .show();
         }
+    }
+
+    public static Intent authenticationErrorWarning(Context context) {
+        Intent i = new Intent(context.getApplicationContext(), ConversationList.class);
+        i.setAction(ACTION_AUTH_ERROR_WARNING);
+        return i;
     }
 
 }
