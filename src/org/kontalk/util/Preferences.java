@@ -293,6 +293,19 @@ public final class Preferences {
         return old;
     }
 
+    /** Enable/disable offline mode. */
+    public static void setOfflineMode(Context context, boolean enabled) {
+        sPreferences.edit().putBoolean("offline_mode", enabled).commit();
+
+        if (enabled) {
+            // stop the message center and never start it again
+            MessageCenterService.stop(context);
+        }
+        else {
+            MessageCenterService.start(context);
+        }
+    }
+
     public static boolean getOfflineMode(Context context) {
         return getBoolean(context, "offline_mode", false);
     }

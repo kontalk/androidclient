@@ -104,7 +104,12 @@ public class ConversationList extends ActionBarActivity
         	}
 
             if (!Authenticator.hasPersonalKey(am, account)) {
+            	// first of all, disable offline mode
+            	Preferences.setOfflineMode(this, false);
+
+            	// ask for user name
             	askForPersonalName();
+
             	return true;
             }
         }
