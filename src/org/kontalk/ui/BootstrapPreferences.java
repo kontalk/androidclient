@@ -19,8 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-
-import com.google.android.gcm.GCMRegistrar;
+import org.kontalk.util.GcmUtils;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
@@ -44,10 +43,7 @@ public class BootstrapPreferences extends PreferenceActivity {
         addPreferencesFromResource(R.xml.bootstrap_preferences);
 
         // disable push notifications if GCM is not available on the device
-        try {
-            GCMRegistrar.checkDevice(this);
-        }
-        catch (UnsupportedOperationException unsupported) {
+        if (GcmUtils.isGcmAvailable(this)) {
             final Preference push = findPreference("pref_push_notifications");
             push.setEnabled(false);
         }

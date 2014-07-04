@@ -43,6 +43,9 @@ import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 
 /**
  * Access to application preferences.

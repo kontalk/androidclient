@@ -24,6 +24,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ServerList;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
+import org.kontalk.util.GcmUtils;
 import org.kontalk.util.Preferences;
 
 import android.annotation.TargetApi;
@@ -44,8 +45,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
-
-import com.google.android.gcm.GCMRegistrar;
 
 
 /**
@@ -179,10 +178,7 @@ public final class PreferencesActivity extends PreferenceActivity {
         });
 
         // disable push notifications if GCM is not available on the device
-        try {
-            GCMRegistrar.checkDevice(this);
-        }
-        catch (UnsupportedOperationException unsupported) {
+        if (GcmUtils.isGcmAvailable(this)) {
             final Preference push = findPreference("pref_push_notifications");
             push.setEnabled(false);
         }

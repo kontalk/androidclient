@@ -59,7 +59,6 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.BuildConfig;
-import org.kontalk.GCMIntentService;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -103,7 +102,10 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.gcm.DefaultGcmListener;
+import org.kontalk.service.gcm.GcmListener;
 import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.GcmUtils;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -144,8 +146,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.google.android.gcm.GCMRegistrar;
 
 
 /**
@@ -285,9 +285,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
 
+    private static final GcmListener sGcmListener = new DefaultGcmListener();
+
     /** Push notifications enabled flag. */
     private boolean mPushNotifications;
-    /** Server push sender id. This is static so {@link GCMIntentService} can see it. */
+    /** Server push sender id. This is static so {@link GcmIntentService} can see it. */
     private static String mPushSenderId;
     /** GCM registration id. */
     private String mPushRegistrationId;
@@ -1574,7 +1576,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void updateStatus(final Context context) {
-        updateStatus(context, GCMRegistrar.getRegistrationId(context));
+        updateStatus(context, GcmUtils.getRegistrationId(context));
     }
 
     /** Broadcasts our presence to the server. */
@@ -1695,33 +1697,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void gcmRegister() {
         if (mPushSenderId != null) {
-            try {
-                GCMRegistrar.checkDevice(this);
-                //GCMRegistrar.checkManifest(this);
+        	if (GcmUtils.isGcmAvailable(this)) {
                 // senderId will be given by serverinfo if any
-                mPushRegistrationId = GCMRegistrar.getRegistrationId(this);
+                mPushRegistrationId = GcmUtils.getRegistrationId(this);
                 if (TextUtils.isEmpty(mPushRegistrationId))
                     // start registration
-                    GCMRegistrar.register(this, mPushSenderId);
+                    GcmUtils.register(sGcmListener, this, mPushSenderId);
                 else
                     // already registered - send registration id to server
                     setPushRegistrationId(mPushRegistrationId);
             }
-            catch (UnsupportedOperationException unsupported) {
-                // GCM not supported
-            }
-            catch (Exception e) {
-                // this exception should be reported
-                Log.w(TAG, "error setting up GCM", e);
-            }
-
         }
     }
 
     private void gcmUnregister() {
-        if (GCMRegistrar.isRegistered(this))
+        if (GcmUtils.isRegistered(this))
             // start unregistration
-            GCMRegistrar.unregister(this);
+            GcmUtils.unregister(sGcmListener, this);
         else
             // force unregistration
             setPushRegistrationId(null);
@@ -1732,7 +1724,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // notify the server about the change
         updateStatus(this, mPushRegistrationId);
-        GCMRegistrar.setRegisteredOnServer(this, mPushRegistrationId != null);
+        GcmUtils.setRegisteredOnServer(this, mPushRegistrationId != null);
     }
 
     public static String getPushSenderId() {
@@ -1882,7 +1874,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                         // begin a registration cycle if senderId is different
                         if (oldSender != null && !oldSender.equals(mPushSenderId)) {
-                            GCMRegistrar.unregister(MessageCenterService.this);
+                            GcmUtils.unregister(sGcmListener, MessageCenterService.this);
                             // unregister will see this as an attempt to register again
                             mPushRegistrationCycle = true;
                         }
