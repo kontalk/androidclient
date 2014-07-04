@@ -168,6 +168,18 @@ public abstract class MediaStorage {
         return File.createTempFile(filename, ".jpg", path);
     }
 
+    /** Creates a temporary 3gp file. */
+    public static File getTempAudio(Context context) throws IOException {
+        File path = new File(Environment
+            .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                "Kontalk");
+        path.mkdirs();
+        String timeStamp =
+            new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String filename = "record" + timeStamp + "_";
+        return File.createTempFile(filename, ".3gp", path);
+    }
+
     /** Guesses the MIME type of an {@link Uri}. */
     public static String getType(Context context, Uri uri) {
         String mime = context.getContentResolver().getType(uri);

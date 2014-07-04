@@ -1,6 +1,8 @@
 package org.kontalk.message;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.kontalk.util.MediaStorage;
 
@@ -15,26 +17,22 @@ import android.net.Uri;
 
 public class AudioComponent extends AttachmentComponent {
 
-    private static final String[][] MIME_TYPES = {
-        { "audio/3gpp", "3gp" },
-        { "audio/mpeg", "mp3" },
-        { "audio/mp4", "mp4" },
-        { "audio/wav", "wav" },
-        { "audio/aac", "aac" },
-        { "audio/flac", "flac" },
-
-    };
+    static Map<String, String> MIME_TYPES = new HashMap<String, String>();
+    static {
+        MIME_TYPES.put("audio/3gpp", "3gp");
+        MIME_TYPES.put("audio/mpeg", "mp3");
+        MIME_TYPES.put("audio/mp4", "mp4");
+        MIME_TYPES.put("audio/wav", "wav");
+        MIME_TYPES.put("audio/aac", "aac");
+        MIME_TYPES.put("audio/flac", "flac");
+    }
 
     public AudioComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
         super(mime, previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
     }
 
     public static boolean supportsMimeType(String mime) {
-        for (int i = 0; i < MIME_TYPES.length; i++)
-            if (MIME_TYPES[i][0].equalsIgnoreCase(mime))
-                return true;
-
-        return false;
+        return MIME_TYPES.containsKey(mime);
     }
 
     /** FIXME not used yet */
@@ -62,12 +60,7 @@ public class AudioComponent extends AttachmentComponent {
     }
 
     /** Returns the file extension from the mime type. */
-    private static String getFileExtension(String mime) {
-        for (int i = 0; i < MIME_TYPES.length; i++)
-            if (MIME_TYPES[i][0].equalsIgnoreCase(mime))
-                return MIME_TYPES[i][1];
-
-        return null;
+    public static String getFileExtension(String mime) {
+        return MIME_TYPES.get(mime);
     }
-
 }
