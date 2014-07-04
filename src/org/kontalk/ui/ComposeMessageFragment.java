@@ -2336,6 +2336,6 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void onResult(String path) {
         if (path != null)
-            sendBinaryMessage(Uri.fromFile(new File(path)), AudioDialog.MIME_3GPP, true, AudioComponent.class);
+            sendBinaryMessage(Uri.fromFile(new File(path)), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
     }
 }

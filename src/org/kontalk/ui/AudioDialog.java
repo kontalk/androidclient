@@ -34,7 +34,6 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -77,7 +76,7 @@ public class AudioDialog extends AlertDialog {
     private static final int STATUS_SEND = 6;
     private static final int MAX_DURATE=120000;
     private static final int MAX_PROGRESS=100;
-    public static final String MIME_3GPP = "audio/3gpp";
+    public static final String DEFAULT_MIME = "audio/3gpp";
 
 
     public AudioDialog(Context context, OnAudioDialogResult result) {
@@ -157,12 +156,12 @@ public class AudioDialog extends AlertDialog {
                 }
             }
         });
-        setButton(Dialog.BUTTON_NEGATIVE, getContext().getString(R.string.cancel), new OnClickListener() {
+        setButton(Dialog.BUTTON_NEGATIVE, getContext().getString(android.R.string.cancel), new OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.w("Kontalk","File Cancellato");
-                mFile.delete();
+                if (mFile != null)
+                    mFile.delete();
             }
         });
     }
@@ -179,7 +178,6 @@ public class AudioDialog extends AlertDialog {
 
     private void finish() {
         if (mCheckFlags == STATUS_RECORDING) {
-            Log.w("Kontalk","Stop Riproduzione");
             stopRecord();
         }
         else if (mCheckFlags == STATUS_PLAYING) {
@@ -187,14 +185,12 @@ public class AudioDialog extends AlertDialog {
             mPlayer.release();
         }
 
-        if (mCheckFlags==STATUS_STOPPED || mCheckFlags== STATUS_PAUSED && mCheckFlags != STATUS_SEND) {
-            Log.w("Kontalk","File Cancellato");
+        if (mCheckFlags==STATUS_STOPPED || mCheckFlags== STATUS_PAUSED && mCheckFlags != STATUS_SEND && mFile != null) {
             mFile.delete();
         }
     }
 
     private void startRecord() throws IOException {
-        Log.w("Kontalk","Start Record");
         mImageButton.setImageResource(R.drawable.rec);
         mHoloCircularProgressBar.setVisibility(View.VISIBLE);
         mHoloCircularProgressBar.setCircleColor(Color.TRANSPARENT);
@@ -224,7 +220,6 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void stopRecord() {
-        Log.w("Kontalk","Registrazione Fermata");
         mRecorder.stop();
         mRecorder.reset();
         mRecorder.release();
@@ -240,7 +235,6 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void playAudio() {
-        Log.w("Kontalk",mFile.getAbsolutePath());
         mHoloCircularProgressBar.setClickable(true);
         try {
             mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);

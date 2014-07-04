@@ -25,7 +25,6 @@
     <string name="download_service">Download Service</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="cancel">Cancel</string>
     <string name="send">Send</string>
     <string name="menu_compose">Compose</string>
     <string name="menu_delete_all">Delete threads</string>
