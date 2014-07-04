@@ -2179,12 +2179,22 @@ public class ComposeMessageFragment extends ListFragment implements
             mDeleteThreadMenu.setEnabled(threadEnabled);
         }
 
-        if (mBlockMenu != null && contact != null) {
-            // block/unblock
-            boolean blocked = contact.isBlocked();
+        if (mBlockMenu != null) {
+        	if (Authenticator.isSelfUserId(getActivity(), userId)) {
+	            mBlockMenu.setVisible(false).setEnabled(false);
+	            mUnblockMenu.setVisible(false).setEnabled(false);
+        	}
+        	else if (contact != null) {
+	            // block/unblock
+	            boolean blocked = contact.isBlocked();
 
-            mBlockMenu.setVisible(!blocked);
-            mUnblockMenu.setVisible(blocked);
+	            mBlockMenu.setVisible(!blocked).setEnabled(!blocked);
+	            mUnblockMenu.setVisible(blocked).setEnabled(blocked);
+        	}
+        	else {
+	            mBlockMenu.setVisible(true).setEnabled(true);
+	            mUnblockMenu.setVisible(true).setEnabled(true);
+        	}
         }
     }
 

@@ -29,6 +29,7 @@ import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.ui.NumberValidation;
+import org.kontalk.util.MessageUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.AbstractAccountAuthenticator;
@@ -91,6 +92,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static String getDefaultAccountName(Context ctx) {
         Account acc = getDefaultAccount(ctx);
         return (acc != null) ? acc.name : null;
+    }
+
+    public static boolean isSelfUserId(Context ctx, String userId) {
+    	String name = getDefaultAccountName(ctx);
+    	return (name != null && MessageUtils.sha1(name).equals(userId));
     }
 
     public static boolean hasPersonalKey(AccountManager am, Account account) {
