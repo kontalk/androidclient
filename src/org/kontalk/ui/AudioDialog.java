@@ -59,7 +59,7 @@ public class AudioDialog extends AlertDialog {
     private MediaPlayer mPlayer=new MediaPlayer();
     private CircularSeekBar mHoloCircularProgressBar;
     private ObjectAnimator mProgressBarAnimator;
-    private ImageView mImg;
+    private ImageView mImageButton;
     private TextView mTimeTxt;
     protected boolean mAnimationHasEnded = false;
     private File mFile;
@@ -74,10 +74,11 @@ public class AudioDialog extends AlertDialog {
     private static final int STATUS_PLAYING=3;
     private static final int STATUS_PAUSED=4;
     private static final int STATUS_ENDED = 5;
+    private static final int STATUS_SEND = 6;
     private static final int MAX_DURATE=120000;
     private static final int MAX_PROGRESS=100;
-    private static final int COLOR_RECORD = Color.rgb(0xDD, 0x18, 0x12);
-    private static final int COLOR_PLAY = Color.rgb(0x00, 0xAC, 0xEC);
+    public static final String MIME_3GPP = "audio/3gpp";
+
 
     public AudioDialog(Context context, OnAudioDialogResult result) {
         super(context);
@@ -90,7 +91,7 @@ public class AudioDialog extends AlertDialog {
         super.onCreate(savedInstanceState);
         mTimeTxt=(TextView) findViewById(R.id.time);
         mTimeTxt.setVisibility(View.INVISIBLE);
-        mImg=(ImageView) findViewById(R.id.image_audio);
+        mImageButton=(ImageView) findViewById(R.id.image_audio);
         mHoloCircularProgressBar = (CircularSeekBar) findViewById(R.id.circularSeekBar);
         mHoloCircularProgressBar.getProgress();
         mHoloCircularProgressBar.setMax(MAX_PROGRESS);
@@ -116,7 +117,7 @@ public class AudioDialog extends AlertDialog {
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mImg.setImageResource(R.drawable.play);
+                mImageButton.setImageResource(R.drawable.play);
                 mProgressBarAnimator.end();
                 mCheckFlags=STATUS_ENDED;
             }
@@ -146,21 +147,22 @@ public class AudioDialog extends AlertDialog {
             }
         });
 
-        setButton(Dialog.BUTTON_POSITIVE, "Send", new OnClickListener() {
+        setButton(Dialog.BUTTON_POSITIVE, getContext().getString(R.string.send), new OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (mFile.getAbsolutePath() != null)
+                if (mFile != null) {
                     mResult.onResult(mFile.getAbsolutePath());
+                    mCheckFlags = STATUS_SEND;
+                }
             }
         });
-        setButton(Dialog.BUTTON_NEGATIVE, "Cancel", new OnClickListener() {
+        setButton(Dialog.BUTTON_NEGATIVE, getContext().getString(R.string.cancel), new OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.w("Kontalk","File Cancellato");
-                File audio = new File(mFile.getAbsolutePath());
-                audio.delete();
+                mFile.delete();
             }
         });
     }
@@ -185,25 +187,24 @@ public class AudioDialog extends AlertDialog {
             mPlayer.release();
         }
 
-        /*if (mCheckFlags==STATUS_STOPPED || mCheckFlags== STATUS_PAUSED) {
+        if (mCheckFlags==STATUS_STOPPED || mCheckFlags== STATUS_PAUSED && mCheckFlags != STATUS_SEND) {
             Log.w("Kontalk","File Cancellato");
-            File audio = new File(path);
-            audio.delete();
-        }*/
+            mFile.delete();
+        }
     }
 
     private void startRecord() throws IOException {
         Log.w("Kontalk","Start Record");
-        mImg.setImageResource(R.drawable.rec);
+        mImageButton.setImageResource(R.drawable.rec);
         mHoloCircularProgressBar.setVisibility(View.VISIBLE);
         mHoloCircularProgressBar.setCircleColor(Color.TRANSPARENT);
-        mHoloCircularProgressBar.setCircleProgressColor(COLOR_RECORD);
-        mHoloCircularProgressBar.setPointerColor(COLOR_RECORD);
-        mHoloCircularProgressBar.setPointerBorderColor(COLOR_RECORD);
+        mHoloCircularProgressBar.setCircleProgressColor(getContext().getResources().getColor(R.color.audio_pbar_record));
+        mHoloCircularProgressBar.setPointerColor(getContext().getResources().getColor(R.color.audio_pbar_record));
+        mHoloCircularProgressBar.setPointerBorderColor(getContext().getResources().getColor(R.color.audio_pbar_record));
         mHoloCircularProgressBar.setPointerHaloColor(Color.TRANSPARENT);
         animate(mHoloCircularProgressBar, null, 100, MAX_DURATE);
         mTimeTxt.setVisibility(View.VISIBLE);
-        mTimeTxt.setTextColor(COLOR_RECORD);
+        mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_record));
         mFile = MediaStorage.getTempAudio(getContext());
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -212,10 +213,8 @@ public class AudioDialog extends AlertDialog {
         try {
             mRecorder.prepare();
         } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         // Start recording
@@ -229,15 +228,15 @@ public class AudioDialog extends AlertDialog {
         mRecorder.stop();
         mRecorder.reset();
         mRecorder.release();
-        mImg.setImageResource(R.drawable.play);
+        mImageButton.setImageResource(R.drawable.play);
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
         mCheckFlags=STATUS_STOPPED;
         mProgressBarAnimator.end();
         mTimeTxt.setVisibility(View.INVISIBLE);
-        mHoloCircularProgressBar.setCircleProgressColor(COLOR_PLAY);
+        mHoloCircularProgressBar.setCircleProgressColor(getContext().getResources().getColor(R.color.audio_pbar_play));
         mHoloCircularProgressBar.setPointerHaloColor(Color.TRANSPARENT);
-        mHoloCircularProgressBar.setPointerColor(COLOR_PLAY);
-        mHoloCircularProgressBar.setPointerBorderColor(COLOR_PLAY);
+        mHoloCircularProgressBar.setPointerColor(getContext().getResources().getColor(R.color.audio_pbar_play));
+        mHoloCircularProgressBar.setPointerBorderColor(getContext().getResources().getColor(R.color.audio_pbar_play));
     }
 
     private void playAudio() {
@@ -248,34 +247,30 @@ public class AudioDialog extends AlertDialog {
             mPlayer.setDataSource(mFile.getAbsolutePath());
             mPlayer.prepare();
         } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (SecurityException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         mTimeTxt.setVisibility(View.VISIBLE);
-        mTimeTxt.setTextColor(COLOR_PLAY);
+        mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
         mTimeCircle=MAX_PROGRESS/(float)mPlayer.getDuration();
         animate(mHoloCircularProgressBar, null, 100, mPlayer.getDuration());
         resumeAudio();
     }
 
     private void pauseAudio() {
-        mImg.setImageResource(R.drawable.play);
+        mImageButton.setImageResource(R.drawable.play);
         mProgressBarAnimator.cancel();
         mPlayer.pause();
         mCheckFlags=STATUS_PAUSED;
     }
 
     private void resumeAudio() {
-        mImg.setImageResource(R.drawable.pause);
+        mImageButton.setImageResource(R.drawable.pause);
         if (mCheckFlags==STATUS_PAUSED || mCheckFlags == STATUS_ENDED)
             mProgressBarAnimator.start();
         if (mCheckFlags==STATUS_PAUSED)
