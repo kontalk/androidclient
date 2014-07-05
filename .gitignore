@@ -3,3 +3,4 @@ gen
 .settings/org.eclipse.mylyn.tasks.ui.prefs
 .DS_Store
 libs/*.properties
+proguard/
