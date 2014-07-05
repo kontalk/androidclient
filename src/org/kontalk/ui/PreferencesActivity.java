@@ -178,7 +178,7 @@ public final class PreferencesActivity extends PreferenceActivity {
         });
 
         // disable push notifications if GCM is not available on the device
-        if (GcmUtils.isGcmAvailable(this)) {
+        if (!GcmUtils.isGcmAvailable(this)) {
             final Preference push = findPreference("pref_push_notifications");
             push.setEnabled(false);
         }
