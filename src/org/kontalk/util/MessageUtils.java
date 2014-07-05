@@ -47,12 +47,14 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.QuickAction;
 
+import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;

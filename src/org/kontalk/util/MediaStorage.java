@@ -25,13 +25,15 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
 
@@ -175,6 +177,23 @@ public abstract class MediaStorage {
             mime = MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()));
         return mime;
+    }
+
+
+    /**
+     * Returns true if the running platform is using SAF, therefore we'll need
+     * to persist permissions when asking for media files.
+     */
+    public static boolean isStorageAccessFrameworkAvailable() {
+    	return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT;
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+	public static void requestPersistablePermissions(Context context, Intent intent) {
+    	final int takeFlags = intent.getFlags()
+                & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    	final Uri uri = intent.getData();
+    	context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
     }
 
 }

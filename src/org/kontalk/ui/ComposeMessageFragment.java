@@ -65,6 +65,7 @@ import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -85,6 +86,7 @@ import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
@@ -755,10 +757,20 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	/** Starts activity for an image attachment. */
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void selectImageAttachment() {
-        Intent i = new Intent(Intent.ACTION_GET_CONTENT)
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("image/*");
+		Intent pictureIntent;
+
+		if (!MediaStorage.isStorageAccessFrameworkAvailable()) {
+			pictureIntent = new Intent(Intent.ACTION_GET_CONTENT);
+		}
+		else {
+			pictureIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+		}
+
+		pictureIntent
+			.addCategory(Intent.CATEGORY_OPENABLE)
+			.setType("image/*");
 
         Intent chooser = null;
         try {
@@ -772,7 +784,7 @@ public class ComposeMessageFragment extends ListFragment implements
             mCurrentPhoto = MediaStorage.getTempImage(getActivity());
     	    Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
     	    take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
-       	    chooser = Intent.createChooser(i, getString(R.string.chooser_send_picture));
+       	    chooser = Intent.createChooser(pictureIntent, getString(R.string.chooser_send_picture));
             chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { take });
         }
         catch (UnsupportedOperationException ue) {
@@ -784,7 +796,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 Toast.LENGTH_LONG).show();
         }
 
-        if (chooser == null) chooser = i;
+        if (chooser == null) chooser = pictureIntent;
 	    startActivityForResult(chooser, SELECT_ATTACHMENT_OPENABLE);
 	}
 
@@ -1157,6 +1169,11 @@ public class ComposeMessageFragment extends ListFragment implements
 			        }
 			        uri = data.getData();
 			        mime = data.getType();
+
+			        // SAF available, request persistable permissions
+			        if (MediaStorage.isStorageAccessFrameworkAvailable()) {
+			        	MediaStorage.requestPersistablePermissions(getActivity(), data);
+			        }
 			    }
 
 				if (uri != null) {
