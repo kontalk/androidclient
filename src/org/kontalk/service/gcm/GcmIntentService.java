@@ -28,10 +28,9 @@ public class GcmIntentService extends IntentService {
     /** Internal action for handling back-off. */
     private static final String ACTION_RETRY = "org.kontalk.gcm.RETRY";
 
-    private static final Random sRandom = new Random();
     // token used to check intent origin
     private static final String TOKEN =
-            Long.toBinaryString(sRandom.nextLong());
+            Long.toBinaryString(new Random().nextLong());
     private static final String EXTRA_TOKEN = "token";
 
     public GcmIntentService() {
