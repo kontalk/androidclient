@@ -30,6 +30,7 @@ public final class MyMessages {
         public static final String DIRECTION = "direction";
         public static final String TIMESTAMP = "timestamp";
         public static final String UNREAD = "unread";
+        public static final String NEW = "new";
         public static final String STATUS_CHANGED = "status_changed";
         public static final String STATUS = "status";
         public static final String MESSAGE_ID = "msg_id";

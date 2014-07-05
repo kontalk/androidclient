@@ -25,6 +25,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.Preferences;
@@ -204,6 +205,17 @@ public class ConversationList extends ActionBarActivity
     @Override
     public void onResume() {
         super.onResume();
+
+        final Context context = getApplicationContext();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // mark all messages as old
+                MessagesProvider.markAllThreadsAsOld(context);
+                // update notification
+                MessagingNotification.updateMessagesNotification(context, false);
+            }
+        }).start();
 
         if (Authenticator.getDefaultAccount(this) == null) {
             NumberValidation.startValidation(this);

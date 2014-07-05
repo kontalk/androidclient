@@ -103,6 +103,7 @@ import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.service.gcm.DefaultGcmListener;
+import org.kontalk.service.gcm.GcmIntentService;
 import org.kontalk.service.gcm.GcmListener;
 import org.kontalk.service.gcm.GcmUtils;
 import org.kontalk.ui.MessagingNotification;
@@ -1429,6 +1430,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         MessageUtils.fillContentValues(values, msg);
 
         values.put(Messages.UNREAD, true);
+        values.put(Messages.NEW, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 

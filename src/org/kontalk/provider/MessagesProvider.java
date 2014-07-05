@@ -55,7 +55,7 @@ public class MessagesProvider extends ContentProvider {
     private static final String TAG = MessagesProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.messages";
 
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     private static final String DATABASE_NAME = "messages.db";
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";
@@ -87,6 +87,7 @@ public class MessagesProvider extends ContentProvider {
             "peer TEXT NOT NULL, " +
             "direction INTEGER NOT NULL, " +
             "unread INTEGER NOT NULL DEFAULT 0, " +
+            "new INTEGER NOT NULL DEFAULT 0, " +
             // this the sent/received timestamp
             // this will not change after insert EVER
             "timestamp INTEGER NOT NULL," +
@@ -131,6 +132,7 @@ public class MessagesProvider extends ContentProvider {
             "direction INTEGER NOT NULL, " +
             "count INTEGER NOT NULL DEFAULT 0, " +
             "unread INTEGER NOT NULL DEFAULT 0, " +
+            "new INTEGER NOT NULL DEFAULT 0, " +
             "mime TEXT, " +
             "content TEXT, " +
             // this the sent/received timestamp
@@ -182,6 +184,16 @@ public class MessagesProvider extends ContentProvider {
             "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id " +
             "AND unread <> 0) WHERE _id = old.thread_id";
 
+        /** Updates the thread new count. */
+        private static final String UPDATE_NEW_COUNT_NEW =
+            "UPDATE " + TABLE_THREADS + " SET \"new\" = (" +
+            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = new.thread_id " +
+            "AND \"new\" <> 0) WHERE _id = new.thread_id";
+        private static final String UPDATE_NEW_COUNT_OLD =
+            "UPDATE " + TABLE_THREADS + " SET \"new\" = (" +
+            "SELECT COUNT(_id) FROM " + TABLE_MESSAGES + " WHERE thread_id = old.thread_id " +
+            "AND \"new\" <> 0) WHERE _id = old.thread_id";
+
         /** Updates the thread status reflected by the latest message. */
         /*
         private static final String UPDATE_STATUS_OLD =
@@ -200,6 +212,7 @@ public class MessagesProvider extends ContentProvider {
             " BEGIN " +
             UPDATE_MESSAGES_COUNT_NEW + ";" +
             UPDATE_UNREAD_COUNT_NEW   + ";" +
+            UPDATE_NEW_COUNT_NEW      + ";" +
             UPDATE_STATUS_NEW         + ";" +
             "END";
 
@@ -209,6 +222,7 @@ public class MessagesProvider extends ContentProvider {
             " BEGIN " +
             UPDATE_MESSAGES_COUNT_NEW + ";" +
             UPDATE_UNREAD_COUNT_NEW   + ";" +
+            UPDATE_NEW_COUNT_NEW      + ";" +
             UPDATE_STATUS_NEW         + ";" +
             "END";
 
@@ -219,6 +233,7 @@ public class MessagesProvider extends ContentProvider {
             " BEGIN " +
             UPDATE_MESSAGES_COUNT_OLD + ";" +
             UPDATE_UNREAD_COUNT_OLD   + ";" +
+            UPDATE_NEW_COUNT_OLD      + ";" +
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
             "END";
 
@@ -258,6 +273,19 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_THREADS_DELETE_COUNT
         };
 
+        private static final String[] SCHEMA_V5_TO_V6 = {
+        	// new messages counter: notified vs. unread
+        	"ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
+        	"ALTER TABLE " + TABLE_THREADS + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
+        	// recreate triggers for the new messages count
+            "DROP TRIGGER update_thread_on_insert",
+        	TRIGGER_THREADS_INSERT_COUNT,
+        	"DROP TRIGGER update_thread_on_update",
+        	TRIGGER_THREADS_UPDATE_COUNT,
+        	"DROP TRIGGER update_thread_on_delete",
+        	TRIGGER_THREADS_DELETE_COUNT,
+        };
+
         protected DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
@@ -280,9 +308,17 @@ public class MessagesProvider extends ContentProvider {
                 // unsupported version
                 throw new SQLException("Upgrade from version less than 4 is unsupported.");
             }
-            else if (oldVersion == 4) {
+
+            if (oldVersion == 4) {
                 for (int i = 0; i < SCHEMA_V4_TO_V5.length; i++)
                     db.execSQL(SCHEMA_V4_TO_V5[i]);
+                // trigger upgrade to version 5
+                oldVersion = 5;
+            }
+
+            if (oldVersion == 5) {
+                for (int i = 0; i < SCHEMA_V5_TO_V6.length; i++)
+                    db.execSQL(SCHEMA_V5_TO_V6[i]);
             }
         }
     }
@@ -1055,13 +1091,29 @@ public class MessagesProvider extends ContentProvider {
      */
     public static int markThreadAsRead(Context context, long id) {
         ContentResolver c = context.getContentResolver();
-        ContentValues values = new ContentValues(1);
+        ContentValues values = new ContentValues(2);
         values.put(Messages.UNREAD, Boolean.FALSE);
+        values.put(Messages.NEW, Boolean.FALSE);
         return c.update(Messages.CONTENT_URI, values,
                 Messages.THREAD_ID + " = ? AND " +
                 Messages.UNREAD + " <> 0 AND " +
                 Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
                 new String[] { String.valueOf(id) });
+    }
+
+    /**
+     * Marks all messages as old.
+     * @param context used to request a {@link ContentResolver}
+     * @return the number of rows affected in the messages table
+     */
+    public static int markAllThreadsAsOld(Context context) {
+        ContentResolver c = context.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(Messages.NEW, Boolean.FALSE);
+        return c.update(Messages.CONTENT_URI, values,
+                Messages.NEW + " <> 0 AND " +
+                Messages.DIRECTION + " = " + Messages.DIRECTION_IN,
+                null);
     }
 
     public static int getThreadUnreadCount(Context context, long id) {
@@ -1196,6 +1248,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ATTACHMENT_SECURITY_FLAGS, Messages.ATTACHMENT_SECURITY_FLAGS);
 
         messagesProjectionMap.put(Messages.UNREAD, Messages.UNREAD);
+        messagesProjectionMap.put(Messages.NEW, Messages.NEW);
         messagesProjectionMap.put(Messages.DIRECTION, Messages.DIRECTION);
         messagesProjectionMap.put(Messages.TIMESTAMP, Messages.TIMESTAMP);
         messagesProjectionMap.put(Messages.STATUS_CHANGED, Messages.STATUS_CHANGED);
@@ -1211,6 +1264,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.DIRECTION, Threads.DIRECTION);
         threadsProjectionMap.put(Threads.COUNT, Threads.COUNT);
         threadsProjectionMap.put(Threads.UNREAD, Threads.UNREAD);
+        threadsProjectionMap.put(Threads.NEW, Threads.NEW);
         threadsProjectionMap.put(Threads.MIME, Threads.MIME);
         threadsProjectionMap.put(Threads.CONTENT, Threads.CONTENT);
         threadsProjectionMap.put(Threads.TIMESTAMP, Threads.TIMESTAMP);
