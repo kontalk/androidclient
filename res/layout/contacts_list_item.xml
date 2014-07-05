@@ -23,7 +23,6 @@
 
     <android.widget.QuickContactBadge
         android:id="@+id/avatar"
-        android:visibility="gone"
         android:layout_marginLeft="7dip"
         android:layout_centerVertical="true"
         style="?android:attr/quickContactBadgeStyleWindowSmall" />
