@@ -15,4 +15,6 @@ public interface GcmListener {
 
     public void onError(Context context, String errorId);
 
+    public String getSenderId(Context context);
+
 }

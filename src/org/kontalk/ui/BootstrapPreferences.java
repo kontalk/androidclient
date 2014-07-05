@@ -19,7 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.util.GcmUtils;
+import org.kontalk.service.gcm.GcmUtils;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;

@@ -1,28 +1,32 @@
-package org.kontalk.util;
+package org.kontalk.service.gcm;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.kontalk.Kontalk;
-import org.kontalk.service.MessageCenterService;
-import org.kontalk.service.gcm.GcmListener;
-import org.kontalk.service.gcm.GcmIntentService;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-public class GcmUtils {
 
-	/** GCM message received from server. */
-    private static final String ACTION_CHECK_MESSAGES = "org.kontalk.CHECK_MESSAGES";
+/**
+ * Utilities for Google Cloud Messaging.
+ * This is actually an adaptation from the deprecated GCM library.
+ * @author Daniele Ricci
+ * @see gcm.jar
+ */
+public class GcmUtils {
 
     /**
      * Default lifespan (7 days) of the {@link #isRegisteredOnServer(Context)}
@@ -32,7 +36,12 @@ public class GcmUtils {
     public static final long DEFAULT_ON_SERVER_LIFESPAN_MS =
             1000 * 3600 * 24 * 7;
 
+    private static final Random sRandom = new Random();
+
+    private static final String BACKOFF_MS = "backoff_ms";
     private static final int DEFAULT_BACKOFF_MS = 3000;
+    private static final int MAX_BACKOFF_MS =
+            (int) TimeUnit.SECONDS.toMillis(3600); // 1 hour
 
     private static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
@@ -43,6 +52,9 @@ public class GcmUtils {
             "onServerLifeSpan";
 
     private static GoogleCloudMessaging sGcm;
+
+    /** The last used listener. */
+    private static GcmListener sListener;
 
 	private GcmUtils() {
 	}
@@ -148,7 +160,49 @@ public class GcmUtils {
         editor.commit();
     }
 
+    /**
+     * Resets the backoff counter.
+     * <p>
+     * This method should be called after a GCM call succeeds.
+     *
+     * @param context application's context.
+     */
+    static void resetBackoff(Context context) {
+        Log.d(Kontalk.TAG, "resetting backoff for " + context.getPackageName());
+        setBackoff(context, DEFAULT_BACKOFF_MS);
+    }
+
+    /**
+     * Gets the current backoff counter.
+     *
+     * @param context application's context.
+     * @return current backoff counter, in milliseconds.
+     */
+    static int getBackoff(Context context) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        return prefs.getInt(BACKOFF_MS, DEFAULT_BACKOFF_MS);
+    }
+
+    /**
+     * Sets the backoff counter.
+     * <p>
+     * This method should be called after a GCM call fails, passing an
+     * exponential value.
+     *
+     * @param context application's context.
+     * @param backoff new backoff counter, in milliseconds.
+     */
+    static void setBackoff(Context context, int backoff) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        Editor editor = prefs.edit();
+        editor.putInt(BACKOFF_MS, backoff);
+        editor.commit();
+    }
+
 	public static void register(final GcmListener listener, final Context context, final String senderId) {
+		sListener = listener;
+		resetBackoff(context);
+
 	    new Thread(new Runnable() {
 			public void run() {
                 ensureGcmInstance(context);
@@ -171,6 +225,9 @@ public class GcmUtils {
 	}
 
 	public static void unregister(final GcmListener listener, final Context context) {
+		sListener = listener;
+		resetBackoff(context);
+
 	    new Thread(new Runnable() {
 			public void run() {
                 ensureGcmInstance(context);
@@ -187,9 +244,21 @@ public class GcmUtils {
 				}
 				catch (IOException e) {
 					listener.onError(context, e.toString());
+
+					retryOnError(context);
 				}
 			}
 		}).start();
+	}
+
+	static void retry(Context context) {
+        // retry last call
+        if (isRegistered(context)) {
+            unregister(sListener, context);
+        } else {
+            register(sListener, context, sListener.getSenderId(context));
+        }
+
 	}
 
     public static boolean isRegistered(Context context) {
@@ -201,42 +270,29 @@ public class GcmUtils {
             .isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS;
     }
 
-    /** Process a new incoming {@link Intent} from {@link GcmIntentService}. */
-    public static void processIntent(Context context, Intent intent) {
-        Bundle extras = intent.getExtras();
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
-        // The getMessageType() intent parameter must be the intent you received
-        // in your BroadcastReceiver.
-        String messageType = gcm.getMessageType(intent);
+    private static void retryOnError(Context context) {
+		int backoffTimeMs = getBackoff(context);
+		int nextAttempt = backoffTimeMs / 2 + sRandom.nextInt(backoffTimeMs);
+		Log.d(Kontalk.TAG, "Scheduling registration retry, backoff = "
+				+ nextAttempt + " (" + backoffTimeMs + ")");
 
-        if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
+		PendingIntent retryPendingIntent = GcmIntentService.getRetryIntent(context);
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime()
+				+ nextAttempt, retryPendingIntent);
 
-        	if (GoogleCloudMessaging.
-                    MESSAGE_TYPE_MESSAGE.equals(messageType)) {
-
-                String dataAction = intent.getStringExtra("action");
-                Log.v(Kontalk.TAG, "cloud message received: " + dataAction);
-
-                // new messages - start message center
-                if (ACTION_CHECK_MESSAGES.equals(dataAction)) {
-                	// remember we just received a push notifications
-                	// this means that there are really messages waiting for us
-                	Preferences.setLastPushNotification(context,
-                		System.currentTimeMillis());
-
-                	// start message center
-                    MessageCenterService.start(context.getApplicationContext());
-                }
-
-            }
-        }
+		// Next retry should wait longer.
+		if (backoffTimeMs < MAX_BACKOFF_MS) {
+			setBackoff(context, backoffTimeMs * 2);
+		}
 
     }
 
 	private static SharedPreferences getGCMPreferences(Context context) {
 	    // This sample app persists the registration ID in shared preferences, but
 	    // how you store the regID in your app is up to you.
-	    return context.getSharedPreferences(GcmUtils.class.getName(),
+	    return context.getSharedPreferences(context.getPackageName() + ".gcm",
 	            Context.MODE_PRIVATE);
 	}
 

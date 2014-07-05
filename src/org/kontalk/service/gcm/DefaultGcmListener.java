@@ -30,4 +30,9 @@ public class DefaultGcmListener implements GcmListener {
         Log.w(Kontalk.TAG, "error registering to GCM service: " + errorId);
 	}
 
+    @Override
+	public String getSenderId(Context context) {
+        return MessageCenterService.getPushSenderId();
+    }
+
 }

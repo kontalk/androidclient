@@ -24,7 +24,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ServerList;
 import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
-import org.kontalk.util.GcmUtils;
+import org.kontalk.service.gcm.GcmUtils;
 import org.kontalk.util.Preferences;
 
 import android.annotation.TargetApi;
