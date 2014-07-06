@@ -18,7 +18,11 @@
 
 package org.kontalk.ui;
 
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import org.kontalk.R;
@@ -30,6 +34,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.Preferences;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
@@ -165,9 +170,13 @@ public class ContactsListActivity extends ActionBarActivity
                 String packageName = resolveInfo.activityInfo.packageName;
 
                 if (!getPackageName().equals(packageName)) {
-                	// copy
+                	// copy intent and add resolved info
 	                Intent targetShareIntent = new Intent(shareIntent);
-	                targetShareIntent.setPackage(packageName);
+	                targetShareIntent
+	                	.setPackage(packageName)
+	                	.setComponent(new ComponentName(
+	                        packageName, resolveInfo.activityInfo.name))
+	                    .putExtra("org.kontalk.invite.label", resolveInfo.loadLabel(getPackageManager()));
 
 	                targets.add(targetShareIntent);
                 }
@@ -175,6 +184,11 @@ public class ContactsListActivity extends ActionBarActivity
 
         	// initial intents are added before of the main intent, so we remove the last one here
             Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
+            Collections.sort(targets, new DisplayNameComparator());
+            // remove custom extras
+            for (Intent intent : targets)
+            	intent.removeExtra("org.kontalk.invite.label");
+
             Parcelable[] extraIntents = new Parcelable[targets.size()];
             targets.toArray(extraIntents);
             chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
@@ -188,5 +202,25 @@ public class ContactsListActivity extends ActionBarActivity
         			Toast.LENGTH_SHORT).show();
         }
     }
+
+	public static class DisplayNameComparator implements
+			Comparator<Intent> {
+		public DisplayNameComparator() {
+			mCollator.setStrength(Collator.PRIMARY);
+		}
+
+		public final int compare(Intent a, Intent b) {
+			CharSequence sa = a.getCharSequenceExtra("org.kontalk.invite.label");
+			if (sa == null)
+				sa = a.getComponent().getClassName();
+			CharSequence sb = b.getCharSequenceExtra("org.kontalk.invite.label");
+			if (sb == null)
+				sb = b.getComponent().getClassName();
+
+			return mCollator.compare(sa.toString(), sb.toString());
+		}
+
+		private final Collator mCollator = Collator.getInstance();
+	}
 
 }
