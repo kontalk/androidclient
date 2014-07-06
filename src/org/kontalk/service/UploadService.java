@@ -33,6 +33,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.upload.KontalkBoxUploadConnection;

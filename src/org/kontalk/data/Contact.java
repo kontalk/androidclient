@@ -93,6 +93,10 @@ public class Contact {
 
     private PGPPublicKeyRing mKeyRing;
 
+    public interface ContactCallback {
+    	public void avatarLoaded(Contact contact, Drawable avatar);
+    }
+
     /**
      * Contact cache.
      * @author Daniele Ricci
@@ -199,6 +203,27 @@ public class Contact {
 
     public PGPPublicKeyRing getPublicKeyRing() {
     	return mKeyRing;
+    }
+
+    public void getAvatarAsync(final Context context, final ContactCallback callback) {
+    	if (mAvatar != null) {
+    		callback.avatarLoaded(this, mAvatar);
+    	}
+    	else {
+    		// start async load
+    		new Thread(new Runnable() {
+				public void run() {
+					try {
+						Drawable avatar = getAvatar(context, null);
+						callback.avatarLoaded(Contact.this, avatar);
+					}
+					catch (Exception e) {
+						// do not throw any exception while loading
+						Log.w(TAG, "error while loading avatar", e);
+					}
+				}
+			}).start();
+    	}
     }
 
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {

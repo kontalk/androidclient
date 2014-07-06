@@ -15,18 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.kontalk.service;
+package org.kontalk.service.msgcenter;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,24 +37,14 @@ import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.Registration;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
-import org.jivesoftware.smackx.delay.packet.DelayInfo;
-import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
-import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
-import org.jivesoftware.smackx.xdata.Form;
-import org.jivesoftware.smackx.xdata.FormField;
-import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.BuildConfig;
-import org.kontalk.GCMIntentService;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -75,54 +60,43 @@ import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
 import org.kontalk.client.ReceivedServerReceipt;
 import org.kontalk.client.SentServerReceipt;
-import org.kontalk.client.ServerReceipt;
 import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.SubscribePublicKey;
-import org.kontalk.client.UploadExtension;
 import org.kontalk.client.UploadInfo;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.ImageComponent;
-import org.kontalk.message.MessageComponent;
-import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
-import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Requests;
-import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
-import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
-import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
+import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.service.UploadService;
+import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.gcm.DefaultGcmListener;
+import org.kontalk.service.gcm.GcmIntentService;
+import org.kontalk.service.gcm.GcmListener;
+import org.kontalk.service.gcm.GcmUtils;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.ConnectivityManager;
@@ -141,11 +115,8 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.google.android.gcm.GCMRegistrar;
 
 
 /**
@@ -153,10 +124,10 @@ import com.google.android.gcm.GCMRegistrar;
  * Use {@link Intent}s to deliver commands (via {@link Context#startService}).
  * Service will broadcast intents when certain events occur.
  * @author Daniele Ricci
- * @version 3.0
+ * @version 4.0
  */
 public class MessageCenterService extends Service implements ConnectionHelperListener {
-    private static final String TAG = MessageCenterService.class.getSimpleName();
+    static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
         SmackConfiguration.DEBUG_ENABLED = BuildConfig.DEBUG;
@@ -285,46 +256,44 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
 
+    static final GcmListener sGcmListener = new DefaultGcmListener();
+
     /** Push notifications enabled flag. */
-    private boolean mPushNotifications;
-    /** Server push sender id. This is static so {@link GCMIntentService} can see it. */
-    private static String mPushSenderId;
+    boolean mPushNotifications;
+    /** Server push sender id. This is static so {@link GcmIntentService} can see it. */
+    static String mPushSenderId;
     /** GCM registration id. */
     private String mPushRegistrationId;
     /** Flag marking a currently ongoing GCM registration cycle (unregister/register) */
-    private boolean mPushRegistrationCycle;
+    boolean mPushRegistrationCycle;
 
     private WakeLock mWakeLock;	// created in onCreate
-    private LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
+    LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
     /** Cached last used server. */
-    private EndpointServer mServer;
+    EndpointServer mServer;
     /** The connection helper instance. */
     private XMPPConnectionHelper mHelper;
     /** The connection instance. */
-    private KontalkConnection mConnection;
-    /**
-     * My username (account name).
-     * @deprecated Remove this if not needed before converting package to org.kontalk
-     */
-    @Deprecated
-    private String mMyUsername;
+    KontalkConnection mConnection;
+    /** My username (account name). */
+    String mMyUsername;
 
     /** Supported upload services. */
-    private Map<String, String> mUploadServices;
+    Map<String, String> mUploadServices;
 
     /** Service handler. */
-    private Handler mHandler;
+    Handler mHandler;
 
     /** Idle handler. */
-    private IdleConnectionHandler mIdleHandler;
+    IdleConnectionHandler mIdleHandler;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
-    private Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
+    Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
 
     private RegenerateKeyPairListener mKeyPairRegenerator;
 
-    private static final class IdleConnectionHandler extends Handler implements IdleHandler {
+    static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
         private final static int DEFAULT_IDLE_TIME = 60000;
 
@@ -445,7 +414,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mHandler = new Handler();
     }
 
-    private void sendPacket(Packet packet) {
+    void sendPacket(Packet packet) {
         sendPacket(packet, true);
     }
 
@@ -453,7 +422,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Sends a packet to the connection if found.
      * @param bumpIdle true if the idle handler must be notified of this event
      */
-    private void sendPacket(Packet packet, boolean bumpIdle) {
+    void sendPacket(Packet packet, boolean bumpIdle) {
         // reset idler if requested
         if (bumpIdle) mIdleHandler.reset();
 
@@ -858,22 +827,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         PacketFilter filter;
 
         filter = new PacketTypeFilter(Ping.class);
-        mConnection.addPacketListener(new PingListener(), filter);
+        mConnection.addPacketListener(new PingListener(this), filter);
 
         filter = new PacketTypeFilter(Presence.class);
-        mConnection.addPacketListener(new PresenceListener(), filter);
+        mConnection.addPacketListener(new PresenceListener(this), filter);
 
         filter = new PacketTypeFilter(RosterPacket.class);
-        mConnection.addPacketListener(new RosterListener(), filter);
+        mConnection.addPacketListener(new RosterListener(this), filter);
 
         filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        mConnection.addPacketListener(new MessageListener(), filter);
+        mConnection.addPacketListener(new MessageListener(this), filter);
 
         filter = new PacketTypeFilter(LastActivity.class);
-        mConnection.addPacketListener(new LastActivityListener(), filter);
+        mConnection.addPacketListener(new LastActivityListener(this), filter);
 
         filter = new PacketTypeFilter(VCard4.class);
-        mConnection.addPacketListener(new VCardListener(), filter);
+        mConnection.addPacketListener(new VCardListener(this), filter);
     }
 
     @Override
@@ -925,7 +894,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         info.setTo(mServer.getNetwork());
 
         PacketFilter filter = new PacketIDFilter(info.getPacketID());
-        mConnection.addPacketListener(new DiscoverInfoListener(), filter);
+        mConnection.addPacketListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
     }
 
@@ -944,7 +913,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * @param retrying if true, we are retrying to send media messages after
      * receiving upload info (non-media messages will be filtered out)
      */
-    private void resendPendingMessages(boolean retrying) {
+    void resendPendingMessages(boolean retrying) {
         StringBuilder filter = new StringBuilder()
             .append(Messages.DIRECTION)
             .append('=')
@@ -1416,7 +1385,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Process an incoming message. */
-    private Uri incoming(CompositeMessage msg) {
+    Uri incoming(CompositeMessage msg) {
         String sender = msg.getSender(true);
 
         // save to local storage
@@ -1427,6 +1396,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         MessageUtils.fillContentValues(values, msg);
 
         values.put(Messages.UNREAD, true);
+        values.put(Messages.NEW, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
         values.put(Messages.TIMESTAMP, System.currentTimeMillis());
 
@@ -1471,7 +1441,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void beginKeyPairRegeneration() {
         if (mKeyPairRegenerator == null) {
         	try {
-        		mKeyPairRegenerator = new RegenerateKeyPairListener();
+        		mKeyPairRegenerator = new RegenerateKeyPairListener(this);
         	}
         	catch (Exception e) {
         		Log.e(TAG, "unable to initiate keypair regeneration", e);
@@ -1480,7 +1450,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void endKeyPairRegeneration() {
+    void endKeyPairRegeneration() {
         if (mKeyPairRegenerator != null) {
             mKeyPairRegenerator.abort();
             mKeyPairRegenerator = null;
@@ -1574,7 +1544,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void updateStatus(final Context context) {
-        updateStatus(context, GCMRegistrar.getRegistrationId(context));
+        updateStatus(context, GcmUtils.getRegistrationId(context));
     }
 
     /** Broadcasts our presence to the server. */
@@ -1693,35 +1663,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void gcmRegister() {
+    void gcmRegister() {
         if (mPushSenderId != null) {
-            try {
-                GCMRegistrar.checkDevice(this);
-                //GCMRegistrar.checkManifest(this);
+        	if (GcmUtils.isGcmAvailable(this)) {
                 // senderId will be given by serverinfo if any
-                mPushRegistrationId = GCMRegistrar.getRegistrationId(this);
+                mPushRegistrationId = GcmUtils.getRegistrationId(this);
                 if (TextUtils.isEmpty(mPushRegistrationId))
                     // start registration
-                    GCMRegistrar.register(this, mPushSenderId);
+                    GcmUtils.register(sGcmListener, this, mPushSenderId);
                 else
                     // already registered - send registration id to server
                     setPushRegistrationId(mPushRegistrationId);
             }
-            catch (UnsupportedOperationException unsupported) {
-                // GCM not supported
-            }
-            catch (Exception e) {
-                // this exception should be reported
-                Log.w(TAG, "error setting up GCM", e);
-            }
-
         }
     }
 
     private void gcmUnregister() {
-        if (GCMRegistrar.isRegistered(this))
+        if (GcmUtils.isRegistered(this))
             // start unregistration
-            GCMRegistrar.unregister(this);
+            GcmUtils.unregister(sGcmListener, this);
         else
             // force unregistration
             setPushRegistrationId(null);
@@ -1732,7 +1692,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // notify the server about the change
         updateStatus(this, mPushRegistrationId);
-        GCMRegistrar.setRegisteredOnServer(this, mPushRegistrationId != null);
+        GcmUtils.setRegisteredOnServer(this, mPushRegistrationId != null);
     }
 
     public static String getPushSenderId() {
@@ -1753,1058 +1713,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     	am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
     			SystemClock.elapsedRealtime() + delay, pi);
-    }
-
-    private final class PingListener implements PacketListener {
-        @Override
-        public void processPacket(Packet packet) {
-            sendPacket(IQ.createResultIQ((IQ) packet), false);
-        }
-    }
-
-    private final class DiscoverInfoListener implements PacketListener {
-        @Override
-        public void processPacket(Packet packet) {
-            // we don't need this listener anymore
-            mConnection.removePacketListener(this);
-
-            DiscoverInfo query = (DiscoverInfo) packet;
-            List<DiscoverInfo.Feature> features = query.getFeatures();
-            for (DiscoverInfo.Feature feat : features) {
-
-                /*
-                 * TODO do not request info about push if disabled by user.
-                 * Of course if user enables push notification we should
-                 * reissue this discovery again.
-                 */
-                if (PushRegistration.NAMESPACE.equals(feat.getVar())) {
-                    // push notifications are enabled on this server
-                    // request items to check if gcm is supported and obtain the server id
-                    DiscoverItems items = new DiscoverItems();
-                    items.setNode(PushRegistration.NAMESPACE);
-                    items.setTo(mServer.getNetwork());
-
-                    PacketFilter filter = new PacketIDFilter(items.getPacketID());
-                    mConnection.addPacketListener(new PushDiscoverItemsListener(), filter);
-
-                    sendPacket(items);
-                }
-
-                /*
-                 * TODO upload info should be requested only when needed and
-                 * cached. This discovery should of course be issued before any
-                 * media message gets requeued.
-                 * Actually, delay any message from being requeued if at least
-                 * 1 media message is present; do the discovery first.
-                 */
-                else if (UploadExtension.NAMESPACE.equals(feat.getVar())) {
-                    // media upload is available on this server
-                    // request items to check what services are available
-                    DiscoverItems items = new DiscoverItems();
-                    items.setNode(UploadExtension.NAMESPACE);
-                    items.setTo(mServer.getNetwork());
-
-                    PacketFilter filter = new PacketIDFilter(items.getPacketID());
-                    mConnection.addPacketListener(new UploadDiscoverItemsListener(), filter);
-
-                    sendPacket(items);
-                }
-            }
-        }
-    }
-
-    private final class UploadDiscoverItemsListener implements PacketListener {
-        @Override
-        public void processPacket(Packet packet) {
-            // we don't need this listener anymore
-            mConnection.removePacketListener(this);
-
-            if (mUploadServices == null)
-                mUploadServices = new HashMap<String, String>();
-            else
-                mUploadServices.clear();
-
-            // store available services
-            DiscoverItems query = (DiscoverItems) packet;
-            List<DiscoverItems.Item> items = query.getItems();
-            for (DiscoverItems.Item item : items) {
-                String jid = item.getEntityID();
-                if ((mServer.getNetwork()).equals(jid)) {
-                    mUploadServices.put(item.getNode(), null);
-
-                    // request upload url
-                    UploadInfo iq = new UploadInfo(item.getNode());
-                    iq.setType(IQ.Type.GET);
-                    iq.setTo(mServer.getNetwork());
-
-                    mConnection.addPacketListener(new UploadInfoListener(), new PacketIDFilter(iq.getPacketID()));
-                    sendPacket(iq);
-                }
-            }
-        }
-    }
-
-    private final class UploadInfoListener implements PacketListener {
-        @Override
-        public void processPacket(Packet packet) {
-            // we don't need this listener anymore
-            mConnection.removePacketListener(this);
-
-            UploadInfo info = (UploadInfo) packet;
-            String node = info.getNode();
-            mUploadServices.put(node, info.getUri());
-            Log.v(TAG, "upload info received, node = " + node + ", uri = " + info.getUri());
-
-            // resend pending messages
-            resendPendingMessages(true);
-        }
-    }
-
-    private final class PushDiscoverItemsListener implements PacketListener {
-        @Override
-        public void processPacket(Packet packet) {
-            // we don't need this listener anymore
-            mConnection.removePacketListener(this);
-
-            DiscoverItems query = (DiscoverItems) packet;
-            List<DiscoverItems.Item> items = query.getItems();
-            for (DiscoverItems.Item item : items) {
-                String jid = item.getEntityID();
-                // google push notifications
-                if (("gcm.push." + mServer.getNetwork()).equals(jid)) {
-                    mPushSenderId = item.getNode();
-
-                    if (mPushNotifications) {
-                        String oldSender = Preferences.getPushSenderId(MessageCenterService.this);
-
-                        // store the new sender id
-                        Preferences.setPushSenderId(MessageCenterService.this, mPushSenderId);
-
-                        // begin a registration cycle if senderId is different
-                        if (oldSender != null && !oldSender.equals(mPushSenderId)) {
-                            GCMRegistrar.unregister(MessageCenterService.this);
-                            // unregister will see this as an attempt to register again
-                            mPushRegistrationCycle = true;
-                        }
-                        else {
-                            // begin registration immediately
-                            gcmRegister();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /** Listener for last activity iq. */
-    private final class LastActivityListener implements PacketListener {
-        @Override
-        public void processPacket(Packet packet) {
-            LastActivity p = (LastActivity) packet;
-            Intent i = new Intent(ACTION_LAST_ACTIVITY);
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-            String from = p.getFrom();
-            String network = StringUtils.parseServer(from);
-            // our network - convert to userId
-            if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                StringBuilder b = new StringBuilder();
-                b.append(StringUtils.parseName(from));
-                b.append(StringUtils.parseResource(from));
-                i.putExtra(EXTRA_FROM_USERID, b.toString());
-            }
-
-            i.putExtra(EXTRA_FROM, from);
-            i.putExtra(EXTRA_TO, p.getTo());
-            i.putExtra(EXTRA_SECONDS, p.lastActivity);
-
-            // non-standard stanza group extension
-            PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
-            if (ext != null && ext instanceof StanzaGroupExtension) {
-                StanzaGroupExtension g = (StanzaGroupExtension) ext;
-                i.putExtra(EXTRA_GROUP_ID, g.getId());
-                i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
-            }
-
-            Log.v(TAG, "broadcasting presence: " + i);
-            mLocalBroadcastManager.sendBroadcast(i);
-        }
-    }
-
-    /** Listener for roster iq stanzas. */
-    private final class RosterListener implements PacketListener {
-        @Override
-        public void processPacket(Packet packet) {
-            RosterPacket p = (RosterPacket) packet;
-            Intent i = new Intent(ACTION_ROSTER);
-            i.putExtra(EXTRA_FROM, p.getFrom());
-            i.putExtra(EXTRA_TO, p.getTo());
-            // here we are not using() because Type is a class, not an enum
-            i.putExtra(EXTRA_TYPE, p.getType().toString());
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-            Collection<RosterPacket.Item> items = p.getRosterItems();
-            String[] list = new String[items.size()];
-
-            int index = 0;
-            for (Iterator<RosterPacket.Item> iter = items.iterator(); iter.hasNext(); ) {
-                RosterPacket.Item item = iter.next();
-                list[index] = item.getUser();
-                index++;
-            }
-
-            i.putExtra(EXTRA_JIDLIST, list);
-
-            mLocalBroadcastManager.sendBroadcast(i);
-        }
-    }
-
-    /** Listener for vCard4 iq stanzas. */
-    private final class VCardListener implements PacketListener {
-
-        @Override
-        public void processPacket(Packet packet) {
-            VCard4 p = (VCard4) packet;
-
-            // will be true if it's our card
-            boolean myCard = false;
-            byte[] _publicKey = p.getPGPKey();
-
-            // vcard was requested, store but do not broadcast
-            if (p.getType() == IQ.Type.RESULT) {
-
-                if (_publicKey != null) {
-
-                    // FIXME always false LOL
-    	            if (myCard) {
-    	                byte[] bridgeCertData;
-    	                try {
-    	                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
-
-    	                    // TODO subjectAltName?
-    	                    bridgeCertData = X509Bridge.createCertificate(_publicKey,
-    	                        key.getSignKeyPair().getPrivateKey(), null).getEncoded();
-    	                }
-    	                catch (Exception e) {
-    	                    Log.e(TAG, "error decoding key data", e);
-    	                    bridgeCertData = null;
-    	                }
-
-    	                if (bridgeCertData != null) {
-    	                    // store key data in AccountManager
-    	                    Authenticator.setDefaultPersonalKey(MessageCenterService.this,
-    	                        _publicKey, null, bridgeCertData);
-    	                    // invalidate cached personal key
-    	                    ((Kontalk)getApplicationContext()).invalidatePersonalKey();
-
-    	                    Log.v(TAG, "personal key updated.");
-    	                }
-    	            }
-
-    	            try {
-	    	            String userId = StringUtils.parseName(p.getFrom());
-	    	            String fingerprint = PGP.getFingerprint(_publicKey);
-	    	            UsersProvider.setUserKey(MessageCenterService.this, userId,
-	    	            	_publicKey, fingerprint);
-
-                		// invalidate cache for this user
-                		Contact.invalidate(userId);
-    	            }
-    	            catch (Exception e) {
-    	            	// TODO warn user
-    	            	Log.e(TAG, "unable to update user key", e);
-    	            }
-                }
-
-            }
-
-            // vcard coming from sync, send a broadcast but do not store
-            else if (p.getType() == IQ.Type.SET) {
-
-                Intent i = new Intent(ACTION_VCARD);
-                i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-                String from = p.getFrom();
-                String network = StringUtils.parseServer(from);
-                // our network - convert to userId
-                if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                    StringBuilder b = new StringBuilder();
-
-                    // is this our vCard?
-                    String userId = StringUtils.parseName(from);
-                    String hash = MessageUtils.sha1(mMyUsername);
-                    if (userId.equalsIgnoreCase(hash))
-                    	myCard = true;
-
-                    b.append(userId);
-                    b.append(StringUtils.parseResource(from));
-                    i.putExtra(EXTRA_FROM_USERID, b.toString());
-                }
-
-                i.putExtra(EXTRA_FROM, from);
-                i.putExtra(EXTRA_TO, p.getTo());
-                i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
-
-                Log.v(TAG, "broadcasting vcard: " + i);
-                mLocalBroadcastManager.sendBroadcast(i);
-
-            }
-        }
-    }
-
-    /** Listener for presence stanzas. */
-    private final class PresenceListener implements PacketListener {
-
-        private Packet subscribe(Presence p) {
-            PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
-
-            try {
-
-	            if (_pkey instanceof SubscribePublicKey) {
-	                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
-
-                    PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
-                    PGPPublicKey publicKey = PGP.getMasterKey(pubRing);
-                    String fingerprint = MessageUtils.bytesToHex(publicKey.getFingerprint());
-
-                    // store key to users table
-                    String userId = StringUtils.parseName(p.getFrom());
-                    UsersProvider.setUserKey(MessageCenterService.this, userId,
-                    	pkey.getKey(), fingerprint);
-	            }
-
-                Presence p2 = new Presence(Presence.Type.subscribed);
-                p2.setTo(p.getFrom());
-                return p2;
-
-            }
-            catch (Exception e) {
-                Log.w(TAG, "unable add user to whitelist", e);
-                // TODO should we notify the user about this?
-                // TODO throw new PGPException(...)
-                return null;
-            }
-        }
-
-        @Override
-        public void processPacket(Packet packet) {
-            try {
-                Presence p = (Presence) packet;
-
-                // presence subscription request
-                if (p.getType() == Presence.Type.subscribe) {
-
-                	// auto-accept subscription
-                	if (Preferences.getAutoAcceptSubscriptions(MessageCenterService.this)) {
-
-	                    Packet r = subscribe(p);
-	                    if (r != null)
-	                        mConnection.sendPacket(r);
-
-                	}
-
-                	// ask the user
-                	else {
-
-                		/*
-                		 * Subscription procedure:
-                		 * 1. update (or insert) users table with the public key just received
-                		 * 2. update (or insert) threads table with a special subscription record
-                		 * 3. user will either accept or refuse
-                		 */
-
-                		String from = StringUtils.parseName(p.getFrom());
-
-                		// extract public key
-                		String name = null, fingerprint = null;
-                		byte[] publicKey = null;
-                        PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
-                        if (_pkey instanceof SubscribePublicKey) {
-                            SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
-                            byte[] _publicKey = pkey.getKey();
-                            // extract the name from the uid
-                            PGPPublicKeyRing ring = PGP.readPublicKeyring(_publicKey);
-                            if (ring != null) {
-                            	PGPPublicKey pk = PGP.getMasterKey(ring);
-                            	if (pk != null) {
-                            		// set all parameters
-		                            name = PGP.getUserId(pk, mServer.getNetwork());
-		                            fingerprint = PGP.getFingerprint(pk);
-		                            publicKey = _publicKey;
-                            	}
-                            }
-                        }
-
-                		ContentResolver cr = getContentResolver();
-                		ContentValues values = new ContentValues(4);
-
-                		// insert public key into the users table
-                		values.put(Users.HASH, from);
-                		values.put(Users.PUBLIC_KEY, publicKey);
-                		values.put(Users.FINGERPRINT, fingerprint);
-                		values.put(Users.DISPLAY_NAME, name);
-                		cr.insert(Users.CONTENT_URI.buildUpon()
-                				.appendQueryParameter(Users.DISCARD_NAME, "true")
-                				.build(), values);
-
-                		// invalidate cache for this user
-                		Contact.invalidate(from);
-
-                		// insert request into the database
-                		values.clear();
-                		values.put(CommonColumns.PEER, from);
-                		values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
-                		cr.insert(Requests.CONTENT_URI, values);
-
-                		// fire up a notification
-                		MessagingNotification.chatInvitation(MessageCenterService.this, from);
-                	}
-
-                }
-
-                // presence subscription response
-                else if (p.getType() == Presence.Type.subscribed) {
-
-            		String from = StringUtils.parseName(p.getFrom());
-
-                	if (UsersProvider.getPublicKey(MessageCenterService.this, from) == null) {
-                		// public key not found
-                		// assuming the user has allowed us, request it
-
-                        VCard4 vcard = new VCard4();
-                        vcard.setType(IQ.Type.GET);
-                        vcard.setTo(StringUtils.parseBareAddress(p.getFrom()));
-
-                        sendPacket(vcard);
-                	}
-
-                    // send a broadcast
-                    Intent i = new Intent(ACTION_SUBSCRIBED);
-                    i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
-                    i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-                    from = p.getFrom();
-                    String network = StringUtils.parseServer(from);
-                    // our network - convert to userId
-                    if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                        StringBuilder b = new StringBuilder();
-                        b.append(StringUtils.parseName(from));
-                        b.append(StringUtils.parseResource(from));
-                        i.putExtra(EXTRA_FROM_USERID, b.toString());
-                    }
-
-                    i.putExtra(EXTRA_FROM, from);
-                    i.putExtra(EXTRA_TO, p.getTo());
-
-                    mLocalBroadcastManager.sendBroadcast(i);
-                }
-
-                /*
-                else if (p.getType() == Presence.Type.unsubscribed) {
-                    // TODO can this even happen?
-                }
-                */
-
-                else {
-                    Intent i = new Intent(ACTION_PRESENCE);
-                    Presence.Type type = p.getType();
-                    i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
-                    i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-                    String from = p.getFrom();
-                    String network = StringUtils.parseServer(from);
-                    // our network - convert to userId
-                    if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                        StringBuilder b = new StringBuilder();
-                        b.append(StringUtils.parseName(from));
-                        b.append(StringUtils.parseResource(from));
-                        i.putExtra(EXTRA_FROM_USERID, b.toString());
-                    }
-
-                    i.putExtra(EXTRA_FROM, from);
-                    i.putExtra(EXTRA_TO, p.getTo());
-                    i.putExtra(EXTRA_STATUS, p.getStatus());
-                    Presence.Mode mode = p.getMode();
-                    i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
-                    i.putExtra(EXTRA_PRIORITY, p.getPriority());
-
-                    // getExtension doesn't work here
-                    Iterator<PacketExtension> iter = p.getExtensions().iterator();
-                    while (iter.hasNext()) {
-                        PacketExtension _ext = iter.next();
-                        if (_ext instanceof DelayInformation) {
-                            DelayInformation delay = (DelayInformation) _ext;
-                            i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
-                            break;
-                        }
-                    }
-
-                    // non-standard stanza group extension
-                    PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
-                    if (ext != null && ext instanceof StanzaGroupExtension) {
-                        StanzaGroupExtension g = (StanzaGroupExtension) ext;
-                        i.putExtra(EXTRA_GROUP_ID, g.getId());
-                        i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
-                    }
-
-                    Log.v(TAG, "broadcasting presence: " + i);
-                    mLocalBroadcastManager.sendBroadcast(i);
-                }
-            }
-            catch (Exception e) {
-                Log.e(TAG, "error parsing presence", e);
-            }
-        }
-    }
-
-    /** Listener for message stanzas. */
-    private final class MessageListener implements PacketListener {
-        private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
-        private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
-
-        @Override
-        public void processPacket(Packet packet) {
-            org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
-            if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
-                Intent i = new Intent(ACTION_MESSAGE);
-                String from = m.getFrom();
-                String network = StringUtils.parseServer(from);
-                // our network - convert to userId
-                if (network.equalsIgnoreCase(mServer.getNetwork())) {
-                    StringBuilder b = new StringBuilder();
-                    b.append(StringUtils.parseName(from));
-                    b.append(StringUtils.parseResource(from));
-                    i.putExtra(EXTRA_FROM_USERID, b.toString());
-                }
-
-                // check if there is a composing notification
-                PacketExtension _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
-                ChatStateExtension chatstate = null;
-                if (_chatstate != null) {
-                    chatstate = (ChatStateExtension) _chatstate;
-                    i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
-
-                }
-
-                i.putExtra(EXTRA_FROM, from);
-                i.putExtra(EXTRA_TO, m.getTo());
-                mLocalBroadcastManager.sendBroadcast(i);
-
-                // non-active notifications are not to be processed as messages
-                if (chatstate != null && !chatstate.getElementName().equals(ChatState.active.name()))
-                    return;
-
-                // delayed deliver extension is the first the be processed
-                // because it's used also in delivery receipts
-                PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
-                if (_delay == null)
-                    _delay = m.getExtension("x", "jabber:x:delay");
-
-                Date stamp = null;
-                if (_delay != null) {
-                    if (_delay instanceof DelayInformation) {
-                        stamp = ((DelayInformation) _delay).getStamp();
-                    }
-                    else if (_delay instanceof DelayInfo) {
-                        stamp = ((DelayInfo) _delay).getStamp();
-                    }
-                }
-
-                long serverTimestamp = 0;
-                if (stamp != null)
-                    serverTimestamp = stamp.getTime();
-                else
-                    serverTimestamp = System.currentTimeMillis();
-
-                PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
-
-                // delivery receipt
-                if (_ext != null && !ServerReceiptRequest.ELEMENT_NAME.equals(_ext.getElementName())) {
-                    ServerReceipt ext = (ServerReceipt) _ext;
-                    synchronized (mWaitingReceipt) {
-                        String id = m.getPacketID();
-                        Long _msgId = mWaitingReceipt.get(id);
-                        long msgId = (_msgId != null) ? _msgId : 0;
-                        ContentResolver cr = getContentResolver();
-
-                        // TODO compress this code
-                        if (ext instanceof ReceivedServerReceipt) {
-
-                            // message has been delivered: check if we have previously stored the server id
-                            if (msgId > 0) {
-                                ContentValues values = new ContentValues(3);
-                                values.put(Messages.MESSAGE_ID, ext.getId());
-                                values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                                values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                    values, selectionOutgoing, null);
-
-                                mWaitingReceipt.remove(id);
-                            }
-                            else {
-                                Uri msg = Messages.getUri(ext.getId());
-                                ContentValues values = new ContentValues(2);
-                                values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                                values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                                cr.update(msg, values, selectionOutgoing, null);
-                            }
-
-                            // send ack
-                            AckServerReceipt receipt = new AckServerReceipt(id);
-                            org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
-                                org.jivesoftware.smack.packet.Message.Type.chat);
-                            ack.addExtension(receipt);
-
-                            sendPacket(ack);
-                        }
-
-                        else if (ext instanceof SentServerReceipt) {
-                            long now = System.currentTimeMillis();
-
-                            if (msgId > 0) {
-                                ContentValues values = new ContentValues(3);
-                                values.put(Messages.MESSAGE_ID, ext.getId());
-                                values.put(Messages.STATUS, Messages.STATUS_SENT);
-                                values.put(Messages.STATUS_CHANGED, now);
-                                values.put(Messages.SERVER_TIMESTAMP, now);
-                                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                    values, selectionOutgoing, null);
-
-                                mWaitingReceipt.remove(id);
-
-                                // we can now release the message center. Hopefully
-                                // there will be one hold and one matching release.
-                                mIdleHandler.release();
-                            }
-                            else {
-                                Uri msg = Messages.getUri(ext.getId());
-                                ContentValues values = new ContentValues(2);
-                                values.put(Messages.STATUS, Messages.STATUS_SENT);
-                                values.put(Messages.STATUS_CHANGED, now);
-                                values.put(Messages.SERVER_TIMESTAMP, now);
-                                cr.update(msg, values, selectionOutgoing, null);
-                            }
-                        }
-
-                        // ack is received after sending a <received/> message
-                        else if (ext instanceof AckServerReceipt) {
-                            // mark message as confirmed
-                            ContentValues values = new ContentValues(1);
-                            values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionIncoming, null);
-
-                            mWaitingReceipt.remove(id);
-                        }
-
-                    }
-                }
-
-                // incoming message
-                else {
-                    String msgId = null;
-                    if (_ext != null) {
-                        ServerReceiptRequest req = (ServerReceiptRequest) _ext;
-                        // prepare for ack
-                        msgId = req.getId();
-                    }
-
-                    if (msgId == null)
-                        msgId = "incoming" + StringUtils.randomString(6);
-
-                    String sender = StringUtils.parseName(from);
-                    String body = m.getBody();
-
-                    // create message
-                    CompositeMessage msg = new CompositeMessage(
-                            MessageCenterService.this,
-                            msgId,
-                            serverTimestamp,
-                            sender,
-                            false,
-                            Coder.SECURITY_CLEARTEXT
-                        );
-
-                    PacketExtension _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
-
-                    if (_encrypted != null && _encrypted instanceof E2EEncryption) {
-                    	E2EEncryption mEnc = (E2EEncryption) _encrypted;
-                        byte[] encryptedData = mEnc.getData();
-
-                        // encrypted message
-                        msg.setEncrypted(true);
-                        msg.setSecurityFlags(Coder.SECURITY_BASIC);
-
-                        if (encryptedData != null) {
-
-                            // decrypt message
-                            try {
-                                MessageUtils.decryptMessage(MessageCenterService.this,
-                                        mServer, msg, encryptedData);
-                            }
-
-                            catch (Exception exc) {
-                                Log.e(TAG, "decryption failed", exc);
-
-                            	// raw component for encrypted data
-                            	// reuse security flags
-                                msg.clearComponents();
-                            	msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
-                            }
-
-                        }
-                    }
-
-                    else {
-
-                        // use message body
-                    	if (body != null)
-                    		msg.addComponent(new TextComponent(body));
-
-                    }
-
-                    // out of band data
-                    PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
-                    if (_media != null && _media instanceof OutOfBandData) {
-                        File previewFile = null;
-
-                        OutOfBandData media = (OutOfBandData) _media;
-                        String mime = media.getMime();
-                        String fetchUrl = media.getUrl();
-                        long length = media.getLength();
-
-                        // bits-of-binary for preview
-                        PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
-                        if (_preview != null && _preview instanceof BitsOfBinary) {
-                            BitsOfBinary preview = (BitsOfBinary) _preview;
-                            String previewMime = preview.getType();
-                            if (previewMime == null)
-                                previewMime = MediaStorage.THUMBNAIL_MIME;
-
-                            String filename = null;
-
-                            if (ImageComponent.supportsMimeType(mime)) {
-                            	filename = ImageComponent.buildMediaFilename(msgId, previewMime);
-                            }
-
-                            else if (VCardComponent.supportsMimeType(mime)) {
-                            	filename = VCardComponent.buildMediaFilename(msgId, previewMime);
-                            }
-
-                            try {
-                            	if (filename != null) previewFile =
-                            		MediaStorage.writeInternalMedia(MessageCenterService.this,
-                            			filename, preview.getContents());
-                            }
-                            catch (IOException e) {
-                                Log.w(TAG, "error storing thumbnail", e);
-                            }
-                        }
-
-                        MessageComponent<?> attachment = null;
-
-                        if (ImageComponent.supportsMimeType(mime)) {
-                            // cleartext only for now
-                        	attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
-                        			false, Coder.SECURITY_CLEARTEXT);
-                        }
-
-                        else if (VCardComponent.supportsMimeType(mime)) {
-                            // cleartext only for now
-                        	attachment = new VCardComponent(previewFile, null, fetchUrl, length,
-                        			false, Coder.SECURITY_CLEARTEXT);
-                        }
-
-                        // TODO other types
-
-                        if (attachment != null)
-                        	msg.addComponent(attachment);
-
-                        // add a dummy body if none was found
-                        /*
-                        if (body == null) {
-                        	msg.addComponent(new TextComponent(CompositeMessage
-                        		.getSampleTextContent((Class<? extends MessageComponent<?>>)
-                        			attachment.getClass(), mime)));
-                        }
-                        */
-
-                    }
-
-                    if (msg != null) {
-
-                        Uri msgUri = incoming(msg);
-                        if (_ext != null) {
-                            // send ack :)
-                            ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
-                            org.jivesoftware.smack.packet.Message ack =
-                            	new org.jivesoftware.smack.packet.Message(from,
-                            		org.jivesoftware.smack.packet.Message.Type.chat);
-                            ack.addExtension(receipt);
-
-                            if (msgUri != null) {
-                                // will mark this message as confirmed
-                                long storageId = ContentUris.parseId(msgUri);
-                                mWaitingReceipt.put(ack.getPacketID(), storageId);
-                            }
-                            sendPacket(ack);
-                        }
-                    }
-
-                }
-            }
-
-            // error message
-            else if (m.getType() == org.jivesoftware.smack.packet.Message.Type.error) {
-                synchronized (mWaitingReceipt) {
-                    String id = m.getPacketID();
-                    Long _msgId = mWaitingReceipt.get(id);
-                    long msgId = (_msgId != null) ? _msgId : 0;
-                    ContentResolver cr = getContentResolver();
-
-                    // message has been rejected: mark as error
-                    if (msgId > 0) {
-                        ContentValues values = new ContentValues(3);
-                        values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
-                        values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
-                        cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                            values, selectionOutgoing, null);
-
-                        mWaitingReceipt.remove(id);
-
-                        // we can now release the message center. Hopefully
-                        // there will be one hold and one matching release.
-                        mIdleHandler.release();
-                    }
-                }
-            }
-        }
-    }
-
-    /** Listener and manager for a key pair regeneration cycle. */
-    private final class RegenerateKeyPairListener implements PacketListener {
-        private BroadcastReceiver mKeyReceiver, mConnReceiver;
-        private PGPKeyPairRing mKeyRing;
-        private PGPPublicKey mRevoked;
-
-        public RegenerateKeyPairListener()
-        		throws CertificateException, SignatureException, PGPException, IOException {
-
-            revokeCurrentKey();
-            setupKeyPairReceiver();
-            setupConnectedReceiver();
-
-            Intent i = new Intent(getApplicationContext(), KeyPairGeneratorService.class);
-            i.setAction(KeyPairGeneratorService.ACTION_GENERATE);
-            i.putExtra(KeyPairGeneratorService.EXTRA_FOREGROUND, true);
-            startService(i);
-        }
-
-        public void abort() {
-            if (mKeyReceiver != null) {
-                mLocalBroadcastManager.unregisterReceiver(mKeyReceiver);
-                mKeyReceiver = null;
-            }
-
-            if (mConnReceiver != null) {
-                mLocalBroadcastManager.unregisterReceiver(mConnReceiver);
-                mConnReceiver = null;
-            }
-        }
-
-        private Packet prepareKeyPacket() {
-            if (mKeyRing != null) {
-                try {
-                    String publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
-
-                    Registration iq = new Registration();
-                    iq.setType(IQ.Type.SET);
-                    iq.setTo(mConnection.getServiceName());
-                    Form form = new Form(Form.TYPE_SUBMIT);
-
-                    // form type: register#key
-                    FormField type = new FormField("FORM_TYPE");
-                    type.setType(FormField.TYPE_HIDDEN);
-                    type.addValue("http://kontalk.org/protocol/register#key");
-                    form.addField(type);
-
-                    // new (to-be-signed) public key
-                    FormField fieldKey = new FormField("publickey");
-                    fieldKey.setLabel("Public key");
-                    fieldKey.setType(FormField.TYPE_TEXT_SINGLE);
-                    fieldKey.addValue(publicKey);
-                    form.addField(fieldKey);
-
-                    // old (revoked) public key
-                    if (mRevoked != null) {
-	                    String revokedKey = Base64.encodeToString(mRevoked.getEncoded(), Base64.NO_WRAP);
-
-	                    FormField fieldRevoked = new FormField("revoked");
-	                    fieldRevoked.setLabel("Revoked public key");
-	                    fieldRevoked.setType(FormField.TYPE_TEXT_SINGLE);
-	                    fieldRevoked.addValue(revokedKey);
-	                    form.addField(fieldRevoked);
-                    }
-
-                    iq.addExtension(form.getDataFormToSend());
-                    return iq;
-                }
-                catch (IOException e) {
-                    Log.v(TAG, "error encoding key", e);
-                }
-            }
-
-            return null;
-        }
-
-        private void setupKeyPairReceiver() {
-            if (mKeyReceiver == null) {
-
-                PersonalKeyRunnable action = new PersonalKeyRunnable() {
-                    public void run(PersonalKey key) {
-                        Log.d(TAG, "keypair generation complete.");
-                        // unregister the broadcast receiver
-                        mLocalBroadcastManager.unregisterReceiver(mKeyReceiver);
-                        mKeyReceiver = null;
-
-                        // store the key
-                        try {
-                        	AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
-                            Account acc = Authenticator.getDefaultAccount(am);
-                            String name = am.getUserData(acc, Authenticator.DATA_NAME);
-
-                            String userId = MessageUtils.sha1(acc.name);
-                            mKeyRing = key.storeNetwork(userId, mServer.getNetwork(), name,
-                                // TODO should we ask passphrase to the user?
-                                ((Kontalk)getApplicationContext()).getCachedPassphrase());
-
-                            // listen for connection events
-                            setupConnectedReceiver();
-                            // request connection status
-                            requestConnectionStatus(MessageCenterService.this);
-
-                            // CONNECTED listener will do the rest
-                        }
-                        catch (Exception e) {
-                            // TODO notify user
-                            Log.v(TAG, "error saving key", e);
-                        }
-                    }
-                };
-
-                mKeyReceiver = new KeyGeneratorReceiver(mIdleHandler, action);
-
-                IntentFilter filter = new IntentFilter(KeyPairGeneratorService.ACTION_GENERATE);
-                mLocalBroadcastManager.registerReceiver(mKeyReceiver, filter);
-            }
-        }
-
-        private void setupConnectedReceiver() {
-            if (mConnReceiver == null) {
-                mConnReceiver = new BroadcastReceiver() {
-                    public void onReceive(Context context, Intent intent) {
-                        // unregister the broadcast receiver
-                        mLocalBroadcastManager.unregisterReceiver(mConnReceiver);
-                        mConnReceiver = null;
-
-                        // prepare public key packet
-                        Packet iq = prepareKeyPacket();
-
-                        if (iq != null) {
-
-                            // setup packet filter for response
-                            PacketIDFilter filter = new PacketIDFilter(iq.getPacketID());
-                            mConnection.addPacketListener(RegenerateKeyPairListener.this, filter);
-
-                            // send the key out
-                            sendPacket(iq);
-
-                            // now wait for a response
-                        }
-
-                        // TODO else?
-                    }
-                };
-
-                IntentFilter filter = new IntentFilter(ACTION_CONNECTED);
-                mLocalBroadcastManager.registerReceiver(mConnReceiver, filter);
-            }
-        }
-
-        /** We do this here so if something goes wrong the old key is still valid. */
-        private void revokeCurrentKey()
-        		throws CertificateException, PGPException, IOException, SignatureException {
-
-        	PersonalKey oldKey = ((Kontalk) getApplicationContext()).getPersonalKey();
-        	if (oldKey != null)
-        		mRevoked = oldKey.revoke(false);
-        }
-
-        @Override
-        public void processPacket(Packet packet) {
-            IQ iq = (IQ) packet;
-            if (iq.getType() == IQ.Type.RESULT) {
-                DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
-                if (response != null) {
-                    String publicKey = null;
-
-                    // ok! message will be sent
-                    List<FormField> fields = response.getFields();
-                    for (FormField field : fields) {
-                        if ("publickey".equals(field.getVariable())) {
-                            publicKey = field.getValues().get(0);
-                            break;
-                        }
-                    }
-
-                    if (!TextUtils.isEmpty(publicKey)) {
-                        byte[] publicKeyData;
-                        byte[] privateKeyData;
-                        byte[] bridgeCertData;
-                        try {
-                            publicKeyData = Base64.decode(publicKey, Base64.DEFAULT);
-                            privateKeyData = mKeyRing.secretKey.getEncoded();
-
-                            String passphrase = ((Kontalk) getApplicationContext()).getCachedPassphrase();
-                            // TODO subjectAltName?
-                            bridgeCertData = X509Bridge.createCertificate(publicKeyData,
-                            	mKeyRing.secretKey.getSecretKey(), passphrase, null).getEncoded();
-                        }
-                        catch (Exception e) {
-                            Log.e(TAG, "error decoding key data", e);
-                            publicKeyData = null;
-                            privateKeyData = null;
-                            bridgeCertData = null;
-                        }
-
-                        if (publicKeyData != null && privateKeyData != null && bridgeCertData != null) {
-
-                            // store key data in AccountManager
-                            Authenticator.setDefaultPersonalKey(MessageCenterService.this,
-                                publicKeyData, privateKeyData, bridgeCertData);
-                            // invalidate cached personal key
-                            ((Kontalk)getApplicationContext()).invalidatePersonalKey();
-
-                            mHandler.post(new Runnable() {
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(),
-                                        R.string.msg_gen_keypair_complete,
-                                        Toast.LENGTH_LONG).show();
-                                }
-                            });
-
-                            // restart message center
-                            restart(getApplicationContext());
-                        }
-
-                        // TODO else?
-                    }
-                }
-            }
-
-            // we are done here
-            endKeyPairRegeneration();
-        }
     }
 
 }

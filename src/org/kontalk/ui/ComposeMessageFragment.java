@@ -19,9 +19,9 @@
 package org.kontalk.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
-import static org.kontalk.service.MessageCenterService.PRIVACY_ACCEPT;
-import static org.kontalk.service.MessageCenterService.PRIVACY_BLOCK;
-import static org.kontalk.service.MessageCenterService.PRIVACY_UNBLOCK;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +56,7 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
@@ -67,6 +67,7 @@ import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.AsyncQueryHandler;
@@ -87,6 +88,7 @@ import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
@@ -762,10 +764,20 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
 	/** Starts activity for an image attachment. */
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void selectImageAttachment() {
-        Intent i = new Intent(Intent.ACTION_GET_CONTENT)
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("image/*");
+		Intent pictureIntent;
+
+		if (!MediaStorage.isStorageAccessFrameworkAvailable()) {
+			pictureIntent = new Intent(Intent.ACTION_GET_CONTENT);
+		}
+		else {
+			pictureIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+		}
+
+		pictureIntent
+			.addCategory(Intent.CATEGORY_OPENABLE)
+			.setType("image/*");
 
         Intent chooser = null;
         try {
@@ -779,7 +791,7 @@ public class ComposeMessageFragment extends ListFragment implements
             mCurrentPhoto = MediaStorage.getTempImage(getActivity());
     	    Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
     	    take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
-       	    chooser = Intent.createChooser(i, getString(R.string.chooser_send_picture));
+       	    chooser = Intent.createChooser(pictureIntent, getString(R.string.chooser_send_picture));
             chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { take });
         }
         catch (UnsupportedOperationException ue) {
@@ -791,7 +803,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 Toast.LENGTH_LONG).show();
         }
 
-        if (chooser == null) chooser = i;
+        if (chooser == null) chooser = pictureIntent;
 	    startActivityForResult(chooser, SELECT_ATTACHMENT_OPENABLE);
 	}
 
@@ -1168,6 +1180,11 @@ public class ComposeMessageFragment extends ListFragment implements
 			        }
 			        uri = data.getData();
 			        mime = data.getType();
+
+			        // SAF available, request persistable permissions
+			        if (MediaStorage.isStorageAccessFrameworkAvailable()) {
+			        	MediaStorage.requestPersistablePermissions(getActivity(), data);
+			        }
 			    }
 
 				if (uri != null) {
@@ -2190,12 +2207,22 @@ public class ComposeMessageFragment extends ListFragment implements
             mDeleteThreadMenu.setEnabled(threadEnabled);
         }
 
-        if (mBlockMenu != null && contact != null) {
-            // block/unblock
-            boolean blocked = contact.isBlocked();
+        if (mBlockMenu != null) {
+        	if (Authenticator.isSelfUserId(getActivity(), userId)) {
+	            mBlockMenu.setVisible(false).setEnabled(false);
+	            mUnblockMenu.setVisible(false).setEnabled(false);
+        	}
+        	else if (contact != null) {
+	            // block/unblock
+	            boolean blocked = contact.isBlocked();
 
-            mBlockMenu.setVisible(!blocked);
-            mUnblockMenu.setVisible(blocked);
+	            mBlockMenu.setVisible(!blocked).setEnabled(!blocked);
+	            mUnblockMenu.setVisible(blocked).setEnabled(blocked);
+        	}
+        	else {
+	            mBlockMenu.setVisible(true).setEnabled(true);
+	            mUnblockMenu.setVisible(true).setEnabled(true);
+        	}
         }
     }
 

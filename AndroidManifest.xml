@@ -58,7 +58,7 @@
         android:allowBackup="true">
 
         <!-- Services -->
-        <service android:name=".service.MessageCenterService"
+        <service android:name=".service.msgcenter.MessageCenterService"
             android:label="@string/service_name"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
                 android:label="@string/authenticator_name">
@@ -79,7 +79,7 @@
         <service android:name=".service.DownloadService"
             android:label="@string/download_service"/>
         <service android:name=".service.UploadService"/>
-        <service android:name=".GCMIntentService"/>
+        <service android:name=".service.gcm.GcmIntentService"/>
         <service android:name=".service.KeyPairGeneratorService"/>
 
         <!-- Content providers -->
@@ -104,7 +104,7 @@
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
             </intent-filter>
         </receiver>
-        <receiver android:name="com.google.android.gcm.GCMBroadcastReceiver"
+        <receiver android:name=".service.gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND">
           <intent-filter>
             <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -116,6 +116,8 @@
         <!-- Other -->
         <meta-data android:name="android.app.default_searchable"
             android:value=".ui.SearchActivity" />
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <!-- Activities -->
         <activity android:name=".ui.ConversationList"

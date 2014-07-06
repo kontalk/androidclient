@@ -29,7 +29,6 @@ import org.kontalk.util.MessageUtils.SmileyImageSpan;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -38,11 +37,9 @@ import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.widget.Checkable;
 import android.widget.ImageView;
-import android.widget.QuickContactBadge;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class ConversationListItem extends RelativeLayout implements Checkable {
+public class ConversationListItem extends AvatarListItem implements Checkable {
     //private static final String TAG = ConversationListItem.class.getSimpleName();
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
@@ -54,23 +51,16 @@ public class ConversationListItem extends RelativeLayout implements Checkable {
     //private View mAttachmentView;
     private ImageView mErrorIndicator;
     //private ImageView mPresenceView;
-    private QuickContactBadge mAvatarView;
     private TextView mCounterView;
 
     private boolean mChecked = false;
-
-    static private Drawable sDefaultContactImage;
 
     public ConversationListItem(Context context) {
         super(context);
     }
 
-    public ConversationListItem(final Context context, AttributeSet attrs) {
+    public ConversationListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        if (sDefaultContactImage == null) {
-            sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
-        }
     }
 
     @Override
@@ -84,15 +74,12 @@ public class ConversationListItem extends RelativeLayout implements Checkable {
         //mAttachmentView = findViewById(R.id.attachment);
         mErrorIndicator = (ImageView) findViewById(R.id.error);
         //mPresenceView = (ImageView) findViewById(R.id.presence);
-        mAvatarView = (QuickContactBadge) findViewById(R.id.avatar);
         mCounterView = (TextView) findViewById(R.id.counter);
 
         if (isInEditMode()) {
             mFromView.setText("Test zio");
             mSubjectView.setText("Bella zio senti per domani facciamo che mi vieni a prendere ok?");
             mDateView.setText("20:14");
-            mAvatarView.setVisibility(VISIBLE);
-            mAvatarView.setImageResource(R.drawable.ic_contact_picture);
             /*
             mErrorIndicator.setVisibility(VISIBLE);
             mErrorIndicator.setImageResource(R.drawable.ic_msg_pending);
@@ -112,14 +99,13 @@ public class ConversationListItem extends RelativeLayout implements Checkable {
 
         if (contact != null) {
             recipient = contact.getName();
-            mAvatarView.assignContactUri(contact.getUri());
-            mAvatarView.setImageDrawable(contact.getAvatar(context, sDefaultContactImage));
         }
         else {
             // FIXME debug mode -- recipient = conv.getRecipient();
             recipient = context.getString(R.string.peer_unknown);
-            mAvatarView.setImageDrawable(sDefaultContactImage);
         }
+
+        loadAvatar(contact);
 
         SpannableStringBuilder from = new SpannableStringBuilder(recipient);
         if (conv.getUnreadCount() > 0)

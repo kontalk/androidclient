@@ -22,7 +22,7 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
 import android.app.AlertDialog;

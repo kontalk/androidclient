@@ -31,7 +31,7 @@ import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;

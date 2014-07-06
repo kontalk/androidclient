@@ -19,7 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
 import android.app.Activity;

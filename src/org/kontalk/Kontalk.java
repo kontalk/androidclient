@@ -28,10 +28,10 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.DownloadService;
-import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.NetworkStateReceiver;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
@@ -46,7 +46,9 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -226,6 +228,19 @@ public class Kontalk extends Application {
         pm.setComponentEnabledSetting(new ComponentName(context, klass),
             enabled ? PackageManager.COMPONENT_ENABLED_STATE_DEFAULT : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
+    }
+
+    public static int getVersionCode(Context context) {
+        try {
+            PackageInfo pInfo = context.getPackageManager()
+            	.getPackageInfo(context.getPackageName(), 0);
+
+            return pInfo.versionCode;
+        }
+        catch (NameNotFoundException e) {
+            // shouldn't happen
+        	return 0;
+        }
     }
 
     /** Increments the reference counter. */

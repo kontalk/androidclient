@@ -18,7 +18,7 @@
 
 package org.kontalk.authenticator;
 
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;

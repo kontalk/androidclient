@@ -89,7 +89,7 @@ public class MessagingNotification {
     };
 
     private static final String MESSAGES_UNREAD_SELECTION =
-        CommonColumns.UNREAD + " <> 0 AND " +
+        CommonColumns.NEW + " <> 0 AND " +
         CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** Pending delayed notification update flag. */
