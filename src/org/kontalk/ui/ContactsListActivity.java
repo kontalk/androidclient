@@ -18,6 +18,9 @@
 
 package org.kontalk.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
@@ -28,8 +31,9 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.Preferences;
 
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
+import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -98,7 +102,6 @@ public class ContactsListActivity extends ActionBarActivity
     public synchronized boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.contacts_list_menu, menu);
         mSyncButton = menu.findItem(R.id.menu_refresh);
-        MenuItemCompat.setShowAsAction(mSyncButton, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         mSyncButton.setVisible(!SyncAdapter.isActive(this));
         return true;
     }
@@ -116,10 +119,7 @@ public class ContactsListActivity extends ActionBarActivity
                 return true;
 
             case R.id.menu_invite:
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType(TextComponent.MIME_TYPE);
-                i.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
-                startActivity(i);
+                startInvite();
                 return true;
         }
 
@@ -149,6 +149,44 @@ public class ContactsListActivity extends ActionBarActivity
         if (mSyncButton != null)
             mSyncButton.setVisible(!syncing);
         setSupportProgressBarIndeterminateVisibility(syncing);
+    }
+
+    private void startInvite() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType(TextComponent.MIME_TYPE);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
+
+        List<ResolveInfo> resInfo = getPackageManager().queryIntentActivities(shareIntent, 0);
+        // having size=1 means that we are the only handlers
+        if (resInfo != null && resInfo.size() > 1) {
+            List<Intent> targets = new ArrayList<Intent>();
+
+        	for (ResolveInfo resolveInfo : resInfo) {
+                String packageName = resolveInfo.activityInfo.packageName;
+
+                if (!getPackageName().equals(packageName)) {
+                	// copy
+	                Intent targetShareIntent = new Intent(shareIntent);
+	                targetShareIntent.setPackage(packageName);
+
+	                targets.add(targetShareIntent);
+                }
+            }
+
+        	// initial intents are added before of the main intent, so we remove the last one here
+            Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
+            Parcelable[] extraIntents = new Parcelable[targets.size()];
+            targets.toArray(extraIntents);
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+
+            startActivity(chooser);
+        }
+
+        else {
+        	// no activity to handle invitation
+        	Toast.makeText(this, R.string.warn_invite_no_app,
+        			Toast.LENGTH_SHORT).show();
+        }
     }
 
 }
