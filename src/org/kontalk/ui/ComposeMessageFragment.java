@@ -2069,6 +2069,10 @@ public class ComposeMessageFragment extends ListFragment implements
 			return;
 		}
 
+		// resume content watcher
+		if (mListAdapter != null)
+			mListAdapter.setOnContentChangedListener(mContentChangedListener);
+
 		// we are updating the status now
 		setActivityStatusUpdating();
 
@@ -2092,6 +2096,11 @@ public class ComposeMessageFragment extends ListFragment implements
 	@Override
 	public void onPause() {
 		super.onPause();
+
+		// pause content watcher
+		if (mListAdapter != null)
+			mListAdapter.setOnContentChangedListener(null);
+
 		CharSequence text = mTextEntry.getText();
 		int len = text.length();
 
