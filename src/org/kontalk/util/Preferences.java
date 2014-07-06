@@ -43,9 +43,6 @@ import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-
 
 /**
  * Access to application preferences.
@@ -362,6 +359,10 @@ public final class Preferences {
         return sPreferences.edit()
             .putLong("pref_last_connection", System.currentTimeMillis())
             .commit();
+    }
+
+    public static boolean getEnterKeyEnabled(Context context) {
+    	return getBoolean(context, "pref_text_enter", false);
     }
 
     /** Recent statuses database helper. */

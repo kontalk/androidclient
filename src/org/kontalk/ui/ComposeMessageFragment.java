@@ -96,6 +96,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.Html;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -244,6 +245,14 @@ public class ComposeMessageFragment extends ListFragment implements
 		}
 
 		mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
+
+		// enter key flag
+		int inputTypeFlags = Preferences.getEnterKeyEnabled(getActivity()) ?
+				InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE :
+				InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
+
+		mTextEntry.setInputType(mTextEntry.getInputType() | inputTypeFlags);
+
 		mTextEntry.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
