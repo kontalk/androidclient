@@ -26,7 +26,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.Preferences;
 

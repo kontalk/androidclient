@@ -3,7 +3,7 @@ package org.kontalk.service.gcm;
 import java.util.Random;
 
 import org.kontalk.Kontalk;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
 import android.app.IntentService;

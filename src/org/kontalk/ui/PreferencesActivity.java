@@ -22,9 +22,9 @@ import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.ServerList;
-import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.gcm.GcmUtils;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
 import android.annotation.TargetApi;

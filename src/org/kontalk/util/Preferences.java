@@ -24,8 +24,8 @@ import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.service.MessageCenterService;
 import org.kontalk.service.ServerListUpdater;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.content.ContentValues;
 import android.content.Context;

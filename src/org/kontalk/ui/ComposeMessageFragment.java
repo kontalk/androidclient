@@ -19,9 +19,9 @@
 package org.kontalk.ui;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
-import static org.kontalk.service.MessageCenterService.PRIVACY_ACCEPT;
-import static org.kontalk.service.MessageCenterService.PRIVACY_BLOCK;
-import static org.kontalk.service.MessageCenterService.PRIVACY_UNBLOCK;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +55,7 @@ import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;

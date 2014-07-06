@@ -1,7 +1,7 @@
 package org.kontalk.service.gcm;
 
 import org.kontalk.Kontalk;
-import org.kontalk.service.MessageCenterService;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.content.Context;
 import android.util.Log;

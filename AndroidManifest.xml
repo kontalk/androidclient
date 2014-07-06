@@ -58,7 +58,7 @@
         android:allowBackup="true">
 
         <!-- Services -->
-        <service android:name=".service.MessageCenterService"
+        <service android:name=".service.msgcenter.MessageCenterService"
             android:label="@string/service_name"/>
         <service android:name=".authenticator.AccountAuthenticatorService"
                 android:label="@string/authenticator_name">
