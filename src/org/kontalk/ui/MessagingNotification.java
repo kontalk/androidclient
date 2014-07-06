@@ -93,23 +93,23 @@ public class MessagingNotification {
         CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** Pending delayed notification update flag. */
-    private static volatile boolean mPending;
+    private static volatile boolean sPending;
 
     /** Peer to NOT be notified for new messages. */
-    private static volatile String mPaused;
+    private static volatile String sPaused;
 
     /** Peer of last notified chat invitation. */
-    private static volatile String mLastInvitation;
+    private static volatile String sLastInvitation;
 
     /** This class is not instanciable. */
     private MessagingNotification() {}
 
     public static void setPaused(String jid) {
-        mPaused = jid;
+        sPaused = jid;
     }
 
     public static String getPaused() {
-        return mPaused;
+        return sPaused;
     }
 
     private static boolean supportsBigNotifications() {
@@ -122,13 +122,13 @@ public class MessagingNotification {
         if (!Preferences.getNotificationsEnabled(context))
             return;
 
-        if (!mPending) {
-            mPending = true;
+        if (!sPending) {
+            sPending = true;
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     updateMessagesNotification(context, isNew);
-                    mPending = false;
+                    sPending = false;
                 }
             }).start();
         }
@@ -180,9 +180,9 @@ public class MessagingNotification {
         }
 
         // is there a peer to not notify for?
-        if (mPaused != null) {
+        if (sPaused != null) {
             query += " AND " + CommonColumns.PEER + " <> ?";
-            args = new String[] { StringUtils.parseName(mPaused) };
+            args = new String[] { StringUtils.parseName(sPaused) };
         }
 
         Cursor c = res.query(uri, proj, query, args, order);
@@ -441,7 +441,7 @@ public class MessagingNotification {
     /** Triggers a notification for a chat invitation. */
     public static void chatInvitation(Context context, String userId) {
     	// open conversation, do not send notification
-    	if (userId.equalsIgnoreCase(StringUtils.parseName(mPaused)))
+    	if (userId.equalsIgnoreCase(StringUtils.parseName(sPaused)))
     		return;
 
         // find the contact for the userId
@@ -483,12 +483,12 @@ public class MessagingNotification {
         nm.notify(NOTIFICATION_ID_INVITATION, builder.build());
 
         // this is for clearChatInvitation()
-        mLastInvitation = userId;
+        sLastInvitation = userId;
     }
 
     /** Cancel a chat invitation notification. */
     public static void clearChatInvitation(Context context, String userId) {
-    	if (userId.equalsIgnoreCase(mLastInvitation)) {
+    	if (userId.equalsIgnoreCase(sLastInvitation)) {
             NotificationManager nm = (NotificationManager) context
                     .getSystemService(Context.NOTIFICATION_SERVICE);
 
