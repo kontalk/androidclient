@@ -77,6 +77,9 @@ import android.os.Parcel;
  */
 public class X509Bridge {
 
+    public static final String PEM_TYPE_PRIVATE_KEY = "RSA PRIVATE KEY";
+    public static final String PEM_TYPE_CERTIFICATE = "CERTIFICATE";
+
     private final static String DN_COMMON_PART_O = "OpenPGP to X.509 Bridge";
 
     private X509Bridge() {
