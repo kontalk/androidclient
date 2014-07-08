@@ -172,7 +172,7 @@ public class PGP {
     public static PGPPublicKey signPublicKey(PGPKeyPair secret, PGPPublicKey keyToBeSigned, String id)
             throws PGPException, IOException, SignatureException {
 
-    	return signPublicKey(secret, keyToBeSigned, id, PGPSignature.CASUAL_CERTIFICATION);
+        return signPublicKey(secret, keyToBeSigned, id, PGPSignature.CASUAL_CERTIFICATION);
     }
 
     /** Signs a public key with the given secret key. */
@@ -192,14 +192,14 @@ public class PGP {
 
     /** Signs and add the given user attributes to the given public key. */
     public static PGPPublicKey signUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
-    		throws PGPException, SignatureException {
+            throws PGPException, SignatureException {
 
         return signUserAttributes(secret, keyToBeSigned, attributes, PGPSignature.POSITIVE_CERTIFICATION);
     }
 
     /** Signs and add the given user attributes to the given public key. */
     public static PGPPublicKey signUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes, int certification)
-    		throws PGPException, SignatureException {
+            throws PGPException, SignatureException {
 
         PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
 
@@ -210,14 +210,14 @@ public class PGP {
         sGen.init(certification, pgpPrivKey);
 
         return PGPPublicKey.addCertification(keyToBeSigned, attributes,
-        		sGen.generateCertification(attributes, keyToBeSigned));
+                sGen.generateCertification(attributes, keyToBeSigned));
     }
 
     public static PGPPublicKey revokeUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
-    		throws SignatureException, PGPException {
+            throws SignatureException, PGPException {
 
-		return PGP.signUserAttributes(secret, keyToBeSigned, attributes,
-				PGPSignature.CERTIFICATION_REVOCATION);
+        return PGP.signUserAttributes(secret, keyToBeSigned, attributes,
+                PGPSignature.CERTIFICATION_REVOCATION);
     }
 
     /** Revokes the given key. */
@@ -237,7 +237,7 @@ public class PGP {
     }
 
     public static PGPDecryptedKeyPairRing fromParcel(Parcel in) throws PGPException {
-    	ensureKeyConverter();
+        ensureKeyConverter();
 
         // TODO read byte data
         PrivateKey privSign = (PrivateKey) in.readSerializable();
@@ -287,12 +287,12 @@ public class PGP {
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {
-    	return MessageUtils.bytesToHex(publicKey.getFingerprint());
+        return MessageUtils.bytesToHex(publicKey.getFingerprint());
     }
 
     public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {
-    	PGPPublicKey pk = getMasterKey(publicKeyring);
-    	return MessageUtils.bytesToHex(pk.getFingerprint());
+        PGPPublicKey pk = getMasterKey(publicKeyring);
+        return MessageUtils.bytesToHex(pk.getFingerprint());
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
@@ -303,8 +303,8 @@ public class PGP {
 
     /** Returns the first user ID on the key that matches the given hostname. */
     public static String getUserId(byte[] publicKeyring, String host) throws IOException, PGPException {
-    	PGPPublicKey pk = getMasterKey(publicKeyring);
-    	return getUserId(pk, host);
+        PGPPublicKey pk = getMasterKey(publicKeyring);
+        return getUserId(pk, host);
     }
 
     /** Returns the first master key found in the given public keyring. */
@@ -322,12 +322,12 @@ public class PGP {
 
     /** Returns the first master key found in the given public keyring. */
     public static PGPPublicKey getMasterKey(byte[] publicKeyring) throws IOException, PGPException {
-    	return getMasterKey(readPublicKeyring(publicKeyring));
+        return getMasterKey(readPublicKeyring(publicKeyring));
     }
 
     public static PGPPublicKey getEncryptionKey(PGPPublicKeyRing publicKeyring) {
         @SuppressWarnings("unchecked")
-		Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
             if (pk.isEncryptionKey())
@@ -342,7 +342,7 @@ public class PGP {
         Object o = reader.nextObject();
         while (o != null) {
             if (o instanceof PGPPublicKeyRing)
-            	return (PGPPublicKeyRing) o;
+                return (PGPPublicKeyRing) o;
 
             o = reader.nextObject();
         }
@@ -351,18 +351,18 @@ public class PGP {
     }
 
     private static void ensureKeyConverter() {
-    	if (sKeyConverter == null)
-    		sKeyConverter = new JcaPGPKeyConverter().setProvider(PGP.PROVIDER);
+        if (sKeyConverter == null)
+            sKeyConverter = new JcaPGPKeyConverter().setProvider(PGP.PROVIDER);
     }
 
     public static PrivateKey convertPrivateKey(PGPPrivateKey key) throws PGPException {
-    	ensureKeyConverter();
-    	return sKeyConverter.getPrivateKey(key);
+        ensureKeyConverter();
+        return sKeyConverter.getPrivateKey(key);
     }
 
     @SuppressWarnings("unchecked")
-	public static PrivateKey convertPrivateKey(byte[] privateKeyData, String passphrase)
-    		throws PGPException, IOException {
+    public static PrivateKey convertPrivateKey(byte[] privateKeyData, String passphrase)
+            throws PGPException, IOException {
 
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
         PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
@@ -388,8 +388,8 @@ public class PGP {
     }
 
     public static PublicKey convertPublicKey(PGPPublicKey key) throws PGPException {
-    	ensureKeyConverter();
-    	return sKeyConverter.getPublicKey(key);
+        ensureKeyConverter();
+        return sKeyConverter.getPublicKey(key);
     }
 
 

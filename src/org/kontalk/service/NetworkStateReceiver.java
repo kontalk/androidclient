@@ -72,9 +72,9 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 Log.w(TAG, "network state changed!");
 
                 if (info.getType() == ConnectivityManager.TYPE_MOBILE &&
-                		!shouldReconnect(context)) {
-                	Log.w(TAG, "throttling on mobile network");
-                	return;
+                        !shouldReconnect(context)) {
+                    Log.w(TAG, "throttling on mobile network");
+                    return;
                 }
 
                 switch (info.getState()) {
@@ -102,23 +102,23 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 
     private boolean shouldReconnect(Context context) {
         // check if some activity is holding to the message center
-    	// or there is a pending push notification
+        // or there is a pending push notification
         if (((Kontalk) context.getApplicationContext()).hasReference() ||
-        		Preferences.getLastPushNotification(context) < 0)
+                Preferences.getLastPushNotification(context) < 0)
             return true;
 
-    	long lastConnect = Preferences.getLastConnection(context);
+        long lastConnect = Preferences.getLastConnection(context);
 
-    	// no last connection registered
-    	if (lastConnect < 0)
-    		return true;
+        // no last connection registered
+        if (lastConnect < 0)
+            return true;
 
-    	long now = System.currentTimeMillis();
-    	long diff = Preferences.getWakeupTimeMillis(context,
-			MessageCenterService.MIN_WAKEUP_TIME,
-			MessageCenterService.DEFAULT_WAKEUP_TIME);
+        long now = System.currentTimeMillis();
+        long diff = Preferences.getWakeupTimeMillis(context,
+            MessageCenterService.MIN_WAKEUP_TIME,
+            MessageCenterService.DEFAULT_WAKEUP_TIME);
 
-    	return (now - lastConnect) >= diff;
+        return (now - lastConnect) >= diff;
     }
 
 }

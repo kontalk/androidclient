@@ -163,16 +163,16 @@ public class ComposeMessage extends ActionBarActivity {
     }
 
     public void setUpdatingSubtitle() {
-    	CharSequence current = mSubtitleView.getText();
-    	// no need to set updating status if no text is displayed
-    	if (current.length() > 0) {
-    		// we call toString() to strip any existing span
-			SpannableString status = new SpannableString(current.toString());
-			status.setSpan(new StyleSpan(Typeface.ITALIC),
-				0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        CharSequence current = mSubtitleView.getText();
+        // no need to set updating status if no text is displayed
+        if (current.length() > 0) {
+            // we call toString() to strip any existing span
+            SpannableString status = new SpannableString(current.toString());
+            status.setSpan(new StyleSpan(Typeface.ITALIC),
+                0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-			mSubtitleView.setText(status);
-    	}
+            mSubtitleView.setText(status);
+        }
     }
 
     private void onAvatarClick() {

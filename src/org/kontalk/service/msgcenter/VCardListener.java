@@ -47,10 +47,10 @@ import android.util.Log;
 class VCardListener extends MessageCenterPacketListener {
 
     public VCardListener(MessageCenterService instance) {
-		super(instance);
-	}
+        super(instance);
+    }
 
-	@Override
+    @Override
     public void processPacket(Packet packet) {
         VCard4 p = (VCard4) packet;
 
@@ -64,44 +64,44 @@ class VCardListener extends MessageCenterPacketListener {
             if (_publicKey != null) {
 
                 // FIXME always false LOL
-	            if (myCard) {
-	                byte[] bridgeCertData;
-	                try {
-	                    PersonalKey key = getApplication().getPersonalKey();
+                if (myCard) {
+                    byte[] bridgeCertData;
+                    try {
+                        PersonalKey key = getApplication().getPersonalKey();
 
-	                    // TODO subjectAltName?
-	                    bridgeCertData = X509Bridge.createCertificate(_publicKey,
-	                        key.getSignKeyPair().getPrivateKey(), null).getEncoded();
-	                }
-	                catch (Exception e) {
-	                    Log.e(MessageCenterService.TAG, "error decoding key data", e);
-	                    bridgeCertData = null;
-	                }
+                        // TODO subjectAltName?
+                        bridgeCertData = X509Bridge.createCertificate(_publicKey,
+                            key.getSignKeyPair().getPrivateKey(), null).getEncoded();
+                    }
+                    catch (Exception e) {
+                        Log.e(MessageCenterService.TAG, "error decoding key data", e);
+                        bridgeCertData = null;
+                    }
 
-	                if (bridgeCertData != null) {
-	                    // store key data in AccountManager
-	                    Authenticator.setDefaultPersonalKey(getContext(),
-	                        _publicKey, null, bridgeCertData);
-	                    // invalidate cached personal key
-	                    getApplication().invalidatePersonalKey();
+                    if (bridgeCertData != null) {
+                        // store key data in AccountManager
+                        Authenticator.setDefaultPersonalKey(getContext(),
+                            _publicKey, null, bridgeCertData);
+                        // invalidate cached personal key
+                        getApplication().invalidatePersonalKey();
 
-	                    Log.v(MessageCenterService.TAG, "personal key updated.");
-	                }
-	            }
+                        Log.v(MessageCenterService.TAG, "personal key updated.");
+                    }
+                }
 
-	            try {
-    	            String userId = StringUtils.parseName(p.getFrom());
-    	            String fingerprint = PGP.getFingerprint(_publicKey);
-    	            UsersProvider.setUserKey(getContext(), userId,
-    	            	_publicKey, fingerprint);
+                try {
+                    String userId = StringUtils.parseName(p.getFrom());
+                    String fingerprint = PGP.getFingerprint(_publicKey);
+                    UsersProvider.setUserKey(getContext(), userId,
+                        _publicKey, fingerprint);
 
-            		// invalidate cache for this user
-            		Contact.invalidate(userId);
-	            }
-	            catch (Exception e) {
-	            	// TODO warn user
-	            	Log.e(MessageCenterService.TAG, "unable to update user key", e);
-	            }
+                    // invalidate cache for this user
+                    Contact.invalidate(userId);
+                }
+                catch (Exception e) {
+                    // TODO warn user
+                    Log.e(MessageCenterService.TAG, "unable to update user key", e);
+                }
             }
 
         }
@@ -122,7 +122,7 @@ class VCardListener extends MessageCenterPacketListener {
                 String userId = StringUtils.parseName(from);
                 String hash = MessageUtils.sha1(getMyUsername());
                 if (userId.equalsIgnoreCase(hash))
-                	myCard = true;
+                    myCard = true;
 
                 b.append(userId);
                 b.append(StringUtils.parseResource(from));

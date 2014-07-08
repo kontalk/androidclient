@@ -35,12 +35,12 @@ public class AndroidConnectionConfiguration extends ConnectionConfiguration {
 
     public AndroidConnectionConfiguration(String host, int port, String name) {
         super(host, port, name);
-	    //AndroidInit();
+        //AndroidInit();
     }
 
     /* TODO move to custom SSL context
     private void AndroidInit() {
-    	// API 14 is Ice Cream Sandwich
+        // API 14 is Ice Cream Sandwich
         if (Build.VERSION.SDK_INT >= 14) {
             setTruststoreType("AndroidCAStore");
             setTruststorePassword(null);
@@ -49,9 +49,9 @@ public class AndroidConnectionConfiguration extends ConnectionConfiguration {
             setTruststoreType("BKS");
             String path = System.getProperty("javax.net.ssl.trustStore");
             if (path == null)
-        	path = System.getProperty("java.home") + File.separator + "etc"
-        	    + File.separator + "security" + File.separator
-        	    + "cacerts.bks";
+            path = System.getProperty("java.home") + File.separator + "etc"
+                + File.separator + "security" + File.separator
+                + "cacerts.bks";
             setTruststorePath(path);
         }
     }

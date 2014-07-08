@@ -50,12 +50,12 @@ import android.text.TextUtils;
  */
 public final class Preferences {
 
-	private static SharedPreferences sPreferences;
+    private static SharedPreferences sPreferences;
     private static Drawable sCustomBackground;
     private static String sBalloonTheme;
 
     public static void init(Context context) {
-    	sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     public static void setCachedCustomBackground(Drawable customBackground) {
@@ -100,7 +100,7 @@ public final class Preferences {
     private static long getLongOnce(Context context, String key) {
         long value = sPreferences.getLong(key, -1);
         if (value >= 0)
-        	sPreferences.edit().putLong(key, -1).commit();
+            sPreferences.edit().putLong(key, -1).commit();
         return value;
     }
 
@@ -112,7 +112,7 @@ public final class Preferences {
     private static boolean getBooleanOnce(Context context, String key) {
         boolean value = sPreferences.getBoolean(key, false);
         if (!value)
-        	sPreferences.edit().putBoolean(key, true).commit();
+            sPreferences.edit().putBoolean(key, true).commit();
         return value;
     }
 
@@ -121,9 +121,9 @@ public final class Preferences {
     }
 
     public static boolean setServerURI(Context context, String serverURI) {
-    	return sPreferences.edit()
-    		.putString("pref_network_uri", serverURI)
-    		.commit();
+        return sPreferences.edit()
+            .putString("pref_network_uri", serverURI)
+            .commit();
     }
 
     /** Returns a random server from the cached list or the user-defined server. */
@@ -151,7 +151,7 @@ public final class Preferences {
     }
 
     public static boolean getAutoAcceptSubscriptions(Context context) {
-    	return getBoolean(context, "pref_auto_accept_subscriptions", false);
+        return getBoolean(context, "pref_auto_accept_subscriptions", false);
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {
@@ -201,7 +201,7 @@ public final class Preferences {
     }
 
     public static long getLastPushNotification(Context context) {
-    	return getLongOnce(context, "pref_last_push_notification");
+        return getLongOnce(context, "pref_last_push_notification");
     }
 
     /** TODO cache value */
@@ -340,7 +340,7 @@ public final class Preferences {
     }
 
     public static boolean getAcceptAnyCertificate(Context context) {
-    	return getBoolean(context, "pref_accept_any_certificate", false);
+        return getBoolean(context, "pref_accept_any_certificate", false);
     }
 
     public static int getIdleTimeMillis(Context context, int minValue, int defaultValue) {
@@ -352,7 +352,7 @@ public final class Preferences {
     }
 
     public static long getLastConnection(Context context) {
-    	return getLong(context, "pref_last_connection", -1);
+        return getLong(context, "pref_last_connection", -1);
     }
 
     public static boolean setLastConnection(Context context) {
@@ -362,7 +362,7 @@ public final class Preferences {
     }
 
     public static boolean getEnterKeyEnabled(Context context) {
-    	return getBoolean(context, "pref_text_enter", false);
+        return getBoolean(context, "pref_text_enter", false);
     }
 
     /** Recent statuses database helper. */

@@ -32,52 +32,52 @@ import android.widget.EditText;
  */
 public class InputDialog extends AlertDialog {
 
-	private static final int TEXT_VIEW_ID = R.id.textinput;
+    private static final int TEXT_VIEW_ID = R.id.textinput;
 
-	public InputDialog(Context context) {
-		super(context);
-	}
+    public InputDialog(Context context) {
+        super(context);
+    }
 
-	public InputDialog(Context context, int theme) {
-		super(context, theme);
-	}
+    public InputDialog(Context context, int theme) {
+        super(context, theme);
+    }
 
-	public InputDialog(Context context, boolean cancelable, OnCancelListener cancelListener) {
-		super(context, cancelable, cancelListener);
-	}
+    public InputDialog(Context context, boolean cancelable, OnCancelListener cancelListener) {
+        super(context, cancelable, cancelListener);
+    }
 
-	public CharSequence getText() {
-		return getTextFromAlertDialog(this);
-	}
+    public CharSequence getText() {
+        return getTextFromAlertDialog(this);
+    }
 
-	public static CharSequence getTextFromAlertDialog(AlertDialog dialog) {
-		return ((EditText) dialog.findViewById(TEXT_VIEW_ID)).getText();
-	}
+    public static CharSequence getTextFromAlertDialog(AlertDialog dialog) {
+        return ((EditText) dialog.findViewById(TEXT_VIEW_ID)).getText();
+    }
 
-	public static class Builder extends AlertDialog.Builder {
+    public static class Builder extends AlertDialog.Builder {
 
-		public Builder(Context context, int inputType) {
-			super(context);
+        public Builder(Context context, int inputType) {
+            super(context);
 
-			setCustomView(context, inputType);
-		}
+            setCustomView(context, inputType);
+        }
 
-		private void setCustomView(Context context, int inputType) {
-			/*
-			EditText txt = new EditText(context);
-			txt.setInputType(inputType);
-			txt.setId(TEXT_VIEW_ID);
-			*/
+        private void setCustomView(Context context, int inputType) {
+            /*
+            EditText txt = new EditText(context);
+            txt.setInputType(inputType);
+            txt.setId(TEXT_VIEW_ID);
+            */
 
-			setView(LayoutInflater.from(context)
-				.inflate(R.layout.edittext_dialog, null, false));
-		}
+            setView(LayoutInflater.from(context)
+                .inflate(R.layout.edittext_dialog, null, false));
+        }
 
-		@Override
-		public AlertDialog create() {
-			return super.create();
-		}
+        @Override
+        public AlertDialog create() {
+            return super.create();
+        }
 
-	}
+    }
 
 }

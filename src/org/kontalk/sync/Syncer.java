@@ -170,7 +170,7 @@ public class Syncer {
 
                     // all presence data already received (WHATT???)
                     if ((rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount) || allPresenceReceived)
-                    		&& blocklistReceived)
+                            && blocklistReceived)
                         finish();
 
                 }
@@ -197,36 +197,36 @@ public class Syncer {
 
                     // done with presence data and blocklist
                     if (rosterCount >= 0 && allPresenceReceived &&
-                    		vCardCount >= presenceCount && blocklistReceived)
-                    	finish();
+                            vCardCount >= presenceCount && blocklistReceived)
+                        finish();
 
                 }
 
             }
 
             else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
-            	blocklistReceived = true;
+                blocklistReceived = true;
 
-            	String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
-            	if (list != null) {
+                String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_BLOCKLIST);
+                if (list != null) {
 
-            		for (String jid : list) {
+                    for (String jid : list) {
                         // see if bare JID is present in roster response
                         String compare = StringUtils.parseBareAddress(jid);
                         for (PresenceItem item : response) {
                             if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
-                            	item.blocked = true;
+                                item.blocked = true;
 
                                 break;
                             }
                         }
-            		}
+                    }
 
-            	}
+                }
 
                 // done with presence data and blocklist
                 if (rosterCount >= 0 && allPresenceReceived &&
-                		vCardCount >= presenceCount)
+                        vCardCount >= presenceCount)
                     finish();
             }
 
@@ -471,12 +471,12 @@ public class Syncer {
                             registeredValues.put(Users.PUBLIC_KEY, entry.publicKey);
 
                             try {
-	                            byte[] fp = PGP.getMasterKey(entry.publicKey).getFingerprint();
-	                            registeredValues.put(Users.FINGERPRINT, MessageUtils.bytesToHex(fp));
+                                byte[] fp = PGP.getMasterKey(entry.publicKey).getFingerprint();
+                                registeredValues.put(Users.FINGERPRINT, MessageUtils.bytesToHex(fp));
                             }
                             catch (Exception e) {
-                            	Log.w(TAG, "unable to parse public key", e);
-                            	registeredValues.putNull(Users.FINGERPRINT);
+                                Log.w(TAG, "unable to parse public key", e);
+                                registeredValues.putNull(Users.FINGERPRINT);
                             }
                         }
                         else

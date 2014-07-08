@@ -342,14 +342,14 @@ public class UsersProvider extends ContentProvider {
 
         int rc = db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
         if (rc == 0) {
-        	// insert new record
-        	values.put(Users.HASH, selectionArgs[0]);
-        	values.put(Users.NUMBER, selectionArgs[0]);
-        	values.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
-        	values.put(Users.REGISTERED, true);
+            // insert new record
+            values.put(Users.HASH, selectionArgs[0]);
+            values.put(Users.NUMBER, selectionArgs[0]);
+            values.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
+            values.put(Users.REGISTERED, true);
 
-        	db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, values);
-        	return 1;
+            db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, values);
+            return 1;
         }
 
         return rc;
@@ -406,7 +406,7 @@ public class UsersProvider extends ContentProvider {
 
             try {
                 // query for phone numbers
-            	// FIXME this might return null on some devices
+                // FIXME this might return null on some devices
                 phones = cr.query(Phone.CONTENT_URI,
                     new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE },
                     // this will filter out RawContacts from Kontalk
@@ -550,19 +550,19 @@ public class UsersProvider extends ContentProvider {
         long id = 0;
 
         try {
-	        id = db.insertOrThrow(table, null, values);
+            id = db.insertOrThrow(table, null, values);
         }
         catch (SQLException e) {
-        	String hash = values.getAsString(Users.HASH);
-        	if (hash != null) {
-        		// discard display_name if requested
-        		boolean discardName = Boolean.parseBoolean(uri
-        				.getQueryParameter(Users.DISCARD_NAME));
-        		if (discardName)
-        			values.remove(Users.DISPLAY_NAME);
+            String hash = values.getAsString(Users.HASH);
+            if (hash != null) {
+                // discard display_name if requested
+                boolean discardName = Boolean.parseBoolean(uri
+                        .getQueryParameter(Users.DISCARD_NAME));
+                if (discardName)
+                    values.remove(Users.DISPLAY_NAME);
 
-        		db.update(table, values, Users.HASH + "=?", new String[] { hash });
-        	}
+                db.update(table, values, Users.HASH + "=?", new String[] { hash });
+            }
         }
 
         if (id >= 0)
@@ -600,8 +600,8 @@ public class UsersProvider extends ContentProvider {
             if (ring == null)
                 throw new IllegalArgumentException("public key not found for user " + rcpt);
 
-        	keys[i] = PGP.getEncryptionKey(ring);
-        	if (keys[i] == null)
+            keys[i] = PGP.getEncryptionKey(ring);
+            if (keys[i] == null)
                 throw new IllegalArgumentException("public key not found for user " + rcpt);
         }
 
@@ -616,8 +616,8 @@ public class UsersProvider extends ContentProvider {
         if (ring == null)
             throw new IllegalArgumentException("public key not found for user " + rcpt);
 
-    	PGPPublicKey senderKey = PGP.getMasterKey(ring);
-    	if (senderKey == null)
+        PGPPublicKey senderKey = PGP.getMasterKey(ring);
+        if (senderKey == null)
             throw new IllegalArgumentException("public key not found for user " + rcpt);
 
         return new PGPCoder(server, key, senderKey);

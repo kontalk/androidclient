@@ -13,25 +13,25 @@ import android.util.Log;
  */
 public class DefaultGcmListener implements GcmListener {
 
-	@Override
-	public void onRegistered(Context context, String registrationId) {
+    @Override
+    public void onRegistered(Context context, String registrationId) {
         Log.d(Kontalk.TAG, "registered to GCM - " + registrationId);
         MessageCenterService.registerPushNotifications(context, registrationId);
-	}
-
-	@Override
-	public void onUnregistered(Context context) {
-        Log.d(Kontalk.TAG, "unregistered from GCM");
-        MessageCenterService.registerPushNotifications(context, null);
-	}
-
-	@Override
-	public void onError(Context context, String errorId) {
-        Log.w(Kontalk.TAG, "error registering to GCM service: " + errorId);
-	}
+    }
 
     @Override
-	public String getSenderId(Context context) {
+    public void onUnregistered(Context context) {
+        Log.d(Kontalk.TAG, "unregistered from GCM");
+        MessageCenterService.registerPushNotifications(context, null);
+    }
+
+    @Override
+    public void onError(Context context, String errorId) {
+        Log.w(Kontalk.TAG, "error registering to GCM service: " + errorId);
+    }
+
+    @Override
+    public String getSenderId(Context context) {
         return MessageCenterService.getPushSenderId();
     }
 

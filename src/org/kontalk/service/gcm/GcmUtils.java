@@ -56,42 +56,42 @@ public class GcmUtils {
     /** The last used listener. */
     private static GcmListener sListener;
 
-	private GcmUtils() {
-	}
-
-    private static void ensureGcmInstance(Context context) {
-    	if (sGcm == null)
-    		sGcm = GoogleCloudMessaging.getInstance(context);
+    private GcmUtils() {
     }
 
-	public static String getRegistrationId(Context context) {
-	    final SharedPreferences prefs = getGCMPreferences(context);
-	    String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-	    if (registrationId == null || registrationId.length() == 0) {
-	        Log.i(Kontalk.TAG, "Registration not found.");
-	        return "";
-	    }
+    private static void ensureGcmInstance(Context context) {
+        if (sGcm == null)
+            sGcm = GoogleCloudMessaging.getInstance(context);
+    }
 
-	    // Check if app was updated; if so, it must clear the registration ID
-	    // since the existing regID is not guaranteed to work with the new
-	    // app version.
-	    int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-	    int currentVersion = Kontalk.getVersionCode(context);
-	    if (registeredVersion != currentVersion) {
-	        Log.i(Kontalk.TAG, "App version changed.");
-	        return "";
-	    }
-	    return registrationId;
-	}
+    public static String getRegistrationId(Context context) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+        if (registrationId == null || registrationId.length() == 0) {
+            Log.i(Kontalk.TAG, "Registration not found.");
+            return "";
+        }
 
-	private static void storeRegistrationId(Context context, String regId) {
-	    final SharedPreferences prefs = getGCMPreferences(context);
-	    int appVersion = Kontalk.getVersionCode(context);
-	    prefs.edit()
-	    	.putString(PROPERTY_REG_ID, regId)
-	    	.putInt(PROPERTY_APP_VERSION, appVersion)
-	    	.commit();
-	}
+        // Check if app was updated; if so, it must clear the registration ID
+        // since the existing regID is not guaranteed to work with the new
+        // app version.
+        int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+        int currentVersion = Kontalk.getVersionCode(context);
+        if (registeredVersion != currentVersion) {
+            Log.i(Kontalk.TAG, "App version changed.");
+            return "";
+        }
+        return registrationId;
+    }
+
+    private static void storeRegistrationId(Context context, String regId) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        int appVersion = Kontalk.getVersionCode(context);
+        prefs.edit()
+            .putString(PROPERTY_REG_ID, regId)
+            .putInt(PROPERTY_APP_VERSION, appVersion)
+            .commit();
+    }
 
     /**
      * Sets whether the device was successfully registered in the server side.
@@ -199,59 +199,59 @@ public class GcmUtils {
         editor.commit();
     }
 
-	public static void register(final GcmListener listener, final Context context, final String senderId) {
-		sListener = listener;
-		resetBackoff(context);
+    public static void register(final GcmListener listener, final Context context, final String senderId) {
+        sListener = listener;
+        resetBackoff(context);
 
-	    new Thread(new Runnable() {
-			public void run() {
+        new Thread(new Runnable() {
+            public void run() {
                 ensureGcmInstance(context);
 
-				try {
-	                String regId = sGcm.register(senderId);
+                try {
+                    String regId = sGcm.register(senderId);
 
-	                // persist the regID - no need to register again.
-	                storeRegistrationId(context, regId);
+                    // persist the regID - no need to register again.
+                    storeRegistrationId(context, regId);
 
-	                // call the listener
-	                listener.onRegistered(context, regId);
+                    // call the listener
+                    listener.onRegistered(context, regId);
 
-				}
-				catch (IOException e) {
-					listener.onError(context, e.toString());
-				}
-			}
-		}).start();
-	}
+                }
+                catch (IOException e) {
+                    listener.onError(context, e.toString());
+                }
+            }
+        }).start();
+    }
 
-	public static void unregister(final GcmListener listener, final Context context) {
-		sListener = listener;
-		resetBackoff(context);
+    public static void unregister(final GcmListener listener, final Context context) {
+        sListener = listener;
+        resetBackoff(context);
 
-	    new Thread(new Runnable() {
-			public void run() {
+        new Thread(new Runnable() {
+            public void run() {
                 ensureGcmInstance(context);
 
-				try {
-	                sGcm.unregister();
+                try {
+                    sGcm.unregister();
 
-	                // persist the regID - no need to register again.
-	                storeRegistrationId(context, "");
+                    // persist the regID - no need to register again.
+                    storeRegistrationId(context, "");
 
-	                // call the listener
-	                listener.onUnregistered(context);
+                    // call the listener
+                    listener.onUnregistered(context);
 
-				}
-				catch (IOException e) {
-					listener.onError(context, e.toString());
+                }
+                catch (IOException e) {
+                    listener.onError(context, e.toString());
 
-					retryOnError(context);
-				}
-			}
-		}).start();
-	}
+                    retryOnError(context);
+                }
+            }
+        }).start();
+    }
 
-	static void retry(Context context) {
+    static void retry(Context context) {
         // retry last call
         if (isRegistered(context)) {
             unregister(sListener, context);
@@ -259,7 +259,7 @@ public class GcmUtils {
             register(sListener, context, sListener.getSenderId(context));
         }
 
-	}
+    }
 
     public static boolean isRegistered(Context context) {
         return getRegistrationId(context).length() > 0;
@@ -271,29 +271,29 @@ public class GcmUtils {
     }
 
     private static void retryOnError(Context context) {
-		int backoffTimeMs = getBackoff(context);
-		int nextAttempt = backoffTimeMs / 2 + sRandom.nextInt(backoffTimeMs);
-		Log.d(Kontalk.TAG, "Scheduling registration retry, backoff = "
-				+ nextAttempt + " (" + backoffTimeMs + ")");
+        int backoffTimeMs = getBackoff(context);
+        int nextAttempt = backoffTimeMs / 2 + sRandom.nextInt(backoffTimeMs);
+        Log.d(Kontalk.TAG, "Scheduling registration retry, backoff = "
+                + nextAttempt + " (" + backoffTimeMs + ")");
 
-		PendingIntent retryPendingIntent = GcmIntentService.getRetryIntent(context);
-		AlarmManager am = (AlarmManager) context
-				.getSystemService(Context.ALARM_SERVICE);
-		am.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime()
-				+ nextAttempt, retryPendingIntent);
+        PendingIntent retryPendingIntent = GcmIntentService.getRetryIntent(context);
+        AlarmManager am = (AlarmManager) context
+                .getSystemService(Context.ALARM_SERVICE);
+        am.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime()
+                + nextAttempt, retryPendingIntent);
 
-		// Next retry should wait longer.
-		if (backoffTimeMs < MAX_BACKOFF_MS) {
-			setBackoff(context, backoffTimeMs * 2);
-		}
+        // Next retry should wait longer.
+        if (backoffTimeMs < MAX_BACKOFF_MS) {
+            setBackoff(context, backoffTimeMs * 2);
+        }
 
     }
 
-	private static SharedPreferences getGCMPreferences(Context context) {
-	    // This sample app persists the registration ID in shared preferences, but
-	    // how you store the regID in your app is up to you.
-	    return context.getSharedPreferences(context.getPackageName() + ".gcm",
-	            Context.MODE_PRIVATE);
-	}
+    private static SharedPreferences getGCMPreferences(Context context) {
+        // This sample app persists the registration ID in shared preferences, but
+        // how you store the regID in your app is up to you.
+        return context.getSharedPreferences(context.getPackageName() + ".gcm",
+                Context.MODE_PRIVATE);
+    }
 
 }

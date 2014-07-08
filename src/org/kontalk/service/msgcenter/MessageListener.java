@@ -71,8 +71,8 @@ class MessageListener extends MessageCenterPacketListener {
     private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageListener(MessageCenterService instance) {
-		super(instance);
-	}
+        super(instance);
+    }
 
     @Override
     public void processPacket(Packet packet) {
@@ -244,7 +244,7 @@ class MessageListener extends MessageCenterPacketListener {
                 PacketExtension _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
                 if (_encrypted != null && _encrypted instanceof E2EEncryption) {
-                	E2EEncryption mEnc = (E2EEncryption) _encrypted;
+                    E2EEncryption mEnc = (E2EEncryption) _encrypted;
                     byte[] encryptedData = mEnc.getData();
 
                     // encrypted message
@@ -262,10 +262,10 @@ class MessageListener extends MessageCenterPacketListener {
                         catch (Exception exc) {
                             Log.e(MessageCenterService.TAG, "decryption failed", exc);
 
-                        	// raw component for encrypted data
-                        	// reuse security flags
+                            // raw component for encrypted data
+                            // reuse security flags
                             msg.clearComponents();
-                        	msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
+                            msg.addComponent(new RawComponent(encryptedData, true, msg.getSecurityFlags()));
                         }
 
                     }
@@ -274,8 +274,8 @@ class MessageListener extends MessageCenterPacketListener {
                 else {
 
                     // use message body
-                	if (body != null)
-                		msg.addComponent(new TextComponent(body));
+                    if (body != null)
+                        msg.addComponent(new TextComponent(body));
 
                 }
 
@@ -300,17 +300,17 @@ class MessageListener extends MessageCenterPacketListener {
                         String filename = null;
 
                         if (ImageComponent.supportsMimeType(mime)) {
-                        	filename = ImageComponent.buildMediaFilename(msgId, previewMime);
+                            filename = ImageComponent.buildMediaFilename(msgId, previewMime);
                         }
 
                         else if (VCardComponent.supportsMimeType(mime)) {
-                        	filename = VCardComponent.buildMediaFilename(msgId, previewMime);
+                            filename = VCardComponent.buildMediaFilename(msgId, previewMime);
                         }
 
                         try {
-                        	if (filename != null) previewFile =
-                        		MediaStorage.writeInternalMedia(getContext(),
-                        			filename, preview.getContents());
+                            if (filename != null) previewFile =
+                                MediaStorage.writeInternalMedia(getContext(),
+                                    filename, preview.getContents());
                         }
                         catch (IOException e) {
                             Log.w(MessageCenterService.TAG, "error storing thumbnail", e);
@@ -321,27 +321,27 @@ class MessageListener extends MessageCenterPacketListener {
 
                     if (ImageComponent.supportsMimeType(mime)) {
                         // cleartext only for now
-                    	attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
-                    			false, Coder.SECURITY_CLEARTEXT);
+                        attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
+                                false, Coder.SECURITY_CLEARTEXT);
                     }
 
                     else if (VCardComponent.supportsMimeType(mime)) {
                         // cleartext only for now
-                    	attachment = new VCardComponent(previewFile, null, fetchUrl, length,
-                    			false, Coder.SECURITY_CLEARTEXT);
+                        attachment = new VCardComponent(previewFile, null, fetchUrl, length,
+                                false, Coder.SECURITY_CLEARTEXT);
                     }
 
                     // TODO other types
 
                     if (attachment != null)
-                    	msg.addComponent(attachment);
+                        msg.addComponent(attachment);
 
                     // add a dummy body if none was found
                     /*
                     if (body == null) {
-                    	msg.addComponent(new TextComponent(CompositeMessage
-                    		.getSampleTextContent((Class<? extends MessageComponent<?>>)
-                    			attachment.getClass(), mime)));
+                        msg.addComponent(new TextComponent(CompositeMessage
+                            .getSampleTextContent((Class<? extends MessageComponent<?>>)
+                                attachment.getClass(), mime)));
                     }
                     */
 
@@ -354,8 +354,8 @@ class MessageListener extends MessageCenterPacketListener {
                         // send ack :)
                         ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
                         org.jivesoftware.smack.packet.Message ack =
-                        	new org.jivesoftware.smack.packet.Message(from,
-                        		org.jivesoftware.smack.packet.Message.Type.chat);
+                            new org.jivesoftware.smack.packet.Message(from,
+                                org.jivesoftware.smack.packet.Message.Type.chat);
                         ack.addExtension(receipt);
 
                         if (msgUri != null) {

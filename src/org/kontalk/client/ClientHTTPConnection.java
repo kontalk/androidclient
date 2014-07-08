@@ -125,11 +125,11 @@ public class ClientHTTPConnection {
         // load merged truststore (system + internal)
         KeyStore truststore = InternalTrustStore.getTrustStore(context);
 
-    	if (acceptAnyCertificate)
-    		return new BlackholeSSLSocketFactory(keystore, null, truststore);
+        if (acceptAnyCertificate)
+            return new BlackholeSSLSocketFactory(keystore, null, truststore);
 
-    	else
-	        return new SSLSocketFactory(keystore, null, truststore);
+        else
+            return new SSLSocketFactory(keystore, null, truststore);
     }
 
     /**
@@ -148,7 +148,7 @@ public class ClientHTTPConnection {
 
                     boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
                     registry.register(new Scheme("https", setupSSLSocketFactory(mContext,
-                    	mPrivateKey, mCertificate, acceptAnyCertificate), 443));
+                        mPrivateKey, mCertificate, acceptAnyCertificate), 443));
                 }
                 catch (Exception e) {
                     IOException ie = new IOException("unable to create keystore");
@@ -242,7 +242,7 @@ public class ClientHTTPConnection {
         SSLContext sslContext = SSLContext.getInstance("TLS");
 
         public BlackholeSSLSocketFactory(KeyStore keystore, String keystorePassword, KeyStore truststore)
-        		throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
+                throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
             super(keystore, keystorePassword, truststore);
 
             TrustManager tm = new X509TrustManager() {

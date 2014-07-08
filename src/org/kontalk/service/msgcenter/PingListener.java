@@ -28,10 +28,10 @@ import org.jivesoftware.smack.packet.Packet;
 class PingListener extends MessageCenterPacketListener {
 
     public PingListener(MessageCenterService instance) {
-		super(instance);
-	}
+        super(instance);
+    }
 
-	@Override
+    @Override
     public void processPacket(Packet packet) {
         sendPacket(IQ.createResultIQ((IQ) packet), false);
     }

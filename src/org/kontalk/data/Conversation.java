@@ -152,8 +152,8 @@ public class Conversation {
     }
 
     public String getMime() {
-		return mMime;
-	}
+        return mMime;
+    }
 
     public String getSubject() {
         return mSubject;
@@ -190,7 +190,7 @@ public class Conversation {
     }
 
     public boolean isEncrypted() {
-    	return mEncrypted;
+        return mEncrypted;
     }
 
     public String getDraft() {
@@ -198,7 +198,7 @@ public class Conversation {
     }
 
     public int getRequestStatus() {
-    	return mRequestStatus;
+        return mRequestStatus;
     }
 
     public String getNumberHint() {

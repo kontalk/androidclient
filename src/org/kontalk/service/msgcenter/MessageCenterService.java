@@ -267,7 +267,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Flag marking a currently ongoing GCM registration cycle (unregister/register) */
     boolean mPushRegistrationCycle;
 
-    private WakeLock mWakeLock;	// created in onCreate
+    private WakeLock mWakeLock; // created in onCreate
     LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
 
     /** Cached last used server. */
@@ -333,9 +333,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         private boolean handleMessage(MessageCenterService service, Message msg) {
             if (msg.what == MSG_IDLE) {
-            	// push notifications unavailable: set up an alarm for next time
+                // push notifications unavailable: set up an alarm for next time
                 if (service.mPushRegistrationId == null) {
-                	setWakeupAlarm(service);
+                    setWakeupAlarm(service);
                 }
 
                 Log.d(TAG, "shutting down message center due to inactivity");
@@ -361,7 +361,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // zero means no idle (keep-alive forever)
                 if (time > 0)
-                	sendMessageDelayed(obtainMessage(MSG_IDLE), time);
+                    sendMessageDelayed(obtainMessage(MSG_IDLE), time);
             }
         }
 
@@ -698,9 +698,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_SUBSCRIBED.equals(action)) {
-            	if (canConnect && isConnected) {
+                if (canConnect && isConnected) {
 
-            		String to;
+                    String to;
                     String toUserid = intent.getStringExtra(EXTRA_TO_USERID);
                     if (toUserid != null)
                         to = MessageUtils.toJID(toUserid, mServer.getNetwork());
@@ -709,16 +709,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     // FIXME taking toUserid for granted
                     sendSubscriptionReply(toUserid,
-                    		intent.getStringExtra(EXTRA_PACKET_ID),
-                    		intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
-            	}
+                            intent.getStringExtra(EXTRA_PACKET_ID),
+                            intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
+                }
             }
 
             else if (ACTION_RETRY.equals(action)) {
 
-            	Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
+                Uri msgUri = intent.getParcelableExtra(EXTRA_MESSAGE);
 
-            	boolean encrypted = Preferences.getEncryptionEnabled(this);
+                boolean encrypted = Preferences.getEncryptionEnabled(this);
 
                 ContentValues values = new ContentValues(2);
                 values.put(Messages.STATUS, Messages.STATUS_SENDING);
@@ -727,14 +727,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // FIXME shouldn't we resend just the above message?
 
-            	// already connected: resend pending messages
-            	if (isConnected)
-            		resendPendingMessages(false);
+                // already connected: resend pending messages
+                if (isConnected)
+                    resendPendingMessages(false);
             }
 
             else if (ACTION_BLOCKLIST.equals(action)) {
-            	if (isConnected)
-            		requestBlocklist();
+                if (isConnected)
+                    requestBlocklist();
             }
 
             else {
@@ -791,8 +791,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void authenticationFailed() {
-    	// fire up a notification explaining the situation
-    	MessagingNotification.authenticationError(this);
+        // fire up a notification explaining the situation
+        MessagingNotification.authenticationError(this);
     }
 
     @Override
@@ -883,7 +883,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void broadcast(String action, String extraName, String extraValue) {
         Intent i = new Intent(action);
         if (extraName != null)
-        	i.putExtra(extraName, extraValue);
+            i.putExtra(extraName, extraValue);
 
         mLocalBroadcastManager.sendBroadcast(i);
     }
@@ -1080,35 +1080,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void sendSubscriptionReply(String userId, String packetId, int action) {
 
-    	if (action == PRIVACY_ACCEPT) {
+        if (action == PRIVACY_ACCEPT) {
             String to = MessageUtils.toJID(userId, mServer.getNetwork());
 
-    		// standard response: subscribed
-			Presence p = new Presence(Presence.Type.subscribed);
+            // standard response: subscribed
+            Presence p = new Presence(Presence.Type.subscribed);
 
-	        p.setPacketID(packetId);
-			p.setTo(to);
+            p.setPacketID(packetId);
+            p.setTo(to);
 
-			// send the subscribed response
-			sendPacket(p);
+            // send the subscribed response
+            sendPacket(p);
 
-			// send a subscription request anyway
-			p = new Presence(Presence.Type.subscribe);
-			p.setTo(to);
+            // send a subscription request anyway
+            p = new Presence(Presence.Type.subscribe);
+            p.setTo(to);
 
-			sendPacket(p);
-    	}
+            sendPacket(p);
+        }
 
-    	else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
-    	    sendPrivacyListCommand(userId, action);
-    	}
+        else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+            sendPrivacyListCommand(userId, action);
+        }
 
-		// clear the request status
-		ContentValues values = new ContentValues(1);
-		values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
+        // clear the request status
+        ContentValues values = new ContentValues(1);
+        values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
-		getContentResolver().update(Requests.CONTENT_URI,
-			values, CommonColumns.PEER + "=?", new String[] { userId });
+        getContentResolver().update(Requests.CONTENT_URI,
+            values, CommonColumns.PEER + "=?", new String[] { userId });
     }
 
     private void sendPrivacyListCommand(final String userId, final int action) {
@@ -1144,8 +1144,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     // broadcast result
                     broadcast(action == PRIVACY_BLOCK ?
-                    	ACTION_BLOCKED : ACTION_UNBLOCKED,
-                    	EXTRA_FROM_USERID, userId);
+                        ACTION_BLOCKED : ACTION_UNBLOCKED,
+                        EXTRA_FROM_USERID, userId);
                 }
 
             }
@@ -1157,35 +1157,35 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void requestBlocklist() {
-    	Packet p = BlockingCommand.blocklist();
-    	String packetId = p.getPacketID();
+        Packet p = BlockingCommand.blocklist();
+        String packetId = p.getPacketID();
 
-    	// listen for response (TODO cache the listener, it shouldn't change)
-    	PacketFilter idFilter = new PacketIDFilter(packetId);
-    	mConnection.addPacketListener(new PacketListener() {
-			public void processPacket(Packet packet) {
-				// we don't need this listener anymore
-				mConnection.removePacketListener(this);
+        // listen for response (TODO cache the listener, it shouldn't change)
+        PacketFilter idFilter = new PacketIDFilter(packetId);
+        mConnection.addPacketListener(new PacketListener() {
+            public void processPacket(Packet packet) {
+                // we don't need this listener anymore
+                mConnection.removePacketListener(this);
 
-				if (packet instanceof BlockingCommand) {
-					BlockingCommand blocklist = (BlockingCommand) packet;
+                if (packet instanceof BlockingCommand) {
+                    BlockingCommand blocklist = (BlockingCommand) packet;
 
-					Intent i = new Intent(ACTION_BLOCKLIST);
+                    Intent i = new Intent(ACTION_BLOCKLIST);
 
-					List<String> _list = blocklist.getItems();
-					if (_list != null) {
-						String[] list = new String[_list.size()];
-						i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
-					}
+                    List<String> _list = blocklist.getItems();
+                    if (_list != null) {
+                        String[] list = new String[_list.size()];
+                        i.putExtra(EXTRA_BLOCKLIST, _list.toArray(list));
+                    }
 
-					Log.v(TAG, "broadcasting blocklist: " + i);
-					mLocalBroadcastManager.sendBroadcast(i);
-				}
+                    Log.v(TAG, "broadcasting blocklist: " + i);
+                    mLocalBroadcastManager.sendBroadcast(i);
+                }
 
-			}
-		}, idFilter);
+            }
+        }, idFilter);
 
-    	sendPacket(p);
+        sendPacket(p);
     }
 
     private void sendMessage(Bundle data) {
@@ -1250,7 +1250,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             String body = data.getString("org.kontalk.message.body");
             if (body != null)
-            	m.setBody(body);
+                m.setBody(body);
 
             boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
             String fetchUrl = data.getString("org.kontalk.message.fetch.url");
@@ -1295,24 +1295,24 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
                     if (coder != null) {
 
-                    	// no extensions, create a simple text version to save space
-                    	if (m.getExtensions().size() == 0) {
+                        // no extensions, create a simple text version to save space
+                        if (m.getExtensions().size() == 0) {
                             toMessage = coder.encryptText(body);
-                    	}
+                        }
 
-                    	// some extension, encrypt whole stanza just to be sure
-                    	else {
-                    		toMessage = coder.encryptStanza(m.toXML());
-                    	}
+                        // some extension, encrypt whole stanza just to be sure
+                        else {
+                            toMessage = coder.encryptStanza(m.toXML());
+                        }
 
-                    	org.jivesoftware.smack.packet.Message encMsg =
-	                    		new org.jivesoftware.smack.packet.Message(m.getTo(),
-	                    				m.getType());
+                        org.jivesoftware.smack.packet.Message encMsg =
+                                new org.jivesoftware.smack.packet.Message(m.getTo(),
+                                        m.getType());
 
-                    	encMsg.setPacketID(m.getPacketID());
-                    	encMsg.addExtension(new E2EEncryption(toMessage));
+                        encMsg.setPacketID(m.getPacketID());
+                        encMsg.addExtension(new E2EEncryption(toMessage));
 
-                    	m = encMsg;
+                        m = encMsg;
                     }
                 }
 
@@ -1320,43 +1320,43 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // FIXME notify just once per session (store in Kontalk instance?)
 
                 catch (PGPException pgpe) {
-                	// warn user: message will be sent cleartext
-                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, R.string.warn_no_personal_key,
-                			Toast.LENGTH_LONG).show();
-                	}
+                    // warn user: message will be sent cleartext
+                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                        Toast.makeText(this, R.string.warn_no_personal_key,
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
 
                 catch (IOException io) {
-                	// warn user: message will be sent cleartext
-                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, R.string.warn_no_personal_key,
-                			Toast.LENGTH_LONG).show();
-                	}
+                    // warn user: message will be sent cleartext
+                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                        Toast.makeText(this, R.string.warn_no_personal_key,
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
 
                 catch (IllegalArgumentException noPublicKey) {
-                	// warn user: message will be sent cleartext
-                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, R.string.warn_no_public_key,
-                			Toast.LENGTH_LONG).show();
-                	}
+                    // warn user: message will be sent cleartext
+                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                        Toast.makeText(this, R.string.warn_no_public_key,
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
 
                 catch (GeneralSecurityException e) {
-                	// warn user: message will be sent cleartext
-                	if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                		Toast.makeText(this, R.string.warn_encryption_failed,
-                			Toast.LENGTH_LONG).show();
-                	}
+                    // warn user: message will be sent cleartext
+                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                        Toast.makeText(this, R.string.warn_encryption_failed,
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
 
                 if (toMessage == null) {
-                	// message was not encrypted for some reason, mark it pending user review
+                    // message was not encrypted for some reason, mark it pending user review
                     ContentValues values = new ContentValues(1);
                     values.put(Messages.STATUS, Messages.STATUS_PENDING);
                     getContentResolver().update(ContentUris.withAppendedId
-                    		(Messages.CONTENT_URI, msgId), values, null, null);
+                            (Messages.CONTENT_URI, msgId), values, null, null);
 
                     // do not send the message
                     return;
@@ -1373,7 +1373,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else {
                 // add chat state if message is not a received receipt
                 if (chatState != null)
-                	m.addExtension(new ChatStateExtension(chatState));
+                    m.addExtension(new ChatStateExtension(chatState));
 
                 // standalone message: no receipt
                 if (!data.getBoolean("org.kontalk.message.standalone", false))
@@ -1440,13 +1440,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void beginKeyPairRegeneration() {
         if (mKeyPairRegenerator == null) {
-        	try {
-        		mKeyPairRegenerator = new RegenerateKeyPairListener(this);
-        	}
-        	catch (Exception e) {
-        		Log.e(TAG, "unable to initiate keypair regeneration", e);
-        		// TODO warn user
-        	}
+            try {
+                mKeyPairRegenerator = new RegenerateKeyPairListener(this);
+            }
+            catch (Exception e) {
+                Log.e(TAG, "unable to initiate keypair regeneration", e);
+                // TODO warn user
+            }
         }
     }
 
@@ -1475,7 +1475,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static Intent getStartIntent(Context context) {
-    	final Intent intent = new Intent(context, MessageCenterService.class);
+        final Intent intent = new Intent(context, MessageCenterService.class);
         EndpointServer server = Preferences.getEndpointServer(context);
         intent.putExtra(EndpointServer.class.getName(), server.toString());
         return intent;
@@ -1665,7 +1665,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     void gcmRegister() {
         if (mPushSenderId != null) {
-        	if (GcmUtils.isGcmAvailable(this)) {
+            if (GcmUtils.isGcmAvailable(this)) {
                 // senderId will be given by serverinfo if any
                 mPushRegistrationId = GcmUtils.getRegistrationId(this);
                 if (TextUtils.isEmpty(mPushRegistrationId))
@@ -1700,19 +1700,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void setWakeupAlarm(Context context) {
-    	AlarmManager am = (AlarmManager) context
-    			.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager am = (AlarmManager) context
+                .getSystemService(Context.ALARM_SERVICE);
 
-    	long delay = Preferences.getWakeupTimeMillis(context,
-    		MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
+        long delay = Preferences.getWakeupTimeMillis(context,
+            MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
 
-    	// start message center pending intent
-    	PendingIntent pi = PendingIntent.getService(context
-    			.getApplicationContext(), 0, getStartIntent(context),
-    			PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+        // start message center pending intent
+        PendingIntent pi = PendingIntent.getService(context
+                .getApplicationContext(), 0, getStartIntent(context),
+                PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
 
-    	am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-    			SystemClock.elapsedRealtime() + delay, pi);
+        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + delay, pi);
     }
 
 }

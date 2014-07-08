@@ -56,17 +56,17 @@ public class AboutActivity extends ActionBarActivity {
     private AboutPagerAdapter mAdapter;
     private ViewPager mPager;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.about_screen);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.about_screen);
 
-		mAdapter = new AboutPagerAdapter(getSupportFragmentManager());
+        mAdapter = new AboutPagerAdapter(getSupportFragmentManager());
 
-		mPager = (ViewPager) findViewById(R.id.pager);
-		mPager.setAdapter(mAdapter);
-		mPager.setOnPageChangeListener(
-		    new ViewPager.OnPageChangeListener() {
+        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager.setAdapter(mAdapter);
+        mPager.setOnPageChangeListener(
+            new ViewPager.OnPageChangeListener() {
 
                 @Override
                 public void onPageSelected(int position) {
@@ -82,7 +82,7 @@ public class AboutActivity extends ActionBarActivity {
                 }
 
             }
-		);
+        );
 
         setupActivity();
 
@@ -98,9 +98,9 @@ public class AboutActivity extends ActionBarActivity {
                     mPager.setCurrentItem(ABOUT_CREDITS, true);
             }
         }
-	}
+    }
 
-	private void setupActivity() {
+    private void setupActivity() {
         ActionBar bar = getSupportActionBar();
         bar.setDisplayHomeAsUpEnabled(true);
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -133,7 +133,7 @@ public class AboutActivity extends ActionBarActivity {
             .setTabListener(listener));
     }
 
-	@Override
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -144,19 +144,19 @@ public class AboutActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		DonationFragment fragment = mAdapter.getDonationFragment();
-		IabHelper iabHelper = fragment.getIabHelper();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        DonationFragment fragment = mAdapter.getDonationFragment();
+        IabHelper iabHelper = fragment.getIabHelper();
 
         if (iabHelper == null || !iabHelper.handleActivityResult(requestCode, resultCode, data))
             super.onActivityResult(requestCode, resultCode, data);
-	}
+    }
 
-	private static class AboutPagerAdapter extends FragmentPagerAdapter {
+    private static class AboutPagerAdapter extends FragmentPagerAdapter {
 
-		// this is for IabHelper
-		private DonationFragment mDonationFragment;
+        // this is for IabHelper
+        private DonationFragment mDonationFragment;
 
         public AboutPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -174,7 +174,7 @@ public class AboutActivity extends ActionBarActivity {
                     return new AboutFragment();
 
                 case ABOUT_DONATION:
-                	mDonationFragment = new DonationFragment();
+                    mDonationFragment = new DonationFragment();
                     return mDonationFragment;
 
                 case ABOUT_CREDITS:
@@ -186,9 +186,9 @@ public class AboutActivity extends ActionBarActivity {
         }
 
         public DonationFragment getDonationFragment() {
-			return mDonationFragment;
-		}
+            return mDonationFragment;
+        }
 
-	}
+    }
 
 }

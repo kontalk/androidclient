@@ -84,8 +84,8 @@ public abstract class Coder {
 
     /** Decrypts a byte array which should content text. */
     public abstract void decryptText(byte[] encrypted, boolean verify,
-    		StringBuilder out, StringBuilder mime, List<DecryptException> errors)
-    				throws GeneralSecurityException;
+            StringBuilder out, StringBuilder mime, List<DecryptException> errors)
+                    throws GeneralSecurityException;
 
 
     public abstract InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
@@ -97,14 +97,14 @@ public abstract class Coder {
 
     /** Returns true if the given security flags has some error bit on. */
     public static boolean isError(int securityFlags) {
-    	return (securityFlags & SECURITY_ERROR_INVALID_SIGNATURE) != 0 ||
-    		(securityFlags & SECURITY_ERROR_INVALID_SENDER) != 0 ||
-    		(securityFlags & SECURITY_ERROR_INVALID_RECIPIENT) != 0 ||
-    		(securityFlags & SECURITY_ERROR_INVALID_TIMESTAMP) != 0 ||
-    		(securityFlags & SECURITY_ERROR_INVALID_DATA) != 0 ||
-    		(securityFlags & SECURITY_ERROR_DECRYPT_FAILED) != 0 ||
-    		(securityFlags & SECURITY_ERROR_INTEGRITY_CHECK) != 0 ||
-    		(securityFlags & SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0;
+        return (securityFlags & SECURITY_ERROR_INVALID_SIGNATURE) != 0 ||
+            (securityFlags & SECURITY_ERROR_INVALID_SENDER) != 0 ||
+            (securityFlags & SECURITY_ERROR_INVALID_RECIPIENT) != 0 ||
+            (securityFlags & SECURITY_ERROR_INVALID_TIMESTAMP) != 0 ||
+            (securityFlags & SECURITY_ERROR_INVALID_DATA) != 0 ||
+            (securityFlags & SECURITY_ERROR_DECRYPT_FAILED) != 0 ||
+            (securityFlags & SECURITY_ERROR_INTEGRITY_CHECK) != 0 ||
+            (securityFlags & SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0;
     }
 
 }

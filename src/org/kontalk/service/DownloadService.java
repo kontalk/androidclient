@@ -123,20 +123,20 @@ public class DownloadService extends IntentService implements DownloadListener {
         mCanceled = false;
 
         if (mDownloadClient == null) {
-        	PersonalKey key;
-        	PrivateKey privateKey;
-        	try {
-				key = ((Kontalk) getApplication()).getPersonalKey();
-				privateKey = key.getBridgePrivateKey();
-			}
-        	catch (Exception e) {
-        		// TODO i18n :)
+            PersonalKey key;
+            PrivateKey privateKey;
+            try {
+                key = ((Kontalk) getApplication()).getPersonalKey();
+                privateKey = key.getBridgePrivateKey();
+            }
+            catch (Exception e) {
+                // TODO i18n :)
                 errorNotification("ERROR", "NAUGHTY BOY/GIRL!");
-        		return;
-			}
+                return;
+            }
 
             mDownloadClient = new ClientHTTPConnection(this,
-        		privateKey, key.getBridgeCertificate());
+                privateKey, key.getBridgeCertificate());
         }
 
         try {

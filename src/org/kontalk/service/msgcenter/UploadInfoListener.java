@@ -29,9 +29,9 @@ import android.util.Log;
  */
 class UploadInfoListener extends MessageCenterPacketListener {
 
-	public UploadInfoListener(MessageCenterService instance) {
-		super(instance);
-	}
+    public UploadInfoListener(MessageCenterService instance) {
+        super(instance);
+    }
 
     @Override
     public void processPacket(Packet packet) {
@@ -42,7 +42,7 @@ class UploadInfoListener extends MessageCenterPacketListener {
         String node = info.getNode();
         setUploadService(node, info.getUri());
         Log.v(MessageCenterService.TAG, "upload info received, node = " +
-        	node + ", uri = " + info.getUri());
+            node + ", uri = " + info.getUri());
 
         // resend pending messages
         resendPendingMessages(true);

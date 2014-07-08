@@ -31,9 +31,9 @@ import org.kontalk.util.Preferences;
  */
 class PushDiscoverItemsListener extends MessageCenterPacketListener {
 
-	public PushDiscoverItemsListener(MessageCenterService instance) {
-		super(instance);
-	}
+    public PushDiscoverItemsListener(MessageCenterService instance) {
+        super(instance);
+    }
 
     @Override
     public void processPacket(Packet packet) {

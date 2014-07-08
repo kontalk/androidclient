@@ -34,14 +34,14 @@ import org.kontalk.client.UploadInfo;
  */
 class UploadDiscoverItemsListener extends MessageCenterPacketListener {
 
-	public UploadDiscoverItemsListener(MessageCenterService instance) {
-		super(instance);
-	}
+    public UploadDiscoverItemsListener(MessageCenterService instance) {
+        super(instance);
+    }
 
     @Override
     public void processPacket(Packet packet) {
-    	XMPPConnection conn = getConnection();
-    	EndpointServer server = getServer();
+        XMPPConnection conn = getConnection();
+        EndpointServer server = getServer();
 
         // we don't need this listener anymore
         conn.removePacketListener(this);

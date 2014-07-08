@@ -72,7 +72,7 @@ import android.widget.ImageView;
 
 
 public final class MessageUtils {
-	// TODO convert these to XML styles
+    // TODO convert these to XML styles
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
@@ -282,19 +282,19 @@ public final class MessageUtils {
     }
 
     public static String sha1(String text) {
-    	try {
-	        MessageDigest md;
-	        md = MessageDigest.getInstance("SHA-1");
-	        byte[] sha1hash = new byte[40];
-	        md.update(text.getBytes(), 0, text.length());
-	        sha1hash = md.digest();
+        try {
+            MessageDigest md;
+            md = MessageDigest.getInstance("SHA-1");
+            byte[] sha1hash = new byte[40];
+            md.update(text.getBytes(), 0, text.length());
+            sha1hash = md.digest();
 
-	        return convertToHex(sha1hash);
-    	}
-    	catch (NoSuchAlgorithmException e) {
-    		// no SHA-1?? WWWHHHHAAAAAATTTT???!?!?!?!?!
-    		throw new RuntimeException("no SHA-1 available. What the crap of a device do you have?");
-    	}
+            return convertToHex(sha1hash);
+        }
+        catch (NoSuchAlgorithmException e) {
+            // no SHA-1?? WWWHHHHAAAAAATTTT???!?!?!?!?!
+            throw new RuntimeException("no SHA-1 available. What the crap of a device do you have?");
+        }
     }
 
     public static CharSequence getFileInfoMessage(Context context, CompositeMessage msg, String decodedPeer) {
@@ -316,13 +316,13 @@ public final class MessageUtils {
 
         int resId = R.string.text_message;
         AttachmentComponent attachment = (AttachmentComponent) msg
-        		.getComponent(AttachmentComponent.class);
+                .getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
-        	if (attachment instanceof ImageComponent)
-        		resId = R.string.image_message;
-        	else if (attachment instanceof VCardComponent)
-        		resId = R.string.vcard_message;
+            if (attachment instanceof ImageComponent)
+                resId = R.string.image_message;
+            else if (attachment instanceof VCardComponent)
+                resId = R.string.vcard_message;
         }
 
         details.append(res.getString(resId));
@@ -334,15 +334,15 @@ public final class MessageUtils {
         long length = -1;
         if (attachment != null) {
             // attachment length
-        	length = attachment.getLength();
+            length = attachment.getLength();
         }
         else {
-        	// text content length (if found)
-        	TextComponent txt = (TextComponent) msg
-        			.getComponent(TextComponent.class);
+            // text content length (if found)
+            TextComponent txt = (TextComponent) msg
+                    .getComponent(TextComponent.class);
 
-        	if (txt != null)
-        		length = txt.getLength();
+            if (txt != null)
+                length = txt.getLength();
         }
         // otherwise unknown length
 
@@ -363,13 +363,13 @@ public final class MessageUtils {
 
         int resId = R.string.text_message;
         AttachmentComponent attachment = (AttachmentComponent) msg
-        		.getComponent(AttachmentComponent.class);
+                .getComponent(AttachmentComponent.class);
 
         if (attachment != null) {
-        	if (attachment instanceof ImageComponent)
-        		resId = R.string.image_message;
-        	else if (attachment instanceof VCardComponent)
-        		resId = R.string.vcard_message;
+            if (attachment instanceof ImageComponent)
+                resId = R.string.image_message;
+            else if (attachment instanceof VCardComponent)
+                resId = R.string.vcard_message;
         }
 
         details.append(res.getString(resId));
@@ -391,61 +391,61 @@ public final class MessageUtils {
             details.append(res.getString(R.string.yes));
 
             // Security flags (verification status)
-        	details.append('\n');
-        	details.append(res.getString(R.string.security_label));
+            details.append('\n');
+            details.append(res.getString(R.string.security_label));
 
-        	boolean securityError = Coder.isError(securityFlags);
-        	// save start position for spans
-    		int startPos = details.length();
+            boolean securityError = Coder.isError(securityFlags);
+            // save start position for spans
+            int startPos = details.length();
 
-        	if (securityError) {
-        		details.append(res.getString(R.string.security_status_bad));
+            if (securityError) {
+                details.append(res.getString(R.string.security_status_bad));
 
-        		int stringId = 0;
+                int stringId = 0;
 
-            	if ((securityFlags & Coder.SECURITY_ERROR_INVALID_SIGNATURE) != 0) {
-            		stringId = R.string.security_error_invalid_signature;
-            	}
+                if ((securityFlags & Coder.SECURITY_ERROR_INVALID_SIGNATURE) != 0) {
+                    stringId = R.string.security_error_invalid_signature;
+                }
 
-            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_SENDER) != 0) {
-            		stringId = R.string.security_error_invalid_sender;
-            	}
+                else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_SENDER) != 0) {
+                    stringId = R.string.security_error_invalid_sender;
+                }
 
-            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_RECIPIENT) != 0) {
-            		stringId = R.string.security_error_invalid_recipient;
-            	}
+                else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_RECIPIENT) != 0) {
+                    stringId = R.string.security_error_invalid_recipient;
+                }
 
-            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_TIMESTAMP) != 0) {
-            		stringId = R.string.security_error_invalid_timestamp;
-            	}
+                else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_TIMESTAMP) != 0) {
+                    stringId = R.string.security_error_invalid_timestamp;
+                }
 
-            	else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_DATA) != 0) {
-            		stringId = R.string.security_error_invalid_data;
-            	}
+                else if ((securityFlags & Coder.SECURITY_ERROR_INVALID_DATA) != 0) {
+                    stringId = R.string.security_error_invalid_data;
+                }
 
-            	else if ((securityFlags & Coder.SECURITY_ERROR_DECRYPT_FAILED) != 0) {
-            		stringId = R.string.security_error_decrypt_failed;
-            	}
+                else if ((securityFlags & Coder.SECURITY_ERROR_DECRYPT_FAILED) != 0) {
+                    stringId = R.string.security_error_decrypt_failed;
+                }
 
-            	else if ((securityFlags & Coder.SECURITY_ERROR_INTEGRITY_CHECK) != 0) {
-            		stringId = R.string.security_error_integrity_check;
-            	}
+                else if ((securityFlags & Coder.SECURITY_ERROR_INTEGRITY_CHECK) != 0) {
+                    stringId = R.string.security_error_integrity_check;
+                }
 
-            	else if ((securityFlags & Coder.SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0) {
-            		stringId = R.string.security_error_public_key_unavail;
-            	}
+                else if ((securityFlags & Coder.SECURITY_ERROR_PUBLIC_KEY_UNAVAILABLE) != 0) {
+                    stringId = R.string.security_error_public_key_unavail;
+                }
 
-            	if (stringId > 0)
-            		details.append(res.getString(stringId));
-        	}
+                if (stringId > 0)
+                    details.append(res.getString(stringId));
+            }
 
-        	else {
-        		details.append(res.getString(R.string.security_status_good));
-        	}
+            else {
+                details.append(res.getString(R.string.security_status_good));
+            }
 
             details.setSpan(STYLE_BOLD, startPos, details.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             details.setSpan(securityError ? STYLE_RED : STYLE_GREEN, startPos, details.length(),
-            		Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         }
         else {
@@ -463,15 +463,15 @@ public final class MessageUtils {
         long length = -1;
         if (attachment != null) {
             // attachment length
-        	length = attachment.getLength();
+            length = attachment.getLength();
         }
         else {
-        	// text content length (if found)
-        	TextComponent txt = (TextComponent) msg
-        			.getComponent(TextComponent.class);
+            // text content length (if found)
+            TextComponent txt = (TextComponent) msg
+                    .getComponent(TextComponent.class);
 
-        	if (txt != null)
-        		length = txt.getLength();
+            if (txt != null)
+                length = txt.getLength();
         }
         // otherwise unknown length
 
@@ -818,24 +818,24 @@ public final class MessageUtils {
         // message still encrypted - use whole body of raw component
         if (msg.isEncrypted()) {
 
-        	RawComponent raw = (RawComponent) msg.getComponent(RawComponent.class);
-        	// if raw it's null it's a bug
-        	content = raw.getContent();
-        	mime = null;
-        	checkAttachment = false;
+            RawComponent raw = (RawComponent) msg.getComponent(RawComponent.class);
+            // if raw it's null it's a bug
+            content = raw.getContent();
+            mime = null;
+            checkAttachment = false;
 
         }
 
         else {
 
-        	TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
+            TextComponent txt = (TextComponent) msg.getComponent(TextComponent.class);
 
-        	if (txt != null) {
-        		content = txt.getContent().getBytes();
-        		mime = TextComponent.MIME_TYPE;
-        	}
+            if (txt != null) {
+                content = txt.getContent().getBytes();
+                mime = TextComponent.MIME_TYPE;
+            }
 
-        	checkAttachment = true;
+            checkAttachment = true;
 
         }
 
@@ -843,31 +843,31 @@ public final class MessageUtils {
 
         if (checkAttachment) {
 
-        	@SuppressWarnings("unchecked")
-			Class<AttachmentComponent>[] tryComponents = new Class[] {
-    			ImageComponent.class,
-    			VCardComponent.class,
-        	};
+            @SuppressWarnings("unchecked")
+            Class<AttachmentComponent>[] tryComponents = new Class[] {
+                ImageComponent.class,
+                VCardComponent.class,
+            };
 
-        	for (Class<AttachmentComponent> klass : tryComponents) {
-    	        AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
-    	        if (att != null) {
+            for (Class<AttachmentComponent> klass : tryComponents) {
+                AttachmentComponent att = (AttachmentComponent) msg.getComponent(klass);
+                if (att != null) {
 
-    	        	values.put(Messages.ATTACHMENT_MIME, att.getMime());
-    	        	values.put(Messages.ATTACHMENT_FETCH_URL, att.getFetchUrl());
-    	        	values.put(Messages.ATTACHMENT_LENGTH, att.getLength());
-    	        	values.put(Messages.ATTACHMENT_ENCRYPTED, att.isEncrypted());
-    	        	values.put(Messages.ATTACHMENT_SECURITY_FLAGS, att.getSecurityFlags());
+                    values.put(Messages.ATTACHMENT_MIME, att.getMime());
+                    values.put(Messages.ATTACHMENT_FETCH_URL, att.getFetchUrl());
+                    values.put(Messages.ATTACHMENT_LENGTH, att.getLength());
+                    values.put(Messages.ATTACHMENT_ENCRYPTED, att.isEncrypted());
+                    values.put(Messages.ATTACHMENT_SECURITY_FLAGS, att.getSecurityFlags());
 
-    	            File previewFile = att.getPreviewFile();
-    	            if (previewFile != null)
-    	                values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
+                    File previewFile = att.getPreviewFile();
+                    if (previewFile != null)
+                        values.put(Messages.ATTACHMENT_PREVIEW_PATH, previewFile.getAbsolutePath());
 
-    	            // only one attachment is supported
-    	            break;
-    	        }
+                    // only one attachment is supported
+                    break;
+                }
 
-			}
+            }
 
         }
 
