@@ -204,7 +204,7 @@ public class X509Bridge {
      *            (defaults to current date and time if null)
      * @param endDate
      *            date until which the certificate will be valid
-     *            (defaults to current date and time if null)     *
+     *            (defaults to start date and time if null)
      * @param subjAltNameURI
      *            URI to be placed in subjectAltName
      * @return self-signed certificate
@@ -242,8 +242,7 @@ public class X509Bridge {
         }
         certGenerator.setNotBefore(startDate);
         if (endDate == null) {
-            endDate = new Date(startDate.getTime()+(365L*24L*60L*60L*1000L));
-               System.out.println("end date is="+ DateFormat.getDateInstance().format(endDate));
+            endDate = startDate;
         }
 
         certGenerator.setNotAfter(endDate);
