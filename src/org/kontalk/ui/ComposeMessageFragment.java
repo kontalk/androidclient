@@ -2069,9 +2069,15 @@ public class ComposeMessageFragment extends ListFragment implements
 			return;
 		}
 
+        ComposeMessage activity = getParentActivity();
+        if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
+            onFocus();
+        }
+	}
+
+	public void onFocus() {
 		// resume content watcher
-		if (mListAdapter != null)
-			mListAdapter.setOnContentChangedListener(mContentChangedListener);
+		resumeContentListener();
 
 		// we are updating the status now
 		setActivityStatusUpdating();
@@ -2098,8 +2104,12 @@ public class ComposeMessageFragment extends ListFragment implements
 		super.onPause();
 
 		// pause content watcher
-		if (mListAdapter != null)
-			mListAdapter.setOnContentChangedListener(null);
+		pauseContentListener();
+
+		// notify parent of pausing
+		ComposeMessage parent = getParentActivity();
+		if (parent != null)
+			parent.fragmentLostFocus();
 
 		CharSequence text = mTextEntry.getText();
 		int len = text.length();
@@ -2186,6 +2196,16 @@ public class ComposeMessageFragment extends ListFragment implements
 	        mTextEntry.removeTextChangedListener(mChatStateListener);
 	        mTextEntry.setText("");
 	    }
+	}
+
+	private void pauseContentListener() {
+		if (mListAdapter != null)
+			mListAdapter.setOnContentChangedListener(null);
+	}
+
+	private void resumeContentListener() {
+		if (mListAdapter != null)
+			mListAdapter.setOnContentChangedListener(mContentChangedListener);
 	}
 
 	public final boolean isFinishing() {

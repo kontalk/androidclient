@@ -84,6 +84,11 @@ public class ComposeMessage extends ActionBarActivity {
     private TextView mTitleView;
     private TextView mSubtitleView;
 
+    /**
+     * True if the window has lost focus the last time
+     * {@link #onWindowFocusChanged} was called. */
+    private boolean mLostFocus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -407,6 +412,26 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            if (mLostFocus) {
+                mFragment.onFocus();
+                mLostFocus = false;
+            }
+        }
+    }
+
+    public void fragmentLostFocus() {
+        mLostFocus = true;
+    }
+
+    public boolean hasLostFocus() {
+        return mLostFocus;
     }
 
     public Intent getSendIntent() {
