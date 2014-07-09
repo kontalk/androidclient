@@ -34,6 +34,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -47,37 +48,50 @@ import com.nineoldandroids.animation.Animator.AnimatorListener;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
 import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
+
+
 /**
  * AudioDialog Attachments.
- * @author Andrea Cappelli & Daniele Ricci
+ * @author Andrea Cappelli
+ * @author Daniele Ricci
  */
-
-
 public class AudioDialog extends AlertDialog {
+   static final String TAG = AudioDialog.class.getSimpleName();
+
+
+    public static final String DEFAULT_MIME = "audio/3gpp";
+
+    private static final int STATUS_IDLE = 0;
+    private static final int STATUS_RECORDING = 1;
+    private static final int STATUS_STOPPED = 2;
+    private static final int STATUS_PLAYING = 3;
+    private static final int STATUS_PAUSED = 4;
+    private static final int STATUS_ENDED = 5;
+    private static final int STATUS_SEND = 6;
+
+    private static final int MAX_DURATE = 120000;
+    private static final int MAX_PROGRESS = 100;
+
     private MediaRecorder mRecorder = new MediaRecorder();
-    private MediaPlayer mPlayer=new MediaPlayer();
+    private MediaPlayer mPlayer = new MediaPlayer();
+
     private CircularSeekBar mHoloCircularProgressBar;
     private ObjectAnimator mProgressBarAnimator;
     private ImageView mImageButton;
     private TextView mTimeTxt;
-    protected boolean mAnimationHasEnded = false;
+    private boolean mAnimationHasEnded = false;
+
     private File mFile;
-    private int mCheckFlags;
+
+    /** The current status. */
+    private int mStatus;
+
+    /** Holds the status while dragging the circular progress bar. */
+    private int mCheckSeek;
+
     private float mTimeCircle;
     private int mPlayerSeekTo;
-    private int mCheckSeek;
     private OnAudioDialogResult mResult;
-    private static final int STATUS_IDLE=0;
-    private static final int STATUS_RECORDING=1;
-    private static final int STATUS_STOPPED=2;
-    private static final int STATUS_PLAYING=3;
-    private static final int STATUS_PAUSED=4;
-    private static final int STATUS_ENDED = 5;
-    private static final int STATUS_SEND = 6;
-    private static final int MAX_DURATE=120000;
-    private static final int MAX_PROGRESS=100;
-    public static final String DEFAULT_MIME = "audio/3gpp";
-
 
     public AudioDialog(Context context, OnAudioDialogResult result) {
         super(context);
@@ -101,10 +115,10 @@ public class AudioDialog extends AlertDialog {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         if (!hasFocus) {
-            if (mCheckFlags == STATUS_RECORDING)
+            if (mStatus == STATUS_RECORDING)
                 cancel();
 
-            else if (mCheckFlags == STATUS_PLAYING)
+            else if (mStatus == STATUS_PLAYING)
                 pauseAudio();
         }
     }
@@ -118,29 +132,30 @@ public class AudioDialog extends AlertDialog {
             public void onCompletion(MediaPlayer mp) {
                 mImageButton.setImageResource(R.drawable.play);
                 mProgressBarAnimator.end();
-                mCheckFlags=STATUS_ENDED;
+                mStatus = STATUS_ENDED;
             }
         });
 
         v.findViewById(R.id.image_audio).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if(mCheckFlags==STATUS_IDLE){
+                if (mStatus == STATUS_IDLE){
                     try {
                         startRecord();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    }
+                    catch (IOException e) {
+                        Log.e (TAG, "error starting audio recording: ", e);
                     }
                 }
-                else if (mCheckFlags==STATUS_RECORDING) {
+                else if (mStatus == STATUS_RECORDING) {
                     mProgressBarAnimator.cancel();
                 }
-                else if (mCheckFlags==STATUS_STOPPED) {
+                else if (mStatus == STATUS_STOPPED) {
                     playAudio();
                 }
-                else if (mCheckFlags==STATUS_PLAYING) {
+                else if (mStatus == STATUS_PLAYING) {
                     pauseAudio();
                 }
-                else if (mCheckFlags == STATUS_PAUSED || mCheckFlags == STATUS_ENDED) {
+                else if (mStatus == STATUS_PAUSED || mStatus == STATUS_ENDED) {
                     resumeAudio();
                 }
             }
@@ -152,7 +167,7 @@ public class AudioDialog extends AlertDialog {
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null) {
                     mResult.onResult(mFile.getAbsolutePath());
-                    mCheckFlags = STATUS_SEND;
+                    mStatus = STATUS_SEND;
                 }
             }
         });
@@ -177,15 +192,15 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void finish() {
-        if (mCheckFlags == STATUS_RECORDING) {
+        if (mStatus == STATUS_RECORDING) {
             stopRecord();
         }
-        else if (mCheckFlags == STATUS_PLAYING) {
+        else if (mStatus == STATUS_PLAYING) {
             pauseAudio();
             mPlayer.release();
         }
 
-        if (mCheckFlags==STATUS_STOPPED || mCheckFlags== STATUS_PAUSED && mCheckFlags != STATUS_SEND && mFile != null) {
+        if (mStatus != STATUS_SEND && mFile != null) {
             mFile.delete();
         }
     }
@@ -208,14 +223,16 @@ public class AudioDialog extends AlertDialog {
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
             mRecorder.prepare();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        catch (IllegalStateException e) {
+            Log.e (TAG, "error starting audio recording: ", e);
+        }
+        catch (IOException e) {
+            Log.e (TAG, "error starting audio recording: ", e);
         }
         // Start recording
         mRecorder.start();
-        mCheckFlags=STATUS_RECORDING;
+        mStatus = STATUS_RECORDING;
 
     }
 
@@ -225,7 +242,7 @@ public class AudioDialog extends AlertDialog {
         mRecorder.release();
         mImageButton.setImageResource(R.drawable.play);
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
-        mCheckFlags=STATUS_STOPPED;
+        mStatus = STATUS_STOPPED;
         mProgressBarAnimator.end();
         mTimeTxt.setVisibility(View.INVISIBLE);
         mHoloCircularProgressBar.setCircleProgressColor(getContext().getResources().getColor(R.color.audio_pbar_play));
@@ -240,18 +257,22 @@ public class AudioDialog extends AlertDialog {
             mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mPlayer.setDataSource(mFile.getAbsolutePath());
             mPlayer.prepare();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        catch (IllegalArgumentException e) {
+            Log.e (TAG, "error playing audio: ", e);
+        }
+        catch (SecurityException e) {
+            Log.e (TAG, "error playing audio:", e);
+        }
+        catch (IllegalStateException e) {
+            Log.e (TAG, "error playing audio: ", e);
+        }
+        catch (IOException e) {
+            Log.e (TAG, "error playing audio: ", e);
         }
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
-        mTimeCircle=MAX_PROGRESS/(float)mPlayer.getDuration();
+        mTimeCircle = MAX_PROGRESS/(float)mPlayer.getDuration();
         animate(mHoloCircularProgressBar, null, 100, mPlayer.getDuration());
         resumeAudio();
     }
@@ -260,17 +281,17 @@ public class AudioDialog extends AlertDialog {
         mImageButton.setImageResource(R.drawable.play);
         mProgressBarAnimator.cancel();
         mPlayer.pause();
-        mCheckFlags=STATUS_PAUSED;
+        mStatus = STATUS_PAUSED;
     }
 
     private void resumeAudio() {
         mImageButton.setImageResource(R.drawable.pause);
-        if (mCheckFlags==STATUS_PAUSED || mCheckFlags == STATUS_ENDED)
+        if (mStatus == STATUS_PAUSED || mStatus == STATUS_ENDED)
             mProgressBarAnimator.start();
-        if (mCheckFlags==STATUS_PAUSED)
+        if (mStatus == STATUS_PAUSED)
             mProgressBarAnimator.setCurrentPlayTime(mPlayer.getCurrentPosition());
         mPlayer.start();
-        mCheckFlags=STATUS_PLAYING;
+        mStatus=STATUS_PLAYING;
     }
     private void animate(final CircularSeekBar progressBar, final AnimatorListener listener, final float progress, final int duration) {
 
@@ -286,7 +307,7 @@ public class AudioDialog extends AlertDialog {
 
             @Override
             public void onAnimationEnd(final Animator animation) {
-                if (mCheckFlags==STATUS_RECORDING)
+                if (mStatus == STATUS_RECORDING)
                     stopRecord();
             }
 
@@ -299,23 +320,23 @@ public class AudioDialog extends AlertDialog {
                 progressBar.setOnTouchListener(new OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
-                        if (mCheckFlags== STATUS_RECORDING) {
+                        if (mStatus == STATUS_RECORDING) {
                             return true;
                         }
-                        if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && (mCheckFlags==STATUS_PLAYING || mCheckFlags==STATUS_PAUSED)) {
+                        if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && (mStatus == STATUS_PLAYING || mStatus == STATUS_PAUSED)) {
                             progressBar.setPointerAlpha(135);
                             progressBar.setPointerAlphaOnTouch(100);
-                            mCheckSeek=mCheckFlags;
+                            mCheckSeek = mStatus;
                             pauseAudio();
                           }
                         else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
                             progressBar.setPointerAlpha(0);
                             progressBar.setPointerAlphaOnTouch(0);
                             mPlayer.seekTo(mPlayerSeekTo);
-                            if (mCheckSeek==STATUS_PLAYING)
+                            if (mCheckSeek == STATUS_PLAYING)
                                 resumeAudio();
                           }
-                          else if (event.getAction() == android.view.MotionEvent.ACTION_MOVE && (mCheckFlags==STATUS_PLAYING || mCheckFlags==STATUS_PAUSED)) {
+                          else if (event.getAction() == android.view.MotionEvent.ACTION_MOVE && (mStatus == STATUS_PLAYING || mStatus == STATUS_PAUSED)) {
                             mPlayerSeekTo = (int) (progressBar.getProgress()/mTimeCircle);
                             mTimeTxt.setText(DateUtils.formatElapsedTime(mPlayerSeekTo / 1000));
                           }
