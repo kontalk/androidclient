@@ -1,6 +1,10 @@
-bin
-gen
-.settings/org.eclipse.mylyn.tasks.ui.prefs
+/bin
+/gen
+/.settings
 .DS_Store
 libs/*.properties
 proguard/
+.gradle
+*.iml
+/build
+/local.properties
