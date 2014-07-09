@@ -41,8 +41,8 @@ import android.widget.TextView;
  */
 public class AboutFragment extends Fragment implements OnClickListener {
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.about_about, container, false);
 
         try {
@@ -65,56 +65,56 @@ public class AboutFragment extends Fragment implements OnClickListener {
         view.findViewById(R.id.button_identica).setOnClickListener(this);
 
         return view;
-	}
+    }
 
-	@Override
-	public void onClick(View v) {
-	    switch (v.getId()) {
-	        case R.id.button_twitter:
-	            socialTwitter();
-	            break;
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.button_twitter:
+                socialTwitter();
+                break;
 
-	        case R.id.button_googleplus:
-	            socialGooglePlus();
-	            break;
+            case R.id.button_googleplus:
+                socialGooglePlus();
+                break;
 
-	        case R.id.button_facebook:
-	            socialFacebook();
-	            break;
+            case R.id.button_facebook:
+                socialFacebook();
+                break;
 
-	        case R.id.button_identica:
-	            socialIdentica();
-	            break;
-	    }
-	}
+            case R.id.button_identica:
+                socialIdentica();
+                break;
+        }
+    }
 
-	private void socialFacebook() {
-	    try {
-	        // we try to first activate the Facebook app
-	        getActivity().getPackageManager().getPackageInfo("com.facebook.katana", 0);
-	        startUrl(getString(R.string.facebook_profile));
-	    }
-	    catch (Exception e) {
-	        // no facebook (or error) - start the profile page URL
-	        startUrl(getString(R.string.facebook_link));
-	    }
-	}
+    private void socialFacebook() {
+        try {
+            // we try to first activate the Facebook app
+            getActivity().getPackageManager().getPackageInfo("com.facebook.katana", 0);
+            startUrl(getString(R.string.facebook_profile));
+        }
+        catch (Exception e) {
+            // no facebook (or error) - start the profile page URL
+            startUrl(getString(R.string.facebook_link));
+        }
+    }
 
-	private void socialGooglePlus() {
-	    startUrl(getString(R.string.googleplus_link));
-	}
+    private void socialGooglePlus() {
+        startUrl(getString(R.string.googleplus_link));
+    }
 
-	private void socialIdentica() {
-	    startUrl(getString(R.string.identica_link));
-	}
+    private void socialIdentica() {
+        startUrl(getString(R.string.identica_link));
+    }
 
-	private void socialTwitter() {
-	    startUrl(getString(R.string.twitter_link));
-	}
+    private void socialTwitter() {
+        startUrl(getString(R.string.twitter_link));
+    }
 
-	private void startUrl(String url) {
-	    Intent link = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-	    startActivity(link);
-	}
+    private void startUrl(String url) {
+        Intent link = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(link);
+    }
 
 }

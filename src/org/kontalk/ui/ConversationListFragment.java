@@ -114,7 +114,7 @@ public class ConversationListFragment extends ListFragment {
         else {
             // TODO restore state
             list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        	list.setItemsCanFocus(true);
+            list.setItemsCanFocus(true);
         }
 
         // text for empty conversation list
@@ -363,7 +363,7 @@ public class ConversationListFragment extends ListFragment {
 
         ConversationList parent = getParentActivity();
         if (parent != null)
-    		parent.openConversation(conv, position);
+            parent.openConversation(conv, position);
     }
 
     /** Used only in fragment contexts. */

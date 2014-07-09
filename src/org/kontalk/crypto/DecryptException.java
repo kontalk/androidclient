@@ -26,47 +26,47 @@ import java.security.GeneralSecurityException;
  */
 public class DecryptException extends GeneralSecurityException {
 
-	private static final long serialVersionUID = -3210114563479741397L;
+    private static final long serialVersionUID = -3210114563479741397L;
 
-	/** Signature verification failed. */
-	public static final int DECRYPT_EXCEPTION_VERIFICATION_FAILED = 1;
-	/** Generic (unknown) decryption failure. */
-	public static final int DECRYPT_EXCEPTION_DECRYPT_FAILED = 2;
-	/** Private key needed for decryption was not found. */
-	public static final int DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND = 3;
-	/** Message sender doesn't match signature. */
-	public static final int DECRYPT_EXCEPTION_INVALID_SENDER = 4;
-	/** Message recipient doesn't match encryption key. */
-	public static final int DECRYPT_EXCEPTION_INVALID_RECIPIENT = 5;
-	/** Invalid packet data. */
-	public static final int DECRYPT_EXCEPTION_INVALID_DATA = 6;
-	/** Message integrity check failed. */
-	public static final int DECRYPT_EXCEPTION_INTEGRITY_CHECK = 7;
+    /** Signature verification failed. */
+    public static final int DECRYPT_EXCEPTION_VERIFICATION_FAILED = 1;
+    /** Generic (unknown) decryption failure. */
+    public static final int DECRYPT_EXCEPTION_DECRYPT_FAILED = 2;
+    /** Private key needed for decryption was not found. */
+    public static final int DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND = 3;
+    /** Message sender doesn't match signature. */
+    public static final int DECRYPT_EXCEPTION_INVALID_SENDER = 4;
+    /** Message recipient doesn't match encryption key. */
+    public static final int DECRYPT_EXCEPTION_INVALID_RECIPIENT = 5;
+    /** Invalid packet data. */
+    public static final int DECRYPT_EXCEPTION_INVALID_DATA = 6;
+    /** Message integrity check failed. */
+    public static final int DECRYPT_EXCEPTION_INTEGRITY_CHECK = 7;
 
-	private final int mCode;
+    private final int mCode;
 
-	public DecryptException(int code) {
-		super();
-		mCode = code;
-	}
+    public DecryptException(int code) {
+        super();
+        mCode = code;
+    }
 
-	public DecryptException(int code, String message) {
-		super(message);
-		mCode = code;
-	}
+    public DecryptException(int code, String message) {
+        super(message);
+        mCode = code;
+    }
 
-	public DecryptException(int code, Throwable cause) {
-		super(cause);
-		mCode = code;
-	}
+    public DecryptException(int code, Throwable cause) {
+        super(cause);
+        mCode = code;
+    }
 
-	public DecryptException(int code, Throwable cause, String message) {
-		super(message, cause);
-		mCode = code;
-	}
+    public DecryptException(int code, Throwable cause, String message) {
+        super(message, cause);
+        mCode = code;
+    }
 
-	public int getCode() {
-		return mCode;
-	}
+    public int getCode() {
+        return mCode;
+    }
 
 }

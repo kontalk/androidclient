@@ -71,10 +71,10 @@ import android.util.Log;
 class PresenceListener extends MessageCenterPacketListener {
 
     public PresenceListener(MessageCenterService instance) {
-		super(instance);
-	}
+        super(instance);
+    }
 
-	private Packet createSubscribe(Presence p) {
+    private Packet createSubscribe(Presence p) {
         PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
 
         try {
@@ -89,7 +89,7 @@ class PresenceListener extends MessageCenterPacketListener {
                 // store key to users table
                 String userId = StringUtils.parseName(p.getFrom());
                 UsersProvider.setUserKey(getContext(), userId,
-                	pkey.getKey(), fingerprint);
+                    pkey.getKey(), fingerprint);
             }
 
             Presence p2 = new Presence(Presence.Type.subscribed);
@@ -113,14 +113,14 @@ class PresenceListener extends MessageCenterPacketListener {
             // presence subscription request
             if (p.getType() == Presence.Type.subscribe) {
 
-            	handleSubscribe(p);
+                handleSubscribe(p);
 
             }
 
             // presence subscription response
             else if (p.getType() == Presence.Type.subscribed) {
 
-            	handleSubscribed(p);
+                handleSubscribed(p);
 
             }
 
@@ -132,7 +132,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
             else {
 
-            	handlePresence(p);
+                handlePresence(p);
 
             }
         }
@@ -142,34 +142,34 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribe(Presence p)
-    		throws NotConnectedException, IOException, PGPException {
+            throws NotConnectedException, IOException, PGPException {
 
-    	Context ctx = getContext();
+        Context ctx = getContext();
 
-    	// auto-accept subscription
-    	if (Preferences.getAutoAcceptSubscriptions(ctx)) {
+        // auto-accept subscription
+        if (Preferences.getAutoAcceptSubscriptions(ctx)) {
 
             Packet r = createSubscribe(p);
             if (r != null)
                 getConnection().sendPacket(r);
 
-    	}
+        }
 
-    	// ask the user
-    	else {
+        // ask the user
+        else {
 
-    		/*
-    		 * Subscription procedure:
-    		 * 1. update (or insert) users table with the public key just received
-    		 * 2. update (or insert) threads table with a special subscription record
-    		 * 3. user will either accept or refuse
-    		 */
+            /*
+             * Subscription procedure:
+             * 1. update (or insert) users table with the public key just received
+             * 2. update (or insert) threads table with a special subscription record
+             * 3. user will either accept or refuse
+             */
 
-    		String from = StringUtils.parseName(p.getFrom());
+            String from = StringUtils.parseName(p.getFrom());
 
-    		// extract public key
-    		String name = null, fingerprint = null;
-    		byte[] publicKey = null;
+            // extract public key
+            String name = null, fingerprint = null;
+            byte[] publicKey = null;
             PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
             if (_pkey instanceof SubscribePublicKey) {
                 SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
@@ -177,55 +177,55 @@ class PresenceListener extends MessageCenterPacketListener {
                 // extract the name from the uid
                 PGPPublicKeyRing ring = PGP.readPublicKeyring(_publicKey);
                 if (ring != null) {
-                	PGPPublicKey pk = PGP.getMasterKey(ring);
-                	if (pk != null) {
-                		// set all parameters
+                    PGPPublicKey pk = PGP.getMasterKey(ring);
+                    if (pk != null) {
+                        // set all parameters
                         name = PGP.getUserId(pk, getServer().getNetwork());
                         fingerprint = PGP.getFingerprint(pk);
                         publicKey = _publicKey;
-                	}
+                    }
                 }
             }
 
-    		ContentResolver cr = ctx.getContentResolver();
-    		ContentValues values = new ContentValues(4);
+            ContentResolver cr = ctx.getContentResolver();
+            ContentValues values = new ContentValues(4);
 
-    		// insert public key into the users table
-    		values.put(Users.HASH, from);
-    		values.put(Users.PUBLIC_KEY, publicKey);
-    		values.put(Users.FINGERPRINT, fingerprint);
-    		values.put(Users.DISPLAY_NAME, name);
-    		cr.insert(Users.CONTENT_URI.buildUpon()
-    				.appendQueryParameter(Users.DISCARD_NAME, "true")
-    				.build(), values);
+            // insert public key into the users table
+            values.put(Users.HASH, from);
+            values.put(Users.PUBLIC_KEY, publicKey);
+            values.put(Users.FINGERPRINT, fingerprint);
+            values.put(Users.DISPLAY_NAME, name);
+            cr.insert(Users.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(Users.DISCARD_NAME, "true")
+                    .build(), values);
 
-    		// invalidate cache for this user
-    		Contact.invalidate(from);
+            // invalidate cache for this user
+            Contact.invalidate(from);
 
-    		// insert request into the database
-    		values.clear();
-    		values.put(CommonColumns.PEER, from);
-    		values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
-    		cr.insert(Requests.CONTENT_URI, values);
+            // insert request into the database
+            values.clear();
+            values.put(CommonColumns.PEER, from);
+            values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
+            cr.insert(Requests.CONTENT_URI, values);
 
-    		// fire up a notification
-    		MessagingNotification.chatInvitation(ctx, from);
-    	}
+            // fire up a notification
+            MessagingNotification.chatInvitation(ctx, from);
+        }
     }
 
     private void handleSubscribed(Presence p) {
-		String from = StringUtils.parseName(p.getFrom());
+        String from = StringUtils.parseName(p.getFrom());
 
-    	if (UsersProvider.getPublicKey(getContext(), from) == null) {
-    		// public key not found
-    		// assuming the user has allowed us, request it
+        if (UsersProvider.getPublicKey(getContext(), from) == null) {
+            // public key not found
+            // assuming the user has allowed us, request it
 
             VCard4 vcard = new VCard4();
             vcard.setType(IQ.Type.GET);
             vcard.setTo(StringUtils.parseBareAddress(p.getFrom()));
 
             sendPacket(vcard);
-    	}
+        }
 
         // send a broadcast
         Intent i = new Intent(ACTION_SUBSCRIBED);

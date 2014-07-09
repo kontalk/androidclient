@@ -71,8 +71,8 @@ public class DonationFragment extends Fragment implements OnClickListener {
     };
 
     public IabHelper getIabHelper() {
-		return mIabHelper;
-	}
+        return mIabHelper;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -121,21 +121,21 @@ public class DonationFragment extends Fragment implements OnClickListener {
             startActivity(intent);
         else
             new AlertDialog
-	            .Builder(getActivity())
-	            .setTitle(R.string.title_bitcoin_dialog)
-	            .setMessage(getString(R.string.text_bitcoin_dialog, address))
-	            .setPositiveButton(android.R.string.ok, null)
-	            .setNeutralButton(R.string.copy_clipboard, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						ClipboardManager cpm = (ClipboardManager) getActivity()
-								.getSystemService(Context.CLIPBOARD_SERVICE);
-						cpm.setText(address);
+                .Builder(getActivity())
+                .setTitle(R.string.title_bitcoin_dialog)
+                .setMessage(getString(R.string.text_bitcoin_dialog, address))
+                .setPositiveButton(android.R.string.ok, null)
+                .setNeutralButton(R.string.copy_clipboard, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        ClipboardManager cpm = (ClipboardManager) getActivity()
+                                .getSystemService(Context.CLIPBOARD_SERVICE);
+                        cpm.setText(address);
 
-						Toast.makeText(getActivity(), R.string.bitcoin_clipboard_copied,
-							Toast.LENGTH_LONG).show();
-					}
-				})
-	            .show();
+                        Toast.makeText(getActivity(), R.string.bitcoin_clipboard_copied,
+                            Toast.LENGTH_LONG).show();
+                    }
+                })
+                .show();
     }
 
     private void donatePaypal() {
@@ -144,28 +144,28 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void setupGoogle(final ProgressDialog progress) {
-    	if (mIabHelper == null) {
-	        mIabHelper = new IabHelper(getActivity());
-	        mIabHelper.enableDebugLogging(BuildConfig.DEBUG);
+        if (mIabHelper == null) {
+            mIabHelper = new IabHelper(getActivity());
+            mIabHelper.enableDebugLogging(BuildConfig.DEBUG);
 
-	        mIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-	            public void onIabSetupFinished(IabResult result) {
+            mIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                public void onIabSetupFinished(IabResult result) {
 
-	                if (!result.isSuccess()) {
-	                    alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
-	                    mIabHelper = null;
-	                    progress.dismiss();
-	                    return;
-	                }
+                    if (!result.isSuccess()) {
+                        alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
+                        mIabHelper = null;
+                        progress.dismiss();
+                        return;
+                    }
 
-	                queryInventory(progress);
-	            }
-	        });
-    	}
+                    queryInventory(progress);
+                }
+            });
+        }
 
-    	else {
-    		queryInventory(progress);
-    	}
+        else {
+            queryInventory(progress);
+        }
     }
 
     private void queryInventory(final ProgressDialog progress) {
@@ -227,10 +227,10 @@ public class DonationFragment extends Fragment implements OnClickListener {
             getString(R.string.msg_connecting_iab), true, true,
             new DialogInterface.OnCancelListener() {
                 public void onCancel(DialogInterface dialog) {
-                	// FIXME this doesn't seem to work in some cases
+                    // FIXME this doesn't seem to work in some cases
                     if (mIabHelper != null) {
-                    	mIabHelper.dispose();
-                    	mIabHelper = null;
+                        mIabHelper.dispose();
+                        mIabHelper = null;
                     }
                 }
             });

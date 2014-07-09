@@ -129,27 +129,27 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
         // last message or draft??
         if (conv.getRequestStatus() == Threads.REQUEST_WAITING) {
-        	// TODO i18n and italic (?)
-        	text = "(chat invitation)";
+            // TODO i18n and italic (?)
+            text = "(chat invitation)";
         }
         else {
-        	String source = (draft != null) ? draft : conv.getSubject();
+            String source = (draft != null) ? draft : conv.getSubject();
 
-	        if (source != null) {
-		        text = new SpannableString(source);
-		        MessageUtils.convertSmileys(context, (Spannable) text, SmileyImageSpan.SIZE_LISTITEM);
-		        if (conv.getUnreadCount() > 0)
-		            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-	        }
+            if (source != null) {
+                text = new SpannableString(source);
+                MessageUtils.convertSmileys(context, (Spannable) text, SmileyImageSpan.SIZE_LISTITEM);
+                if (conv.getUnreadCount() > 0)
+                    ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            }
 
-	        else if (conv.isEncrypted()) {
-	        	text = context.getString(R.string.text_encrypted);
-	        }
+            else if (conv.isEncrypted()) {
+                text = context.getString(R.string.text_encrypted);
+            }
 
-	        else {
-	        	// determine from mime type
-	        	text = CompositeMessage.getSampleTextContent(conv.getMime());
-	        }
+            else {
+                // determine from mime type
+                text = CompositeMessage.getSampleTextContent(conv.getMime());
+            }
         }
 
         mSubjectView.setText(text);
@@ -190,12 +190,12 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
             int unread = mConversation.getUnreadCount();
             if (unread > 0) {
-            	mCounterView.setText(String.valueOf(unread));
-            	mCounterView.setVisibility(VISIBLE);
+                mCounterView.setText(String.valueOf(unread));
+                mCounterView.setVisibility(VISIBLE);
             }
         }
         else {
-        	mCounterView.setVisibility(GONE);
+            mCounterView.setVisibility(GONE);
             mErrorIndicator.setVisibility(VISIBLE);
             mErrorIndicator.setImageResource(resId);
             mErrorIndicator.setContentDescription(getResources().getString(statusId));

@@ -25,36 +25,36 @@ package org.kontalk.message;
  */
 public abstract class MessageComponent<T> {
 
-	protected T mContent;
+    protected T mContent;
     protected long mLength;
-	protected boolean mEncrypted;
-	protected int mSecurityFlags;
+    protected boolean mEncrypted;
+    protected int mSecurityFlags;
 
-	public MessageComponent(T content, long length, boolean encrypted, int securityFlags) {
-		mContent = content;
-		mLength = length;
-		mEncrypted = encrypted;
-		mSecurityFlags = securityFlags;
-	}
+    public MessageComponent(T content, long length, boolean encrypted, int securityFlags) {
+        mContent = content;
+        mLength = length;
+        mEncrypted = encrypted;
+        mSecurityFlags = securityFlags;
+    }
 
-	public T getContent() {
-		return mContent;
-	}
+    public T getContent() {
+        return mContent;
+    }
 
-	public void setContent(T content) {
-		this.mContent = content;
-	}
+    public void setContent(T content) {
+        this.mContent = content;
+    }
 
-	public long getLength() {
+    public long getLength() {
         return mLength;
     }
 
-	public boolean isEncrypted() {
-		return mEncrypted;
-	}
+    public boolean isEncrypted() {
+        return mEncrypted;
+    }
 
-	public int getSecurityFlags() {
-		return mSecurityFlags;
-	}
+    public int getSecurityFlags() {
+        return mSecurityFlags;
+    }
 
 }

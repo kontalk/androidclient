@@ -94,7 +94,7 @@ public class Contact {
     private PGPPublicKeyRing mKeyRing;
 
     public interface ContactCallback {
-    	public void avatarLoaded(Contact contact, Drawable avatar);
+        public void avatarLoaded(Contact contact, Drawable avatar);
     }
 
     /**
@@ -198,32 +198,32 @@ public class Contact {
     }
 
     public boolean isBlocked() {
-    	return mBlocked;
+        return mBlocked;
     }
 
     public PGPPublicKeyRing getPublicKeyRing() {
-    	return mKeyRing;
+        return mKeyRing;
     }
 
     public void getAvatarAsync(final Context context, final ContactCallback callback) {
-    	if (mAvatar != null) {
-    		callback.avatarLoaded(this, mAvatar);
-    	}
-    	else {
-    		// start async load
-    		new Thread(new Runnable() {
-				public void run() {
-					try {
-						Drawable avatar = getAvatar(context, null);
-						callback.avatarLoaded(Contact.this, avatar);
-					}
-					catch (Exception e) {
-						// do not throw any exception while loading
-						Log.w(TAG, "error while loading avatar", e);
-					}
-				}
-			}).start();
-    	}
+        if (mAvatar != null) {
+            callback.avatarLoaded(this, mAvatar);
+        }
+        else {
+            // start async load
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Drawable avatar = getAvatar(context, null);
+                        callback.avatarLoaded(Contact.this, avatar);
+                    }
+                    catch (Exception e) {
+                        // do not throw any exception while loading
+                        Log.w(TAG, "error while loading avatar", e);
+                    }
+                }
+            }).start();
+        }
     }
 
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
@@ -267,13 +267,13 @@ public class Contact {
             c.mRegistered = registered;
             c.mStatus = status;
             try {
-            	if (keyring != null)
-            		c.mKeyRing = PGP.readPublicKeyring(keyring);
-			}
+                if (keyring != null)
+                    c.mKeyRing = PGP.readPublicKeyring(keyring);
+            }
             catch (Exception e) {
-            	// ignored for now
-            	Log.w(TAG, "unable to load public keyring", e);
-			}
+                // ignored for now
+                Log.w(TAG, "unable to load public keyring", e);
+            }
 
             cache.put(hash, c);
         }
@@ -336,13 +336,13 @@ public class Contact {
             contact.mRegistered = registered;
             contact.mStatus = status;
             try {
-            	if (keyring != null)
-            		contact.mKeyRing = PGP.readPublicKeyring(keyring);
-			}
+                if (keyring != null)
+                    contact.mKeyRing = PGP.readPublicKeyring(keyring);
+            }
             catch (Exception e) {
-            	// ignored for now
-            	Log.w(TAG, "unable to load public keyring", e);
-			}
+                // ignored for now
+                Log.w(TAG, "unable to load public keyring", e);
+            }
 
             return contact;
         }

@@ -197,7 +197,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 XMPPConnection conn = mConnector.getConnection();
                 conn.addPacketListener(new PacketListener() {
                     public void processPacket(Packet packet) {
-                    	int reason = 0;
+                        int reason = 0;
                         IQ iq = (IQ) packet;
 
                         if (iq.getType() == IQ.Type.RESULT) {
@@ -219,29 +219,29 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         }
 
                         else if (iq.getType() == IQ.Type.ERROR) {
-                        	XMPPError error = iq.getError();
+                            XMPPError error = iq.getError();
 
-                        	if (XMPPError.Condition.service_unavailable.toString()
-                        			.equals(error.getCondition())) {
+                            if (XMPPError.Condition.service_unavailable.toString()
+                                    .equals(error.getCondition())) {
 
-                        		if (error.getType() == XMPPError.Type.WAIT) {
-                        			reason = ERROR_THROTTLING;
+                                if (error.getType() == XMPPError.Type.WAIT) {
+                                    reason = ERROR_THROTTLING;
 
-                        		}
+                                }
 
-                        		else {
-                        			mListener.onServerCheckFailed(NumberValidator.this);
-                        			// onValidationFailed will not be called
-                        			reason = -1;
+                                else {
+                                    mListener.onServerCheckFailed(NumberValidator.this);
+                                    // onValidationFailed will not be called
+                                    reason = -1;
 
-                        		}
-                        	}
+                                }
+                            }
 
                         }
 
                         // validation failed :(
                         if (reason >= 0)
-                        	mListener.onValidationFailed(NumberValidator.this, reason);
+                            mListener.onValidationFailed(NumberValidator.this, reason);
 
                         mStep = STEP_INIT;
                         return;
@@ -364,8 +364,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     private void initConnection() throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
-    		NoSuchAlgorithmException, CertificateException,
-    		IOException {
+            NoSuchAlgorithmException, CertificateException,
+            IOException {
 
         if (!mConnector.isConnected()) {
             mConnector.setListener(this);
@@ -574,7 +574,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     @Override
     public void authenticationFailed() {
-    	// not used
+        // not used
     }
 
 }

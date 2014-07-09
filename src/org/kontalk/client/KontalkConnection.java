@@ -47,15 +47,15 @@ public class KontalkConnection extends XMPPTCPConnection {
     protected EndpointServer mServer;
 
     public KontalkConnection(EndpointServer server,
-    	boolean acceptAnyCertificate, KeyStore trustStore)
-    		throws XMPPException {
+        boolean acceptAnyCertificate, KeyStore trustStore)
+            throws XMPPException {
 
         this(server, null, null, acceptAnyCertificate, trustStore);
     }
 
     public KontalkConnection(EndpointServer server,
-    		PrivateKey privateKey, X509Certificate bridgeCert,
-    		boolean acceptAnyCertificate, KeyStore trustStore) throws XMPPException {
+            PrivateKey privateKey, X509Certificate bridgeCert,
+            boolean acceptAnyCertificate, KeyStore trustStore) throws XMPPException {
 
         super(new AndroidConnectionConfiguration
                 (server.getHost(),
@@ -83,49 +83,49 @@ public class KontalkConnection extends XMPPTCPConnection {
 
             KeyManager[] km = null;
             if (privateKey != null && bridgeCert != null) {
-	            // in-memory keystore
-	            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-	            keystore.load(null, null);
-	            keystore.setKeyEntry("private", privateKey, null, new Certificate[] { bridgeCert });
+                // in-memory keystore
+                KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keystore.load(null, null);
+                keystore.setKeyEntry("private", privateKey, null, new Certificate[] { bridgeCert });
 
-	            // key managers
-	            KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-	            kmFactory.init(keystore, null);
+                // key managers
+                KeyManagerFactory kmFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmFactory.init(keystore, null);
 
-	            km = kmFactory.getKeyManagers();
+                km = kmFactory.getKeyManagers();
             }
 
             // trust managers
             TrustManager[] tm;
 
             if (acceptAnyCertificate) {
-	            tm = new TrustManager[] {
-	                new X509TrustManager() {
-	                    @Override
-	                    public X509Certificate[] getAcceptedIssuers() {
-	                        return null;
-	                    }
+                tm = new TrustManager[] {
+                    new X509TrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
 
-	                    @Override
-	                    public void checkServerTrusted(X509Certificate[] chain, String authType)
-	                        throws CertificateException {
-	                    }
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] chain, String authType)
+                            throws CertificateException {
+                        }
 
-	                    @Override
-	                    public void checkClientTrusted(X509Certificate[] chain, String authType)
-	                        throws CertificateException {
-	                    }
-	                }
-	            };
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] chain, String authType)
+                            throws CertificateException {
+                        }
+                    }
+                };
             }
 
             else {
                 // builtin keystore
-	            TrustManagerFactory tmFactory = TrustManagerFactory
-	            		.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-	            tmFactory.init(trustStore);
+                TrustManagerFactory tmFactory = TrustManagerFactory
+                        .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmFactory.init(trustStore);
 
-	            tm = tmFactory.getTrustManagers();
+                tm = tmFactory.getTrustManagers();
             }
 
             ctx.init(km, tm, null);

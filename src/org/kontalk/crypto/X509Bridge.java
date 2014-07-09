@@ -77,6 +77,9 @@ import android.os.Parcel;
  */
 public class X509Bridge {
 
+    public static final String PEM_TYPE_PRIVATE_KEY = "RSA PRIVATE KEY";
+    public static final String PEM_TYPE_CERTIFICATE = "CERTIFICATE";
+
     private final static String DN_COMMON_PART_O = "OpenPGP to X.509 Bridge";
 
     private X509Bridge() {
@@ -204,7 +207,7 @@ public class X509Bridge {
      *            (defaults to current date and time if null)
      * @param endDate
      *            date until which the certificate will be valid
-     *            (defaults to current date and time if null)     *
+     *            (defaults to start date and time if null)
      * @param subjAltNameURI
      *            URI to be placed in subjectAltName
      * @return self-signed certificate
@@ -242,8 +245,7 @@ public class X509Bridge {
         }
         certGenerator.setNotBefore(startDate);
         if (endDate == null) {
-            endDate = new Date(startDate.getTime()+(365L*24L*60L*60L*1000L));
-               System.out.println("end date is="+ DateFormat.getDateInstance().format(endDate));
+            endDate = startDate;
         }
 
         certGenerator.setNotAfter(endDate);
@@ -349,7 +351,7 @@ public class X509Bridge {
     }
 
     public static X509Certificate load(byte[] certData)
-    		throws CertificateException, NoSuchProviderException {
+            throws CertificateException, NoSuchProviderException {
 
         CertificateFactory certFactory = CertificateFactory.getInstance("X.509", PGP.PROVIDER);
         InputStream in = new ByteArrayInputStream(certData);
@@ -357,7 +359,7 @@ public class X509Bridge {
     }
 
     public static KeyStore exportCertificate(X509Certificate certificate, PrivateKey privateKey)
-    		throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
+            throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
 
         KeyStore store = KeyStore.getInstance("PKCS12", PGP.PROVIDER);
 

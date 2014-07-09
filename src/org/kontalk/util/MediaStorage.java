@@ -197,15 +197,15 @@ public abstract class MediaStorage {
      * to persist permissions when asking for media files.
      */
     public static boolean isStorageAccessFrameworkAvailable() {
-    	return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT;
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT;
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-	public static void requestPersistablePermissions(Context context, Intent intent) {
-    	final int takeFlags = intent.getFlags()
+    public static void requestPersistablePermissions(Context context, Intent intent) {
+        final int takeFlags = intent.getFlags()
                 & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
-    	final Uri uri = intent.getData();
-    	context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+        final Uri uri = intent.getData();
+        context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
     }
 
 }

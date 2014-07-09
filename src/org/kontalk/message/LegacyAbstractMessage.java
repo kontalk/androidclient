@@ -359,7 +359,7 @@ public abstract class LegacyAbstractMessage<T> {
     public abstract void recycle();
 
     public static LegacyAbstractMessage fromCursor(Context context, Cursor cursor) {
-    	// TODO
+        // TODO
         return null;
     }
 
@@ -372,7 +372,7 @@ public abstract class LegacyAbstractMessage<T> {
     }
 
     public static String buildMediaFilename(LegacyAbstractMessage msg) {
-    	// TODO
+        // TODO
         return null;
     }
 

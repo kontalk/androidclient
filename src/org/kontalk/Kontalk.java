@@ -19,6 +19,8 @@
 package org.kontalk;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
@@ -188,9 +190,10 @@ public class Kontalk extends Application {
     }
 
     public void exportPersonalKey()
-    		throws CertificateException, PGPException, IOException, NoSuchProviderException {
+            throws CertificateException, PGPException, IOException,
+                NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException {
 
-    	Authenticator.exportDefaultPersonalKey(this, getCachedPassphrase(), true);
+        Authenticator.exportDefaultPersonalKey(this, getCachedPassphrase(), true);
     }
 
     /** Invalidates the cached personal key. */
@@ -199,16 +202,16 @@ public class Kontalk extends Application {
     }
 
     private void ensureCachedPassphrase() {
-    	if (mKeyPassphrase == null) {
+        if (mKeyPassphrase == null) {
             AccountManager am = AccountManager.get(this);
             Account account = Authenticator.getDefaultAccount(am);
             // cache passphrase from account
             mKeyPassphrase = am.getPassword(account);
-    	}
+        }
     }
 
     public String getCachedPassphrase()  {
-    	ensureCachedPassphrase();
+        ensureCachedPassphrase();
         return mKeyPassphrase;
     }
 
@@ -233,13 +236,13 @@ public class Kontalk extends Application {
     public static int getVersionCode(Context context) {
         try {
             PackageInfo pInfo = context.getPackageManager()
-            	.getPackageInfo(context.getPackageName(), 0);
+                .getPackageInfo(context.getPackageName(), 0);
 
             return pInfo.versionCode;
         }
         catch (NameNotFoundException e) {
             // shouldn't happen
-        	return 0;
+            return 0;
         }
     }
 

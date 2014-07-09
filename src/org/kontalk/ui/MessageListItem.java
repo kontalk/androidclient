@@ -59,11 +59,11 @@ import android.widget.TextView;
 public class MessageListItem extends RelativeLayout {
     //private static final String TAG = MessageListItem.class.getSimpleName();
 
-	/**
-	 * Maximum affordable size of a text message to make complex stuff
-	 * (e.g. emoji, linkify, etc.)
-	 */
-	private static final int MAX_AFFORDABLE_SIZE = 10240;	// 10 KB
+    /**
+     * Maximum affordable size of a text message to make complex stuff
+     * (e.g. emoji, linkify, etc.)
+     */
+    private static final int MAX_AFFORDABLE_SIZE = 10240;   // 10 KB
 
     static private Drawable sDefaultContactImage;
 
@@ -134,7 +134,7 @@ public class MessageListItem extends RelativeLayout {
             mDateView.setText("28 Nov");
             */
 
-	        /* OUTGOING */
+            /* OUTGOING */
             if (mStatusIcon != null) {
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
                 mStatusIcon.setVisibility(VISIBLE);
@@ -173,7 +173,7 @@ public class MessageListItem extends RelativeLayout {
         // linkify!
         boolean linksFound = false;
         if (mFormattedMessage.length() < MAX_AFFORDABLE_SIZE)
-        	linksFound = Linkify.addLinks(mFormattedMessage, Linkify.ALL);
+            linksFound = Linkify.addLinks(mFormattedMessage, Linkify.ALL);
 
         /*
          * workaround for bugs:
@@ -183,8 +183,8 @@ public class MessageListItem extends RelativeLayout {
          */
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
                 android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
-        	// from http://stackoverflow.com/a/12303155/1045199
-        	mFormattedMessage.append("\u200b"); // was: \u2060
+            // from http://stackoverflow.com/a/12303155/1045199
+            mFormattedMessage.append("\u200b"); // was: \u2060
 
         if (linksFound)
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
@@ -199,18 +199,18 @@ public class MessageListItem extends RelativeLayout {
         int securityFlags = mMessage.getSecurityFlags();
 
         if (Coder.isError(securityFlags)) {
-        	mWarningIcon.setImageResource(R.drawable.ic_msg_security);
+            mWarningIcon.setImageResource(R.drawable.ic_msg_security);
             mWarningIcon.setVisibility(VISIBLE);
         }
         else {
-        	mWarningIcon.setImageResource(R.drawable.ic_msg_warning);
-        	mWarningIcon.setVisibility((securityFlags != Coder.SECURITY_CLEARTEXT) ? GONE : VISIBLE);
+            mWarningIcon.setImageResource(R.drawable.ic_msg_warning);
+            mWarningIcon.setVisibility((securityFlags != Coder.SECURITY_CLEARTEXT) ? GONE : VISIBLE);
         }
 
         if (mMessage.getSender() != null) {
             if (mBalloonView != null) {
-	            mBalloonView.setBackgroundResource(Preferences
-	                .getBalloonResource(getContext(), Messages.DIRECTION_IN));
+                mBalloonView.setBackgroundResource(Preferences
+                    .getBalloonResource(getContext(), Messages.DIRECTION_IN));
             }
             else {
                 mParentView.setGravity(Gravity.LEFT);
@@ -227,7 +227,7 @@ public class MessageListItem extends RelativeLayout {
         }
         else {
             if (mBalloonView != null) {
-            	mBalloonView.setBackgroundResource(Preferences
+                mBalloonView.setBackgroundResource(Preferences
                     .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
             }
             else {
@@ -316,50 +316,50 @@ public class MessageListItem extends RelativeLayout {
             String textContent = txt != null ? txt.getContent() : null;
 
             if (TextUtils.isEmpty(textContent)) {
-            	buf = new SpannableStringBuilder();
-            	thumbnailOnly = true;
+                buf = new SpannableStringBuilder();
+                thumbnailOnly = true;
             }
 
             else {
-	            buf = new SpannableStringBuilder(textContent);
-	            thumbnailOnly = false;
+                buf = new SpannableStringBuilder(textContent);
+                thumbnailOnly = false;
             }
 
             // convert smileys first
             int c = buf.length();
             if (c > 0 && c < MAX_AFFORDABLE_SIZE)
-            	MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
+                MessageUtils.convertSmileys(getContext(), buf, SmileyImageSpan.SIZE_EDITABLE);
 
             // image component: show image before text
             AttachmentComponent attachment = (AttachmentComponent) mMessage
-            		.getComponent(AttachmentComponent.class);
+                    .getComponent(AttachmentComponent.class);
 
             if (attachment != null) {
 
-            	if (attachment instanceof ImageComponent) {
-            		ImageComponent img = (ImageComponent) attachment;
+                if (attachment instanceof ImageComponent) {
+                    ImageComponent img = (ImageComponent) attachment;
 
-	            	// prepend some text for the ImageSpan
-	            	String placeholder = CompositeMessage.getSampleTextContent(img.getContent().getMime());
-	            	buf.insert(0, placeholder);
+                    // prepend some text for the ImageSpan
+                    String placeholder = CompositeMessage.getSampleTextContent(img.getContent().getMime());
+                    buf.insert(0, placeholder);
 
-	            	// add newline if there is some text after
-	            	if (!thumbnailOnly)
-	            		buf.insert(placeholder.length(), "\n");
+                    // add newline if there is some text after
+                    if (!thumbnailOnly)
+                        buf.insert(placeholder.length(), "\n");
 
-	                Bitmap bitmap = img.getBitmap();
-	                if (bitmap != null) {
-	                    ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), bitmap);
-	                    buf.setSpan(imgSpan, 0, placeholder.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-	                }
+                    Bitmap bitmap = img.getBitmap();
+                    if (bitmap != null) {
+                        ImageSpan imgSpan = new MaxSizeImageSpan(getContext(), bitmap);
+                        buf.setSpan(imgSpan, 0, placeholder.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
 
-            	}
+                }
 
                 else {
 
-                	// other component: show sample content if no body was found
-                	if (txt == null)
-                		buf.append(CompositeMessage.getSampleTextContent(attachment.getMime()));
+                    // other component: show sample content if no body was found
+                    if (txt == null)
+                        buf.append(CompositeMessage.getSampleTextContent(attachment.getMime()));
 
                 }
 

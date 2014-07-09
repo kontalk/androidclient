@@ -84,11 +84,11 @@ public class LegacyPlainTextMessage extends LegacyAbstractMessage<byte[]> {
 
     @Override
     public void decrypt(Coder coder) throws GeneralSecurityException {
-    	/*
+        /*
         if (isEncrypted()) {
-        	// FIXME ehm :)
-        	StringBuilder clearText = new StringBuilder();
-        	coder.decryptText(content, true, clearText, null, null);
+            // FIXME ehm :)
+            StringBuilder clearText = new StringBuilder();
+            coder.decryptText(content, true, clearText, null, null);
             content = clearText.toString().getBytes();
             length = content.length;
             encrypted = false;
@@ -119,7 +119,7 @@ public class LegacyPlainTextMessage extends LegacyAbstractMessage<byte[]> {
     public static LegacyPlainTextMessage obtain(Context context) {
         synchronized (sPoolSync) {
             if (sPool != null) {
-            	LegacyPlainTextMessage m = sPool;
+                LegacyPlainTextMessage m = sPool;
                 sPool = m.next;
                 m.next = null;
                 sPoolSize--;

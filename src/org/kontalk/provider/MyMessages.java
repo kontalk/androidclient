@@ -128,7 +128,7 @@ public final class MyMessages {
         /** Request represents a presence subscription request. */
         public static final class Requests implements BaseColumns {
             public static final Uri CONTENT_URI = Uri
-            	.parse("content://" + MessagesProvider.AUTHORITY + "/requests");
+                .parse("content://" + MessagesProvider.AUTHORITY + "/requests");
         }
 
         /**

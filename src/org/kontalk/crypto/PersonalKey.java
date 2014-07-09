@@ -94,18 +94,18 @@ public class PersonalKey implements Parcelable {
     }
 
     public PrivateKey getBridgePrivateKey() throws PGPException {
-    	return PGP.convertPrivateKey(mPair.signKey.getPrivateKey());
+        return PGP.convertPrivateKey(mPair.signKey.getPrivateKey());
     }
 
     public PGPPublicKeyRing getPublicKeyRing() throws IOException {
-    	return new PGPPublicKeyRing(getEncodedPublicKeyRing(), new BcKeyFingerprintCalculator());
+        return new PGPPublicKeyRing(getEncodedPublicKeyRing(), new BcKeyFingerprintCalculator());
     }
 
     public byte[] getEncodedPublicKeyRing() throws IOException {
-    	ByteArrayOutputStream out = new ByteArrayOutputStream();
-    	mPair.signKey.getPublicKey().encode(out);
-    	mPair.encryptKey.getPublicKey().encode(out);
-    	return out.toByteArray();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        mPair.signKey.getPublicKey().encode(out);
+        mPair.encryptKey.getPublicKey().encode(out);
+        return out.toByteArray();
     }
 
     /** Returns the first user ID on the key that matches the given network. */
@@ -114,11 +114,11 @@ public class PersonalKey implements Parcelable {
     }
 
     public String getFingerprint() {
-    	return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint());
+        return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint());
     }
 
     public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {
-    	// FIXME dummy values
+        // FIXME dummy values
         return store(name,
             userId + '@' + network, "NO COMMENT",
             passphrase);
@@ -275,40 +275,40 @@ public class PersonalKey implements Parcelable {
      * @param store true to store the key in this object
      * @return the revoked master public key
      */
-	public PGPPublicKey revoke(boolean store)
-			throws PGPException, IOException, SignatureException {
+    public PGPPublicKey revoke(boolean store)
+            throws PGPException, IOException, SignatureException {
 
-		PGPPublicKey revoked = PGP.revokeKey(mPair.signKey);
+        PGPPublicKey revoked = PGP.revokeKey(mPair.signKey);
 
-		if (store)
-			mPair.signKey = new PGPKeyPair(revoked, mPair.signKey.getPrivateKey());
+        if (store)
+            mPair.signKey = new PGPKeyPair(revoked, mPair.signKey.getPrivateKey());
 
-		return revoked;
-	}
+        return revoked;
+    }
 
-	/** Stores the public keyring to the system {@link AccountManager}. */
-	public void updateAccountManager(Context context)
-			throws IOException, CertificateEncodingException, InvalidKeyException,
-			IllegalStateException, NoSuchAlgorithmException, SignatureException,
-			CertificateException, NoSuchProviderException, PGPException {
+    /** Stores the public keyring to the system {@link AccountManager}. */
+    public void updateAccountManager(Context context)
+            throws IOException, CertificateEncodingException, InvalidKeyException,
+            IllegalStateException, NoSuchAlgorithmException, SignatureException,
+            CertificateException, NoSuchProviderException, PGPException {
 
-		AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-		Account account = Authenticator.getDefaultAccount(am);
+        AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        Account account = Authenticator.getDefaultAccount(am);
 
-		if (account != null) {
-			PGPPublicKeyRing pubRing = getPublicKeyRing();
+        if (account != null) {
+            PGPPublicKeyRing pubRing = getPublicKeyRing();
 
-			// regenerate bridge certificate
+            // regenerate bridge certificate
             byte[] bridgeCertData = X509Bridge.createCertificate(pubRing,
                     mPair.signKey.getPrivateKey(), null).getEncoded();
-			byte[] publicKeyData = pubRing.getEncoded();
+            byte[] publicKeyData = pubRing.getEncoded();
 
-			am.setUserData(account, Authenticator.DATA_PUBLICKEY,
-				Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
-			am.setUserData(account, Authenticator.DATA_BRIDGECERT,
-					Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
-		}
-	}
+            am.setUserData(account, Authenticator.DATA_PUBLICKEY,
+                Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
+            am.setUserData(account, Authenticator.DATA_BRIDGECERT,
+                    Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
+        }
+    }
 
     @Override
     public int describeContents() {

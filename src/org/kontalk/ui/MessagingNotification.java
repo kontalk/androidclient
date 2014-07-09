@@ -67,7 +67,7 @@ public class MessagingNotification {
     public static final int NOTIFICATION_ID_QUICK_REPLY     = 107;
     public static final int NOTIFICATION_ID_KEYPAIR_GEN     = 108;
     public static final int NOTIFICATION_ID_INVITATION      = 109;
-    public static final int NOTIFICATION_ID_AUTH_ERROR		= 110;
+    public static final int NOTIFICATION_ID_AUTH_ERROR      = 110;
 
     private static final String[] MESSAGES_UNREAD_PROJECTION =
     {
@@ -93,23 +93,23 @@ public class MessagingNotification {
         CommonColumns.DIRECTION + " = " + Messages.DIRECTION_IN;
 
     /** Pending delayed notification update flag. */
-    private static volatile boolean mPending;
+    private static volatile boolean sPending;
 
     /** Peer to NOT be notified for new messages. */
-    private static volatile String mPaused;
+    private static volatile String sPaused;
 
     /** Peer of last notified chat invitation. */
-    private static volatile String mLastInvitation;
+    private static volatile String sLastInvitation;
 
     /** This class is not instanciable. */
     private MessagingNotification() {}
 
     public static void setPaused(String jid) {
-        mPaused = jid;
+        sPaused = jid;
     }
 
     public static String getPaused() {
-        return mPaused;
+        return sPaused;
     }
 
     private static boolean supportsBigNotifications() {
@@ -122,13 +122,13 @@ public class MessagingNotification {
         if (!Preferences.getNotificationsEnabled(context))
             return;
 
-        if (!mPending) {
-            mPending = true;
+        if (!sPending) {
+            sPending = true;
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     updateMessagesNotification(context, isNew);
-                    mPending = false;
+                    sPending = false;
                 }
             }).start();
         }
@@ -180,9 +180,9 @@ public class MessagingNotification {
         }
 
         // is there a peer to not notify for?
-        if (mPaused != null) {
+        if (sPaused != null) {
             query += " AND " + CommonColumns.PEER + " <> ?";
-            args = new String[] { StringUtils.parseName(mPaused) };
+            args = new String[] { StringUtils.parseName(sPaused) };
         }
 
         Cursor c = res.query(uri, proj, query, args, order);
@@ -230,13 +230,13 @@ public class MessagingNotification {
 
                 boolean encrypted = c.getInt(4) != 0;
                 if (encrypted) {
-                	textContent = context.getString(R.string.text_encrypted);
+                    textContent = context.getString(R.string.text_encrypted);
                 }
                 else if (content == null && attMime != null) {
-                	textContent = CompositeMessage.getSampleTextContent(attMime);
+                    textContent = CompositeMessage.getSampleTextContent(attMime);
                 }
                 else {
-                	textContent = content != null ? new String(content) : "";
+                    textContent = content != null ? new String(content) : "";
                 }
 
                 ((StringBuilder) b[0]).append(textContent);
@@ -375,9 +375,9 @@ public class MessagingNotification {
                 boolean encrypted = c.getInt(4) != 0;
 
                 if (encrypted)
-                	content = context.getString(R.string.text_encrypted);
+                    content = context.getString(R.string.text_encrypted);
                 else if (content == null)
-                	content = CompositeMessage.getSampleTextContent(c.getString(2));
+                    content = CompositeMessage.getSampleTextContent(c.getString(2));
 
                 accumulator.accumulate(
                     c.getLong(0),
@@ -403,7 +403,7 @@ public class MessagingNotification {
         }
 
         if (isNew) {
-        	setDefaults(context, builder);
+            setDefaults(context, builder);
         }
 
         nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
@@ -440,9 +440,9 @@ public class MessagingNotification {
 
     /** Triggers a notification for a chat invitation. */
     public static void chatInvitation(Context context, String userId) {
-    	// open conversation, do not send notification
-    	if (userId.equalsIgnoreCase(StringUtils.parseName(mPaused)))
-    		return;
+        // open conversation, do not send notification
+        if (userId.equalsIgnoreCase(StringUtils.parseName(sPaused)))
+            return;
 
         // find the contact for the userId
         Contact contact = Contact.findByUserId(context, userId);
@@ -453,12 +453,12 @@ public class MessagingNotification {
         // notification will open the conversation
         Intent ni = ComposeMessage.fromUserId(context, userId);
         PendingIntent pi = PendingIntent.getActivity(context,
-        	NOTIFICATION_ID_INVITATION, ni, 0);
+            NOTIFICATION_ID_INVITATION, ni, 0);
 
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(context.getApplicationContext())
-        	.setAutoCancel(true)
+            .setAutoCancel(true)
             .setSmallIcon(R.drawable.stat_notify)
             .setTicker(context.getString(R.string.title_invitation))
             .setContentTitle(title)
@@ -483,17 +483,17 @@ public class MessagingNotification {
         nm.notify(NOTIFICATION_ID_INVITATION, builder.build());
 
         // this is for clearChatInvitation()
-        mLastInvitation = userId;
+        sLastInvitation = userId;
     }
 
     /** Cancel a chat invitation notification. */
     public static void clearChatInvitation(Context context, String userId) {
-    	if (userId.equalsIgnoreCase(mLastInvitation)) {
+        if (userId.equalsIgnoreCase(sLastInvitation)) {
             NotificationManager nm = (NotificationManager) context
                     .getSystemService(Context.NOTIFICATION_SERVICE);
 
             nm.cancel(NOTIFICATION_ID_INVITATION);
-    	}
+        }
     }
 
     /** Fires an authentication error notification. */
@@ -501,12 +501,12 @@ public class MessagingNotification {
         // notification will open the conversation
         Intent ni = ConversationList.authenticationErrorWarning(context);
         PendingIntent pi = PendingIntent.getActivity(context,
-        	NOTIFICATION_ID_AUTH_ERROR, ni, 0);
+            NOTIFICATION_ID_AUTH_ERROR, ni, 0);
 
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(context.getApplicationContext())
-        	.setAutoCancel(true)
+            .setAutoCancel(true)
             .setSmallIcon(R.drawable.stat_notify)
             .setTicker(context.getString(R.string.title_auth_error))
             .setContentTitle(context.getString(R.string.title_auth_error))

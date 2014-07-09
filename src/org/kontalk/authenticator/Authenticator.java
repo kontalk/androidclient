@@ -20,17 +20,27 @@ package org.kontalk.authenticator;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.X509Bridge;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
+import org.spongycastle.bcpg.ArmoredOutputStream;
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.util.io.pem.PemObject;
+import org.spongycastle.util.io.pem.PemWriter;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
@@ -70,6 +80,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String PRIVATE_KEY_FILENAME = "kontalk-private.pgp";
     public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
     public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
+    public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
 
     private final Context mContext;
     private final Handler mHandler;
@@ -95,8 +106,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static boolean isSelfUserId(Context ctx, String userId) {
-    	String name = getDefaultAccountName(ctx);
-    	return (name != null && MessageUtils.sha1(name).equals(userId));
+        String name = getDefaultAccountName(ctx);
+        return (name != null && MessageUtils.sha1(name).equals(userId));
     }
 
     public static boolean hasPersonalKey(AccountManager am, Account account) {
@@ -115,56 +126,64 @@ public class Authenticator extends AbstractAccountAuthenticator {
         String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
 
         if (privKeyData != null && pubKeyData != null && bridgeCertData != null)
-	        return PersonalKey
-	            .load(Base64.decode(privKeyData, Base64.DEFAULT),
-	                  Base64.decode(pubKeyData, Base64.DEFAULT),
-	                  passphrase,
-	                  Base64.decode(bridgeCertData, Base64.DEFAULT)
-	            );
+            return PersonalKey
+                .load(Base64.decode(privKeyData, Base64.DEFAULT),
+                      Base64.decode(pubKeyData, Base64.DEFAULT),
+                      passphrase,
+                      Base64.decode(bridgeCertData, Base64.DEFAULT)
+                );
 
         else
-        	return null;
+            return null;
     }
 
     public static void exportDefaultPersonalKey(Context ctx, String passphrase, boolean bridgeCertificate)
-    		throws CertificateException, NoSuchProviderException, PGPException, IOException {
+            throws CertificateException, NoSuchProviderException, PGPException,
+                IOException, KeyStoreException, NoSuchAlgorithmException {
 
-    	AccountManager m = AccountManager.get(ctx);
-	    Account acc = getDefaultAccount(m);
+        AccountManager m = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(m);
 
         String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
         String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
 
         File path = Environment.getExternalStorageDirectory();
-        FileOutputStream out;
+        OutputStream out;
 
         byte[] publicKey = Base64.decode(pubKeyData, Base64.DEFAULT);
         byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
 
         if (bridgeCertificate) {
-        	// bridge certificate is just plain data
+            // bridge certificate is just plain data
             String bridgeCertData = m.getUserData(acc, DATA_BRIDGECERT);
             byte[] bridgeCert = Base64.decode(bridgeCertData, Base64.DEFAULT);
 
             // export bridge certificate
-            out = new FileOutputStream(new File(path, BRIDGE_CERT_FILENAME));
-            out.write(bridgeCert);
-            out.close();
+            PemWriter writer = new PemWriter(new FileWriter(new File(path, BRIDGE_CERT_FILENAME)));
+            writer.writeObject(new PemObject(X509Bridge.PEM_TYPE_CERTIFICATE, bridgeCert));
+            writer.close();
 
             // export bridge private key
-        	PrivateKey bridgeKey = PGP.convertPrivateKey(privateKey, passphrase);
-            out = new FileOutputStream(new File(path, BRIDGE_KEY_FILENAME));
-            out.write(bridgeKey.getEncoded());
+            PrivateKey bridgeKey = PGP.convertPrivateKey(privateKey, passphrase);
+            writer = new PemWriter(new FileWriter(new File(path, BRIDGE_KEY_FILENAME)));
+            writer.writeObject(new PemObject(X509Bridge.PEM_TYPE_PRIVATE_KEY, bridgeKey.getEncoded()));
+            writer.close();
+
+            // certificate pack in PKCS#12
+            X509Certificate certificate = X509Bridge.load(bridgeCert);
+            KeyStore pkcs12 = X509Bridge.exportCertificate(certificate, bridgeKey);
+            out = new FileOutputStream(new File(path, BRIDGE_CERTPACK_FILENAME));
+            pkcs12.store(out, passphrase.toCharArray());
             out.close();
         }
 
         // export public key
-        out = new FileOutputStream(new File(path, PUBLIC_KEY_FILENAME));
+        out = new ArmoredOutputStream(new FileOutputStream(new File(path, PUBLIC_KEY_FILENAME)));
         out.write(publicKey);
         out.close();
 
         // export private key
-        out = new FileOutputStream(new File(path, PRIVATE_KEY_FILENAME));
+        out = new ArmoredOutputStream(new FileOutputStream(new File(path, PRIVATE_KEY_FILENAME)));
         out.write(privateKey);
         out.close();
     }
@@ -175,7 +194,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         // private key data is optional when updating just the public key
         if (privateKeyData != null)
-        	am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
+            am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(privateKeyData, Base64.NO_WRAP));
 
         am.setUserData(acc, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
         am.setUserData(acc, Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));

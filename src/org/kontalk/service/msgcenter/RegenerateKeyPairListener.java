@@ -62,8 +62,8 @@ class RegenerateKeyPairListener extends MessageCenterPacketListener {
     private PGPPublicKey mRevoked;
 
     public RegenerateKeyPairListener(MessageCenterService instance)
-    		throws CertificateException, SignatureException, PGPException, IOException {
-    	super(instance);
+            throws CertificateException, SignatureException, PGPException, IOException {
+        super(instance);
 
         revokeCurrentKey();
         setupKeyPairReceiver();
@@ -145,8 +145,8 @@ class RegenerateKeyPairListener extends MessageCenterPacketListener {
 
                     // store the key
                     try {
-                    	Context context = getContext();
-                    	AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+                        Context context = getContext();
+                        AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
                         Account acc = Authenticator.getDefaultAccount(am);
                         String name = am.getUserData(acc, Authenticator.DATA_NAME);
 
@@ -210,11 +210,11 @@ class RegenerateKeyPairListener extends MessageCenterPacketListener {
 
     /** We do this here so if something goes wrong the old key is still valid. */
     private void revokeCurrentKey()
-    		throws CertificateException, PGPException, IOException, SignatureException {
+            throws CertificateException, PGPException, IOException, SignatureException {
 
-    	PersonalKey oldKey = getApplication().getPersonalKey();
-    	if (oldKey != null)
-    		mRevoked = oldKey.revoke(false);
+        PersonalKey oldKey = getApplication().getPersonalKey();
+        if (oldKey != null)
+            mRevoked = oldKey.revoke(false);
     }
 
     @Override
@@ -245,7 +245,7 @@ class RegenerateKeyPairListener extends MessageCenterPacketListener {
                         String passphrase = getApplication().getCachedPassphrase();
                         // TODO subjectAltName?
                         bridgeCertData = X509Bridge.createCertificate(publicKeyData,
-                        	mKeyRing.secretKey.getSecretKey(), passphrase, null).getEncoded();
+                            mKeyRing.secretKey.getSecretKey(), passphrase, null).getEncoded();
                     }
                     catch (Exception e) {
                         Log.e(MessageCenterService.TAG, "error decoding key data", e);

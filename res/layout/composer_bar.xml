@@ -49,7 +49,7 @@
                     android:nextFocusRight="@+id/send_button"
                     android:hint="@string/hint_enter_text"
                     android:maxLines="3"
-                    android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine"
+                    android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
                     android:imeOptions="actionSend|flagNoEnterAction"
                     android:background="@android:drawable/edit_text"
                     android:maxLength="2000"

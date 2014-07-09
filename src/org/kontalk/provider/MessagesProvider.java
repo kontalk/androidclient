@@ -254,7 +254,7 @@ public class MessagesProvider extends ContentProvider {
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
             "_id, msg_id, peer, direction, count, unread, 'text/plain', content, timestamp, status_changed, status, 0, draft, 0" +
-            	" FROM " + TABLE_THREADS,
+                " FROM " + TABLE_THREADS,
             // drop table messages
             "DROP TABLE " + TABLE_MESSAGES,
             // drop table threads
@@ -274,16 +274,16 @@ public class MessagesProvider extends ContentProvider {
         };
 
         private static final String[] SCHEMA_V5_TO_V6 = {
-        	// new messages counter: notified vs. unread
-        	"ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
-        	"ALTER TABLE " + TABLE_THREADS + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
-        	// recreate triggers for the new messages count
+            // new messages counter: notified vs. unread
+            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE " + TABLE_THREADS + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
+            // recreate triggers for the new messages count
             "DROP TRIGGER update_thread_on_insert",
-        	TRIGGER_THREADS_INSERT_COUNT,
-        	"DROP TRIGGER update_thread_on_update",
-        	TRIGGER_THREADS_UPDATE_COUNT,
-        	"DROP TRIGGER update_thread_on_delete",
-        	TRIGGER_THREADS_DELETE_COUNT,
+            TRIGGER_THREADS_INSERT_COUNT,
+            "DROP TRIGGER update_thread_on_update",
+            TRIGGER_THREADS_UPDATE_COUNT,
+            "DROP TRIGGER update_thread_on_delete",
+            TRIGGER_THREADS_DELETE_COUNT,
         };
 
         protected DatabaseHelper(Context context) {
@@ -396,7 +396,7 @@ public class MessagesProvider extends ContentProvider {
     @Override
     public synchronized Uri insert(Uri uri, ContentValues initialValues) {
         // only messages and requests virtual table can be inserted
-    	int match = sUriMatcher.match(uri);
+        int match = sUriMatcher.match(uri);
         if (match != MESSAGES && match != REQUESTS) { throw new IllegalArgumentException("Unknown URI " + uri); }
         if (initialValues == null) { throw new IllegalArgumentException("No data"); }
 
@@ -425,11 +425,11 @@ public class MessagesProvider extends ContentProvider {
 
                 // request only - return conversation
                 if (match == REQUESTS)
-                	return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
+                    return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
 
                 // draft only - no uri
                 else
-                	return null;
+                    return null;
 
             }
 
@@ -476,7 +476,7 @@ public class MessagesProvider extends ContentProvider {
 
             if (rowId > 0) {
                 // update fulltext table
-            	byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
+                byte[] content = values.getAsByteArray(Messages.BODY_CONTENT);
                 Boolean encrypted = values.getAsBoolean(Messages.ENCRYPTED);
                 if (content != null && content.length > 0 && (encrypted == null || !encrypted.booleanValue())) {
                     updateFulltext(db, rowId, threadId, content);
@@ -511,22 +511,22 @@ public class MessagesProvider extends ContentProvider {
 
         // use the binary content converted to string
         if (bodyContent == null) {
-        	// try the attachment mime
-        	mime = attachmentMime;
-        	// no content
-        	content = null;
+            // try the attachment mime
+            mime = attachmentMime;
+            // no content
+            content = null;
         }
         else {
-        	// use body data if there is indeed a mime
-        	if (bodyMime != null) {
-	        	mime = bodyMime;
-	        	content = new String(bodyContent);
-        	}
-        	// no mime and no data, nothing to do
-        	else {
-        		mime = null;
-        		content = null;
-        	}
+            // use body data if there is indeed a mime
+            if (bodyMime != null) {
+                mime = bodyMime;
+                content = new String(bodyContent);
+            }
+            // no mime and no data, nothing to do
+            else {
+                mime = null;
+                content = null;
+            }
         }
 
         values.put(Threads.CONTENT, content);
@@ -553,35 +553,35 @@ public class MessagesProvider extends ContentProvider {
 
         if (requestOnly) {
 
-	        values.put(Threads.MESSAGE_ID, "");
-	        values.put(Threads.DIRECTION, Messages.DIRECTION_IN);
-	        values.put(Threads.ENCRYPTED, false);
-        	values.put(Threads.REQUEST_STATUS, Threads.REQUEST_WAITING);
+            values.put(Threads.MESSAGE_ID, "");
+            values.put(Threads.DIRECTION, Messages.DIRECTION_IN);
+            values.put(Threads.ENCRYPTED, false);
+            values.put(Threads.REQUEST_STATUS, Threads.REQUEST_WAITING);
 
         }
 
         else {
 
-        	values.put(Threads.MESSAGE_ID, initialValues.getAsString(Messages.MESSAGE_ID));
-	        values.put(Threads.DIRECTION, initialValues.getAsInteger(Messages.DIRECTION));
-	        values.put(Threads.ENCRYPTED, initialValues.getAsBoolean(Messages.ENCRYPTED));
+            values.put(Threads.MESSAGE_ID, initialValues.getAsString(Messages.MESSAGE_ID));
+            values.put(Threads.DIRECTION, initialValues.getAsInteger(Messages.DIRECTION));
+            values.put(Threads.ENCRYPTED, initialValues.getAsBoolean(Messages.ENCRYPTED));
 
-	        if (initialValues.containsKey(Messages.STATUS))
-	        	values.put(Threads.STATUS, initialValues.getAsInteger(Messages.STATUS));
-	        if (initialValues.containsKey(Messages.STATUS_CHANGED))
-	        	values.put(Threads.STATUS_CHANGED, initialValues.getAsInteger(Messages.STATUS_CHANGED));
-	        // this column is an exception
-	        if (initialValues.containsKey(Threads.DRAFT))
-	        	values.put(Threads.DRAFT, initialValues.getAsString(Threads.DRAFT));
+            if (initialValues.containsKey(Messages.STATUS))
+                values.put(Threads.STATUS, initialValues.getAsInteger(Messages.STATUS));
+            if (initialValues.containsKey(Messages.STATUS_CHANGED))
+                values.put(Threads.STATUS_CHANGED, initialValues.getAsInteger(Messages.STATUS_CHANGED));
+            // this column is an exception
+            if (initialValues.containsKey(Threads.DRAFT))
+                values.put(Threads.DRAFT, initialValues.getAsString(Threads.DRAFT));
 
-	        // unread column will be calculated by the trigger
+            // unread column will be calculated by the trigger
 
-	        // thread content has a special behaviour
-	        setThreadContent(
-	    		initialValues.getAsByteArray(Messages.BODY_CONTENT),
-	    		initialValues.getAsString(Messages.BODY_MIME),
-	    		initialValues.getAsString(Messages.ATTACHMENT_MIME),
-	    		values);
+            // thread content has a special behaviour
+            setThreadContent(
+                initialValues.getAsByteArray(Messages.BODY_CONTENT),
+                initialValues.getAsString(Messages.BODY_MIME),
+                initialValues.getAsString(Messages.ATTACHMENT_MIME),
+                values);
         }
 
         // insert new thread
@@ -597,9 +597,9 @@ public class MessagesProvider extends ContentProvider {
             values.putNull(Threads.DRAFT);
             // remove other stuff coming from subscription request entry
             if (requestOnly) {
-            	values.remove(Threads.MESSAGE_ID);
-            	values.remove(Threads.ENCRYPTED);
-            	values.remove(Threads.DIRECTION);
+                values.remove(Threads.MESSAGE_ID);
+                values.remove(Threads.ENCRYPTED);
+                values.remove(Threads.DIRECTION);
             }
 
             db.update(TABLE_THREADS, values, "peer = ?", new String[] { peer });
@@ -708,8 +708,8 @@ public class MessagesProvider extends ContentProvider {
 
             // notify change only if rows are actually affected
             if (rows > 0) {
-            	if (requestOnly)
-            		uri = Threads.CONTENT_URI;
+                if (requestOnly)
+                    uri = Threads.CONTENT_URI;
 
                 notifications.add(uri);
 
@@ -757,14 +757,14 @@ public class MessagesProvider extends ContentProvider {
                     }
                 }
 
-            	// delete thread if no messages are found
+                // delete thread if no messages are found
                 else if (requestOnly) {
 
                     Cursor th = db.query(TABLE_THREADS, new String[] { Threads.COUNT },
                             where, args, null, null, null);
 
                     if (th.moveToFirst() && th.getInt(0) == 0)
-                    	db.delete(TABLE_THREADS, where, args);
+                        db.delete(TABLE_THREADS, where, args);
 
                     th.close();
 

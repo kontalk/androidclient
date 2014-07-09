@@ -43,144 +43,144 @@ import android.net.Uri;
  */
 abstract class MessageCenterPacketListener implements PacketListener {
 
-	private WeakReference<MessageCenterService> mInstance;
+    private WeakReference<MessageCenterService> mInstance;
 
-	MessageCenterPacketListener(MessageCenterService instance) {
-		mInstance = new WeakReference<MessageCenterService>(instance);
-	}
+    MessageCenterPacketListener(MessageCenterService instance) {
+        mInstance = new WeakReference<MessageCenterService>(instance);
+    }
 
-	protected MessageCenterService getInstance() {
-		return mInstance.get();
-	}
+    protected MessageCenterService getInstance() {
+        return mInstance.get();
+    }
 
-	protected Context getContext() {
-		return mInstance.get();
-	}
+    protected Context getContext() {
+        return mInstance.get();
+    }
 
-	protected Kontalk getApplication() {
-		return (Kontalk) mInstance.get().getApplicationContext();
-	}
+    protected Kontalk getApplication() {
+        return (Kontalk) mInstance.get().getApplicationContext();
+    }
 
-	protected KontalkConnection getConnection() {
-		MessageCenterService instance = mInstance.get();
-		return (instance != null) ? instance.mConnection : null;
-	}
+    protected KontalkConnection getConnection() {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.mConnection : null;
+    }
 
-	protected EndpointServer getServer() {
-		MessageCenterService instance = mInstance.get();
-		return (instance != null) ? instance.mServer : null;
-	}
+    protected EndpointServer getServer() {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.mServer : null;
+    }
 
-	protected String getMyUsername() {
-		MessageCenterService instance = mInstance.get();
-		return (instance != null) ? instance.mMyUsername : null;
-	}
+    protected String getMyUsername() {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.mMyUsername : null;
+    }
 
-	protected void sendBroadcast(Intent intent) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.mLocalBroadcastManager.sendBroadcast(intent);
-	}
+    protected void sendBroadcast(Intent intent) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mLocalBroadcastManager.sendBroadcast(intent);
+    }
 
-	protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.mLocalBroadcastManager.registerReceiver(receiver, filter);
-	}
+    protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mLocalBroadcastManager.registerReceiver(receiver, filter);
+    }
 
-	protected void unregisterReceiver(BroadcastReceiver receiver) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.mLocalBroadcastManager.unregisterReceiver(receiver);
-	}
+    protected void unregisterReceiver(BroadcastReceiver receiver) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mLocalBroadcastManager.unregisterReceiver(receiver);
+    }
 
-	protected void sendPacket(Packet packet) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.sendPacket(packet);
-	}
+    protected void sendPacket(Packet packet) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.sendPacket(packet);
+    }
 
-	protected void sendPacket(Packet packet, boolean bumpIdle) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.sendPacket(packet, bumpIdle);
-	}
+    protected void sendPacket(Packet packet, boolean bumpIdle) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.sendPacket(packet, bumpIdle);
+    }
 
-	protected void initUploadServices() {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null) {
-			if (instance.mUploadServices == null)
-				instance.mUploadServices = new HashMap<String, String>();
-			else
-				instance.mUploadServices.clear();
-		}
-	}
+    protected void initUploadServices() {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null) {
+            if (instance.mUploadServices == null)
+                instance.mUploadServices = new HashMap<String, String>();
+            else
+                instance.mUploadServices.clear();
+        }
+    }
 
-	protected void setUploadService(String name, String url) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.mUploadServices.put(name, url);
-	}
+    protected void setUploadService(String name, String url) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mUploadServices.put(name, url);
+    }
 
     protected void resendPendingMessages(boolean retrying) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.resendPendingMessages(retrying);
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.resendPendingMessages(retrying);
     }
 
     protected boolean isPushNotificationsEnabled() {
-		MessageCenterService instance = mInstance.get();
-		return (instance != null) ? instance.mPushNotifications : false;
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.mPushNotifications : false;
     }
 
     protected void setPushSenderId(String senderId) {
-		MessageCenterService.mPushSenderId = senderId;
+        MessageCenterService.mPushSenderId = senderId;
     }
 
     protected GcmListener getGcmListener() {
-    	return MessageCenterService.sGcmListener;
+        return MessageCenterService.sGcmListener;
     }
 
     protected void startPushRegistrationCycle() {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.mPushRegistrationCycle = true;
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mPushRegistrationCycle = true;
     }
 
     protected void gcmRegister() {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.gcmRegister();
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.gcmRegister();
     }
 
     protected Map<String, Long> getWaitingReceiptList() {
-		MessageCenterService instance = mInstance.get();
-		return (instance != null) ? instance.mWaitingReceipt : null;
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.mWaitingReceipt : null;
     }
 
     protected Uri incoming(CompositeMessage msg) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			return instance.incoming(msg);
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            return instance.incoming(msg);
 
-		return null;
+        return null;
     }
 
     protected IdleConnectionHandler getIdleHandler() {
-		MessageCenterService instance = mInstance.get();
-		return (instance != null) ? instance.mIdleHandler: null;
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.mIdleHandler: null;
     }
 
     protected void runOnUiThread(Runnable action) {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.mHandler.post(action);
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mHandler.post(action);
     }
 
     protected void endKeyPairRegeneration() {
-		MessageCenterService instance = mInstance.get();
-		if (instance != null)
-			instance.endKeyPairRegeneration();
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.endKeyPairRegeneration();
     }
 
 }

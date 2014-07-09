@@ -42,11 +42,11 @@ import android.util.Log;
  */
 class LastActivityListener extends MessageCenterPacketListener {
 
-	public LastActivityListener(MessageCenterService instance) {
-		super(instance);
-	}
+    public LastActivityListener(MessageCenterService instance) {
+        super(instance);
+    }
 
-	@Override
+    @Override
     public void processPacket(Packet packet) {
         LastActivity p = (LastActivity) packet;
         Intent i = new Intent(ACTION_LAST_ACTIVITY);

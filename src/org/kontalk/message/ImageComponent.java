@@ -50,9 +50,9 @@ public class ImageComponent extends AttachmentComponent {
 
     private Bitmap mBitmap;
 
-	public ImageComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
-		super(mime, previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
-	}
+    public ImageComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
+        super(mime, previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
+    }
 
     public static boolean supportsMimeType(String mime) {
         for (int i = 0; i < MIME_TYPES.length; i++)
@@ -76,12 +76,12 @@ public class ImageComponent extends AttachmentComponent {
     }
 
     public Bitmap getBitmap() {
-		return mBitmap;
-	}
+        return mBitmap;
+    }
 
     /** FIXME not used yet */
     public boolean isValidMedia(Context context) {
-    	Uri localUri = mContent.getLocalUri();
+        Uri localUri = mContent.getLocalUri();
         if (localUri != null) {
             try {
                 return (MediaStorage.getLength(context, localUri) == mLength);
@@ -104,8 +104,8 @@ public class ImageComponent extends AttachmentComponent {
          * generated on the fly from local_uri - if possible.
          */
 
-    	File previewFile = mContent.getPreviewFile();
-    	Uri localUri = mContent.getLocalUri();
+        File previewFile = mContent.getPreviewFile();
+        Uri localUri = mContent.getLocalUri();
         try {
             // preview path
             if (previewFile != null) {

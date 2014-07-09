@@ -40,10 +40,10 @@ import android.content.Intent;
 class RosterListener extends MessageCenterPacketListener {
 
     public RosterListener(MessageCenterService instance) {
-		super(instance);
-	}
+        super(instance);
+    }
 
-	@Override
+    @Override
     public void processPacket(Packet packet) {
         RosterPacket p = (RosterPacket) packet;
         Intent i = new Intent(ACTION_ROSTER);

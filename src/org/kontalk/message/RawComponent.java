@@ -26,8 +26,8 @@ package org.kontalk.message;
  */
 public class RawComponent extends MessageComponent<byte[]> {
 
-	public RawComponent(byte[] text, boolean encrypted, int securityFlags) {
-		super(text, text.length, encrypted, securityFlags);
-	}
+    public RawComponent(byte[] text, boolean encrypted, int securityFlags) {
+        super(text, text.length, encrypted, securityFlags);
+    }
 
 }

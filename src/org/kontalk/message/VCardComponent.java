@@ -31,18 +31,18 @@ import android.net.Uri;
  */
 public class VCardComponent extends AttachmentComponent {
 
-	// actually the second one is not standard...
+    // actually the second one is not standard...
     public static final String[] MIME_TYPES = { "text/x-vcard", "text/vcard" };
     public static final String MIME_TYPE = MIME_TYPES[0];
 
-	public VCardComponent(File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
-		super(MIME_TYPES[0], previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
-	}
+    public VCardComponent(File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
+        super(MIME_TYPES[0], previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
+    }
 
-	@Override
-	protected void populateFromCursor(Context context, Cursor cursor) {
-		// TODO
-	}
+    @Override
+    protected void populateFromCursor(Context context, Cursor cursor) {
+        // TODO
+    }
 
     public static boolean supportsMimeType(String mime) {
         for (int i = 0; i < MIME_TYPES.length; i++)

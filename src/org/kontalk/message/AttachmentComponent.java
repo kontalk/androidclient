@@ -31,24 +31,24 @@ import android.net.Uri;
  */
 public abstract class AttachmentComponent extends MessageComponent<Attachment> {
 
-	public AttachmentComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
-		super(new Attachment(mime, previewFile, localUri, fetchUrl), length, encrypted, securityFlags);
-	}
+    public AttachmentComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
+        super(new Attachment(mime, previewFile, localUri, fetchUrl), length, encrypted, securityFlags);
+    }
 
     public String getMime() {
-    	return mContent.getMime();
+        return mContent.getMime();
     }
 
     public File getPreviewFile() {
-    	return mContent.getPreviewFile();
+        return mContent.getPreviewFile();
     }
 
     public Uri getLocalUri() {
-    	return mContent.getLocalUri();
+        return mContent.getLocalUri();
     }
 
     public String getFetchUrl() {
-    	return mContent.getFetchUrl();
+        return mContent.getFetchUrl();
     }
 
     protected abstract void populateFromCursor(Context context, Cursor cursor);

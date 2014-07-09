@@ -22,7 +22,6 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import org.kontalk.R;
@@ -166,28 +165,28 @@ public class ContactsListActivity extends ActionBarActivity
         if (resInfo != null && resInfo.size() > 1) {
             List<Intent> targets = new ArrayList<Intent>();
 
-        	for (ResolveInfo resolveInfo : resInfo) {
+            for (ResolveInfo resolveInfo : resInfo) {
                 String packageName = resolveInfo.activityInfo.packageName;
 
                 if (!getPackageName().equals(packageName)) {
-                	// copy intent and add resolved info
-	                Intent targetShareIntent = new Intent(shareIntent);
-	                targetShareIntent
-	                	.setPackage(packageName)
-	                	.setComponent(new ComponentName(
-	                        packageName, resolveInfo.activityInfo.name))
-	                    .putExtra("org.kontalk.invite.label", resolveInfo.loadLabel(getPackageManager()));
+                    // copy intent and add resolved info
+                    Intent targetShareIntent = new Intent(shareIntent);
+                    targetShareIntent
+                        .setPackage(packageName)
+                        .setComponent(new ComponentName(
+                            packageName, resolveInfo.activityInfo.name))
+                        .putExtra("org.kontalk.invite.label", resolveInfo.loadLabel(getPackageManager()));
 
-	                targets.add(targetShareIntent);
+                    targets.add(targetShareIntent);
                 }
             }
 
-        	// initial intents are added before of the main intent, so we remove the last one here
+            // initial intents are added before of the main intent, so we remove the last one here
             Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
             Collections.sort(targets, new DisplayNameComparator());
             // remove custom extras
             for (Intent intent : targets)
-            	intent.removeExtra("org.kontalk.invite.label");
+                intent.removeExtra("org.kontalk.invite.label");
 
             Parcelable[] extraIntents = new Parcelable[targets.size()];
             targets.toArray(extraIntents);
@@ -197,30 +196,30 @@ public class ContactsListActivity extends ActionBarActivity
         }
 
         else {
-        	// no activity to handle invitation
-        	Toast.makeText(this, R.string.warn_invite_no_app,
-        			Toast.LENGTH_SHORT).show();
+            // no activity to handle invitation
+            Toast.makeText(this, R.string.warn_invite_no_app,
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
-	public static class DisplayNameComparator implements
-			Comparator<Intent> {
-		public DisplayNameComparator() {
-			mCollator.setStrength(Collator.PRIMARY);
-		}
+    public static class DisplayNameComparator implements
+            Comparator<Intent> {
+        public DisplayNameComparator() {
+            mCollator.setStrength(Collator.PRIMARY);
+        }
 
-		public final int compare(Intent a, Intent b) {
-			CharSequence sa = a.getCharSequenceExtra("org.kontalk.invite.label");
-			if (sa == null)
-				sa = a.getComponent().getClassName();
-			CharSequence sb = b.getCharSequenceExtra("org.kontalk.invite.label");
-			if (sb == null)
-				sb = b.getComponent().getClassName();
+        public final int compare(Intent a, Intent b) {
+            CharSequence sa = a.getCharSequenceExtra("org.kontalk.invite.label");
+            if (sa == null)
+                sa = a.getComponent().getClassName();
+            CharSequence sb = b.getCharSequenceExtra("org.kontalk.invite.label");
+            if (sb == null)
+                sb = b.getComponent().getClassName();
 
-			return mCollator.compare(sa.toString(), sb.toString());
-		}
+            return mCollator.compare(sa.toString(), sb.toString());
+        }
 
-		private final Collator mCollator = Collator.getInstance();
-	}
+        private final Collator mCollator = Collator.getInstance();
+    }
 
 }

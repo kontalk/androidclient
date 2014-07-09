@@ -29,36 +29,36 @@ import android.net.Uri;
  */
 public class Attachment {
 
-	private String mMime;
-	private File mPreviewFile;
-	private Uri mLocalUri;
-	private String mFetchUrl;
+    private String mMime;
+    private File mPreviewFile;
+    private Uri mLocalUri;
+    private String mFetchUrl;
 
-	public Attachment(String mime, File previewFile, Uri localUri, String fetchUrl) {
-		mMime = mime;
-		mPreviewFile = previewFile;
-		mLocalUri = localUri;
-		mFetchUrl = fetchUrl;
-	}
+    public Attachment(String mime, File previewFile, Uri localUri, String fetchUrl) {
+        mMime = mime;
+        mPreviewFile = previewFile;
+        mLocalUri = localUri;
+        mFetchUrl = fetchUrl;
+    }
 
-	public Attachment(String mime, String previewFile, String localUri, String fetchUrl) {
-		this(mime, new File(previewFile), Uri.parse(localUri), fetchUrl);
-	}
+    public Attachment(String mime, String previewFile, String localUri, String fetchUrl) {
+        this(mime, new File(previewFile), Uri.parse(localUri), fetchUrl);
+    }
 
-	public String getMime() {
-		return mMime;
-	}
+    public String getMime() {
+        return mMime;
+    }
 
-	public File getPreviewFile() {
-		return mPreviewFile;
-	}
+    public File getPreviewFile() {
+        return mPreviewFile;
+    }
 
-	public Uri getLocalUri() {
-		return mLocalUri;
-	}
+    public Uri getLocalUri() {
+        return mLocalUri;
+    }
 
-	public String getFetchUrl() {
-		return mFetchUrl;
-	}
+    public String getFetchUrl() {
+        return mFetchUrl;
+    }
 
 }

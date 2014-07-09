@@ -101,6 +101,11 @@
             android:entries="@array/balloons_labels"
             android:entryValues="@array/balloons_values"
             android:defaultValue="classic"/>
+        <CheckBoxPreference android:key="pref_text_enter"
+            android:title="@string/pref_text_enter"
+            android:summaryOff="@string/pref_title_off_text_enter"
+            android:summaryOn="@string/pref_title_on_text_enter"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_notification_settings"

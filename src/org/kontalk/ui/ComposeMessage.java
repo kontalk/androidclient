@@ -84,6 +84,11 @@ public class ComposeMessage extends ActionBarActivity {
     private TextView mTitleView;
     private TextView mSubtitleView;
 
+    /**
+     * True if the window has lost focus the last time
+     * {@link #onWindowFocusChanged} was called. */
+    private boolean mLostFocus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -158,16 +163,16 @@ public class ComposeMessage extends ActionBarActivity {
     }
 
     public void setUpdatingSubtitle() {
-    	CharSequence current = mSubtitleView.getText();
-    	// no need to set updating status if no text is displayed
-    	if (current.length() > 0) {
-    		// we call toString() to strip any existing span
-			SpannableString status = new SpannableString(current.toString());
-			status.setSpan(new StyleSpan(Typeface.ITALIC),
-				0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        CharSequence current = mSubtitleView.getText();
+        // no need to set updating status if no text is displayed
+        if (current.length() > 0) {
+            // we call toString() to strip any existing span
+            SpannableString status = new SpannableString(current.toString());
+            status.setSpan(new StyleSpan(Typeface.ITALIC),
+                0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-			mSubtitleView.setText(status);
-    	}
+            mSubtitleView.setText(status);
+        }
     }
 
     private void onAvatarClick() {
@@ -407,6 +412,26 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            if (mLostFocus) {
+                mFragment.onFocus();
+                mLostFocus = false;
+            }
+        }
+    }
+
+    public void fragmentLostFocus() {
+        mLostFocus = true;
+    }
+
+    public boolean hasLostFocus() {
+        return mLostFocus;
     }
 
     public Intent getSendIntent() {

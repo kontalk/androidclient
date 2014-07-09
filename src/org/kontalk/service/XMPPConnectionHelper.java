@@ -114,15 +114,15 @@ public class XMPPConnectionHelper extends Thread {
     }
 
     public void connectOnce(PersonalKey key) throws XMPPException, SmackException,
-    		PGPException, KeyStoreException, NoSuchProviderException,
-    		NoSuchAlgorithmException, CertificateException, IOException {
+            PGPException, KeyStoreException, NoSuchProviderException,
+            NoSuchAlgorithmException, CertificateException, IOException {
 
         connectOnce(key, null);
     }
 
     private void connectOnce(PersonalKey key, String token) throws XMPPException,
             SmackException, PGPException, IOException, KeyStoreException,
-    		NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
+            NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 
         Log.d(TAG, "using server " + mServer.toString());
 
@@ -146,14 +146,14 @@ public class XMPPConnectionHelper extends Thread {
         // recreate connection if closed
         if (mConn == null || !mConn.isConnected()) {
 
-        	KeyStore trustStore = null;
-        	boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
-        	if (!acceptAnyCertificate)
-        		trustStore = InternalTrustStore.getTrustStore(mContext);
+            KeyStore trustStore = null;
+            boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
+            if (!acceptAnyCertificate)
+                trustStore = InternalTrustStore.getTrustStore(mContext);
 
             if (key == null) {
                 mConn = new KontalkConnection(mServer,
-                	acceptAnyCertificate, trustStore);
+                    acceptAnyCertificate, trustStore);
             }
 
             else {
@@ -231,15 +231,15 @@ public class XMPPConnectionHelper extends Thread {
 
                     // SASL: not-authorized
                     if (ie instanceof SASLErrorException && ((SASLErrorException) ie)
-                    	.getSASLFailure().getSASLError() == SASLError.not_authorized &&
-                    	mRetryCount >= MAX_AUTH_ERRORS) {
+                        .getSASLFailure().getSASLError() == SASLError.not_authorized &&
+                        mRetryCount >= MAX_AUTH_ERRORS) {
 
-                    	if (mListener != null) {
-                    		mListener.authenticationFailed();
+                        if (mListener != null) {
+                            mListener.authenticationFailed();
 
-                    		// this ends here.
-                    		break;
-                    	}
+                            // this ends here.
+                            break;
+                        }
                     }
 
                     if (mRetryEnabled) {

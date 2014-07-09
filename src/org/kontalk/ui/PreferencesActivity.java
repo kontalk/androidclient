@@ -119,25 +119,25 @@ public final class PreferencesActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-        		// TODO check for external storage presence
+                // TODO check for external storage presence
 
-            	try {
+                try {
 
-            		((Kontalk)getApplicationContext()).exportPersonalKey();
-
-                    Toast.makeText(PreferencesActivity.this,
-                		R.string.msg_keypair_exported,
-                        Toast.LENGTH_LONG).show();
-
-            	}
-            	catch (Exception e) {
+                    ((Kontalk)getApplicationContext()).exportPersonalKey();
 
                     Toast.makeText(PreferencesActivity.this,
-                    	// TODO i18n
-                		"Unable to export personal key.",
+                        R.string.msg_keypair_exported,
                         Toast.LENGTH_LONG).show();
 
-            	}
+                }
+                catch (Exception e) {
+
+                    Toast.makeText(PreferencesActivity.this,
+                        // TODO i18n
+                        "Unable to export personal key.",
+                        Toast.LENGTH_LONG).show();
+
+                }
 
                 return true;
             }

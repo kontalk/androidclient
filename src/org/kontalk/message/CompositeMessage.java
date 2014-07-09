@@ -45,12 +45,12 @@ public class CompositeMessage {
     public static final int USERID_LENGTH = 40;
     public static final int USERID_LENGTH_RESOURCE = 48;
 
-	@SuppressWarnings("unchecked")
-	private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
-		ImageComponent.class,
-		AudioComponent.class,
-		VCardComponent.class,
-	};
+    @SuppressWarnings("unchecked")
+    private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
+        ImageComponent.class,
+        AudioComponent.class,
+        VCardComponent.class,
+    };
 
     private static final String[] MESSAGE_LIST_PROJECTION = {
         Messages._ID,

@@ -29,9 +29,9 @@ public class TextComponent extends MessageComponent<String> {
 
     public static final String MIME_TYPE = "text/plain";
 
-	public TextComponent(String text) {
-		super(text, text.length(), false, Coder.SECURITY_CLEARTEXT);
-	}
+    public TextComponent(String text) {
+        super(text, text.length(), false, Coder.SECURITY_CLEARTEXT);
+    }
 
     public static boolean supportsMimeType(String mime) {
         return MIME_TYPE.equalsIgnoreCase(mime);

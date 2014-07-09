@@ -76,7 +76,7 @@ public class ConversationList extends ActionBarActivity
                 .findFragmentById(R.id.fragment_conversation_list);
 
         if (!xmppUpgrade())
-        	handleIntent(getIntent());
+            handleIntent(getIntent());
     }
 
     public void titleComposeMessage(View view) {
@@ -92,26 +92,26 @@ public class ConversationList extends ActionBarActivity
         AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
-        	// adjust manual server address if any
-        	String manualServer = Preferences.getServerURI(this);
-        	if (!TextUtils.isEmpty(manualServer) && manualServer.indexOf('|') < 0) {
-        		ServerList list = ServerListUpdater.getCurrentList(this);
-        		if (list != null) {
-        			EndpointServer server = list.random();
-        			String newServer = server.getNetwork() + "|" + manualServer;
+            // adjust manual server address if any
+            String manualServer = Preferences.getServerURI(this);
+            if (!TextUtils.isEmpty(manualServer) && manualServer.indexOf('|') < 0) {
+                ServerList list = ServerListUpdater.getCurrentList(this);
+                if (list != null) {
+                    EndpointServer server = list.random();
+                    String newServer = server.getNetwork() + "|" + manualServer;
 
-        			Preferences.setServerURI(this, newServer);
-        		}
-        	}
+                    Preferences.setServerURI(this, newServer);
+                }
+            }
 
             if (!Authenticator.hasPersonalKey(am, account)) {
-            	// first of all, disable offline mode
-            	Preferences.setOfflineMode(this, false);
+                // first of all, disable offline mode
+                Preferences.setOfflineMode(this, false);
 
-            	// ask for user name
-            	askForPersonalName();
+                // ask for user name
+                askForPersonalName();
 
-            	return true;
+                return true;
             }
         }
 
@@ -119,50 +119,50 @@ public class ConversationList extends ActionBarActivity
     }
 
     private void askForPersonalName() {
-    	DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
+        DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
                 // no key pair found, generate a new one
                 Toast.makeText(ConversationList.this,
-                	R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
+                    R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
 
                 String name = InputDialog
-                		.getTextFromAlertDialog((AlertDialog) dialog)
-                		.toString();
+                        .getTextFromAlertDialog((AlertDialog) dialog)
+                        .toString();
 
                 // upgrade account
                 LegacyAuthentication.doUpgrade(getApplicationContext(), name);
 
-			}
-		};
+            }
+        };
 
-		DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
-			public void onCancel(DialogInterface dialog) {
-				new AlertDialog.Builder(ConversationList.this)
-					.setTitle(R.string.title_no_personal_key)
-					.setMessage(R.string.msg_no_personal_key)
-					.setPositiveButton(android.R.string.ok, null)
-					.show();
-			}
-		};
+        DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
+            public void onCancel(DialogInterface dialog) {
+                new AlertDialog.Builder(ConversationList.this)
+                    .setTitle(R.string.title_no_personal_key)
+                    .setMessage(R.string.msg_no_personal_key)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            }
+        };
 
-    	new InputDialog.Builder(this,
-    			InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
-    		.setTitle(R.string.title_no_name)
-    		.setMessage(R.string.msg_no_name)
-    		.setPositiveButton(android.R.string.ok, okListener)
-    		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.cancel();
-				}
-			})
-    		.setOnCancelListener(cancelListener)
-    		.show();
+        new InputDialog.Builder(this,
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
+            .setTitle(R.string.title_no_name)
+            .setMessage(R.string.msg_no_name)
+            .setPositiveButton(android.R.string.ok, okListener)
+            .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            })
+            .setOnCancelListener(cancelListener)
+            .show();
     }
 
     /** Called when a new intent is sent to the activity (if already started). */
     @Override
     protected void onNewIntent(Intent intent) {
-    	handleIntent(intent);
+        handleIntent(intent);
 
         ConversationListFragment fragment = getListFragment();
         fragment.startQuery();
@@ -170,23 +170,23 @@ public class ConversationList extends ActionBarActivity
 
     @Override
     protected Dialog onCreateDialog(int id, Bundle args) {
-    	if (id == DIALOG_AUTH_ERROR_WARNING) {
+        if (id == DIALOG_AUTH_ERROR_WARNING) {
 
-    		return new AlertDialog.Builder(this)
-				.setTitle(R.string.title_auth_error)
-				.setMessage(Html.fromHtml(getString(R.string.msg_auth_error)))
-				.setPositiveButton(android.R.string.ok, null)
-				.create();
+            return new AlertDialog.Builder(this)
+                .setTitle(R.string.title_auth_error)
+                .setMessage(Html.fromHtml(getString(R.string.msg_auth_error)))
+                .setPositiveButton(android.R.string.ok, null)
+                .create();
 
-    	}
+        }
 
-    	return super.onCreateDialog(id, args);
+        return super.onCreateDialog(id, args);
     }
 
     private void handleIntent(Intent intent) {
-    	if (intent != null && ACTION_AUTH_ERROR_WARNING.equals(intent.getAction())) {
-    		showDialog(DIALOG_AUTH_ERROR_WARNING);
-    	}
+        if (intent != null && ACTION_AUTH_ERROR_WARNING.equals(intent.getAction())) {
+            showDialog(DIALOG_AUTH_ERROR_WARNING);
+        }
     }
 
     @Override

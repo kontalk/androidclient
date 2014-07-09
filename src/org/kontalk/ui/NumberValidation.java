@@ -400,8 +400,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // check name first
         mName = mNameText.getText().toString().trim();
         if (mName.length() == 0) {
-        	error(R.string.title_no_name, R.string.msg_no_name);
-        	return false;
+            error(R.string.title_no_name, R.string.msg_no_name);
+            return false;
         }
 
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
@@ -685,7 +685,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-            	int msg;
+                int msg;
                 if (reason == NumberValidator.ERROR_THROTTLING)
                     msg = R.string.err_validation_retry_later;
                 else

@@ -30,11 +30,11 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
     }
 
     private void init(Context context) {
-    	mHandler = new Handler();
+        mHandler = new Handler();
 
         if (sDefaultContactImage == null)
             sDefaultContactImage = context.getResources()
-            	.getDrawable(R.drawable.ic_contact_picture);
+                .getDrawable(R.drawable.ic_contact_picture);
     }
 
     @Override
@@ -65,33 +65,33 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
 
     @Override
     public void avatarLoaded(final Contact contact, final Drawable avatar) {
-    	if (avatar != null) {
-    		if (mHandler.getLooper().getThread() != Thread.currentThread()) {
-	    		mHandler.post(new Runnable() {
-					public void run() {
-						updateAvatar(contact, avatar);
-					}
-				});
-    		}
-    		else {
-    			updateAvatar(contact, avatar);
-    		}
-    	}
+        if (avatar != null) {
+            if (mHandler.getLooper().getThread() != Thread.currentThread()) {
+                mHandler.post(new Runnable() {
+                    public void run() {
+                        updateAvatar(contact, avatar);
+                    }
+                });
+            }
+            else {
+                updateAvatar(contact, avatar);
+            }
+        }
     }
 
     private void updateAvatar(Contact contact, Drawable avatar) {
-		try {
-			// be sure the contact is still the same
-			// this is an insane workaround against race conditions
-			Integer contactTag = (Integer) mAvatarView.getTag();
-			if (contactTag != null && contactTag.intValue() == contact.hashCode())
-				mAvatarView.setImageDrawable(avatar);
-		}
-		catch (Exception e) {
-			// we are deliberately ignoring any exception here
-			// because an error here could happen only if something
-			// weird is happening, e.g. user leaving the activity
-		}
+        try {
+            // be sure the contact is still the same
+            // this is an insane workaround against race conditions
+            Integer contactTag = (Integer) mAvatarView.getTag();
+            if (contactTag != null && contactTag.intValue() == contact.hashCode())
+                mAvatarView.setImageDrawable(avatar);
+        }
+        catch (Exception e) {
+            // we are deliberately ignoring any exception here
+            // because an error here could happen only if something
+            // weird is happening, e.g. user leaving the activity
+        }
     }
 
 }
