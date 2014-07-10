@@ -2,5 +2,4 @@
 
 echo "sdk.dir=$1" >local.properties
 
-git clone https://github.com/kontalk/client-common-java.git
-
+git clone -b gradle https://github.com/kontalk/client-common-java.git

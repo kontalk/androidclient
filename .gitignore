@@ -9,3 +9,4 @@ proguard/
 /build
 /local.properties
 /client-common-java
+.idea
