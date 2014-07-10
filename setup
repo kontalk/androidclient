@@ -1,5 +1,3 @@
 #!/bin/sh
 
-ln -s ../client-common-java client-common-java
-
 echo "sdk.dir=$1" >local.properties
