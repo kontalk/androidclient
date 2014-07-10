@@ -8,3 +8,4 @@ proguard/
 *.iml
 /build
 /local.properties
+/client-common-java

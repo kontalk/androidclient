@@ -1,51 +1,15 @@
-apply plugin: 'android'
-
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.12.+'
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
-android {
-    compileSdkVersion 19
-    buildToolsVersion '20.0.0'
-
-    defaultConfig {
-        applicationId "org.kontalk"
-        minSdkVersion 8
-        targetSdkVersion 19
+allprojects {
+    repositories {
+        jcenter()
     }
-
-    buildTypes {
-        release {
-            runProguard true
-            proguardFiles 'proguard.cfg'
-        }
-    }
-
-    lintOptions {
-        checkReleaseBuilds false
-    }
-}
-
-dependencies {
-    compile (project(':client-common-java')) {
-        exclude group: 'net.sf.kxml'
-    }
-    compile 'com.google.android.gms:play-services:+'
-    compile 'com.android.support:appcompat-v7:20.0.0'
-    compile 'com.madgag.spongycastle:core:1.50.0.0'
-    compile 'com.madgag.spongycastle:prov:1.50.0.0'
-    compile 'com.madgag.spongycastle:pg:1.50.0.0'
-    compile 'com.googlecode.libphonenumber:libphonenumber:5.9'
-    compile 'dnsjava:dnsjava:2.1.6'
-    compile 'com.jcraft:jzlib:+'
-    compile files('libs/asmack-android-19-4.0.0.jar')
 }

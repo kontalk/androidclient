@@ -1,2 +1,2 @@
 include ':client-common-java'
-include ':androidclient'
+include ':app'
