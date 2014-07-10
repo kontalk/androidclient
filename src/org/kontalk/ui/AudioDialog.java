@@ -223,17 +223,29 @@ public class AudioDialog extends AlertDialog {
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
             mRecorder.prepare();
+            // Start recording
+            mRecorder.start();
+            mStatus = STATUS_RECORDING;
         }
         catch (IllegalStateException e) {
             Log.e (TAG, "error starting audio recording: ", e);
         }
         catch (IOException e) {
-            Log.e (TAG, "error starting audio recording: ", e);
+            Log.e (TAG, "error writing on sdcard: ", e);
+            this.cancel();
+            new AlertDialog.Builder(getContext())
+                .setMessage("Error Writing on SDCard") //TODO i18n
+                .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
+                .show();
         }
-        // Start recording
-        mRecorder.start();
-        mStatus = STATUS_RECORDING;
-
+        catch (RuntimeException e) {
+            Log.e (TAG, "error starting audio recording: ", e);
+            this.cancel();
+            new AlertDialog.Builder(getContext())
+                .setMessage("Error Starting Audio Recording") //TODO i18n
+                .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
+                .show();
+        }
     }
 
     private void stopRecord() {
@@ -268,7 +280,11 @@ public class AudioDialog extends AlertDialog {
             Log.e (TAG, "error playing audio: ", e);
         }
         catch (IOException e) {
-            Log.e (TAG, "error playing audio: ", e);
+            Log.e (TAG, "error reading on sdcard: ", e);
+            new AlertDialog.Builder(getContext())
+            .setMessage("Error Reading on SDCard") //TODO i18n
+            .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
+            .show();
         }
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
@@ -293,6 +309,7 @@ public class AudioDialog extends AlertDialog {
         mPlayer.start();
         mStatus=STATUS_PLAYING;
     }
+
     private void animate(final CircularSeekBar progressBar, final AnimatorListener listener, final float progress, final int duration) {
 
         mProgressBarAnimator = ObjectAnimator.ofFloat(progressBar, "progress", progress);
