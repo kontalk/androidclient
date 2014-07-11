@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo "sdk.dir=$1" >local.properties
+
+git clone https://github.com/kontalk/client-common-java.git
+cd client-common-java &&
+./setup asmack &&
+mkdir -p lib && cp ../app/libs/asmack-android-19-4.0.0.jar lib/
