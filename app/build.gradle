@@ -31,7 +31,7 @@ dependencies {
     compile 'com.madgag.spongycastle:core:1.50.0.0'
     compile 'com.madgag.spongycastle:prov:1.50.0.0'
     compile 'com.madgag.spongycastle:pg:1.50.0.0'
-    compile 'com.googlecode.libphonenumber:libphonenumber:5.9'
+    compile 'com.googlecode.libphonenumber:libphonenumber:6.2'
     compile 'dnsjava:dnsjava:2.1.6'
     compile 'com.jcraft:jzlib:+'
     compile files('libs/asmack-android-19-4.0.0.jar')
