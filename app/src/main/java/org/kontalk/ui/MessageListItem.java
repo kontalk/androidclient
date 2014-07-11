@@ -57,7 +57,6 @@ import android.widget.TextView;
  * @version 1.0
  */
 public class MessageListItem extends RelativeLayout {
-    //private static final String TAG = MessageListItem.class.getSimpleName();
 
     /**
      * Maximum affordable size of a text message to make complex stuff

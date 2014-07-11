@@ -43,6 +43,7 @@ import android.util.Log;
 
 
 public class KontalkConnection extends XMPPTCPConnection {
+    private static final String TAG = Kontalk.TAG;
 
     protected EndpointServer mServer;
 
@@ -136,19 +137,19 @@ public class KontalkConnection extends XMPPTCPConnection {
             SASLAuthentication.supportSASLMechanism("EXTERNAL");
         }
         catch (Exception e) {
-            Log.w(Kontalk.TAG, "unable to setup SSL connection", e);
+            Log.w(TAG, "unable to setup SSL connection", e);
         }
     }
 
     @Override
     public void disconnect() throws NotConnectedException {
-        Log.v("KontalkConnection", "disconnecting (no presence)");
+        Log.v(TAG, "disconnecting (no presence)");
         super.disconnect();
     }
 
     @Override
     public synchronized void disconnect(Presence presence) throws NotConnectedException {
-        Log.v("KontalkConnection", "disconnecting ("+presence+")");
+        Log.v(TAG, "disconnecting ("+presence+")");
         super.disconnect(presence);
     }
 

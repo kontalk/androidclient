@@ -127,7 +127,7 @@ import android.widget.Toast;
  * @version 4.0
  */
 public class MessageCenterService extends Service implements ConnectionHelperListener {
-    static final String TAG = MessageCenterService.class.getSimpleName();
+    public static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
         SmackConfiguration.DEBUG_ENABLED = BuildConfig.DEBUG;

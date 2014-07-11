@@ -27,7 +27,6 @@ import android.widget.TextView;
 
 
 public class ContactsListItem extends AvatarListItem {
-    //private static final String TAG = ConversationListItem.class.getSimpleName();
 
     private Contact mContact;
     private TextView mText1;

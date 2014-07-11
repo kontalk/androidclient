@@ -32,7 +32,7 @@ import android.widget.CursorAdapter;
 
 public class SearchListAdapter extends CursorAdapter {
 
-    private static final String TAG = SearchListAdapter.class.getSimpleName();
+    private static final String TAG = SearchActivity.TAG;
 
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;

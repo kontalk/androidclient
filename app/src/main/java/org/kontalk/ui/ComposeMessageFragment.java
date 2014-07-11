@@ -127,8 +127,7 @@ import android.widget.Toast;
  */
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener {
-    private static final String TAG = ComposeMessageFragment.class
-            .getSimpleName();
+    private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
     private static final int CONVERSATION_QUERY_TOKEN = 8721;

@@ -61,6 +61,7 @@ import android.util.Log;
 
 /** Personal asymmetric encryption key. */
 public class PersonalKey implements Parcelable {
+    private static final String TAG = Kontalk.TAG;
 
     /** Decrypted key pair (for direct usage). */
     private final PGPDecryptedKeyPairRing mPair;
@@ -333,7 +334,7 @@ public class PersonalKey implements Parcelable {
                 return new PersonalKey(source);
             }
             catch (PGPException e) {
-                Log.w(Kontalk.TAG, "error creating from parcel", e);
+                Log.w(TAG, "error creating from parcel", e);
                 return null;
             }
         }

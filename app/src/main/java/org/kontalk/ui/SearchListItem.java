@@ -28,7 +28,6 @@ import android.widget.TextView;
 
 
 public class SearchListItem extends RelativeLayout {
-    //private static final String TAG = SearchListItem.class.getSimpleName();
 
     private SearchItem mFound;
     private TextView mText1;

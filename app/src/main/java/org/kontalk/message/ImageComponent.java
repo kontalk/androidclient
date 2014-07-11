@@ -39,6 +39,7 @@ import android.util.Log;
  * @author Daniele Ricci
  */
 public class ImageComponent extends AttachmentComponent {
+    private static final String TAG = Kontalk.TAG;
 
     private static final String[][] MIME_TYPES = {
         { "image/png", "png" },
@@ -114,7 +115,7 @@ public class ImageComponent extends AttachmentComponent {
             }
         }
         catch (Exception e) {
-            Log.w(Kontalk.TAG, "unable to load thumbnail, generating one");
+            Log.w(TAG, "unable to load thumbnail, generating one");
 
             try {
                 /*
@@ -128,7 +129,7 @@ public class ImageComponent extends AttachmentComponent {
                 }
             }
             catch (Exception e1) {
-                Log.e(Kontalk.TAG, "unable to generate thumbnail", e1);
+                Log.e(TAG, "unable to generate thumbnail", e1);
             }
         }
     }

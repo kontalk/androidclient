@@ -33,8 +33,7 @@ import android.widget.AbsListView.RecyclerListener;
 
 
 public class ContactsListAdapter extends CursorAdapter {
-
-    private static final String TAG = ContactsListAdapter.class.getSimpleName();
+    private static final String TAG = ContactsListActivity.TAG;
 
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;

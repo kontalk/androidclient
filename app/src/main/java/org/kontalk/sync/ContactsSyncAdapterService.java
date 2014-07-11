@@ -24,7 +24,6 @@ import android.os.IBinder;
 
 
 public class ContactsSyncAdapterService extends Service {
-    //private static final String TAG = ContactsSyncAdapterService.class.getSimpleName();
 
     private SyncAdapter mSyncAdapter;
 

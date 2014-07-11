@@ -57,7 +57,7 @@ import android.widget.Toast;
  */
 public class ConversationList extends ActionBarActivity
         implements ContactsSyncActivity, ContactPickerListener {
-    //private static final String TAG = ConversationList.class.getSimpleName();
+    static final String TAG = ConversationList.class.getSimpleName();
 
     private ConversationListFragment mFragment;
 

@@ -41,7 +41,7 @@ import android.util.Log;
  * @author Daniele Ricci
  */
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
-    private static final String TAG = SyncAdapter.class.getSimpleName();
+    public static final String TAG = SyncAdapter.class.getSimpleName();
 
     /** How many seconds between sync operations. */
     private static final int MAX_SYNC_DELAY = 600;

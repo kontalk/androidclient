@@ -37,6 +37,7 @@ import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
@@ -50,7 +51,7 @@ import android.util.Log;
  * @author Daniele Ricci
  */
 public class XMPPConnectionHelper extends Thread {
-    private static final String TAG = XMPPConnectionHelper.class.getSimpleName();
+    private static final String TAG = MessageCenterService.TAG;
 
     /** Max connection retry count if idle. */
     private static final int MAX_IDLE_BACKOFF = 10;
@@ -191,7 +192,7 @@ public class XMPPConnectionHelper extends Thread {
             key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
         }
         catch (Exception e) {
-            Log.e(Kontalk.TAG, "unable to retrieve personal key - not using SSL", e);
+            Log.e(TAG, "unable to retrieve personal key - not using SSL", e);
         }
 
         String token = LegacyAuthentication.getAuthToken(mContext);

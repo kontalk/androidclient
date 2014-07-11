@@ -40,7 +40,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class ConversationListItem extends AvatarListItem implements Checkable {
-    //private static final String TAG = ConversationListItem.class.getSimpleName();
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
 

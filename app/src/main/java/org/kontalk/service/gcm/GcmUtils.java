@@ -27,6 +27,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
  * @see gcm.jar
  */
 public class GcmUtils {
+    private static final String TAG = Kontalk.TAG;
 
     /**
      * Default lifespan (7 days) of the {@link #isRegisteredOnServer(Context)}
@@ -68,7 +69,7 @@ public class GcmUtils {
         final SharedPreferences prefs = getGCMPreferences(context);
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
         if (registrationId == null || registrationId.length() == 0) {
-            Log.i(Kontalk.TAG, "Registration not found.");
+            Log.i(TAG, "Registration not found.");
             return "";
         }
 
@@ -78,7 +79,7 @@ public class GcmUtils {
         int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
         int currentVersion = Kontalk.getVersionCode(context);
         if (registeredVersion != currentVersion) {
-            Log.i(Kontalk.TAG, "App version changed.");
+            Log.i(TAG, "App version changed.");
             return "";
         }
         return registrationId;
@@ -103,7 +104,7 @@ public class GcmUtils {
         // set the flag's expiration date
         long lifespan = getRegisterOnServerLifespan(context);
         long expirationTime = System.currentTimeMillis() + lifespan;
-        Log.v(Kontalk.TAG, "Setting registeredOnServer status as " + flag + " until " +
+        Log.v(TAG, "Setting registeredOnServer status as " + flag + " until " +
                 new Timestamp(expirationTime));
         editor.putLong(PROPERTY_ON_SERVER_EXPIRATION_TIME, expirationTime);
         editor.commit();
@@ -121,13 +122,13 @@ public class GcmUtils {
     public static boolean isRegisteredOnServer(Context context) {
         final SharedPreferences prefs = getGCMPreferences(context);
         boolean isRegistered = prefs.getBoolean(PROPERTY_ON_SERVER, false);
-        Log.v(Kontalk.TAG, "Is registered on server: " + isRegistered);
+        Log.v(TAG, "Is registered on server: " + isRegistered);
         if (isRegistered) {
             // checks if the information is not stale
             long expirationTime =
                     prefs.getLong(PROPERTY_ON_SERVER_EXPIRATION_TIME, -1);
             if (System.currentTimeMillis() > expirationTime) {
-                Log.v(Kontalk.TAG, "flag expired on: " + new Timestamp(expirationTime));
+                Log.v(TAG, "flag expired on: " + new Timestamp(expirationTime));
                 return false;
             }
         }
@@ -168,7 +169,7 @@ public class GcmUtils {
      * @param context application's context.
      */
     static void resetBackoff(Context context) {
-        Log.d(Kontalk.TAG, "resetting backoff for " + context.getPackageName());
+        Log.d(TAG, "resetting backoff for " + context.getPackageName());
         setBackoff(context, DEFAULT_BACKOFF_MS);
     }
 
@@ -273,7 +274,7 @@ public class GcmUtils {
     private static void retryOnError(Context context) {
         int backoffTimeMs = getBackoff(context);
         int nextAttempt = backoffTimeMs / 2 + sRandom.nextInt(backoffTimeMs);
-        Log.d(Kontalk.TAG, "Scheduling registration retry, backoff = "
+        Log.d(TAG, "Scheduling registration retry, backoff = "
                 + nextAttempt + " (" + backoffTimeMs + ")");
 
         PendingIntent retryPendingIntent = GcmIntentService.getRetryIntent(context);
