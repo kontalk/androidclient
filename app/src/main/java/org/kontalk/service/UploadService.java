@@ -185,9 +185,10 @@ public class UploadService extends IntentService implements ProgressListener {
         Log.d(TAG, "starting foreground progress notification");
 
         Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_UPLOADING, ni, Intent.FLAG_ACTIVITY_NEW_TASK);
+                NOTIFICATION_ID_UPLOADING, ni, 0);
 
         if (mNotificationBuilder == null) {
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
@@ -240,8 +241,9 @@ public class UploadService extends IntentService implements ProgressListener {
     private void errorNotification(String ticker, String text) {
         // create intent for upload error notification
         Intent i = new Intent(this, ConversationList.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_UPLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+                NOTIFICATION_ID_UPLOAD_ERROR, i, 0);
 
         // create notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())

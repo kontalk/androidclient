@@ -227,8 +227,9 @@ public class DownloadService extends IntentService implements DownloadListener {
             // create intent for download complete notification
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setDataAndType(uri, mime);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                    NOTIFICATION_ID_DOWNLOAD_OK, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+                    NOTIFICATION_ID_DOWNLOAD_OK, i, 0);
 
             // create notification
             NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
@@ -261,8 +262,9 @@ public class DownloadService extends IntentService implements DownloadListener {
     private void errorNotification(String ticker, String text) {
         // create intent for download error notification
         Intent i = new Intent(this, ConversationList.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_DOWNLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+                NOTIFICATION_ID_DOWNLOAD_ERROR, i, 0);
 
         // create notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
