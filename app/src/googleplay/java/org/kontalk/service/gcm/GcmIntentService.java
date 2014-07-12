@@ -52,7 +52,7 @@ public class GcmIntentService extends IntentService {
                 return;
             }
 
-            PushServiceManager.getInstance().retry(this);
+            PushServiceManager.getInstance(this).retry();
         }
 
         else {

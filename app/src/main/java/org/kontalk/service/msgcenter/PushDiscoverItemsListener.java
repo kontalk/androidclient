@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
-import org.kontalk.service.gcm.GcmUtils;
 import org.kontalk.util.Preferences;
 
 
@@ -57,13 +56,14 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
 
                     // begin a registration cycle if senderId is different
                     if (oldSender != null && !oldSender.equals(senderId)) {
-                        GcmUtils.unregister(getGcmListener(), getContext());
+                        PushServiceManager.getInstance(getContext())
+                            .unregister(getPushListener());
                         // unregister will see this as an attempt to register again
                         startPushRegistrationCycle();
                     }
                     else {
                         // begin registration immediately
-                        gcmRegister();
+                        pushRegister();
                     }
                 }
             }
