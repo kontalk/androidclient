@@ -31,6 +31,7 @@ import java.security.PrivateKey;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
@@ -217,7 +218,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         Uri uri = Uri.fromFile(destination);
 
         // notify only if conversation is not open
-        if (!mPeer.equals(MessagingNotification.getPaused())) {
+        if (!mPeer.equals(StringUtils.parseName(MessagingNotification.getPaused()))) {
 
             // detect mime type if not available
             if (mime == null)
