@@ -17,11 +17,12 @@ package org.kontalk.billing;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.kontalk.billing.IProductDetails;
 
 /**
  * Represents an in-app product's listing details.
  */
-public class SkuDetails {
+public class ProductDetails implements IProductDetails {
     String mItemType;
     String mSku;
     String mType;
@@ -30,11 +31,11 @@ public class SkuDetails {
     String mDescription;
     String mJson;
 
-    public SkuDetails(String jsonSkuDetails) throws JSONException {
-        this(IabHelper.ITEM_TYPE_INAPP, jsonSkuDetails);
+    public ProductDetails(String jsonSkuDetails) throws JSONException {
+        this(GoogleBillingService.ITEM_TYPE_INAPP, jsonSkuDetails);
     }
 
-    public SkuDetails(String itemType, String jsonSkuDetails) throws JSONException {
+    public ProductDetails(String itemType, String jsonSkuDetails) throws JSONException {
         mItemType = itemType;
         mJson = jsonSkuDetails;
         JSONObject o = new JSONObject(mJson);
@@ -45,7 +46,7 @@ public class SkuDetails {
         mDescription = o.optString("description");
     }
 
-    public String getSku() { return mSku; }
+    public String getId() { return mSku; }
     public String getType() { return mType; }
     public String getPrice() { return mPrice; }
     public String getTitle() { return mTitle; }

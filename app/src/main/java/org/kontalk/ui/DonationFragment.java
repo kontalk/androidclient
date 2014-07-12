@@ -22,11 +22,15 @@ import java.util.Arrays;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
-import org.kontalk.billing.IabHelper;
-import org.kontalk.billing.IabResult;
-import org.kontalk.billing.Inventory;
-import org.kontalk.billing.Purchase;
-import org.kontalk.billing.SkuDetails;
+import org.kontalk.billing.BillingResult;
+import org.kontalk.billing.BillingServiceManager;
+import org.kontalk.billing.IBillingService;
+import org.kontalk.billing.IInventory;
+import org.kontalk.billing.IProductDetails;
+import org.kontalk.billing.IPurchase;
+import org.kontalk.billing.OnBillingSetupFinishedListener;
+import org.kontalk.billing.OnPurchaseFinishedListener;
+import org.kontalk.billing.QueryInventoryFinishedListener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -54,31 +58,36 @@ import android.widget.Toast;
 public class DonationFragment extends Fragment implements OnClickListener {
 
     // for Google Play
-    private IabHelper mIabHelper;
+    private IBillingService mBillingService;
     private static final int IAB_REQUEST_CODE = 10001;
 
-    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+    OnPurchaseFinishedListener mPurchaseFinishedListener = new OnPurchaseFinishedListener() {
 
-        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            if (mIabHelper == null) return;
+        public void onPurchaseFinished(BillingResult result, IPurchase purchase) {
+            if (mBillingService == null) return;
 
             // end async operation
-            mIabHelper.flagEndAsync();
+            mBillingService.endAsyncOperation();
 
             if (result.isSuccess())
                 Toast.makeText(getActivity(), R.string.msg_iab_thankyou, Toast.LENGTH_LONG).show();
         }
     };
 
-    public IabHelper getIabHelper() {
-        return mIabHelper;
+    public IBillingService getBillingService() {
+        return mBillingService;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.about_donation, container, false);
 
-        view.findViewById(R.id.donate_google).setOnClickListener(this);
+        View button = view.findViewById(R.id.donate_google);
+        if (BillingServiceManager.isEnabled())
+            button.setOnClickListener(this);
+        else
+            button.setVisibility(View.GONE);
+
         view.findViewById(R.id.donate_paypal).setOnClickListener(this);
         view.findViewById(R.id.donate_bitcoin).setOnClickListener(this);
         view.findViewById(R.id.donate_flattr).setOnClickListener(this);
@@ -144,16 +153,16 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void setupGoogle(final ProgressDialog progress) {
-        if (mIabHelper == null) {
-            mIabHelper = new IabHelper(getActivity());
-            mIabHelper.enableDebugLogging(BuildConfig.DEBUG);
+        if (mBillingService == null) {
+            mBillingService = BillingServiceManager.getInstance(getActivity());
+            mBillingService.enableDebugLogging(BuildConfig.DEBUG);
 
-            mIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-                public void onIabSetupFinished(IabResult result) {
+            mBillingService.startSetup(new OnBillingSetupFinishedListener() {
+                public void onSetupFinished(BillingResult result) {
 
                     if (!result.isSuccess()) {
                         alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
-                        mIabHelper = null;
+                        mBillingService = null;
                         progress.dismiss();
                         return;
                     }
@@ -171,9 +180,9 @@ public class DonationFragment extends Fragment implements OnClickListener {
     private void queryInventory(final ProgressDialog progress) {
         final String[] iabItems = getResources().getStringArray(R.array.iab_items);
 
-        IabHelper.QueryInventoryFinishedListener gotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
-            public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-                if (mIabHelper == null) return;
+        QueryInventoryFinishedListener gotInventoryListener = new QueryInventoryFinishedListener() {
+            public void onQueryInventoryFinished(BillingResult result, IInventory inventory) {
+                if (mBillingService == null) return;
 
                 // dismiss progress
                 progress.dismiss();
@@ -185,13 +194,13 @@ public class DonationFragment extends Fragment implements OnClickListener {
                 else {
 
                     // end async operation
-                    mIabHelper.flagEndAsync();
+                    mBillingService.endAsyncOperation();
 
                     // prepare items for the dialog
                     String[] dialogItems = new String[iabItems.length];
 
                     for (int i = 0; i < iabItems.length; i++) {
-                        SkuDetails sku = inventory.getSkuDetails(iabItems[i]);
+                        IProductDetails sku = inventory.getSkuDetails(iabItems[i]);
                         if (sku != null)
                             dialogItems[i] = sku.getDescription();
                         else
@@ -205,8 +214,8 @@ public class DonationFragment extends Fragment implements OnClickListener {
                             public void onClick(DialogInterface dialog, int which) {
                                 // start the purchase
                                 String itemId = iabItems[which];
-                                mIabHelper.launchPurchaseFlow(getActivity(), itemId,
-                                    IAB_REQUEST_CODE, mPurchaseFinishedListener);
+                                mBillingService.launchPurchaseFlow(getActivity(), itemId,
+                                        IAB_REQUEST_CODE, mPurchaseFinishedListener);
                             }
                         })
                         .setNegativeButton(android.R.string.cancel, null)
@@ -216,8 +225,8 @@ public class DonationFragment extends Fragment implements OnClickListener {
         };
 
 
-        if (mIabHelper != null)
-            mIabHelper.queryInventoryAsync(true, Arrays
+        if (mBillingService != null)
+            mBillingService.queryInventoryAsync(true, Arrays
                 .asList(iabItems), gotInventoryListener);
     }
 
@@ -228,9 +237,9 @@ public class DonationFragment extends Fragment implements OnClickListener {
             new DialogInterface.OnCancelListener() {
                 public void onCancel(DialogInterface dialog) {
                     // FIXME this doesn't seem to work in some cases
-                    if (mIabHelper != null) {
-                        mIabHelper.dispose();
-                        mIabHelper = null;
+                    if (mBillingService != null) {
+                        mBillingService.dispose();
+                        mBillingService = null;
                     }
                 }
             });
@@ -242,9 +251,9 @@ public class DonationFragment extends Fragment implements OnClickListener {
     public void onDestroy() {
         super.onDestroy();
 
-        if (mIabHelper != null) {
-            mIabHelper.dispose();
-            mIabHelper = null;
+        if (mBillingService != null) {
+            mBillingService.dispose();
+            mBillingService = null;
         }
     }
 

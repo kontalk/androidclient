@@ -24,31 +24,19 @@ import java.util.Map;
  * Represents a block of information about in-app items.
  * An Inventory is returned by such methods as {@link IBillingService#queryInventory}.
  */
-public class Inventory implements IInventory {
-    Map<String,ProductDetails> mSkuMap = new HashMap<String,ProductDetails>();
-    Map<String,Purchase> mPurchaseMap = new HashMap<String,Purchase>();
-
-    Inventory() { }
+public interface IInventory {
 
     /** Returns the listing details for an in-app product. */
-    public ProductDetails getSkuDetails(String sku) {
-        return mSkuMap.get(sku);
-    }
+    public IProductDetails getSkuDetails(String sku);
 
     /** Returns purchase information for a given product, or null if there is no purchase. */
-    public IPurchase getPurchase(String sku) {
-        return mPurchaseMap.get(sku);
-    }
+    public IPurchase getPurchase(String sku);
 
     /** Returns whether or not there exists a purchase of the given product. */
-    public boolean hasPurchase(String sku) {
-        return mPurchaseMap.containsKey(sku);
-    }
+    public boolean hasPurchase(String sku);
 
     /** Return whether or not details about the given product are available. */
-    public boolean hasDetails(String sku) {
-        return mSkuMap.containsKey(sku);
-    }
+    public boolean hasDetails(String sku);
 
     /**
      * Erase a purchase (locally) from the inventory, given its product ID. This just
@@ -58,34 +46,6 @@ public class Inventory implements IInventory {
      * purchase data from the Inventory you already have is quicker than querying for
      * a new Inventory.
      */
-    public void erasePurchase(String sku) {
-        if (mPurchaseMap.containsKey(sku)) mPurchaseMap.remove(sku);
-    }
+    public void erasePurchase(String sku);
 
-    /** Returns a list of all owned product IDs. */
-    List<String> getAllOwnedSkus() {
-        return new ArrayList<String>(mPurchaseMap.keySet());
-    }
-
-    /** Returns a list of all owned product IDs of a given type */
-    List<String> getAllOwnedSkus(String itemType) {
-        List<String> result = new ArrayList<String>();
-        for (Purchase p : mPurchaseMap.values()) {
-            if (p.getItemType().equals(itemType)) result.add(p.getProduct());
-        }
-        return result;
-    }
-
-    /** Returns a list of all purchases. */
-    List<Purchase> getAllPurchases() {
-        return new ArrayList<Purchase>(mPurchaseMap.values());
-    }
-
-    void addSkuDetails(ProductDetails d) {
-        mSkuMap.put(d.getId(), d);
-    }
-
-    void addPurchase(Purchase p) {
-        mPurchaseMap.put(p.getProduct(), p);
-    }
 }
