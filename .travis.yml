@@ -5,5 +5,7 @@ android:
     - android-19
     - extra-android-m2repository
     - extra-google-m2repository
+  licenses:
+    - 'android-sdk-license-.+'
 install: ./setup "${ANDROID_HOME}"
 script: ./gradlew build
