@@ -19,7 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.billing.IabHelper;
+import org.kontalk.billing.IBillingService;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -147,9 +147,9 @@ public class AboutActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         DonationFragment fragment = mAdapter.getDonationFragment();
-        IabHelper iabHelper = fragment.getIabHelper();
+        IBillingService service = fragment.getBillingService();
 
-        if (iabHelper == null || !iabHelper.handleActivityResult(requestCode, resultCode, data))
+        if (service == null || !service.handleActivityResult(requestCode, resultCode, data))
             super.onActivityResult(requestCode, resultCode, data);
     }
 

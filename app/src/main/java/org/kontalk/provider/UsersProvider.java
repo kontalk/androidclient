@@ -59,7 +59,6 @@ import android.util.Log;
 
 
 public class UsersProvider extends ContentProvider {
-    private static final String TAG = UsersProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.users";
 
     private static final int DATABASE_VERSION = 6;
@@ -376,7 +375,7 @@ public class UsersProvider extends ContentProvider {
             }
             catch (SQLException e) {
                 // ops :)
-                Log.i(TAG, "users table commit failed - already committed?", e);
+                Log.i(SyncAdapter.TAG, "users table commit failed - already committed?", e);
             }
             finally {
                 endTransaction(db, success);
@@ -436,7 +435,7 @@ public class UsersProvider extends ContentProvider {
                                 Authenticator.getDefaultAccountName(context), 0);
                     }
                     catch (Exception e) {
-                        Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+                        Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
                         // skip number
                         continue;
                     }
@@ -479,7 +478,7 @@ public class UsersProvider extends ContentProvider {
                             at android.content.ContentResolver.query(ContentResolver.java:372)
                             at android.content.ContentResolver.query(ContentResolver.java:315)
                          */
-                        Log.w(TAG, "unable to retrieve SIM contacts", e);
+                        Log.w(SyncAdapter.TAG, "unable to retrieve SIM contacts", e);
                         phones = null;
                     }
 
@@ -505,7 +504,7 @@ public class UsersProvider extends ContentProvider {
                                         Authenticator.getDefaultAccountName(context), 0);
                             }
                             catch (Exception e) {
-                                Log.e(TAG, "unable to normalize number: " + number + " - skipping", e);
+                                Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
                                 // skip number
                                 continue;
                             }

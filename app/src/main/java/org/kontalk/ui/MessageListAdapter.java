@@ -37,7 +37,7 @@ import android.widget.ListView;
 
 public class MessageListAdapter extends CursorAdapter {
 
-    private static final String TAG = MessageListAdapter.class.getSimpleName();
+    private static final String TAG = ComposeMessage.TAG;
 
     private final LayoutInflater mFactory;
     private final Pattern mHighlight;

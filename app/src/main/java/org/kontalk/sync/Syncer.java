@@ -62,7 +62,7 @@ import android.util.Log;
  */
 public class Syncer {
     // using SyncAdapter tag
-    private static final String TAG = SyncAdapter.class.getSimpleName();
+    private static final String TAG = SyncAdapter.TAG;
 
     // max time to wait for network response
     private static final int MAX_WAIT_TIME = 60000;

@@ -22,23 +22,23 @@ package org.kontalk.billing;
  * call {@link #getResult()}.
  */
 @SuppressWarnings("serial")
-public class IabException extends Exception {
-    IabResult mResult;
+public class BillingException extends Exception {
+    BillingResult mResult;
 
-    public IabException(IabResult r) {
+    public BillingException(BillingResult r) {
         this(r, null);
     }
-    public IabException(int response, String message) {
-        this(new IabResult(response, message));
+    public BillingException(int response, String message) {
+        this(new BillingResult(response, message));
     }
-    public IabException(IabResult r, Exception cause) {
+    public BillingException(BillingResult r, Exception cause) {
         super(r.getMessage(), cause);
         mResult = r;
     }
-    public IabException(int response, String message, Exception cause) {
-        this(new IabResult(response, message), cause);
+    public BillingException(int response, String message, Exception cause) {
+        this(new BillingResult(response, message), cause);
     }
 
-    /** Returns the IAB result (error) that this exception signals. */
-    public IabResult getResult() { return mResult; }
+    /** Returns the billing result (error) that this exception signals. */
+    public BillingResult getResult() { return mResult; }
 }

@@ -54,8 +54,7 @@ import android.widget.Toast;
 
 
 public class ConversationListFragment extends ListFragment {
-
-    private static final String TAG = ConversationListFragment.class.getSimpleName();
+    private static final String TAG = ConversationList.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 

@@ -57,7 +57,8 @@ import android.util.Log;
  * @author Daniele Ricci
  */
 public class UploadService extends IntentService implements ProgressListener {
-    private static final String TAG = UploadService.class.getSimpleName();
+    private static final String TAG = MessageCenterService.TAG;
+
     /** A map to avoid duplicate uploads. */
     private static final Map<String, Long> queue = new LinkedHashMap<String, Long>();
 

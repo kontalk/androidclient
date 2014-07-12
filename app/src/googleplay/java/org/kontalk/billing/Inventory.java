@@ -22,21 +22,21 @@ import java.util.Map;
 
 /**
  * Represents a block of information about in-app items.
- * An Inventory is returned by such methods as {@link IabHelper#queryInventory}.
+ * An Inventory is returned by such methods as {@link IBillingService#queryInventory}.
  */
-public class Inventory {
-    Map<String,SkuDetails> mSkuMap = new HashMap<String,SkuDetails>();
+public class Inventory implements IInventory {
+    Map<String,ProductDetails> mSkuMap = new HashMap<String,ProductDetails>();
     Map<String,Purchase> mPurchaseMap = new HashMap<String,Purchase>();
 
     Inventory() { }
 
     /** Returns the listing details for an in-app product. */
-    public SkuDetails getSkuDetails(String sku) {
+    public ProductDetails getSkuDetails(String sku) {
         return mSkuMap.get(sku);
     }
 
     /** Returns purchase information for a given product, or null if there is no purchase. */
-    public Purchase getPurchase(String sku) {
+    public IPurchase getPurchase(String sku) {
         return mPurchaseMap.get(sku);
     }
 
@@ -71,7 +71,7 @@ public class Inventory {
     List<String> getAllOwnedSkus(String itemType) {
         List<String> result = new ArrayList<String>();
         for (Purchase p : mPurchaseMap.values()) {
-            if (p.getItemType().equals(itemType)) result.add(p.getSku());
+            if (p.getItemType().equals(itemType)) result.add(p.getProduct());
         }
         return result;
     }
@@ -81,11 +81,11 @@ public class Inventory {
         return new ArrayList<Purchase>(mPurchaseMap.values());
     }
 
-    void addSkuDetails(SkuDetails d) {
-        mSkuMap.put(d.getSku(), d);
+    void addSkuDetails(ProductDetails d) {
+        mSkuMap.put(d.getId(), d);
     }
 
     void addPurchase(Purchase p) {
-        mPurchaseMap.put(p.getSku(), p);
+        mPurchaseMap.put(p.getProduct(), p);
     }
 }

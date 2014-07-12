@@ -45,7 +45,7 @@ import android.widget.Toast;
 /** Manual validation code input. */
 public class CodeValidation extends AccountAuthenticatorActionBarActivity
         implements NumberValidatorListener {
-    private static final String TAG = CodeValidation.class.getSimpleName();
+    private static final String TAG = NumberValidation.TAG;
 
     private EditText mCode;
     private Button mButton;

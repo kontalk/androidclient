@@ -5,9 +5,6 @@ android {
     buildToolsVersion '20.0.0'
 
     defaultConfig {
-        applicationId "org.kontalk"
-        minSdkVersion 8
-        targetSdkVersion 19
     }
 
     buildTypes {
@@ -20,13 +17,20 @@ android {
     lintOptions {
         checkReleaseBuilds false
     }
+
+    productFlavors {
+        basic {
+        }
+        googleplay {
+        }
+    }
+
 }
 
 dependencies {
     compile (project(':client-common-java')) {
         exclude group: 'net.sf.kxml'
     }
-    compile 'com.google.android.gms:play-services:+'
     compile 'com.android.support:appcompat-v7:20.0.0'
     compile 'com.madgag.spongycastle:core:1.50.0.0'
     compile 'com.madgag.spongycastle:prov:1.50.0.0'
@@ -36,4 +40,6 @@ dependencies {
     compile 'com.jcraft:jzlib:+'
     compile files('libs/asmack-android-19-4.0.0.jar')
     compile 'com.nineoldandroids:library:2.4.0+'
+
+    googleplayCompile 'com.google.android.gms:play-services:+'
 }

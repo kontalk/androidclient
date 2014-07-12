@@ -17,14 +17,34 @@
  */
 package org.kontalk.service.msgcenter;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import android.accounts.Account;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.MessageQueue.IdleHandler;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
+import android.os.Process;
+import android.os.SystemClock;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
@@ -79,44 +99,20 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
-import org.kontalk.service.gcm.DefaultGcmListener;
-import org.kontalk.service.gcm.GcmIntentService;
-import org.kontalk.service.gcm.GcmListener;
-import org.kontalk.service.gcm.GcmUtils;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
 
-import android.accounts.Account;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.app.Service;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteConstraintException;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-import android.os.MessageQueue.IdleHandler;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
-import android.os.Process;
-import android.os.SystemClock;
-import android.support.v4.content.LocalBroadcastManager;
-import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.security.GeneralSecurityException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -127,7 +123,7 @@ import android.widget.Toast;
  * @version 4.0
  */
 public class MessageCenterService extends Service implements ConnectionHelperListener {
-    static final String TAG = MessageCenterService.class.getSimpleName();
+    public static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
         SmackConfiguration.DEBUG_ENABLED = BuildConfig.DEBUG;
@@ -246,7 +242,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_MESSAGE = "org.kontalk.message";
 
     // other
-    public static final String GCM_REGISTRATION_ID = "org.kontalk.GCM_REGISTRATION_ID";
+    public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
 
     /** Idle signal. */
     private static final int MSG_IDLE = 1;
@@ -256,15 +252,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
 
-    static final GcmListener sGcmListener = new DefaultGcmListener();
+    static final IPushListener sPushListener = PushServiceManager.getDefaultListener();
 
+    /** Push service instance. */
+    private IPushService mPushService;
     /** Push notifications enabled flag. */
     boolean mPushNotifications;
-    /** Server push sender id. This is static so {@link GcmIntentService} can see it. */
+    /** Server push sender id. This is static so the {@link IPushListener} can see it. */
     static String mPushSenderId;
-    /** GCM registration id. */
+    /** Push registration id. */
     private String mPushRegistrationId;
-    /** Flag marking a currently ongoing GCM registration cycle (unregister/register) */
+    /** Flag marking a currently ongoing push registration cycle (unregister/register) */
     boolean mPushRegistrationCycle;
 
     private WakeLock mWakeLock; // created in onCreate
@@ -405,6 +403,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mWakeLock.setReferenceCounted(false);
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        mPushService = PushServiceManager.getInstance(this);
 
         // create idle handler
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
@@ -590,11 +589,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_PUSH_REGISTERED.equals(action)) {
-                String regId = intent.getStringExtra(GCM_REGISTRATION_ID);
+                String regId = intent.getStringExtra(PUSH_REGISTRATION_ID);
                 // registration cycle under way
                 if (regId == null && mPushRegistrationCycle) {
                     mPushRegistrationCycle = false;
-                    gcmRegister();
+                    pushRegister();
                 }
                 else
                     setPushRegistrationId(regId);
@@ -760,7 +759,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mWakeLock.acquire();
 
             // reset push notification variable
-            mPushNotifications = Preferences.getPushNotificationsEnabled(this);
+            mPushNotifications = Preferences.getPushNotificationsEnabled(this) &&
+                mPushService.isServiceAvailable();
             // reset waiting messages
             mWaitingReceipt.clear();
 
@@ -1544,7 +1544,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static void updateStatus(final Context context) {
-        updateStatus(context, GcmUtils.getRegistrationId(context));
+        updateStatus(context, PushServiceManager.getInstance(context)
+                .getRegistrationId());
     }
 
     /** Broadcasts our presence to the server. */
@@ -1648,7 +1649,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void registerPushNotifications(Context context, String registrationId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PUSH_REGISTERED);
-        i.putExtra(GCM_REGISTRATION_ID, registrationId);
+        i.putExtra(PUSH_REGISTRATION_ID, registrationId);
         context.startService(i);
     }
 
@@ -1656,21 +1657,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mPushNotifications = enabled;
         if (mPushNotifications) {
             if (mPushRegistrationId == null)
-                gcmRegister();
+                pushRegister();
         }
         else {
-            gcmUnregister();
+            pushUnregister();
         }
     }
 
-    void gcmRegister() {
+    void pushRegister() {
         if (mPushSenderId != null) {
-            if (GcmUtils.isGcmAvailable(this)) {
+            if (mPushService.isServiceAvailable()) {
                 // senderId will be given by serverinfo if any
-                mPushRegistrationId = GcmUtils.getRegistrationId(this);
+                mPushRegistrationId = mPushService.getRegistrationId();
                 if (TextUtils.isEmpty(mPushRegistrationId))
                     // start registration
-                    GcmUtils.register(sGcmListener, this, mPushSenderId);
+                    mPushService.register(sPushListener, mPushSenderId);
                 else
                     // already registered - send registration id to server
                     setPushRegistrationId(mPushRegistrationId);
@@ -1678,10 +1679,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
-    private void gcmUnregister() {
-        if (GcmUtils.isRegistered(this))
+    private void pushUnregister() {
+        if (mPushService.isRegistered())
             // start unregistration
-            GcmUtils.unregister(sGcmListener, this);
+            mPushService.unregister(sPushListener);
         else
             // force unregistration
             setPushRegistrationId(null);
@@ -1692,7 +1693,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // notify the server about the change
         updateStatus(this, mPushRegistrationId);
-        GcmUtils.setRegisteredOnServer(this, mPushRegistrationId != null);
+        mPushService.setRegisteredOnServer(mPushRegistrationId != null);
     }
 
     public static String getPushSenderId() {

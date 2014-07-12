@@ -209,10 +209,10 @@ public class ClientHTTPConnection {
             }
         }
 
-        Log.e(TAG, "invalid response: " + code);
+        Log.d(TAG, "invalid response: " + code);
         HttpEntity entity = response.getEntity();
         if (entity != null) {
-            Log.e(TAG, EntityUtils.toString(entity));
+            Log.w(TAG, EntityUtils.toString(entity));
             entity.consumeContent();
         }
         listener.error(url, null, new IOException("invalid response: " + code));

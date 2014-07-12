@@ -17,11 +17,12 @@ package org.kontalk.billing;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.kontalk.billing.IPurchase;
 
 /**
  * Represents an in-app billing purchase.
  */
-public class Purchase {
+public class Purchase implements IPurchase {
     String mItemType;  // ITEM_TYPE_INAPP or ITEM_TYPE_SUBS
     String mOrderId;
     String mPackageName;
@@ -50,7 +51,7 @@ public class Purchase {
     public String getItemType() { return mItemType; }
     public String getOrderId() { return mOrderId; }
     public String getPackageName() { return mPackageName; }
-    public String getSku() { return mSku; }
+    public String getProduct() { return mSku; }
     public long getPurchaseTime() { return mPurchaseTime; }
     public int getPurchaseState() { return mPurchaseState; }
     public String getDeveloperPayload() { return mDeveloperPayload; }

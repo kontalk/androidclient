@@ -33,8 +33,7 @@ import android.widget.ListView;
 
 
 public class ConversationListAdapter extends CursorAdapter {
-
-    private static final String TAG = "ConversationListAdapter";
+    private static final String TAG = ConversationList.TAG;
 
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;

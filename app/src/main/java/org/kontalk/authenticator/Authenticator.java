@@ -64,7 +64,6 @@ import android.widget.Toast;
  * @version 1.0
  */
 public class Authenticator extends AbstractAccountAuthenticator {
-    private static final String TAG = Authenticator.class.getSimpleName();
 
     public static final String ACCOUNT_TYPE = "org.kontalk.account";
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
@@ -235,7 +234,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public Bundle confirmCredentials(AccountAuthenticatorResponse response,
             Account account, Bundle options) throws NetworkErrorException {
 
-        Log.v(TAG, "confirming credentials");
         // remove account
         AccountManager man = AccountManager.get(mContext);
         man.removeAccount(account, null, null);

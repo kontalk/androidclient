@@ -37,6 +37,7 @@ import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
@@ -60,7 +61,8 @@ import android.util.Log;
  * @author Daniele Ricci
  */
 public class DownloadService extends IntentService implements DownloadListener {
-    private static final String TAG = DownloadService.class.getSimpleName();
+    private static final String TAG = MessageCenterService.TAG;
+
     /** A map to avoid duplicate downloads. */
     private static final Map<String, String> queue = new LinkedHashMap<String, String>();
 

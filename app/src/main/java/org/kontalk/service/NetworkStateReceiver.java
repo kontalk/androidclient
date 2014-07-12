@@ -36,7 +36,7 @@ import android.util.Log;
  * @version 1.0
  */
 public class NetworkStateReceiver extends BroadcastReceiver {
-    private static final String TAG = NetworkStateReceiver.class.getSimpleName();
+    private static final String TAG = Kontalk.TAG;
 
     private static final int ACTION_START = 1;
     private static final int ACTION_STOP = 2;

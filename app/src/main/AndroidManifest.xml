@@ -39,15 +39,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- internal permissions -->
-    <permission android:name="org.kontalk.permission.C2D_MESSAGE" android:protectionLevel="signature" />
-
-    <uses-permission android:name="org.kontalk.permission.C2D_MESSAGE" />
 
     <!-- do not make telephony and touchscreen mandatory -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
@@ -81,7 +75,6 @@
         <service android:name=".service.DownloadService"
             android:label="@string/download_service"/>
         <service android:name=".service.UploadService"/>
-        <service android:name=".service.gcm.GcmIntentService"/>
         <service android:name=".service.KeyPairGeneratorService"/>
 
         <!-- Content providers -->
@@ -106,20 +99,10 @@
                 <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".service.gcm.GcmBroadcastReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND">
-          <intent-filter>
-            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-            <category android:name="org.kontalk" />
-          </intent-filter>
-        </receiver>
 
         <!-- Other -->
         <meta-data android:name="android.app.default_searchable"
             android:value=".ui.SearchActivity" />
-        <meta-data android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
 
         <!-- Activities -->
         <activity android:name=".ui.ConversationList"

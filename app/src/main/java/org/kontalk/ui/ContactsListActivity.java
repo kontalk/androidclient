@@ -48,6 +48,8 @@ import android.widget.Toast;
 public class ContactsListActivity extends ActionBarActivity
         implements ContactsSyncActivity, ContactPickerListener {
 
+    static final String TAG = ContactsListActivity.class.getSimpleName();
+
     private MenuItem mSyncButton;
 
     private ContactsListFragment mFragment;

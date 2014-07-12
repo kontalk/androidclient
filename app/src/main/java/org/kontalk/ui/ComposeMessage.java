@@ -63,7 +63,7 @@ import android.widget.Toast;
  * @version 1.0
  */
 public class ComposeMessage extends ActionBarActivity {
-    private static final String TAG = ComposeMessage.class.getSimpleName();
+    static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
 
