@@ -31,6 +31,7 @@ import java.security.PrivateKey;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
@@ -217,7 +218,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         Uri uri = Uri.fromFile(destination);
 
         // notify only if conversation is not open
-        if (!mPeer.equals(MessagingNotification.getPaused())) {
+        if (!mPeer.equals(StringUtils.parseName(MessagingNotification.getPaused()))) {
 
             // detect mime type if not available
             if (mime == null)
@@ -226,8 +227,9 @@ public class DownloadService extends IntentService implements DownloadListener {
             // create intent for download complete notification
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setDataAndType(uri, mime);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                    NOTIFICATION_ID_DOWNLOAD_OK, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+                    NOTIFICATION_ID_DOWNLOAD_OK, i, 0);
 
             // create notification
             NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
@@ -260,8 +262,9 @@ public class DownloadService extends IntentService implements DownloadListener {
     private void errorNotification(String ticker, String text) {
         // create intent for download error notification
         Intent i = new Intent(this, ConversationList.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                NOTIFICATION_ID_DOWNLOAD_ERROR, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+                NOTIFICATION_ID_DOWNLOAD_ERROR, i, 0);
 
         // create notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())

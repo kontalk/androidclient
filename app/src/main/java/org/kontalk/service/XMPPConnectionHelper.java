@@ -182,8 +182,6 @@ public class XMPPConnectionHelper extends Thread {
             // the dummy values are not actually used
             mConn.login("dummy", token != null ? token : "dummy");
 
-        if (mListener != null)
-            mListener.authenticated(mConn);
     }
 
     public void connect() {
