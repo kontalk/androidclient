@@ -1,4 +1,4 @@
-package org.kontalk.service.gcm;
+package org.kontalk.service.msgcenter;
 
 import android.content.Context;
 
@@ -7,7 +7,7 @@ import android.content.Context;
  * Interface for GCM listeners (the Message Center in our case).
  * @author Daniele Ricci
  */
-public interface GcmListener {
+public interface IPushListener {
 
     public void onRegistered(Context context, String registrationId);
 

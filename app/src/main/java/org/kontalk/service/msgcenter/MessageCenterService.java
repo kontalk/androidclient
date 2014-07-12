@@ -79,10 +79,6 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
-import org.kontalk.service.gcm.DefaultGcmListener;
-import org.kontalk.service.gcm.GcmIntentService;
-import org.kontalk.service.gcm.GcmListener;
-import org.kontalk.service.gcm.GcmUtils;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -256,8 +252,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
 
-    static final GcmListener sGcmListener = new DefaultGcmListener();
+    static final IPushListener sGcmListener = PushServiceManager.getDefaultListener();
 
+    /** Push service instance. */
+    private IPushService mPushService;
     /** Push notifications enabled flag. */
     boolean mPushNotifications;
     /** Server push sender id. This is static so {@link GcmIntentService} can see it. */
@@ -405,6 +403,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mWakeLock.setReferenceCounted(false);
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        mPushService = PushServiceManager.getInstance(context);
 
         // create idle handler
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);

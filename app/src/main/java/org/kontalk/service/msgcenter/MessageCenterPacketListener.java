@@ -27,7 +27,6 @@ import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.service.gcm.GcmListener;
 import org.kontalk.service.msgcenter.MessageCenterService.IdleConnectionHandler;
 
 import android.content.BroadcastReceiver;

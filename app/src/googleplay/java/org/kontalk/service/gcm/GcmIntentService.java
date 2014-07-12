@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.kontalk.Kontalk;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.util.Preferences;
 
 import android.app.IntentService;
@@ -17,7 +18,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 
 /**
- * Intent service simply turning over control to {@link GcmUtils#processIntent}.
+ * Intent service for GCM broadcasts.
  * @author Daniele Ricci
  */
 public class GcmIntentService extends IntentService {
@@ -51,7 +52,7 @@ public class GcmIntentService extends IntentService {
                 return;
             }
 
-            GcmUtils.retry(this);
+            PushServiceManager.getInstance().retry(this);
         }
 
         else {

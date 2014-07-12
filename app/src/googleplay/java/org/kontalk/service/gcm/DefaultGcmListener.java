@@ -1,6 +1,7 @@
 package org.kontalk.service.gcm;
 
 import org.kontalk.Kontalk;
+import org.kontalk.service.msgcenter.IPushListener;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.content.Context;
@@ -11,7 +12,7 @@ import android.util.Log;
  * Listener for the Message Center.
  * @author Daniele Ricci
  */
-public class DefaultGcmListener implements GcmListener {
+public class DefaultGcmListener implements IPushListener {
     private static final String TAG = Kontalk.TAG;
 
     @Override

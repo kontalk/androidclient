@@ -19,7 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.service.gcm.GcmUtils;
+import org.kontalk.service.msgcenter.PushServiceManager;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
@@ -43,7 +43,7 @@ public class BootstrapPreferences extends PreferenceActivity {
         addPreferencesFromResource(R.xml.bootstrap_preferences);
 
         // disable push notifications if GCM is not available on the device
-        if (!GcmUtils.isGcmAvailable(this)) {
+        if (!PushServiceManager.getInstance(this).isServiceAvailable()) {
             final Preference push = findPreference("pref_push_notifications");
             push.setEnabled(false);
         }
