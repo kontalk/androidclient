@@ -35,4 +35,5 @@ dependencies {
     compile 'dnsjava:dnsjava:2.1.6'
     compile 'com.jcraft:jzlib:+'
     compile files('libs/asmack-android-19-4.0.0.jar')
+    compile 'com.nineoldandroids:library:2.4.0+'
 }
