@@ -1,3 +1,9 @@
 language: android
+android:
+  components:
+    - build-tools-20.0.0
+    - android-19
+    - extra-android-m2repository
+    - extra-google-m2repository
 install: ./setup "${ANDROID_HOME}"
 script: ./gradlew build
