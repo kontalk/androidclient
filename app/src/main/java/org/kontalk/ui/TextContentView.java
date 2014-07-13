@@ -7,6 +7,8 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.kontalk.R;
@@ -23,7 +25,21 @@ import java.util.regex.Pattern;
  * Message component for {@link TextComponent}.
  * @author Daniele Ricci
  */
-public class TextContentView extends TextView implements MessageContentView<TextComponent> {
+public class TextContentView extends TextView
+        implements MessageContentView<TextComponent> {
+
+    // pool-related stuff
+
+    private static final Object sPoolSync = new Object();
+    private static TextContentView sPool;
+    private static int sPoolSize = 0;
+
+    /** Global pool max size. */
+    private static final int MAX_POOL_SIZE = 50;
+
+    /** Used for pooling. */
+    protected TextContentView next;
+
 
     /**
      * Maximum affordable size of a text message to make complex stuff
@@ -123,6 +139,10 @@ public class TextContentView extends TextView implements MessageContentView<Text
         setText(formattedMessage);
     }
 
+    public void unbind() {
+        recycle();
+    }
+
     private SpannableStringBuilder formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf;
 
@@ -142,6 +162,46 @@ public class TextContentView extends TextView implements MessageContentView<Text
         }
 
         return buf;
+    }
+
+    private void clear() {
+        mComponent = null;
+    }
+
+    public void recycle() {
+        clear();
+
+        synchronized (sPoolSync) {
+            if (sPoolSize < MAX_POOL_SIZE) {
+                next = sPool;
+                sPool = this;
+                sPoolSize++;
+            }
+        }
+    }
+
+    /**
+     * Return a new Message instance from the global pool. Allows us to
+     * avoid allocating new objects in many cases. Inspired by {@link android.os.Message}.
+     */
+    public static TextContentView obtain(LayoutInflater inflater, ViewGroup parent) {
+        synchronized (sPoolSync) {
+            if (sPool != null) {
+                TextContentView m = sPool;
+                sPool = m.next;
+                m.next = null;
+                sPoolSize--;
+                //m.mContext = context;
+                return m;
+            }
+        }
+
+        return create(inflater, parent);
+    }
+
+    public static TextContentView create(LayoutInflater inflater, ViewGroup parent) {
+        return (TextContentView) inflater.inflate(R.layout.message_content_text,
+            parent, false);
     }
 
 }

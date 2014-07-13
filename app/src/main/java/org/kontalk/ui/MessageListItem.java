@@ -168,7 +168,7 @@ public class MessageListItem extends RelativeLayout {
             MessageContentView<?> view = MessageContentViewFactory
                 .createContent(mInflater, mContent, cmp, contact, highlight);
 
-            mContent.addView((View) view);
+            mContent.addContent(view);
         }
 
         int resId = 0;
@@ -366,6 +366,12 @@ public class MessageListItem extends RelativeLayout {
     public final void unbind() {
         // TODO mMessage.recycle();
         mMessage = null;
+
+        int c = mContent.getChildCount();
+        for (int i = 0; i < c; i++) {
+            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(i);
+            view.unbind();
+        }
     }
 
     public CompositeMessage getMessage() {

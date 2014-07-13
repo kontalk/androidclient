@@ -32,6 +32,9 @@ public interface MessageContentView<T> {
     /** Binds the given component with this view. */
     public void bind(T component, Contact contact, Pattern highlight);
 
+    /** Unbinds and release all resources from this view. */
+    public void unbind();
+
     // TODO
 
 }

@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import android.content.Context;
 import android.text.Layout;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -37,6 +38,10 @@ public class MessageContentLayout extends LinearLayout {
 
     public MessageContentLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
+
+    public void addContent(MessageContentView<?> view) {
+        addView((View) view);
     }
 
 }
