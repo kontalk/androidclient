@@ -29,6 +29,7 @@ import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
+import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
@@ -162,13 +163,23 @@ public class MessageListItem extends RelativeLayout {
         // empty container
         mContent.removeAllViews();
 
-        // process components
-        List<MessageComponent<?>> components = msg.getComponents();
-        for (MessageComponent<?> cmp : components) {
-            MessageContentView<?> view = MessageContentViewFactory
-                .createContent(mInflater, mContent, cmp, contact, highlight);
+        if (msg.isEncrypted()) {
+            // FIXME this is not good
+            TextContentView view = TextContentView.obtain(mInflater, mContent, true);
 
-            mContent.addContent(view);
+            String text = getResources().getString(R.string.text_encrypted);
+            view.bind(new TextComponent(text), contact, highlight);
+        }
+
+        else {
+            // process components
+            List<MessageComponent<?>> components = msg.getComponents();
+            for (MessageComponent<?> cmp : components) {
+                MessageContentView<?> view = MessageContentViewFactory
+                    .createContent(mInflater, mContent, cmp, contact, highlight);
+
+                mContent.addContent(view);
+            }
         }
 
         int resId = 0;
@@ -262,21 +273,6 @@ public class MessageListItem extends RelativeLayout {
         }
 
         mDateView.setText(formatTimestamp());
-    }
-
-    private final class MaxSizeImageSpan extends ImageSpan {
-        private final Drawable mDrawable;
-
-        public MaxSizeImageSpan(Context context, Bitmap bitmap) {
-            super(context, bitmap);
-            mDrawable = super.getDrawable();
-            mDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        }
-
-        @Override
-        public Drawable getDrawable() {
-            return mDrawable;
-        }
     }
 
     /*

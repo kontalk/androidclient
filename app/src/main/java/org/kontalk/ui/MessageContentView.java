@@ -35,6 +35,9 @@ public interface MessageContentView<T> {
     /** Unbinds and release all resources from this view. */
     public void unbind();
 
+    /** Returns the component associated with this view. */
+    public T getComponent();
+
     // TODO
 
 }

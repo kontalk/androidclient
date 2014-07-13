@@ -22,7 +22,9 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.kontalk.data.Contact;
+import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
+import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 
 import java.util.regex.Pattern;
@@ -49,6 +51,9 @@ public class MessageContentViewFactory {
 
         if (component instanceof TextComponent) {
             view = (MessageContentView<T>) TextContentView.obtain(inflater, parent);
+        }
+        else if (component instanceof ImageComponent) {
+            view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
         }
 
         if (view != null)

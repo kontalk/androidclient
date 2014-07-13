@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -48,6 +49,7 @@ public class TextContentView extends TextView
     private static final int MAX_AFFORDABLE_SIZE = 10240;   // 10 KB
 
     private TextComponent mComponent;
+    private boolean mEncryptionPlaceholder;
     private BackgroundColorSpan mHighlightColorSpan;  // set in ctor
 
     public TextContentView(Context context) {
@@ -143,6 +145,14 @@ public class TextContentView extends TextView
         recycle();
     }
 
+    public TextComponent getComponent() {
+        return mComponent;
+    }
+
+    public boolean isEncryptionPlaceholder() {
+        return mEncryptionPlaceholder;
+    }
+
     private SpannableStringBuilder formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf;
 
@@ -180,11 +190,16 @@ public class TextContentView extends TextView
         }
     }
 
+    public static TextContentView obtain(LayoutInflater inflater, ViewGroup parent) {
+        return obtain(inflater, parent, false);
+    }
+
     /**
      * Return a new Message instance from the global pool. Allows us to
      * avoid allocating new objects in many cases. Inspired by {@link android.os.Message}.
+     * @param encryptionPlaceholder true if the whole message is encrypted and this is a placeholder.
      */
-    public static TextContentView obtain(LayoutInflater inflater, ViewGroup parent) {
+    public static TextContentView obtain(LayoutInflater inflater, ViewGroup parent, boolean encryptionPlaceholder) {
         synchronized (sPoolSync) {
             if (sPool != null) {
                 TextContentView m = sPool;
@@ -192,16 +207,20 @@ public class TextContentView extends TextView
                 m.next = null;
                 sPoolSize--;
                 //m.mContext = context;
+                m.mEncryptionPlaceholder = encryptionPlaceholder;
                 return m;
             }
         }
 
-        return create(inflater, parent);
+        return create(inflater, parent, encryptionPlaceholder);
     }
 
-    public static TextContentView create(LayoutInflater inflater, ViewGroup parent) {
-        return (TextContentView) inflater.inflate(R.layout.message_content_text,
+    public static TextContentView create(LayoutInflater inflater, ViewGroup parent, boolean encryptionPlaceholder) {
+        TextContentView view = (TextContentView) inflater.inflate(R.layout.message_content_text,
             parent, false);
+        view.mEncryptionPlaceholder = encryptionPlaceholder;
+
+        return view;
     }
 
 }
