@@ -160,15 +160,13 @@ public class MessageListItem extends RelativeLayout {
             final Contact contact, final Pattern highlight) {
         mMessage = msg;
 
-        // empty container
-        mContent.removeAllViews();
-
         if (msg.isEncrypted()) {
             // FIXME this is not good
             TextContentView view = TextContentView.obtain(mInflater, mContent, true);
 
             String text = getResources().getString(R.string.text_encrypted);
             view.bind(new TextComponent(text), contact, highlight);
+            mContent.addContent(view);
         }
 
         else {
@@ -365,7 +363,8 @@ public class MessageListItem extends RelativeLayout {
 
         int c = mContent.getChildCount();
         for (int i = 0; i < c; i++) {
-            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(i);
+            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
+            mContent.removeView((View) view);
             view.unbind();
         }
     }
