@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +28,8 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
+import org.kontalk.message.MessageComponent;
+import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
@@ -45,6 +48,8 @@ import android.text.style.ImageSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -58,17 +63,12 @@ import android.widget.TextView;
  */
 public class MessageListItem extends RelativeLayout {
 
-    /**
-     * Maximum affordable size of a text message to make complex stuff
-     * (e.g. emoji, linkify, etc.)
-     */
-    private static final int MAX_AFFORDABLE_SIZE = 10240;   // 10 KB
-
     static private Drawable sDefaultContactImage;
 
+    private LayoutInflater mInflater;
+
     private CompositeMessage mMessage;
-    private SpannableStringBuilder mFormattedMessage;
-    private MessageItemTextView mTextView;
+    private MessageContentLayout mContent;
     private ImageView mStatusIcon;
     private ImageView mWarningIcon;
     private TextView mDateView;
@@ -92,27 +92,29 @@ public class MessageListItem extends RelativeLayout {
         new TextAppearanceSpan(getContext(), android.R.style.TextAppearance_Small);
     */
 
-    private BackgroundColorSpan mHighlightColorSpan;  // set in ctor
-
     public MessageListItem(Context context) {
         super(context);
+        init(context);
     }
 
     public MessageListItem(final Context context, AttributeSet attrs) {
         super(context, attrs);
-        int color = context.getResources().getColor(R.color.highlight_color);
-        mHighlightColorSpan = new BackgroundColorSpan(color);
+        init(context);
+    }
 
+    private void init(Context context) {
         if (sDefaultContactImage == null) {
             sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
         }
+
+        mInflater = LayoutInflater.from(context);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mTextView = (MessageItemTextView) findViewById(R.id.text_view);
+        mContent = (MessageContentLayout) findViewById(R.id.content);
         mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
         mWarningIcon = (ImageView) findViewById(R.id.warning_icon);
         mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
@@ -122,7 +124,7 @@ public class MessageListItem extends RelativeLayout {
         mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
 
         if (isInEditMode()) {
-            mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
+            //mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
             //mTextView.setText("TEST");
             //mTextView.setText(":-)");
             /* INCOMING
@@ -158,39 +160,25 @@ public class MessageListItem extends RelativeLayout {
             final Contact contact, final Pattern highlight) {
         mMessage = msg;
 
-        mFormattedMessage = formatMessage(contact, highlight);
-        String size = Preferences.getFontSize(context);
-        int sizeId;
-        if (size.equals("small"))
-            sizeId = android.R.style.TextAppearance_Small;
-        else if (size.equals("large"))
-            sizeId = android.R.style.TextAppearance_Large;
-        else
-            sizeId = android.R.style.TextAppearance;
-        mTextView.setTextAppearance(context, sizeId);
+        if (msg.isEncrypted()) {
+            // FIXME this is not good
+            TextContentView view = TextContentView.obtain(mInflater, mContent, true);
 
-        // linkify!
-        boolean linksFound = false;
-        if (mFormattedMessage.length() < MAX_AFFORDABLE_SIZE)
-            linksFound = Linkify.addLinks(mFormattedMessage, Linkify.ALL);
+            String text = getResources().getString(R.string.text_encrypted);
+            view.bind(new TextComponent(text), contact, highlight);
+            mContent.addContent(view);
+        }
 
-        /*
-         * workaround for bugs:
-         * http://code.google.com/p/android/issues/detail?id=17343
-         * http://code.google.com/p/android/issues/detail?id=22493
-         * applies from Honeycomb to JB 4.2.2 afaik
-         */
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB &&
-                android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
-            // from http://stackoverflow.com/a/12303155/1045199
-            mFormattedMessage.append("\u200b"); // was: \u2060
+        else {
+            // process components
+            List<MessageComponent<?>> components = msg.getComponents();
+            for (MessageComponent<?> cmp : components) {
+                MessageContentView<?> view = MessageContentViewFactory
+                    .createContent(mInflater, mContent, cmp, contact, highlight);
 
-        if (linksFound)
-            mTextView.setMovementMethod(LinkMovementMethod.getInstance());
-        else
-            mTextView.setMovementMethod(null);
-
-        mTextView.setText(mFormattedMessage);
+                mContent.addContent(view);
+            }
+        }
 
         int resId = 0;
         int statusId = 0;
@@ -285,21 +273,7 @@ public class MessageListItem extends RelativeLayout {
         mDateView.setText(formatTimestamp());
     }
 
-    private final class MaxSizeImageSpan extends ImageSpan {
-        private final Drawable mDrawable;
-
-        public MaxSizeImageSpan(Context context, Bitmap bitmap) {
-            super(context, bitmap);
-            mDrawable = super.getDrawable();
-            mDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        }
-
-        @Override
-        public Drawable getDrawable() {
-            return mDrawable;
-        }
-    }
-
+    /*
     private SpannableStringBuilder formatMessage(final Contact contact, final Pattern highlight) {
         SpannableStringBuilder buf;
 
@@ -374,6 +348,7 @@ public class MessageListItem extends RelativeLayout {
 
         return buf;
     }
+    */
 
     private CharSequence formatTimestamp() {
         long serverTime = mMessage.getServerTimestamp();
@@ -385,6 +360,13 @@ public class MessageListItem extends RelativeLayout {
     public final void unbind() {
         // TODO mMessage.recycle();
         mMessage = null;
+
+        int c = mContent.getChildCount();
+        for (int i = 0; i < c; i++) {
+            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
+            mContent.removeView((View) view);
+            view.unbind();
+        }
     }
 
     public CompositeMessage getMessage() {
