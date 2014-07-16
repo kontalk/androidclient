@@ -20,6 +20,7 @@ package org.kontalk.crypto;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -153,14 +154,74 @@ public class PersonalKey implements Parcelable {
         return ring;
     }
 
+    /** Checks that the given personal key data is correct. */
+    public static PGPKeyPairRing test(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
+            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+
+        // X.509 bridge certificate
+        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+
+        return test(secRing, pubRing, passphrase, bridgeCert);
+    }
+
+    /** Checks that the given personal key data is correct. */
+    public static PGPKeyPairRing test(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
+            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+
+        // X.509 bridge certificate
+        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+
+        return test(secRing, pubRing, passphrase, bridgeCert);
+    }
+
+    private static PGPKeyPairRing test(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
+            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+
+        // for now we just do a test load
+        load(secRing, pubRing, passphrase, bridgeCert);
+
+        return new PGPKeyPairRing(pubRing, secRing);
+    }
+
+    /** Creates a {@link PersonalKey} from private and public key input streams. */
+    public static PersonalKey load(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
+            throws PGPException, IOException, CertificateException, NoSuchProviderException {
+
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+
+        // X.509 bridge certificate
+        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+
+        return load(secRing, pubRing, passphrase, bridgeCert);
+    }
+
     /** Creates a {@link PersonalKey} from private and public key byte buffers. */
-    @SuppressWarnings("unchecked")
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
             throws PGPException, IOException, CertificateException, NoSuchProviderException {
 
         KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
         PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+
+        // X.509 bridge certificate
+        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+
+        return load(secRing, pubRing, passphrase, bridgeCert);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static PersonalKey load(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
+            throws PGPException, IOException, CertificateException, NoSuchProviderException {
 
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
         PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
@@ -202,9 +263,6 @@ public class PersonalKey implements Parcelable {
                 encPriv = sec.extractPrivateKey(decryptor);
             }
         }
-
-        // X.509 bridge certificate
-        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
 
         if (encPriv != null && encPub != null && signPriv != null && signPub != null && bridgeCert != null) {
             signKp = new PGPKeyPair(signPub, signPriv);
@@ -260,7 +318,7 @@ public class PersonalKey implements Parcelable {
 
     /**
      * Signs the given public key uid using our master (signing) key.<br>
-     * WARNING use this method along with {@link PGPPublicKeyRing#insertPublicKey()}
+     * WARNING use this method along with {@link PGPPublicKeyRing#insertPublicKey}
      * to make this effective, otherwise GnuPG will not accept the new signature.
      * @see PGPPublicKeyRing#insertPublicKey(PGPPublicKeyRing, PGPPublicKey)
      * @see #signPublicKey(byte[], String)

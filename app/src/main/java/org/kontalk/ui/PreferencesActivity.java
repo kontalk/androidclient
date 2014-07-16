@@ -34,8 +34,10 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -45,6 +47,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import java.io.File;
 
 
 /**
@@ -158,9 +162,16 @@ public final class PreferencesActivity extends PreferenceActivity {
                  */
 
                 Toast.makeText(PreferencesActivity.this,
-                        // TODO i18n
-                        "Not implemented.",
-                        Toast.LENGTH_LONG).show();
+                    // TODO i18n
+                    "Not implemented.",
+                    Toast.LENGTH_LONG).show();
+
+                /* TEST
+                Uri keypack = Uri.fromFile(new File(Environment
+                    .getExternalStorageDirectory(), Authenticator.KEYPACK_FILENAME));
+                MessageCenterService.importKeyPair(getApplicationContext(),
+                    keypack, "dummy");
+                 */
 
                 return true;
             }

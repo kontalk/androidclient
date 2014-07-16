@@ -213,9 +213,14 @@ public class Authenticator extends AbstractAccountAuthenticator {
         zip.close();
     }
 
-    public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData, byte[] bridgeCertData) {
+    public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData,
+            byte[] bridgeCertData, String passphrase) {
         AccountManager am = AccountManager.get(ctx);
         Account acc = getDefaultAccount(am);
+
+        // password is optional when updating just the public key
+        if (passphrase != null)
+            am.setPassword(acc, passphrase);
 
         // private key data is optional when updating just the public key
         if (privateKeyData != null)

@@ -182,4 +182,10 @@ abstract class MessageCenterPacketListener implements PacketListener {
             instance.endKeyPairRegeneration();
     }
 
+    protected void endKeyPairImport() {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.endKeyPairImport();
+    }
+
 }
