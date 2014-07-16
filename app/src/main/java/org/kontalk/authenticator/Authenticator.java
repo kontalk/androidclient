@@ -18,30 +18,6 @@
 
 package org.kontalk.authenticator;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-
-import org.kontalk.R;
-import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.X509Bridge;
-import org.kontalk.ui.NumberValidation;
-import org.kontalk.util.MessageUtils;
-import org.spongycastle.bcpg.ArmoredOutputStream;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.util.io.pem.PemObject;
-import org.spongycastle.util.io.pem.PemWriter;
-
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
@@ -54,8 +30,34 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
-import android.util.Log;
 import android.widget.Toast;
+
+import org.kontalk.R;
+import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.X509Bridge;
+import org.kontalk.ui.NumberValidation;
+import org.kontalk.util.MessageUtils;
+import org.spongycastle.bcpg.ArmoredOutputStream;
+import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.util.io.pem.PemObject;
+import org.spongycastle.util.io.pem.PemWriter;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 
 /**
@@ -80,6 +82,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
     public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
     public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
+    public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
 
     private final Context mContext;
     private final Handler mHandler;
@@ -140,17 +143,18 @@ public class Authenticator extends AbstractAccountAuthenticator {
             throws CertificateException, NoSuchProviderException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
+        // put everything in a zip file
+        File path = Environment.getExternalStorageDirectory();
+        ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(new File(path, KEYPACK_FILENAME)));
+
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);
 
         String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
-        String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
-
-        File path = Environment.getExternalStorageDirectory();
-        OutputStream out;
-
-        byte[] publicKey = Base64.decode(pubKeyData, Base64.DEFAULT);
         byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
+
+        OutputStream out;
+        ByteArrayOutputStream stream;
 
         if (bridgeCertificate) {
             // bridge certificate is just plain data
@@ -158,33 +162,55 @@ public class Authenticator extends AbstractAccountAuthenticator {
             byte[] bridgeCert = Base64.decode(bridgeCertData, Base64.DEFAULT);
 
             // export bridge certificate
-            PemWriter writer = new PemWriter(new FileWriter(new File(path, BRIDGE_CERT_FILENAME)));
+            zip.putNextEntry(new ZipEntry(BRIDGE_CERT_FILENAME));
+            stream = new ByteArrayOutputStream();
+            PemWriter writer = new PemWriter(new OutputStreamWriter(stream));
             writer.writeObject(new PemObject(X509Bridge.PEM_TYPE_CERTIFICATE, bridgeCert));
             writer.close();
+            stream.writeTo(zip);
+            zip.closeEntry();
 
             // export bridge private key
+            zip.putNextEntry(new ZipEntry(BRIDGE_KEY_FILENAME));
             PrivateKey bridgeKey = PGP.convertPrivateKey(privateKey, passphrase);
-            writer = new PemWriter(new FileWriter(new File(path, BRIDGE_KEY_FILENAME)));
+            stream = new ByteArrayOutputStream();
+            writer = new PemWriter(new OutputStreamWriter(stream));
             writer.writeObject(new PemObject(X509Bridge.PEM_TYPE_PRIVATE_KEY, bridgeKey.getEncoded()));
             writer.close();
+            stream.writeTo(zip);
+            zip.closeEntry();
 
             // certificate pack in PKCS#12
+            zip.putNextEntry(new ZipEntry(BRIDGE_CERTPACK_FILENAME));
             X509Certificate certificate = X509Bridge.load(bridgeCert);
             KeyStore pkcs12 = X509Bridge.exportCertificate(certificate, bridgeKey);
-            out = new FileOutputStream(new File(path, BRIDGE_CERTPACK_FILENAME));
-            pkcs12.store(out, passphrase.toCharArray());
-            out.close();
+            pkcs12.store(zip, passphrase.toCharArray());
+            zip.closeEntry();
         }
 
+        String pubKeyData = m.getUserData(acc, DATA_PUBLICKEY);
+        byte[] publicKey = Base64.decode(pubKeyData, Base64.DEFAULT);
+
         // export public key
-        out = new ArmoredOutputStream(new FileOutputStream(new File(path, PUBLIC_KEY_FILENAME)));
+        zip.putNextEntry(new ZipEntry(PUBLIC_KEY_FILENAME));
+        stream = new ByteArrayOutputStream();
+        out = new ArmoredOutputStream(stream);
         out.write(publicKey);
         out.close();
+        stream.writeTo(zip);
+        zip.closeEntry();
 
         // export private key
-        out = new ArmoredOutputStream(new FileOutputStream(new File(path, PRIVATE_KEY_FILENAME)));
+        zip.putNextEntry(new ZipEntry(PRIVATE_KEY_FILENAME));
+        stream = new ByteArrayOutputStream();
+        out = new ArmoredOutputStream(stream);
         out.write(privateKey);
         out.close();
+        stream.writeTo(zip);
+        zip.closeEntry();
+
+        // finalize the zip file
+        zip.close();
     }
 
     public static void setDefaultPersonalKey(Context ctx, byte[] publicKeyData, byte[] privateKeyData, byte[] bridgeCertData) {

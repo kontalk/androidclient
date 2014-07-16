@@ -132,6 +132,7 @@ public final class PreferencesActivity extends PreferenceActivity {
                 }
                 catch (Exception e) {
 
+                    Log.e(TAG, "error exporting keys", e);
                     Toast.makeText(PreferencesActivity.this,
                         // TODO i18n
                         "Unable to export personal key.",
