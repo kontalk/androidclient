@@ -199,6 +199,7 @@ public class Kontalk extends Application {
     /** Invalidates the cached personal key. */
     public void invalidatePersonalKey() {
         mDefaultKey = null;
+        mKeyPassphrase = null;
     }
 
     private void ensureCachedPassphrase() {
