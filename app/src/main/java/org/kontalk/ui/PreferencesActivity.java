@@ -144,6 +144,28 @@ public final class PreferencesActivity extends PreferenceActivity {
             }
         });
 
+        // import key pair
+        final Preference importKeyPair = findPreference("pref_import_keypair");
+        importKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                /*
+                 * TODO import keys
+                 * Import process is like a key renewal: old keys must be
+                 * revoked, then the new keys will be sent to the server which
+                 * will check them for the right signatures and data.
+                 */
+
+                Toast.makeText(PreferencesActivity.this,
+                        // TODO i18n
+                        "Not implemented.",
+                        Toast.LENGTH_LONG).show();
+
+                return true;
+            }
+        });
+
         // use custom background
         final Preference customBg = findPreference("pref_custom_background");
         customBg.setOnPreferenceClickListener(new OnPreferenceClickListener() {
