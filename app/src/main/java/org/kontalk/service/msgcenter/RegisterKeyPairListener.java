@@ -208,13 +208,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
                         // invalidate cached personal key
                         getApplication().invalidatePersonalKey();
 
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                            Toast.makeText(getApplication(),
-                                R.string.msg_gen_keypair_complete,
-                                Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        finish();
 
                         // restart message center
                         MessageCenterService.restart(getApplication());
@@ -225,5 +219,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
             }
         }
     }
+
+    protected abstract void finish();
 
 }

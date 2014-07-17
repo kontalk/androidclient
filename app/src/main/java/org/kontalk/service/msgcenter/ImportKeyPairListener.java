@@ -17,8 +17,11 @@
  */
 package org.kontalk.service.msgcenter;
 
+import android.widget.Toast;
+
 import org.jivesoftware.smack.packet.Packet;
 import org.kontalk.Log;
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
@@ -130,6 +133,17 @@ class ImportKeyPairListener extends RegisterKeyPairListener {
 
         // we are done here
         endKeyPairImport();
+    }
+
+    @Override
+    protected void finish() {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getApplication(),
+                    R.string.msg_import_keypair_complete,
+                    Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 }

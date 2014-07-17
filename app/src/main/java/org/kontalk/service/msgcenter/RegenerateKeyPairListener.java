@@ -24,8 +24,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.jivesoftware.smack.packet.Packet;
+import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.KeyPairGeneratorService;
@@ -125,6 +127,17 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
 
         // we are done here
         endKeyPairRegeneration();
+    }
+
+    @Override
+    protected void finish() {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getApplication(),
+                    R.string.msg_gen_keypair_complete,
+                    Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 }
