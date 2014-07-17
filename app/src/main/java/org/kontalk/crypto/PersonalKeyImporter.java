@@ -3,19 +3,19 @@ package org.kontalk.crypto;
 
 import android.os.Environment;
 
+import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.util.MessageUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.openpgp.PGPException;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.kontalk.crypto.PGP.PGPKeyPairRing;
 
 
 /**
@@ -26,8 +26,8 @@ public class PersonalKeyImporter {
 
     private static final long MAX_KEY_SIZE = 102400; // 100 KB
 
-    public static final String PUBLIC_KEY_FILENAME = "kontalk-public.pgp";
-    public static final String PRIVATE_KEY_FILENAME = "kontalk-private.pgp";
+    public static final String PUBLIC_KEY_FILENAME = "kontalk-public.asc";
+    public static final String PRIVATE_KEY_FILENAME = "kontalk-private.asc";
     public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
     public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
     public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
@@ -40,8 +40,8 @@ public class PersonalKeyImporter {
     private ZipInputStream mKeyPack;
     private String mPassphrase;
 
-    private ArmoredInputStream mPublicKey;
-    private ArmoredInputStream mPrivateKey;
+    private ByteArrayOutputStream mPublicKey;
+    private ByteArrayOutputStream mPrivateKey;
 
     public PersonalKeyImporter(ZipInputStream keypack, String passphrase) {
         mKeyPack = keypack;
@@ -49,7 +49,7 @@ public class PersonalKeyImporter {
     }
 
     public void load() throws IOException {
-        ArmoredInputStream publicKey = null, privateKey = null;
+        ByteArrayOutputStream publicKey = null, privateKey = null;
 
         ZipEntry entry;
         while ((entry = mKeyPack.getNextEntry()) != null) {
@@ -57,17 +57,13 @@ public class PersonalKeyImporter {
             // PGP public key
             if (PUBLIC_KEY_FILENAME.equals(entry.getName())) {
                 // I don't really know if this is good...
-                byte[] publicKeyData = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE)
-                    .toByteArray();
-                publicKey = new ArmoredInputStream(new ByteArrayInputStream(publicKeyData));
+                publicKey = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
             }
 
             // PGP private key
             else if (PRIVATE_KEY_FILENAME.equals(entry.getName())) {
                 // I don't really know if this is good...
-                byte[] privateKeyData = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE)
-                    .toByteArray();
-                privateKey = new ArmoredInputStream(new ByteArrayInputStream(privateKeyData));
+                privateKey = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
             }
 
         }
@@ -89,15 +85,29 @@ public class PersonalKeyImporter {
     public PersonalKey createPersonalKey() throws PGPException, NoSuchProviderException,
             CertificateException, IOException {
         if (mPrivateKey != null && mPublicKey != null)
-            return PersonalKey.load(mPrivateKey, mPublicKey, mPassphrase, null);
+            return PersonalKey.load(
+                new ArmoredInputStream(new ByteArrayInputStream(mPrivateKey.toByteArray())),
+                new ArmoredInputStream(new ByteArrayInputStream(mPublicKey.toByteArray())),
+                mPassphrase, null);
         return null;
     }
 
     public PGPKeyPairRing createKeyPairRing() throws PGPException, NoSuchProviderException,
             CertificateException, IOException {
         if (mPrivateKey != null && mPublicKey != null)
-            return PersonalKey.test(mPrivateKey, mPublicKey, mPassphrase, null);
+            return PersonalKey.test(
+                new ArmoredInputStream(new ByteArrayInputStream(mPrivateKey.toByteArray())),
+                new ArmoredInputStream(new ByteArrayInputStream(mPublicKey.toByteArray())),
+                mPassphrase, null);
         return null;
+    }
+
+    public byte[] getPrivateKeyData() {
+        return mPrivateKey != null ? mPrivateKey.toByteArray() : null;
+    }
+
+    public byte[] getPublicKeyData() {
+        return mPublicKey != null ? mPublicKey.toByteArray() : null;
     }
 
 }

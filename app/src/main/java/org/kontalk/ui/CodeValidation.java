@@ -18,16 +18,6 @@
 
 package org.kontalk.ui;
 
-import java.net.SocketException;
-
-import org.kontalk.R;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.service.KeyPairGeneratorService;
-import org.kontalk.util.Preferences;
-
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -40,6 +30,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.util.Preferences;
+
+import java.net.SocketException;
 
 
 /** Manual validation code input. */
@@ -54,8 +54,10 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private String mName;
     private String mPhone;
     private String mPassphrase;
-    private boolean mNewKey;
     private EndpointServer mServer;
+
+    private byte[] mImportedPrivateKey;
+    private byte[] mImportedPublicKey;
 
     private static final class RetainData {
         NumberValidator validator;
@@ -97,7 +99,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         mName = i.getStringExtra("name");
         mPhone = i.getStringExtra("phone");
         mPassphrase = i.getStringExtra("passphrase");
-        mNewKey = i.getBooleanExtra("newKey", true);
+        mImportedPrivateKey = i.getByteArrayExtra("importedPrivateKey");
+        mImportedPublicKey = i.getByteArrayExtra("importedPublicKey");
 
         String server = i.getStringExtra("server");
         if (server != null)
@@ -170,8 +173,12 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         startProgress();
 
         // send the code
-        mValidator = new NumberValidator(this, mServer, mName, mPhone, mKey, mPassphrase, mNewKey);
+        boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
+        mValidator = new NumberValidator(this, mServer, mName, mPhone,
+            imported ? null : mKey, mPassphrase);
         mValidator.setListener(this);
+        if (imported)
+            mValidator.importKey(mImportedPrivateKey, mImportedPublicKey);
 
         mValidator.manualInput(code);
         mValidator.start();
@@ -247,7 +254,6 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 Intent i = new Intent();
                 i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
                 i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
-                i.putExtra(NumberValidation.PARAM_NEWKEY, v.isNewKey());
                 setResult(RESULT_OK, i);
                 finish();
             }
