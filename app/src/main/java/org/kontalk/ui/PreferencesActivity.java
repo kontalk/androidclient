@@ -30,6 +30,7 @@ import org.kontalk.util.Preferences;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -49,6 +50,8 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
+
+import static org.kontalk.authenticator.Authenticator.KEYPACK_FILENAME;
 
 
 /**
@@ -153,25 +156,19 @@ public final class PreferencesActivity extends PreferenceActivity {
         importKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-
-                /*
-                 * TODO import keys
-                 * Import process is like a key renewal: old keys must be
-                 * revoked, then the new keys will be sent to the server which
-                 * will check them for the right signatures and data.
-                 */
-
-                Toast.makeText(PreferencesActivity.this,
-                    // TODO i18n
-                    "Not implemented.",
-                    Toast.LENGTH_LONG).show();
-
-                /* TEST
-                Uri keypack = Uri.fromFile(new File(Environment
-                    .getExternalStorageDirectory(), Authenticator.KEYPACK_FILENAME));
-                MessageCenterService.importKeyPair(getApplicationContext(),
-                    keypack, "dummy");
-                 */
+                new AlertDialog.Builder(PreferencesActivity.this)
+                    .setTitle(R.string.pref_import_keypair)
+                    .setMessage(getString(R.string.msg_import_keypair, KEYPACK_FILENAME))
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Uri keypack = Uri.fromFile(new File(Environment
+                                .getExternalStorageDirectory(), KEYPACK_FILENAME));
+                            MessageCenterService.importKeyPair(getApplicationContext(),
+                                keypack, ((Kontalk) getApplication()).getCachedPassphrase());
+                        }
+                    })
+                    .show();
 
                 return true;
             }
