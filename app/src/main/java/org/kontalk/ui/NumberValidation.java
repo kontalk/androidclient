@@ -482,6 +482,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             startValidationCode(REQUEST_VALIDATION_CODE);
     }
 
+    /**
+     * Opens import keys from another device wizard.
+     * Used by the view definition as the {@link OnClickListener}.
+     * @param v not used
+     */
+    public void importKeys(View v) {
+        // TODO import keys -- number verification with server is not needed
+        // nonetheless, we need to verify the number against the user ID
+        Toast.makeText(this, "Not implemented.", Toast.LENGTH_SHORT).show();
+    }
+
     /** No search here. */
     @Override
     public boolean onSearchRequested() {

@@ -147,6 +147,7 @@
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Request verification code</string>
     <string name="button_validation_code">I already have a verification code</string>
+    <string name="button_import_keys">Import keys from another device</string>
     <string name="button_validation_register">Verify</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>
