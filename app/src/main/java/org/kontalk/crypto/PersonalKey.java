@@ -66,6 +66,8 @@ public class PersonalKey implements Parcelable {
 
     /** Decrypted key pair (for direct usage). */
     private final PGPDecryptedKeyPairRing mPair;
+    /** Secret keyring (for cache). */
+    private PGPSecretKeyRing mSecretKeyRing;
     /** X.509 bridge certificate. */
     private X509Certificate mBridgeCert;
 
@@ -108,6 +110,22 @@ public class PersonalKey implements Parcelable {
         mPair.signKey.getPublicKey().encode(out);
         mPair.encryptKey.getPublicKey().encode(out);
         return out.toByteArray();
+    }
+
+    /**
+     * This is cached from the first load.
+     * Altering objects in this class does not affect the returned keyring in any way!!
+     */
+    public PGPSecretKeyRing getCachedSecretKeyRing() {
+        return mSecretKeyRing;
+    }
+
+    /** Only available if secret keyring cache is available. */
+    public PGPKeyPairRing createKeyPairRing() throws IOException {
+        if (mSecretKeyRing == null)
+            throw new IllegalArgumentException("cached secret keyring is not available.");
+
+        return new PGPKeyPairRing(getPublicKeyRing(), mSecretKeyRing);
     }
 
     /** Returns the first user ID on the key that matches the given network. */
@@ -177,7 +195,8 @@ public class PersonalKey implements Parcelable {
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         // X.509 bridge certificate
-        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+        X509Certificate bridgeCert = (bridgeCertData != null) ?
+            X509Bridge.load(bridgeCertData) : null;
 
         return test(secRing, pubRing, passphrase, bridgeCert);
     }
@@ -200,7 +219,8 @@ public class PersonalKey implements Parcelable {
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         // X.509 bridge certificate
-        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+        X509Certificate bridgeCert = (bridgeCertData != null) ?
+            X509Bridge.load(bridgeCertData) : null;
 
         return load(secRing, pubRing, passphrase, bridgeCert);
     }
@@ -214,7 +234,8 @@ public class PersonalKey implements Parcelable {
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         // X.509 bridge certificate
-        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+        X509Certificate bridgeCert = (bridgeCertData != null) ?
+            X509Bridge.load(bridgeCertData) : null;
 
         return load(secRing, pubRing, passphrase, bridgeCert);
     }
@@ -267,7 +288,9 @@ public class PersonalKey implements Parcelable {
         if (encPriv != null && encPub != null && signPriv != null && signPub != null && bridgeCert != null) {
             signKp = new PGPKeyPair(signPub, signPriv);
             encryptKp = new PGPKeyPair(encPub, encPriv);
-            return new PersonalKey(signKp, encryptKp, bridgeCert);
+            PersonalKey key = new PersonalKey(signKp, encryptKp, bridgeCert);
+            // save the secret keyring for later
+            key.mSecretKeyRing = secRing;
         }
 
         throw new PGPException("invalid key data");

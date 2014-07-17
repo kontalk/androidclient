@@ -26,7 +26,6 @@ import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
@@ -35,6 +34,7 @@ import android.widget.Toast;
 import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
@@ -44,7 +44,6 @@ import org.spongycastle.util.io.pem.PemObject;
 import org.spongycastle.util.io.pem.PemWriter;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,6 +57,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static org.kontalk.crypto.PersonalKeyImporter.BRIDGE_CERTPACK_FILENAME;
+import static org.kontalk.crypto.PersonalKeyImporter.BRIDGE_CERT_FILENAME;
+import static org.kontalk.crypto.PersonalKeyImporter.BRIDGE_KEY_FILENAME;
+import static org.kontalk.crypto.PersonalKeyImporter.PRIVATE_KEY_FILENAME;
+import static org.kontalk.crypto.PersonalKeyImporter.PUBLIC_KEY_FILENAME;
 
 
 /**
@@ -76,13 +81,6 @@ public class Authenticator extends AbstractAccountAuthenticator {
     /** @deprecated This was obviously deprecated from the beginning. */
     @Deprecated
     public static final String DATA_AUTHTOKEN = "org.kontalk.token";
-
-    public static final String PUBLIC_KEY_FILENAME = "kontalk-public.pgp";
-    public static final String PRIVATE_KEY_FILENAME = "kontalk-private.pgp";
-    public static final String BRIDGE_CERT_FILENAME = "kontalk-login.crt";
-    public static final String BRIDGE_KEY_FILENAME = "kontalk-login.key";
-    public static final String BRIDGE_CERTPACK_FILENAME = "kontalk-login.p12";
-    public static final String KEYPACK_FILENAME = "kontalk-keys.zip";
 
     private final Context mContext;
     private final Handler mHandler;
@@ -143,9 +141,10 @@ public class Authenticator extends AbstractAccountAuthenticator {
             throws CertificateException, NoSuchProviderException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
+        // TODO move all this stuff to a PersonalKeyExporter
+
         // put everything in a zip file
-        File path = Environment.getExternalStorageDirectory();
-        ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(new File(path, KEYPACK_FILENAME)));
+        ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(PersonalKeyImporter.DEFAULT_KEYPACK));
 
         AccountManager m = AccountManager.get(ctx);
         Account acc = getDefaultAccount(m);

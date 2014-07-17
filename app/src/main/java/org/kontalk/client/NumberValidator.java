@@ -94,6 +94,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private NumberValidatorListener mListener;
     private volatile int mStep;
     private CharSequence mValidationCode;
+    /** This flags allows to use the already provided key (which is supposed to be signed). */
+    // TODO actually use this
+    private boolean mNewKey;
 
     private final Context mContext;
     private Thread mThread;
@@ -101,13 +104,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private HandlerThread mServiceHandler;
     private Handler mInternalHandler;
 
-    public NumberValidator(Context context, EndpointServer server, String name, String phone, PersonalKey key, String passphrase) {
+    public NumberValidator(Context context, EndpointServer server, String name, String phone, PersonalKey key, String passphrase, boolean newKey) {
         mContext = context.getApplicationContext();
         mServer = server;
         mName = name;
         mPhone = phone;
         mKey = key;
         mPassphrase = passphrase;
+        mNewKey = newKey;
 
         mConnector = new XMPPConnectionHelper(mContext, mServer, true);
         mConnector.setRetryEnabled(false);
@@ -362,6 +366,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return mStep;
     }
 
+    public boolean isNewKey() {
+        return mNewKey;
+    }
+
     private void initConnection() throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException,
@@ -414,10 +422,17 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         if (mKey != null) {
             String publicKey;
             try {
-                String userId = MessageUtils.sha1(mPhone);
-                // TODO what in name and comment fields here?
-                mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(),
-                    mName, mPassphrase);
+
+                if (mNewKey) {
+                    String userId = MessageUtils.sha1(mPhone);
+                    // TODO what in name and comment fields here?
+                    mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(),
+                        mName, mPassphrase);
+                }
+                else {
+                    mKeyRing = mKey.createKeyPairRing();
+                }
+
                 publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
             }
             catch (Exception e) {

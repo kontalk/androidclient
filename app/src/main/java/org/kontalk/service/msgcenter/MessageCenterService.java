@@ -1480,7 +1480,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void beginKeyPairImport(Uri keypack, String passphrase) {
         if (mKeyPairImporter == null) {
             try {
-
                 ZipInputStream zip = new ZipInputStream(getContentResolver()
                     .openInputStream(keypack));
 

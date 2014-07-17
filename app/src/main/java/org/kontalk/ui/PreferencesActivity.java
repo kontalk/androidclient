@@ -51,7 +51,7 @@ import android.widget.Toast;
 
 import java.io.File;
 
-import static org.kontalk.authenticator.Authenticator.KEYPACK_FILENAME;
+import static org.kontalk.crypto.PersonalKeyImporter.KEYPACK_FILENAME;
 
 
 /**

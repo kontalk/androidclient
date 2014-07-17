@@ -54,6 +54,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private String mName;
     private String mPhone;
     private String mPassphrase;
+    private boolean mNewKey;
     private EndpointServer mServer;
 
     private static final class RetainData {
@@ -96,6 +97,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         mName = i.getStringExtra("name");
         mPhone = i.getStringExtra("phone");
         mPassphrase = i.getStringExtra("passphrase");
+        mNewKey = i.getBooleanExtra("newKey", true);
 
         String server = i.getStringExtra("server");
         if (server != null)
@@ -168,7 +170,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         startProgress();
 
         // send the code
-        mValidator = new NumberValidator(this, mServer, mName, mPhone, mKey, mPassphrase);
+        mValidator = new NumberValidator(this, mServer, mName, mPhone, mKey, mPassphrase, mNewKey);
         mValidator.setListener(this);
 
         mValidator.manualInput(code);
@@ -245,6 +247,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
                 Intent i = new Intent();
                 i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
                 i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
+                i.putExtra(NumberValidation.PARAM_NEWKEY, v.isNewKey());
                 setResult(RESULT_OK, i);
                 finish();
             }

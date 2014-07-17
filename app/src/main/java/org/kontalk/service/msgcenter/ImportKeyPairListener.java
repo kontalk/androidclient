@@ -20,95 +20,46 @@ package org.kontalk.service.msgcenter;
 import android.widget.Toast;
 
 import org.jivesoftware.smack.packet.Packet;
-import org.kontalk.Log;
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.X509Bridge;
-import org.kontalk.util.MessageUtils;
-import org.spongycastle.bcpg.ArmoredInputStream;
-import org.spongycastle.jcajce.provider.asymmetric.X509;
+import org.kontalk.crypto.PersonalKeyImporter;
 import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.util.io.pem.PemObject;
-import org.spongycastle.util.io.pem.PemReader;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import static org.kontalk.authenticator.Authenticator.BRIDGE_CERT_FILENAME;
-import static org.kontalk.authenticator.Authenticator.PRIVATE_KEY_FILENAME;
-import static org.kontalk.authenticator.Authenticator.PUBLIC_KEY_FILENAME;
 
 
 /** Listener and manager for a key pair import cycle. */
 class ImportKeyPairListener extends RegisterKeyPairListener {
 
-    private static final long MAX_KEY_SIZE = 102400; // 100 KB
-
-    private ZipInputStream mKeyPack;
+    private PersonalKeyImporter mImporter;
 
     public ImportKeyPairListener(MessageCenterService instance,
             ZipInputStream keypack, String passphrase) {
         super(instance, passphrase);
 
-        mKeyPack = keypack;
+        mImporter = new PersonalKeyImporter(keypack, passphrase);
     }
 
     public void run() throws CertificateException, SignatureException,
             PGPException, IOException, NoSuchProviderException {
         super.run();
 
-        ArmoredInputStream publicKey = null, privateKey = null;
-        ByteArrayInputStream bridgeCert = null;
-
-        ZipEntry entry;
-        while ((entry = mKeyPack.getNextEntry()) != null) {
-
-            // PGP public key
-            if (PUBLIC_KEY_FILENAME.equals(entry.getName())) {
-                // I don't really know if this is good...
-                byte[] publicKeyData = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE)
-                    .toByteArray();
-                publicKey = new ArmoredInputStream(new ByteArrayInputStream(publicKeyData));
-            }
-
-            // PGP private key
-            else if (PRIVATE_KEY_FILENAME.equals(entry.getName())) {
-                // I don't really know if this is good...
-                byte[] privateKeyData = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE)
-                        .toByteArray();
-                privateKey = new ArmoredInputStream(new ByteArrayInputStream(privateKeyData));
-            }
-
-            // X.509 bridge certificate
-            else if (BRIDGE_CERT_FILENAME.equals(entry.getName())) {
-                byte[] bridgeCertData = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE)
-                    .toByteArray();
-
-                PemReader reader = new PemReader(new InputStreamReader(new ByteArrayInputStream(bridgeCertData)));
-                PemObject object = reader.readPemObject();
-                if (object != null && X509Bridge.PEM_TYPE_CERTIFICATE.equals(object.getType())) {
-                    bridgeCert = new ByteArrayInputStream(object.getContent());
-                }
-
-                reader.close();
-            }
-
+        try {
+            mImporter.load();
+            mKeyRing = mImporter.createKeyPairRing();
         }
 
-        if (privateKey == null || publicKey == null || bridgeCert == null)
-            throw new IOException("invalid data");
-
-        // try to load a PersonalKey out of the given data
-        mKeyRing = PersonalKey
-            .test(privateKey, publicKey, mPassphrase, bridgeCert);
+        finally {
+            try {
+                mImporter.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
 
         // if we are here, it means personal key is likely valid
         // proceed to send the public key to the server for approval

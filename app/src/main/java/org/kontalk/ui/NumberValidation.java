@@ -18,31 +18,6 @@
 
 package org.kontalk.ui;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.net.SocketException;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
-import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.BuildConfig;
-import org.kontalk.Kontalk;
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.X509Bridge;
-import org.kontalk.service.KeyPairGeneratorService;
-import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
-import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
-import org.kontalk.sync.SyncAdapter;
-import org.kontalk.ui.CountryCodesAdapter.CountryCode;
-import org.kontalk.util.Preferences;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -56,6 +31,7 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -83,6 +59,33 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
+import org.jivesoftware.smack.util.StringUtils;
+import org.kontalk.BuildConfig;
+import org.kontalk.Kontalk;
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.X509Bridge;
+import org.kontalk.service.KeyPairGeneratorService;
+import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
+import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
+import org.kontalk.sync.SyncAdapter;
+import org.kontalk.ui.CountryCodesAdapter.CountryCode;
+import org.kontalk.util.Preferences;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.SocketException;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.util.zip.ZipInputStream;
+
 
 /** Number validation activity. */
 public class NumberValidation extends AccountAuthenticatorActionBarActivity
@@ -98,6 +101,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
+    public static final String PARAM_NEWKEY = "org.kontalk.newKey";
 
     private AccountManager mAccountManager;
     private EditText mNameText;
@@ -339,8 +343,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         super.onStop();
         keepScreenOn(false);
 
-        if (mKeyReceiver != null)
-            lbm.unregisterReceiver(mKeyReceiver);
+        stopKeyReceiver();
 
         if (mProgress != null) {
             if (isFinishing())
@@ -348,6 +351,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             else
                 mProgress.dismiss();
         }
+    }
+
+    private void stopKeyReceiver() {
+        if (mKeyReceiver != null)
+            lbm.unregisterReceiver(mKeyReceiver);
     }
 
     @Override
@@ -360,7 +368,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
-            finishLogin(data.getByteArrayExtra(PARAM_PRIVATEKEY), data.getByteArrayExtra(PARAM_PUBLICKEY));
+            boolean newKey = data.getBooleanExtra(PARAM_NEWKEY, true);
+            if (newKey)
+                finishLogin(data.getByteArrayExtra(PARAM_PRIVATEKEY),
+                    data.getByteArrayExtra(PARAM_PUBLICKEY));
+            else
+                finishLogin();
         }
     }
 
@@ -443,7 +456,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         return true;
     }
 
-    private void startValidation() {
+    private void startValidation(boolean newKey) {
         enableControls(false);
 
         if (!checkInput()) {
@@ -456,7 +469,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
             // key generation finished, start immediately
             EndpointServer server = Preferences.getEndpointServer(this);
-            mValidator = new NumberValidator(this, server, mName, mPhoneNumber, mKey, mPassphrase);
+            mValidator = new NumberValidator(this, server, mName, mPhoneNumber, mKey, mPassphrase, newKey);
             mValidator.setListener(this);
             mValidator.start();
         }
@@ -469,7 +482,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validatePhone(View v) {
         keepScreenOn(true);
-        startValidation();
+        startValidation(true);
     }
 
     /**
@@ -479,7 +492,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validateCode(View v) {
         if (checkInput())
-            startValidationCode(REQUEST_VALIDATION_CODE);
+            startValidationCode(REQUEST_VALIDATION_CODE, true);
     }
 
     /**
@@ -488,9 +501,52 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      * @param v not used
      */
     public void importKeys(View v) {
-        // TODO import keys -- number verification with server is not needed
-        // nonetheless, we need to verify the number against the user ID
-        Toast.makeText(this, "Not implemented.", Toast.LENGTH_SHORT).show();
+        if (checkInput()) {
+            // import keys -- number verification with server is not needed
+            // TODO we should verify the number against the user ID
+
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.pref_import_keypair)
+                .setMessage(getString(R.string.msg_import_keypair, PersonalKeyImporter.KEYPACK_FILENAME))
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do not wait for the generated key
+                        stopKeyReceiver();
+
+                        PersonalKeyImporter importer = null;
+                        try {
+                            Uri keypack = Uri.fromFile(PersonalKeyImporter.DEFAULT_KEYPACK);
+                            ZipInputStream zip = new ZipInputStream(getContentResolver()
+                                .openInputStream(keypack));
+                            // TODO ask passphrase to user and assign to mPassphrase
+                            importer = new PersonalKeyImporter(zip, "dummy");
+                            importer.load();
+
+                            mKey = importer.createPersonalKey();
+                        }
+                        catch (Exception e) {
+                            Log.e(TAG, "error importing keys", e);
+                            // TODO warn user
+                            mKey = null;
+                        }
+                        finally {
+                            try {
+                                importer.close();
+                            }
+                            catch (Exception e) {
+                                // ignored
+                            }
+                        }
+
+                        if (mKey != null) {
+                            // begin usual validation
+                            startValidation(false);
+                        }
+                    }
+                })
+                .show();
+        }
     }
 
     /** No search here. */
@@ -623,6 +679,29 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         });
     }
 
+    private void statusInitializing() {
+        if (mProgress == null)
+            startProgress();
+        mProgress.setCancelable(false);
+        setProgressMessage(getString(R.string.msg_initializing));
+    }
+
+    /** Finish completes the registration procedure using the existing key data. */
+    protected void finishLogin() {
+        Log.v(TAG, "finishing login");
+
+        statusInitializing();
+
+        try {
+            completeLogin(mKey.getCachedSecretKeyRing().getEncoded(),
+                mKey.getEncodedPublicKeyRing());
+        }
+        catch (IOException e) {
+            // abort
+            throw new RuntimeException("error decoding public key", e);
+        }
+    }
+
     protected void finishLogin(final byte[] privateKeyData, final byte[] publicKeyData) {
         Log.v(TAG, "finishing login");
 
@@ -631,17 +710,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mKey.update(publicKeyData);
         }
         catch (IOException e) {
-            Log.v(TAG, "error decoding public key", e);
-            // TODO what now??
+            // abort
+            throw new RuntimeException("error decoding public key", e);
         }
 
-        if (mProgress == null)
-            startProgress();
-        mProgress.setCancelable(false);
-        setProgressMessage(getString(R.string.msg_initializing));
+        completeLogin(privateKeyData, publicKeyData);
+    }
 
-        final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
-
+    private void completeLogin(byte[] privateKeyData, byte[] publicKeyData) {
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
@@ -652,6 +728,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // abort
             throw new RuntimeException("unable to build X.509 bridge certificate", e);
         }
+
+        final Account account = new Account(mPhoneNumber, Authenticator.ACCOUNT_TYPE);
 
         // workaround for bug in AccountManager (http://stackoverflow.com/a/11698139/1045199)
         // procedure will continue in removeAccount callback
@@ -711,26 +789,27 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     public void onValidationRequested(NumberValidator v) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual();
+        proceedManual(v.isNewKey());
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual() {
+    private void proceedManual(final boolean newKey) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abortProgress(true);
-                startValidationCode(REQUEST_MANUAL_VALIDATION);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, newKey);
             }
         });
     }
 
-    private void startValidationCode(int requestCode) {
+    private void startValidationCode(int requestCode, boolean newKey) {
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
         i.putExtra("name", mName);
         i.putExtra("phone", mPhoneNumber);
         i.putExtra("passphrase", mPassphrase);
+        i.putExtra("newKey", newKey);
 
         // validator might be null if we are skipping verification code request
         if (mValidator != null)
