@@ -30,12 +30,15 @@ import org.kontalk.util.Preferences;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -45,6 +48,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import java.io.File;
+
+import static org.kontalk.crypto.PersonalKeyImporter.KEYPACK_FILENAME;
 
 
 /**
@@ -132,12 +139,36 @@ public final class PreferencesActivity extends PreferenceActivity {
                 }
                 catch (Exception e) {
 
+                    Log.e(TAG, "error exporting keys", e);
                     Toast.makeText(PreferencesActivity.this,
                         // TODO i18n
                         "Unable to export personal key.",
                         Toast.LENGTH_LONG).show();
 
                 }
+
+                return true;
+            }
+        });
+
+        // import key pair
+        final Preference importKeyPair = findPreference("pref_import_keypair");
+        importKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                new AlertDialog.Builder(PreferencesActivity.this)
+                    .setTitle(R.string.pref_import_keypair)
+                    .setMessage(getString(R.string.msg_import_keypair, KEYPACK_FILENAME))
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Uri keypack = Uri.fromFile(new File(Environment
+                                .getExternalStorageDirectory(), KEYPACK_FILENAME));
+                            MessageCenterService.importKeyPair(getApplicationContext(),
+                                keypack, ((Kontalk) getApplication()).getCachedPassphrase());
+                        }
+                    })
+                    .show();
 
                 return true;
             }

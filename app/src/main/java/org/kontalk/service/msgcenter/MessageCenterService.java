@@ -113,6 +113,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipInputStream;
 
 
 /**
@@ -166,6 +167,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * key, it will be installed in the default account.
      */
     public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
+
+    /** Commence key pair import. */
+    public static final String ACTION_IMPORT_KEYPAIR = "org.kontalk.action.IMPORT_KEYPAIR";
 
     /**
      * Broadcasted when a presence subscription has been accepted.
@@ -233,6 +237,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // used with org.kontalk.action.BLOCKLIST
     public static final String EXTRA_BLOCKLIST = "org.kontalk.blocklist";
 
+    // used with org.kontalk.action.IMPORT_KEYPAIR
+    public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
+    public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
+
     // used for org.kontalk.presence.privacy.action extra
     public static final int PRIVACY_ACCEPT = 0;
     public static final int PRIVACY_BLOCK = 1;
@@ -290,6 +298,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
 
     private RegenerateKeyPairListener mKeyPairRegenerator;
+    private ImportKeyPairListener mKeyPairImporter;
 
     static final class IdleConnectionHandler extends Handler implements IdleHandler {
         /** How much time to wait to idle the message center. */
@@ -601,6 +610,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_REGENERATE_KEYPAIR.equals(action)) {
                 beginKeyPairRegeneration();
+            }
+
+            else if (ACTION_IMPORT_KEYPAIR.equals(action)) {
+                // zip file with keys
+                Uri file = (Uri) intent.getParcelableExtra(EXTRA_KEYPACK);
+                // passphrase to decrypt files
+                String passphrase = intent.getStringExtra(EXTRA_PASSPHRASE);
+                beginKeyPairImport(file, passphrase);
             }
 
             else if (ACTION_CONNECTED.equals(action)) {
@@ -1442,10 +1459,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mKeyPairRegenerator == null) {
             try {
                 mKeyPairRegenerator = new RegenerateKeyPairListener(this);
+                mKeyPairRegenerator.run();
             }
             catch (Exception e) {
                 Log.e(TAG, "unable to initiate keypair regeneration", e);
                 // TODO warn user
+
+                endKeyPairRegeneration();
             }
         }
     }
@@ -1454,6 +1474,31 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mKeyPairRegenerator != null) {
             mKeyPairRegenerator.abort();
             mKeyPairRegenerator = null;
+        }
+    }
+
+    private void beginKeyPairImport(Uri keypack, String passphrase) {
+        if (mKeyPairImporter == null) {
+            try {
+                ZipInputStream zip = new ZipInputStream(getContentResolver()
+                    .openInputStream(keypack));
+
+                mKeyPairImporter = new ImportKeyPairListener(this, zip, passphrase);
+                mKeyPairImporter.run();
+            }
+            catch (Exception e) {
+                Log.e(TAG, "unable to initiate keypair import", e);
+                // TODO warn user
+
+                endKeyPairImport();
+            }
+        }
+    }
+
+    void endKeyPairImport() {
+        if (mKeyPairImporter != null) {
+            mKeyPairImporter.abort();
+            mKeyPairImporter = null;
         }
     }
 
@@ -1622,6 +1667,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void regenerateKeyPair(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
+        context.startService(i);
+    }
+
+    public static void importKeyPair(final Context context, Uri keypack, String passphrase) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_IMPORT_KEYPAIR);
+        i.putExtra(EXTRA_KEYPACK, keypack);
+        i.putExtra(EXTRA_PASSPHRASE, passphrase);
         context.startService(i);
     }
 

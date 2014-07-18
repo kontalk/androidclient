@@ -18,13 +18,18 @@
 
 package org.kontalk.client;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
-import java.util.List;
-import java.util.Locale;
+import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.util.Base64;
+import android.util.Log;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackAndroid;
@@ -48,18 +53,13 @@ import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.util.MessageUtils;
 import org.spongycastle.openpgp.PGPException;
 
-import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.telephony.TelephonyManager;
-import android.text.TextUtils;
-import android.util.Base64;
-import android.util.Log;
-
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -89,6 +89,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private PGPKeyPairRing mKeyRing;
     private String mPassphrase;
     private volatile Object mKeyLock = new Object();
+
+    private byte[] mImportedPrivateKey;
+    private byte[] mImportedPublicKey;
 
     private final XMPPConnectionHelper mConnector;
     private NumberValidatorListener mListener;
@@ -130,6 +133,11 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     public PersonalKey getKey() {
         return mKey;
+    }
+
+    public void importKey(byte[] privateKeyData, byte[] publicKeyData) {
+        mImportedPrivateKey = privateKeyData;
+        mImportedPublicKey = publicKeyData;
     }
 
     public EndpointServer getServer() {
@@ -411,13 +419,19 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         code.addValue(mValidationCode.toString());
         form.addField(code);
 
-        if (mKey != null) {
+        if (mKey != null || (mImportedPrivateKey != null && mImportedPublicKey != null)) {
             String publicKey;
             try {
-                String userId = MessageUtils.sha1(mPhone);
-                // TODO what in name and comment fields here?
-                mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(),
-                    mName, mPassphrase);
+                if (mKey != null) {
+                    String userId = MessageUtils.sha1(mPhone);
+                    // TODO what in name and comment fields here?
+                    mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(),
+                        mName, mPassphrase);
+                }
+                else {
+                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                }
+
                 publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
             }
             catch (Exception e) {
