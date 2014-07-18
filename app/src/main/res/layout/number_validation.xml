@@ -63,6 +63,13 @@
             android:text="@string/button_validate" />
 
         <Button
+            android:id="@+id/button_import_keys"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:onClick="importKeys"
+            android:text="@string/button_import_keys" />
+
+        <Button
             android:id="@+id/button_validation_code"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"

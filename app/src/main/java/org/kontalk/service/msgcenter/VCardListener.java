@@ -81,7 +81,7 @@ class VCardListener extends MessageCenterPacketListener {
                     if (bridgeCertData != null) {
                         // store key data in AccountManager
                         Authenticator.setDefaultPersonalKey(getContext(),
-                            _publicKey, null, bridgeCertData);
+                            _publicKey, null, bridgeCertData, null);
                         // invalidate cached personal key
                         getApplication().invalidatePersonalKey();
 

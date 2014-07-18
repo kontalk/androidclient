@@ -18,6 +18,7 @@
 
 package org.kontalk.crypto;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
@@ -32,6 +33,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.kontalk.util.MessageUtils;
+import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openpgp.PGPEncryptedData;
@@ -103,6 +105,16 @@ public class PGP {
         PGPKeyPairRing(PGPPublicKeyRing publicKey, PGPSecretKeyRing secretKey) {
             this.publicKey = publicKey;
             this.secretKey = secretKey;
+        }
+
+        public static PGPKeyPairRing load(byte[] privateKeyData, byte[] publicKeyData)
+                throws IOException, PGPException {
+            KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+            ArmoredInputStream inPublic = new ArmoredInputStream(new ByteArrayInputStream(publicKeyData));
+            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, fpr);
+            ArmoredInputStream inPrivate = new ArmoredInputStream(new ByteArrayInputStream(privateKeyData));
+            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(inPrivate, fpr);
+            return new PGPKeyPairRing(publicKey, secretKey);
         }
     }
 
