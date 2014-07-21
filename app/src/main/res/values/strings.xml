@@ -73,6 +73,7 @@
     <string name="message_type_label">Type:\u0020</string>
     <string name="text_message">Text message</string>
     <string name="image_message">Image message</string>
+    <string name="audio_message">Audio message</string>
     <string name="from_label">From:\u0020</string>
     <string name="to_address_label">To:\u0020</string>
     <string name="sent_label">Sent:\u0020</string>

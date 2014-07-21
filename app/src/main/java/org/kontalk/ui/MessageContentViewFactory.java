@@ -18,10 +18,12 @@
 
 package org.kontalk.ui;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.kontalk.data.Contact;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
@@ -54,6 +56,9 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof ImageComponent) {
             view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
+        }
+        else if (component instanceof AudioComponent) {
+            view = (MessageContentView<T>) AudioContentView.create(inflater, parent);
         }
 
         if (view != null)

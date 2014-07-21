@@ -43,6 +43,7 @@ import org.kontalk.client.SentServerReceipt;
 import org.kontalk.client.ServerReceipt;
 import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.crypto.Coder;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -329,6 +330,12 @@ class MessageListener extends MessageCenterPacketListener {
                         // cleartext only for now
                         attachment = new VCardComponent(previewFile, null, fetchUrl, length,
                                 false, Coder.SECURITY_CLEARTEXT);
+                    }
+
+                    else if (AudioComponent.supportsMimeType(mime)) {
+                        // cleartext only for now
+                        attachment = new AudioComponent(mime, null, fetchUrl, length,
+                            false, Coder.SECURITY_CLEARTEXT);
                     }
 
                     // TODO other types

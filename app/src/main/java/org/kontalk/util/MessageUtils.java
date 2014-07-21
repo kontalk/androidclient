@@ -50,6 +50,7 @@ import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.AttachmentComponent;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -332,6 +333,8 @@ public final class MessageUtils {
                 resId = R.string.image_message;
             else if (attachment instanceof VCardComponent)
                 resId = R.string.vcard_message;
+            else if (attachment instanceof AudioComponent)
+                resId = R.string.audio_message;
         }
 
         details.append(res.getString(resId));
@@ -379,6 +382,8 @@ public final class MessageUtils {
                 resId = R.string.image_message;
             else if (attachment instanceof VCardComponent)
                 resId = R.string.vcard_message;
+            else if (attachment instanceof AudioComponent)
+                resId = R.string.audio_message;
         }
 
         details.append(res.getString(resId));
@@ -856,6 +861,7 @@ public final class MessageUtils {
             Class<AttachmentComponent>[] tryComponents = new Class[] {
                 ImageComponent.class,
                 VCardComponent.class,
+                AudioComponent.class,
             };
 
             for (Class<AttachmentComponent> klass : tryComponents) {

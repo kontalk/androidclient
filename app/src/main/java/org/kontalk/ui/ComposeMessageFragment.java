@@ -727,7 +727,7 @@ public class ComposeMessageFragment extends ListFragment implements
         AttachmentComponent attachment = (AttachmentComponent) msg
                 .getComponent(AttachmentComponent.class);
 
-        if (attachment != null) {
+        if (attachment != null && !(attachment instanceof AudioComponent)) {
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
             startActivity(i);

@@ -52,7 +52,7 @@ public class AudioComponent extends AttachmentComponent {
 
     @Override
     protected void populateFromCursor(Context context, Cursor c) {
-        //TODO
+        // Nothing to do here
     }
 
     public static String buildMediaFilename(String id, String mime) {

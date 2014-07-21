@@ -324,28 +324,26 @@ public class CompositeMessage {
 	        		att = new ImageComponent(attMime, previewFile,
 	        				localUri, attFetch, attLength,
 	        				attEncrypted, attSecurityFlags);
-	        		att.populateFromCursor(mContext, c);
 	        	}
 
 	        	else if (VCardComponent.supportsMimeType(attMime)) {
 	        		att = new VCardComponent(previewFile,
 	        				localUri, attFetch, attLength,
 	        				attEncrypted, attSecurityFlags);
-	        		att.populateFromCursor(mContext, c);
 	        	}
 
                 else if (AudioComponent.supportsMimeType(attMime)) {
                     att = new AudioComponent(attMime,
                             localUri, attFetch,
                             attLength, attEncrypted, attSecurityFlags);
-                    att.populateFromCursor(mContext, c);
                 }
 
 	        	// TODO other type of attachments
 
-
-	        	if (att != null)
-	        		addComponent(att);
+	        	if (att != null) {
+                    att.populateFromCursor(mContext, c);
+                    addComponent(att);
+                }
 
 	        }
 
