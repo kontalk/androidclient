@@ -39,7 +39,14 @@ public class MessageContentLayout extends LinearLayout {
     }
 
     public void addContent(MessageContentView<?> view) {
-        addView((View) view);
+        // FIXME dummy (non-working) algorithm
+        int prio = view.getPriority();
+        int count = getChildCount();
+
+        if (prio > count)
+            prio = count;
+
+        addView((View) view, prio);
     }
 
 }

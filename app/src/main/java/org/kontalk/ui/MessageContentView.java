@@ -38,6 +38,9 @@ public interface MessageContentView<T> {
     /** Returns the component associated with this view. */
     public T getComponent();
 
+    /** Returns the priority of the view. Lower values means higher position. */
+    public int getPriority();
+
     // TODO
 
 }
