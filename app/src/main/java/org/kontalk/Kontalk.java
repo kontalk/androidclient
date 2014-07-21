@@ -106,9 +106,6 @@ public class Kontalk extends Application {
         // init preferences
         Preferences.init(this);
 
-        // update notifications from locally unread messages
-        MessagingNotification.updateMessagesNotification(this, false);
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPrefChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
@@ -139,9 +136,12 @@ public class Kontalk extends Application {
 
         // TODO listen for changes to phone numbers
 
-        // register account change listener
         Account account = Authenticator.getDefaultAccount(this);
         if (account != null) {
+            // update notifications from locally unread messages
+            MessagingNotification.updateMessagesNotification(this, false);
+
+            // register account change listener
             final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
                 @Override
                 public void onAccountsUpdated(Account[] accounts) {
