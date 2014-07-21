@@ -27,8 +27,8 @@ public class AudioComponent extends AttachmentComponent {
         MIME_TYPES.put("audio/flac", "flac");
     }
 
-    public AudioComponent(String mime, File previewFile, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
-        super(mime, previewFile, localUri, fetchUrl, length, encrypted, securityFlags);
+    public AudioComponent(String mime, Uri localUri, String fetchUrl, long length, boolean encrypted, int securityFlags) {
+        super(mime, null, localUri, fetchUrl, length, encrypted, securityFlags);
     }
 
     public static boolean supportsMimeType(String mime) {

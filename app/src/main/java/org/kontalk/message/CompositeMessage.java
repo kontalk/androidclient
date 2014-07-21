@@ -334,6 +334,13 @@ public class CompositeMessage {
 	        		att.populateFromCursor(mContext, c);
 	        	}
 
+                else if (AudioComponent.supportsMimeType(attMime)) {
+                    att = new AudioComponent(attMime,
+                            localUri, attFetch,
+                            attLength, attEncrypted, attSecurityFlags);
+                    att.populateFromCursor(mContext, c);
+                }
+
 	        	// TODO other type of attachments
 
 
