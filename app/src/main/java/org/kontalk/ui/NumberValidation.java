@@ -507,7 +507,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void importKeys(View v) {
         if (checkInput()) {
-            // import keys -- number verification with server is not needed
+            // import keys -- number verification with server is still needed
+            // though because of key rollback protection
+            // TODO allow for manual validation too
             // TODO we should verify the number against the user ID
 
             new AlertDialog.Builder(this)
@@ -530,8 +532,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                         }
                         catch (Exception e) {
                             Log.e(TAG, "error importing keys", e);
-                            // TODO warn user
                             mImportedPublicKey = mImportedPrivateKey = null;
+
+                            Toast.makeText(NumberValidation.this,
+                                R.string.err_import_keypair_failed,
+                                Toast.LENGTH_LONG).show();
                         }
                         finally {
                             try {
@@ -590,8 +595,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
-            // TODO warn user
             mImportedPublicKey = mImportedPrivateKey = null;
+
+            Toast.makeText(this,
+                R.string.err_import_keypair_failed,
+                Toast.LENGTH_LONG).show();
         }
 
         finally {
