@@ -333,15 +333,22 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onStart() {
         super.onStart();
-
-        // hold message center
-        MessageCenterService.hold(getActivity());
         startQuery();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // release message center
+        MessageCenterService.release(getActivity());
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        // hold message center
+        MessageCenterService.hold(getActivity());
 
         // update offline mode
         updateOffline();
@@ -351,8 +358,6 @@ public class ConversationListFragment extends ListFragment {
     public void onStop() {
         super.onStop();
         mListAdapter.changeCursor(null);
-        // release message center
-        MessageCenterService.release(getActivity());
     }
 
     @Override

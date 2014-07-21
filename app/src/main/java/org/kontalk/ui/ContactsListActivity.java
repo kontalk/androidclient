@@ -77,16 +77,8 @@ public class ContactsListActivity extends ActionBarActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        // hold message center
-        MessageCenterService.hold(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
+    protected void onPause() {
+        super.onPause();
         // release message center
         MessageCenterService.release(this);
     }
@@ -100,6 +92,9 @@ public class ContactsListActivity extends ActionBarActivity
             finish();
             return;
         }
+
+        // hold message center
+        MessageCenterService.hold(this);
 
         mFragment.startQuery();
     }
