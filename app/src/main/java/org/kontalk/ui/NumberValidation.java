@@ -39,6 +39,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+import android.text.InputType;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
@@ -506,7 +507,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void importKeys(View v) {
         if (checkInput()) {
-            // import keys -- number verification with server is not needed
+            // import keys -- number verification with server is still needed
+            // though because of key rollback protection
+            // TODO allow for manual validation too
             // TODO we should verify the number against the user ID
 
             new AlertDialog.Builder(this)
@@ -518,47 +521,102 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                         // do not wait for the generated key
                         stopKeyReceiver();
 
-                        PersonalKeyImporter importer = null;
+                        ZipInputStream zip = null;
                         try {
                             Uri keypack = Uri.fromFile(PersonalKeyImporter.DEFAULT_KEYPACK);
-                            ZipInputStream zip = new ZipInputStream(getContentResolver()
+                            zip = new ZipInputStream(getContentResolver()
                                 .openInputStream(keypack));
-                            // TODO ask passphrase to user and assign to mPassphrase
-                            mPassphrase = "dummy";
-                            importer = new PersonalKeyImporter(zip, mPassphrase);
-                            importer.load();
 
-                            // we do not save this test key into the mKey field
-                            // we need it to be clear so the validator will use the imported data
-                            // createPersonalKey is called only to make sure data is valid
-                            if (importer.createPersonalKey() != null) {
-                                mImportedPublicKey = importer.getPublicKeyData();
-                                mImportedPrivateKey = importer.getPrivateKeyData();
-                            }
-                            else
-                                throw new Exception("unable to load imported personal key.");
+                            // ask passphrase to user and assign to mPassphrase
+                            importAskPassphrase(zip);
                         }
                         catch (Exception e) {
                             Log.e(TAG, "error importing keys", e);
-                            // TODO warn user
                             mImportedPublicKey = mImportedPrivateKey = null;
+
+                            Toast.makeText(NumberValidation.this,
+                                R.string.err_import_keypair_failed,
+                                Toast.LENGTH_LONG).show();
                         }
                         finally {
                             try {
-                                importer.close();
+                                zip.close();
                             }
                             catch (Exception e) {
-                                // ignored
+                                // ignored.
                             }
-                        }
-
-                        if (mImportedPublicKey != null && mImportedPrivateKey != null) {
-                            // begin usual validation
-                            startValidation();
                         }
                     }
                 })
                 .show();
+        }
+    }
+
+    private void importAskPassphrase(final ZipInputStream zip) {
+        new InputDialog.Builder(this,
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            .setTitle(R.string.title_passphrase)
+            .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        zip.close();
+                    }
+                    catch (IOException e) {
+                        // ignored
+                    }
+                }
+            })
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    startImport(zip, InputDialog.getTextFromAlertDialog
+                        ((AlertDialog) dialog).toString());
+                }
+            })
+            .show();
+    }
+
+    private void startImport(ZipInputStream zip, String passphrase) {
+        PersonalKeyImporter importer = null;
+
+        try {
+            importer = new PersonalKeyImporter(zip, mPassphrase);
+            importer.load();
+
+            // we do not save this test key into the mKey field
+            // we need it to be clear so the validator will use the imported data
+            // createPersonalKey is called only to make sure data is valid
+            if (importer.createPersonalKey() != null) {
+                mImportedPublicKey = importer.getPublicKeyData();
+                mImportedPrivateKey = importer.getPrivateKeyData();
+            }
+            else
+                throw new Exception("unable to load imported personal key.");
+        }
+
+        catch (Exception e) {
+            Log.e(TAG, "error importing keys", e);
+            mImportedPublicKey = mImportedPrivateKey = null;
+
+            Toast.makeText(this,
+                R.string.err_import_keypair_failed,
+                Toast.LENGTH_LONG).show();
+        }
+
+        finally {
+            try {
+                importer.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+
+        if (mImportedPublicKey != null && mImportedPrivateKey != null) {
+            // we can now store the passphrase
+            mPassphrase = passphrase;
+
+            // begin usual validation
+            startValidation();
         }
     }
 

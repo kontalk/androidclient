@@ -2063,13 +2063,6 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        // hold message center
-        MessageCenterService.hold(getActivity());
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
@@ -2078,6 +2071,9 @@ public class ComposeMessageFragment extends ListFragment implements
             getActivity().finish();
             return;
         }
+
+        // hold message center
+        MessageCenterService.hold(getActivity());
 
         ComposeMessage activity = getParentActivity();
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
@@ -2180,8 +2176,12 @@ public class ComposeMessageFragment extends ListFragment implements
                 MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
             mComposeSent = false;
         }
+
         // unsubcribe presence notifications
         unsubcribePresence();
+
+        // release message center
+        MessageCenterService.release(getActivity());
     }
 
     @Override
@@ -2194,9 +2194,6 @@ public class ComposeMessageFragment extends ListFragment implements
         // be sure to cancel all queries
         mQueryHandler.cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
         mQueryHandler.cancelOperation(CONVERSATION_QUERY_TOKEN);
-
-        // release message center
-        MessageCenterService.release(getActivity());
     }
 
     @Override

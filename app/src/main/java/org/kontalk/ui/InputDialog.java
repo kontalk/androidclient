@@ -22,7 +22,10 @@ import org.kontalk.R;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.text.InputType;
+import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 
 
@@ -63,14 +66,16 @@ public class InputDialog extends AlertDialog {
         }
 
         private void setCustomView(Context context, int inputType) {
-            /*
-            EditText txt = new EditText(context);
-            txt.setInputType(inputType);
-            txt.setId(TEXT_VIEW_ID);
-            */
+            View view = LayoutInflater.from(context)
+                .inflate(R.layout.edittext_dialog, null, false);
+            EditText text = (EditText) view.findViewById(TEXT_VIEW_ID);
 
-            setView(LayoutInflater.from(context)
-                .inflate(R.layout.edittext_dialog, null, false));
+            text.setInputType(inputType);
+            if ((inputType & InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0) {
+                text.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+
+            setView(view);
         }
 
         @Override
