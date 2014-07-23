@@ -734,6 +734,17 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
+    private void openAudio(CompositeMessage msg) {
+        AttachmentComponent attachment = (AttachmentComponent) msg
+                .getComponent(AttachmentComponent.class);
+
+        if (attachment != null) {
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
+            startActivity(i);
+        }
+    }
+
     /** Listener for attachment type chooser. */
     @Override
     public void onClick(int id) {
@@ -973,6 +984,8 @@ public class ComposeMessageFragment extends ListFragment implements
                     int resId;
                     if (attachment instanceof ImageComponent)
                         resId = R.string.view_image;
+                    else if (attachment instanceof  AudioComponent)
+                        resId = R.string.open_audio;
                     else
                         resId = R.string.open_file;
 
@@ -1104,7 +1117,13 @@ public class ComposeMessageFragment extends ListFragment implements
             }
 
             case MENU_OPEN: {
-                openFile(msg);
+                AttachmentComponent attachment = (AttachmentComponent) msg
+                        .getComponent(AttachmentComponent.class);
+
+                if (!(attachment instanceof AudioComponent))
+                    openFile(msg);
+                else
+                    openAudio(msg);
                 return true;
             }
         }
