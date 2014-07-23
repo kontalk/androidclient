@@ -111,11 +111,19 @@ public final class PreferencesActivity extends PreferenceActivity {
         regenKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                new AlertDialog.Builder(PreferencesActivity.this)
+                        .setMessage(R.string.pref_regenerate_keypair_confirm)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(PreferencesActivity.this, R.string.msg_generating_keypair,
+                                        Toast.LENGTH_LONG).show();
 
-                Toast.makeText(PreferencesActivity.this, R.string.msg_generating_keypair,
-                    Toast.LENGTH_LONG).show();
+                                MessageCenterService.regenerateKeyPair(getApplicationContext());
+                            }
+                        })
+                        .show();
 
-                MessageCenterService.regenerateKeyPair(getApplicationContext());
                 return true;
             }
         });

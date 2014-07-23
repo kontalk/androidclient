@@ -96,6 +96,7 @@
     <string name="pref_maintenance">Maintenance</string>
     <string name="pref_regenerate_keypair">Regenerate personal key</string>
     <string name="pref_title_regenerate_keypair">Use this in case your personal key has been compromised</string>
+    <string name="pref_regenerate_keypair_confirm">Your old key will become invalid</string>
     <string name="contacts_list_title">Choose a contact</string>
     <string name="pref_messaging_settings">Messaging settings</string>
     <string name="pref_privacy_settings">Privacy settings</string>
