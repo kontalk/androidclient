@@ -23,6 +23,7 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -568,8 +569,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             })
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    startImport(zip, InputDialog.getTextFromAlertDialog
-                        ((AlertDialog) dialog).toString());
+                    startImport(zip, InputDialog.getInputText
+                        ((Dialog) dialog).toString());
                 }
             })
             .show();
