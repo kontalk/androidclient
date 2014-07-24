@@ -112,6 +112,7 @@ public final class PreferencesActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 new AlertDialog.Builder(PreferencesActivity.this)
+                        .setTitle(R.string.pref_regenerate_keypair)
                         .setMessage(R.string.pref_regenerate_keypair_confirm)
                         .setNegativeButton(android.R.string.cancel, null)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
