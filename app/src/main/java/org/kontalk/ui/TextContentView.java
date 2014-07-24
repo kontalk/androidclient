@@ -149,6 +149,12 @@ public class TextContentView extends TextView
         return mComponent;
     }
 
+    /** Text is always below. */
+    @Override
+    public int getPriority() {
+        return 10;
+    }
+
     public boolean isEncryptionPlaceholder() {
         return mEncryptionPlaceholder;
     }

@@ -24,6 +24,10 @@ import android.util.AttributeSet;
 import android.widget.TextView;
 
 
+/**
+ * Text view for text message content. Used by {@link TextContentView}.
+ * @author Daniele Ricci
+ */
 public class MessageItemTextView extends TextView {
 
     public MessageItemTextView(Context context) {
