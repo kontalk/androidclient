@@ -126,7 +126,7 @@ public class ConversationList extends ActionBarActivity
                     R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
 
                 String name = InputDialog
-                        .getTextFromAlertDialog((AlertDialog) dialog)
+                        .getInputText((Dialog) dialog)
                         .toString();
 
                 // upgrade account
