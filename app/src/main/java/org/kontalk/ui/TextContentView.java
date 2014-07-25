@@ -74,7 +74,7 @@ public class TextContentView extends TextView
 
     /*
      * Hack for fixing extra space took by the TextView.
-     * I still have to understand why this works and plain getWidth() doesn't.
+     * I still have to understand why this works and plain getHeight() doesn't.
      * http://stackoverflow.com/questions/7439748/why-is-wrap-content-in-multiple-line-textview-filling-parent
      */
 
