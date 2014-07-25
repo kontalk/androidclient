@@ -57,6 +57,12 @@ public class ImageContentView extends ImageView
         return mComponent;
     }
 
+    /** Image is always on top. */
+    @Override
+    public int getPriority() {
+        return 1;
+    }
+
     private void clear() {
         mComponent = null;
         setImageBitmap(null);

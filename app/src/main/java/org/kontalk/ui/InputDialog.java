@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import org.kontalk.R;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
@@ -31,29 +32,18 @@ import android.widget.EditText;
 
 /**
  * A custom {@link AlertDialog} with an {@link EditText} inside.
+ * This isn't really a dialog class, it is rather a container for a custom
+ * dialog builder which adds some features over the default one.
  * @author Daniele Ricci
  */
-public class InputDialog extends AlertDialog {
+public class InputDialog {
 
     private static final int TEXT_VIEW_ID = R.id.textinput;
 
-    public InputDialog(Context context) {
-        super(context);
+    private InputDialog() {
     }
 
-    public InputDialog(Context context, int theme) {
-        super(context, theme);
-    }
-
-    public InputDialog(Context context, boolean cancelable, OnCancelListener cancelListener) {
-        super(context, cancelable, cancelListener);
-    }
-
-    public CharSequence getText() {
-        return getTextFromAlertDialog(this);
-    }
-
-    public static CharSequence getTextFromAlertDialog(AlertDialog dialog) {
+    public static CharSequence getInputText(Dialog dialog) {
         return ((EditText) dialog.findViewById(TEXT_VIEW_ID)).getText();
     }
 
@@ -77,12 +67,6 @@ public class InputDialog extends AlertDialog {
 
             setView(view);
         }
-
-        @Override
-        public AlertDialog create() {
-            return super.create();
-        }
-
     }
 
 }
