@@ -336,5 +336,10 @@
     <string name="pref_title_on_text_enter">Showing the enter key while composing messages.</string>
     <string name="pref_title_off_text_enter">Showing the default action key while composing messages.</string>
 
+    <string name="title_password1">Password:</string>
+    <string name="title_password2">Confirm password:</string>
+
+    <string name="err_password_too_short">Password must be at least %d characters.</string>
+    <string name="err_passwords_mismatch">Passwords does not match!</string>
 
 </resources>
