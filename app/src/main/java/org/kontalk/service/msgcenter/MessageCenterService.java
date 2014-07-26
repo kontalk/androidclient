@@ -355,6 +355,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         /** Resets the idle timer. */
+        public void reset(int refCount) {
+            mRefCount = refCount;
+            reset();
+        }
+
+        /** Resets the idle timer. */
         public void reset() {
             removeMessages(MSG_IDLE);
 
@@ -481,10 +487,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private synchronized void quit(boolean restarting) {
-        // quit the idle handler
         if (!restarting) {
+            // quit the idle handler
             mIdleHandler.quit();
             mIdleHandler = null;
+        }
+        else {
+            // reset the reference counter
+            int refCount = ((Kontalk) getApplicationContext()).getReferenceCounter();
+            mIdleHandler.reset(refCount);
         }
 
         // disable listeners
@@ -1376,6 +1387,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             (Messages.CONTENT_URI, msgId), values, null, null);
 
                     // do not send the message
+                    mIdleHandler.release();
                     return;
                 }
             }

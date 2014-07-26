@@ -263,4 +263,12 @@ public class Kontalk extends Application {
         return mRefCounter > 0;
     }
 
+    /**
+     * Returns the reference counter. Used only by the message center to restore
+     * its reference counter when restarting or handling exceptions.
+     */
+    public int getReferenceCounter() {
+        return mRefCounter;
+    }
+
 }
