@@ -92,17 +92,20 @@ public class AudioContentView extends LinearLayout
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                //TODO
+                if (fromUser) {
+                    mPlayer.seekTo(progress);
+                    seekBar.setProgress(progress);
+                }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                //TODO
+                pauseAudio();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                //TODO
+                playAudio();
             }
         });
     }
@@ -115,8 +118,14 @@ public class AudioContentView extends LinearLayout
         return mComponent;
     }
 
+    @Override
+    public int getPriority() {
+        return 5;
+    }
+
     private void clear() {
         mComponent = null;
+        mPlayer.release();
     }
 
     public static AudioContentView create(LayoutInflater inflater, ViewGroup parent) {
