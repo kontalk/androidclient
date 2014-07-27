@@ -2201,6 +2201,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
         // release message center
         MessageCenterService.release(getActivity());
+
+        //release AudioPlayer
+        AudioContentView.releaseAudio();
     }
 
     @Override

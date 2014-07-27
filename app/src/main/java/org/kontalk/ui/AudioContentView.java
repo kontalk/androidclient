@@ -34,14 +34,16 @@ import java.util.regex.Pattern;
  * Audio content view for {@link AudioComponent}s.
  */
 public class AudioContentView extends LinearLayout
-        implements MessageContentView<AudioComponent>, View.OnClickListener, Runnable {
+        implements MessageContentView<AudioComponent>, View.OnClickListener, MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener, Runnable {
+
+    static final String TAG = AudioContentView.class.getSimpleName();
 
     private AudioComponent mComponent;
     private File mAudioFile;
-    private MediaPlayer mPlayer;
+    private static MediaPlayer mPlayer;
     private ImageButton mPlayButton;
     private SeekBar mSeekBar;
-    private final Handler mHandler = new Handler();
+    private static final Handler mHandler = new Handler();
 
     private static final int STATUS_IDLE = 0;
     private static final int STATUS_PLAYING = 1;
@@ -67,47 +69,11 @@ public class AudioContentView extends LinearLayout
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
         mAudioFile = new File(String.valueOf(mComponent.getLocalUri()));
-
-        mPlayer = new MediaPlayer();
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        try {
-            mPlayer.setDataSource(mAudioFile.getPath());
-            mPlayer.prepare();
-        }
-        catch (IOException e) {
-
-        }
-
+        prepareAudio();
         mPlayButton.setOnClickListener(this);
-        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                mPlayButton.setBackgroundResource(R.drawable.play);
-                mStatus = STATUS_ENDED;
-                mPlayer.seekTo(0);
-                mSeekBar.setProgress(0);
-            }
-        });
+        mPlayer.setOnCompletionListener(this);
         mSeekBar.setMax(mPlayer.getDuration());
-        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    mPlayer.seekTo(progress);
-                    seekBar.setProgress(progress);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                pauseAudio();
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                playAudio();
-            }
-        });
+        mSeekBar.setOnSeekBarChangeListener(this);
     }
 
     public void unbind() {
@@ -125,7 +91,6 @@ public class AudioContentView extends LinearLayout
 
     private void clear() {
         mComponent = null;
-        mPlayer.release();
     }
 
     public static AudioContentView create(LayoutInflater inflater, ViewGroup parent) {
@@ -133,21 +98,34 @@ public class AudioContentView extends LinearLayout
             parent, false);
     }
 
+    private void prepareAudio() {
+        mPlayer = new MediaPlayer();
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        try {
+            mPlayer.setDataSource(mAudioFile.getPath());
+            mPlayer.prepare();
+        }
+        catch (IOException e) {
+            Log.e(TAG,"exception",e);
+        }
+    }
+
     private void playAudio() {
-        Log.w("PLAYER: ","PLAY");
         mPlayer.start();
         mPlayButton.setBackgroundResource(R.drawable.pause);
         mStatus = STATUS_PLAYING;
-        new Thread(this).start();
+        updatePosition();
     }
 
     private void pauseAudio() {
-        Log.w("PLAYER: ","PAUSE");
         mPlayer.pause();
         mPlayButton.setBackgroundResource(R.drawable.play);
         mStatus = STATUS_PAUSED;
     }
 
+    public static void releaseAudio() {
+        mPlayer.release();
+    }
 
     @Override
     public void onClick(View v) {
@@ -158,9 +136,48 @@ public class AudioContentView extends LinearLayout
         }
     }
 
-    @Override
-    public void run() {
+    private void updatePosition(){
+        mHandler.removeCallbacks(this);
         mSeekBar.setProgress(mPlayer.getCurrentPosition());
         mHandler.postDelayed(this, 100);
+    }
+
+
+    @Override
+    public void run() {
+        try {
+            if (mPlayer.isPlaying()) {
+                updatePosition();
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG,"exception",e);
+        }
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        mPlayButton.setBackgroundResource(R.drawable.play);
+        mStatus = STATUS_ENDED;
+        mPlayer.reset();
+        mSeekBar.setProgress(0);
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (fromUser) {
+            mPlayer.seekTo(progress);
+            seekBar.setProgress(progress);
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        pauseAudio();
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        playAudio();
     }
 }
