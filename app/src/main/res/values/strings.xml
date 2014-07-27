@@ -210,6 +210,7 @@
     <string name="serverlist_update_nodata">No available server list found.</string>
 
     <string name="pref_remove_prefix">Dial prefix</string>
+    <string name="pref_change_passphrase">Change personal key password</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
     <string name="pref_export_keypair">Export personal key</string>
     <string name="pref_title_export_keypair">Export personal key and login certificate to external storage</string>
@@ -338,5 +339,8 @@
 
     <string name="err_password_too_short">Password must be at least %d characters.</string>
     <string name="err_passwords_mismatch">Passwords does not match!</string>
+    <string name="err_password_invalid">Wrong password.</string>
+
+    <string name="err_change_passphrase">Unable to change the personal key password.</string>
 
 </resources>

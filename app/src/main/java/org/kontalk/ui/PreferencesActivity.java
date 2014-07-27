@@ -18,19 +18,11 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.Kontalk;
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.ServerList;
-import org.kontalk.service.ServerListUpdater;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.service.msgcenter.PushServiceManager;
-import org.kontalk.util.Preferences;
-
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -45,9 +37,20 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import org.kontalk.Kontalk;
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.ServerList;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.service.ServerListUpdater;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.PushServiceManager;
+import org.kontalk.util.Preferences;
 
 import java.io.File;
 
@@ -102,6 +105,47 @@ public final class PreferencesActivity extends PreferenceActivity {
                 Log.w(TAG, "manual message center restart requested");
                 MessageCenterService.restart(getApplicationContext());
                 Toast.makeText(PreferencesActivity.this, R.string.msg_msgcenter_restarted, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
+        // change passphrase
+        final Preference changePassphrase = findPreference("pref_change_passphrase");
+        changePassphrase.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                if (Authenticator.isUserPassphrase(PreferencesActivity.this)) {
+
+                    new InputDialog.Builder(PreferencesActivity.this,
+                            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                        .setTitle(R.string.title_passphrase)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                CharSequence passphrase = InputDialog.getInputText((Dialog) dialog);
+                                if (passphrase.equals(((Kontalk) getApplicationContext())
+                                        .getCachedPassphrase())) {
+                                    askNewPassphrase();
+                                }
+                                else {
+                                    new AlertDialog.Builder(PreferencesActivity.this)
+                                        .setTitle(R.string.title_passphrase)
+                                        .setMessage(R.string.err_password_invalid)
+                                        .show();
+                                }
+
+                            }
+                        })
+                        .show();
+                }
+
+                else {
+                    askNewPassphrase();
+                }
+
+
                 return true;
             }
         });
@@ -292,6 +336,28 @@ public final class PreferencesActivity extends PreferenceActivity {
         ServerList list = ServerListUpdater.getCurrentList(this);
         if (list != null)
             Preferences.updateServerListLastUpdate(updateServerList, list);
+    }
+
+    private void askNewPassphrase() {
+        new PasswordInputDialog.Builder(this)
+            .setMinLength(PersonalKey.MIN_PASSPHRASE_LENGTH)
+            .setTitle(R.string.pref_change_passphrase)
+            .setPositiveButton(android.R.string.ok, new PasswordInputDialog.OnPasswordInputListener() {
+                public void onClick(DialogInterface dialog, int which, String password) {
+                    String oldPassword = ((Kontalk) getApplicationContext()).getCachedPassphrase();
+                    try {
+                        Authenticator.changePassphrase(PreferencesActivity.this, oldPassword, password, true);
+                        ((Kontalk) getApplicationContext()).invalidatePersonalKey();
+                    }
+                    catch (Exception e) {
+                        Toast.makeText(PreferencesActivity.this,
+                            R.string.err_change_passphrase, Toast.LENGTH_LONG)
+                            .show();
+                    }
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)

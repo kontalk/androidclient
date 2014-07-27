@@ -89,6 +89,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
     public static final String DATA_NAME = "org.kontalk.key.name";
+    public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
 
     /** @deprecated This was obviously deprecated from the beginning. */
     @Deprecated
@@ -245,7 +246,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
      * Set a new passphrase for the default account.
      * Please note that this method does not invalidate the cached key or passphrase.
      */
-    public static void changePassphrase(Context ctx, String oldPassphrase, String newPassphrase)
+    public static void changePassphrase(Context ctx, String oldPassphrase, String newPassphrase, boolean fromUser)
             throws PGPException, IOException {
 
         AccountManager am = AccountManager.get(ctx);
@@ -273,10 +274,18 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         // replace key data in AccountManager
         byte[] newPrivateKeyData = newSecRing.getEncoded();
-        am.setUserData(acc, Authenticator.DATA_PRIVATEKEY, Base64.encodeToString(newPrivateKeyData, Base64.NO_WRAP));
+        am.setUserData(acc, DATA_PRIVATEKEY, Base64.encodeToString(newPrivateKeyData, Base64.NO_WRAP));
+
+        am.setUserData(acc, DATA_USER_PASSPHRASE, String.valueOf(fromUser));
 
         // replace password for account
         am.setPassword(acc, newPassphrase);
+    }
+
+    public static boolean isUserPassphrase(Context ctx) {
+        AccountManager am = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(am);
+        return Boolean.parseBoolean(am.getUserData(acc, DATA_USER_PASSPHRASE));
     }
 
     @Override
