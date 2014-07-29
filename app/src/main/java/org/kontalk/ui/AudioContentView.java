@@ -40,7 +40,7 @@ public class AudioContentView extends LinearLayout
 
     private AudioComponent mComponent;
     private File mAudioFile;
-    private static MediaPlayer mPlayer;
+    private MediaPlayer mPlayer;
     private ImageButton mPlayButton;
     private SeekBar mSeekBar;
     private static final Handler mHandler = new Handler();
@@ -68,7 +68,6 @@ public class AudioContentView extends LinearLayout
         mComponent = component;
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
-        mAudioFile = new File(String.valueOf(mComponent.getLocalUri()));
         prepareAudio();
         mPlayButton.setOnClickListener(this);
         mPlayer.setOnCompletionListener(this);
@@ -102,7 +101,7 @@ public class AudioContentView extends LinearLayout
         mPlayer = new MediaPlayer();
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
-            mPlayer.setDataSource(mAudioFile.getPath());
+            mPlayer.setDataSource(new File(String.valueOf(mComponent.getLocalUri())).getPath());
             mPlayer.prepare();
         }
         catch (IOException e) {
@@ -123,10 +122,6 @@ public class AudioContentView extends LinearLayout
         mStatus = STATUS_PAUSED;
     }
 
-    public static void releaseAudio() {
-        mPlayer.release();
-    }
-
     @Override
     public void onClick(View v) {
         if (mStatus == STATUS_PLAYING)
@@ -137,7 +132,6 @@ public class AudioContentView extends LinearLayout
     }
 
     private void updatePosition(){
-        mHandler.removeCallbacks(this);
         mSeekBar.setProgress(mPlayer.getCurrentPosition());
         mHandler.postDelayed(this, 100);
     }
@@ -159,7 +153,7 @@ public class AudioContentView extends LinearLayout
     public void onCompletion(MediaPlayer mp) {
         mPlayButton.setBackgroundResource(R.drawable.play);
         mStatus = STATUS_ENDED;
-        mPlayer.reset();
+        mPlayer.seekTo(0);
         mSeekBar.setProgress(0);
     }
 
