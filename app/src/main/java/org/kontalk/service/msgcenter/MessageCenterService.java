@@ -60,6 +60,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
@@ -103,6 +104,7 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import java.io.File;
@@ -213,9 +215,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
-    public static final String EXTRA_FROM_USERID = "org.kontalk.stanza.from.userId";
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
-    public static final String EXTRA_TO_USERID = "org.kontalk.stanza.to.userId";
     public static final String EXTRA_STATUS = "org.kontalk.presence.status";
     public static final String EXTRA_SHOW = "org.kontalk.presence.show";
     public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
@@ -668,12 +668,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     String type = intent.getStringExtra(EXTRA_TYPE);
                     String id = intent.getStringExtra(EXTRA_PACKET_ID);
 
-                    String to;
-                    String toUserid = intent.getStringExtra(EXTRA_TO_USERID);
-                    if (toUserid != null)
-                        to = MessageUtils.toJID(toUserid, mServer.getNetwork());
-                    else
-                        to = intent.getStringExtra(EXTRA_TO);
+                    String to = intent.getStringExtra(EXTRA_TO);
 
                     Packet pack;
                     if ("probe".equals(type)) {
@@ -710,15 +705,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (canConnect && isConnected) {
                     LastActivity p = new LastActivity();
 
-                    String to;
-                    String toUserid = intent.getStringExtra(EXTRA_TO_USERID);
-                    if (toUserid != null)
-                        to = MessageUtils.toJID(toUserid, mServer.getNetwork());
-                    else
-                        to = intent.getStringExtra(EXTRA_TO);
-
                     p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
-                    p.setTo(to);
+                    p.setTo(intent.getStringExtra(EXTRA_TO));
 
                     sendPacket(p);
                 }
@@ -727,17 +715,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else if (ACTION_SUBSCRIBED.equals(action)) {
                 if (canConnect && isConnected) {
 
-                    String to;
-                    String toUserid = intent.getStringExtra(EXTRA_TO_USERID);
-                    if (toUserid != null)
-                        to = MessageUtils.toJID(toUserid, mServer.getNetwork());
-                    else
-                        to = intent.getStringExtra(EXTRA_TO);
-
-                    // FIXME taking toUserid for granted
-                    sendSubscriptionReply(toUserid,
-                            intent.getStringExtra(EXTRA_PACKET_ID),
-                            intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
+                    sendSubscriptionReply(intent.getStringExtra(EXTRA_TO),
+                        intent.getStringExtra(EXTRA_PACKET_ID),
+                        intent.getIntExtra(EXTRA_PRIVACY, PRIVACY_ACCEPT));
                 }
             }
 
@@ -989,7 +969,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         while (c.moveToNext()) {
             long id = c.getLong(0);
-            String userId = c.getString(1);
+            String peer = c.getString(1);
             byte[] textContent = c.getBlob(2);
             int securityFlags = c.getInt(3);
             String attMime = c.getString(4);
@@ -1008,7 +988,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
-            b.putString("org.kontalk.message.toUser", userId);
+            b.putString("org.kontalk.message.to", peer);
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
 
@@ -1051,12 +1031,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         while (c.moveToNext()) {
             long id = c.getLong(0);
             String msgId = c.getString(1);
-            String userId = c.getString(2);
+            String peer = c.getString(2);
 
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
-            b.putString("org.kontalk.message.toUser", userId);
+            b.putString("org.kontalk.message.to", peer);
             b.putString("org.kontalk.message.ack", msgId);
 
             Log.v(TAG, "resending pending receipt for message " + id);
@@ -1077,7 +1057,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 null, Threads._ID);
 
         while (c.moveToNext()) {
-            String userId = c.getString(0);
+            String to = c.getString(0);
             int reqStatus = c.getInt(1);
 
             int action;
@@ -1100,17 +1080,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     continue;
             }
 
-            sendSubscriptionReply(userId, null, action);
+            sendSubscriptionReply(to, null, action);
         }
 
         c.close();
     }
 
-    private void sendSubscriptionReply(String userId, String packetId, int action) {
+    private void sendSubscriptionReply(String to, String packetId, int action) {
 
         if (action == PRIVACY_ACCEPT) {
-            String to = MessageUtils.toJID(userId, mServer.getNetwork());
-
             // standard response: subscribed
             Presence p = new Presence(Presence.Type.subscribed);
 
@@ -1128,7 +1106,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
-            sendPrivacyListCommand(userId, action);
+            sendPrivacyListCommand(to, action);
         }
 
         // clear the request status
@@ -1136,11 +1114,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-            values, CommonColumns.PEER + "=?", new String[] { userId });
+            values, CommonColumns.PEER + "=?", new String[] { to });
     }
 
-    private void sendPrivacyListCommand(final String userId, final int action) {
-        String to = MessageUtils.toJID(userId, mServer.getNetwork());
+    private void sendPrivacyListCommand(final String to, final int action) {
         IQ p;
 
         if (action == PRIVACY_BLOCK) {
@@ -1164,16 +1141,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             public void processPacket(Packet packet) {
 
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.RESULT) {
-                    UsersProvider.setBlockStatus(MessageCenterService.this,
-                        userId, action == PRIVACY_BLOCK);
+                    if (XMPPUtils.isLocalJID(to, mServer.getNetwork())) {
+                        String userId = StringUtils.parseName(to);
 
-                    // invalidate cached contact
-                    Contact.invalidate(userId);
+                        UsersProvider.setBlockStatus(MessageCenterService.this,
+                            userId, action == PRIVACY_BLOCK);
+
+                        // invalidate cached contact
+                        Contact.invalidate(userId);
+                    }
 
                     // broadcast result
                     broadcast(action == PRIVACY_BLOCK ?
                         ACTION_BLOCKED : ACTION_UNBLOCKED,
-                        EXTRA_FROM_USERID, userId);
+                        EXTRA_FROM, to);
                 }
 
             }
@@ -1246,9 +1227,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(UploadService.EXTRA_MIME, mime);
                 i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
 
-                // TODO should support JIDs too
-                String toUser = data.getString("org.kontalk.message.toUser");
-                i.putExtra(UploadService.EXTRA_USER_ID, toUser);
+                String to = data.getString("org.kontalk.message.to");
+                i.putExtra(UploadService.EXTRA_USER, to);
                 startService(i);
             }
             else {
@@ -1265,10 +1245,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
             m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
             String to = data.getString("org.kontalk.message.to");
-            if (to == null) {
-                to = data.getString("org.kontalk.message.toUser");
-                to += '@' + mServer.getNetwork();
-            }
             if (to != null) m.setTo(to);
 
             if (msgId > 0) {
@@ -1438,7 +1414,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // mark sender as registered in the users database
-        final String userId = msg.getSender(true);
+        final String userId = StringUtils.parseName(sender);
         final Context context = getApplicationContext();
         new Thread(new Runnable() {
             public void run() {
@@ -1616,22 +1592,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a chat state message. */
-    public static void sendChatState(final Context context, String userId, ChatState state) {
+    public static void sendChatState(final Context context, String to, ChatState state) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
-        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.chatState", state.name());
         i.putExtra("org.kontalk.message.standalone", true);
         context.startService(i);
     }
 
     /** Sends a text message. */
-    public static void sendTextMessage(final Context context, String userId, String text, boolean encrypt, long msgId) {
+    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
-        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
@@ -1639,12 +1615,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a binary message. */
-    public static void sendBinaryMessage(final Context context, String userId, String mime, Uri localUri, long length, String previewPath, long msgId) {
+    public static void sendBinaryMessage(final Context context, String to, String mime, Uri localUri, long length, String previewPath, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", mime);
-        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
@@ -1652,13 +1628,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void sendUploadedMedia(final Context context, String userId,
+    public static void sendUploadedMedia(final Context context, String to,
             String mime, Uri localUri, long length, String previewPath, String fetchUrl, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
         i.putExtra("org.kontalk.message.mime", mime);
-        i.putExtra("org.kontalk.message.toUser", userId);
+        i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
@@ -1668,10 +1644,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Replies to a presence subscription request. */
-    public static void replySubscription(final Context context, String userId, int action) {
+    public static void replySubscription(final Context context, String to, int action) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_SUBSCRIBED);
-        i.putExtra(EXTRA_TO_USERID, userId);
+        i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PRIVACY, action);
         context.startService(i);
     }

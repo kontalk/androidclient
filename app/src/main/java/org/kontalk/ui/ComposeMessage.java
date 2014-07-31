@@ -33,6 +33,7 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.XMPPUtils;
 
 import android.annotation.TargetApi;
 import android.content.ContentUris;
@@ -186,7 +187,7 @@ public class ComposeMessage extends ActionBarActivity {
     }
 
     private void processIntent(Bundle savedInstanceState) {
-        Intent intent = null;
+        Intent intent;
         if (savedInstanceState != null) {
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
             intent = new Intent(ACTION_VIEW_USERID, uri);
@@ -234,11 +235,11 @@ public class ComposeMessage extends ActionBarActivity {
                             uri.getSchemeSpecificPart(),
                             Authenticator.getDefaultAccountName(this), 0);
                     // compute hash and open conversation
-                    String userId = MessageUtils.sha1(number);
+                    String jid = XMPPUtils.createLocalJID(this, MessageUtils.sha1(number));
 
                     args = new Bundle();
                     args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
-                    args.putParcelable("data", Threads.getUri(userId));
+                    args.putParcelable("data", Threads.getUri(jid));
                     args.putString("number", number);
                 }
                 catch (Exception e) {

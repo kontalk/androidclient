@@ -19,7 +19,6 @@ package org.kontalk.service.msgcenter;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_MESSAGE;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM_USERID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 import java.io.File;
@@ -83,14 +82,6 @@ class MessageListener extends MessageCenterPacketListener {
         if (m.getType() == org.jivesoftware.smack.packet.Message.Type.chat) {
             Intent i = new Intent(ACTION_MESSAGE);
             String from = m.getFrom();
-            String network = StringUtils.parseServer(from);
-            // our network - convert to userId
-            if (network.equalsIgnoreCase(getServer().getNetwork())) {
-                StringBuilder b = new StringBuilder();
-                b.append(StringUtils.parseName(from));
-                b.append(StringUtils.parseResource(from));
-                i.putExtra(EXTRA_FROM_USERID, b.toString());
-            }
 
             // check if there is a composing notification
             PacketExtension _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
@@ -98,7 +89,6 @@ class MessageListener extends MessageCenterPacketListener {
             if (_chatstate != null) {
                 chatstate = (ChatStateExtension) _chatstate;
                 i.putExtra("org.kontalk.message.chatState", chatstate.getElementName());
-
             }
 
             i.putExtra(EXTRA_FROM, from);
@@ -228,7 +218,7 @@ class MessageListener extends MessageCenterPacketListener {
                 if (msgId == null)
                     msgId = "incoming" + StringUtils.randomString(6);
 
-                String sender = StringUtils.parseName(from);
+                String sender = from;
                 String body = m.getBody();
 
                 // create message

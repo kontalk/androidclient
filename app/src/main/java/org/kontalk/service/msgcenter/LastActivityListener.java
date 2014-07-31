@@ -19,7 +19,6 @@ package org.kontalk.service.msgcenter;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_LAST_ACTIVITY;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM_USERID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_ID;
@@ -28,7 +27,6 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
 
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.kontalk.client.StanzaGroupExtension;
 
@@ -52,17 +50,7 @@ class LastActivityListener extends MessageCenterPacketListener {
         Intent i = new Intent(ACTION_LAST_ACTIVITY);
         i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-        String from = p.getFrom();
-        String network = StringUtils.parseServer(from);
-        // our network - convert to userId
-        if (network.equalsIgnoreCase(getServer().getNetwork())) {
-            StringBuilder b = new StringBuilder();
-            b.append(StringUtils.parseName(from));
-            b.append(StringUtils.parseResource(from));
-            i.putExtra(EXTRA_FROM_USERID, b.toString());
-        }
-
-        i.putExtra(EXTRA_FROM, from);
+        i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
         i.putExtra(EXTRA_SECONDS, p.lastActivity);
 

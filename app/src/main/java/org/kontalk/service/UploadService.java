@@ -69,8 +69,8 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_MESSAGE_ID = "org.kontalk.upload.MESSAGE_ID";
     /** URL to post to. Use with ACTION_UPLOAD. */
     public static final String EXTRA_POST_URL = "org.kontalk.upload.POST_URL";
-    /** User id to send to. */
-    public static final String EXTRA_USER_ID = "org.kontalk.upload.USER_ID";
+    /** User to send to. */
+    public static final String EXTRA_USER = "org.kontalk.upload.USER";
     /** Media MIME type. */
     public static final String EXTRA_MIME = "org.kontalk.upload.MIME";
     /** Preview file path. */
@@ -130,7 +130,7 @@ public class UploadService extends IntentService implements ProgressListener {
         // url to post to
         String url = intent.getStringExtra(EXTRA_POST_URL);
         // user to send message to
-        String userId = intent.getStringExtra(EXTRA_USER_ID);
+        String to = intent.getStringExtra(EXTRA_USER);
         // media mime type
         String mime = intent.getStringExtra(EXTRA_MIME);
         // preview file path
@@ -167,7 +167,7 @@ public class UploadService extends IntentService implements ProgressListener {
             MessagesProvider.uploaded(this, msgId, mediaUrl);
 
             // send message with fetch url to server
-            MessageCenterService.sendUploadedMedia(this, userId, mime, file, length, previewPath, mediaUrl, msgId);
+            MessageCenterService.sendUploadedMedia(this, to, mime, file, length, previewPath, mediaUrl, msgId);
 
             // end operations
             completed();

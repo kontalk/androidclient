@@ -18,6 +18,7 @@
 
 package org.kontalk.data;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.ui.MessagingNotification;
@@ -136,7 +137,8 @@ public class Conversation {
     }
 
     private void loadContact() {
-        mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
+        String recipientName = StringUtils.parseName(mRecipient);
+        mContact = Contact.findByUserId(mContext, recipientName, mNumberHint);
     }
 
     public Contact getContact() {

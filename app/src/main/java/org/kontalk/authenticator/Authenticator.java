@@ -32,12 +32,15 @@ import android.util.Base64;
 import android.widget.Toast;
 
 import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.bcpg.ArmoredOutputStream;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPEncryptedData;
@@ -118,9 +121,13 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return (acc != null) ? acc.name : null;
     }
 
-    public static boolean isSelfUserId(Context ctx, String userId) {
+    public static boolean isSelfJID(Context ctx, String bareJid) {
         String name = getDefaultAccountName(ctx);
-        return (name != null && MessageUtils.sha1(name).equals(userId));
+        if (name != null) {
+            return XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name))
+                .equalsIgnoreCase(bareJid);
+        }
+        return false;
     }
 
     public static boolean hasPersonalKey(AccountManager am, Account account) {

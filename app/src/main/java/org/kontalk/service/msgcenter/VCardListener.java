@@ -19,7 +19,6 @@ package org.kontalk.service.msgcenter;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VCARD;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM_USERID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
@@ -35,6 +34,7 @@ import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.XMPPUtils;
 
 import android.content.Intent;
 import android.util.Log;
@@ -63,7 +63,18 @@ class VCardListener extends MessageCenterPacketListener {
 
             if (_publicKey != null) {
 
-                // FIXME always false LOL
+                String from = p.getFrom();
+
+                boolean networkUser = XMPPUtils.isLocalJID(from, getServer().getNetwork());
+                // our network - convert to userId
+                if (networkUser) {
+                    // is this our vCard?
+                    String userId = StringUtils.parseName(from);
+                    String hash = MessageUtils.sha1(getMyUsername());
+                    if (userId.equalsIgnoreCase(hash))
+                        myCard = true;
+                }
+
                 if (myCard) {
                     byte[] bridgeCertData;
                     try {
@@ -90,13 +101,15 @@ class VCardListener extends MessageCenterPacketListener {
                 }
 
                 try {
-                    String userId = StringUtils.parseName(p.getFrom());
-                    String fingerprint = PGP.getFingerprint(_publicKey);
-                    UsersProvider.setUserKey(getContext(), userId,
-                        _publicKey, fingerprint);
+                    if (networkUser) {
+                        String userId = StringUtils.parseName(from);
+                        String fingerprint = PGP.getFingerprint(_publicKey);
+                        UsersProvider.setUserKey(getContext(), userId,
+                            _publicKey, fingerprint);
 
-                    // invalidate cache for this user
-                    Contact.invalidate(userId);
+                        // invalidate cache for this user
+                        Contact.invalidate(userId);
+                    }
                 }
                 catch (Exception e) {
                     // TODO warn user
@@ -112,24 +125,7 @@ class VCardListener extends MessageCenterPacketListener {
             Intent i = new Intent(ACTION_VCARD);
             i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-            String from = p.getFrom();
-            String network = StringUtils.parseServer(from);
-            // our network - convert to userId
-            if (network.equalsIgnoreCase(getServer().getNetwork())) {
-                StringBuilder b = new StringBuilder();
-
-                // is this our vCard?
-                String userId = StringUtils.parseName(from);
-                String hash = MessageUtils.sha1(getMyUsername());
-                if (userId.equalsIgnoreCase(hash))
-                    myCard = true;
-
-                b.append(userId);
-                b.append(StringUtils.parseResource(from));
-                i.putExtra(EXTRA_FROM_USERID, b.toString());
-            }
-
-            i.putExtra(EXTRA_FROM, from);
+            i.putExtra(EXTRA_FROM, p.getFrom());
             i.putExtra(EXTRA_TO, p.getTo());
             i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
 

@@ -20,7 +20,6 @@ package org.kontalk.service.msgcenter;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM_USERID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_COUNT;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
@@ -232,17 +231,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
         i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-        from = p.getFrom();
-        String network = StringUtils.parseServer(from);
-        // our network - convert to userId
-        if (network.equalsIgnoreCase(getServer().getNetwork())) {
-            StringBuilder b = new StringBuilder();
-            b.append(StringUtils.parseName(from));
-            b.append(StringUtils.parseResource(from));
-            i.putExtra(EXTRA_FROM_USERID, b.toString());
-        }
-
-        i.putExtra(EXTRA_FROM, from);
+        i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
 
         sendBroadcast(i);
@@ -254,17 +243,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
         i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-        String from = p.getFrom();
-        String network = StringUtils.parseServer(from);
-        // our network - convert to userId
-        if (network.equalsIgnoreCase(getServer().getNetwork())) {
-            StringBuilder b = new StringBuilder();
-            b.append(StringUtils.parseName(from));
-            b.append(StringUtils.parseResource(from));
-            i.putExtra(EXTRA_FROM_USERID, b.toString());
-        }
-
-        i.putExtra(EXTRA_FROM, from);
+        i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
         i.putExtra(EXTRA_STATUS, p.getStatus());
         Presence.Mode mode = p.getMode();

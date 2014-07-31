@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 
@@ -156,8 +157,8 @@ public class CompositeMessage {
     }
 
     public String getSender(boolean generic) {
-        return (generic && mSender.length() > USERID_LENGTH) ?
-                mSender.substring(0, USERID_LENGTH) : mSender;
+        return generic && StringUtils.isFullJID(mSender) ?
+            StringUtils.parseBareAddress(mSender) : mSender;
     }
 
     public String getSender() {

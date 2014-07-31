@@ -17,10 +17,14 @@
  */
 package org.kontalk.util;
 
+import android.content.Context;
+
 import java.io.StringReader;
 
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.PacketParserUtils;
+import org.jivesoftware.smack.util.StringUtils;
+import org.kontalk.client.EndpointServer;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -78,6 +82,19 @@ public class XMPPUtils {
         }
 
         return msg;
+    }
+
+    public static boolean isLocalJID(String jid, String host) {
+        return StringUtils.parseServer(jid).equalsIgnoreCase(host);
+    }
+
+    public static String createLocalJID(Context context, String name) {
+        EndpointServer server = Preferences.getEndpointServer(context);
+        return name + '@' + server.getNetwork();
+    }
+
+    public static boolean equalsBareJID(String full, String bare) {
+        return StringUtils.parseBareAddress(full).equalsIgnoreCase(bare);
     }
 
 }
