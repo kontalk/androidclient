@@ -197,7 +197,6 @@ public class UsersProvider extends ContentProvider {
                 break;
 
             case USERS_JID:
-                Log.e("UsersProvider", "users matching: " + match);
                 qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
                 // TODO append to selection
