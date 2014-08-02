@@ -86,8 +86,8 @@ class PresenceListener extends MessageCenterPacketListener {
                 String fingerprint = MessageUtils.bytesToHex(publicKey.getFingerprint());
 
                 // store key to users table
-                String userId = StringUtils.parseName(p.getFrom());
-                UsersProvider.setUserKey(getContext(), userId,
+                UsersProvider.setUserKey(getContext(),
+                    StringUtils.parseBareAddress(p.getFrom()),
                     pkey.getKey(), fingerprint);
             }
 
@@ -164,7 +164,7 @@ class PresenceListener extends MessageCenterPacketListener {
              * 3. user will either accept or refuse
              */
 
-            String from = StringUtils.parseName(p.getFrom());
+            String from = p.getFrom();
 
             // extract public key
             String name = null, fingerprint = null;
@@ -190,7 +190,8 @@ class PresenceListener extends MessageCenterPacketListener {
             ContentValues values = new ContentValues(4);
 
             // insert public key into the users table
-            values.put(Users.HASH, from);
+            values.put(Users.HASH, StringUtils.parseName(from));
+            values.put(Users.JID, from);
             values.put(Users.PUBLIC_KEY, publicKey);
             values.put(Users.FINGERPRINT, fingerprint);
             values.put(Users.DISPLAY_NAME, name);
@@ -213,7 +214,7 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribed(Presence p) {
-        String from = StringUtils.parseName(p.getFrom());
+        String from = StringUtils.parseBareAddress(p.getFrom());
 
         if (UsersProvider.getPublicKey(getContext(), from) == null) {
             // public key not found

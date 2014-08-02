@@ -247,7 +247,7 @@ public class ConversationList extends ActionBarActivity
     @Override
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
         // open by user hash
-        openConversation(Threads.getUri(contact.getHash()));
+        openConversation(Threads.getUri(contact.getJID()));
     }
 
     public void showContactPicker() {

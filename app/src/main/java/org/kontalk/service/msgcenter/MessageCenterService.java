@@ -60,7 +60,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
@@ -104,7 +103,6 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import java.io.File;
@@ -225,7 +223,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
 
     // use with org.kontalk.action.ROSTER
-    public static final String EXTRA_USERLIST = "org.kontalk.roster.userList";
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
 
     // use with org.kontalk.action.LAST_ACTIVITY
@@ -650,14 +647,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else if (ACTION_ROSTER.equals(action)) {
                 if (canConnect && isConnected) {
                     String id = intent.getStringExtra(EXTRA_PACKET_ID);
-                    String[] list = intent.getStringArrayExtra(EXTRA_USERLIST);
+                    String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
                     int c = list.length;
                     RosterPacket iq = new RosterPacket();
                     iq.setPacketID(id);
                     // iq default type is get
 
                     for (int i = 0; i < c; i++)
-                        iq.addRosterItem(new RosterPacket.Item(list[i] + "@" + mServer.getNetwork(), null));
+                        iq.addRosterItem(new RosterPacket.Item(list[i], null));
 
                     sendPacket(iq);
                 }
@@ -1141,15 +1138,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             public void processPacket(Packet packet) {
 
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.RESULT) {
-                    if (XMPPUtils.isLocalJID(to, mServer.getNetwork())) {
-                        String userId = StringUtils.parseName(to);
+                    UsersProvider.setBlockStatus(MessageCenterService.this,
+                        to, action == PRIVACY_BLOCK);
 
-                        UsersProvider.setBlockStatus(MessageCenterService.this,
-                            userId, action == PRIVACY_BLOCK);
-
-                        // invalidate cached contact
-                        Contact.invalidate(userId);
-                    }
+                    // invalidate cached contact
+                    Contact.invalidate(to);
 
                     // broadcast result
                     broadcast(action == PRIVACY_BLOCK ?
@@ -1391,7 +1384,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Process an incoming message. */
     Uri incoming(CompositeMessage msg) {
-        String sender = msg.getSender(true);
+        final String sender = msg.getSender(true);
 
         // save to local storage
         ContentValues values = new ContentValues();
@@ -1414,11 +1407,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // mark sender as registered in the users database
-        final String userId = StringUtils.parseName(sender);
         final Context context = getApplicationContext();
         new Thread(new Runnable() {
             public void run() {
-                UsersProvider.markRegistered(context, userId);
+            UsersProvider.markRegistered(context, sender);
             }
         }).start();
 

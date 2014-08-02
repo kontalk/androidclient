@@ -92,7 +92,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         mConversation = conv;
         mChecked = false;
 
-        String recipient = null;
+        String recipient;
 
         Contact contact = mConversation.getContact();
 

@@ -102,13 +102,12 @@ class VCardListener extends MessageCenterPacketListener {
 
                 try {
                     if (networkUser) {
-                        String userId = StringUtils.parseName(from);
                         String fingerprint = PGP.getFingerprint(_publicKey);
-                        UsersProvider.setUserKey(getContext(), userId,
+                        UsersProvider.setUserKey(getContext(), from,
                             _publicKey, fingerprint);
 
                         // invalidate cache for this user
-                        Contact.invalidate(userId);
+                        Contact.invalidate(from);
                     }
                 }
                 catch (Exception e) {

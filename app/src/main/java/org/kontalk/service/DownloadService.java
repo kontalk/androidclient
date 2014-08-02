@@ -218,7 +218,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         Uri uri = Uri.fromFile(destination);
 
         // notify only if conversation is not open
-        if (!mPeer.equals(StringUtils.parseName(MessagingNotification.getPaused()))) {
+        if (!mPeer.equals(MessagingNotification.getPaused())) {
 
             // detect mime type if not available
             if (mime == null)

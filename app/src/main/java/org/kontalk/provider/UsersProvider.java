@@ -34,6 +34,7 @@ import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -61,13 +62,13 @@ import android.util.Log;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = "org.kontalk.users";
 
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
 
     private static final int USERS = 1;
-    private static final int USERS_HASH = 2;
+    private static final int USERS_JID = 2;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -79,6 +80,7 @@ public class UsersProvider extends ContentProvider {
             "hash TEXT NOT NULL UNIQUE," +
             "number TEXT NOT NULL UNIQUE," +
             "display_name TEXT," +
+            "jid TEXT," +
             "lookup_key TEXT," +
             "contact_id INTEGER," +
             "registered INTEGER NOT NULL DEFAULT 0," +
@@ -96,31 +98,12 @@ public class UsersProvider extends ContentProvider {
         private static final String SCHEMA_USERS_OFFLINE =
             "CREATE TABLE " + TABLE_USERS_OFFLINE + CREATE_TABLE_USERS;
 
-        // version 2 - just replace the table
-        private static final String[] SCHEMA_V1_TO_V2 = {
+        // any upgrade - just replace the table
+        private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
-            SCHEMA_USERS
-        };
-        // version 3 - add status column
-        private static final String[] SCHEMA_V2_TO_V3 = {
-            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN status TEXT"
-        };
-        // version 4 - create users_offline
-        private static final String[] SCHEMA_V3_TO_V4 = {
+            SCHEMA_USERS,
             "DROP TABLE IF EXISTS " + TABLE_USERS_OFFLINE,
-            SCHEMA_USERS_OFFLINE
-        };
-        // version 5 - add public_key and fingerprint columns
-        private static final String[] SCHEMA_V4_TO_V5 = {
-            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN public_key BLOB",
-            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN fingerprint TEXT",
-            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN public_key BLOB",
-            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN fingerprint TEXT",
-        };
-        // version 6 - add blocked status
-        private static final String[] SCHEMA_V5_TO_V6 = {
-            "ALTER TABLE " + TABLE_USERS + " ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0",
-            "ALTER TABLE " + TABLE_USERS_OFFLINE + " ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0",
+            SCHEMA_USERS_OFFLINE,
         };
 
         private Context mContext;
@@ -145,39 +128,10 @@ public class UsersProvider extends ContentProvider {
         /** TODO simplify upgrade process based on org.kontalk database schema */
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (oldVersion == 1) {
-                for (String sql : SCHEMA_V1_TO_V2)
+            if (oldVersion != newVersion) {
+                for (String sql : SCHEMA_UPGRADE)
                     db.execSQL(sql);
                 mNew = true;
-            }
-            else if (oldVersion == 2) {
-                for (String sql : SCHEMA_V2_TO_V3)
-                    db.execSQL(sql);
-                // upgrade for versions 4 and 5 too
-                for (String sql : SCHEMA_V3_TO_V4)
-                    db.execSQL(sql);
-                for (String sql : SCHEMA_V4_TO_V5)
-                    db.execSQL(sql);
-            }
-            else if (oldVersion == 3) {
-                for (String sql : SCHEMA_V3_TO_V4)
-                    db.execSQL(sql);
-                // upgrade for versions 4 and 5 too
-                for (String sql : SCHEMA_V4_TO_V5)
-                    db.execSQL(sql);
-                for (String sql : SCHEMA_V5_TO_V6)
-                    db.execSQL(sql);
-            }
-            else if (oldVersion == 4) {
-                for (String sql : SCHEMA_V4_TO_V5)
-                    db.execSQL(sql);
-                // upgrade for version 5 too
-                for (String sql : SCHEMA_V5_TO_V6)
-                    db.execSQL(sql);
-            }
-            else if (oldVersion == 5) {
-                for (String sql : SCHEMA_V5_TO_V6)
-                    db.execSQL(sql);
             }
         }
 
@@ -221,7 +175,7 @@ public class UsersProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case USERS:
                 return Users.CONTENT_TYPE;
-            case USERS_HASH:
+            case USERS_JID:
                 return Users.CONTENT_ITEM_TYPE;
 
             default:
@@ -234,20 +188,21 @@ public class UsersProvider extends ContentProvider {
             String[] selectionArgs, String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
-        String userId = null;
 
-        switch (sUriMatcher.match(uri)) {
+        int match = sUriMatcher.match(uri);
+        switch (match) {
             case USERS:
                 qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
                 break;
 
-            case USERS_HASH:
+            case USERS_JID:
+                Log.e("UsersProvider", "users matching: " + match);
                 qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
                 qb.setProjectionMap(usersProjectionMap);
                 // TODO append to selection
-                userId = uri.getPathSegments().get(1);
-                selection = Users.HASH + " = ?";
+                String userId = uri.getPathSegments().get(1);
+                selection = Users.JID + " = ?";
                 selectionArgs = new String[] { userId };
                 break;
 
@@ -342,7 +297,8 @@ public class UsersProvider extends ContentProvider {
         int rc = db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
         if (rc == 0) {
             // insert new record
-            values.put(Users.HASH, selectionArgs[0]);
+            values.put(Users.HASH, StringUtils.parseName(selectionArgs[0]));
+            values.put(Users.JID, selectionArgs[0]);
             values.put(Users.NUMBER, selectionArgs[0]);
             values.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
             values.put(Users.REGISTERED, true);
@@ -397,7 +353,7 @@ public class UsersProvider extends ContentProvider {
 
             // we are trying to be fast here
             SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
-                " (hash, number, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?)");
+                " (hash, number, jid, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?, ?)");
 
             Cursor phones = null;
             String dialPrefix = Preferences.getDialPrefix(context);
@@ -446,9 +402,10 @@ public class UsersProvider extends ContentProvider {
                         stm.clearBindings();
                         stm.bindString(1, hash);
                         stm.bindString(2, number);
-                        stm.bindString(3, name);
-                        stm.bindString(4, phones.getString(2));
-                        stm.bindLong(5, phones.getLong(3));
+                        stm.bindString(3, XMPPUtils.createLocalJID(getContext(), hash));
+                        stm.bindString(4, name);
+                        stm.bindString(5, phones.getString(2));
+                        stm.bindLong(6, phones.getLong(3));
                         stm.executeInsert();
                         count++;
                     }
@@ -515,9 +472,10 @@ public class UsersProvider extends ContentProvider {
                                 stm.clearBindings();
                                 stm.bindString(1, hash);
                                 stm.bindString(2, number);
-                                stm.bindString(3, name);
-                                stm.bindNull(4);
-                                stm.bindLong(5, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
+                                stm.bindString(3, XMPPUtils.createLocalJID(getContext(), hash));
+                                stm.bindString(4, name);
+                                stm.bindNull(5);
+                                stm.bindLong(6, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
                                 stm.executeInsert();
                                 count++;
                             }
@@ -578,14 +536,14 @@ public class UsersProvider extends ContentProvider {
     private static ContentValues registeredValues;
 
     /** Marks a user as registered. */
-    public static void markRegistered(Context context, String userId) {
+    public static void markRegistered(Context context, String jid) {
         if (registeredValues == null) {
             registeredValues = new ContentValues(1);
             registeredValues.put(Users.REGISTERED, 1);
         }
         // TODO Uri.withAppendedPath(Users.CONTENT_URI, msg.getSender(true))
         context.getContentResolver().update(Users.CONTENT_URI, registeredValues,
-            Users.HASH + "=?", new String[] { userId });
+            Users.JID + "=?", new String[] { jid });
     }
 
     /** Returns a {@link Coder} instance for encrypting data. */
@@ -593,15 +551,13 @@ public class UsersProvider extends ContentProvider {
         // get recipients public keys from users database
         PGPPublicKey keys[] = new PGPPublicKey[recipients.length];
         for (int i = 0; i < recipients.length; i++) {
-            String rcpt = StringUtils.parseName(recipients[i]);
-
-            PGPPublicKeyRing ring = getPublicKey(context, rcpt);
+            PGPPublicKeyRing ring = getPublicKey(context, recipients[i]);
             if (ring == null)
-                throw new IllegalArgumentException("public key not found for user " + rcpt);
+                throw new IllegalArgumentException("public key not found for user " + recipients[i]);
 
             keys[i] = PGP.getEncryptionKey(ring);
             if (keys[i] == null)
-                throw new IllegalArgumentException("public key not found for user " + rcpt);
+                throw new IllegalArgumentException("public key not found for user " + recipients[i]);
         }
 
         return new PGPCoder(server, key, keys);
@@ -609,27 +565,25 @@ public class UsersProvider extends ContentProvider {
 
     /** Returns a {@link Coder} instance for decrypting data. */
     public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        String rcpt = StringUtils.parseName(sender);
-
-        PGPPublicKeyRing ring = getPublicKey(context, rcpt);
+        PGPPublicKeyRing ring = getPublicKey(context, sender);
         if (ring == null)
-            throw new IllegalArgumentException("public key not found for user " + rcpt);
+            throw new IllegalArgumentException("public key not found for user " + sender);
 
         PGPPublicKey senderKey = PGP.getMasterKey(ring);
         if (senderKey == null)
-            throw new IllegalArgumentException("public key not found for user " + rcpt);
+            throw new IllegalArgumentException("public key not found for user " + sender);
 
         return new PGPCoder(server, key, senderKey);
     }
 
     /** Retrieves the public key for a user. */
-    public static PGPPublicKeyRing getPublicKey(Context context, String userId) {
+    public static PGPPublicKeyRing getPublicKey(Context context, String jid) {
         byte[] keydata = null;
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(Users.CONTENT_URI,
                 new String[] { Users.PUBLIC_KEY },
-                Users.HASH + "=?",
-                new String[] { userId },
+                Users.JID + "=?",
+                new String[] { jid },
                 null);
 
         if (c.moveToFirst())
@@ -648,19 +602,19 @@ public class UsersProvider extends ContentProvider {
     }
 
     /** Updates a user public key. */
-    public static void setUserKey(Context context, String userId, byte[] keydata, String fingerprint) {
+    public static void setUserKey(Context context, String jid, byte[] keydata, String fingerprint) {
         ContentValues values = new ContentValues(2);
         values.put(Users.PUBLIC_KEY, keydata);
         values.put(Users.FINGERPRINT, fingerprint);
         context.getContentResolver().update(Users.CONTENT_URI, values,
-            Users.HASH + "=?", new String[] { userId });
+            Users.JID + "=?", new String[] { jid });
     }
 
-    public static void setBlockStatus(Context context, String userId, boolean blocked) {
+    public static void setBlockStatus(Context context, String jid, boolean blocked) {
         ContentValues values = new ContentValues(1);
         values.put(Users.BLOCKED, blocked);
         context.getContentResolver().update(Users.CONTENT_URI, values,
-            Users.HASH + "=?", new String[] { userId });
+            Users.JID + "=?", new String[] { jid });
     }
 
     /* Transactions compatibility layer */
@@ -690,13 +644,14 @@ public class UsersProvider extends ContentProvider {
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_USERS, USERS);
-        sUriMatcher.addURI(AUTHORITY, TABLE_USERS + "/*", USERS_HASH);
+        sUriMatcher.addURI(AUTHORITY, TABLE_USERS + "/*", USERS_JID);
 
         usersProjectionMap = new HashMap<String, String>();
         usersProjectionMap.put(Users._ID, Users._ID);
         usersProjectionMap.put(Users.HASH, Users.HASH);
         usersProjectionMap.put(Users.NUMBER, Users.NUMBER);
         usersProjectionMap.put(Users.DISPLAY_NAME, Users.DISPLAY_NAME);
+        usersProjectionMap.put(Users.JID, Users.JID);
         usersProjectionMap.put(Users.LOOKUP_KEY, Users.LOOKUP_KEY);
         usersProjectionMap.put(Users.CONTACT_ID, Users.CONTACT_ID);
         usersProjectionMap.put(Users.REGISTERED, Users.REGISTERED);

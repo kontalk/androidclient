@@ -1604,8 +1604,7 @@ public class ComposeMessageFragment extends ListFragment implements
         String fingerprint;
         String uid;
 
-        String userId = StringUtils.parseName(mUserJID);
-        PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), userId);
+        PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), mUserJID);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             fingerprint = PGP.getFingerprint(pk);

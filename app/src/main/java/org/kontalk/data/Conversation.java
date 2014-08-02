@@ -137,8 +137,7 @@ public class Conversation {
     }
 
     private void loadContact() {
-        String recipientName = StringUtils.parseName(mRecipient);
-        mContact = Contact.findByUserId(mContext, recipientName, mNumberHint);
+        mContact = Contact.findByUserId(mContext, mRecipient, mNumberHint);
     }
 
     public Contact getContact() {
