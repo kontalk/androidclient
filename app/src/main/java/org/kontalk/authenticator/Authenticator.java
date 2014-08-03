@@ -32,14 +32,29 @@ import android.util.Base64;
 import android.widget.Toast;
 
 import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.ui.NumberValidation;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.bcpg.ArmoredOutputStream;
+import org.spongycastle.bcpg.HashAlgorithmTags;
+import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPSecretKeyRing;
+import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
+import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.spongycastle.openpgp.operator.PBESecretKeyEncryptor;
+import org.spongycastle.openpgp.operator.PGPDigestCalculator;
+import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
+import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 import org.spongycastle.util.io.pem.PemObject;
 import org.spongycastle.util.io.pem.PemWriter;
 
@@ -77,6 +92,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
     public static final String DATA_NAME = "org.kontalk.key.name";
+    public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
 
     /** @deprecated This was obviously deprecated from the beginning. */
     @Deprecated
@@ -105,9 +121,13 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return (acc != null) ? acc.name : null;
     }
 
-    public static boolean isSelfUserId(Context ctx, String userId) {
+    public static boolean isSelfJID(Context ctx, String bareJid) {
         String name = getDefaultAccountName(ctx);
-        return (name != null && MessageUtils.sha1(name).equals(userId));
+        if (name != null) {
+            return XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name))
+                .equalsIgnoreCase(bareJid);
+        }
+        return false;
     }
 
     public static boolean hasPersonalKey(AccountManager am, Account account) {
@@ -227,6 +247,52 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         am.setUserData(acc, Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
         am.setUserData(acc, Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
+    }
+
+    /**
+     * Set a new passphrase for the default account.
+     * Please note that this method does not invalidate the cached key or passphrase.
+     */
+    public static void changePassphrase(Context ctx, String oldPassphrase, String newPassphrase, boolean fromUser)
+            throws PGPException, IOException {
+
+        AccountManager am = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(am);
+
+        // get old secret key ring
+        String privKeyData = am.getUserData(acc, DATA_PRIVATEKEY);
+        byte[] privateKeyData = Base64.decode(privKeyData, Base64.DEFAULT);
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing oldSecRing = new PGPSecretKeyRing(privateKeyData, fpr);
+
+        // old decryptor
+        PGPDigestCalculatorProvider calcProv = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor oldDecryptor = new JcePBESecretKeyDecryptorBuilder(calcProv)
+                .setProvider(PGP.PROVIDER)
+                .build(oldPassphrase.toCharArray());
+
+        // new encryptor
+        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
+        PBESecretKeyEncryptor newEncryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
+                .setProvider(PGP.PROVIDER).build(newPassphrase.toCharArray());
+
+        // create new secret key ring
+        PGPSecretKeyRing newSecRing = PGPSecretKeyRing.copyWithNewPassword(oldSecRing, oldDecryptor, newEncryptor);
+
+        // replace key data in AccountManager
+        byte[] newPrivateKeyData = newSecRing.getEncoded();
+        am.setUserData(acc, DATA_PRIVATEKEY, Base64.encodeToString(newPrivateKeyData, Base64.NO_WRAP));
+
+        am.setUserData(acc, DATA_USER_PASSPHRASE, String.valueOf(fromUser));
+
+        // replace password for account
+        am.setPassword(acc, newPassphrase);
+    }
+
+    public static boolean isUserPassphrase(Context ctx) {
+        AccountManager am = AccountManager.get(ctx);
+        Account acc = getDefaultAccount(am);
+        return Boolean.parseBoolean(am.getUserData(acc, DATA_USER_PASSPHRASE));
     }
 
     @Override

@@ -21,8 +21,10 @@ package org.kontalk.data;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.crypto.PGP;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.sync.Syncer;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
@@ -56,7 +58,7 @@ public class Contact {
         Users.LOOKUP_KEY,
         Users.DISPLAY_NAME,
         Users.NUMBER,
-        Users.HASH,
+        Users.JID,
         Users.REGISTERED,
         Users.STATUS,
         Users.PUBLIC_KEY,
@@ -68,7 +70,7 @@ public class Contact {
     public static final int COLUMN_LOOKUP_KEY = 2;
     public static final int COLUMN_DISPLAY_NAME = 3;
     public static final int COLUMN_NUMBER = 4;
-    public static final int COLUMN_HASH = 5;
+    public static final int COLUMN_JID = 5;
     public static final int COLUMN_REGISTERED = 6;
     public static final int COLUMN_STATUS = 7;
     public static final int COLUMN_PUBLICKEY = 8;
@@ -79,7 +81,7 @@ public class Contact {
 
     private String mNumber;
     private String mName;
-    private String mHash;
+    private String mJID;
 
     private String mLookupKey;
     private Uri mContactUri;
@@ -136,9 +138,10 @@ public class Contact {
 
                         // insert result into users database immediately
                         ContentValues values = new ContentValues(5);
-                        values.put(Users.HASH, userId);
+                        values.put(Users.HASH, StringUtils.parseName(userId));
                         values.put(Users.NUMBER, numberHint);
                         values.put(Users.DISPLAY_NAME, name);
+                        values.put(Users.JID, userId);
                         values.put(Users.LOOKUP_KEY, lookupKey);
                         values.put(Users.CONTACT_ID, cid);
                         resolver.insert(Users.CONTENT_URI, values);
@@ -153,12 +156,12 @@ public class Contact {
 
     private final static ContactCache cache = new ContactCache();
 
-    private Contact(long contactId, String lookupKey, String name, String number, String hash, boolean blocked) {
+    private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
         mLookupKey = lookupKey;
         mName = name;
         mNumber = number;
-        mHash = hash;
+        mJID = jid;
         mBlocked = blocked;
     }
 
@@ -185,8 +188,8 @@ public class Contact {
         return mName;
     }
 
-    public String getHash() {
-        return mHash;
+    public String getJID() {
+        return mJID;
     }
 
     public boolean isRegistered() {
@@ -250,8 +253,8 @@ public class Contact {
     /** Builds a contact from a UsersProvider cursor. */
     public static Contact fromUsersCursor(Context context, Cursor cursor) {
         // try the cache
-        String hash = cursor.getString(COLUMN_HASH);
-        Contact c = cache.get(hash);
+        String jid = cursor.getString(COLUMN_JID);
+        Contact c = cache.get(jid);
         if (c == null) {
             // don't let the cache fetch contact data again - we'll populate it
             final long contactId = cursor.getLong(COLUMN_CONTACT_ID);
@@ -263,7 +266,7 @@ public class Contact {
             final byte[] keyring = cursor.getBlob(COLUMN_PUBLICKEY);
             final boolean blocked = (cursor.getInt(COLUMN_BLOCKED) != 0);
 
-            c = new Contact(contactId, key, name, number, hash, blocked);
+            c = new Contact(contactId, key, name, number, jid, blocked);
             c.mRegistered = registered;
             c.mStatus = status;
             try {
@@ -275,7 +278,7 @@ public class Contact {
                 Log.w(TAG, "unable to load public keyring", e);
             }
 
-            cache.put(hash, c);
+            cache.put(jid, c);
         }
         return c;
     }
@@ -381,19 +384,6 @@ public class Contact {
         }
 
         return data;
-    }
-
-    public static String getUserId(Context context, Uri rawContactUri) {
-        Cursor c = context.getContentResolver().query(rawContactUri,
-                new String[] {
-                    RawContacts.SYNC3
-                }, null, null, null);
-
-        if (c.moveToFirst()) {
-            return c.getString(0);
-        }
-
-        return null;
     }
 
     public static Cursor queryContacts(Context context) {

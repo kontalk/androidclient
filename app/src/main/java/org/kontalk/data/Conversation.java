@@ -18,6 +18,7 @@
 
 package org.kontalk.data;
 
+import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.ui.MessagingNotification;

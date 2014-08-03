@@ -130,7 +130,7 @@ public class ContactsListActivity extends ActionBarActivity
     /** Called when a contact has been selected from a {@link ContactsListFragment}. */
     @Override
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
-        Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(contact.getHash()));
+        Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(contact.getJID()));
         setResult(RESULT_OK, i);
         finish();
     }

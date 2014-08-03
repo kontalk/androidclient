@@ -571,7 +571,7 @@ public final class MessageUtils {
 
     /**
      * Cool handy method to format a size in bytes in some human readable form.
-     * @see http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
+     * http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
      */
     public static String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
@@ -654,8 +654,7 @@ public final class MessageUtils {
             if (server == null)
                 server = Preferences.getEndpointServer(context);
 
-            String from = msg.getSender(true) + "@" + server.getNetwork();
-            Coder coder = UsersProvider.getDecryptCoder(context, server, key, from);
+            Coder coder = UsersProvider.getDecryptCoder(context, server, key, msg.getSender(true));
 
             // decrypt
             StringBuilder mimeFound = new StringBuilder();

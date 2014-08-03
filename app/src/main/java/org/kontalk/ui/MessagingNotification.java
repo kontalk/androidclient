@@ -182,7 +182,7 @@ public class MessagingNotification {
         // is there a peer to not notify for?
         if (sPaused != null) {
             query += " AND " + CommonColumns.PEER + " <> ?";
-            args = new String[] { StringUtils.parseName(sPaused) };
+            args = new String[] { sPaused };
         }
 
         Cursor c = res.query(uri, proj, query, args, order);
@@ -439,19 +439,19 @@ public class MessagingNotification {
     }
 
     /** Triggers a notification for a chat invitation. */
-    public static void chatInvitation(Context context, String userId) {
+    public static void chatInvitation(Context context, String jid) {
         // open conversation, do not send notification
-        if (userId.equalsIgnoreCase(StringUtils.parseName(sPaused)))
+        if (jid.equalsIgnoreCase(sPaused))
             return;
 
         // find the contact for the userId
-        Contact contact = Contact.findByUserId(context, userId);
+        Contact contact = Contact.findByUserId(context, jid);
 
         String title = (contact != null) ? contact.getName() :
             context.getString(R.string.peer_unknown);
 
         // notification will open the conversation
-        Intent ni = ComposeMessage.fromUserId(context, userId);
+        Intent ni = ComposeMessage.fromUserId(context, jid);
         PendingIntent pi = PendingIntent.getActivity(context,
             NOTIFICATION_ID_INVITATION, ni, 0);
 
@@ -483,7 +483,7 @@ public class MessagingNotification {
         nm.notify(NOTIFICATION_ID_INVITATION, builder.build());
 
         // this is for clearChatInvitation()
-        sLastInvitation = userId;
+        sLastInvitation = jid;
     }
 
     /** Cancel a chat invitation notification. */

@@ -37,6 +37,7 @@ public class MyUsers {
         public static final String HASH = "hash";
         public static final String NUMBER = "number";
         public static final String DISPLAY_NAME = "display_name";
+        public static final String JID = "jid";
         public static final String LOOKUP_KEY = "lookup_key";
         public static final String CONTACT_ID = "contact_id";
         public static final String REGISTERED = "registered";

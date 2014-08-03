@@ -64,6 +64,8 @@ import java.util.Iterator;
 public class PersonalKey implements Parcelable {
     private static final String TAG = Kontalk.TAG;
 
+    public static final int MIN_PASSPHRASE_LENGTH = 4;
+
     /** Decrypted key pair (for direct usage). */
     private final PGPDecryptedKeyPairRing mPair;
     /** X.509 bridge certificate. */
