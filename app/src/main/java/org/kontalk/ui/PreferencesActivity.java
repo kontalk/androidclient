@@ -50,6 +50,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 import java.io.File;
@@ -117,28 +118,19 @@ public final class PreferencesActivity extends PreferenceActivity {
 
                 if (Authenticator.isUserPassphrase(PreferencesActivity.this)) {
 
-                    new InputDialog.Builder(PreferencesActivity.this,
-                            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
-                        .setTitle(R.string.title_passphrase)
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
+                    OnPassphraseRequestListener action = new OnPassphraseRequestListener() {
+                        public void onValidPassphrase(String passphrase) {
+                            askNewPassphrase();
+                        }
 
-                                CharSequence passphrase = InputDialog.getInputText((Dialog) dialog);
-                                if (passphrase.equals(((Kontalk) getApplicationContext())
-                                        .getCachedPassphrase())) {
-                                    askNewPassphrase();
-                                }
-                                else {
-                                    new AlertDialog.Builder(PreferencesActivity.this)
-                                        .setTitle(R.string.title_passphrase)
-                                        .setMessage(R.string.err_password_invalid)
-                                        .show();
-                                }
-
-                            }
-                        })
-                        .show();
+                        public void onInvalidPassphrase() {
+                            new AlertDialog.Builder(PreferencesActivity.this)
+                                .setTitle(R.string.title_passphrase)
+                                .setMessage(R.string.err_password_invalid)
+                                .show();
+                        }
+                    };
+                    askCurrentPassphrase(action);
                 }
 
                 else {
@@ -181,23 +173,50 @@ public final class PreferencesActivity extends PreferenceActivity {
 
                 // TODO check for external storage presence
 
-                try {
+                final OnPassphraseChangedListener action = new OnPassphraseChangedListener() {
+                    public void onPassphraseChanged(String passphrase) {
+                        try {
 
-                    ((Kontalk)getApplicationContext()).exportPersonalKey();
+                            ((Kontalk)getApplicationContext()).exportPersonalKey(passphrase);
 
-                    Toast.makeText(PreferencesActivity.this,
-                        R.string.msg_keypair_exported,
-                        Toast.LENGTH_LONG).show();
+                            Toast.makeText(PreferencesActivity.this,
+                                R.string.msg_keypair_exported,
+                                Toast.LENGTH_LONG).show();
 
+                        }
+                        catch (Exception e) {
+
+                            Log.e(TAG, "error exporting keys", e);
+                            Toast.makeText(PreferencesActivity.this,
+                                // TODO i18n
+                                "Unable to export personal key.",
+                                Toast.LENGTH_LONG).show();
+
+                        }
+                    }
+                };
+
+                // passphrase was never set by the user
+                // encrypt it with a user-defined passphrase first
+                if (!Authenticator.isUserPassphrase(PreferencesActivity.this)) {
+                    askNewPassphrase(action);
                 }
-                catch (Exception e) {
 
-                    Log.e(TAG, "error exporting keys", e);
-                    Toast.makeText(PreferencesActivity.this,
-                        // TODO i18n
-                        "Unable to export personal key.",
-                        Toast.LENGTH_LONG).show();
+                else {
+                    OnPassphraseRequestListener action2 = new OnPassphraseRequestListener() {
+                        public void onValidPassphrase(String passphrase) {
+                            action.onPassphraseChanged(passphrase);
+                        }
 
+                        public void onInvalidPassphrase() {
+                            new AlertDialog.Builder(PreferencesActivity.this)
+                                .setTitle(R.string.pref_export_keypair)
+                                .setMessage(R.string.err_password_invalid)
+                                .show();
+                        }
+                    };
+
+                    askCurrentPassphrase(action2);
                 }
 
                 return true;
@@ -338,7 +357,44 @@ public final class PreferencesActivity extends PreferenceActivity {
             Preferences.updateServerListLastUpdate(updateServerList, list);
     }
 
+    private interface OnPassphraseChangedListener {
+        public void onPassphraseChanged(String passphrase);
+    }
+
+    private interface OnPassphraseRequestListener {
+        public void onValidPassphrase(String passphrase);
+        public void onInvalidPassphrase();
+    }
+
+    private void askCurrentPassphrase(final OnPassphraseRequestListener action) {
+        new InputDialog.Builder(PreferencesActivity.this,
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            .setTitle(R.string.title_passphrase)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+
+                    String passphrase = InputDialog.getInputText((Dialog) dialog).toString();
+                    // user-entered passphrase is hashed, so compare with SHA-1 version
+                    String hashed = MessageUtils.sha1(passphrase);
+                    if (hashed.equals(((Kontalk) getApplicationContext())
+                        .getCachedPassphrase())) {
+                        action.onValidPassphrase(passphrase);
+                    }
+                    else {
+                        action.onInvalidPassphrase();
+                    }
+
+                }
+            })
+            .show();
+    }
+
     private void askNewPassphrase() {
+        askNewPassphrase(null);
+    }
+
+    private void askNewPassphrase(final OnPassphraseChangedListener action) {
         new PasswordInputDialog.Builder(this)
             .setMinLength(PersonalKey.MIN_PASSPHRASE_LENGTH)
             .setTitle(R.string.pref_change_passphrase)
@@ -346,8 +402,13 @@ public final class PreferencesActivity extends PreferenceActivity {
                 public void onClick(DialogInterface dialog, int which, String password) {
                     String oldPassword = ((Kontalk) getApplicationContext()).getCachedPassphrase();
                     try {
-                        Authenticator.changePassphrase(PreferencesActivity.this, oldPassword, password, true);
+                        // user-entered passphrase must be hashed
+                        String hashed = MessageUtils.sha1(password);
+                        Authenticator.changePassphrase(PreferencesActivity.this, oldPassword, hashed, true);
                         ((Kontalk) getApplicationContext()).invalidatePersonalKey();
+
+                        if (action != null)
+                            action.onPassphraseChanged(password);
                     }
                     catch (Exception e) {
                         Toast.makeText(PreferencesActivity.this,

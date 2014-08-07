@@ -157,7 +157,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             return null;
     }
 
-    public static void exportDefaultPersonalKey(Context ctx, String passphrase, boolean bridgeCertificate)
+    public static void exportDefaultPersonalKey(Context ctx, String passphrase, String exportPassphrase, boolean bridgeCertificate)
             throws CertificateException, NoSuchProviderException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
@@ -171,6 +171,13 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
         byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
+
+        // custom export passphrase -- re-encrypt private key
+        if (exportPassphrase != null) {
+            privateKey = PGP.copySecretKeyRingWithNewPassword(privateKey,
+                passphrase, exportPassphrase)
+                .getEncoded();
+        }
 
         OutputStream out;
         ByteArrayOutputStream stream;

@@ -52,6 +52,7 @@ import org.spongycastle.openpgp.PGPUserAttributeSubpacketVector;
 import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.spongycastle.openpgp.operator.PBESecretKeyEncryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculator;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
 import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
@@ -402,6 +403,31 @@ public class PGP {
     public static PublicKey convertPublicKey(PGPPublicKey key) throws PGPException {
         ensureKeyConverter();
         return sKeyConverter.getPublicKey(key);
+    }
+
+    public static PGPSecretKeyRing copySecretKeyRingWithNewPassword(byte[] privateKeyData,
+            String oldPassphrase, String newPassphrase) throws PGPException, IOException {
+
+        // load the secret key ring
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+
+        return copySecretKeyRingWithNewPassword(secRing, oldPassphrase, newPassphrase);
+    }
+
+    public static PGPSecretKeyRing copySecretKeyRingWithNewPassword(PGPSecretKeyRing secRing,
+            String oldPassphrase, String newPassphrase) throws PGPException {
+
+        PGPDigestCalculatorProvider sha1CalcProv = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1CalcProv)
+            .setProvider(PGP.PROVIDER)
+            .build(oldPassphrase.toCharArray());
+
+        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
+        PBESecretKeyEncryptor encryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
+            .setProvider(PROVIDER).build(newPassphrase.toCharArray());
+
+        return PGPSecretKeyRing.copyWithNewPassword(secRing, decryptor, encryptor);
     }
 
 
