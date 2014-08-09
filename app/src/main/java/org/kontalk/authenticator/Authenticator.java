@@ -18,30 +18,21 @@
 
 package org.kontalk.authenticator;
 
-import android.accounts.AbstractAccountAuthenticator;
-import android.accounts.Account;
-import android.accounts.AccountAuthenticatorResponse;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.NetworkErrorException;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Base64;
-import android.widget.Toast;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import org.kontalk.R;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.crypto.PersonalKeyImporter;
-import org.kontalk.crypto.X509Bridge;
-import org.kontalk.ui.NumberValidation;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.XMPPUtils;
 import org.spongycastle.bcpg.ArmoredOutputStream;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPEncryptedData;
@@ -59,20 +50,28 @@ import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 import org.spongycastle.util.io.pem.PemObject;
 import org.spongycastle.util.io.pem.PemWriter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import android.accounts.AbstractAccountAuthenticator;
+import android.accounts.Account;
+import android.accounts.AccountAuthenticatorResponse;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.NetworkErrorException;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Base64;
+import android.widget.Toast;
+
+import org.kontalk.R;
+import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.PersonalKeyImporter;
+import org.kontalk.crypto.X509Bridge;
+import org.kontalk.ui.NumberValidation;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.crypto.PersonalKeyImporter.BRIDGE_CERTPACK_FILENAME;
 import static org.kontalk.crypto.PersonalKeyImporter.BRIDGE_CERT_FILENAME;
@@ -89,6 +88,7 @@ import static org.kontalk.crypto.PersonalKeyImporter.PUBLIC_KEY_FILENAME;
 public class Authenticator extends AbstractAccountAuthenticator {
 
     public static final String ACCOUNT_TYPE = "org.kontalk.account";
+    public static final String ACCOUNT_TYPE_LEGACY = "org.kontalk.legacy.account";
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";

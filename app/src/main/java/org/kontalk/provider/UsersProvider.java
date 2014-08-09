@@ -21,20 +21,6 @@ package org.kontalk.provider;
 import java.util.HashMap;
 
 import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.PGP;
-import org.kontalk.crypto.PGPCoder;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.data.Contact;
-import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.sync.SyncAdapter;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -57,6 +43,21 @@ import android.provider.BaseColumns;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
+
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGPCoder;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.sync.SyncAdapter;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
 
 
 public class UsersProvider extends ContentProvider {
@@ -365,8 +366,10 @@ public class UsersProvider extends ContentProvider {
                     new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE },
                     // this will filter out RawContacts from Kontalk
                     RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
-                    RawContacts.ACCOUNT_TYPE + "<> ?",
-                    new String[] { Authenticator.ACCOUNT_TYPE }, null);
+                    RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?)",
+                    new String[] {
+                        Authenticator.ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE_LEGACY
+                    }, null);
 
                 while (phones.moveToNext()) {
                     String number = phones.getString(0);
