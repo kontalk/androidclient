@@ -67,6 +67,10 @@ public class EndpointServer {
         return mPort;
     }
 
+    public int getSecurePort() {
+        return mPort + 1;
+    }
+
     public String getNetwork() {
         return mNetwork;
     }

@@ -153,12 +153,12 @@ public class XMPPConnectionHelper extends Thread {
                 trustStore = InternalTrustStore.getTrustStore(mContext);
 
             if (key == null) {
-                mConn = new KontalkConnection(mServer,
+                mConn = new KontalkConnection(mServer, true,
                     acceptAnyCertificate, trustStore);
             }
 
             else {
-                mConn = new KontalkConnection(mServer,
+                mConn = new KontalkConnection(mServer, true,
                     key.getBridgePrivateKey(),
                     key.getBridgeCertificate(),
                     acceptAnyCertificate,
