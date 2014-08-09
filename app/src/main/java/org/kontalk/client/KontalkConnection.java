@@ -74,6 +74,8 @@ public class KontalkConnection extends XMPPTCPConnection {
         config.setSecurityMode(SecurityMode.enabled);
         // we will send a custom presence
         config.setSendPresence(false);
+        // disable session initiation
+        config.setLegacySessionDisabled(true);
 
         setupSSL(privateKey, bridgeCert, acceptAnyCertificate, trustStore);
     }
