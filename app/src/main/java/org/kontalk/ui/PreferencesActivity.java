@@ -18,6 +18,8 @@
 
 package org.kontalk.ui;
 
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -238,6 +240,43 @@ public final class PreferencesActivity extends PreferenceActivity {
                                 .getExternalStorageDirectory(), KEYPACK_FILENAME));
                             MessageCenterService.importKeyPair(getApplicationContext(),
                                 keypack, ((Kontalk) getApplication()).getCachedPassphrase());
+                        }
+                    })
+                    .show();
+
+                return true;
+            }
+        });
+
+        // delete account
+        final Preference deleteAccount = findPreference("pref_delete_account");
+        deleteAccount.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                new AlertDialog.Builder(PreferencesActivity.this)
+                    .setTitle(R.string.pref_delete_account)
+                    .setMessage(R.string.msg_delete_account)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // progress dialog
+                            final LockedProgressDialog progress = new LockedProgressDialog(PreferencesActivity.this);
+                            progress.setMessage(getString(R.string.msg_delete_account_progress));
+                            progress.setIndeterminate(true);
+                            progress.show();
+
+                            // stop the message center first
+                            MessageCenterService.stop(getApplicationContext());
+
+                            AccountManagerCallback<Boolean> callback = new AccountManagerCallback<Boolean>() {
+                                public void run(AccountManagerFuture<Boolean> future) {
+                                    // dismiss progress
+                                    progress.dismiss();
+                                    // exit now
+                                    finish();
+                                }
+                            };
+                            Authenticator.removeDefaultAccount(PreferencesActivity.this, callback);
                         }
                     })
                     .show();

@@ -161,6 +161,8 @@
         <CheckBoxPreference android:key="pref_accept_any_certificate"
             android:title="@string/pref_accept_any_certificate"
             android:defaultValue="false"/>
+        <Preference android:key="pref_delete_account"
+            android:title="@string/pref_delete_account"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"

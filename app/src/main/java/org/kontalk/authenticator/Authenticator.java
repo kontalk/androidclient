@@ -22,6 +22,7 @@ import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
 import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
@@ -300,6 +301,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
         AccountManager am = AccountManager.get(ctx);
         Account acc = getDefaultAccount(am);
         return Boolean.parseBoolean(am.getUserData(acc, DATA_USER_PASSPHRASE));
+    }
+
+    public static void removeDefaultAccount(Context ctx, AccountManagerCallback<Boolean> callback) {
+        AccountManager am = AccountManager.get(ctx);
+        am.removeAccount(getDefaultAccount(am), callback, null);
     }
 
     @Override
