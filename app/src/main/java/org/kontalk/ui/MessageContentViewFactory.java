@@ -46,7 +46,7 @@ public class MessageContentViewFactory {
     @SuppressWarnings("unchecked")
     public static <T> MessageContentView<T> createContent(LayoutInflater inflater,
             ViewGroup parent, T component,
-            Contact contact, Pattern highlight) {
+            Contact contact, Pattern highlight, AudioContentView.AudioPlayerControl audioPlayerControl, long messageId) {
 
         // using conditionals to avoid reflection
         MessageContentView<T> view = null;
@@ -59,10 +59,11 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof AudioComponent) {
             view = (MessageContentView<T>) AudioContentView.create(inflater, parent);
+            ((AudioContentView)view).setAudioPlayerControl(audioPlayerControl);
         }
 
         if (view != null)
-            view.bind(component, contact, highlight);
+            view.bind(messageId, component, contact, highlight);
 
         return view;
     }

@@ -87,6 +87,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -118,6 +120,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
@@ -128,7 +131,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnLongClickListener, IconContextMenuOnClickListener, OnAudioDialogResult {
+		View.OnLongClickListener, IconContextMenuOnClickListener, OnAudioDialogResult, AudioContentView.AudioPlayerControl {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -174,6 +177,11 @@ public class ComposeMessageFragment extends ListFragment implements
     private PresenceData mMostAvailable;
     /** Available resources. */
     private Set<String> mAvailableResources = new HashSet<String>();
+
+    /** MediaPlayer */
+    private MediaPlayer mPlayer = new MediaPlayer();
+    private int mStatus = AudioContentView.STATUS_IDLE;
+    private long mMediaPlayerMessageId;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -1452,7 +1460,7 @@ public class ComposeMessageFragment extends ListFragment implements
             }
 
             mListAdapter = new MessageListAdapter(getActivity(), null,
-                    highlight, getListView());
+                    highlight, getListView(), this);
             mListAdapter.setOnContentChangedListener(mContentChangedListener);
             setListAdapter(mListAdapter);
         }
@@ -2202,6 +2210,11 @@ public class ComposeMessageFragment extends ListFragment implements
         // release message center
         MessageCenterService.release(getActivity());
 
+        // release audio player
+        if (mPlayer != null) {
+            mPlayer.stop();
+            mPlayer.release();
+        }
     }
 
     @Override
@@ -2418,5 +2431,107 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onResult(String path) {
         if (path != null)
             sendBinaryMessage(Uri.fromFile(new File(path)), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+    }
+
+    @Override
+    public void buttonClick(File audioFile, ImageButton playerButton, SeekBar seekbar, long messageId) {
+        if (mStatus == AudioContentView.STATUS_PLAYING) {
+            if (mMediaPlayerMessageId == messageId)
+                pauseAudio(playerButton);
+        }
+        else if (mStatus == AudioContentView.STATUS_IDLE || mStatus == AudioContentView.STATUS_PAUSED || mStatus == AudioContentView.STATUS_ENDED) {
+            if (mMediaPlayerMessageId != messageId) {
+                resetAudio(seekbar, playerButton);
+                prepareAudio(audioFile, playerButton, seekbar, messageId);
+                seekbar.setMax(mPlayer.getDuration());
+                playAudio(playerButton, seekbar);
+            }
+            else if (mMediaPlayerMessageId == messageId) {
+                playAudio(playerButton, seekbar);
+            }
+        }
+    }
+
+    @Override
+    public void prepareAudio(File audioFile, final ImageButton playerButton, final SeekBar seekBar,final long messageId) {
+        mMediaPlayerMessageId = messageId;
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        try {
+            mPlayer.setDataSource(audioFile.getPath());
+            mPlayer.prepare();
+        } catch (IOException e) {
+            Toast.makeText(getActivity(),"File not Found", Toast.LENGTH_SHORT).show();
+        }
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                playerButton.setBackgroundResource(R.drawable.play);
+                mPlayer.seekTo(0);
+                seekBar.setProgress(0);
+                setAudioStatus(AudioContentView.STATUS_ENDED);
+            }
+        });
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    mPlayer.seekTo(progress);
+                    seekBar.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                pauseAudio(playerButton);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                playAudio(playerButton, seekBar);
+            }
+        });
+    }
+
+    @Override
+    public void playAudio(ImageButton playerButton, SeekBar seekBar) {
+        playerButton.setBackgroundResource(R.drawable.pause);
+        mPlayer.start();
+        setAudioStatus(AudioContentView.STATUS_PLAYING);
+        updatePosition(seekBar);
+    }
+
+    private void updatePosition(final SeekBar seekBar) {
+        seekBar.setProgress(mPlayer.getCurrentPosition());
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+               if (mPlayer.isPlaying())
+                   updatePosition(seekBar);
+            }
+        },100);
+    }
+
+    @Override
+    public void pauseAudio(ImageButton playerButton) {
+        playerButton.setBackgroundResource(R.drawable.play);
+        mPlayer.pause();
+        setAudioStatus(AudioContentView.STATUS_PAUSED);
+    }
+
+    @Override
+    public void resetAudio(SeekBar seekBar, ImageButton playerButton) {
+        playerButton.setBackgroundResource(R.drawable.play);
+        mPlayer.reset();
+        setAudioStatus(AudioContentView.STATUS_IDLE);
+    }
+
+    @Override
+    public int getAudioStatus() {
+        return mStatus;
+    }
+
+    @Override
+    public void setAudioStatus(int audioStatus) {
+        mStatus = audioStatus;
     }
 }

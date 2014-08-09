@@ -157,7 +157,7 @@ public class MessageListItem extends RelativeLayout {
     }
 
     public final void bind(Context context, final CompositeMessage msg,
-            final Contact contact, final Pattern highlight) {
+                           final Contact contact, final Pattern highlight, AudioContentView.AudioPlayerControl audioPlayerControl) {
         mMessage = msg;
 
         if (msg.isEncrypted()) {
@@ -165,7 +165,7 @@ public class MessageListItem extends RelativeLayout {
             TextContentView view = TextContentView.obtain(mInflater, mContent, true);
 
             String text = getResources().getString(R.string.text_encrypted);
-            view.bind(new TextComponent(text), contact, highlight);
+            view.bind(mMessage.getDatabaseId(), new TextComponent(text), contact, highlight);
             mContent.addContent(view);
         }
 
@@ -174,7 +174,7 @@ public class MessageListItem extends RelativeLayout {
             List<MessageComponent<?>> components = msg.getComponents();
             for (MessageComponent<?> cmp : components) {
                 MessageContentView<?> view = MessageContentViewFactory
-                    .createContent(mInflater, mContent, cmp, contact, highlight);
+                    .createContent(mInflater, mContent, cmp, contact, highlight, audioPlayerControl, mMessage.getDatabaseId());
 
                 mContent.addContent(view);
             }

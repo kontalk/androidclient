@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.os.Handler;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.SeekBar;
 
 import org.kontalk.R;
@@ -34,23 +35,25 @@ import java.util.regex.Pattern;
  * Audio content view for {@link AudioComponent}s.
  */
 public class AudioContentView extends LinearLayout
-        implements MessageContentView<AudioComponent>, View.OnClickListener, MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener, Runnable {
+        implements MessageContentView<AudioComponent>, View.OnClickListener{
 
     static final String TAG = AudioContentView.class.getSimpleName();
 
     private AudioComponent mComponent;
-    private File mAudioFile;
-    private MediaPlayer mPlayer;
     private ImageButton mPlayButton;
     private SeekBar mSeekBar;
-    private static final Handler mHandler = new Handler();
+    private Handler mHandler = new Handler();
 
-    private static final int STATUS_IDLE = 0;
-    private static final int STATUS_PLAYING = 1;
-    private static final int STATUS_PAUSED = 2;
-    private static final int STATUS_ENDED = 3;
+    public static final int STATUS_IDLE = 0;
+    public static final int STATUS_PLAYING = 1;
+    public static final int STATUS_PAUSED = 2;
+    public static final int STATUS_ENDED = 3;
 
     private int mStatus = STATUS_IDLE;
+    private Uri mUri;
+    private long mMessageId;
+
+    private AudioPlayerControl mAudioPlayerControl;
 
     public AudioContentView(Context context) {
         super(context);
@@ -64,15 +67,12 @@ public class AudioContentView extends LinearLayout
         super(context, attrs, defStyle);
     }
 
-    public void bind(AudioComponent component, Contact contact, Pattern highlight) {
+    public void bind(long messageId, AudioComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
+        mMessageId = messageId;
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
-        prepareAudio();
         mPlayButton.setOnClickListener(this);
-        mPlayer.setOnCompletionListener(this);
-        mSeekBar.setMax(mPlayer.getDuration());
-        mSeekBar.setOnSeekBarChangeListener(this);
     }
 
     public void unbind() {
@@ -97,81 +97,22 @@ public class AudioContentView extends LinearLayout
             parent, false);
     }
 
-    private void prepareAudio() {
-        mPlayer = new MediaPlayer();
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        try {
-            mPlayer.setDataSource(new File(String.valueOf(mComponent.getLocalUri())).getPath());
-            mPlayer.prepare();
-        }
-        catch (IOException e) {
-            Log.e(TAG,"exception",e);
-        }
-    }
-
-    private void playAudio() {
-        mPlayer.start();
-        mPlayButton.setBackgroundResource(R.drawable.pause);
-        mStatus = STATUS_PLAYING;
-        updatePosition();
-    }
-
-    private void pauseAudio() {
-        mPlayer.pause();
-        mPlayButton.setBackgroundResource(R.drawable.play);
-        mStatus = STATUS_PAUSED;
-    }
-
     @Override
     public void onClick(View v) {
-        if (mStatus == STATUS_PLAYING)
-            pauseAudio();
-        else if (mStatus == STATUS_PAUSED || mStatus == STATUS_ENDED || mStatus == STATUS_IDLE ) {
-            playAudio();
-        }
+        mAudioPlayerControl.buttonClick(new File(String.valueOf(mComponent.getLocalUri())), mPlayButton, mSeekBar, mMessageId);
     }
 
-    private void updatePosition(){
-        mSeekBar.setProgress(mPlayer.getCurrentPosition());
-        mHandler.postDelayed(this, 100);
+    public void  setAudioPlayerControl (AudioPlayerControl l) {
+        mAudioPlayerControl = l;
     }
 
-
-    @Override
-    public void run() {
-        try {
-            if (mPlayer.isPlaying()) {
-                updatePosition();
-            }
-        }
-        catch (Exception e) {
-            Log.e(TAG,"exception",e);
-        }
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        mPlayButton.setBackgroundResource(R.drawable.play);
-        mStatus = STATUS_ENDED;
-        mPlayer.seekTo(0);
-        mSeekBar.setProgress(0);
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (fromUser) {
-            mPlayer.seekTo(progress);
-            seekBar.setProgress(progress);
-        }
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-        pauseAudio();
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        playAudio();
+    public interface AudioPlayerControl {
+        public void buttonClick (File audioFile, ImageButton playerButton, SeekBar seekBar, long messageId);
+        public void prepareAudio(File audioFile, ImageButton playerButton, SeekBar seekBar, long messageId);
+        public void playAudio(ImageButton playerButton, SeekBar seekBar);
+        public void pauseAudio(ImageButton playerButton);
+        public void resetAudio(SeekBar seekBar, ImageButton playerButton);
+        public int getAudioStatus();
+        public void setAudioStatus(int audioStatus);
     }
 }
