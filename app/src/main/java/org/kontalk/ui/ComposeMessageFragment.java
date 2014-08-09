@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -64,6 +65,7 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.MessageUtils.SmileyImageSpan;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -167,9 +169,9 @@ public class ComposeMessageFragment extends ListFragment implements
     private Bundle mArguments;
 
     /** The user we are talking to. */
-    private String userId;
-    private String userName;
-    private String userPhone;
+    private String mUserJID;
+    private String mUserName;
+    private String mUserPhone;
 
     /** Presence probe packet id. */
     private String mPresenceId;
@@ -300,7 +302,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 if (Preferences.getSendTyping(getActivity())) {
                     // send typing notification if necessary
                     if (!mComposeSent && mAvailableResources.size() > 0) {
-                        MessageCenterService.sendChatState(getActivity(), userId, ChatState.composing);
+                        MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.composing);
                         mComposeSent = true;
                     }
                 }
@@ -434,7 +436,7 @@ public class ComposeMessageFragment extends ListFragment implements
             ContentValues values = new ContentValues();
             // must supply a message ID...
             values.put(Messages.MESSAGE_ID, msgId);
-            values.put(Messages.PEER, userId);
+            values.put(Messages.PEER, mUserJID);
 
             /* TODO ask for a text to send with the image
             values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
@@ -483,7 +485,7 @@ public class ComposeMessageFragment extends ListFragment implements
             // FIXME do not encrypt binary messages for now
             String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
             MessageCenterService.sendBinaryMessage(getActivity(),
-                userId, mime, uri, length, previewPath, ContentUris.parseId(newMsg));
+                mUserJID, mime, uri, length, previewPath, ContentUris.parseId(newMsg));
         }
         else {
             getActivity().runOnUiThread(new Runnable() {
@@ -520,7 +522,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 ContentValues values = new ContentValues();
                 // must supply a message ID...
                 values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
-                values.put(Messages.PEER, userId);
+                values.put(Messages.PEER, mUserJID);
                 values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
                 values.put(Messages.BODY_CONTENT, bytes);
                 values.put(Messages.BODY_LENGTH, bytes.length);
@@ -553,7 +555,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
                     // send message!
                     MessageCenterService.sendTextMessage(getActivity(),
-                        userId, mText, Preferences
+                        mUserJID, mText, Preferences
                             .getEncryptionEnabled(getActivity()),
                         ContentUris.parseId(newMsg));
                 }
@@ -619,7 +621,7 @@ public class ComposeMessageFragment extends ListFragment implements
         switch (item.getItemId()) {
             case R.id.call_contact:
                 startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"
-                        + userPhone)));
+                        + mUserPhone)));
                 return true;
 
             case R.id.view_contact:
@@ -668,7 +670,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 // info & download dialog
                 CharSequence message = MessageUtils
                     .getFileInfoMessage(getActivity(), msg,
-                        userPhone != null ? userPhone : userId);
+                        mUserPhone != null ? mUserPhone : mUserJID);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                     .setTitle(R.string.title_file_info)
@@ -1110,7 +1112,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
             case MENU_DETAILS: {
                 CharSequence messageDetails = MessageUtils.getMessageDetails(
-                        getActivity(), msg, userPhone != null ? userPhone : userId);
+                        getActivity(), msg, mUserPhone != null ? mUserPhone : mUserJID);
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.title_message_details)
                         .setMessage(messageDetails)
@@ -1166,14 +1168,14 @@ public class ComposeMessageFragment extends ListFragment implements
             return;
         }
 
-        userId = mConversation.getRecipient();
+        mUserJID = mConversation.getRecipient();
         Contact contact = mConversation.getContact();
         if (contact != null) {
-            userName = contact.getName();
-            userPhone = contact.getNumber();
+            mUserName = contact.getName();
+            mUserPhone = contact.getNumber();
         }
         else {
-            userName = userId;
+            mUserName = mUserJID;
         }
     }
 
@@ -1284,7 +1286,7 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        out.putParcelable(Uri.class.getName(), Threads.getUri(userId));
+        out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1316,15 +1318,15 @@ public class ComposeMessageFragment extends ListFragment implements
                         Syncer.DATA_COLUMN_DISPLAY_NAME,
                         Syncer.DATA_COLUMN_PHONE }, null, null, null);
                 if (c.moveToFirst()) {
-                    userName = c.getString(0);
-                    userPhone = c.getString(1);
+                    mUserName = c.getString(0);
+                    mUserPhone = c.getString(1);
 
                     // FIXME should it be retrieved from RawContacts.SYNC3 ??
-                    userId = MessageUtils.sha1(userPhone);
+                    mUserJID = XMPPUtils.createLocalJID(getActivity(), MessageUtils.sha1(mUserPhone));
 
                     Cursor cp = cres.query(Messages.CONTENT_URI,
                             new String[] { Messages.THREAD_ID }, Messages.PEER
-                                    + " = ?", new String[] { userId }, null);
+                                    + " = ?", new String[] { mUserJID }, null);
                     if (cp.moveToFirst())
                         threadId = cp.getLong(0);
                     cp.close();
@@ -1337,7 +1339,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 }
                 else {
                     mConversation = Conversation.createNew(getActivity());
-                    mConversation.setRecipient(userId);
+                    mConversation.setRecipient(mUserJID);
                 }
             }
 
@@ -1350,39 +1352,39 @@ public class ComposeMessageFragment extends ListFragment implements
             // view conversation - just userId provided
             else if (ComposeMessage.ACTION_VIEW_USERID.equals(action)) {
                 Uri uri = args.getParcelable("data");
-                userId = uri.getPathSegments().get(1);
+                mUserJID = uri.getPathSegments().get(1);
                 mConversation = Conversation.loadFromUserId(getActivity(),
-                        userId);
+                    mUserJID);
 
                 if (mConversation == null) {
                     mConversation = Conversation.createNew(getActivity());
                     mConversation.setNumberHint(args.getString("number"));
-                    mConversation.setRecipient(userId);
+                    mConversation.setRecipient(mUserJID);
                 }
                 // this way avoid doing the users database query twice
                 else {
                     if (mConversation.getContact() == null) {
                         mConversation.setNumberHint(args.getString("number"));
-                        mConversation.setRecipient(userId);
+                        mConversation.setRecipient(mUserJID);
                     }
                 }
 
                 threadId = mConversation.getThreadId();
                 Contact contact = mConversation.getContact();
                 if (contact != null) {
-                    userName = contact.getName();
-                    userPhone = contact.getNumber();
+                    mUserName = contact.getName();
+                    mUserPhone = contact.getNumber();
                 }
                 else {
-                    userName = userId;
+                    mUserName = mUserJID;
                 }
             }
         }
 
         // set title if we are autonomous
         if (mArguments != null) {
-            String title = userName;
-            //if (userPhone != null) title += " <" + userPhone + ">";
+            String title = mUserName;
+            //if (mUserPhone != null) title += " <" + mUserPhone + ">";
             setActivityTitle(title, "", null);
         }
 
@@ -1393,14 +1395,14 @@ public class ComposeMessageFragment extends ListFragment implements
         // non existant thread - check for not synced contact
         if (threadId <= 0 && mConversation != null) {
             Contact contact = mConversation.getContact();
-            if (userPhone != null && contact != null ? !contact.isRegistered() : true) {
+            if (mUserPhone != null && contact != null ? !contact.isRegistered() : true) {
                 // ask user to send invitation
                 DialogInterface.OnClickListener noListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // FIXME is this specific to sms app?
                         Intent i = new Intent(Intent.ACTION_SENDTO,
-                                Uri.parse("smsto:" + userPhone));
+                                Uri.parse("smsto:" + mUserPhone));
                         i.putExtra("sms_body",
                                 getString(R.string.text_invite_message));
                         startActivity(i);
@@ -1474,7 +1476,7 @@ public class ComposeMessageFragment extends ListFragment implements
             getActivity().setProgressBarIndeterminateVisibility(false);
 
             mConversation = Conversation.createNew(getActivity());
-            mConversation.setRecipient(userId);
+            mConversation.setRecipient(mUserJID);
             onConversationCreated();
         }
     }
@@ -1591,18 +1593,19 @@ public class ComposeMessageFragment extends ListFragment implements
 
         ctx.getContentResolver().update(Requests.CONTENT_URI,
             values, CommonColumns.PEER + "=?",
-                new String[] { userId });
+                new String[] { mUserJID });
 
         // setup broadcast receiver for block/unblock reply
         if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
             if (mPrivacyListener == null) {
                 mPrivacyListener = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
+                        String from = StringUtils.parseBareAddress(intent
+                            .getStringExtra(MessageCenterService.EXTRA_FROM));
 
-                        if (userId.equals(from)) {
+                        if (mUserJID.equals(from)) {
                             // this will trigger a Contact reload
-                            mConversation.setRecipient(userId);
+                            mConversation.setRecipient(mUserJID);
                             // this will update block/unblock menu items
                             updateUI();
                             // request presence subscription if unblocking
@@ -1632,14 +1635,14 @@ public class ComposeMessageFragment extends ListFragment implements
         }
 
         // send command to message center
-        MessageCenterService.replySubscription(ctx, userId, action);
+        MessageCenterService.replySubscription(ctx, mUserJID, action);
     }
 
     private void showIdentityDialog() {
         String fingerprint;
         String uid;
 
-        PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), userId);
+        PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), mUserJID);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
             fingerprint = PGP.getFingerprint(pk);
@@ -1739,10 +1742,11 @@ public class ComposeMessageFragment extends ListFragment implements
                             CharSequence statusText = null;
 
                             String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
-                            String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
+                            String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                            String bareFrom = from != null ? StringUtils.parseBareAddress(from) : null;
 
                             // we are receiving a presence from our peer, upgrade available resources
-                            if (from != null && from.substring(0, CompositeMessage.USERID_LENGTH).equals(userId)) {
+                            if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
                                 // our presence!!!
 
                                 if (Presence.Type.available.toString().equals(type)) {
@@ -1882,11 +1886,11 @@ public class ComposeMessageFragment extends ListFragment implements
                     }
 
                     else if (MessageCenterService.ACTION_MESSAGE.equals(action)) {
-                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM_USERID);
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                         String chatState = intent.getStringExtra("org.kontalk.message.chatState");
 
                         // we are receiving a composing notification from our peer
-                        if (from != null && from.substring(0, CompositeMessage.USERID_LENGTH).equals(userId)) {
+                        if (from != null && XMPPUtils.equalsBareJID(from, mUserJID)) {
                             if (chatState != null && ChatState.composing.toString().equals(chatState)) {
                                 mIsTyping = true;
                                 setStatusText(getString(R.string.seen_typing_label));
@@ -1925,7 +1929,7 @@ public class ComposeMessageFragment extends ListFragment implements
             if (c == null || c.getPublicKeyRing() == null) {
                 Intent i = new Intent(getActivity(), MessageCenterService.class);
                 i.setAction(MessageCenterService.ACTION_PRESENCE);
-                i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
+                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
                 i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
                 getActivity().startService(i);
             }
@@ -1933,7 +1937,7 @@ public class ComposeMessageFragment extends ListFragment implements
             // send subscription request
             Intent i = new Intent(getActivity(), MessageCenterService.class);
             i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
+            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
             i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
             getActivity().startService(i);
 
@@ -1949,7 +1953,7 @@ public class ComposeMessageFragment extends ListFragment implements
         // send unsubscription request
         Intent i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO_USERID, userId);
+        i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
         i.putExtra(MessageCenterService.EXTRA_TYPE, "unsubscribe");
         getActivity().startService(i);
     }
@@ -2069,7 +2073,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
         @Override
         public void onChange(boolean selfChange) {
-            Conversation conv = Conversation.loadFromUserId(mContext, userId);
+            Conversation conv = Conversation.loadFromUserId(mContext, mUserJID);
 
             if (conv != null) {
                 mConversation = conv;
@@ -2118,17 +2122,13 @@ public class ComposeMessageFragment extends ListFragment implements
         // cursor was previously destroyed -- reload everything
         // mConversation = null;
         processStart(true);
-        if (userId != null) {
-            // TODO use some method to generate the JID
-            EndpointServer server = Preferences.getEndpointServer(getActivity());
-            String jid = userId + '@' + server.getNetwork();
-
+        if (mUserJID != null) {
             // set notifications on pause
-            MessagingNotification.setPaused(jid);
+            MessagingNotification.setPaused(mUserJID);
 
             // clear chat invitation (if any)
             // TODO use jid here
-            MessagingNotification.clearChatInvitation(getActivity(), userId);
+            MessagingNotification.clearChatInvitation(getActivity(), mUserJID);
         }
     }
 
@@ -2179,7 +2179,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 // must supply a message ID...
                 values.put(Messages.MESSAGE_ID,
                         "draft" + (new Random().nextInt()));
-                values.put(Messages.PEER, userId);
+                values.put(Messages.PEER, mUserJID);
                 values.put(Messages.BODY_CONTENT, new byte[0]);
                 values.put(Messages.BODY_LENGTH, 0);
                 values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
@@ -2200,7 +2200,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (Preferences.getSendTyping(getActivity())) {
             // send inactive state notification
             if (mAvailableResources.size() > 0)
-                MessageCenterService.sendChatState(getActivity(), userId, ChatState.inactive);
+                MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.inactive);
             mComposeSent = false;
         }
 
@@ -2275,7 +2275,7 @@ public class ComposeMessageFragment extends ListFragment implements
         }
 
         if (mBlockMenu != null) {
-            if (Authenticator.isSelfUserId(getActivity(), userId)) {
+            if (Authenticator.isSelfJID(getActivity(), mUserJID)) {
                 mBlockMenu.setVisible(false).setEnabled(false);
                 mUnblockMenu.setVisible(false).setEnabled(false);
             }
@@ -2394,7 +2394,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     public String getUserId() {
-        return userId;
+        return mUserJID;
     }
 
     public void setTextEntry(CharSequence text) {

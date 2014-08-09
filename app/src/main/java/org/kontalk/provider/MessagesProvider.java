@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.util.Preferences;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -55,7 +57,7 @@ public class MessagesProvider extends ContentProvider {
     private static final String TAG = MessagesProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.messages";
 
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     private static final String DATABASE_NAME = "messages.db";
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";
@@ -286,8 +288,16 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_THREADS_DELETE_COUNT,
         };
 
+        private static final String[] SCHEMA_V6_TO_V7 = {
+            "UPDATE " + TABLE_THREADS + " SET peer = peer || '@' || ?",
+            "UPDATE " + TABLE_MESSAGES + " SET peer = peer || '@' || ?",
+        };
+
+        private Context mContext;
+
         protected DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
+            mContext = context;
         }
 
         @Override
@@ -319,6 +329,15 @@ public class MessagesProvider extends ContentProvider {
             if (oldVersion == 5) {
                 for (int i = 0; i < SCHEMA_V5_TO_V6.length; i++)
                     db.execSQL(SCHEMA_V5_TO_V6[i]);
+            }
+
+            // version 6 appends a host part to all peers
+            if (oldVersion == 6) {
+                EndpointServer server = Preferences.getEndpointServer(mContext);
+                String host = server.getNetwork();
+
+                for (String sql : SCHEMA_V6_TO_V7)
+                    db.execSQL(sql, new Object[] { host });
             }
         }
     }
@@ -536,8 +555,6 @@ public class MessagesProvider extends ContentProvider {
     /**
      * Updates the threads table, returning the thread id to associate with the new message.
      * A thread is created for the given message if not found.
-     * @param db
-     * @param values
      * @return the thread id
      */
     private long updateThreads(SQLiteDatabase db, ContentValues initialValues, List<Uri> notifications, boolean requestOnly) {

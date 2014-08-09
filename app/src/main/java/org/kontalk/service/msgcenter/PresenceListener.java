@@ -20,7 +20,6 @@ package org.kontalk.service.msgcenter;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM_USERID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_COUNT;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
@@ -87,8 +86,8 @@ class PresenceListener extends MessageCenterPacketListener {
                 String fingerprint = MessageUtils.bytesToHex(publicKey.getFingerprint());
 
                 // store key to users table
-                String userId = StringUtils.parseName(p.getFrom());
-                UsersProvider.setUserKey(getContext(), userId,
+                UsersProvider.setUserKey(getContext(),
+                    StringUtils.parseBareAddress(p.getFrom()),
                     pkey.getKey(), fingerprint);
             }
 
@@ -165,7 +164,7 @@ class PresenceListener extends MessageCenterPacketListener {
              * 3. user will either accept or refuse
              */
 
-            String from = StringUtils.parseName(p.getFrom());
+            String from = p.getFrom();
 
             // extract public key
             String name = null, fingerprint = null;
@@ -191,7 +190,8 @@ class PresenceListener extends MessageCenterPacketListener {
             ContentValues values = new ContentValues(4);
 
             // insert public key into the users table
-            values.put(Users.HASH, from);
+            values.put(Users.HASH, StringUtils.parseName(from));
+            values.put(Users.JID, from);
             values.put(Users.PUBLIC_KEY, publicKey);
             values.put(Users.FINGERPRINT, fingerprint);
             values.put(Users.DISPLAY_NAME, name);
@@ -214,7 +214,7 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribed(Presence p) {
-        String from = StringUtils.parseName(p.getFrom());
+        String from = StringUtils.parseBareAddress(p.getFrom());
 
         if (UsersProvider.getPublicKey(getContext(), from) == null) {
             // public key not found
@@ -232,17 +232,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
         i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-        from = p.getFrom();
-        String network = StringUtils.parseServer(from);
-        // our network - convert to userId
-        if (network.equalsIgnoreCase(getServer().getNetwork())) {
-            StringBuilder b = new StringBuilder();
-            b.append(StringUtils.parseName(from));
-            b.append(StringUtils.parseResource(from));
-            i.putExtra(EXTRA_FROM_USERID, b.toString());
-        }
-
-        i.putExtra(EXTRA_FROM, from);
+        i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
 
         sendBroadcast(i);
@@ -254,17 +244,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
         i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-        String from = p.getFrom();
-        String network = StringUtils.parseServer(from);
-        // our network - convert to userId
-        if (network.equalsIgnoreCase(getServer().getNetwork())) {
-            StringBuilder b = new StringBuilder();
-            b.append(StringUtils.parseName(from));
-            b.append(StringUtils.parseResource(from));
-            i.putExtra(EXTRA_FROM_USERID, b.toString());
-        }
-
-        i.putExtra(EXTRA_FROM, from);
+        i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
         i.putExtra(EXTRA_STATUS, p.getStatus());
         Presence.Mode mode = p.getMode();

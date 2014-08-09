@@ -78,7 +78,7 @@ public class Syncer {
     public static final String RAW_COLUMN_DISPLAY_NAME = RawContacts.SYNC1;
     /** {@link RawContacts} column for the phone number. */
     public static final String RAW_COLUMN_PHONE = RawContacts.SYNC2;
-    /** {@link RawContacts} column for the user id (hashed phone number). */
+    /** {@link RawContacts} column for the JID. */
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
     private volatile boolean mCanceled;
@@ -98,17 +98,17 @@ public class Syncer {
         private List<PresenceItem> response;
         private final WeakReference<Syncer> notifyTo;
         private final String iq;
-        private final List<String> hashList;
+        private final List<String> jidList;
         private int presenceCount = -1;
         private int vCardCount = -1;
         private int rosterCount = -1;
         private boolean allPresenceReceived;
         private boolean blocklistReceived;
 
-        public PresenceBroadcastReceiver(String iq, List<String> hashList, Syncer notifyTo) {
+        public PresenceBroadcastReceiver(String iq, List<String> jidList, Syncer notifyTo) {
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
             this.iq = iq;
-            this.hashList = hashList;
+            this.jidList = jidList;
         }
 
         @Override
@@ -246,7 +246,7 @@ public class Syncer {
                  */
                 Syncer w = notifyTo.get();
                 if (w != null) {
-                    w.sendRoster(iq, hashList);
+                    w.sendRoster(iq, jidList);
                     w.requestBlocklist();
                 }
             }
@@ -279,13 +279,13 @@ public class Syncer {
 
     private static final class RawPhoneNumberEntry {
         public final String number;
-        public final String hash;
+        public final String jid;
         public final String lookupKey;
 
-        public RawPhoneNumberEntry(String lookupKey, String number, String hash) {
+        public RawPhoneNumberEntry(String lookupKey, String number, String jid) {
             this.lookupKey = lookupKey;
             this.number = number;
-            this.hash = hash;
+            this.jid = jid;
         }
     }
 
@@ -302,7 +302,7 @@ public class Syncer {
             throws OperationCanceledException {
 
         final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
-        final List<String> hashList = new ArrayList<String>();
+        final List<String> jidList = new ArrayList<String>();
 
         // resync users database
         Log.v(TAG, "resyncing users database");
@@ -323,12 +323,12 @@ public class Syncer {
         }
 
         // query all contacts
-        Cursor cursor = null;
+        Cursor cursor;
         Uri offlineUri = Users.CONTENT_URI.buildUpon()
             .appendQueryParameter(Users.OFFLINE, "true").build();
         try {
             cursor = usersProvider.query(offlineUri,
-                new String[] { Users.HASH, Users.NUMBER, Users.LOOKUP_KEY },
+                new String[] { Users.JID, Users.NUMBER, Users.LOOKUP_KEY },
                 null, null, null);
         }
         catch (RemoteException e) {
@@ -343,7 +343,7 @@ public class Syncer {
                 throw new OperationCanceledException();
             }
 
-            String hash = cursor.getString(0);
+            String jid = cursor.getString(0);
             String number = cursor.getString(1);
             String lookupKey = cursor.getString(2);
 
@@ -362,15 +362,15 @@ public class Syncer {
             }
 
             // avoid to send duplicates to server
-            if (lookupNumbers.put(hash, new RawPhoneNumberEntry(lookupKey, number, hash)) == null)
-                hashList.add(hash);
+            if (lookupNumbers.put(jid, new RawPhoneNumberEntry(lookupKey, number, jid)) == null)
+                jidList.add(jid);
         }
         cursor.close();
 
         if (mCanceled) throw new OperationCanceledException();
 
         // empty contacts :-|
-        if (hashList.size() == 0) {
+        if (jidList.size() == 0) {
             // delete all Kontalk raw contacts
             try {
                 syncResult.stats.numDeletes += deleteAll(account, provider);
@@ -387,7 +387,7 @@ public class Syncer {
 
             // register presence broadcast receiver
             String iq = Packet.nextID();
-            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, hashList, this);
+            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER);
@@ -439,14 +439,13 @@ public class Syncer {
                 registeredValues.put(Users.REGISTERED, 1);
                 for (int i = 0; i < res.size(); i++) {
                     PresenceItem entry = res.get(i);
-                    String userId = StringUtils.parseName(entry.from);
 
-                    final RawPhoneNumberEntry data = lookupNumbers.get(userId);
+                    final RawPhoneNumberEntry data = lookupNumbers.get(entry.from);
                     if (data != null) {
                         // add contact
                         addContact(account,
                                 getDisplayName(provider, data.lookupKey, data.number),
-                                data.number, data.hash, operations, op);
+                                data.number, data.jid, operations, op);
                         op++;
                     }
                     else {
@@ -486,7 +485,7 @@ public class Syncer {
                         registeredValues.put(Users.BLOCKED, entry.blocked);
 
                         usersProvider.update(offlineUri, registeredValues,
-                            Users.HASH + " = ?", new String[] { userId });
+                            Users.JID + " = ?", new String[] { entry.from });
                     }
                     catch (RemoteException e) {
                         Log.e(TAG, "error updating users database", e);
@@ -548,7 +547,7 @@ public class Syncer {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_ROSTER);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
-        i.putExtra(MessageCenterService.EXTRA_USERLIST, list.toArray(new String[0]));
+        i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[0]));
         mContext.startService(i);
     }
 
@@ -616,7 +615,7 @@ public class Syncer {
     }
     */
 
-    private void addContact(Account account, String username, String phone, String hash,
+    private void addContact(Account account, String username, String phone, String jid,
             List<ContentProviderOperation> operations, int index) {
         Log.d(TAG, "adding contact username = \"" + username + "\", phone: " + phone);
         ContentProviderOperation.Builder builder;
@@ -629,7 +628,7 @@ public class Syncer {
             .withValue(RawContacts.ACCOUNT_TYPE, account.type)
             .withValue(RAW_COLUMN_DISPLAY_NAME, username)
             .withValue(RAW_COLUMN_PHONE, phone)
-            .withValue(RAW_COLUMN_USERID, hash);
+            .withValue(RAW_COLUMN_USERID, jid);
         operations.add(builder.build());
 
         // create a Data record of common type 'StructuredName' for our RawContact
