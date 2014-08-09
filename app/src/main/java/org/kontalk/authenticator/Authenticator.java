@@ -199,7 +199,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
             // export bridge private key
             zip.putNextEntry(new ZipEntry(BRIDGE_KEY_FILENAME));
-            PrivateKey bridgeKey = PGP.convertPrivateKey(privateKey, passphrase);
+            PrivateKey bridgeKey = PGP.convertPrivateKey(privateKey, exportPassphrase);
             stream = new ByteArrayOutputStream();
             writer = new PemWriter(new OutputStreamWriter(stream));
             writer.writeObject(new PemObject(X509Bridge.PEM_TYPE_PRIVATE_KEY, bridgeKey.getEncoded()));
@@ -211,7 +211,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             zip.putNextEntry(new ZipEntry(BRIDGE_CERTPACK_FILENAME));
             X509Certificate certificate = X509Bridge.load(bridgeCert);
             KeyStore pkcs12 = X509Bridge.exportCertificate(certificate, bridgeKey);
-            pkcs12.store(zip, passphrase.toCharArray());
+            pkcs12.store(zip, exportPassphrase.toCharArray());
             zip.closeEntry();
         }
 
