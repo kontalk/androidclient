@@ -22,6 +22,7 @@ import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
 import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
@@ -157,7 +158,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             return null;
     }
 
-    public static void exportDefaultPersonalKey(Context ctx, String passphrase, boolean bridgeCertificate)
+    public static void exportDefaultPersonalKey(Context ctx, String passphrase, String exportPassphrase, boolean bridgeCertificate)
             throws CertificateException, NoSuchProviderException, PGPException,
                 IOException, KeyStoreException, NoSuchAlgorithmException {
 
@@ -171,6 +172,13 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         String privKeyData = m.getUserData(acc, DATA_PRIVATEKEY);
         byte[] privateKey = Base64.decode(privKeyData, Base64.DEFAULT);
+
+        // custom export passphrase -- re-encrypt private key
+        if (exportPassphrase != null) {
+            privateKey = PGP.copySecretKeyRingWithNewPassword(privateKey,
+                passphrase, exportPassphrase)
+                .getEncoded();
+        }
 
         OutputStream out;
         ByteArrayOutputStream stream;
@@ -293,6 +301,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
         AccountManager am = AccountManager.get(ctx);
         Account acc = getDefaultAccount(am);
         return Boolean.parseBoolean(am.getUserData(acc, DATA_USER_PASSPHRASE));
+    }
+
+    public static void removeDefaultAccount(Context ctx, AccountManagerCallback<Boolean> callback) {
+        AccountManager am = AccountManager.get(ctx);
+        am.removeAccount(getDefaultAccount(am), callback, null);
     }
 
     @Override

@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -47,20 +48,20 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     protected EndpointServer mServer;
 
-    public KontalkConnection(EndpointServer server,
+    public KontalkConnection(EndpointServer server, boolean secure,
         boolean acceptAnyCertificate, KeyStore trustStore)
             throws XMPPException {
 
-        this(server, null, null, acceptAnyCertificate, trustStore);
+        this(server, secure, null, null, acceptAnyCertificate, trustStore);
     }
 
-    public KontalkConnection(EndpointServer server,
+    public KontalkConnection(EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
             boolean acceptAnyCertificate, KeyStore trustStore) throws XMPPException {
 
         super(new AndroidConnectionConfiguration
                 (server.getHost(),
-                 server.getPort(),
+                 secure ? server.getSecurePort() : server.getPort(),
                  server.getNetwork()));
 
         mServer = server;
@@ -71,14 +72,17 @@ public class KontalkConnection extends XMPPTCPConnection {
         // enable compression
         config.setCompressionEnabled(true);
         // enable encryption
-        config.setSecurityMode(SecurityMode.enabled);
+        config.setSecurityMode(secure ? SecurityMode.disabled : SecurityMode.required);
         // we will send a custom presence
         config.setSendPresence(false);
+        // disable session initiation
+        config.setLegacySessionDisabled(true);
 
-        setupSSL(privateKey, bridgeCert, acceptAnyCertificate, trustStore);
+        setupSSL(secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);
     }
 
-    private void setupSSL(PrivateKey privateKey, X509Certificate bridgeCert, boolean acceptAnyCertificate, KeyStore trustStore) {
+    private void setupSSL(boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
+            boolean acceptAnyCertificate, KeyStore trustStore) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
 
@@ -131,7 +135,8 @@ public class KontalkConnection extends XMPPTCPConnection {
 
             ctx.init(km, tm, null);
             config.setCustomSSLContext(ctx);
-            //config.setSocketFactory(SSLSocketFactory.getDefault());
+            if (direct)
+                config.setSocketFactory(ctx.getSocketFactory());
 
             // enable SASL EXTERNAL
             SASLAuthentication.supportSASLMechanism("EXTERNAL");
