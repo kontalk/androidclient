@@ -25,17 +25,24 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
+
+import org.kontalk.Kontalk;
 
 
 /**
@@ -43,10 +50,12 @@ import android.webkit.MimeTypeMap;
  * @author Daniele Ricci
  */
 public abstract class MediaStorage {
+    private static final String TAG = Kontalk.TAG;
+
     public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
 
-    private static final int THUMBNAIL_WIDTH = 128;
-    private static final int THUMBNAIL_HEIGHT = 128;
+    private static final int THUMBNAIL_WIDTH = 256;
+    private static final int THUMBNAIL_HEIGHT = 256;
     public static final String THUMBNAIL_MIME = "image/png";
 
     public static boolean isExternalStorageAvailable() {
@@ -112,9 +121,34 @@ public abstract class MediaStorage {
         in = cr.openInputStream(media);
         Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
         in.close();
+
         Bitmap thumbnail = ThumbnailUtils
             .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
         bitmap.recycle();
+
+        // check if we have to (and can) rotate the thumbnail
+        try {
+            Cursor cursor = context.getContentResolver().query(media,
+                new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
+
+            cursor.moveToFirst();
+            if (cursor != null) {
+                int orientation = cursor.getInt(0);
+                cursor.close();
+
+                if (orientation != 0) {
+                    Matrix m = new Matrix();
+                    m.postRotate(orientation);
+
+                    Bitmap rotated = Bitmap.createBitmap(thumbnail, 0, 0, thumbnail.getWidth(), thumbnail.getHeight(), m, true);
+                    thumbnail.recycle();
+                    thumbnail = rotated;
+                }
+            }
+        }
+        catch (Exception e) {
+            Log.w(TAG, "unable to check for rotation data", e);
+        }
 
         // write down to file
         thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
