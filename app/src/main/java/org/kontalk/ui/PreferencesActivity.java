@@ -214,6 +214,7 @@ public final class PreferencesActivity extends PreferenceActivity {
                             new AlertDialog.Builder(PreferencesActivity.this)
                                 .setTitle(R.string.pref_export_keypair)
                                 .setMessage(R.string.err_password_invalid)
+                                .setPositiveButton(android.R.string.ok, null)
                                 .show();
                         }
                     };
