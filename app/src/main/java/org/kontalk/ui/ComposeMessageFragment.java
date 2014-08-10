@@ -403,6 +403,8 @@ public class ComposeMessageFragment extends ListFragment implements
         File previewFile = null;
         long length = -1;
 
+        boolean encrypted = Preferences.getEncryptionEnabled(getActivity());
+
         try {
             // TODO convert to thread (?)
 
@@ -434,7 +436,9 @@ public class ComposeMessageFragment extends ListFragment implements
              */
 
             values.put(Messages.UNREAD, false);
+            // of course outgoing messages are not encrypted in database
             values.put(Messages.ENCRYPTED, false);
+            values.put(Messages.SECURITY_FLAGS, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
             values.put(Messages.DIRECTION, Messages.DIRECTION_OUT);
             values.put(Messages.TIMESTAMP, System.currentTimeMillis());
             values.put(Messages.STATUS, Messages.STATUS_SENDING);
@@ -474,7 +478,8 @@ public class ComposeMessageFragment extends ListFragment implements
             // FIXME do not encrypt binary messages for now
             String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
             MessageCenterService.sendBinaryMessage(getActivity(),
-                mUserJID, mime, uri, length, previewPath, ContentUris.parseId(newMsg));
+                mUserJID, mime, uri, length, previewPath, encrypted,
+                ContentUris.parseId(newMsg));
         }
         else {
             getActivity().runOnUiThread(new Runnable() {
@@ -544,8 +549,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
                     // send message!
                     MessageCenterService.sendTextMessage(getActivity(),
-                        mUserJID, mText, Preferences
-                            .getEncryptionEnabled(getActivity()),
+                        mUserJID, mText, encrypted,
                         ContentUris.parseId(newMsg));
                 }
                 else {
@@ -700,6 +704,7 @@ public class ComposeMessageFragment extends ListFragment implements
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
             i.putExtra(CompositeMessage.MSG_ID, msg.getDatabaseId());
             i.putExtra(CompositeMessage.MSG_SENDER, msg.getSender());
+            i.putExtra(CompositeMessage.MSG_ENCRYPTED, attachment.isEncrypted());
             i.setData(Uri.parse(attachment.getFetchUrl()));
             getActivity().startService(i);
         }

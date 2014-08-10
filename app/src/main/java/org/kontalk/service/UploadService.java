@@ -75,6 +75,8 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_MIME = "org.kontalk.upload.MIME";
     /** Preview file path. */
     public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
+    /** Encryption flag. */
+    public static final String EXTRA_ENCRYPT = "org.kontalk.upload.ENCRYPT";
     // Intent data is the local file Uri
 
     private ProgressNotificationBuilder mNotificationBuilder;
@@ -135,6 +137,8 @@ public class UploadService extends IntentService implements ProgressListener {
         String mime = intent.getStringExtra(EXTRA_MIME);
         // preview file path
         String previewPath = intent.getStringExtra(EXTRA_PREVIEW_PATH);
+        // encryption flag
+        boolean encrypt = intent.getBooleanExtra(EXTRA_ENCRYPT, false);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -160,14 +164,15 @@ public class UploadService extends IntentService implements ProgressListener {
             queue.put(filename, mMessageId);
 
             // upload content
-            String mediaUrl = mConn.upload(file, mime, false, this);
+            String mediaUrl = mConn.upload(file, mime, encrypt, to, this);
             Log.d(TAG, "uploaded with media URL: " + mediaUrl);
 
             // update message fetch_url
             MessagesProvider.uploaded(this, msgId, mediaUrl);
 
             // send message with fetch url to server
-            MessageCenterService.sendUploadedMedia(this, to, mime, file, length, previewPath, mediaUrl, msgId);
+            MessageCenterService.sendUploadedMedia(this, to, mime, file, length,
+                previewPath, mediaUrl, encrypt, msgId);
 
             // end operations
             completed();

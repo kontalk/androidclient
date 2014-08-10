@@ -18,6 +18,9 @@
 
 package org.kontalk.upload;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PrivateKey;
@@ -45,17 +48,21 @@ import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-import org.kontalk.Kontalk;
-import org.kontalk.client.ClientHTTPConnection;
-import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.service.ProgressListener;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.ProgressInputStreamEntity;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
+import android.os.Environment;
+
+import org.kontalk.Kontalk;
+import org.kontalk.client.ClientHTTPConnection;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.ProgressListener;
+import org.kontalk.util.Preferences;
+import org.kontalk.util.ProgressInputStreamEntity;
 
 
 /**
@@ -97,42 +104,49 @@ public class KontalkBoxUploadConnection implements UploadConnection {
     }
 
     @Override
-    public String upload(Uri uri, String mime, boolean encrypt, ProgressListener listener)
+    public String upload(Uri uri, String mime, boolean encrypt, String to, ProgressListener listener)
             throws IOException {
 
         HttpResponse response = null;
+        InputStream inMessage = null;
         try {
             AssetFileDescriptor stat = mContext.getContentResolver()
                 .openAssetFileDescriptor(uri, "r");
-            long length = stat.getLength();
+            long inLength = stat.getLength();
             stat.close();
 
-            InputStream in = mContext.getContentResolver().openInputStream(uri);
+            inMessage = mContext.getContentResolver().openInputStream(uri);
 
-            InputStream toMessage = null;
-            long toLength = 0;
-            Coder coder = null;
             boolean encrypted = false;
             // check if we have to encrypt the message
             if (encrypt) {
                 PersonalKey key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
-                // TODO recipients?
-                coder = null; // TODO UsersProvider.getEncryptCoder(key, null);
+                EndpointServer server = Preferences.getEndpointServer(mContext);
+                Coder coder = UsersProvider.getEncryptCoder(mContext, server, key, new String[] { to });
                 if (coder != null) {
-                    toMessage = coder.wrapInputStream(in);
-                    toLength = coder.getEncryptedLength(length);
-                    encrypted = true;
-                }
-            }
+                    // create a temporary file to store encrypted data
+                    File temp = File.createTempFile("media", null, mContext.getCacheDir());
+                    FileOutputStream out = new FileOutputStream(temp);
 
-            if (coder == null) {
-                toMessage = in;
-                toLength = length;
+                    coder.encryptFile(inMessage, out);
+                    // close original file and encrypted file
+                    inMessage.close();
+                    out.close();
+
+                    // open the encrypted file
+                    inMessage = new FileInputStream(temp);
+                    inLength = temp.length();
+                    encrypted = true;
+
+                    // delete the encrypted file
+                    // it will stay until all streams are closed
+                    temp.delete();
+                }
             }
 
             // http request!
             currentRequest = prepareMessage(listener,
-                mime, toMessage, toLength, encrypted);
+                mime, inMessage, inLength, encrypted);
             response = execute(currentRequest);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
                 throw new HttpException(response.getStatusLine().getReasonPhrase());
@@ -150,6 +164,12 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             catch (Exception e) {
                 // ignore
             }
+            try {
+                inMessage.close();
+            }
+            catch (Exception e) {
+                // ignore
+            }
         }
     }
 
@@ -159,23 +179,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         return ie;
     }
 
-    /**
-     * A generic endpoint request method for the messaging server.
-     *
-     * @param path
-     *            request path
-     * @param params
-     *            additional GET parameters
-     * @param mime
-     *            if null will use <code>application/x-google-protobuf</code>
-     * @param content
-     *            the POST body content, if null it will use GET
-     * @param forcePost
-     *            force a POST request even with null content (useful for
-     *            post-poning entity creation)
-     * @return the request object
-     * @throws IOException
-     */
+    /** A generic endpoint request method for the messaging server. */
     public HttpRequestBase prepare(List<NameValuePair> params,
         String mime, byte[] content, boolean forcePost)
         throws IOException {
@@ -201,22 +205,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         return req;
     }
 
-    /**
-     * A message posting method.
-     *
-     * @param listener
-     *            the uploading listener
-     * @param group
-     *            the recipients
-     * @param mime
-     *            message mime type
-     * @param data
-     *            data to be sent
-     * @param length
-     *            length of data
-     * @return the request object
-     * @throws IOException
-     */
+    /** A message posting method. */
     private HttpRequestBase prepareMessage(ProgressListener listener,
         String mime, InputStream data, long length, boolean encrypted)
             throws IOException {

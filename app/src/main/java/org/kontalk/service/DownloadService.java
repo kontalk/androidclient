@@ -24,8 +24,14 @@ package org.kontalk.service;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.PrivateKey;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import android.app.IntentService;
@@ -43,14 +49,19 @@ import android.util.Log;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.DecryptException;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.ConversationList;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.Preferences;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
@@ -80,6 +91,8 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     private long mMessageId;
     private String mPeer;
+    private boolean mEncrypted;
+
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
 
@@ -156,6 +169,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
             mMessageId = intent.getLongExtra(CompositeMessage.MSG_ID, 0);
             mPeer = intent.getStringExtra(CompositeMessage.MSG_SENDER);
+            mEncrypted = intent.getBooleanExtra(CompositeMessage.MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
             // download content
@@ -218,6 +232,66 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         Uri uri = Uri.fromFile(destination);
 
+        ContentValues values = null;
+
+        // encrypted file?
+        if (mEncrypted) {
+            InputStream in = null;
+            OutputStream out = null;
+            try {
+                EndpointServer server = Preferences.getEndpointServer(this);
+                PersonalKey key = ((Kontalk) getApplicationContext()).getPersonalKey();
+                Coder coder = UsersProvider.getDecryptCoder(this, server, key, mPeer);
+                if (coder != null) {
+                    in = new FileInputStream(destination);
+
+                    File outFile = new File(destination + ".new");
+                    out = new FileOutputStream(outFile);
+                    List<DecryptException> errors = new LinkedList<DecryptException>();
+                    coder.decryptFile(in, true, out, errors);
+
+                    // TODO process errors
+
+                    // delete old file and rename the decrypted one
+                    destination.delete();
+                    outFile.renameTo(destination);
+
+                    // save this for later
+                    values = new ContentValues(3);
+                    values.put(Messages.ATTACHMENT_ENCRYPTED, false);
+                    values.put(Messages.ATTACHMENT_LENGTH, outFile.length());
+                }
+            }
+            catch (Exception e) {
+                Log.e(TAG, "decryption failed!", e);
+                errorNotification(getString(R.string.notify_ticker_download_error),
+                    // TODO i18n
+                    "Decryption failed.");
+                return;
+            }
+            finally {
+                try {
+                    in.close();
+                }
+                catch (Exception e) {
+                    // ignored
+                }
+                try {
+                    out.close();
+                }
+                catch (Exception e) {
+                    // ignored
+                }
+            }
+        }
+
+        // update messages.localUri
+        if (values == null)
+            values = new ContentValues(1);
+        values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
+        getContentResolver().update(ContentUris
+            .withAppendedId(Messages.CONTENT_URI, mMessageId), values, null, null);
+
         // notify only if conversation is not open
         if (!mPeer.equals(MessagingNotification.getPaused())) {
 
@@ -230,7 +304,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             i.setDataAndType(uri, mime);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-                    NOTIFICATION_ID_DOWNLOAD_OK, i, 0);
+                NOTIFICATION_ID_DOWNLOAD_OK, i, 0);
 
             // create notification
             NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
@@ -244,12 +318,6 @@ public class DownloadService extends IntentService implements DownloadListener {
             // notify!!
             mNotificationManager.notify(NOTIFICATION_ID_DOWNLOAD_OK, builder.build());
         }
-
-        // update messages.localUri
-        ContentValues values = new ContentValues();
-        values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
-        getContentResolver().update(ContentUris
-            .withAppendedId(Messages.CONTENT_URI, mMessageId), values, null, null);
     }
 
     @Override

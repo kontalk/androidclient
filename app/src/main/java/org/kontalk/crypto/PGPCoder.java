@@ -17,13 +17,6 @@
  */
 package org.kontalk.crypto;
 
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT;
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER;
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
-import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,10 +30,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.kontalk.client.EndpointServer;
-import org.kontalk.message.TextComponent;
-import org.kontalk.util.CPIMMessage;
-import org.kontalk.util.XMPPUtils;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.openpgp.PGPCompressedData;
 import org.spongycastle.openpgp.PGPCompressedDataGenerator;
@@ -65,6 +54,18 @@ import org.spongycastle.openpgp.operator.bc.BcPGPContentVerifierBuilderProvider;
 import org.spongycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.spongycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
+
+import org.kontalk.client.EndpointServer;
+import org.kontalk.message.TextComponent;
+import org.kontalk.util.CPIMMessage;
+import org.kontalk.util.XMPPUtils;
+
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CHECK;
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT;
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER;
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
 
 
 /**
@@ -429,20 +430,228 @@ public class PGPCoder extends Coder {
 
     }
 
-    public InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException {
-        // TODO
-        return null;
-        //return new CipherInputStream(inputStream, TODO);
+    @Override
+    public void encryptFile(InputStream input, OutputStream output) throws GeneralSecurityException {
+        try {
+            StringBuilder to = new StringBuilder();
+            for (PGPPublicKey rcpt : mRecipients)
+                to.append(PGP.getUserId(rcpt, mServer.getNetwork()))
+                    .append("; ");
+
+            // setup data encryptor & generator
+            BcPGPDataEncryptorBuilder encryptor = new BcPGPDataEncryptorBuilder(PGPEncryptedData.AES_192);
+            encryptor.setWithIntegrityPacket(true);
+            encryptor.setSecureRandom(new SecureRandom());
+
+            // add public key recipients
+            PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(encryptor);
+            for (PGPPublicKey rcpt : mRecipients)
+                encGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(rcpt));
+
+            OutputStream encryptedOut = encGen.open(output, new byte[BUFFER_SIZE]);
+
+            // setup compressed data generator
+            PGPCompressedDataGenerator compGen = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
+            OutputStream compressedOut = compGen.open(encryptedOut, new byte[BUFFER_SIZE]);
+
+            // setup signature generator
+            PGPSignatureGenerator sigGen = new PGPSignatureGenerator
+                (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
+                    .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
+            sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
+
+            PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
+            spGen.setSignerUserID(false, mKey.getUserId(mServer.getNetwork()));
+            sigGen.setUnhashedSubpackets(spGen.generate());
+
+            sigGen.generateOnePassVersion(false)
+                .encode(compressedOut);
+
+            // Initialize literal data generator
+            PGPLiteralDataGenerator literalGen = new PGPLiteralDataGenerator();
+            OutputStream literalOut = literalGen.open(
+                compressedOut,
+                PGPLiteralData.BINARY,
+                "",
+                new Date(),
+                new byte[BUFFER_SIZE]);
+
+            // read the "in" stream, compress, encrypt and write to the "out" stream
+            // this must be done if clear data is bigger than the buffer size
+            // but there are other ways to optimize...
+            byte[] buf = new byte[BUFFER_SIZE];
+            int len;
+            while ((len = input.read(buf)) > 0) {
+                literalOut.write(buf, 0, len);
+                sigGen.update(buf, 0, len);
+            }
+
+            literalGen.close();
+            // Generate the signature, compress, encrypt and write to the "out" stream
+            sigGen.generate().encode(compressedOut);
+            compGen.close();
+            encGen.close();
+        }
+        catch (PGPException e) {
+            throw new GeneralSecurityException(e);
+        }
+
+        catch (IOException e) {
+            throw new GeneralSecurityException(e);
+        }
     }
 
-    public OutputStream wrapOutputStream(OutputStream outputStream) throws GeneralSecurityException {
-        // TODO
-        return null;
-        //return new CipherOutputStream(outputStream, TODO);
+    /** Decrypts a file. */
+    public void decryptFile(InputStream input, boolean verify,
+        OutputStream output, List<DecryptException> errors)
+            throws GeneralSecurityException {
+        try {
+            PGPObjectFactory pgpF = new PGPObjectFactory(input);
+            PGPEncryptedDataList enc;
+
+            Object o = pgpF.nextObject();
+
+            // the first object might be a PGP marker packet
+            if (o instanceof PGPEncryptedDataList) {
+                enc = (PGPEncryptedDataList) o;
+            }
+            else {
+                enc = (PGPEncryptedDataList) pgpF.nextObject();
+            }
+
+            // check if secret key matches
+            Iterator<PGPPublicKeyEncryptedData> it = enc.getEncryptedDataObjects();
+            PGPPrivateKey sKey = null;
+            PGPPublicKeyEncryptedData pbe = null;
+
+            // our encryption keyID
+            long ourKeyID = mKey.getEncryptKeyPair().getPrivateKey().getKeyID();
+
+            while (sKey == null && it.hasNext()) {
+                pbe = it.next();
+
+                if (pbe.getKeyID() == ourKeyID)
+                    sKey = mKey.getEncryptKeyPair().getPrivateKey();
+            }
+
+            if (sKey == null)
+                throw new DecryptException(
+                    DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND,
+                    "Secret key for message not found.");
+
+            InputStream clear = pbe.getDataStream(new BcPublicKeyDataDecryptorFactory(sKey));
+
+            PGPObjectFactory plainFact = new PGPObjectFactory(clear);
+
+            Object message = plainFact.nextObject();
+
+            if (message instanceof PGPCompressedData) {
+                PGPCompressedData cData = (PGPCompressedData) message;
+                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream());
+
+                message = pgpFact.nextObject();
+
+                PGPOnePassSignature ops = null;
+                if (message instanceof PGPOnePassSignatureList) {
+                    if (verify) {
+                        ops = ((PGPOnePassSignatureList) message).get(0);
+                        ops.init(new BcPGPContentVerifierBuilderProvider(), mSender);
+                    }
+
+                    message = pgpFact.nextObject();
+                }
+
+                if (message instanceof PGPLiteralData) {
+                    PGPLiteralData ld = (PGPLiteralData) message;
+
+                    InputStream unc = ld.getInputStream();
+                    int ch;
+
+                    while ((ch = unc.read()) >= 0) {
+                        output.write(ch);
+
+                        if (ops != null)
+                            ops.update((byte) ch);
+                    }
+
+                    if (verify) {
+                        if (ops == null) {
+                            if (errors != null)
+                                errors.add(new DecryptException(
+                                    DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+                                    "No signature list found"));
+                        }
+
+                        message = pgpFact.nextObject();
+
+                        if (ops != null) {
+
+                            if (message instanceof PGPSignatureList) {
+                                PGPSignature signature = ((PGPSignatureList) message).get(0);
+                                if (!ops.verify(signature)) {
+                                    if (errors != null)
+                                        errors.add(new DecryptException(
+                                            DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+                                            "Signature verification failed"));
+                                }
+                            }
+
+                            else {
+                                if (errors != null)
+                                    errors.add(new DecryptException(
+                                        DECRYPT_EXCEPTION_INVALID_DATA,
+                                        "Invalid signature packet"));
+                            }
+
+                        }
+
+                    }
+
+                    // verify message integrity
+                    if (pbe.isIntegrityProtected()) {
+                        try {
+                            if (!pbe.verify()) {
+                                // unrecoverable situation
+                                throw new DecryptException(
+                                    DECRYPT_EXCEPTION_INTEGRITY_CHECK,
+                                    "Message integrity check failed");
+                            }
+                        }
+                        catch (PGPException e) {
+                            // unrecoverable situation
+                            throw new DecryptException(
+                                DECRYPT_EXCEPTION_INTEGRITY_CHECK,
+                                e);
+                        }
+                    }
+
+                }
+                else {
+                    // invalid or unknown packet
+                    throw new DecryptException(
+                        DECRYPT_EXCEPTION_INVALID_DATA,
+                        "Unknown packet type " + message.getClass().getName());
+                }
+
+            }
+
+            else {
+                throw new DecryptException(DecryptException
+                    .DECRYPT_EXCEPTION_INVALID_DATA,
+                    "Compressed data packet expected");
+            }
+
+        }
+
+        // unrecoverable situations
+
+        catch (IOException ioe) {
+            throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, ioe);
+        }
+
+        catch (PGPException pe) {
+            throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, pe);
+        }
     }
 
-    public long getEncryptedLength(long decryptedLength) {
-        // TODO
-        return 0;
-    }
 }

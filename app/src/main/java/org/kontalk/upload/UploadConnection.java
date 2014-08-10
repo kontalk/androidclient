@@ -20,9 +20,9 @@ package org.kontalk.upload;
 
 import java.io.IOException;
 
-import org.kontalk.service.ProgressListener;
-
 import android.net.Uri;
+
+import org.kontalk.service.ProgressListener;
 
 
 /**
@@ -33,7 +33,7 @@ public interface UploadConnection {
 
     public void abort();
 
-    public String upload(Uri uri, String mime, boolean encrypt, ProgressListener listener)
+    public String upload(Uri uri, String mime, boolean encrypt, String to, ProgressListener listener)
         throws IOException;
 
 }

@@ -278,6 +278,7 @@ class MessageListener extends MessageCenterPacketListener {
                     String mime = media.getMime();
                     String fetchUrl = media.getUrl();
                     long length = media.getLength();
+                    boolean encrypted = media.isEncrypted();
 
                     // bits-of-binary for preview
                     PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
@@ -312,13 +313,13 @@ class MessageListener extends MessageCenterPacketListener {
                     if (ImageComponent.supportsMimeType(mime)) {
                         // cleartext only for now
                         attachment = new ImageComponent(mime, previewFile, null, fetchUrl, length,
-                                false, Coder.SECURITY_CLEARTEXT);
+                            encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                     }
 
                     else if (VCardComponent.supportsMimeType(mime)) {
                         // cleartext only for now
                         attachment = new VCardComponent(previewFile, null, fetchUrl, length,
-                                false, Coder.SECURITY_CLEARTEXT);
+                            encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                     }
 
                     // TODO other types
