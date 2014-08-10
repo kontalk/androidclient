@@ -22,16 +22,24 @@ package org.kontalk.service;
  * TODO instead of using a notification ID per type, use a notification ID per
  * download.
  */
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
-import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
 
 import java.io.File;
 import java.security.PrivateKey;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.jivesoftware.smack.util.StringUtils;
+import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
+import android.util.Log;
+
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.client.ClientHTTPConnection;
@@ -44,16 +52,9 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.MediaStorage;
 
-import android.app.IntentService;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.support.v4.app.NotificationCompat;
-import android.util.Log;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
 
 
 /**
@@ -65,7 +66,7 @@ public class DownloadService extends IntentService implements DownloadListener {
     private static final String TAG = MessageCenterService.TAG;
 
     /** A map to avoid duplicate downloads. */
-    private static final Map<String, String> queue = new LinkedHashMap<String, String>();
+    private static final Map<String, Long> sQueue = new LinkedHashMap<String, Long>();
 
     public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
     public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
@@ -77,7 +78,7 @@ public class DownloadService extends IntentService implements DownloadListener {
     private Notification mCurrentNotification;
     private long mTotalBytes;
 
-    private String mMessageId;
+    private long mMessageId;
     private String mPeer;
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
@@ -93,16 +94,16 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
             String url = intent.getData().toString();
-            String msgId = queue.get(url);
+            Long msgId = sQueue.get(url);
             if (msgId != null) {
                 // interrupt worker if running
-                if (msgId.equals(mMessageId)) {
+                if (msgId.longValue() == mMessageId) {
                     mDownloadClient.abort();
                     mCanceled = true;
                 }
                 // remove from queue - will never be processed
                 else
-                    queue.remove(url);
+                    sQueue.remove(url);
             }
             return START_NOT_STICKY;
         }
@@ -119,7 +120,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         String url = uri.toString();
 
         // check if download has already been queued
-        if (queue.get(url) != null) return;
+        if (sQueue.get(url) != null) return;
 
         // notify user about download immediately
         startForeground(0);
@@ -153,9 +154,9 @@ public class DownloadService extends IntentService implements DownloadListener {
             // make sure storage directory is present
             MediaStorage.MEDIA_ROOT.mkdirs();
 
-            mMessageId = intent.getStringExtra(CompositeMessage.MSG_ID);
+            mMessageId = intent.getLongExtra(CompositeMessage.MSG_ID, 0);
             mPeer = intent.getStringExtra(CompositeMessage.MSG_SENDER);
-            queue.put(url, mMessageId);
+            sQueue.put(url, mMessageId);
 
             // download content
             mDownloadClient.downloadAutofilename(url, MediaStorage.MEDIA_ROOT, this);
@@ -164,8 +165,8 @@ public class DownloadService extends IntentService implements DownloadListener {
             error(url, null, e);
         }
         finally {
-            queue.remove(url);
-            mMessageId = null;
+            sQueue.remove(url);
+            mMessageId = 0;
             mPeer = null;
         }
     }
@@ -247,7 +248,8 @@ public class DownloadService extends IntentService implements DownloadListener {
         // update messages.localUri
         ContentValues values = new ContentValues();
         values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
-        getContentResolver().update(Messages.getUri(mMessageId), values, null, null);
+        getContentResolver().update(ContentUris
+            .withAppendedId(Messages.CONTENT_URI, mMessageId), values, null, null);
     }
 
     @Override
@@ -292,6 +294,6 @@ public class DownloadService extends IntentService implements DownloadListener {
     }
 
     public static boolean isQueued(String url) {
-        return queue.containsKey(url);
+        return sQueue.containsKey(url);
     }
 }

@@ -698,7 +698,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getActivity(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
-            i.putExtra(CompositeMessage.MSG_ID, msg.getId());
+            i.putExtra(CompositeMessage.MSG_ID, msg.getDatabaseId());
             i.putExtra(CompositeMessage.MSG_SENDER, msg.getSender());
             i.setData(Uri.parse(attachment.getFetchUrl()));
             getActivity().startService(i);
