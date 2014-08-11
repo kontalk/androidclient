@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,6 +64,7 @@ import android.widget.TextView;
  */
 public class MessageListItem extends RelativeLayout {
 
+    public static final int SECONDS_IN_DAY = 86400000;
     static private Drawable sDefaultContactImage;
 
     private LayoutInflater mInflater;
@@ -77,6 +79,8 @@ public class MessageListItem extends RelativeLayout {
 
     private ImageView mAvatarIncoming;
     private ImageView mAvatarOutgoing;
+
+    private TextView mDateHeader;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -123,6 +127,8 @@ public class MessageListItem extends RelativeLayout {
         mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
         mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
 
+        mDateHeader = (TextView) findViewById(R.id.date_header);
+
         if (isInEditMode()) {
             //mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
             //mTextView.setText("TEST");
@@ -157,8 +163,16 @@ public class MessageListItem extends RelativeLayout {
     }
 
     public final void bind(Context context, final CompositeMessage msg,
-            final Contact contact, final Pattern highlight) {
+                           final Contact contact, final Pattern highlight, long previous) {
         mMessage = msg;
+
+        if ((mMessage.getTimestamp() / SECONDS_IN_DAY) == (previous / SECONDS_IN_DAY)) {
+            mDateHeader.setVisibility(View.GONE);
+        }
+        else {
+            mDateHeader.setText(MessageUtils.formatDateString(context, mMessage.getTimestamp()));
+            mDateHeader.setVisibility(View.VISIBLE);
+        }
 
         if (msg.isEncrypted()) {
             // FIXME this is not good
