@@ -26,6 +26,7 @@ import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
+import org.kontalk.message.VCardComponent;
 
 import java.util.regex.Pattern;
 
@@ -54,6 +55,9 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof ImageComponent) {
             view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
+        }
+        else if (component instanceof VCardComponent) {
+            view = (MessageContentView<T>) VCardContentView.create(inflater, parent);
         }
 
         if (view != null)
