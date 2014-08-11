@@ -228,14 +228,20 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void completed(String url, String mime, File destination) {
-        stopForeground();
-
         Uri uri = Uri.fromFile(destination);
 
         ContentValues values = null;
 
         // encrypted file?
         if (mEncrypted) {
+            mCurrentNotification = mNotificationBuilder
+                .progress(-1,
+                    R.string.attachment_download,
+                    R.string.decrypting_attachment)
+                .build();
+            // send the updates to the notification manager
+            mNotificationManager.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
+
             InputStream in = null;
             OutputStream out = null;
             try {
@@ -259,7 +265,7 @@ public class DownloadService extends IntentService implements DownloadListener {
                     // save this for later
                     values = new ContentValues(3);
                     values.put(Messages.ATTACHMENT_ENCRYPTED, false);
-                    values.put(Messages.ATTACHMENT_LENGTH, outFile.length());
+                    values.put(Messages.ATTACHMENT_LENGTH, destination.length());
                 }
             }
             catch (Exception e) {
@@ -291,6 +297,9 @@ public class DownloadService extends IntentService implements DownloadListener {
         values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
         getContentResolver().update(ContentUris
             .withAppendedId(Messages.CONTENT_URI, mMessageId), values, null, null);
+
+        // stop foreground
+        stopForeground();
 
         // notify only if conversation is not open
         if (!mPeer.equals(MessagingNotification.getPaused())) {
