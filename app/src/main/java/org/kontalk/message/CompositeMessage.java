@@ -105,6 +105,7 @@ public class CompositeMessage {
     public static final String MSG_RECIPIENTS = "org.kontalk.message.recipients";
     public static final String MSG_GROUP = "org.kontalk.message.group";
     public static final String MSG_TIMESTAMP = "org.kontalk.message.timestamp";
+    public static final String MSG_ENCRYPTED = "org.kontalk.message.encrypted";
 
     private static final int SUFFIX_LENGTH = "Component".length();
 

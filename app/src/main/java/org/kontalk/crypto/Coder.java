@@ -87,13 +87,12 @@ public abstract class Coder {
             StringBuilder out, StringBuilder mime, List<DecryptException> errors)
                     throws GeneralSecurityException;
 
+    /** Encrypts a file. */
+    public abstract void encryptFile(InputStream input, OutputStream output) throws GeneralSecurityException;
 
-    public abstract InputStream wrapInputStream(InputStream inputStream) throws GeneralSecurityException;
-
-    public abstract OutputStream wrapOutputStream(OutputStream outputStream) throws GeneralSecurityException;
-
-    public abstract long getEncryptedLength(long decryptedLength);
-
+    /** Decrypts a file. */
+    public abstract void decryptFile(InputStream input, boolean verify,
+        OutputStream output, List<DecryptException> errors) throws GeneralSecurityException;
 
     /** Returns true if the given security flags has some error bit on. */
     public static boolean isError(int securityFlags) {

@@ -196,6 +196,7 @@
     <string name="open_audio">Open Audio</string>
     <string name="msg_msgcenter_restarted">Message center restarted.</string>
     <string name="downloading_attachment">Downloading attachment&#8230;</string>
+    <string name="decrypting_attachment">Decrypting attachment&#8230;</string>
     <string name="attachment_download">Attachment download</string>
     <string name="attachment_upload">Attachment upload</string>
     <string name="seen_moment_ago_label">a moment ago</string>

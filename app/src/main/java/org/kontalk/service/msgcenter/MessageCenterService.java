@@ -1199,7 +1199,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             return;
         }
 
+        boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
         String mime = data.getString("org.kontalk.message.mime");
+        String to = data.getString("org.kontalk.message.to");
         String _mediaUri = data.getString("org.kontalk.message.media.uri");
         if (_mediaUri != null) {
             // take the first available upload service :)
@@ -1218,9 +1220,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(UploadService.EXTRA_POST_URL, postUrl);
                 i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
                 i.putExtra(UploadService.EXTRA_MIME, mime);
+                i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
                 i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
-
-                String to = data.getString("org.kontalk.message.to");
                 i.putExtra(UploadService.EXTRA_USER, to);
                 startService(i);
             }
@@ -1237,7 +1238,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // message stanza
             org.jivesoftware.smack.packet.Message m = new org.jivesoftware.smack.packet.Message();
             m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
-            String to = data.getString("org.kontalk.message.to");
             if (to != null) m.setTo(to);
 
             if (msgId > 0) {
@@ -1249,7 +1249,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (body != null)
                 m.setBody(body);
 
-            boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
             String fetchUrl = data.getString("org.kontalk.message.fetch.url");
 
             // generate preview if needed
@@ -1282,7 +1281,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (fetchUrl != null) {
                 // in this case we will need the length too
                 long length = data.getLong("org.kontalk.message.length");
-                m.addExtension(new OutOfBandData(fetchUrl, mime, length));
+                m.addExtension(new OutOfBandData(fetchUrl, mime, length, encrypt));
             }
 
             if (encrypt) {
@@ -1607,7 +1606,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a binary message. */
-    public static void sendBinaryMessage(final Context context, String to, String mime, Uri localUri, long length, String previewPath, long msgId) {
+    public static void sendBinaryMessage(final Context context,
+            String to,
+            String mime, Uri localUri, long length, String previewPath,
+            boolean encrypt,
+            long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
@@ -1616,12 +1619,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
 
     public static void sendUploadedMedia(final Context context, String to,
-            String mime, Uri localUri, long length, String previewPath, String fetchUrl, long msgId) {
+            String mime, Uri localUri, long length, String previewPath, String fetchUrl,
+            boolean encrypt, long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
@@ -1631,6 +1636,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
         i.putExtra("org.kontalk.message.fetch.url", fetchUrl);
+        i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
     }
