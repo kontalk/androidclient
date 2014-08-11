@@ -42,15 +42,12 @@ public class AudioContentView extends LinearLayout
     private AudioComponent mComponent;
     private ImageButton mPlayButton;
     private SeekBar mSeekBar;
-    private Handler mHandler = new Handler();
 
     public static final int STATUS_IDLE = 0;
     public static final int STATUS_PLAYING = 1;
     public static final int STATUS_PAUSED = 2;
     public static final int STATUS_ENDED = 3;
 
-    private int mStatus = STATUS_IDLE;
-    private Uri mUri;
     private long mMessageId;
 
     private AudioPlayerControl mAudioPlayerControl;
@@ -109,7 +106,7 @@ public class AudioContentView extends LinearLayout
     public interface AudioPlayerControl {
         public void buttonClick (File audioFile, ImageButton playerButton, SeekBar seekBar, long messageId);
         public void prepareAudio(File audioFile, ImageButton playerButton, SeekBar seekBar, long messageId);
-        public void playAudio(ImageButton playerButton, SeekBar seekBar);
+        public void playAudio(ImageButton playerButton, SeekBar seekBar, long messageId);
         public void pauseAudio(ImageButton playerButton);
         public void resetAudio(SeekBar seekBar, ImageButton playerButton);
         public int getAudioStatus();

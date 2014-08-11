@@ -184,6 +184,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private MediaPlayer mPlayer = new MediaPlayer();
     private int mStatus = AudioContentView.STATUS_IDLE;
     private long mMediaPlayerMessageId;
+    private ImageButton mPlayerButton;
+    private SeekBar mSeekBar;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -2211,8 +2213,9 @@ public class ComposeMessageFragment extends ListFragment implements
         MessageCenterService.release(getActivity());
 
         // release audio player
-        if (mPlayer != null) {
-            mPlayer.stop();
+        if (mStatus == AudioContentView.STATUS_PAUSED || mStatus == AudioContentView.STATUS_ENDED || mStatus == AudioContentView.STATUS_PLAYING) {
+            if (mPlayer.isPlaying())
+                mPlayer.stop();
             mPlayer.release();
         }
     }
@@ -2435,20 +2438,37 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void buttonClick(File audioFile, ImageButton playerButton, SeekBar seekbar, long messageId) {
-        if (mStatus == AudioContentView.STATUS_PLAYING) {
-            if (mMediaPlayerMessageId == messageId)
-                pauseAudio(playerButton);
+        if (mStatus == AudioContentView.STATUS_PLAYING && mMediaPlayerMessageId == messageId) {
+           pauseAudio(playerButton);
         }
-        else if (mStatus == AudioContentView.STATUS_IDLE || mStatus == AudioContentView.STATUS_PAUSED || mStatus == AudioContentView.STATUS_ENDED) {
-            if (mMediaPlayerMessageId != messageId) {
-                resetAudio(seekbar, playerButton);
-                prepareAudio(audioFile, playerButton, seekbar, messageId);
-                seekbar.setMax(mPlayer.getDuration());
-                playAudio(playerButton, seekbar);
-            }
-            else if (mMediaPlayerMessageId == messageId) {
-                playAudio(playerButton, seekbar);
-            }
+        else if (mStatus == AudioContentView.STATUS_IDLE && mMediaPlayerMessageId != messageId) {
+            prepareAudio(audioFile, playerButton, seekbar, messageId);
+            seekbar.setMax(mPlayer.getDuration());
+            playAudio(playerButton, seekbar, messageId);
+        }
+        else if (mStatus == AudioContentView.STATUS_PAUSED && mMediaPlayerMessageId == messageId) {
+            playAudio(playerButton, seekbar, messageId);
+        }
+        else if (mStatus == AudioContentView.STATUS_ENDED && mMediaPlayerMessageId == messageId) {
+            playAudio(playerButton, seekbar, messageId);
+        }
+        else if (mStatus == AudioContentView.STATUS_ENDED && mMediaPlayerMessageId != messageId) {
+            resetAudio(seekbar, playerButton);
+            prepareAudio(audioFile, playerButton, seekbar, messageId);
+            seekbar.setMax(mPlayer.getDuration());
+            playAudio(playerButton, seekbar, messageId);
+        }
+        else if (mStatus == AudioContentView.STATUS_PLAYING && mMediaPlayerMessageId != messageId) {
+            resetAudio(mSeekBar, mPlayerButton);
+            prepareAudio(audioFile, playerButton, seekbar, messageId);
+            seekbar.setMax(mPlayer.getDuration());
+            playAudio(playerButton, seekbar, messageId);
+        }
+        else if (mStatus == AudioContentView.STATUS_PAUSED && mMediaPlayerMessageId != messageId) {
+            resetAudio(mSeekBar, mPlayerButton);
+            prepareAudio(audioFile, playerButton, seekbar, messageId);
+            seekbar.setMax(mPlayer.getDuration());
+            playAudio(playerButton, seekbar, messageId);
         }
     }
 
@@ -2466,8 +2486,7 @@ public class ComposeMessageFragment extends ListFragment implements
             @Override
             public void onCompletion(MediaPlayer mp) {
                 playerButton.setBackgroundResource(R.drawable.play);
-                mPlayer.seekTo(0);
-                seekBar.setProgress(0);
+                resetAudio(seekBar, playerButton);
                 setAudioStatus(AudioContentView.STATUS_ENDED);
             }
         });
@@ -2482,22 +2501,27 @@ public class ComposeMessageFragment extends ListFragment implements
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                pauseAudio(playerButton);
+                if (mMediaPlayerMessageId == messageId)
+                    pauseAudio(playerButton);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                playAudio(playerButton, seekBar);
+                if (mMediaPlayerMessageId == messageId)
+                    playAudio(playerButton, seekBar, messageId);
             }
         });
     }
 
     @Override
-    public void playAudio(ImageButton playerButton, SeekBar seekBar) {
+    public void playAudio(ImageButton playerButton, SeekBar seekBar, long messageId) {
+        mPlayerButton = playerButton;
+        mSeekBar = seekBar;
         playerButton.setBackgroundResource(R.drawable.pause);
         mPlayer.start();
         setAudioStatus(AudioContentView.STATUS_PLAYING);
-        updatePosition(seekBar);
+        if (mMediaPlayerMessageId == messageId)
+            updatePosition(seekBar);
     }
 
     private void updatePosition(final SeekBar seekBar) {
@@ -2521,8 +2545,8 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void resetAudio(SeekBar seekBar, ImageButton playerButton) {
         playerButton.setBackgroundResource(R.drawable.play);
+        seekBar.setProgress(0);
         mPlayer.reset();
-        setAudioStatus(AudioContentView.STATUS_IDLE);
     }
 
     @Override
