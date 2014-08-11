@@ -18,7 +18,6 @@
 
 package org.kontalk.ui;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -26,8 +25,8 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
-import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
+import org.kontalk.message.VCardComponent;
 
 import java.util.regex.Pattern;
 
@@ -59,7 +58,10 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof AudioComponent) {
             view = (MessageContentView<T>) AudioContentView.create(inflater, parent);
-            ((AudioContentView)view).setAudioPlayerControl(audioPlayerControl);
+            ((AudioContentView) view).setAudioPlayerControl(audioPlayerControl);
+        }
+        else if (component instanceof VCardComponent) {
+            view = (MessageContentView<T>) VCardContentView.create(inflater, parent);
         }
 
         if (view != null)
@@ -67,5 +69,4 @@ public class MessageContentViewFactory {
 
         return view;
     }
-
 }
