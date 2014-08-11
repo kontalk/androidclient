@@ -704,7 +704,7 @@ public class ComposeMessageFragment extends ListFragment implements
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
             i.putExtra(CompositeMessage.MSG_ID, msg.getDatabaseId());
             i.putExtra(CompositeMessage.MSG_SENDER, msg.getSender());
-            i.putExtra(CompositeMessage.MSG_ENCRYPTED, attachment.isEncrypted());
+            i.putExtra(CompositeMessage.MSG_ENCRYPTED, attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT);
             i.setData(Uri.parse(attachment.getFetchUrl()));
             getActivity().startService(i);
         }
