@@ -350,5 +350,6 @@
     <string name="err_password_invalid">Wrong password.</string>
 
     <string name="err_change_passphrase">Unable to change the personal key password.</string>
+    <string name="err_file_not_found">File not found.</string>
 
 </resources>

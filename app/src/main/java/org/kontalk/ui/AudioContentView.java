@@ -70,10 +70,12 @@ public class AudioContentView extends LinearLayout
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
         mPlayButton.setOnClickListener(this);
+        mAudioPlayerControl.onBind(messageId, mSeekBar, mPlayButton);
     }
 
     public void unbind() {
         clear();
+        mAudioPlayerControl.onUnbind(mMessageId, mSeekBar, mPlayButton);
     }
 
     public AudioComponent getComponent() {
@@ -111,5 +113,7 @@ public class AudioContentView extends LinearLayout
         public void resetAudio(SeekBar seekBar, ImageButton playerButton);
         public int getAudioStatus();
         public void setAudioStatus(int audioStatus);
+        public void onBind (long messageId, SeekBar seekBar, ImageButton playerButton);
+        public void onUnbind(long messageId, SeekBar seekBar, ImageButton playerButton);
     }
 }

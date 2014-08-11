@@ -2484,21 +2484,13 @@ public class ComposeMessageFragment extends ListFragment implements
             mPlayer = new MediaPlayer();
 
         stopMediaPlayerUpdater();
-        mMediaPlayerUpdater = new Runnable() {
-            @Override
-            public void run() {
-                updatePosition(seekBar);
-                mHandler.postDelayed(this, 100);
-            }
-        };
-        mHandler.postDelayed(mMediaPlayerUpdater, 100);
 
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             mPlayer.setDataSource(audioFile.getPath());
             mPlayer.prepare();
         } catch (IOException e) {
-            Toast.makeText(getActivity(),"File not Found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.err_file_not_found, Toast.LENGTH_SHORT).show();
         }
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -2508,27 +2500,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 setAudioStatus(AudioContentView.STATUS_ENDED);
             }
         });
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    mPlayer.seekTo(progress);
-                    seekBar.setProgress(progress);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                if (mMediaPlayerMessageId == messageId)
-                    pauseAudio(playerButton);
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mMediaPlayerMessageId == messageId)
-                    playAudio(playerButton, seekBar, messageId);
-            }
-        });
+        setSeekBarListener(messageId, seekBar, playerButton);
     }
 
     @Override
@@ -2536,7 +2508,7 @@ public class ComposeMessageFragment extends ListFragment implements
         playerButton.setBackgroundResource(R.drawable.pause);
         mPlayer.start();
         setAudioStatus(AudioContentView.STATUS_PLAYING);
-        updatePosition(seekBar);
+        startMediaPlayerUpdater(seekBar);
     }
 
     private void updatePosition(SeekBar seekBar) {
@@ -2568,10 +2540,83 @@ public class ComposeMessageFragment extends ListFragment implements
         mStatus = audioStatus;
     }
 
+    @Override
+    public void onBind(long messageId, SeekBar seekBar, final ImageButton playerButton) {
+        if (mMediaPlayerMessageId == messageId) {
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    playerButton.setBackgroundResource(R.drawable.play);
+                    mPlayer.seekTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+            });
+            setSeekBarListener(messageId, seekBar, playerButton);
+            seekBar.setMax(mPlayer.getDuration());
+            startMediaPlayerUpdater(seekBar);
+            playerButton.setBackgroundResource(R.drawable.pause);
+        }
+    }
+
+    @Override
+    public void onUnbind(long messageId, SeekBar seekBar, ImageButton playerButton) {
+        if (mMediaPlayerMessageId == messageId) {
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    setAudioStatus(AudioContentView.STATUS_IDLE);
+                }
+            });
+            seekBar.setOnSeekBarChangeListener(null);
+            if (!MessagesProvider.exists(getActivity(), messageId))
+               resetAudio(seekBar, playerButton);
+
+            else {
+                stopMediaPlayerUpdater();
+            }
+        }
+    }
+
+    private void startMediaPlayerUpdater(final SeekBar seekBar) {
+        updatePosition(seekBar);
+        mMediaPlayerUpdater = new Runnable() {
+            @Override
+            public void run() {
+                updatePosition(seekBar);
+                mHandler.postDelayed(this, 100);
+            }
+        };
+        mHandler.postDelayed(mMediaPlayerUpdater, 100);
+    }
+
     private void stopMediaPlayerUpdater() {
         if (mMediaPlayerUpdater != null) {
             mHandler.removeCallbacks(mMediaPlayerUpdater);
             mMediaPlayerUpdater = null;
         }
+    }
+
+    private void setSeekBarListener(final long messageId, SeekBar seekBar, final ImageButton playerButton) {
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    mPlayer.seekTo(progress);
+                    seekBar.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                if (mMediaPlayerMessageId == messageId)
+                    pauseAudio(playerButton);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (mMediaPlayerMessageId == messageId)
+                    playAudio(playerButton, seekBar, messageId);
+            }
+        });
     }
 }
