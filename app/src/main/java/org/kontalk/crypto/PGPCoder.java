@@ -278,15 +278,16 @@ public class PGPCoder extends Coder {
                     PGPLiteralData ld = (PGPLiteralData) message;
 
                     InputStream unc = ld.getInputStream();
-                    int ch;
-
                     ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
-                    while ((ch = unc.read()) >= 0) {
-                        bout.write(ch);
+                    byte[] buf = new byte[4096];
+                    int num;
+
+                    while ((num = unc.read(buf)) >= 0) {
+                        bout.write(buf, 0, num);
 
                         if (ops != null)
-                            ops.update((byte) ch);
+                            ops.update(buf, 0, num);
                     }
 
                     if (verify) {
@@ -565,13 +566,14 @@ public class PGPCoder extends Coder {
                     PGPLiteralData ld = (PGPLiteralData) message;
 
                     InputStream unc = ld.getInputStream();
-                    int ch;
+                    byte[] buf = new byte[8192];
+                    int num;
 
-                    while ((ch = unc.read()) >= 0) {
-                        output.write(ch);
+                    while ((num = unc.read(buf)) >= 0) {
+                        output.write(buf, 0, num);
 
                         if (ops != null)
-                            ops.update((byte) ch);
+                            ops.update(buf, 0, num);
                     }
 
                     if (verify) {
