@@ -180,8 +180,8 @@ public class XMPPConnectionHelper extends Thread {
 
         // login
         if (key != null || token != null)
-            // the dummy values are not actually used
-            mConn.login("dummy", token != null ? token : "dummy");
+            // the dummy value is not actually used
+            mConn.login(null, token != null ? token : "dummy");
 
     }
 
