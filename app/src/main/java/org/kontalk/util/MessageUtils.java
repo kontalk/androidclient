@@ -237,7 +237,7 @@ public final class MessageUtils {
 
         // Basic settings for formatDateTime() we want for all cases.
         int format_flags = DateUtils.FORMAT_NO_NOON_MIDNIGHT |
-                DateUtils.FORMAT_ABBREV_ALL |
+                DateUtils.FORMAT_SHOW_DATE |
                 DateUtils.FORMAT_CAP_AMPM;
 
         // If the message is from a different year, show the date and year.

@@ -29,7 +29,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:background=""/>
+        android:textSize="12sp"
+        android:textColor="#0099CC"
+        android:background="@drawable/rounded_corner"
+        android:layout_marginBottom="5dp"/>
 
     <LinearLayout android:id="@+id/balloon_view"
         android:layout_width="wrap_content"
