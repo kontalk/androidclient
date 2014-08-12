@@ -18,7 +18,10 @@
 
 package org.kontalk.util;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.kontalk.R;
 import org.kontalk.client.EndpointServer;
@@ -35,6 +38,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -42,6 +46,8 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.view.Display;
+import android.view.WindowManager;
 
 
 /**
@@ -238,6 +244,48 @@ public final class Preferences {
             .commit();
     }
 
+    /** Loads and stores a cached version of the given conversation background. */
+    public static File cacheConversationBackground(Context context, Uri uri) {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = context.getContentResolver().openInputStream(uri);
+
+            Bitmap bmap = BitmapFactory.decodeStream(in, null, null);
+
+            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+
+            Bitmap tn = ThumbnailUtils.extractThumbnail(bmap, display.getWidth(), display.getHeight());
+            bmap.recycle();
+
+            File outFile = new File(context.getFilesDir(), "background.png");
+            out = new FileOutputStream(outFile);
+            tn.compress(Bitmap.CompressFormat.PNG, 90, out);
+            tn.recycle();
+
+            return outFile;
+        }
+        catch (Exception e) {
+            // ignored
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                out.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
     public static Drawable getConversationBackground(Context context) {
         InputStream in = null;
         try {
@@ -246,9 +294,7 @@ public final class Preferences {
                     String _customBg = getString(context, "pref_background_uri", null);
                     in = context.getContentResolver().openInputStream(Uri.parse(_customBg));
 
-                    BitmapFactory.Options opt = new BitmapFactory.Options();
-                    opt.inSampleSize = 4;
-                    Bitmap bmap = BitmapFactory.decodeStream(in, null, opt);
+                    Bitmap bmap = BitmapFactory.decodeStream(in, null, null);
                     sCustomBackground = new BitmapDrawable(context.getResources(), bmap);
                 }
                 return sCustomBackground;
