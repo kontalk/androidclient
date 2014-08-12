@@ -117,6 +117,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -241,8 +242,10 @@ public class ComposeMessageFragment extends ListFragment implements
         // set custom background (if any)
         Drawable bg = Preferences.getConversationBackground(getActivity());
         if (bg != null) {
+            ImageView background = (ImageView) getView().findViewById(R.id.background);
             list.setCacheColorHint(Color.TRANSPARENT);
-            list.setBackgroundDrawable(bg);
+            list.setBackgroundColor(Color.TRANSPARENT);
+            background.setImageDrawable(bg);
         }
 
         mTextEntry = (EditText) getView().findViewById(R.id.text_editor);

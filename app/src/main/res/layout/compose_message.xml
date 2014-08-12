@@ -16,37 +16,48 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical">
+    android:layout_height="fill_parent">
 
-    <include layout="@layout/invitation_bar"
-        android:id="@+id/invitation_bar"
-        android:visibility="gone"/>
-
-    <ListView android:id="@android:id/list"
-        style="?android:attr/listViewWhiteStyle"
-        android:background="@color/compose_message_list_background"
-        android:cacheColorHint="@color/compose_message_list_background"
-        android:divider="@null"
-        android:dividerHeight="0.0sp"
+    <ImageView android:id="@+id/background"
+        android:scaleType="centerCrop"
         android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1.0"
-        android:drawSelectorOnTop="false"
-        android:transcriptMode="normal"
-        android:smoothScrollbar="false"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
-        android:fastScrollEnabled="true"
-        android:fastScrollAlwaysVisible="true"
-        android:scrollbarStyle="insideInset"
-        android:stackFromBottom="true"
-        android:fadingEdgeLength="8dp"
-        >
-        <!-- Preview: listitem=@layout/message_list_item -->
-    </ListView>
+        android:layout_height="fill_parent"/>
 
-    <include layout="@layout/composer_bar"/>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
 
-</LinearLayout>
+        <include layout="@layout/invitation_bar"
+            android:id="@+id/invitation_bar"
+            android:visibility="gone"/>
+
+        <ListView android:id="@android:id/list"
+            style="?android:attr/listViewWhiteStyle"
+            android:background="@color/compose_message_list_background"
+            android:cacheColorHint="@color/compose_message_list_background"
+            android:divider="@null"
+            android:dividerHeight="0.0sp"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.0"
+            android:drawSelectorOnTop="false"
+            android:transcriptMode="normal"
+            android:smoothScrollbar="false"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:fastScrollEnabled="true"
+            android:fastScrollAlwaysVisible="true"
+            android:scrollbarStyle="insideInset"
+            android:stackFromBottom="true"
+            android:fadingEdgeLength="8dp"
+            >
+            <!-- Preview: listitem=@layout/message_list_item -->
+        </ListView>
+
+        <include layout="@layout/composer_bar"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

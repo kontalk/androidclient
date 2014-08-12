@@ -488,9 +488,13 @@ public final class PreferencesActivity extends PreferenceActivity {
             if (resultCode == RESULT_OK) {
                 // invalidate any previous reference
                 Preferences.setCachedCustomBackground(null);
+                // resize and cache image
+                // TODO do this in background (might take some time)
+                File image = Preferences.cacheConversationBackground(this, data.getData());
+                // save to preferences
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
                 prefs.edit()
-                    .putString("pref_background_uri", data.getDataString())
+                    .putString("pref_background_uri", Uri.fromFile(image).toString())
                     .commit();
             }
         }
