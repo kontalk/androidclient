@@ -139,7 +139,7 @@ public class KontalkConnection extends XMPPTCPConnection {
                 config.setSocketFactory(ctx.getSocketFactory());
 
             // enable SASL EXTERNAL
-            SASLAuthentication.supportSASLMechanism("EXTERNAL");
+            // TODO SASLAuthentication.supportSASLMechanism("EXTERNAL");
         }
         catch (Exception e) {
             Log.w(TAG, "unable to setup SSL connection", e);

@@ -17,15 +17,13 @@
  */
 package org.kontalk.service.msgcenter;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VCARD;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.util.XmppStringUtils;
+
+import android.content.Intent;
+import android.util.Log;
+
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.PGP;
@@ -36,8 +34,11 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
-import android.content.Intent;
-import android.util.Log;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VCARD;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 
 /**
@@ -59,7 +60,7 @@ class VCardListener extends MessageCenterPacketListener {
         byte[] _publicKey = p.getPGPKey();
 
         // vcard was requested, store but do not broadcast
-        if (p.getType() == IQ.Type.RESULT) {
+        if (p.getType() == IQ.Type.result) {
 
             if (_publicKey != null) {
 
@@ -69,7 +70,7 @@ class VCardListener extends MessageCenterPacketListener {
                 // our network - convert to userId
                 if (networkUser) {
                     // is this our vCard?
-                    String userId = StringUtils.parseName(from);
+                    String userId = XmppStringUtils.parseLocalpart(from);
                     String hash = MessageUtils.sha1(getMyUsername());
                     if (userId.equalsIgnoreCase(hash))
                         myCard = true;
@@ -119,7 +120,7 @@ class VCardListener extends MessageCenterPacketListener {
         }
 
         // vcard coming from sync, send a broadcast but do not store
-        else if (p.getType() == IQ.Type.SET) {
+        else if (p.getType() == IQ.Type.set) {
 
             Intent i = new Intent(ACTION_VCARD);
             i.putExtra(EXTRA_PACKET_ID, p.getPacketID());

@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
+import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
@@ -67,7 +68,7 @@ public class XMPPConnectionHelper extends Thread {
     private int mRetryCount;
 
     /** Connection is re-created on demand if necessary. */
-    protected XMPPConnection mConn;
+    protected AbstractXMPPConnection mConn;
 
     /** Client listener. */
     private ConnectionHelperListener mListener;
@@ -283,7 +284,7 @@ public class XMPPConnectionHelper extends Thread {
         mConnecting = false;
     }
 
-    public XMPPConnection getConnection() {
+    public AbstractXMPPConnection getConnection() {
         return mConn;
     }
 

@@ -21,10 +21,7 @@ package org.kontalk.data;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.crypto.PGP;
-import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.sync.Syncer;
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.content.ContentResolver;
@@ -40,9 +37,11 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
-import android.provider.ContactsContract.RawContacts;
 import android.support.v4.util.LruCache;
 import android.util.Log;
+
+import org.kontalk.crypto.PGP;
+import org.kontalk.provider.MyUsers.Users;
 
 
 /**
@@ -138,7 +137,7 @@ public class Contact {
 
                         // insert result into users database immediately
                         ContentValues values = new ContentValues(5);
-                        values.put(Users.HASH, StringUtils.parseName(userId));
+                        values.put(Users.HASH, XmppStringUtils.parseLocalpart(userId));
                         values.put(Users.NUMBER, numberHint);
                         values.put(Users.DISPLAY_NAME, name);
                         values.put(Users.JID, userId);

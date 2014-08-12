@@ -32,7 +32,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.SmackAndroid;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
@@ -115,7 +114,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mConnector = new XMPPConnectionHelper(mContext, mServer, true);
         mConnector.setRetryEnabled(false);
 
-        SmackAndroid.init(context.getApplicationContext());
         configure();
     }
 
@@ -208,7 +206,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         int reason = 0;
                         IQ iq = (IQ) packet;
 
-                        if (iq.getType() == IQ.Type.RESULT) {
+                        if (iq.getType() == IQ.Type.result) {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 // ok! message will be sent
@@ -226,7 +224,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             }
                         }
 
-                        else if (iq.getType() == IQ.Type.ERROR) {
+                        else if (iq.getType() == IQ.Type.error) {
                             XMPPError error = iq.getError();
 
                             if (XMPPError.Condition.service_unavailable.toString()
@@ -271,7 +269,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 conn.addPacketListener(new PacketListener() {
                     public void processPacket(Packet packet) {
                         IQ iq = (IQ) packet;
-                        if (iq.getType() == IQ.Type.RESULT) {
+                        if (iq.getType() == IQ.Type.result) {
                             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 String publicKey = null;
@@ -383,7 +381,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     private Packet createRegistrationForm() {
         Registration iq = new Registration();
-        iq.setType(IQ.Type.SET);
+        iq.setType(IQ.Type.set);
         iq.setTo(mConnector.getConnection().getServiceName());
         Form form = new Form(Form.TYPE_SUBMIT);
 
@@ -404,7 +402,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     private Packet createValidationForm() {
         Registration iq = new Registration();
-        iq.setType(IQ.Type.SET);
+        iq.setType(IQ.Type.set);
         iq.setTo(mConnector.getConnection().getServiceName());
         Form form = new Form(Form.TYPE_SUBMIT);
 

@@ -83,7 +83,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
                 String publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
 
                 Registration iq = new Registration();
-                iq.setType(IQ.Type.SET);
+                iq.setType(IQ.Type.set);
                 iq.setTo(getConnection().getServiceName());
                 Form form = new Form(Form.TYPE_SUBMIT);
 
@@ -166,7 +166,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
     @Override
     public void processPacket(Packet packet) {
         IQ iq = (IQ) packet;
-        if (iq.getType() == IQ.Type.RESULT) {
+        if (iq.getType() == IQ.Type.result) {
             DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
             if (response != null) {
                 String publicKey = null;

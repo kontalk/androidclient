@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.util.XmppStringUtils;
+
 import org.kontalk.R;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
@@ -126,9 +128,9 @@ public class Syncer {
 
                         String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                         // see if bare JID is present in roster response
-                        String compare = StringUtils.parseBareAddress(jid);
+                        String compare = XmppStringUtils.parseBareAddress(jid);
                         for (PresenceItem item : response) {
-                            if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
                                 item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
                                 item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
 
@@ -180,9 +182,9 @@ public class Syncer {
                 if (response != null) {
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     // see if bare JID is present in roster response
-                    String compare = StringUtils.parseBareAddress(jid);
+                    String compare = XmppStringUtils.parseBareAddress(jid);
                     for (PresenceItem item : response) {
-                        if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                        if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
                             item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
 
                             // increment vcard count
@@ -212,9 +214,9 @@ public class Syncer {
 
                     for (String jid : list) {
                         // see if bare JID is present in roster response
-                        String compare = StringUtils.parseBareAddress(jid);
+                        String compare = XmppStringUtils.parseBareAddress(jid);
                         for (PresenceItem item : response) {
-                            if (StringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
                                 item.blocked = true;
 
                                 break;
@@ -386,7 +388,7 @@ public class Syncer {
             mLocalBroadcastManager = LocalBroadcastManager.getInstance(mContext);
 
             // register presence broadcast receiver
-            String iq = Packet.nextID();
+            String iq = StringUtils.randomString(6);
             PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);

@@ -58,7 +58,7 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
 
                 // request upload url
                 UploadInfo iq = new UploadInfo(item.getNode());
-                iq.setType(IQ.Type.GET);
+                iq.setType(IQ.Type.get);
                 iq.setTo(server.getNetwork());
 
                 conn.addPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));

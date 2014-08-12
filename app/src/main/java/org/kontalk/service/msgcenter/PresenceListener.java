@@ -17,19 +17,6 @@
  */
 package org.kontalk.service.msgcenter;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_COUNT;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PRIORITY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SHOW;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
-
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -38,8 +25,18 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
+
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
 import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.SubscribePublicKey;
 import org.kontalk.client.VCard4;
@@ -52,15 +49,19 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_COUNT;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_ID;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PRIORITY;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SHOW;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 
 /**
@@ -87,7 +88,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
                 // store key to users table
                 UsersProvider.setUserKey(getContext(),
-                    StringUtils.parseBareAddress(p.getFrom()),
+                    XmppStringUtils.parseBareAddress(p.getFrom()),
                     pkey.getKey(), fingerprint);
             }
 
@@ -190,7 +191,7 @@ class PresenceListener extends MessageCenterPacketListener {
             ContentValues values = new ContentValues(4);
 
             // insert public key into the users table
-            values.put(Users.HASH, StringUtils.parseName(from));
+            values.put(Users.HASH, XmppStringUtils.parseLocalpart(from));
             values.put(Users.JID, from);
             values.put(Users.PUBLIC_KEY, publicKey);
             values.put(Users.FINGERPRINT, fingerprint);
@@ -214,15 +215,15 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribed(Presence p) {
-        String from = StringUtils.parseBareAddress(p.getFrom());
+        String from = XmppStringUtils.parseBareAddress(p.getFrom());
 
         if (UsersProvider.getPublicKey(getContext(), from) == null) {
             // public key not found
             // assuming the user has allowed us, request it
 
             VCard4 vcard = new VCard4();
-            vcard.setType(IQ.Type.GET);
-            vcard.setTo(StringUtils.parseBareAddress(p.getFrom()));
+            vcard.setType(IQ.Type.get);
+            vcard.setTo(XmppStringUtils.parseBareAddress(p.getFrom()));
 
             sendPacket(vcard);
         }
