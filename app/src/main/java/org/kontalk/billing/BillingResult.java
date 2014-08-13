@@ -15,6 +15,7 @@
 
 package org.kontalk.billing;
 
+
 /**
  * Represents the result of an in-app billing operation.
  * A result is composed of a response code (an integer) and possibly a

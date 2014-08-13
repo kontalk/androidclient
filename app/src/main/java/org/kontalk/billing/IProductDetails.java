@@ -15,6 +15,7 @@
 
 package org.kontalk.billing;
 
+
 /**
  * Represents an in-app product's listing details.
  */

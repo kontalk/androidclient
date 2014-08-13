@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.kontalk.service.msgcenter;
 
 import java.util.List;
@@ -58,7 +59,7 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
 
                 // request upload url
                 UploadInfo iq = new UploadInfo(item.getNode());
-                iq.setType(IQ.Type.GET);
+                iq.setType(IQ.Type.get);
                 iq.setTo(server.getNetwork());
 
                 conn.addPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));

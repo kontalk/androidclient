@@ -138,8 +138,7 @@ public class KontalkConnection extends XMPPTCPConnection {
             if (direct)
                 config.setSocketFactory(ctx.getSocketFactory());
 
-            // enable SASL EXTERNAL
-            SASLAuthentication.supportSASLMechanism("EXTERNAL");
+            // SASL EXTERNAL is already enabled in Smack
         }
         catch (Exception e) {
             Log.w(TAG, "unable to setup SSL connection", e);
