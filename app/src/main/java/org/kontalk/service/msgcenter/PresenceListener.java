@@ -63,6 +63,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FINGERPRINT;
 
 
 /**
@@ -253,7 +254,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
         i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
-        // getExtension doesn't work here
+        // TODO see if getExtension works with new Smack 4.1 here
         Iterator<PacketExtension> iter = p.getExtensions().iterator();
         while (iter.hasNext()) {
             PacketExtension _ext = iter.next();
@@ -261,6 +262,18 @@ class PresenceListener extends MessageCenterPacketListener {
                 DelayInformation delay = (DelayInformation) _ext;
                 i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
                 break;
+            }
+        }
+
+        // public key extension (for fingerprint)
+        PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+
+        if (_pkey instanceof SubscribePublicKey) {
+            SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
+
+            String fingerprint = pkey.getFingerprint();
+            if (fingerprint != null) {
+                i.putExtra(EXTRA_FINGERPRINT, fingerprint);
             }
         }
 
