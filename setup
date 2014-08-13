@@ -2,6 +2,6 @@
 
 echo "sdk.dir=$1" >local.properties
 
-git clone -b smack_4_1_0 https://github.com/kontalk/client-common-java.git
+git clone https://github.com/kontalk/client-common-java.git
 cd client-common-java &&
 ./setup asmack
