@@ -136,8 +136,10 @@ public class GcmPushService implements IPushService {
 
     @Override
     public boolean isServiceAvailable() {
-        return GooglePlayServicesUtil
-            .isGooglePlayServicesAvailable(mContext) == ConnectionResult.SUCCESS;
+        int status = GooglePlayServicesUtil
+            .isGooglePlayServicesAvailable(mContext);
+        return status == ConnectionResult.SUCCESS ||
+            status == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
     }
 
     @Override
