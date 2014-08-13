@@ -42,7 +42,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
@@ -506,14 +505,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // abort connection helper (if any)
         if (mHelper != null) {
             // this is because of NetworkOnMainThreadException
-            new AbortThread(mHelper, restarting).start();
+            new AbortThread(mHelper).start();
             mHelper = null;
         }
 
         // disconnect from server (if any)
         if (mConnection != null) {
             // this is because of NetworkOnMainThreadException
-            new DisconnectThread(mConnection, restarting).start();
+            new DisconnectThread(mConnection).start();
             mConnection = null;
         }
 
@@ -526,17 +525,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static final class AbortThread extends Thread {
         private final XMPPConnectionHelper mHelper;
-        private final boolean mForce;
-
-        public AbortThread(XMPPConnectionHelper helper, boolean force) {
+        public AbortThread(XMPPConnectionHelper helper) {
             mHelper = helper;
-            mForce = force;
         }
 
         @Override
         public void run() {
             try {
-                mHelper.shutdown(mForce);
+                mHelper.shutdown();
             }
             catch (Exception e) {
                 // ignored
@@ -546,20 +542,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static final class DisconnectThread extends Thread {
         private final AbstractXMPPConnection mConn;
-        private final boolean mForce;
-
-        public DisconnectThread(AbstractXMPPConnection conn, boolean force) {
+        public DisconnectThread(AbstractXMPPConnection conn) {
             mConn = conn;
-            mForce = force;
         }
 
         @Override
         public void run() {
             try {
-                if (mForce)
-                    ((XMPPTCPConnection) mConn).instantShutdown();
-                else
-                    mConn.disconnect();
+                mConn.disconnect();
             }
             catch (Exception e) {
                 // ignored
