@@ -346,7 +346,7 @@ public class MessageListItem extends RelativeLayout {
         long serverTime = mMessage.getServerTimestamp();
         long ts = serverTime > 0 ? serverTime : mMessage.getTimestamp();
 
-        return MessageUtils.formatTimeStampString(getContext(), ts, false);
+        return MessageUtils.formatTimeString(getContext(), ts);
     }
 
     public final void unbind() {

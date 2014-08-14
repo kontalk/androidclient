@@ -287,6 +287,21 @@ public final class MessageUtils {
         return DateUtils.formatDateTime(context, when, format_flags);
     }
 
+    public static String formatTimeString(Context context, long when) {
+        Time then = new Time();
+        then.set(when);
+        Time now = new Time();
+        now.setToNow();
+
+        // Basic settings for formatDateTime() we want for all cases.
+        int format_flags = DateUtils.FORMAT_NO_NOON_MIDNIGHT |
+                DateUtils.FORMAT_ABBREV_ALL |
+                DateUtils.FORMAT_CAP_AMPM |
+                DateUtils.FORMAT_SHOW_TIME;
+
+        return DateUtils.formatDateTime(context, when, format_flags);
+    }
+
     private static String convertToHex(byte[] data) {
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < data.length; i++) {
