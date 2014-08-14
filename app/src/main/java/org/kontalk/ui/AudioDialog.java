@@ -166,6 +166,7 @@ public class AudioDialog extends AlertDialog {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null) {
+                    mPlayer.setOnCompletionListener(null);
                     mResult.onResult(mFile.getAbsolutePath());
                     mStatus = STATUS_SEND;
                 }
@@ -195,8 +196,8 @@ public class AudioDialog extends AlertDialog {
         if (mStatus == STATUS_RECORDING) {
             stopRecord();
         }
-        else if (mStatus == STATUS_PLAYING) {
-            pauseAudio();
+        else if (mStatus == STATUS_PLAYING || mStatus == STATUS_SEND) {
+            pauseAudio(mStatus == STATUS_SEND);
             mPlayer.release();
         }
 
@@ -294,10 +295,15 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void pauseAudio() {
+        pauseAudio(false);
+    }
+
+    private void pauseAudio(boolean sending) {
         mImageButton.setImageResource(R.drawable.play);
         mProgressBarAnimator.cancel();
         mPlayer.pause();
-        mStatus = STATUS_PAUSED;
+        if (!sending)
+            mStatus = STATUS_PAUSED;
     }
 
     private void resumeAudio() {

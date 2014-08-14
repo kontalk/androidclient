@@ -41,7 +41,8 @@ import org.kontalk.message.AudioComponent;
  * Audio content view for {@link AudioComponent}s.
  */
 public class AudioContentView extends LinearLayout
-        implements MessageContentView<AudioComponent>, View.OnClickListener{
+        implements MessageContentView<AudioComponent>, View.OnClickListener,
+        AudioContentViewControl {
 
     static final String TAG = AudioContentView.class.getSimpleName();
 
@@ -77,12 +78,12 @@ public class AudioContentView extends LinearLayout
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
         mPlayButton.setOnClickListener(this);
-        mAudioPlayerControl.onBind(messageId, mSeekBar, mPlayButton);
+        mAudioPlayerControl.onBind(messageId, this);
     }
 
     public void unbind() {
         clear();
-        mAudioPlayerControl.onUnbind(mMessageId, mSeekBar, mPlayButton);
+        mAudioPlayerControl.onUnbind(mMessageId, this);
     }
 
     public AudioComponent getComponent() {
@@ -105,22 +106,66 @@ public class AudioContentView extends LinearLayout
 
     @Override
     public void onClick(View v) {
-        mAudioPlayerControl.buttonClick(new File(String.valueOf(mComponent.getLocalUri())), mPlayButton, mSeekBar, mMessageId);
+        mAudioPlayerControl.buttonClick(new File(String.valueOf(mComponent.getLocalUri())), this, mMessageId);
     }
 
-    public void  setAudioPlayerControl (AudioPlayerControl l) {
-        mAudioPlayerControl = l;
+    public void  setAudioPlayerControl (AudioPlayerControl apc) {
+        mAudioPlayerControl = apc;
     }
 
-    public interface AudioPlayerControl {
-        public void buttonClick (File audioFile, ImageButton playerButton, SeekBar seekBar, long messageId);
-        public void prepareAudio(File audioFile, ImageButton playerButton, SeekBar seekBar, long messageId);
-        public void playAudio(ImageButton playerButton, SeekBar seekBar, long messageId);
-        public void pauseAudio(ImageButton playerButton);
-        public void resetAudio(SeekBar seekBar, ImageButton playerButton);
-        public int getAudioStatus();
-        public void setAudioStatus(int audioStatus);
-        public void onBind (long messageId, SeekBar seekBar, ImageButton playerButton);
-        public void onUnbind(long messageId, SeekBar seekBar, ImageButton playerButton);
+    @Override
+    public void prepare(int duration) {
+        mSeekBar.setMax(duration);
     }
+
+    @Override
+    public void play() {
+        mPlayButton.setBackgroundResource(R.drawable.pause);
+    }
+
+    @Override
+    public void pause() {
+        mPlayButton.setBackgroundResource(R.drawable.play);
+    }
+
+    @Override
+    public void updatePosition(int position) {
+        mSeekBar.setProgress(position);
+    }
+
+    @Override
+    public void end() {
+        mPlayButton.setBackgroundResource(R.drawable.play);
+        mSeekBar.setProgress(0);
+    }
+
+    @Override
+    public void setProgressChangeListener(boolean enable) {
+        SeekBar.OnSeekBarChangeListener listener = enable ?
+            new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        mAudioPlayerControl.seekTo(progress);
+                        updatePosition(progress);
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                    mAudioPlayerControl.pauseAudio(AudioContentView.this);
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    mAudioPlayerControl.playAudio(AudioContentView.this, mMessageId);
+                }
+            } : null;
+        mSeekBar.setOnSeekBarChangeListener(listener);
+    }
+
+    public long getMessageId() {
+        return mMessageId;
+    }
+
 }

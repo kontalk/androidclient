@@ -45,7 +45,7 @@ public class MessageContentViewFactory {
     @SuppressWarnings("unchecked")
     public static <T> MessageContentView<T> createContent(LayoutInflater inflater,
             ViewGroup parent, T component,
-            Contact contact, Pattern highlight, AudioContentView.AudioPlayerControl audioPlayerControl, long messageId) {
+            Contact contact, Pattern highlight, AudioPlayerControl audioPlayerControl, long messageId) {
 
         // using conditionals to avoid reflection
         MessageContentView<T> view = null;

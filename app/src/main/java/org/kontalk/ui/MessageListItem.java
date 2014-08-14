@@ -150,7 +150,7 @@ public class MessageListItem extends RelativeLayout {
 
     public final void bind(Context context, final CompositeMessage msg,
        final Contact contact, final Pattern highlight, long previous,
-       AudioContentView.AudioPlayerControl audioPlayerControl) {
+       AudioPlayerControl audioPlayerControl) {
 
         mMessage = msg;
 

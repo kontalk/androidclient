@@ -87,7 +87,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
@@ -134,7 +133,8 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-		View.OnLongClickListener, IconContextMenuOnClickListener, OnAudioDialogResult, AudioContentView.AudioPlayerControl {
+		View.OnLongClickListener, IconContextMenuOnClickListener, OnAudioDialogResult,
+        AudioPlayerControl {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -187,6 +187,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private long mMediaPlayerMessageId;
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
+    private AudioContentViewControl mAudioControl;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -2463,17 +2464,15 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     @Override
-    public void buttonClick(File audioFile, ImageButton playerButton, SeekBar seekbar, long messageId) {
+    public void buttonClick(File audioFile, AudioContentViewControl view, long messageId) {
         if (mMediaPlayerMessageId == messageId) {
             switch (mStatus) {
                 case AudioContentView.STATUS_PLAYING:
-                    pauseAudio(playerButton);
+                    pauseAudio(view);
                     break;
                 case AudioContentView.STATUS_PAUSED:
-                    playAudio(playerButton, seekbar, messageId);
-                    break;
                 case AudioContentView.STATUS_ENDED:
-                    playAudio(playerButton, seekbar, messageId);
+                    playAudio(view, messageId);
                     break;
 
             }
@@ -2481,25 +2480,24 @@ public class ComposeMessageFragment extends ListFragment implements
         else {
             switch (mStatus) {
                 case AudioContentView.STATUS_IDLE:
-                    prepareAudio(audioFile, playerButton, seekbar, messageId);
-                    seekbar.setMax(mPlayer.getDuration());
-                    playAudio(playerButton, seekbar, messageId);
+                    prepareAudio(audioFile, view, messageId);
+                    playAudio(view, messageId);
                     break;
                 case AudioContentView.STATUS_ENDED:
                 case AudioContentView.STATUS_PLAYING:
                 case AudioContentView.STATUS_PAUSED:
-                    resetAudio(seekbar, playerButton);
-                    prepareAudio(audioFile, playerButton, seekbar, messageId);
-                    seekbar.setMax(mPlayer.getDuration());
-                    playAudio(playerButton, seekbar, messageId);
+                    if (mAudioControl != null)
+                        resetAudio(mAudioControl);
+                    prepareAudio(audioFile, view, messageId);
+                    playAudio(view, messageId);
                     break;
             }
         }
     }
 
-    @Override
-    public void prepareAudio(File audioFile, final ImageButton playerButton, final SeekBar seekBar,final long messageId) {
+    private void prepareAudio(File audioFile, final AudioContentViewControl view, final long messageId) {
         mMediaPlayerMessageId = messageId;
+        mAudioControl = view;
         if (mPlayer == null)
             mPlayer = new MediaPlayer();
 
@@ -2509,87 +2507,97 @@ public class ComposeMessageFragment extends ListFragment implements
         try {
             mPlayer.setDataSource(audioFile.getPath());
             mPlayer.prepare();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             Toast.makeText(getActivity(), R.string.err_file_not_found, Toast.LENGTH_SHORT).show();
         }
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                playerButton.setBackgroundResource(R.drawable.play);
+                stopMediaPlayerUpdater();
+                view.end();
                 mPlayer.seekTo(0);
                 setAudioStatus(AudioContentView.STATUS_ENDED);
             }
         });
-        setSeekBarListener(messageId, seekBar, playerButton);
+
+        view.prepare(mPlayer.getDuration());
+        view.setProgressChangeListener(true);
     }
 
     @Override
-    public void playAudio(ImageButton playerButton, SeekBar seekBar, long messageId) {
-        playerButton.setBackgroundResource(R.drawable.pause);
+    public void playAudio(AudioContentViewControl view, long messageId) {
+        view.play();
         mPlayer.start();
         setAudioStatus(AudioContentView.STATUS_PLAYING);
-        startMediaPlayerUpdater(seekBar);
+        startMediaPlayerUpdater(view);
     }
 
-    private void updatePosition(SeekBar seekBar) {
-        seekBar.setProgress(mPlayer.getCurrentPosition());
+    private void updatePosition(AudioContentViewControl view) {
+        view.updatePosition(mPlayer.getCurrentPosition());
     }
 
     @Override
-    public void pauseAudio(ImageButton playerButton) {
-        playerButton.setBackgroundResource(R.drawable.play);
+    public void pauseAudio(AudioContentViewControl view) {
+        view.pause();
         mPlayer.pause();
         stopMediaPlayerUpdater();
         setAudioStatus(AudioContentView.STATUS_PAUSED);
     }
 
-    @Override
-    public void resetAudio(SeekBar seekBar, ImageButton playerButton) {
-        playerButton.setBackgroundResource(R.drawable.play);
+    private void resetAudio(AudioContentViewControl view) {
         stopMediaPlayerUpdater();
+        view.end();
         mPlayer.reset();
+        mMediaPlayerMessageId = -1;
     }
 
-    @Override
-    public int getAudioStatus() {
-        return mStatus;
-    }
-
-    @Override
-    public void setAudioStatus(int audioStatus) {
+    private void setAudioStatus(int audioStatus) {
         mStatus = audioStatus;
     }
 
     @Override
-    public void onBind(long messageId, SeekBar seekBar, final ImageButton playerButton) {
+    public void onBind(long messageId, final AudioContentViewControl view) {
+        Log.v(TAG, "onBind for message " + messageId + " (current=" + mMediaPlayerMessageId + ")");
         if (mMediaPlayerMessageId == messageId) {
+            mAudioControl = view;
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    playerButton.setBackgroundResource(R.drawable.play);
+                    stopMediaPlayerUpdater();
+                    view.end();
                     mPlayer.seekTo(0);
                     setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
             });
-            setSeekBarListener(messageId, seekBar, playerButton);
-            seekBar.setMax(mPlayer.getDuration());
-            startMediaPlayerUpdater(seekBar);
-            playerButton.setBackgroundResource(R.drawable.pause);
+            view.setProgressChangeListener(true);
+            view.prepare(mPlayer.getDuration());
+            if (mPlayer.isPlaying()) {
+                startMediaPlayerUpdater(view);
+                view.play();
+            }
+            else {
+                view.pause();
+            }
         }
     }
 
     @Override
-    public void onUnbind(long messageId, SeekBar seekBar, ImageButton playerButton) {
+    public void onUnbind(long messageId, AudioContentViewControl view) {
+        Log.v(TAG, "onUnbind for message " + messageId + " (current=" + mMediaPlayerMessageId + ")");
         if (mMediaPlayerMessageId == messageId) {
+            mAudioControl = null;
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    setAudioStatus(AudioContentView.STATUS_IDLE);
+                    mPlayer.seekTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
             });
-            seekBar.setOnSeekBarChangeListener(null);
-            if (!MessagesProvider.exists(getActivity(), messageId))
-               resetAudio(seekBar, playerButton);
+            view.setProgressChangeListener(false);
+            if (!MessagesProvider.exists(getActivity(), messageId)) {
+                resetAudio(view);
+            }
 
             else {
                 stopMediaPlayerUpdater();
@@ -2597,12 +2605,18 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    private void startMediaPlayerUpdater(final SeekBar seekBar) {
-        updatePosition(seekBar);
+    @Override
+    public void seekTo(int position) {
+        mPlayer.seekTo(position);
+    }
+
+    private void startMediaPlayerUpdater(final AudioContentViewControl view) {
+        Log.v(TAG, "starting player updater for message " + view.getMessageId());
+        updatePosition(view);
         mMediaPlayerUpdater = new Runnable() {
             @Override
             public void run() {
-                updatePosition(seekBar);
+                updatePosition(view);
                 mHandler.postDelayed(this, 100);
             }
         };
@@ -2610,33 +2624,11 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void stopMediaPlayerUpdater() {
+        Log.v(TAG, "stopping player updater");
         if (mMediaPlayerUpdater != null) {
             mHandler.removeCallbacks(mMediaPlayerUpdater);
             mMediaPlayerUpdater = null;
         }
     }
 
-    private void setSeekBarListener(final long messageId, SeekBar seekBar, final ImageButton playerButton) {
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    mPlayer.seekTo(progress);
-                    seekBar.setProgress(progress);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                if (mMediaPlayerMessageId == messageId)
-                    pauseAudio(playerButton);
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mMediaPlayerMessageId == messageId)
-                    playAudio(playerButton, seekBar, messageId);
-            }
-        });
-    }
 }

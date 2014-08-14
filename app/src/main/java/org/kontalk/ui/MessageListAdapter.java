@@ -45,9 +45,9 @@ public class MessageListAdapter extends CursorAdapter {
     private OnContentChangedListener mOnContentChangedListener;
 
     private Contact mContact;
-    private AudioContentView.AudioPlayerControl mAudioPlayerControl;
+    private AudioPlayerControl mAudioPlayerControl;
 
-    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list, AudioContentView.AudioPlayerControl audioPlayerControl) {
+    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list, AudioPlayerControl audioPlayerControl) {
         super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
         mHighlight = highlight;
