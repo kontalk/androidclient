@@ -26,18 +26,24 @@ import org.kontalk.client.ServerList;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.ServerListUpdater;
+import org.kontalk.sync.Syncer;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -184,8 +190,38 @@ public class ConversationList extends ActionBarActivity
     }
 
     private void handleIntent(Intent intent) {
-        if (intent != null && ACTION_AUTH_ERROR_WARNING.equals(intent.getAction())) {
-            showDialog(DIALOG_AUTH_ERROR_WARNING);
+        if (intent != null) {
+            String action = intent.getAction();
+
+            if (ACTION_AUTH_ERROR_WARNING.equals(action)) {
+                showDialog(DIALOG_AUTH_ERROR_WARNING);
+            }
+
+            // this is for intents coming from the world, forwarded by ComposeMessage
+            else {
+                boolean actionView = Intent.ACTION_VIEW.equals(action);
+                if (actionView || ComposeMessage.ACTION_VIEW_USERID.equals(action)) {
+                    Uri uri = null;
+
+                    if (actionView) {
+                        Cursor c = getContentResolver().query(intent.getData(),
+                            new String[]{Syncer.DATA_COLUMN_PHONE},
+                            null, null, null);
+                        if (c.moveToFirst()) {
+                            String phone = c.getString(0);
+                            String userJID = XMPPUtils.createLocalJID(this,
+                                MessageUtils.sha1(phone));
+                            uri = Threads.getUri(userJID);
+                        }
+                        c.close();
+                    } else {
+                        uri = intent.getData();
+                    }
+
+                    if (uri != null)
+                        openConversation(uri);
+                }
+            }
         }
     }
 
