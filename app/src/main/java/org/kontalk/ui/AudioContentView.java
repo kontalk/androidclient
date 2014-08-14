@@ -21,7 +21,9 @@ package org.kontalk.ui;
 import java.io.File;
 import java.util.regex.Pattern;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,6 +66,7 @@ public class AudioContentView extends LinearLayout
         super(context, attrs);
     }
 
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public AudioContentView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
