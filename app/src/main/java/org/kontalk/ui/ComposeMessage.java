@@ -68,6 +68,8 @@ public class ComposeMessage extends ActionBarActivity {
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
 
+    private static final StyleSpan sUpdatingTextSpan = new StyleSpan(Typeface.ITALIC);
+
     /** View conversation intent action. Just provide the threadId with this. */
     public static final String ACTION_VIEW_CONVERSATION = "org.kontalk.conversation.VIEW";
     /** View conversation with userId intent action. Just provide userId with this. */
@@ -164,15 +166,19 @@ public class ComposeMessage extends ActionBarActivity {
     }
 
     public void setUpdatingSubtitle() {
-        CharSequence current = mSubtitleView.getText();
+        setUpdatingSubtitle(mSubtitleView);
+    }
+
+    static void setUpdatingSubtitle(TextView view) {
+        CharSequence current = view.getText();
         // no need to set updating status if no text is displayed
         if (current.length() > 0) {
             // we call toString() to strip any existing span
             SpannableString status = new SpannableString(current.toString());
-            status.setSpan(new StyleSpan(Typeface.ITALIC),
+            status.setSpan(sUpdatingTextSpan,
                 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-            mSubtitleView.setText(status);
+            view.setText(status);
         }
     }
 

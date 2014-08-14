@@ -75,8 +75,6 @@ public class MessageListAdapter extends CursorAdapter {
             mContact = Contact.findByUserId(context, msg.getSender());
 
         long previous = -1;
-        Log.v(TAG, "msg_id=" + msg.getDatabaseId());
-
         if (cursor.moveToPrevious()) {
             previous = cursor.getLong(CompositeMessage.COLUMN_TIMESTAMP);
             cursor.moveToNext();

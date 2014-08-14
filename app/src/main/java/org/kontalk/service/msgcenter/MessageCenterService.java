@@ -711,6 +711,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
+            else if (ACTION_VCARD.equals(action)) {
+                if (canConnect && isConnected) {
+                    VCard4 p = new VCard4();
+                    p.setTo(intent.getStringExtra(EXTRA_TO));
+
+                    sendPacket(p);
+                }
+            }
+
             else if (ACTION_SUBSCRIBED.equals(action)) {
                 if (canConnect && isConnected) {
 
@@ -1669,6 +1678,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestConnectionStatus(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_CONNECTED);
+        context.startService(i);
+    }
+
+    public static void requestVCard(final Context context, String to) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_VCARD);
+        i.putExtra(EXTRA_TO, to);
         context.startService(i);
     }
 

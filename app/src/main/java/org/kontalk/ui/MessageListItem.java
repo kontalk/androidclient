@@ -220,8 +220,8 @@ public class MessageListItem extends RelativeLayout {
             if (mAvatarOutgoing != null) {
                 mAvatarIncoming.setVisibility(GONE);
                 mAvatarOutgoing.setVisibility(VISIBLE);
-                mAvatarOutgoing.setImageDrawable(contact != null ?
-                    contact.getAvatar(context, sDefaultContactImage) : sDefaultContactImage);
+                // TODO show own profile picture
+                mAvatarOutgoing.setImageDrawable(sDefaultContactImage);
             }
 
             // status icon

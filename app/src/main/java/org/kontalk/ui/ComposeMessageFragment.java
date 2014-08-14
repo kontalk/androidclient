@@ -157,6 +157,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private MessageListAdapter mListAdapter;
     private EditText mTextEntry;
     private View mSendButton;
+    private TextView mStatusText;
     private ViewGroup mInvitationBar;
     private MenuItem mDeleteThreadMenu;
     private MenuItem mViewContactMenu;
@@ -252,6 +253,9 @@ public class ComposeMessageFragment extends ListFragment implements
         ListView list = getListView();
         list.setFastScrollEnabled(true);
         registerForContextMenu(list);
+
+        // footer (for tablet presence status)
+        mStatusText = (TextView) getView().findViewById(R.id.status_text);
 
         // set custom background (if any)
         Drawable bg = Preferences.getConversationBackground(getActivity());
@@ -1447,6 +1451,9 @@ public class ComposeMessageFragment extends ListFragment implements
         Activity parent = getActivity();
         if (parent instanceof ComposeMessage)
             ((ComposeMessage) parent).setUpdatingSubtitle();
+        else if (mStatusText != null) {
+            ComposeMessage.setUpdatingSubtitle(mStatusText);
+        }
     }
 
     public ComposeMessage getParentActivity() {
@@ -1771,8 +1778,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                             String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
                                             if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
                                                 // fingerprint has changed since last time
-                                                // TODO request vCard
-
+                                                // request vCard - new key will be stored in users
+                                                MessageCenterService.requestVCard(getActivity(), bareFrom);
                                             }
                                         }
                                     }
@@ -2072,7 +2079,13 @@ public class ComposeMessageFragment extends ListFragment implements
     */
 
     private void setStatusText(CharSequence text) {
-        setActivityTitle(null, text, null);
+        Activity parent = getActivity();
+        if (parent instanceof ComposeMessage)
+            setActivityTitle(null, text, null);
+        else {
+            if (mStatusText != null)
+                mStatusText.setText(text);
+        }
     }
 
     private synchronized void registerPeerObserver() {
