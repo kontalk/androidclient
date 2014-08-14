@@ -223,6 +223,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
     public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
+    public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
 
     // use with org.kontalk.action.ROSTER
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
