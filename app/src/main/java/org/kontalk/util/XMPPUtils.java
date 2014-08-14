@@ -15,19 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.kontalk.util;
 
-import android.content.Context;
+package org.kontalk.util;
 
 import java.io.StringReader;
 
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.PacketParserUtils;
-import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.client.EndpointServer;
+import org.jxmpp.util.XmppStringUtils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
+
+import android.content.Context;
+
+import org.kontalk.client.EndpointServer;
 
 
 /**
@@ -85,16 +87,16 @@ public class XMPPUtils {
     }
 
     public static boolean isLocalJID(String jid, String host) {
-        return StringUtils.parseServer(jid).equalsIgnoreCase(host);
+        return XmppStringUtils.parseDomain(jid).equalsIgnoreCase(host);
     }
 
     public static String createLocalJID(Context context, String name) {
         EndpointServer server = Preferences.getEndpointServer(context);
-        return name + '@' + server.getNetwork();
+        return XmppStringUtils.completeJidFrom(name, server.getNetwork());
     }
 
     public static boolean equalsBareJID(String full, String bare) {
-        return StringUtils.parseBareAddress(full).equalsIgnoreCase(bare);
+        return XmppStringUtils.parseBareAddress(full).equalsIgnoreCase(bare);
     }
 
 }

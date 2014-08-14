@@ -1,4 +1,22 @@
 apply plugin: 'com.android.application'
+apply plugin: 'checkstyle'
+
+check.dependsOn 'checkstyle'
+
+task checkstyle(type: Checkstyle){
+    source 'src'
+    include '**/*.java'
+    // code from Google/AOSP
+    exclude '**/ThumbnailUtils.java', '**/AccountAuthenticatorActionBarActivity.java',
+        'main/java/org/kontalk/billing/*.java',
+        'googleplay/java/org/kontalk/billing/GoogleBillingService.java',
+        'googleplay/java/org/kontalk/billing/Inventory.java',
+        'googleplay/java/org/kontalk/billing/ProductDetails.java',
+        'googleplay/java/org/kontalk/billing/Purchase.java'
+    // 3rd-party code
+    exclude '**/IconContextMenu.java', '**/RegistrationFormProvider.java'
+    classpath = files()
+}
 
 android {
     compileSdkVersion 19
@@ -39,8 +57,8 @@ dependencies {
     compile 'com.googlecode.libphonenumber:libphonenumber:6.2'
     compile 'dnsjava:dnsjava:2.1.6'
     compile 'com.jcraft:jzlib:+'
-    compile files('libs/asmack-android-19-4.0.0.jar')
     compile 'com.nineoldandroids:library:2.4.0+'
+    compile "org.igniterealtime.smack:smack-android:4.1.0-alpha1-SNAPSHOT"
 
     googleplayCompile 'com.google.android.gms:play-services:+'
 }

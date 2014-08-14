@@ -18,11 +18,6 @@
 
 package org.kontalk.ui;
 
-import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
-import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -33,39 +28,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
-import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.crypto.Coder;
-import org.kontalk.crypto.PGP;
-import org.kontalk.data.Contact;
-import org.kontalk.data.Conversation;
-import org.kontalk.message.AttachmentComponent;
-import org.kontalk.message.AudioComponent;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.ImageComponent;
-import org.kontalk.message.MessageComponent;
-import org.kontalk.message.TextComponent;
-import org.kontalk.message.VCardComponent;
-import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages.CommonColumns;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.provider.MyMessages.Threads.Conversations;
-import org.kontalk.provider.MyMessages.Threads.Requests;
-import org.kontalk.provider.UsersProvider;
-import org.kontalk.service.DownloadService;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.sync.Syncer;
-import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
-import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
-import org.kontalk.util.MediaStorage;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.MessageUtils.SmileyImageSpan;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.XMPPUtils;
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -127,6 +91,42 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.crypto.Coder;
+import org.kontalk.crypto.PGP;
+import org.kontalk.data.Contact;
+import org.kontalk.data.Conversation;
+import org.kontalk.message.AttachmentComponent;
+import org.kontalk.message.AudioComponent;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.ImageComponent;
+import org.kontalk.message.MessageComponent;
+import org.kontalk.message.TextComponent;
+import org.kontalk.message.VCardComponent;
+import org.kontalk.provider.MessagesProvider;
+import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.provider.MyMessages.Threads.Requests;
+import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.DownloadService;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.sync.Syncer;
+import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
+import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
+import org.kontalk.util.MediaStorage;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.MessageUtils.SmileyImageSpan;
+import org.kontalk.util.Preferences;
+import org.kontalk.util.XMPPUtils;
+
+import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK;
 
 
 /**
@@ -1611,7 +1611,7 @@ public class ComposeMessageFragment extends ListFragment implements
             if (mPrivacyListener == null) {
                 mPrivacyListener = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
-                        String from = StringUtils.parseBareAddress(intent
+                        String from = XmppStringUtils.parseBareAddress(intent
                             .getStringExtra(MessageCenterService.EXTRA_FROM));
 
                         if (mUserJID.equals(from)) {
@@ -1754,11 +1754,28 @@ public class ComposeMessageFragment extends ListFragment implements
 
                             String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
                             String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                            String bareFrom = from != null ? StringUtils.parseBareAddress(from) : null;
+                            String bareFrom = from != null ? XmppStringUtils.parseBareAddress(from) : null;
 
                             // we are receiving a presence from our peer, upgrade available resources
                             if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
                                 // our presence!!!
+
+                                // check if fingerprint changed
+                                String fingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
+                                if (fingerprint != null) {
+                                    Contact contact = mConversation != null ? mConversation.getContact() : null;
+                                    if (contact != null) {
+                                        PGPPublicKeyRing publicKey = contact.getPublicKeyRing();
+                                        if (publicKey != null) {
+                                            String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
+                                            if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
+                                                // fingerprint has changed since last time
+                                                // TODO request vCard
+
+                                            }
+                                        }
+                                    }
+                                }
 
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);

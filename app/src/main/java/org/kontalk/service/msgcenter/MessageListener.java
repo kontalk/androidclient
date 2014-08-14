@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.kontalk.service.msgcenter;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_MESSAGE;
@@ -31,7 +32,6 @@ import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
-import org.jivesoftware.smackx.delay.packet.DelayInfo;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.kontalk.client.AckServerReceipt;
 import org.kontalk.client.BitsOfBinary;
@@ -111,12 +111,9 @@ class MessageListener extends MessageCenterPacketListener {
                 if (_delay instanceof DelayInformation) {
                     stamp = ((DelayInformation) _delay).getStamp();
                 }
-                else if (_delay instanceof DelayInfo) {
-                    stamp = ((DelayInfo) _delay).getStamp();
-                }
             }
 
-            long serverTimestamp = 0;
+            long serverTimestamp;
             if (stamp != null)
                 serverTimestamp = stamp.getTime();
             else

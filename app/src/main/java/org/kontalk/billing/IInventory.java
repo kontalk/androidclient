@@ -15,10 +15,6 @@
 
 package org.kontalk.billing;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a block of information about in-app items.

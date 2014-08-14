@@ -18,34 +18,8 @@
 
 package org.kontalk.ui;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.kontalk.R;
-import org.kontalk.crypto.Coder;
-import org.kontalk.data.Contact;
-import org.kontalk.message.AttachmentComponent;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.ImageComponent;
-import org.kontalk.message.MessageComponent;
-import org.kontalk.message.RawComponent;
-import org.kontalk.message.TextComponent;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.MessageUtils.SmileyImageSpan;
-
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ImageSpan;
-import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -55,6 +29,19 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.kontalk.R;
+import org.kontalk.crypto.Coder;
+import org.kontalk.data.Contact;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.MessageComponent;
+import org.kontalk.message.TextComponent;
+import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
+
+import java.util.List;
+import java.util.regex.Pattern;
+
 
 /**
  * A message list item to be used in {@link ComposeMessage} activity.
@@ -63,6 +50,7 @@ import android.widget.TextView;
  */
 public class MessageListItem extends RelativeLayout {
 
+    public static final int SECONDS_IN_DAY = 86400000;
     static private Drawable sDefaultContactImage;
 
     private LayoutInflater mInflater;
@@ -77,6 +65,8 @@ public class MessageListItem extends RelativeLayout {
 
     private ImageView mAvatarIncoming;
     private ImageView mAvatarOutgoing;
+
+    private TextView mDateHeader;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -123,6 +113,8 @@ public class MessageListItem extends RelativeLayout {
         mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
         mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
 
+        mDateHeader = (TextView) findViewById(R.id.date_header);
+
         if (isInEditMode()) {
             //mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
             //mTextView.setText("TEST");
@@ -157,8 +149,18 @@ public class MessageListItem extends RelativeLayout {
     }
 
     public final void bind(Context context, final CompositeMessage msg,
-                           final Contact contact, final Pattern highlight, AudioContentView.AudioPlayerControl audioPlayerControl) {
+       final Contact contact, final Pattern highlight, long previous,
+       AudioContentView.AudioPlayerControl audioPlayerControl) {
+
         mMessage = msg;
+
+        if ((mMessage.getTimestamp() / SECONDS_IN_DAY) == (previous / SECONDS_IN_DAY)) {
+            mDateHeader.setVisibility(View.GONE);
+        }
+        else {
+            mDateHeader.setText(MessageUtils.formatDateString(context, mMessage.getTimestamp()));
+            mDateHeader.setVisibility(View.VISIBLE);
+        }
 
         if (msg.isEncrypted()) {
             // FIXME this is not good
@@ -197,13 +199,9 @@ public class MessageListItem extends RelativeLayout {
         if (mMessage.getSender() != null) {
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(Preferences
-                    .getBalloonResource(getContext(), Messages.DIRECTION_IN));
+                        .getBalloonResource(getContext(), Messages.DIRECTION_IN));
             }
-            else {
-                mParentView.setGravity(Gravity.LEFT);
-            }
-
-            setGravity(Gravity.LEFT);
+            mParentView.setGravity(Gravity.LEFT);
 
             if (mAvatarIncoming != null) {
                 mAvatarOutgoing.setVisibility(GONE);
@@ -215,13 +213,9 @@ public class MessageListItem extends RelativeLayout {
         else {
             if (mBalloonView != null) {
                 mBalloonView.setBackgroundResource(Preferences
-                    .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
+                        .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
             }
-            else {
-                mParentView.setGravity(Gravity.RIGHT);
-            }
-
-            setGravity(Gravity.RIGHT);
+            mParentView.setGravity(Gravity.RIGHT);
 
             if (mAvatarOutgoing != null) {
                 mAvatarIncoming.setVisibility(GONE);
@@ -354,7 +348,7 @@ public class MessageListItem extends RelativeLayout {
         long serverTime = mMessage.getServerTimestamp();
         long ts = serverTime > 0 ? serverTime : mMessage.getTimestamp();
 
-        return MessageUtils.formatTimeStampString(getContext(), ts, false);
+        return MessageUtils.formatTimeString(getContext(), ts);
     }
 
     public final void unbind() {

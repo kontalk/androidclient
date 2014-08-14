@@ -15,7 +15,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.kontalk.service.msgcenter;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.security.GeneralSecurityException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipInputStream;
+
+import org.jivesoftware.smack.AbstractXMPPConnection;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.Roster.SubscriptionMode;
+import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.RosterPacket;
+import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
+import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
 import android.app.AlarmManager;
@@ -46,24 +77,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster.SubscriptionMode;
-import org.jivesoftware.smack.SmackAndroid;
-import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.filter.PacketFilter;
-import org.jivesoftware.smack.filter.PacketIDFilter;
-import org.jivesoftware.smack.filter.PacketTypeFilter;
-import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.RosterPacket;
-import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smackx.chatstates.ChatState;
-import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
-import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
-import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
@@ -103,17 +116,6 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.spongycastle.openpgp.PGPException;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipInputStream;
 
 
 /**
@@ -221,6 +223,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
     public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
+    public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
 
     // use with org.kontalk.action.ROSTER
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
@@ -406,7 +409,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void onCreate() {
-        SmackAndroid.init(getApplicationContext());
         configure();
 
         // create the global wake lock
@@ -540,8 +542,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static final class DisconnectThread extends Thread {
-        private final XMPPConnection mConn;
-        public DisconnectThread(XMPPConnection conn) {
+        private final AbstractXMPPConnection mConn;
+        public DisconnectThread(AbstractXMPPConnection conn) {
             mConn = conn;
         }
 
@@ -1137,7 +1139,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         PacketListener listener = new PacketListener() {
             public void processPacket(Packet packet) {
 
-                if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.RESULT) {
+                if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
                     UsersProvider.setBlockStatus(MessageCenterService.this,
                         to, action == PRIVACY_BLOCK);
 

@@ -23,9 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jivesoftware.smack.util.StringUtils;
-import org.kontalk.provider.MyMessages.Messages;
-import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.jxmpp.util.XmppStringUtils;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentUris;
@@ -33,6 +31,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
+
+import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.provider.MyMessages.Threads.Conversations;
 
 
 /**
@@ -159,8 +160,8 @@ public class CompositeMessage {
     }
 
     public String getSender(boolean generic) {
-        return generic && StringUtils.isFullJID(mSender) ?
-            StringUtils.parseBareAddress(mSender) : mSender;
+        return generic && XmppStringUtils.isFullJID(mSender) ?
+            XmppStringUtils.parseBareAddress(mSender) : mSender;
     }
 
     public String getSender() {

@@ -15,7 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.kontalk.service.msgcenter;
+
+import java.io.IOException;
+import java.util.Iterator;
+
+import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
+
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
+import org.kontalk.client.StanzaGroupExtension;
+import org.kontalk.client.SubscribePublicKey;
+import org.kontalk.client.VCard4;
+import org.kontalk.crypto.PGP;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyMessages.CommonColumns;
+import org.kontalk.provider.MyMessages.Threads.Requests;
+import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.provider.UsersProvider;
+import org.kontalk.ui.MessagingNotification;
+import org.kontalk.util.MessageUtils;
+import org.kontalk.util.Preferences;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
@@ -29,38 +63,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
-
-import java.io.IOException;
-import java.util.Iterator;
-
-import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smackx.delay.packet.DelayInformation;
-import org.kontalk.client.StanzaGroupExtension;
-import org.kontalk.client.SubscribePublicKey;
-import org.kontalk.client.VCard4;
-import org.kontalk.crypto.PGP;
-import org.kontalk.data.Contact;
-import org.kontalk.provider.MyMessages.CommonColumns;
-import org.kontalk.provider.MyMessages.Threads.Requests;
-import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.provider.UsersProvider;
-import org.kontalk.ui.MessagingNotification;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.Preferences;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
-
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FINGERPRINT;
 
 
 /**
@@ -87,7 +90,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
                 // store key to users table
                 UsersProvider.setUserKey(getContext(),
-                    StringUtils.parseBareAddress(p.getFrom()),
+                    XmppStringUtils.parseBareAddress(p.getFrom()),
                     pkey.getKey(), fingerprint);
             }
 
@@ -190,7 +193,7 @@ class PresenceListener extends MessageCenterPacketListener {
             ContentValues values = new ContentValues(4);
 
             // insert public key into the users table
-            values.put(Users.HASH, StringUtils.parseName(from));
+            values.put(Users.HASH, XmppStringUtils.parseLocalpart(from));
             values.put(Users.JID, from);
             values.put(Users.PUBLIC_KEY, publicKey);
             values.put(Users.FINGERPRINT, fingerprint);
@@ -214,15 +217,15 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribed(Presence p) {
-        String from = StringUtils.parseBareAddress(p.getFrom());
+        String from = XmppStringUtils.parseBareAddress(p.getFrom());
 
         if (UsersProvider.getPublicKey(getContext(), from) == null) {
             // public key not found
             // assuming the user has allowed us, request it
 
             VCard4 vcard = new VCard4();
-            vcard.setType(IQ.Type.GET);
-            vcard.setTo(StringUtils.parseBareAddress(p.getFrom()));
+            vcard.setType(IQ.Type.get);
+            vcard.setTo(XmppStringUtils.parseBareAddress(p.getFrom()));
 
             sendPacket(vcard);
         }
@@ -251,7 +254,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
         i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
-        // getExtension doesn't work here
+        // TODO see if getExtension works with new Smack 4.1 here
         Iterator<PacketExtension> iter = p.getExtensions().iterator();
         while (iter.hasNext()) {
             PacketExtension _ext = iter.next();
@@ -259,6 +262,18 @@ class PresenceListener extends MessageCenterPacketListener {
                 DelayInformation delay = (DelayInformation) _ext;
                 i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
                 break;
+            }
+        }
+
+        // public key extension (for fingerprint)
+        PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+
+        if (_pkey instanceof SubscribePublicKey) {
+            SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
+
+            String fingerprint = pkey.getFingerprint();
+            if (fingerprint != null) {
+                i.putExtra(EXTRA_FINGERPRINT, fingerprint);
             }
         }
 

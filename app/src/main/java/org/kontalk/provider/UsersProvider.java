@@ -20,7 +20,7 @@ package org.kontalk.provider;
 
 import java.util.HashMap;
 
-import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -297,7 +297,7 @@ public class UsersProvider extends ContentProvider {
         int rc = db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
         if (rc == 0) {
             // insert new record
-            values.put(Users.HASH, StringUtils.parseName(selectionArgs[0]));
+            values.put(Users.HASH, XmppStringUtils.parseLocalpart(selectionArgs[0]));
             values.put(Users.JID, selectionArgs[0]);
             values.put(Users.NUMBER, selectionArgs[0]);
             values.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));

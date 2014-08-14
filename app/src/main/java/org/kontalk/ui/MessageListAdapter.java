@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import java.util.Date;
 import java.util.regex.Pattern;
 
 import org.kontalk.R;
@@ -73,7 +74,15 @@ public class MessageListAdapter extends CursorAdapter {
         if (msg.getDirection() == Messages.DIRECTION_IN && mContact == null)
             mContact = Contact.findByUserId(context, msg.getSender());
 
-        headerView.bind(context, msg, mContact, mHighlight, mAudioPlayerControl);
+        long previous = -1;
+        Log.v(TAG, "msg_id=" + msg.getDatabaseId());
+
+        if (cursor.moveToPrevious()) {
+            previous = cursor.getLong(CompositeMessage.COLUMN_TIMESTAMP);
+            cursor.moveToNext();
+        }
+
+        headerView.bind(context, msg, mContact, mHighlight, previous, mAudioPlayerControl);
     }
 
     @Override

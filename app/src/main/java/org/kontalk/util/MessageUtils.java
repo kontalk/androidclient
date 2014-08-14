@@ -230,6 +230,28 @@ public final class MessageUtils {
                 format_flags);
     }
 
+    public static String formatDateString(Context context, long when) {
+        Time then = new Time();
+        then.set(when);
+        Time now = new Time();
+        now.setToNow();
+
+        // Basic settings for formatDateTime() we want for all cases.
+        int format_flags = DateUtils.FORMAT_NO_NOON_MIDNIGHT |
+                DateUtils.FORMAT_SHOW_DATE |
+                DateUtils.FORMAT_CAP_AMPM;
+
+        // If the message is from a different year, show the date and year.
+        if (then.year != now.year) {
+            format_flags |= DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_SHOW_DATE;
+        } else if (then.yearDay != now.yearDay) {
+            // If it is from a different day than today, show only the date.
+            format_flags |= DateUtils.FORMAT_SHOW_DATE;
+        }
+
+        return DateUtils.formatDateTime(context, when, format_flags);
+    }
+
     public static String formatTimeStampString(Context context, long when) {
         return formatTimeStampString(context, when, false);
     }
@@ -262,6 +284,21 @@ public final class MessageUtils {
         if (fullFormat) {
             format_flags |= (DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME);
         }
+
+        return DateUtils.formatDateTime(context, when, format_flags);
+    }
+
+    public static String formatTimeString(Context context, long when) {
+        Time then = new Time();
+        then.set(when);
+        Time now = new Time();
+        now.setToNow();
+
+        // Basic settings for formatDateTime() we want for all cases.
+        int format_flags = DateUtils.FORMAT_NO_NOON_MIDNIGHT |
+                DateUtils.FORMAT_ABBREV_ALL |
+                DateUtils.FORMAT_CAP_AMPM |
+                DateUtils.FORMAT_SHOW_TIME;
 
         return DateUtils.formatDateTime(context, when, format_flags);
     }
