@@ -1730,8 +1730,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                             String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
                                             if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
                                                 // fingerprint has changed since last time
-                                                // TODO request vCard
-
+                                                // request vCard - new key will be stored in users
+                                                MessageCenterService.requestVCard(getActivity(), bareFrom);
                                             }
                                         }
                                     }
