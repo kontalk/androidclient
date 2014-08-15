@@ -399,9 +399,7 @@ public class Syncer {
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
             // request current connection status
-            Intent intent = new Intent(mContext, MessageCenterService.class);
-            intent.setAction(MessageCenterService.ACTION_CONNECTED);
-            mContext.startService(intent);
+            MessageCenterService.requestConnectionStatus(mContext);
 
             // wait for the service to complete its job
             synchronized (this) {
