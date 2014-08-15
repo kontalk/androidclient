@@ -18,6 +18,11 @@
 
 package org.kontalk.ui;
 
+import com.rockerhieu.emojicon.EmojiconEditText;
+import com.rockerhieu.emojicon.EmojiconTextView;
+import com.rockerhieu.emojicon.EmojiconsFragment;
+import com.rockerhieu.emojicon.emoji.Emojicon;
+
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -25,7 +30,6 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.MessageUtils;
-import org.kontalk.util.MessageUtils.SmileyImageSpan;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -136,7 +140,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
             if (source != null) {
                 text = new SpannableString(source);
-                MessageUtils.convertSmileys(context, (Spannable) text, SmileyImageSpan.SIZE_LISTITEM);
                 if (conv.getUnreadCount() > 0)
                     ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             }

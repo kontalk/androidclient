@@ -56,6 +56,11 @@
             <!-- Preview: listitem=@layout/message_list_item -->
         </ListView>
 
+        <FrameLayout android:id="@+id/fragment_emojicons"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"/>
+
         <include layout="@layout/composer_bar"/>
 
     </LinearLayout>

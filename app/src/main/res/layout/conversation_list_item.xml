@@ -16,7 +16,9 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.ConversationListItem xmlns:android="http://schemas.android.com/apk/res/android"
+<org.kontalk.ui.ConversationListItem
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:emojicon="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:paddingRight="10dip" >
@@ -64,7 +66,7 @@
         />
         <!-- android:src="@drawable/ic_attachment_universal_small" -->
 
-    <TextView android:id="@+id/subject"
+    <com.rockerhieu.emojicon.EmojiconTextView android:id="@+id/subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -75,6 +77,7 @@
         android:layout_toRightOf="@id/avatar"
         android:layout_alignWithParentIfMissing="true"
         android:layout_toLeftOf="@+id/emblems"
+        emojicon:emojiconSize="@dimen/emoji_listitem_size"
         android:ellipsize="end" />
 
     <TextView

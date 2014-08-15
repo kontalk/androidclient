@@ -27,6 +27,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.rockerhieu.emojicon.EmojiconGridFragment;
+import com.rockerhieu.emojicon.EmojiconsFragment;
+import com.rockerhieu.emojicon.emoji.Emojicon;
+
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
@@ -59,6 +63,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
@@ -114,7 +120,6 @@ import org.kontalk.sync.Syncer;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
-import org.kontalk.util.MessageUtils.SmileyImageSpan;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
@@ -129,7 +134,9 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  * @author Daniele Ricci
  */
 public class ComposeMessageFragment extends ListFragment implements
-        View.OnLongClickListener, IconContextMenuOnClickListener {
+        View.OnLongClickListener, IconContextMenuOnClickListener,
+        EmojiconsFragment.OnEmojiconBackspaceClickedListener,
+        EmojiconGridFragment.OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -272,11 +279,12 @@ public class ComposeMessageFragment extends ListFragment implements
 
             @Override
             public void afterTextChanged(Editable s) {
+                /*
                 // convert smiley codes
                 mTextEntry.removeTextChangedListener(this);
                 MessageUtils.convertSmileys(getActivity(), s, SmileyImageSpan.SIZE_EDITABLE);
                 mTextEntry.addTextChangedListener(this);
-
+                */
                 // enable the send button if there is something to send
                 mSendButton.setEnabled(s.length() > 0);
             }
@@ -828,10 +836,48 @@ public class ComposeMessageFragment extends ListFragment implements
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
     }
 
+    @Override
+    public void onEmojiconBackspaceClicked(View v) {
+        EmojiconsFragment.backspace(mTextEntry);
+    }
+
+    @Override
+    public void onEmojiconClicked(Emojicon emojicon) {
+        EmojiconsFragment.input(mTextEntry, emojicon);
+    }
+
     private void showSmileysPopup(View anchor) {
+        /*
         if (mSmileyPopup == null)
             mSmileyPopup = MessageUtils.smileysPopup(getActivity(), mSmileySelectListener);
         mSmileyPopup.show(anchor);
+        */
+
+        // TODO animate the FrameLayout instead of the fragment transaction
+
+        FragmentManager fm = getChildFragmentManager();
+
+        View container = getView().findViewById(R.id.fragment_emojicons);
+        Fragment f = fm.findFragmentById(R.id.fragment_emojicons);
+        if (f != null) {
+            // remove fragment
+            fm.beginTransaction()
+                .remove(f)
+                .commit();
+            // hide section
+            container.setVisibility(View.GONE);
+        }
+        else {
+            // add fragment
+            f = new EmojiconsFragment();
+            //f.setOnBackspaceClickedListener(this);
+            fm.beginTransaction()
+                .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_bottom)
+                .replace(R.id.fragment_emojicons, f)
+                .commit();
+            // show section
+            container.setVisibility(View.VISIBLE);
+        }
     }
 
     private void deleteThread() {
@@ -1261,6 +1307,9 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
+        // so we can restore it later
+        View emojicons = getView().findViewById(R.id.fragment_emojicons);
+        out.putBoolean("emojiconsVisible", emojicons.getVisibility() == View.VISIBLE);
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1271,6 +1320,12 @@ public class ComposeMessageFragment extends ListFragment implements
             args = new Bundle();
             args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
             args.putParcelable("data", uri);
+
+            if (savedInstanceState.getBoolean("emojiconsVisible", false)) {
+                getView().findViewById(R.id.fragment_emojicons)
+                    .setVisibility(View.VISIBLE);
+            }
+
         }
         else {
             args = myArguments();

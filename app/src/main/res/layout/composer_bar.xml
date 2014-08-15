@@ -16,7 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:emojicon="http://schemas.android.com/apk/res-auto">
         <LinearLayout
             android:id="@+id/bottom_panel"
             android:orientation="horizontal"
@@ -39,7 +40,7 @@
                 android:minHeight="48dip"
                 android:contentDescription="@string/menu_smileys" />
 
-                <EditText
+                <com.rockerhieu.emojicon.EmojiconEditText
                     android:id="@+id/text_editor"
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
@@ -47,6 +48,7 @@
                     android:autoText="true"
                     android:capitalize="sentences"
                     android:nextFocusRight="@+id/send_button"
+                    emojicon:emojiconSize="@dimen/emoji_edittext_size"
                     android:hint="@string/hint_enter_text"
                     android:maxLines="3"
                     android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
