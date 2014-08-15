@@ -94,6 +94,7 @@ import org.kontalk.client.RawPacket;
 import org.kontalk.client.ReceivedServerReceipt;
 import org.kontalk.client.SentServerReceipt;
 import org.kontalk.client.ServerReceiptRequest;
+import org.kontalk.client.ServerlistCommand;
 import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.SubscribePublicKey;
 import org.kontalk.client.UploadInfo;
@@ -184,6 +185,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to update your own vCard.
      */
     public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
+
+    /**
+     * Broadcasted when receiving the server list.
+     * Send this intent to request the server list.
+     */
+    public static final String ACTION_SERVERLIST = "org.kontalk.action.SERVERLIST";
 
     /**
      * Send this intent to retry to send a pending-user-review message.
@@ -455,6 +462,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         ProviderManager.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
         ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
         ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
+        ProviderManager.addIQProvider(ServerlistCommand.ELEMENT_NAME, ServerlistCommand.NAMESPACE, new ServerlistCommand.ResultProvider());
         ProviderManager.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
         ProviderManager.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
         ProviderManager.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
@@ -715,6 +723,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (canConnect && isConnected) {
                     VCard4 p = new VCard4();
                     p.setTo(intent.getStringExtra(EXTRA_TO));
+
+                    sendPacket(p);
+                }
+            }
+
+            else if (ACTION_SERVERLIST.equals(action)) {
+                if (canConnect && isConnected) {
+                    ServerlistCommand p = new ServerlistCommand();
+                    p.setTo(mServer.getNetwork());
+
+                    PacketFilter filter = new PacketIDFilter(p.getPacketID());
+                    // TODO cache the listener (it shouldn't change)
+                    mConnection.addPacketListener(new PacketListener() {
+                        public void processPacket(Packet packet) throws NotConnectedException {
+                            Intent i = new Intent(ACTION_SERVERLIST);
+                            List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
+                                .getItems();
+                            if (_items != null && _items.size() != 0 && packet.getError() == null) {
+                                String[] items = new String[_items.size()];
+                                _items.toArray(items);
+
+                                i.putExtra(EXTRA_FROM, packet.getFrom());
+                                i.putExtra(EXTRA_JIDLIST, items);
+                            }
+                            mLocalBroadcastManager.sendBroadcast(i);
+                        }
+                    }, filter);
 
                     sendPacket(p);
                 }
@@ -1685,6 +1720,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_VCARD);
         i.putExtra(EXTRA_TO, to);
+        context.startService(i);
+    }
+
+    public static void requestServerList(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_SERVERLIST);
         context.startService(i);
     }
 
