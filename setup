@@ -6,4 +6,4 @@ git clone https://github.com/kontalk/client-common-java.git
 cd client-common-java &&
 ./setup asmack
 
-git clone https://github.com/kontalk/emojicons.git
+git clone https://github.com/kontalk/emojicon.git
