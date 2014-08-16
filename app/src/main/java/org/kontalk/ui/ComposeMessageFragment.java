@@ -63,8 +63,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
@@ -85,7 +83,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -331,7 +328,7 @@ public class ComposeMessageFragment extends ListFragment implements
         smileyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showSmileysPopup();
+                toggleEmojiDrawer();
             }
         });
 
@@ -822,29 +819,20 @@ public class ComposeMessageFragment extends ListFragment implements
         EmojiconsFragment.input(mTextEntry, emojicon);
     }
 
-    private void showSmileysPopup() {
-        // TODO animate the FrameLayout instead of the fragment transaction
-
-        FragmentManager fm = getChildFragmentManager();
+    private void toggleEmojiDrawer() {
+        // TODO animate drawer enter & exit
 
         EmojiDrawer drawer = (EmojiDrawer) getView().findViewById(R.id.emoji_drawer);
-        Fragment f = fm.findFragmentById(R.id.emoji_drawer);
-        if (f != null) {
-            // remove fragment
-            fm.beginTransaction()
-                .remove(f)
-                .commit();
-            // hide section
+
+        InputMethodManager input = (InputMethodManager) getActivity()
+            .getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        if (drawer.isVisible()) {
+            input.showSoftInput(mTextEntry, 0);
             drawer.hide();
-        }
-        else {
-            // add fragment
-            f = new EmojiconsFragment();
-            fm.beginTransaction()
-                .replace(R.id.emoji_drawer, f)
-                .commit();
-            // show section
-            drawer.show();
+        } else {
+            input.hideSoftInputFromWindow(mTextEntry.getWindowToken(), 0);
+            drawer.show(getChildFragmentManager());
         }
     }
 
@@ -1291,7 +1279,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
             if (savedInstanceState.getBoolean("emojiDrawer", false)) {
                 ((EmojiDrawer) getView().findViewById(R.id.emoji_drawer))
-                    .show();
+                    .show(getChildFragmentManager());
             }
 
         }
