@@ -190,13 +190,11 @@ public class ComposeMessageFragment extends ListFragment implements
     private BroadcastReceiver mPresenceReceiver;
     private BroadcastReceiver mPrivacyListener;
 
-    private QuickAction mSmileyPopup;
     private boolean mOfflineModeWarned;
     private boolean mComposeSent;
     private boolean mIsTyping;
     private CharSequence mCurrentStatus;
     private TextWatcher mChatStateListener;
-    private AdapterView.OnItemClickListener mSmileySelectListener;
 
     private static final class PresenceData {
         public String status;
@@ -328,28 +326,6 @@ public class ComposeMessageFragment extends ListFragment implements
                 submitSend();
             }
         });
-
-        mSmileySelectListener = new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Editable text = mTextEntry.getText();
-                int startPos = mTextEntry.getSelectionStart();
-                int endPos = mTextEntry.getSelectionEnd();
-
-                if (startPos < 0) startPos = text.length();
-                if (endPos < 0) endPos = startPos;
-                int startMin = Math.min(startPos, endPos);
-
-                // add unicode emoji
-                char[] value = Character.toChars((int) id);
-                text.replace(startMin, Math.max(startPos, endPos),
-                    String.valueOf(value), 0, value.length);
-
-                // textview change listener will do the rest
-
-                // dismiss smileys popup
-                // TEST mSmileyPopup.dismiss();
-            }
-        };
 
         ImageButton smileyButton = (ImageButton) getView().findViewById(R.id.smiley_button);
         smileyButton.setOnClickListener(new View.OnClickListener() {
@@ -847,12 +823,6 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void showSmileysPopup(View anchor) {
-        /*
-        if (mSmileyPopup == null)
-            mSmileyPopup = MessageUtils.smileysPopup(getActivity(), mSmileySelectListener);
-        mSmileyPopup.show(anchor);
-        */
-
         // TODO animate the FrameLayout instead of the fragment transaction
 
         FragmentManager fm = getChildFragmentManager();

@@ -58,7 +58,6 @@ import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
-import org.kontalk.ui.QuickAction;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
