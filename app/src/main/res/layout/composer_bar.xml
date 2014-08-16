@@ -30,9 +30,9 @@
             android:background="@drawable/bottombar_landscape_565">
 
             <ImageButton
-                android:id="@+id/smiley_button"
+                android:id="@+id/emoji_button"
                 style="?android:attr/buttonStyle"
-                android:src="@drawable/smiley_btn"
+                android:src="@drawable/ic_emoji_dark"
                 android:adjustViewBounds="false"
                 android:drawablePadding="0dip"
                 android:layout_width="48dp"

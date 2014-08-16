@@ -192,6 +192,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private boolean mIsTyping;
     private CharSequence mCurrentStatus;
     private TextWatcher mChatStateListener;
+    private ImageButton mEmojiButton;
+    private EmojiDrawer mEmojiDrawer;
 
     private static final class PresenceData {
         public String status;
@@ -274,12 +276,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
             @Override
             public void afterTextChanged(Editable s) {
-                /*
-                // convert smiley codes
-                mTextEntry.removeTextChangedListener(this);
-                MessageUtils.convertSmileys(getActivity(), s, SmileyImageSpan.SIZE_EDITABLE);
-                mTextEntry.addTextChangedListener(this);
-                */
                 // enable the send button if there is something to send
                 mSendButton.setEnabled(s.length() > 0);
             }
@@ -324,8 +320,9 @@ public class ComposeMessageFragment extends ListFragment implements
             }
         });
 
-        ImageButton smileyButton = (ImageButton) getView().findViewById(R.id.smiley_button);
-        smileyButton.setOnClickListener(new View.OnClickListener() {
+        mEmojiDrawer = (EmojiDrawer) getView().findViewById(R.id.emoji_drawer);
+        mEmojiButton = (ImageButton) getView().findViewById(R.id.emoji_button);
+        mEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleEmojiDrawer();
@@ -822,18 +819,28 @@ public class ComposeMessageFragment extends ListFragment implements
     private void toggleEmojiDrawer() {
         // TODO animate drawer enter & exit
 
-        EmojiDrawer drawer = (EmojiDrawer) getView().findViewById(R.id.emoji_drawer);
+        if (mEmojiDrawer.isVisible()) {
+            hideEmojiDrawer();
+        }
+        else {
+            showEmojiDrawer();
+        }
+    }
 
+    private void showEmojiDrawer() {
         InputMethodManager input = (InputMethodManager) getActivity()
             .getSystemService(Context.INPUT_METHOD_SERVICE);
+        input.hideSoftInputFromWindow(mTextEntry.getWindowToken(), 0);
+        mEmojiDrawer.show(getChildFragmentManager());
+        mEmojiButton.setImageResource(R.drawable.ic_keyboard_dark);
+    }
 
-        if (drawer.isVisible()) {
-            input.showSoftInput(mTextEntry, 0);
-            drawer.hide();
-        } else {
-            input.hideSoftInputFromWindow(mTextEntry.getWindowToken(), 0);
-            drawer.show(getChildFragmentManager());
-        }
+    private void hideEmojiDrawer() {
+        InputMethodManager input = (InputMethodManager) getActivity()
+            .getSystemService(Context.INPUT_METHOD_SERVICE);
+        input.showSoftInput(mTextEntry, 0);
+        mEmojiDrawer.hide();
+        mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
     }
 
     private void deleteThread() {
@@ -1264,8 +1271,7 @@ public class ComposeMessageFragment extends ListFragment implements
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
         // so we can restore it later
-        EmojiDrawer emojiDrawer = (EmojiDrawer) getView().findViewById(R.id.emoji_drawer);
-        out.putBoolean("emojiDrawer", emojiDrawer.isVisible());
+        out.putBoolean("emojiDrawer", mEmojiDrawer.isVisible());
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1278,8 +1284,7 @@ public class ComposeMessageFragment extends ListFragment implements
             args.putParcelable("data", uri);
 
             if (savedInstanceState.getBoolean("emojiDrawer", false)) {
-                ((EmojiDrawer) getView().findViewById(R.id.emoji_drawer))
-                    .show(getChildFragmentManager());
+                showEmojiDrawer();
             }
 
         }
