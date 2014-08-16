@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
@@ -212,12 +213,26 @@ public class ComposeMessage extends ActionBarActivity {
             if (Intent.ACTION_VIEW.equals(action) ||
                     ACTION_VIEW_CONVERSATION.equals(action) ||
                     ACTION_VIEW_USERID.equals(action)) {
-                args = new Bundle();
                 Uri uri = intent.getData();
-                args.putString("action", action);
-                args.putParcelable("data", uri);
-                args.putLong(EXTRA_MESSAGE, intent.getLongExtra(EXTRA_MESSAGE, -1));
-                args.putString(EXTRA_HIGHLIGHT, intent.getStringExtra(EXTRA_HIGHLIGHT));
+
+                // two-panes UI: start conversation list
+                if (Kontalk.hasTwoPanesUI(this) && Intent.ACTION_VIEW.equals(action)) {
+                    Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                    startIntent.setAction(Intent.ACTION_VIEW);
+                    startIntent.setData(uri);
+                    startActivity(startIntent);
+                    // no need to go further
+                    finish();
+                    return;
+                }
+                // single-pane UI: start normally
+                else {
+                    args = new Bundle();
+                    args.putString("action", action);
+                    args.putParcelable("data", uri);
+                    args.putLong(EXTRA_MESSAGE, intent.getLongExtra(EXTRA_MESSAGE, -1));
+                    args.putString(EXTRA_HIGHLIGHT, intent.getStringExtra(EXTRA_HIGHLIGHT));
+                }
             }
 
             // send external content
@@ -243,10 +258,23 @@ public class ComposeMessage extends ActionBarActivity {
                     // compute hash and open conversation
                     String jid = XMPPUtils.createLocalJID(this, MessageUtils.sha1(number));
 
-                    args = new Bundle();
-                    args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
-                    args.putParcelable("data", Threads.getUri(jid));
-                    args.putString("number", number);
+                    // two-panes UI: start conversation list
+                    if (Kontalk.hasTwoPanesUI(this)) {
+                        Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                        startIntent.setAction(ACTION_VIEW_USERID);
+                        startIntent.setData(Threads.getUri(jid));
+                        startActivity(startIntent);
+                        // no need to go further
+                        finish();
+                        return;
+                    }
+                    // single-pane UI: start normally
+                    else {
+                        args = new Bundle();
+                        args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
+                        args.putParcelable("data", Threads.getUri(jid));
+                        args.putString("number", number);
+                    }
                 }
                 catch (Exception e) {
                     Log.e(TAG, "invalid intent", e);

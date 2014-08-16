@@ -216,6 +216,16 @@ public class Kontalk extends Application {
         return mKeyPassphrase;
     }
 
+    /** Returns true if we are using a two-panes UI. */
+    public static boolean hasTwoPanesUI(Context context) {
+        return context.getResources().getBoolean(R.bool.has_two_panes);
+    }
+
+    /** Returns the singleton {@link Kontalk} instance. */
+    public static Kontalk get(Context context) {
+        return (Kontalk) context.getApplicationContext();
+    }
+
     /** Enable/disable application components when account is added or removed. */
     public static void setServicesEnabled(Context context, boolean enabled) {
         PackageManager pm = context.getPackageManager();

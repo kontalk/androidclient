@@ -19,58 +19,59 @@
 package org.kontalk.service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+
 import org.kontalk.R;
-import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
-
-import android.content.Context;
-import android.util.Log;
 
 
 /**
- * Worker thread for downloading and caching locally a server list.
+ * Worker for downloading and caching locally a server list.
  * This class doesn't need to be configured: it hides all the logic of picking
  * a random server, connecting to it, downloading the server list and saving it
  * in the application cache. Finally, it restarts the message center.
  * @author Daniele Ricci
  */
-public class ServerListUpdater extends Thread {
+public class ServerListUpdater extends BroadcastReceiver {
     private static final String TAG = ServerListUpdater.class.getSimpleName();
-
-    public static final int SUPPORTED_LIST_VERSION = 1;
 
     private static ServerList sCurrentList;
 
+    private static DateFormat sTimestampFormat =
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+
     private final Context mContext;
+    private final LocalBroadcastManager mLocalBroadcastManager;
     private UpdaterListener mListener;
-    private ClientHTTPConnection mConnection;
 
     public ServerListUpdater(Context context) {
         mContext = context;
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
     }
 
     public void setListener(UpdaterListener listener) {
         mListener = listener;
     }
 
-    @Override
-    public void run() {
-        /**
-         * If we started the thread, it means we have to update our server list.
-         * First check if we already have a loaded one, if not just load one -
-         * either the builtin one or the cached one.
-         */
-
+    public void start() {
         /**
          * We have a server list - either builtin or cached. Now pick a random
          * server from the list and contact it for the latest server list.
@@ -83,61 +84,115 @@ public class ServerListUpdater extends Thread {
 
             // notify to UI
             if (mListener != null)
-                mListener.nodata();
+                mListener.noData();
 
             return;
         }
 
-        try {
-            // TODO
-            /*
-            mConnection = new ClientHTTPConnection(null, mContext, random, null);
-            Protocol.ServerList data = mConnection.serverList();
-            if (data != null) {
-                // write down to cache
-                OutputStream out = new FileOutputStream(getCachedListFile(mContext));
-                data.writeTo(out);
-                out.close();
-            }
-
-            // parse cached list :)
-            sCurrentList = parseList(data);
+        // check for network
+        if (!MessageCenterService.isNetworkConnectionAvailable(mContext)) {
             if (mListener != null)
-                mListener.updated(sCurrentList);
+                mListener.networkNotAvailable();
+            return;
+        }
 
-            // restart message center
-            MessageCenterService.restartMessageCenter(mContext.getApplicationContext());
-            */
-            throw new IOException();
-        }
-        catch (IOException e) {
+        // check for offline mode
+        if (Preferences.getOfflineMode(mContext)) {
             if (mListener != null)
-                mListener.error(e);
+                mListener.offlineModeEnabled();
+            return;
         }
-        finally {
-            mConnection = null;
-        }
+
+        // register for and request connection status
+        IntentFilter f = new IntentFilter();
+        f.addAction(MessageCenterService.ACTION_CONNECTED);
+        f.addAction(MessageCenterService.ACTION_SERVERLIST);
+        mLocalBroadcastManager.registerReceiver(this, f);
+
+        MessageCenterService.requestConnectionStatus(mContext);
+        MessageCenterService.start(mContext);
     }
 
     public void cancel() {
-        if (mConnection != null)
-            mConnection.abort();
+        unregisterReceiver();
     }
 
+    private void unregisterReceiver() {
+        mLocalBroadcastManager.unregisterReceiver(this);
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+
+        if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+            // request serverlist
+            MessageCenterService.requestServerList(mContext);
+        }
+
+        else if (MessageCenterService.ACTION_SERVERLIST.equals(action)) {
+            // we don't need this any more
+            unregisterReceiver();
+
+            String[] items = intent
+                .getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
+            if (items != null && items.length > 0) {
+                String network = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                Properties prop = new Properties();
+                Date now = new Date();
+                ServerList list = new ServerList(now);
+                prop.setProperty("timestamp", sTimestampFormat.format(now));
+
+                for (int i = 0; i < items.length; i++) {
+                    String item = network + '|' + items[i];
+                    prop.setProperty("server" + (i + 1), item);
+                    list.add(new EndpointServer(item));
+                }
+
+                OutputStream out = null;
+                try {
+                    out = new FileOutputStream(getCachedListFile(mContext));
+                    prop.store(out, null);
+                    out.close();
+
+                    // update cached list
+                    sCurrentList = list;
+
+                    if (mListener != null)
+                        mListener.updated(list);
+                }
+                catch (IOException e) {
+                    if (mListener != null)
+                        mListener.error(e);
+                }
+                finally {
+                    try {
+                        out.close();
+                    }
+                    catch (Exception e) {
+                        // ignored
+                    }
+                }
+            }
+
+            else {
+                if (mListener != null)
+                    mListener.error(null);
+            }
+        }
+    }
+
+    /** The path to the locally cached downloaded server list. */
     private static File getCachedListFile(Context context) {
-        return new File(context.getCacheDir(), "serverlist.pb2");
+        return new File(context.getCacheDir(), "serverlist.properties");
     }
 
-    private static ServerList parseBuiltinList(Context context) throws IOException {
-        InputStream in = context.getResources()
-            .openRawResource(R.raw.serverlist);
+    private static ServerList parseList(InputStream in) throws IOException {
         Properties prop = new Properties();
         prop.load(in);
-        in.close();
 
         try {
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
-            Date date = format.parse(prop.getProperty("timestamp"));
+            Date date = sTimestampFormat.parse(prop.getProperty("timestamp"));
             ServerList list = new ServerList(date);
             int i = 1;
             String server;
@@ -155,26 +210,37 @@ public class ServerListUpdater extends Thread {
         }
     }
 
-    /*
-    private static ServerList parseList(Protocol.ServerList pack) {
-        Date date = new Date(pack.getTimestamp() * 1000);
-        ServerList list = new ServerList(date);
-        for (int i = 0; i < pack.getEntryCount(); i++) {
-            Protocol.ServerList.Entry e = pack.getEntry(i);
-            list.add(new EndpointServer(e.getAddress(), e.getPort(), e.getHttpPort()));
+    private static ServerList parseBuiltinList(Context context) throws IOException {
+        InputStream in = null;
+        try {
+            in = context.getResources()
+                .openRawResource(R.raw.serverlist);
+            return parseList(in);
         }
-
-        return list;
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
     }
-    */
 
     private static ServerList parseCachedList(Context context) throws IOException {
-        /*
-        InputStream in = new FileInputStream(getCachedListFile(context));
-        Protocol.ServerList pack = Protocol.ServerList.parseFrom(in);
-        return parseList(pack);
-        */
-        throw new FileNotFoundException();
+        InputStream in = null;
+        try {
+            in = new FileInputStream(getCachedListFile(context));
+            return parseList(in);
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
     }
 
     /** Returns (and loads if necessary) the current server list. */
@@ -199,7 +265,11 @@ public class ServerListUpdater extends Thread {
 
     public interface UpdaterListener {
         /** Called if either the cached list or the built-in list cannot be loaded.*/
-        public void nodata();
+        public void noData();
+        /** Called when network is not available. */
+        public void networkNotAvailable();
+        /** Called when offline mode is active. */
+        public void offlineModeEnabled();
         /** Called if an error occurs during update. */
         public void error(Throwable e);
         /** Called when list update has finished. */

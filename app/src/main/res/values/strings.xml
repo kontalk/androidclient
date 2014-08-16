@@ -211,6 +211,8 @@
     <string name="serverlist_updating">Updating server list&#8230;</string>
     <string name="serverlist_update_error">Unable to download server list. Please retry later.</string>
     <string name="serverlist_update_nodata">No available server list found.</string>
+    <string name="serverlist_update_nonetwork">Network not available. Please retry later.</string>
+    <string name="serverlist_update_offline">Offline mode is enabled.</string>
 
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_change_passphrase">Change personal key password</string>

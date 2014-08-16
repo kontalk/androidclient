@@ -18,6 +18,8 @@
 
 package org.kontalk.ui;
 
+import java.io.File;
+
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.annotation.TargetApi;
@@ -54,8 +56,6 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-
-import java.io.File;
 
 import static org.kontalk.crypto.PersonalKeyImporter.KEYPACK_FILENAME;
 
@@ -350,25 +350,25 @@ public final class PreferencesActivity extends PreferenceActivity {
                     @Override
                     public void error(Throwable e) {
                         diag.cancel();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(PreferencesActivity.this, R.string.serverlist_update_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        message(R.string.serverlist_update_error);
                     }
 
                     @Override
-                    public void nodata() {
+                    public void networkNotAvailable() {
                         diag.cancel();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(PreferencesActivity.this, R.string.serverlist_update_nodata,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        message(R.string.serverlist_update_nonetwork);
+                    }
+
+                    @Override
+                    public void offlineModeEnabled() {
+                        diag.cancel();
+                        message(R.string.serverlist_update_offline);
+                    }
+
+                    @Override
+                    public void noData() {
+                        diag.cancel();
+                        message(R.string.serverlist_update_nodata);
                     }
 
                     @Override
@@ -380,6 +380,16 @@ public final class PreferencesActivity extends PreferenceActivity {
                                 Preferences.updateServerListLastUpdate(updateServerList, list);
                                 // restart message center
                                 MessageCenterService.restart(getApplicationContext());
+                            }
+                        });
+                    }
+
+                    private void message(final int textId) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(PreferencesActivity.this, textId,
+                                    Toast.LENGTH_LONG).show();
                             }
                         });
                     }
