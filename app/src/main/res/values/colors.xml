@@ -37,5 +37,7 @@
     <color name="grayed_out">#ff999999</color>
 
     <color name="conversation_active_background">#ff229DC9</color>
-</resources>
 
+    <color name="date_stamp_background">#ff33B5E5</color>
+    <color name="date_stamp_text">#dddddd</color>
+</resources>

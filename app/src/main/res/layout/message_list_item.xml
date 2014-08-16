@@ -30,8 +30,8 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:textSize="12sp"
-        android:textColor="#0099CC"
-        android:background="@drawable/rounded_corner"
+        android:textColor="@color/date_stamp_text"
+        android:background="@drawable/date_stamp"
         android:layout_marginBottom="5dp"
         android:textAllCaps="true"/>
 
