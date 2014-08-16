@@ -56,12 +56,12 @@
             <!-- Preview: listitem=@layout/message_list_item -->
         </ListView>
 
-        <FrameLayout android:id="@+id/fragment_emojicons"
+        <include layout="@layout/composer_bar"/>
+
+        <org.kontalk.ui.EmojiDrawer android:id="@+id/emoji_drawer"
             android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="220dp"/>
-
-        <include layout="@layout/composer_bar"/>
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

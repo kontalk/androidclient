@@ -6,6 +6,7 @@
     <dimen name="contacts_list_margin_left">0dp</dimen>
     <dimen name="contacts_list_margin_right">0dp</dimen>
 
+    <dimen name="min_emoji_drawer_height">200dp</dimen>
     <integer name="emoji_overflow_length">10240</integer>
     <dimen name="emoji_textview_size">22sp</dimen>
     <dimen name="emoji_edittext_size">22sp</dimen>

@@ -331,7 +331,7 @@ public class ComposeMessageFragment extends ListFragment implements
         smileyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showSmileysPopup(v);
+                showSmileysPopup();
             }
         });
 
@@ -822,31 +822,29 @@ public class ComposeMessageFragment extends ListFragment implements
         EmojiconsFragment.input(mTextEntry, emojicon);
     }
 
-    private void showSmileysPopup(View anchor) {
+    private void showSmileysPopup() {
         // TODO animate the FrameLayout instead of the fragment transaction
 
         FragmentManager fm = getChildFragmentManager();
 
-        View container = getView().findViewById(R.id.fragment_emojicons);
-        Fragment f = fm.findFragmentById(R.id.fragment_emojicons);
+        EmojiDrawer drawer = (EmojiDrawer) getView().findViewById(R.id.emoji_drawer);
+        Fragment f = fm.findFragmentById(R.id.emoji_drawer);
         if (f != null) {
             // remove fragment
             fm.beginTransaction()
                 .remove(f)
                 .commit();
             // hide section
-            container.setVisibility(View.GONE);
+            drawer.hide();
         }
         else {
             // add fragment
             f = new EmojiconsFragment();
-            //f.setOnBackspaceClickedListener(this);
             fm.beginTransaction()
-                .setCustomAnimations(R.anim.enter_from_bottom, R.anim.exit_to_bottom)
-                .replace(R.id.fragment_emojicons, f)
+                .replace(R.id.emoji_drawer, f)
                 .commit();
             // show section
-            container.setVisibility(View.VISIBLE);
+            drawer.show();
         }
     }
 
@@ -1278,8 +1276,8 @@ public class ComposeMessageFragment extends ListFragment implements
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
         // so we can restore it later
-        View emojicons = getView().findViewById(R.id.fragment_emojicons);
-        out.putBoolean("emojiconsVisible", emojicons.getVisibility() == View.VISIBLE);
+        EmojiDrawer emojiDrawer = (EmojiDrawer) getView().findViewById(R.id.emoji_drawer);
+        out.putBoolean("emojiDrawer", emojiDrawer.isVisible());
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1291,9 +1289,9 @@ public class ComposeMessageFragment extends ListFragment implements
             args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
             args.putParcelable("data", uri);
 
-            if (savedInstanceState.getBoolean("emojiconsVisible", false)) {
-                getView().findViewById(R.id.fragment_emojicons)
-                    .setVisibility(View.VISIBLE);
+            if (savedInstanceState.getBoolean("emojiDrawer", false)) {
+                ((EmojiDrawer) getView().findViewById(R.id.emoji_drawer))
+                    .show();
             }
 
         }
