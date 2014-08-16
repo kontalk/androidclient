@@ -183,6 +183,12 @@ public class ComposeMessage extends ActionBarActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mFragment == null || !mFragment.tryHideEmojiDrawer())
+            super.onBackPressed();
+    }
+
     private void onAvatarClick() {
         finish();
         startActivity(new Intent(this, ConversationList.class));

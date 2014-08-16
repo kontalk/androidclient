@@ -836,11 +836,25 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void hideEmojiDrawer() {
-        InputMethodManager input = (InputMethodManager) getActivity()
-            .getSystemService(Context.INPUT_METHOD_SERVICE);
-        input.showSoftInput(mTextEntry, 0);
+        hideEmojiDrawer(true);
+    }
+
+    private void hideEmojiDrawer(boolean showKeyboard) {
+        if (showKeyboard) {
+            InputMethodManager input = (InputMethodManager) getActivity()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+            input.showSoftInput(mTextEntry, 0);
+        }
         mEmojiDrawer.hide();
         mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
+    }
+
+    boolean tryHideEmojiDrawer() {
+        if (mEmojiDrawer.isVisible()) {
+            hideEmojiDrawer(false);
+            return true;
+        }
+        return false;
     }
 
     private void deleteThread() {
