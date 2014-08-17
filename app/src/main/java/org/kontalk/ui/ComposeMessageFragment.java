@@ -2573,7 +2573,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onBind(long messageId, final AudioContentViewControl view) {
-        Log.v(TAG, "onBind for message " + messageId + " (current=" + mMediaPlayerMessageId + ")");
         if (mMediaPlayerMessageId == messageId) {
             mAudioControl = view;
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -2599,7 +2598,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onUnbind(long messageId, AudioContentViewControl view) {
-        Log.v(TAG, "onUnbind for message " + messageId + " (current=" + mMediaPlayerMessageId + ")");
         if (mMediaPlayerMessageId == messageId) {
             mAudioControl = null;
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {

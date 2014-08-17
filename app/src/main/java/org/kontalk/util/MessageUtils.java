@@ -789,6 +789,8 @@ public final class MessageUtils {
         // we have a decrypted message stanza, process it
         if (m != null) {
 
+            // TODO duplicated code (MessageListener#processPacket)
+
             // out of band data
             PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
             if (_media != null && _media instanceof OutOfBandData) {
@@ -841,6 +843,12 @@ public final class MessageUtils {
                     attachment = new VCardComponent(previewFile, null, fetchUrl, length,
                         encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                 }
+
+                else if (AudioComponent.supportsMimeType(mime)) {
+                    attachment = new AudioComponent(mime, null, fetchUrl, length,
+                        encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+                }
+
 
                 // TODO other types
 

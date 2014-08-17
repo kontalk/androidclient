@@ -267,6 +267,8 @@ class MessageListener extends MessageCenterPacketListener {
 
                 }
 
+                // TODO duplicated code (MessageUtils#decryptMessage)
+
                 // out of band data
                 PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
                 if (_media != null && _media instanceof OutOfBandData) {
@@ -321,9 +323,8 @@ class MessageListener extends MessageCenterPacketListener {
                     }
 
                     else if (AudioComponent.supportsMimeType(mime)) {
-                        // cleartext only for now
                         attachment = new AudioComponent(mime, null, fetchUrl, length,
-                            false, Coder.SECURITY_CLEARTEXT);
+                            encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                     }
 
                     // TODO other types
