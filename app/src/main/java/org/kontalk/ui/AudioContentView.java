@@ -29,6 +29,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
@@ -49,6 +50,7 @@ public class AudioContentView extends LinearLayout
     private AudioComponent mComponent;
     private ImageButton mPlayButton;
     private SeekBar mSeekBar;
+    private ImageView mDownload;
 
     public static final int STATUS_IDLE = 0;
     public static final int STATUS_PLAYING = 1;
@@ -77,6 +79,11 @@ public class AudioContentView extends LinearLayout
         mMessageId = messageId;
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
+        mDownload = (ImageView) findViewById(R.id.balloon_audio_download);
+        boolean fetched = component.getLocalUri() != null;
+        mPlayButton.setVisibility(fetched ? VISIBLE : GONE);
+        mSeekBar.setVisibility(fetched ? VISIBLE : GONE);
+        mDownload.setVisibility(fetched ? GONE : VISIBLE);
         mPlayButton.setOnClickListener(this);
         mAudioPlayerControl.onBind(messageId, this);
     }
@@ -97,11 +104,6 @@ public class AudioContentView extends LinearLayout
 
     private void clear() {
         mComponent = null;
-    }
-
-    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent) {
-        return (AudioContentView) inflater.inflate(R.layout.message_content_audio,
-            parent, false);
     }
 
     @Override
@@ -168,4 +170,8 @@ public class AudioContentView extends LinearLayout
         return mMessageId;
     }
 
+    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent) {
+        return (AudioContentView) inflater.inflate(R.layout.message_content_audio,
+                parent, false);
+    }
 }

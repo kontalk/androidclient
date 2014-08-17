@@ -2499,8 +2499,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 case AudioContentView.STATUS_ENDED:
                 case AudioContentView.STATUS_PLAYING:
                 case AudioContentView.STATUS_PAUSED:
-                    if (mAudioControl != null)
-                        resetAudio(mAudioControl);
+                    resetAudio(mAudioControl);
                     prepareAudio(audioFile, view, messageId);
                     playAudio(view, messageId);
                     break;
@@ -2559,8 +2558,10 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void resetAudio(AudioContentViewControl view) {
-        stopMediaPlayerUpdater();
-        view.end();
+        if (view != null){
+            stopMediaPlayerUpdater();
+            view.end();
+        }
         mPlayer.reset();
         mMediaPlayerMessageId = -1;
     }
@@ -2637,7 +2638,6 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void stopMediaPlayerUpdater() {
-        Log.v(TAG, "stopping player updater");
         if (mMediaPlayerUpdater != null) {
             mHandler.removeCallbacks(mMediaPlayerUpdater);
             mMediaPlayerUpdater = null;
