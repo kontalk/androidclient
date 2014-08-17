@@ -3,7 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
     android:descendantFocusability="blocksDescendants">
 
     <ImageView
@@ -18,13 +17,24 @@
         android:layout_gravity="center_horizontal"
         android:id="@+id/balloon_audio_player"
         android:focusable="false"
-        android:background="@drawable/play" />
+        android:background="@drawable/play"
+        android:layout_alignParentLeft="true" />
     <SeekBar
         android:id="@+id/balloon_audio_seekbar"
         android:layout_width="130dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:layout_marginTop="4dp"
-        android:focusable="false" />
+        android:focusable="false"
+        android:layout_toRightOf="@+id/balloon_audio_player" />
+    <TextView
+        android:id="@+id/balloon_audio_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00/01:00"
+        android:layout_below="@id/balloon_audio_seekbar"
+        android:layout_alignLeft="@id/balloon_audio_player"
+        android:layout_alignRight="@id/balloon_audio_seekbar"
+        android:gravity="center_horizontal" />
 
 </org.kontalk.ui.AudioContentView>

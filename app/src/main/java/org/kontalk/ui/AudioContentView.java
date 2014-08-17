@@ -23,7 +23,10 @@ import java.util.regex.Pattern;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Build;
+import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +34,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
@@ -41,7 +46,7 @@ import org.kontalk.message.AudioComponent;
 /**
  * Audio content view for {@link AudioComponent}s.
  */
-public class AudioContentView extends LinearLayout
+public class AudioContentView extends RelativeLayout
         implements MessageContentView<AudioComponent>, View.OnClickListener,
         AudioContentViewControl {
 
@@ -51,6 +56,10 @@ public class AudioContentView extends LinearLayout
     private ImageButton mPlayButton;
     private SeekBar mSeekBar;
     private ImageView mDownload;
+    private TextView mTime;
+    private StringBuilder mTimeBuilder = new StringBuilder();
+    private StringBuilder mTimeBuffer = new StringBuilder();
+    private long mDuration = -1;
 
     public static final int STATUS_IDLE = 0;
     public static final int STATUS_PLAYING = 1;
@@ -80,10 +89,13 @@ public class AudioContentView extends LinearLayout
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
         mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
         mDownload = (ImageView) findViewById(R.id.balloon_audio_download);
+        mTime = (TextView) findViewById(R.id.balloon_audio_time);
         boolean fetched = component.getLocalUri() != null;
         mPlayButton.setVisibility(fetched ? VISIBLE : GONE);
         mSeekBar.setVisibility(fetched ? VISIBLE : GONE);
         mDownload.setVisibility(fetched ? GONE : VISIBLE);
+        mTime.setVisibility(fetched ? VISIBLE : GONE);
+        setTimeText(0, getAudioDuration());
         mPlayButton.setOnClickListener(this);
         mAudioPlayerControl.onBind(messageId, this);
     }
@@ -118,6 +130,7 @@ public class AudioContentView extends LinearLayout
     @Override
     public void prepare(int duration) {
         mSeekBar.setMax(duration);
+        mDuration = duration;
     }
 
     @Override
@@ -133,12 +146,13 @@ public class AudioContentView extends LinearLayout
     @Override
     public void updatePosition(int position) {
         mSeekBar.setProgress(position);
+        setTimeText(position, getAudioDuration());
     }
 
     @Override
     public void end() {
         mPlayButton.setBackgroundResource(R.drawable.play);
-        mSeekBar.setProgress(0);
+        updatePosition(0);
     }
 
     @Override
@@ -168,6 +182,39 @@ public class AudioContentView extends LinearLayout
 
     public long getMessageId() {
         return mMessageId;
+    }
+
+    private long getAudioDuration(Uri uri) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD_MR1) {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(getContext(), uri);
+            String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            return Long.parseLong(time);
+        }
+        return -1;
+    }
+
+    private long getAudioDuration() {
+        if (mDuration < 0) {
+            Uri uri = mComponent.getLocalUri();
+            if (uri != null) {
+                mDuration = getAudioDuration(uri);
+            }
+            else {
+                mDuration = -1;
+            }
+        }
+        return mDuration;
+    }
+
+    private void setTimeText(long current, long duration) {
+        mTimeBuffer.delete(0, mTimeBuffer.length());
+        mTimeBuffer.append(DateUtils.formatElapsedTime(mTimeBuilder, (long)Math.floor((double)current/1000)));
+        if (duration >= 0) {
+            mTimeBuffer.append('/');
+            mTimeBuffer.append(DateUtils.formatElapsedTime(mTimeBuilder, (long)Math.floor((double)duration/1000)));
+        }
+        mTime.setText(mTimeBuffer);
     }
 
     public static AudioContentView create(LayoutInflater inflater, ViewGroup parent) {
