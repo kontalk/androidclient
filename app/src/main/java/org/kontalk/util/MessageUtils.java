@@ -68,6 +68,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 
 public final class MessageUtils {
@@ -75,6 +76,8 @@ public final class MessageUtils {
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
+
+    public static final int MILLISECONDS_IN_DAY = 86400000;
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
@@ -161,6 +164,13 @@ public final class MessageUtils {
                 DateUtils.FORMAT_SHOW_TIME;
 
         return DateUtils.formatDateTime(context, when, format_flags);
+    }
+
+    public static boolean isSameDate(long a, long b) {
+        TimeZone tm = TimeZone.getDefault();
+        a += tm.getOffset(a);
+        b += tm.getOffset(b);
+        return (a / MILLISECONDS_IN_DAY) == (b / MILLISECONDS_IN_DAY);
     }
 
     private static String convertToHex(byte[] data) {
