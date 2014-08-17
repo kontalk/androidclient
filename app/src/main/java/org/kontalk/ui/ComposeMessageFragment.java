@@ -2493,23 +2493,21 @@ public class ComposeMessageFragment extends ListFragment implements
         else {
             switch (mStatus) {
                 case AudioContentView.STATUS_IDLE:
-                    prepareAudio(audioFile, view, messageId);
-                    playAudio(view, messageId);
+                    if (prepareAudio(audioFile, view, messageId))
+                        playAudio(view, messageId);
                     break;
                 case AudioContentView.STATUS_ENDED:
                 case AudioContentView.STATUS_PLAYING:
                 case AudioContentView.STATUS_PAUSED:
                     resetAudio(mAudioControl);
-                    prepareAudio(audioFile, view, messageId);
-                    playAudio(view, messageId);
+                    if (prepareAudio(audioFile, view, messageId))
+                        playAudio(view, messageId);
                     break;
             }
         }
     }
 
-    private void prepareAudio(File audioFile, final AudioContentViewControl view, final long messageId) {
-        mMediaPlayerMessageId = messageId;
-        mAudioControl = view;
+    private boolean prepareAudio(File audioFile, final AudioContentViewControl view, final long messageId) {
         if (mPlayer == null)
             mPlayer = new MediaPlayer();
 
@@ -2519,23 +2517,29 @@ public class ComposeMessageFragment extends ListFragment implements
         try {
             mPlayer.setDataSource(audioFile.getPath());
             mPlayer.prepare();
+
+            // prepare was successful
+            mMediaPlayerMessageId = messageId;
+            mAudioControl = view;
+
+            view.prepare(mPlayer.getDuration());
+            mPlayer.seekTo(view.getPosition());
+            view.setProgressChangeListener(true);
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    stopMediaPlayerUpdater();
+                    view.end();
+                    mPlayer.seekTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+            });
+            return true;
         }
         catch (IOException e) {
             Toast.makeText(getActivity(), R.string.err_file_not_found, Toast.LENGTH_SHORT).show();
+            return false;
         }
-        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                stopMediaPlayerUpdater();
-                view.end();
-                mPlayer.seekTo(0);
-                setAudioStatus(AudioContentView.STATUS_ENDED);
-            }
-        });
-
-        view.prepare(mPlayer.getDuration());
-        mPlayer.seekTo(view.getPosition());
-        view.setProgressChangeListener(true);
     }
 
     @Override

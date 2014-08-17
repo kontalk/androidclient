@@ -191,10 +191,15 @@ public class AudioContentView extends RelativeLayout
 
     private int getAudioDuration(Uri uri) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD_MR1) {
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(getContext(), uri);
-            String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            return Integer.parseInt(time);
+            try {
+                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(getContext(), uri);
+                String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                return Integer.parseInt(time);
+            }
+            catch (Exception a) {
+                // ignored
+            }
         }
         return -1;
     }

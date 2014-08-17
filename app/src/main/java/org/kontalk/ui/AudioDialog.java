@@ -42,6 +42,7 @@ import android.view.View.OnTouchListener;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.Animator.AnimatorListener;
@@ -143,7 +144,8 @@ public class AudioDialog extends AlertDialog {
                         startRecord();
                     }
                     catch (IOException e) {
-                        Log.e (TAG, "error starting audio recording: ", e);
+                        Log.e (TAG, "error starting audio recording: ", e); // TODO i18n
+                        Toast.makeText(getContext(), "Error", Toast.LENGTH_SHORT).show();
                     }
                 }
                 else if (mStatus == STATUS_RECORDING) {
@@ -207,6 +209,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void startRecord() throws IOException {
+        mFile = MediaStorage.getTempAudio(getContext());
         mImageButton.setImageResource(R.drawable.rec);
         mHoloCircularProgressBar.setVisibility(View.VISIBLE);
         mHoloCircularProgressBar.setCircleColor(Color.TRANSPARENT);
@@ -217,7 +220,6 @@ public class AudioDialog extends AlertDialog {
         animate(mHoloCircularProgressBar, null, 100, MAX_DURATE);
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_record));
-        mFile = MediaStorage.getTempAudio(getContext());
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mRecorder.setOutputFile(mFile.getAbsolutePath());
