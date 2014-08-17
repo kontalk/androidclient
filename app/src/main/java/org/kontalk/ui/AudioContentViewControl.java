@@ -18,9 +18,11 @@
 
 package org.kontalk.ui;
 
+
 /**
-* Created by Andrea Cappelli on 14/08/14.
-*/
+ * This interface gives access to the currently playing audio content view by the composer.
+ * @author Andrea Cappelli
+ */
 public interface AudioContentViewControl {
     public void setProgressChangeListener(boolean enabled);
     public void prepare(int duration);
