@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
  */
 public class MessageListItem extends RelativeLayout {
 
-    public static final int SECONDS_IN_DAY = 86400000;
     static private Drawable sDefaultContactImage;
 
     private LayoutInflater mInflater;
@@ -154,7 +153,7 @@ public class MessageListItem extends RelativeLayout {
 
         mMessage = msg;
 
-        if ((mMessage.getTimestamp() / SECONDS_IN_DAY) == (previous / SECONDS_IN_DAY)) {
+        if (MessageUtils.isSameDate(mMessage.getTimestamp(), previous)) {
             mDateHeader.setVisibility(View.GONE);
         }
         else {
