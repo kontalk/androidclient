@@ -98,6 +98,9 @@ public class KontalkConnection extends XMPPTCPConnection {
                 kmFactory.init(keystore, null);
 
                 km = kmFactory.getKeyManagers();
+
+                // blacklist PLAIN mechanism
+                SASLAuthentication.blacklistSASLMechanism("PLAIN");
             }
 
             // trust managers
