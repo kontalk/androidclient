@@ -28,7 +28,5 @@ public interface AudioContentViewControl {
     public void pause();
     public void updatePosition(int position);
     public void end();
-    // TODO remove me
-    public long getMessageId();
-
+    public int getPosition();
 }

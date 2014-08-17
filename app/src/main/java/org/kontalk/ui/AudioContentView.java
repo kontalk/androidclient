@@ -58,8 +58,7 @@ public class AudioContentView extends RelativeLayout
     private ImageView mDownload;
     private TextView mTime;
     private StringBuilder mTimeBuilder = new StringBuilder();
-    private StringBuilder mTimeBuffer = new StringBuilder();
-    private long mDuration = -1;
+    private int mDuration = -1;
 
     public static final int STATUS_IDLE = 0;
     public static final int STATUS_PLAYING = 1;
@@ -95,7 +94,8 @@ public class AudioContentView extends RelativeLayout
         mSeekBar.setVisibility(fetched ? VISIBLE : GONE);
         mDownload.setVisibility(fetched ? GONE : VISIBLE);
         mTime.setVisibility(fetched ? VISIBLE : GONE);
-        setTimeText(0, getAudioDuration());
+        updatePosition(-1);
+        mSeekBar.setMax(getAudioDuration());
         mPlayButton.setOnClickListener(this);
         mAudioPlayerControl.onBind(messageId, this);
     }
@@ -145,14 +145,14 @@ public class AudioContentView extends RelativeLayout
 
     @Override
     public void updatePosition(int position) {
-        mSeekBar.setProgress(position);
-        setTimeText(position, getAudioDuration());
+        mSeekBar.setProgress(position < 0 ? 0 : position);
+        setTimeText(position < 0 ? getAudioDuration() : position);
     }
 
     @Override
     public void end() {
         mPlayButton.setBackgroundResource(R.drawable.play);
-        updatePosition(0);
+        updatePosition(-1);
     }
 
     @Override
@@ -174,7 +174,8 @@ public class AudioContentView extends RelativeLayout
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    mAudioPlayerControl.playAudio(AudioContentView.this, mMessageId);
+                    if (mAudioPlayerControl.isPlaying())
+                        mAudioPlayerControl.playAudio(AudioContentView.this, mMessageId);
                 }
             } : null;
         mSeekBar.setOnSeekBarChangeListener(listener);
@@ -184,17 +185,22 @@ public class AudioContentView extends RelativeLayout
         return mMessageId;
     }
 
-    private long getAudioDuration(Uri uri) {
+    @Override
+    public int getPosition() {
+        return mSeekBar.getProgress();
+    }
+
+    private int getAudioDuration(Uri uri) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD_MR1) {
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             retriever.setDataSource(getContext(), uri);
             String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            return Long.parseLong(time);
+            return Integer.parseInt(time);
         }
         return -1;
     }
 
-    private long getAudioDuration() {
+    private int getAudioDuration() {
         if (mDuration < 0) {
             Uri uri = mComponent.getLocalUri();
             if (uri != null) {
@@ -207,14 +213,14 @@ public class AudioContentView extends RelativeLayout
         return mDuration;
     }
 
-    private void setTimeText(long current, long duration) {
-        mTimeBuffer.delete(0, mTimeBuffer.length());
-        mTimeBuffer.append(DateUtils.formatElapsedTime(mTimeBuilder, (long)Math.floor((double)current/1000)));
-        if (duration >= 0) {
-            mTimeBuffer.append('/');
-            mTimeBuffer.append(DateUtils.formatElapsedTime(mTimeBuilder, (long)Math.floor((double)duration/1000)));
+    private void setTimeText(long duration) {
+        if (duration < 0)
+            mTime.setVisibility(GONE);
+        else {
+            DateUtils.formatElapsedTime(mTimeBuilder, (long) Math.floor((double) duration / 1000));
+            mTime.setText(mTimeBuilder);
+            mTime.setVisibility(VISIBLE);
         }
-        mTime.setText(mTimeBuffer);
     }
 
     public static AudioContentView create(LayoutInflater inflater, ViewGroup parent) {

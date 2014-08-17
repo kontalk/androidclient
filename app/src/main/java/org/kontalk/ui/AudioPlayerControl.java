@@ -12,6 +12,7 @@ public interface AudioPlayerControl {
     public void onBind (long messageId, AudioContentViewControl view);
     public void onUnbind(long messageId, AudioContentViewControl view);
     public void seekTo(int position);
+    public boolean isPlaying();
 
 }
 

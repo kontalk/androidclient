@@ -2534,6 +2534,7 @@ public class ComposeMessageFragment extends ListFragment implements
         });
 
         view.prepare(mPlayer.getDuration());
+        mPlayer.seekTo(view.getPosition());
         view.setProgressChangeListener(true);
     }
 
@@ -2620,12 +2621,16 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     @Override
+    public boolean isPlaying() {
+        return mPlayer.isPlaying();
+    }
+
+    @Override
     public void seekTo(int position) {
         mPlayer.seekTo(position);
     }
 
     private void startMediaPlayerUpdater(final AudioContentViewControl view) {
-        Log.v(TAG, "starting player updater for message " + view.getMessageId());
         updatePosition(view);
         mMediaPlayerUpdater = new Runnable() {
             @Override
