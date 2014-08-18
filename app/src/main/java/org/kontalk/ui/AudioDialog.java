@@ -231,21 +231,21 @@ public class AudioDialog extends AlertDialog {
             mStatus = STATUS_RECORDING;
         }
         catch (IllegalStateException e) {
-            Log.e (TAG, String.valueOf(R.string.err_audio_record), e);
+            Log.e (TAG, "error starting audio recording:", e);
         }
         catch (IOException e) {
-            Log.e (TAG, String.valueOf(R.string.err_audio_record_writing), e);
+            Log.e (TAG, "error writing on external storage:", e);
             this.cancel();
             new Builder(getContext())
-                .setMessage(R.string.err_audio_record)
+                .setMessage(R.string.err_audio_record_writing)
                 .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
                 .show();
         }
         catch (RuntimeException e) {
-            Log.e (TAG, String.valueOf(R.string.err_audio_record), e);
+            Log.e (TAG, "error starting audio recording:", e);
             this.cancel();
             new AlertDialog.Builder(getContext())
-                .setMessage(R.string.err_audio_record_writing)
+                .setMessage(R.string.err_audio_record)
                 .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
                 .show();
         }
@@ -274,18 +274,18 @@ public class AudioDialog extends AlertDialog {
             mPlayer.prepare();
         }
         catch (IllegalArgumentException e) {
-            Log.e (TAG, String.valueOf(R.string.err_playing_audio), e);
+            Log.e (TAG, "error playing audio:", e);
         }
         catch (SecurityException e) {
-            Log.e (TAG, String.valueOf(R.string.err_playing_audio), e);
+            Log.e (TAG, "error playing audio:", e);
         }
         catch (IllegalStateException e) {
-            Log.e (TAG, String.valueOf(R.string.err_playing_audio), e);
+            Log.e (TAG, "error playing audio:", e);
         }
         catch (IOException e) {
-            Log.e (TAG, String.valueOf(R.string.err_playing_sdcard), e);
+            Log.e (TAG, "error reading from external storage", e);
             new AlertDialog.Builder(getContext())
-            .setMessage(R.string.err_playing_sdcard) //TODO i18n
+            .setMessage(R.string.err_playing_sdcard)
             .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
             .show();
         }
