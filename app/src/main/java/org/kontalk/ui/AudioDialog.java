@@ -231,21 +231,21 @@ public class AudioDialog extends AlertDialog {
             mStatus = STATUS_RECORDING;
         }
         catch (IllegalStateException e) {
-            Log.e (TAG, "error starting audio recording: ", e);
+            Log.e (TAG, String.valueOf(R.string.err_audio_record), e);
         }
         catch (IOException e) {
-            Log.e (TAG, "error writing on sdcard: ", e);
+            Log.e (TAG, String.valueOf(R.string.err_audio_record_writing), e);
             this.cancel();
-            new AlertDialog.Builder(getContext())
-                .setMessage("Error Writing on SDCard") //TODO i18n
+            new Builder(getContext())
+                .setMessage(R.string.err_audio_record)
                 .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
                 .show();
         }
         catch (RuntimeException e) {
-            Log.e (TAG, "error starting audio recording: ", e);
+            Log.e (TAG, String.valueOf(R.string.err_audio_record), e);
             this.cancel();
             new AlertDialog.Builder(getContext())
-                .setMessage("Error Starting Audio Recording") //TODO i18n
+                .setMessage(R.string.audio_record_writing_error)
                 .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
                 .show();
         }
@@ -274,18 +274,18 @@ public class AudioDialog extends AlertDialog {
             mPlayer.prepare();
         }
         catch (IllegalArgumentException e) {
-            Log.e (TAG, "error playing audio: ", e);
+            Log.e (TAG, String.valueOf(R.string.err_playing_audio), e);
         }
         catch (SecurityException e) {
-            Log.e (TAG, "error playing audio:", e);
+            Log.e (TAG, String.valueOf(R.string.err_playing_audio), e);
         }
         catch (IllegalStateException e) {
-            Log.e (TAG, "error playing audio: ", e);
+            Log.e (TAG, String.valueOf(R.string.err_playing_audio), e);
         }
         catch (IOException e) {
-            Log.e (TAG, "error reading on sdcard: ", e);
+            Log.e (TAG, String.valueOf(R.string.err_playing_sdcard), e);
             new AlertDialog.Builder(getContext())
-            .setMessage("Error Reading on SDCard") //TODO i18n
+            .setMessage(R.string.err_playing_sdcard) //TODO i18n
             .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
             .show();
         }
