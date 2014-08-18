@@ -31,10 +31,12 @@
         android:id="@+id/balloon_audio_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:00/01:00"
-        android:layout_below="@id/balloon_audio_seekbar"
+        android:text="00:00"
+        android:layout_below="@id/balloon_audio_player"
+        android:layout_marginTop="2dp"
         android:layout_alignLeft="@id/balloon_audio_player"
-        android:layout_alignRight="@id/balloon_audio_seekbar"
+        android:layout_alignRight="@id/balloon_audio_player"
+        android:textSize="11sp"
         android:gravity="center_horizontal" />
 
 </org.kontalk.ui.AudioContentView>
