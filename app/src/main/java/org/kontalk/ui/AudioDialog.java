@@ -245,7 +245,7 @@ public class AudioDialog extends AlertDialog {
             Log.e (TAG, String.valueOf(R.string.err_audio_record), e);
             this.cancel();
             new AlertDialog.Builder(getContext())
-                .setMessage(R.string.audio_record_writing_error)
+                .setMessage(R.string.err_audio_record_writing)
                 .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
                 .show();
         }
