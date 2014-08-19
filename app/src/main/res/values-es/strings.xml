@@ -228,7 +228,7 @@
   <string name="title_bitcoin_dialog">Bitcoin</string>
   <string name="text_bitcoin_dialog">Dirección Bitcoin:\n%s</string>
   <string name="donate_wallet">Google Play</string>
-  <string name="donate_paypal">Paypal</string>
+  <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
   <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Generando la clave personal en segundo plano.</string>
@@ -260,9 +260,22 @@
   <string name="iab_error_query">Falló la consulta del inventario de facturación desde la app (%d)</string>
   <string name="copy_clipboard">Copiar al portapapeles</string>
   <string name="bitcoin_clipboard_copied">Dirección Bitcoin copiada al portapapeles.</string>
+  <string name="warn_no_personal_key">No se ha podido cargar la clave personal. Desactiva el cifrado en las preferencias para enviar el mensaje de todos modos.</string>
+  <string name="warn_no_public_key">No se ha podido encontrar una clave pública para este usuario. Prueba a recargar tu lista de contactos o desactiva el cifrado en las preferencias para enviar el mensaje de todos modos.</string>
+  <string name="warn_encryption_failed">No se ha podido cifrar el mensaje. Desactiva el cifrado en las preferencias para enviar el mensaje de todos modos.</string>
   <string name="pref_sync_sim_contacts">Sincronizar contactos de la SIM</string>
   <string name="pref_title_off_sync_sim_contacts">No incluir los contactos de la SIM al comprobar los usuarios registrados</string>
   <string name="pref_title_on_sync_sim_contacts">Los contactos de la SIM se incluyen al comprobar usuarios registrados</string>
   <string name="pref_accept_any_certificate">Aceptar cualquier certificado SSL</string>
   <string name="msg_user_blocked">El usuario ha sido bloqueado</string>
+  <string name="msg_user_unblocked">El usuario ha sido desbloqueado.</string>
+  <string name="msg_block_user_warning">&lt;b&gt;¡POR FAVOR LEE ESTO ATENTAMENTE!&lt;/b&gt;&lt;br&gt;Estás a punto de bloquear a este usuario. Si haces eso, este usuario no podrá mandarte ningún mensaje o archivo multimedia hasta que le desbloquees. Este usuario tampoco podrá ver tu estado o la última vez que te conectaste y tu tampoco serás capaz de ver su estado. Como efecto secundario, tampoco podrás mandarle mensajes o archivos multimedia.</string>
+  <string name="msg_unblock_user_warning">&lt;b&gt;¡POR FAVOR LEE ESTO ATENTAMENTE!&lt;/b&gt;&lt;br&gt;Estás a punto de desbloquear a este usuario. Desbloquearlo le permitirá mandarte mensajes y ver tu último estado y la última vez que te conectaste.</string>
+  <string name="notification_text_more">Pulsa aquí para saber más</string>
+  <string name="title_auth_error">Error de autenticación</string>
+  <string name="msg_auth_error">&lt;b&gt;¡ATENCIÓN!&lt;/b&gt;&lt;br&gt; La autenticación con un servidor de Kontalk falló la última vez que intentamos conectar. Podría ser un fallo temporal del servidor o, más probablemente, que el servidor esté rechazando tu clave personal. Te recomendamos borrar tu cuenta de Kontalk desde las preferencias del sistema Android y que te registres de nuevo (lamentablemente, haciendo esto perderás todos tus mensajes de Kontalk).</string>
+  <string name="warn_invite_no_app">No hay ninguna aplicación para invitar usuarios</string>
+  <string name="pref_text_enter">Mostrar la tecla Intro</string>
+  <string name="pref_title_on_text_enter">Se muestra la tecla Intro mientras escribes los mensajes</string>
+  <string name="pref_title_off_text_enter">Se muestra la tecla por defecto mientras escribes los mensajes</string>
 </resources>

@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="app_name">Kontal</string>
+  <string name="app_name">Kontalk</string>
   <string name="app_description">Réseau de messagerie instantanée géré par la communauté</string>
   <string name="service_name">Messagerie</string>
   <string name="authenticator_name">Service d\'Authentification</string>
   <string name="sync_service_name">Synchronisation des Contacts</string>
-  <string name="download_service">Service de téléchargement</string>
+  <string name="download_service">Service de Téléchargement</string>
   <string name="yes">Oui</string>
   <string name="no">Non</string>
   <string name="menu_compose">Ecrire</string>
@@ -29,6 +29,7 @@
   <string name="msg_initializing">Enregistrement au réseau Kontalk...</string>
   <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau. Bienvenue!</string>
   <string name="share">Partager</string>
+  <string name="resend">Envoyer à nouveau</string>
   <string name="copy_message_text">Copier le message</string>
   <string name="delete_message">Supprimer le message</string>
   <string name="confirm_delete_all">Supprimer toutes les conversations</string>
@@ -64,7 +65,7 @@
   <string name="refused_label">Refusé:\u0020</string>
   <string name="notdelivered_label">Non transmis:\u0020</string>
   <string name="delivered_label">Transmis:\u0020</string>
-  <string name="encrypted_label">Encrypté:\u0020</string>
+  <string name="encrypted_label">Chiffré:\u0020</string>
   <string name="security_label">Securité :\u0020</string>
   <string name="size_label">Taille:\u0020</string>
   <string name="size_unknown">(inconnus)</string>
@@ -79,8 +80,8 @@
   <string name="pref_regenerate_keypair">Régénérer la clé personnelle</string>
   <string name="pref_title_regenerate_keypair">Utilisez ceci si votre clé personnelle a été compromis</string>
   <string name="contacts_list_title">Choisissez un contact</string>
-  <string name="pref_messaging_settings">Paramètre des discussions</string>
-  <string name="pref_privacy_settings">Paramètre de confidentialité</string>
+  <string name="pref_messaging_settings">Paramètres des discussions</string>
+  <string name="pref_privacy_settings">Paramètres de confidentialité</string>
   <string name="pref_encrypt">Chiffrement des messages</string>
   <string name="pref_title_on_encrypt">Tout les message à venir seront chiffrés .</string>
   <string name="pref_title_off_encrypt">Tous les messages à venir seront en clair.</string>
@@ -108,7 +109,7 @@
   <string name="hint_search_full">Chercher dans les messages</string>
   <string name="hint_search_quickbox">Texte dans vos messages</string>
   <string name="title_search">Recherche: \"%s\"</string>
-  <string name="pref_notification_settings">Paramètre de notification</string>
+  <string name="pref_notification_settings">Paramètres de notification</string>
   <string name="pref_enable_notifications">Notification</string>
   <string name="pref_title_enable_notifications">Afficher les notification dans la barre de statuts</string>
   <string name="pref_ringtone">Choisir une sonnerie</string>
@@ -121,8 +122,8 @@
   <string name="err_validation_retry_later">Trop de tentatives. Veuillez attendre quelques minutes puis réessayer.</string>
   <string name="msg_validation_canceled">Vérification annulée. Vous pouvez peut-être recevoir un SMS de toute façon.</string>
   <string name="err_validation_error">Une erreur est survenue pendant la vérification. Veuillez réessayer plus tard.</string>
-  <string name="err_validation_network_error">Impossible de  se connecter au serveur, Veuillez réessayer plus tard</string>
-  <string name="err_validation_server_not_supported">Le serveur choisi ne suporte pas l\'enregistrement. Veuillez en choisir un autre dans le menu paramètre.</string>
+  <string name="err_validation_network_error">Impossible de  se connecter au serveur. Veuillez réessayer plus tard</string>
+  <string name="err_validation_server_not_supported">Le serveur choisi ne suporte pas l\'enregistrement. Veuillez en choisir un autre dans le menu Paramètres.</string>
   <string name="text_encrypted">(chiffré)</string>
   <string name="peer_unknown">(inconnu)</string>
   <string name="msg_draft_saved">Brouillon enregistré</string>
@@ -163,7 +164,7 @@
   <string name="message_user_not_found">Le contact ne semble pas être enregistré sur le réseau. Vous pouvez essayer de le contacter ou lui envoyer une invitation</string>
   <string name="yes_user_not_found">Contacter l\'utilisateur quoi qu\'il en soit.</string>
   <string name="no_user_not_found">Envoyer l\'invitation</string>
-  <string name="pref_appearance_settings">Paramettre d\'aperence </string>
+  <string name="pref_appearance_settings">Paramètres d\'apparence</string>
   <string name="pref_font_size">Taille de la police</string>
   <string name="menu_status">Statuts</string>
   <string name="menu_attachment">Attache</string>
@@ -226,10 +227,10 @@
   <string name="donate_text">Kontalk a besoin d\'argent pour continuer à fonctionner. Veuillez penser à faire un don, même petit.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
   <string name="text_bitcoin_dialog">Adresse Bitcoin :\n%s</string>
-  <string name="donate_wallet">Google Pla</string>
-  <string name="donate_paypal">Paypa</string>
+  <string name="donate_wallet">Google Play</string>
+  <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
-  <string name="donate_flattr">Flatt</string>
+  <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Génération de la clé personnelle en arrière-plan.</string>
   <string name="msg_gen_keypair_complete">Régénération de la clé personnelle terminée.</string>
   <string name="notify_gen_keypair_ticker">Génération de la clé personnelle...</string>
@@ -250,13 +251,14 @@
   <string name="security_error_public_key_unavail">\u0020(clé publique indisponible)</string>
   <string name="title_invitation">Invitation au tchat</string>
   <string name="text_invitation_unknown">Demande par\n%1$s\nEmpreinte : %2$s</string>
-  <string name="button_accept">Accepte</string>
+  <string name="button_accept">Accepter</string>
   <string name="button_block">Bloquer</string>
-  <string name="msg_connecting_iab">Connexion à Google Play...</string>
+  <string name="msg_connecting_iab">Connexion à Google Play…</string>
   <string name="msg_iab_thankyou">Merci !</string>
   <string name="iab_error_setup">Erreur pendant la configuration de la facturation in-app (%d)</string>
   <string name="iab_error_query">N\'a pas pu demander l\'inventaire de la facturation in-app (%d)</string>
   <string name="copy_clipboard">Copier dans le presse-papiers</string>
   <string name="bitcoin_clipboard_copied">Adresse Bitcoin copiée dans le presse-papiers.</string>
+  <string name="warn_no_personal_key">Impossible de chargé clé personnelle. Désactivez le chifrement dans le menu Paramètres pour quand même envoyer le message. FIXME RÉPAREZMOI Est-ce que c\'est du français correcte?</string>
   <string name="msg_user_blocked">L\'utilisateur est bloqué.</string>
 </resources>

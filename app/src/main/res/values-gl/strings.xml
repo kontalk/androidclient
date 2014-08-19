@@ -226,7 +226,6 @@
   <string name="title_bitcoin_dialog">Bitcoin</string>
   <string name="text_bitcoin_dialog">Enderezo de Bitcoin:\n%s</string>
   <string name="donate_wallet">Google Play</string>
-  <string name="donate_paypal">Paypal</string>
   <string name="donate_bitcoin">Bitcoin</string>
   <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Xerando a clave persoal en segundo plano.</string>
