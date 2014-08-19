@@ -11,3 +11,5 @@ proguard/
 /client-common-java
 /emojicon
 .idea
+.floo
+.flooignore
