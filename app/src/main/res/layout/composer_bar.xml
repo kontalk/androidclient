@@ -17,7 +17,7 @@
  -->
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-       xmlns:emojicon="http://schemas.android.com/apk/res-auto">
+       xmlns:app="http://schemas.android.com/apk/res-auto">
         <LinearLayout
             android:id="@+id/bottom_panel"
             android:orientation="horizontal"
@@ -48,7 +48,7 @@
                     android:autoText="true"
                     android:capitalize="sentences"
                     android:nextFocusRight="@+id/send_button"
-                    emojicon:emojiconSize="@dimen/emoji_edittext_size"
+                    app:emojiconSize="@dimen/emoji_edittext_size"
                     android:hint="@string/hint_enter_text"
                     android:maxLines="3"
                     android:inputType="textAutoCorrect|textCapSentences|textMultiLine"

@@ -17,7 +17,7 @@
  -->
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-       xmlns:emojicon="http://schemas.android.com/apk/res-auto">
+       xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- Divider. (Yes, the .9dp is on purpose.) -->
     <View android:background="?android:attr/dividerHorizontal"
         android:layout_width="match_parent"
@@ -51,7 +51,7 @@
             android:layout_gravity="bottom"
             android:autoText="true"
             android:textSize="16sp"
-            emojicon:emojiconSize="@dimen/emoji_edittext_size"
+            app:emojiconSize="@dimen/emoji_edittext_size"
             android:capitalize="sentences"
             android:nextFocusRight="@+id/send_button"
             android:hint="@string/hint_enter_text"
