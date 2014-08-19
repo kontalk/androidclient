@@ -39,12 +39,14 @@ import org.kontalk.util.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rockerhieu.emojicon.EmojiconTextView;
+
 
 /**
  * Message component for {@link TextComponent}.
  * @author Daniele Ricci
  */
-public class TextContentView extends TextView
+public class TextContentView extends EmojiconTextView
         implements MessageContentView<TextComponent> {
 
     // pool-related stuff
@@ -134,6 +136,7 @@ public class TextContentView extends TextView
         else
             sizeId = android.R.style.TextAppearance;
         setTextAppearance(context, sizeId);
+        //setEmojiconSize((int) getTextSize());
 
         // linkify!
         boolean linksFound = false;
@@ -183,11 +186,6 @@ public class TextContentView extends TextView
         String textContent = mComponent.getContent();
 
         buf = new SpannableStringBuilder(textContent);
-
-        // convert smileys first
-        int c = buf.length();
-        if (c > 0 && c < MAX_AFFORDABLE_SIZE)
-            MessageUtils.convertSmileys(getContext(), buf, MessageUtils.SmileyImageSpan.SIZE_EDITABLE);
 
         if (highlight != null) {
             Matcher m = highlight.matcher(buf.toString());

@@ -57,6 +57,7 @@ public class VCardContentView extends TextView
     public void bind(long id, VCardComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
 
+        // TODO set text appearance (since this is text)
         String text = CompositeMessage.getSampleTextContent(component.getMime());
         setText(text);
     }

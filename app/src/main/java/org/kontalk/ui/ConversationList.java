@@ -239,6 +239,14 @@ public class ConversationList extends ActionBarActivity
     }
 
     @Override
+    public void onBackPressed() {
+        ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
+            .findFragmentById(R.id.fragment_compose_message);
+        if (f == null || !f.tryHideEmojiDrawer())
+            super.onBackPressed();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 

@@ -14,7 +14,8 @@ task checkstyle(type: Checkstyle){
         'googleplay/java/org/kontalk/billing/ProductDetails.java',
         'googleplay/java/org/kontalk/billing/Purchase.java'
     // 3rd-party code
-    exclude '**/IconContextMenu.java', '**/RegistrationFormProvider.java', '**/CircularSeekBar.java'
+    exclude '**/IconContextMenu.java', '**/RegistrationFormProvider.java', '**/CircularSeekBar.java',
+        '**/KeyboardAwareFrameLayout.java'
     classpath = files()
 }
 
@@ -50,6 +51,8 @@ dependencies {
     compile (project(':client-common-java')) {
         exclude group: 'net.sf.kxml'
     }
+    compile project(':emojicon:library')
+
     compile 'com.android.support:appcompat-v7:20.0.0'
     compile 'com.madgag.spongycastle:core:1.50.0.0'
     compile 'com.madgag.spongycastle:prov:1.50.0.0'

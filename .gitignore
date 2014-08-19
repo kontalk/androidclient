@@ -9,4 +9,5 @@ proguard/
 /build
 /local.properties
 /client-common-java
+/emojicon
 .idea

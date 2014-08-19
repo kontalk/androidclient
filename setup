@@ -2,6 +2,9 @@
 
 echo "sdk.dir=$1" >local.properties
 
-git clone https://github.com/kontalk/client-common-java.git
+git clone https://github.com/kontalk/client-common-java.git &&
 cd client-common-java &&
-./setup asmack
+./setup asmack &&
+cd ..
+
+git clone https://github.com/kontalk/emojicon.git
