@@ -93,6 +93,7 @@ public class Syncer {
         public long timestamp;
         public byte[] publicKey;
         public boolean blocked;
+        public boolean presence;
     }
 
     // FIXME this class should handle most recent/available presence stanzas
@@ -101,8 +102,8 @@ public class Syncer {
         private final WeakReference<Syncer> notifyTo;
         private final String iq;
         private final List<String> jidList;
-        private int presenceCount = -1;
-        private int vCardCount = -1;
+        private int presenceCount;
+        private int vCardCount;
         private int rosterCount = -1;
         private boolean allPresenceReceived;
         private boolean blocklistReceived;
@@ -133,23 +134,21 @@ public class Syncer {
                             if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
                                 item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
                                 item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-
-                                // increment presence count
-                                if (presenceCount < 0)
-                                    presenceCount = 1;
-                                else
+                                if (!item.presence) {
+                                    item.presence = true;
+                                    // increment presence count
                                     presenceCount++;
-
+                                }
                                 break;
                             }
                         }
 
-                        // done with presence data and blocklist
                         int groupCount = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
                         allPresenceReceived = (groupCount <= 1);
 
+                        // done with presence data and blocklist
                         if (rosterCount >= 0 && allPresenceReceived &&
-                                vCardCount >= presenceCount && blocklistReceived)
+                                vCardCount == presenceCount && blocklistReceived)
                             finish();
 
                     }
@@ -170,9 +169,8 @@ public class Syncer {
                         response.add(p);
                     }
 
-                    // all presence data already received (WHATT???)
-                    if ((rosterCount == 0 || (presenceCount >= 0 && rosterCount >= presenceCount) || allPresenceReceived)
-                            && blocklistReceived)
+                    // no roster elements
+                    if (rosterCount == 0 && blocklistReceived)
                         finish();
 
                 }
@@ -188,18 +186,14 @@ public class Syncer {
                             item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
 
                             // increment vcard count
-                            if (vCardCount < 0)
-                                vCardCount = 1;
-                            else
-                                vCardCount++;
-
+                            vCardCount++;
                             break;
                         }
                     }
 
                     // done with presence data and blocklist
                     if (rosterCount >= 0 && allPresenceReceived &&
-                            vCardCount >= presenceCount && blocklistReceived)
+                            vCardCount == presenceCount && blocklistReceived)
                         finish();
 
                 }
@@ -467,19 +461,19 @@ public class Syncer {
                             registeredValues.putNull(Users.LAST_SEEN);
 
                         if (entry.publicKey != null) {
-                            registeredValues.put(Users.PUBLIC_KEY, entry.publicKey);
-
                             try {
-                                byte[] fp = PGP.getMasterKey(entry.publicKey).getFingerprint();
-                                registeredValues.put(Users.FINGERPRINT, MessageUtils.bytesToHex(fp));
+                                String fp = PGP.getFingerprint(entry.publicKey);
+                                registeredValues.put(Users.FINGERPRINT, fp);
+                                registeredValues.put(Users.PUBLIC_KEY, entry.publicKey);
                             }
                             catch (Exception e) {
                                 Log.w(TAG, "unable to parse public key", e);
-                                registeredValues.putNull(Users.FINGERPRINT);
                             }
                         }
-                        else
+                        else {
+                            registeredValues.putNull(Users.FINGERPRINT);
                             registeredValues.putNull(Users.PUBLIC_KEY);
+                        }
 
                         // blocked status
                         registeredValues.put(Users.BLOCKED, entry.blocked);
