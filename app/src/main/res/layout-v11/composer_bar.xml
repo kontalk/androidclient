@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height=".9dp" />
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/bottom_panel"
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -40,26 +40,8 @@
             android:layout_height="wrap_content"
             android:minHeight="48dip"
             android:layout_gravity="bottom"
+            android:layout_alignBottom="@+id/text_editor"
             android:contentDescription="@string/menu_smileys" />
-
-        <com.rockerhieu.emojicon.EmojiconEditText
-            android:textColor="@android:color/black"
-            android:id="@+id/text_editor"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:autoText="true"
-            android:textSize="16sp"
-            app:emojiconSize="@dimen/emoji_edittext_size"
-            android:capitalize="sentences"
-            android:nextFocusRight="@+id/send_button"
-            android:hint="@string/hint_enter_text"
-            android:minHeight="48dip"
-            android:maxLines="3"
-            android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
-            android:imeOptions="actionSend|flagNoEnterAction"
-        />
 
         <ImageButton
             android:id="@+id/send_button"
@@ -70,9 +52,109 @@
             android:layout_height="wrap_content"
             android:minHeight="48dip"
             android:layout_gravity="bottom"
-            android:layout_marginLeft="4dip"
+            android:layout_alignParentRight="true"
             android:contentDescription="@string/send"
             android:nextFocusLeft="@+id/text_editor" />
 
-    </LinearLayout>
+        <com.rockerhieu.emojicon.EmojiconEditText
+            android:textColor="@android:color/black"
+            android:id="@+id/text_editor"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="bottom"
+            android:autoText="true"
+            android:textSize="16sp"
+            android:layout_toRightOf="@id/emoji_button"
+            android:layout_toLeftOf="@id/send_button"
+            android:layout_alignParentTop="true"
+            app:emojiconSize="@dimen/emoji_edittext_size"
+            android:capitalize="sentences"
+            android:nextFocusRight="@+id/send_button"
+            android:hint="@string/hint_enter_text"
+            android:minHeight="48dip"
+            android:maxLines="3"
+            android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
+            android:imeOptions="actionSend|flagNoEnterAction"
+            />
+
+        <org.kontalk.ui.FrameLayoutPtt
+            android:layout_height="48dp"
+            android:layout_width="fill_parent"
+            android:layout_marginTop="2dp"
+            android:layout_marginRight="48dp"
+            android:background="#ffffff"
+            android:id="@+id/record_panel"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="30dp"
+                android:orientation="horizontal"
+                android:id="@+id/slideText">
+
+                <ImageView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:src="@drawable/slidearrow"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginTop="1dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#999999"
+                    android:textSize="12dp"
+                    android:layout_marginLeft="6dp"
+                    android:text="SLIDE TO DELETE"
+                    android:id="@+id/slideToCancelTextView"
+                    android:layout_gravity="center_vertical"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="13dp"
+                android:orientation="horizontal"
+                android:background="#ffffffff">
+
+                <ImageView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:src="@drawable/bar_rec"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginTop="1dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/recording_time_text"
+                    android:text="00:00"
+                    android:textColor="#4d4c4b"
+                    android:textSize="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="6dp"/>
+
+            </LinearLayout>
+
+        </org.kontalk.ui.FrameLayoutPtt>
+
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="2dp"
+            android:scaleType="centerInside"
+            android:id="@+id/audio_send_button"
+            android:layout_alignParentRight="true"
+            android:layout_alignBottom="@+id/text_editor"
+            android:enabled="false"
+            android:src="@drawable/bar_mic"
+            android:paddingRight="4dp"
+            android:background="@android:color/white"/>
+
+    </RelativeLayout>
 </merge>

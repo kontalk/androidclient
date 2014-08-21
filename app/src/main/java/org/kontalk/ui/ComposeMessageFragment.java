@@ -161,6 +161,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private MessageListAdapter mListAdapter;
     private EditText mTextEntry;
     private View mSendButton;
+    private View mAudioButton;
     private TextView mStatusText;
     private ViewGroup mInvitationBar;
     private MenuItem mDeleteThreadMenu;
@@ -291,6 +292,14 @@ public class ComposeMessageFragment extends ListFragment implements
             @Override
             public void afterTextChanged(Editable s) {
                 // enable the send button if there is something to send
+                if (s.length() > 0) {
+                    mAudioButton.setVisibility(View.INVISIBLE);
+                    mSendButton.setVisibility(View.VISIBLE);
+                }
+                else if (s.length() <= 0) {
+                    mSendButton.setVisibility(View.INVISIBLE);
+                    mAudioButton.setVisibility(View.VISIBLE);
+                }
                 mSendButton.setEnabled(s.length() > 0);
             }
         });
@@ -298,7 +307,7 @@ public class ComposeMessageFragment extends ListFragment implements
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
                     InputMethodManager imm = (InputMethodManager) getActivity()
-                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
                     submitSend();
                     return true;
@@ -338,6 +347,11 @@ public class ComposeMessageFragment extends ListFragment implements
         });
 
         mSendButton = getView().findViewById(R.id.send_button);
+        mAudioButton = getView().findViewById(R.id.audio_send_button);
+
+        if (mTextEntry.length() <= 0)
+            mSendButton.setVisibility(View.INVISIBLE);
+
         mSendButton.setEnabled(mTextEntry.length() > 0);
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
