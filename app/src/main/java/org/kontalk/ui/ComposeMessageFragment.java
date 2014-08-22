@@ -37,6 +37,7 @@ import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
+import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -56,6 +57,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -63,6 +65,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
@@ -81,12 +84,15 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -123,6 +129,7 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
+
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
@@ -162,8 +169,10 @@ public class ComposeMessageFragment extends ListFragment implements
     private EditText mTextEntry;
     private View mSendButton;
     private View mAudioButton;
+    private View mSlideText;
     private TextView mStatusText;
     private ViewGroup mInvitationBar;
+    private View mRecordLayout;
     private MenuItem mDeleteThreadMenu;
     private MenuItem mViewContactMenu;
     private MenuItem mCallMenu;
@@ -194,6 +203,12 @@ public class ComposeMessageFragment extends ListFragment implements
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
+
+    /** PTT Message */
+    private float startedDraggingX = -1;
+    private float distCanMove;
+    private boolean recordingAudio = false;
+    private TextView mRecordText;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -261,6 +276,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
         // footer (for tablet presence status)
         mStatusText = (TextView) getView().findViewById(R.id.status_text);
+
+        mSlideText = getView().findViewById(R.id.slide_text);
+        mRecordText = (TextView) getView().findViewById(R.id.recording_time);
 
         // set custom background (if any)
         Drawable bg = Preferences.getConversationBackground(getActivity());
@@ -333,6 +351,9 @@ public class ComposeMessageFragment extends ListFragment implements
             public void afterTextChanged(Editable s) {
             }
         };
+
+        mRecordLayout = getView().findViewById(R.id.record_layout);
+
         mTextEntry.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (mEmojiDrawer.isVisible())
@@ -2706,5 +2727,4 @@ public class ComposeMessageFragment extends ListFragment implements
             mMediaPlayerUpdater = null;
         }
     }
-
 }

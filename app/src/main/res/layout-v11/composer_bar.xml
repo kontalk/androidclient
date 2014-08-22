@@ -84,7 +84,7 @@
             android:layout_marginTop="2dp"
             android:layout_marginRight="48dp"
             android:background="#ffffff"
-            android:id="@+id/record_panel"
+            android:id="@+id/record_layout"
             android:visibility="gone">
 
             <LinearLayout
@@ -93,12 +93,12 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="30dp"
                 android:orientation="horizontal"
-                android:id="@+id/slideText">
+                android:id="@+id/slide_text">
 
                 <ImageView
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:src="@drawable/slidearrow"
+                    android:src="@drawable/slide_arrow"
                     android:layout_gravity="center_vertical"
                     android:layout_marginTop="1dp"/>
 
@@ -109,7 +109,7 @@
                     android:textSize="12dp"
                     android:layout_marginLeft="6dp"
                     android:text="SLIDE TO DELETE"
-                    android:id="@+id/slideToCancelTextView"
+                    android:id="@+id/slide_to_cancel"
                     android:layout_gravity="center_vertical"/>
 
             </LinearLayout>
@@ -132,7 +132,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/recording_time_text"
+                    android:id="@+id/recording_time"
                     android:text="00:00"
                     android:textColor="#4d4c4b"
                     android:textSize="16dp"
