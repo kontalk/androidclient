@@ -98,18 +98,6 @@ public class ConversationList extends ActionBarActivity
         AccountManager am = (AccountManager) getSystemService(Context.ACCOUNT_SERVICE);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
-            // adjust manual server address if any
-            String manualServer = Preferences.getServerURI(this);
-            if (!TextUtils.isEmpty(manualServer) && manualServer.indexOf('|') < 0) {
-                ServerList list = ServerListUpdater.getCurrentList(this);
-                if (list != null) {
-                    EndpointServer server = list.random();
-                    String newServer = server.getNetwork() + "|" + manualServer;
-
-                    Preferences.setServerURI(this, newServer);
-                }
-            }
-
             if (!Authenticator.hasPersonalKey(am, account)) {
                 // first of all, disable offline mode
                 Preferences.setOfflineMode(this, false);

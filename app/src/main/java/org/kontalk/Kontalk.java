@@ -30,15 +30,19 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.apache.http.impl.conn.IdleConnectionHandler;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -136,8 +140,12 @@ public class Kontalk extends Application {
 
         // TODO listen for changes to phone numbers
 
-        Account account = Authenticator.getDefaultAccount(this);
+        AccountManager am = AccountManager.get(this);
+        Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
+            if (!Authenticator.hasPersonalKey(am, account))
+                xmppUpgrade();
+
             // update notifications from locally unread messages
             MessagingNotification.updateMessagesNotification(this, false);
 
@@ -166,14 +174,26 @@ public class Kontalk extends Application {
                 }
             };
 
-            AccountManager am = AccountManager.get(this);
-
             // register listener to handle account removal
             am.addOnAccountsUpdatedListener(listener, mHandler, true);
         }
 
         // enable/disable components
         setServicesEnabled(this, account != null);
+    }
+
+    private void xmppUpgrade() {
+        // adjust manual server address if any
+        String manualServer = Preferences.getServerURI(this);
+        if (!TextUtils.isEmpty(manualServer) && manualServer.indexOf('|') < 0) {
+            ServerList list = ServerListUpdater.getCurrentList(this);
+            if (list != null) {
+                EndpointServer server = list.random();
+                String newServer = server.getNetwork() + "|" + manualServer;
+
+                Preferences.setServerURI(this, newServer);
+            }
+        }
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {

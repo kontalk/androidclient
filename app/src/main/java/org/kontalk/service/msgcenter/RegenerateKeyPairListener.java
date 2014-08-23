@@ -54,7 +54,8 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
 
     public void run() throws CertificateException, SignatureException,
             PGPException, IOException, NoSuchProviderException {
-        super.run();
+        // not calling super
+        revokeCurrentKey();
 
         setupKeyPairReceiver();
 

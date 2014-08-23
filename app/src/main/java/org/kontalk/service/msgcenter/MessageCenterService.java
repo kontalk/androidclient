@@ -627,6 +627,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_REGENERATE_KEYPAIR.equals(action)) {
+                doConnect = true;
                 beginKeyPairRegeneration();
             }
 
