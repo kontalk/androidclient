@@ -57,8 +57,6 @@ public class MessagesProvider extends ContentProvider {
     private static final String TAG = MessagesProvider.class.getSimpleName();
     public static final String AUTHORITY = "org.kontalk.messages";
 
-    private static final int DATABASE_VERSION = 7;
-    private static final String DATABASE_NAME = "messages.db";
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";
     private static final String TABLE_THREADS = "threads";
@@ -81,6 +79,8 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> fulltextProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
+        private static final int DATABASE_VERSION = 7;
+        private static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
             "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -239,14 +239,14 @@ public class MessagesProvider extends ContentProvider {
             // do not call this here -- UPDATE_STATUS_OLD         + ";" +
             "END";
 
-        private static final String[] SCHEMA_V4_TO_V5 = {
+        private static final String[] SCHEMA_UPGRADE_V4 = {
             // create temporary messages tables without msg_id UNIQUE constraint
             "CREATE TABLE " + TABLE_MESSAGES + "_new " + _SCHEMA_MESSAGES,
             // create temporary threads tables without msg_id UNIQUE constraint
             "CREATE TABLE " + TABLE_THREADS + "_new " + _SCHEMA_THREADS,
             // copy contents of messages table
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
-            "_id, thread_id, msg_id, peer, direction, unread, timestamp, status_changed, status, 'text/plain', " +
+            "_id, thread_id, msg_id, peer || '@' || ?, direction, unread, 0, timestamp, status_changed, status, 'text/plain', " +
             "CASE WHEN mime <> 'text/plain' THEN NULL ELSE content END, "+
             "CASE WHEN mime <> 'text/plain' THEN 0 ELSE length(content) END, " +
             "CASE WHEN mime <> 'text/plain' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, encrypted, " +
@@ -255,7 +255,7 @@ public class MessagesProvider extends ContentProvider {
                 " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
-            "_id, msg_id, peer, direction, count, unread, 'text/plain', content, timestamp, status_changed, status, 0, draft, 0" +
+            "_id, msg_id, peer || '@' || ?, direction, count, unread, 0, 'text/plain', content, timestamp, status_changed, status, 0, draft, 0" +
                 " FROM " + TABLE_THREADS,
             // drop table messages
             "DROP TABLE " + TABLE_MESSAGES,
@@ -275,7 +275,7 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_THREADS_DELETE_COUNT
         };
 
-        private static final String[] SCHEMA_V5_TO_V6 = {
+        private static final String[] SCHEMA_UPGRADE_V5 = {
             // new messages counter: notified vs. unread
             "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE " + TABLE_THREADS + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
@@ -288,7 +288,7 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_THREADS_DELETE_COUNT,
         };
 
-        private static final String[] SCHEMA_V6_TO_V7 = {
+        private static final String[] SCHEMA_UPGRADE_V6 = {
             "UPDATE " + TABLE_THREADS + " SET peer = peer || '@' || ?",
             "UPDATE " + TABLE_MESSAGES + " SET peer = peer || '@' || ?",
         };
@@ -320,15 +320,22 @@ public class MessagesProvider extends ContentProvider {
             }
 
             if (oldVersion == 4) {
-                for (int i = 0; i < SCHEMA_V4_TO_V5.length; i++)
-                    db.execSQL(SCHEMA_V4_TO_V5[i]);
-                // trigger upgrade to version 5
-                oldVersion = 5;
+                EndpointServer server = Preferences.getEndpointServer(mContext);
+                String host = server.getNetwork();
+
+                for (int i = 0; i < SCHEMA_UPGRADE_V4.length; i++) {
+                    if (SCHEMA_UPGRADE_V4[i].startsWith("INSERT "))
+                        db.execSQL(SCHEMA_UPGRADE_V4[i], new Object[] { host });
+                    else
+                        db.execSQL(SCHEMA_UPGRADE_V4[i]);
+                }
             }
 
-            if (oldVersion == 5) {
-                for (int i = 0; i < SCHEMA_V5_TO_V6.length; i++)
-                    db.execSQL(SCHEMA_V5_TO_V6[i]);
+            else if (oldVersion == 5) {
+                for (int i = 0; i < SCHEMA_UPGRADE_V5.length; i++)
+                    db.execSQL(SCHEMA_UPGRADE_V5[i]);
+                // trigger version 6 upgrade
+                oldVersion = 6;
             }
 
             // version 6 appends a host part to all peers
@@ -336,7 +343,7 @@ public class MessagesProvider extends ContentProvider {
                 EndpointServer server = Preferences.getEndpointServer(mContext);
                 String host = server.getNetwork();
 
-                for (String sql : SCHEMA_V6_TO_V7)
+                for (String sql : SCHEMA_UPGRADE_V6)
                     db.execSQL(sql, new Object[] { host });
             }
         }
