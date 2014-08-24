@@ -21,14 +21,11 @@ package org.kontalk.ui;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
-import org.kontalk.client.EndpointServer;
-import org.kontalk.client.ServerList;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.service.ServerListUpdater;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -39,18 +36,19 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ContentResolver;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.InputType;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.Toast;
@@ -66,6 +64,9 @@ public class ConversationList extends ActionBarActivity
     static final String TAG = ConversationList.class.getSimpleName();
 
     private ConversationListFragment mFragment;
+
+    private LockedProgressDialog mUpgradeProgress;
+    private BroadcastReceiver mUpgradeReceiver;
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
 
@@ -102,8 +103,15 @@ public class ConversationList extends ActionBarActivity
                 // first of all, disable offline mode
                 Preferences.setOfflineMode(this, false);
 
-                // ask for user name
-                askForPersonalName();
+                String name = Authenticator.getDefaultDisplayName(this);
+                if (name == null || name.length() == 0) {
+                    // ask for user name
+                    askForPersonalName();
+                }
+                else {
+                    // proceed to upgrade immediately
+                    proceedXmppUpgrade(name);
+                }
 
                 return true;
             }
@@ -124,8 +132,7 @@ public class ConversationList extends ActionBarActivity
                         .toString();
 
                 // upgrade account
-                LegacyAuthentication.doUpgrade(getApplicationContext(), name);
-
+                proceedXmppUpgrade(name);
             }
         };
 
@@ -151,6 +158,35 @@ public class ConversationList extends ActionBarActivity
             })
             .setOnCancelListener(cancelListener)
             .show();
+    }
+
+    private void proceedXmppUpgrade(String name) {
+        // start progress dialog
+        mUpgradeProgress = new LockedProgressDialog(this);
+        mUpgradeProgress.setIndeterminate(true);
+        mUpgradeProgress.setMessage(getString(R.string.msg_xmpp_upgrading));
+        mUpgradeProgress.show();
+
+        // setup operation completed received
+        mUpgradeReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                LocalBroadcastManager lbm = LocalBroadcastManager
+                    .getInstance(getApplicationContext());
+                lbm.unregisterReceiver(mUpgradeReceiver);
+                mUpgradeReceiver = null;
+
+                if (mUpgradeProgress != null) {
+                    mUpgradeProgress.dismiss();
+                    mUpgradeProgress = null;
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter(MessageCenterService.ACTION_REGENERATE_KEYPAIR);
+        LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
+        lbm.registerReceiver(mUpgradeReceiver, filter);
+
+        LegacyAuthentication.doUpgrade(getApplicationContext(), name);
     }
 
     /** Called when a new intent is sent to the activity (if already started). */

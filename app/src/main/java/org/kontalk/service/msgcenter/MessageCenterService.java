@@ -168,6 +168,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * key pair. After that, we will send the public key to the server for
      * verification and signature. Once the server returns the signed public
      * key, it will be installed in the default account.
+     * Broadcasted when key pair regeneration has completed.
      */
     public static final String ACTION_REGENERATE_KEYPAIR = "org.kontalk.action.REGEN_KEYPAIR";
 

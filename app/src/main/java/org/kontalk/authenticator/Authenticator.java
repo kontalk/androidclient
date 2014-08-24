@@ -131,6 +131,16 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return false;
     }
 
+    public static String getDefaultDisplayName(Context context) {
+        AccountManager am = AccountManager.get(context);
+        Account account = getDefaultAccount(am);
+        return getDisplayName(am, account);
+    }
+
+    public static String getDisplayName(AccountManager am, Account account) {
+        return am.getUserData(account, DATA_NAME);
+    }
+
     public static boolean hasPersonalKey(AccountManager am, Account account) {
         return am.getUserData(account, DATA_PRIVATEKEY) != null &&
             am.getUserData(account, DATA_PUBLICKEY) != null &&
