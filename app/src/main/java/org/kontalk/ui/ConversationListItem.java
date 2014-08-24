@@ -195,6 +195,9 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                 mCounterView.setText(String.valueOf(unread));
                 mCounterView.setVisibility(VISIBLE);
             }
+            else {
+                mCounterView.setVisibility(GONE);
+            }
         }
         else {
             mCounterView.setVisibility(GONE);

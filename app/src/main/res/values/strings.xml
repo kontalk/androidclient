@@ -283,6 +283,7 @@
     <string name="notify_gen_keypair_title">Generating personal key</string>
     <string name="notify_gen_keypair_text">You can continue to work normally.</string>
 
+    <string name="msg_xmpp_upgrading">Upgrading&#8230;</string>
     <string name="title_no_personal_key">No personal key</string>
     <string name="msg_no_personal_key">A personal key is currently unavailable (probably because you just upgraded). You will not be able to login into the Kontalk network if you don\'t generate a personal key. Please insert your name by closing Kontalk and opening it again.</string>
     <string name="msg_keypair_exported">Personal key and login certificate exported to external storage.</string>
