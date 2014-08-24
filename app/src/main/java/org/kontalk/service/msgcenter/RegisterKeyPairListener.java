@@ -156,7 +156,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
     }
 
     /** We do this here so if something goes wrong the old key is still valid. */
-    private void revokeCurrentKey()
+    protected void revokeCurrentKey()
             throws CertificateException, PGPException, IOException, SignatureException {
 
         PersonalKey oldKey = getApplication().getPersonalKey();

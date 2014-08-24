@@ -45,10 +45,14 @@ public class LegacyAuthentication {
         Account account = Authenticator.getDefaultAccount(am);
 
         if (account != null) {
-            String token = am.getPassword(account);
 
-            // save auth token for later use
-            am.setUserData(account, Authenticator.DATA_AUTHTOKEN, token);
+            boolean upgraded = (am.getUserData(account, Authenticator.DATA_AUTHTOKEN) != null);
+            if (!upgraded) {
+                String token = am.getPassword(account);
+
+                // save auth token for later use
+                am.setUserData(account, Authenticator.DATA_AUTHTOKEN, token);
+            }
 
             // save uid name
             am.setUserData(account, Authenticator.DATA_NAME, name);

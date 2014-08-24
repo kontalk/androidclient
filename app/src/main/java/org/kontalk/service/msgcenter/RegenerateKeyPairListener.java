@@ -42,6 +42,8 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_REGENERATE_KEYPAIR;
+
 
 /** Listener and manager for a key pair regeneration cycle. */
 class RegenerateKeyPairListener extends RegisterKeyPairListener {
@@ -54,7 +56,8 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
 
     public void run() throws CertificateException, SignatureException,
             PGPException, IOException, NoSuchProviderException {
-        super.run();
+        // not calling super
+        revokeCurrentKey();
 
         setupKeyPairReceiver();
 
@@ -94,7 +97,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
                         Context context = getContext();
                         AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
                         Account acc = Authenticator.getDefaultAccount(am);
-                        String name = am.getUserData(acc, Authenticator.DATA_NAME);
+                        String name = Authenticator.getDisplayName(am, acc);
 
                         String userId = MessageUtils.sha1(acc.name);
                         mKeyRing = key.storeNetwork(userId, getServer().getNetwork(), name,
@@ -132,6 +135,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
 
     @Override
     protected void finish() {
+        sendBroadcast(new Intent(ACTION_REGENERATE_KEYPAIR));
         runOnUiThread(new Runnable() {
             public void run() {
                 Toast.makeText(getApplication(),
