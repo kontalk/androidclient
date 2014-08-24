@@ -28,7 +28,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#fff">
+        android:background="#ffffff">
 
         <ImageButton
             android:id="@+id/emoji_button"
@@ -81,7 +81,6 @@
         <org.kontalk.ui.FrameLayoutPtt
             android:layout_height="48dp"
             android:layout_width="fill_parent"
-            android:layout_marginTop="2dp"
             android:layout_marginRight="48dp"
             android:background="#ffffff"
             android:id="@+id/record_layout"
@@ -108,7 +107,7 @@
                     android:textColor="#999999"
                     android:textSize="12dp"
                     android:layout_marginLeft="6dp"
-                    android:text="SLIDE TO DELETE"
+                    android:text="@string/slide_to_cancel"
                     android:id="@+id/slide_to_cancel"
                     android:layout_gravity="center_vertical"/>
 
@@ -152,7 +151,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignBottom="@+id/text_editor"
             android:enabled="false"
-            android:src="@drawable/bar_mic"
+            android:src="@drawable/ptt_button_state"
             android:paddingRight="4dp"
             android:background="@android:color/white"/>
 

@@ -70,6 +70,7 @@ public class Kontalk extends Application {
     private Handler mHandler;
     private SharedPreferences.OnSharedPreferenceChangeListener mPrefChangedListener;
     private PersonalKey mDefaultKey;
+    public static volatile Context mApplicationContext = null;
 
     /**
      * Passphrase to decrypt the personal private key.
@@ -105,6 +106,8 @@ public class Kontalk extends Application {
 
         // init preferences
         Preferences.init(this);
+
+        mApplicationContext = getApplicationContext();
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPrefChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {

@@ -1,20 +1,20 @@
 /*
- * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+* Kontalk Android client
+* Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 package org.kontalk.ui;
 
@@ -57,7 +57,6 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -65,7 +64,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
@@ -125,6 +123,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
+import org.kontalk.util.KontalkUtilities;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
@@ -205,9 +204,9 @@ public class ComposeMessageFragment extends ListFragment implements
     private AudioContentViewControl mAudioControl;
 
     /** PTT Message */
-    private float startedDraggingX = -1;
-    private float distCanMove;
-    private boolean recordingAudio = false;
+    private float mDraggingX = -1;
+    private float mDistMove = KontalkUtilities.getDensityPixel(80);
+    private boolean mCheckRecordingAudio = false;
     private TextView mRecordText;
 
     private PeerObserver mPeerObserver;
@@ -249,13 +248,13 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Returns a new fragment instance from a {@link Conversation} instance. */
     public static ComposeMessageFragment fromConversation(Context context,
-            Conversation conv) {
+                                                          Conversation conv) {
         return fromConversation(context, conv.getThreadId());
     }
 
     /** Returns a new fragment instance from a thread ID. */
     public static ComposeMessageFragment fromConversation(Context context,
-            long threadId) {
+                                                          long threadId) {
         ComposeMessageFragment f = new ComposeMessageFragment();
         Bundle args = new Bundle();
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
@@ -373,6 +372,61 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mTextEntry.length() <= 0)
             mSendButton.setVisibility(View.INVISIBLE);
 
+        mAudioButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    mDraggingX = -1;
+                    mCheckRecordingAudio = true;
+                    animateRecordFrame();
+                    mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+                    mDraggingX = -1;
+                    mCheckRecordingAudio = false;
+                    animateRecordFrame();
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mCheckRecordingAudio) {
+                    float x = motionEvent.getX();
+                    if (x < -mDistMove) {
+                        mCheckRecordingAudio = false;
+                        animateRecordFrame();
+                    }
+                    x = x + mAudioButton.getX();
+                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
+                    if (mDraggingX != -1) {
+                        float dist = (x - mDraggingX);
+                        params.leftMargin = KontalkUtilities.getDensityPixel(30) + (int)dist;
+                        mSlideText.setLayoutParams(params);
+                        float alpha = 1.0f + dist / mDistMove;
+                        if (alpha > 1) {
+                            alpha = 1;
+                        } else if (alpha < 0) {
+                            alpha = 0;
+                        }
+                        mSlideText.setAlpha(alpha);
+                    }
+                    if (x <= mSlideText.getX() + mSlideText.getWidth() + KontalkUtilities.getDensityPixel(30)) {
+                        if (mDraggingX == -1) {
+                            mDraggingX = x;
+                            mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - KontalkUtilities.getDensityPixel(48)) / 2.0f;
+                            if (mDistMove <= 0) {
+                                mDistMove = KontalkUtilities.getDensityPixel(80);
+                            } else if (mDistMove > KontalkUtilities.getDensityPixel(80)) {
+                                mDistMove = KontalkUtilities.getDensityPixel(80);
+                            }
+                        }
+                    }
+                    if (params.leftMargin > KontalkUtilities.getDensityPixel(30)) {
+                        params.leftMargin = KontalkUtilities.getDensityPixel(30);
+                        mSlideText.setLayoutParams(params);
+                        mSlideText.setAlpha(1);
+                        mDraggingX = -1;
+                    }
+                }
+                view.onTouchEvent(motionEvent);
+                return true;
+            }
+        });
+
         mSendButton.setEnabled(mTextEntry.length() > 0);
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -411,7 +465,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         return inflater.inflate(R.layout.compose_message, container, false);
     }
 
@@ -444,7 +498,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Sends out a binary message. */
     public void sendBinaryMessage(Uri uri, String mime, boolean media,
-            Class<? extends MessageComponent<?>> klass) {
+                                  Class<? extends MessageComponent<?>> klass) {
         Log.v(TAG, "sending binary content: " + uri);
         Uri newMsg = null;
         File previewFile = null;
@@ -459,14 +513,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
             String msgId = "draft" + (new Random().nextInt());
 
-			// generate thumbnail
-			// FIXME this is blocking!!!!
-			if (media && klass == ImageComponent.class) {
-				// FIXME hard-coded to ImageComponent
-				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
-				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
-						filename);
-			}
+            // generate thumbnail
+            // FIXME this is blocking!!!!
+            if (media && klass == ImageComponent.class) {
+                // FIXME hard-coded to ImageComponent
+                String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
+                previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
+                        filename);
+            }
 
             length = MediaStorage.getLength(getActivity(), uri);
 
@@ -525,15 +579,15 @@ public class ComposeMessageFragment extends ListFragment implements
             // FIXME do not encrypt binary messages for now
             String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
             MessageCenterService.sendBinaryMessage(getActivity(),
-                mUserJID, mime, uri, length, previewPath, encrypted,
-                ContentUris.parseId(newMsg));
+                    mUserJID, mime, uri, length, previewPath, encrypted,
+                    ContentUris.parseId(newMsg));
         }
         else {
             getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(getActivity(),
-                        R.string.err_store_message_failed,
-                        Toast.LENGTH_LONG).show();
+                            R.string.err_store_message_failed,
+                            Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -596,8 +650,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
                     // send message!
                     MessageCenterService.sendTextMessage(getActivity(),
-                        mUserJID, mText, encrypted,
-                        ContentUris.parseId(newMsg));
+                            mUserJID, mText, encrypted,
+                            ContentUris.parseId(newMsg));
                 }
                 else {
                     getActivity().runOnUiThread(new Runnable() {
@@ -709,14 +763,14 @@ public class ComposeMessageFragment extends ListFragment implements
             else {
                 // info & download dialog
                 CharSequence message = MessageUtils
-                    .getFileInfoMessage(getActivity(), msg,
-                        mUserPhone != null ? mUserPhone : mUserJID);
+                        .getFileInfoMessage(getActivity(), msg,
+                                mUserPhone != null ? mUserPhone : mUserJID);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.title_file_info)
-                    .setMessage(message)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setCancelable(true);
+                        .setTitle(R.string.title_file_info)
+                        .setMessage(message)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setCancelable(true);
 
                 if (!DownloadService.isQueued(attachment.getFetchUrl())) {
                     DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
@@ -758,7 +812,7 @@ public class ComposeMessageFragment extends ListFragment implements
         else {
             // corrupted message :(
             Toast.makeText(getActivity(), R.string.err_attachment_corrupted,
-                Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -821,17 +875,17 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-	/** Starts dialog for attachment selection. */
-	public void selectAttachment() {
-	    if (attachmentMenu == null) {
-	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
-	        attachmentMenu.setOnClickListener(this);
-	    }
-	    attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
-	}
+    /** Starts dialog for attachment selection. */
+    public void selectAttachment() {
+        if (attachmentMenu == null) {
+            attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
+            attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
+            attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
+            attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
+            attachmentMenu.setOnClickListener(this);
+        }
+        attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
+    }
 
     /** Starts activity for an image attachment. */
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -846,8 +900,8 @@ public class ComposeMessageFragment extends ListFragment implements
         }
 
         pictureIntent
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("image/*");
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("image/*");
 
         Intent chooser = null;
         try {
@@ -870,7 +924,7 @@ public class ComposeMessageFragment extends ListFragment implements
         catch (IOException e) {
             Log.e(TAG, "error creating temp file", e);
             Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
-                Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_LONG).show();
         }
 
         if (chooser == null) chooser = pictureIntent;
@@ -881,7 +935,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void selectContactAttachment() {
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
-	}
+    }
 
     private void selectAudioAttachment() {
         new AudioDialog(getActivity(), this).show();
@@ -910,7 +964,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void showEmojiDrawer() {
         InputMethodManager input = (InputMethodManager) getActivity()
-            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
         input.hideSoftInputFromWindow(mTextEntry.getWindowToken(), 0);
         mEmojiDrawer.show(getChildFragmentManager());
         mEmojiButton.setImageResource(R.drawable.ic_keyboard_dark);
@@ -923,7 +977,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void hideEmojiDrawer(boolean showKeyboard) {
         if (showKeyboard) {
             InputMethodManager input = (InputMethodManager) getActivity()
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
             input.showSoftInput(mTextEntry, 0);
         }
         mEmojiDrawer.hide();
@@ -975,28 +1029,28 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void blockUser() {
         new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.menu_block_user)
-            .setMessage(Html.fromHtml(getString(R.string.msg_block_user_warning)))
-            .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    setPrivacy(PRIVACY_BLOCK);
-                }
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+                .setTitle(R.string.menu_block_user)
+                .setMessage(Html.fromHtml(getString(R.string.msg_block_user_warning)))
+                .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        setPrivacy(PRIVACY_BLOCK);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void unblockUser() {
         new AlertDialog.Builder(getActivity())
-        .setTitle(R.string.menu_unblock_user)
-        .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
-        .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                setPrivacy(PRIVACY_UNBLOCK);
-            }
-        })
-        .setNegativeButton(android.R.string.cancel, null)
-        .show();
+                .setTitle(R.string.menu_unblock_user)
+                .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
+                .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        setPrivacy(PRIVACY_UNBLOCK);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void decryptMessage(CompositeMessage msg) {
@@ -1041,7 +1095,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
-            ContextMenuInfo menuInfo) {
+                                    ContextMenuInfo menuInfo) {
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
         MessageListItem vitem = (MessageListItem) info.targetView;
         CompositeMessage msg = vitem.getMessage();
@@ -1323,7 +1377,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         sendBinaryMessage(uri, VCardComponent.MIME_TYPE, false, VCardComponent.class);
                     else
                         Toast.makeText(getActivity(), R.string.send_mime_not_supported, Toast.LENGTH_LONG)
-                            .show();
+                                .show();
                 }
             }
             // operation aborted
@@ -1341,7 +1395,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 if (uri != null) {
                     // get lookup key
                     final Cursor c = getActivity().getContentResolver()
-                        .query(uri, new String[] { Contacts.LOOKUP_KEY }, null, null, null);
+                            .query(uri, new String[] { Contacts.LOOKUP_KEY }, null, null, null);
                     if (c != null) {
                         try {
                             c.moveToFirst();
@@ -1447,7 +1501,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 Uri uri = args.getParcelable("data");
                 mUserJID = uri.getPathSegments().get(1);
                 mConversation = Conversation.loadFromUserId(getActivity(),
-                    mUserJID);
+                        mUserJID);
 
                 if (mConversation == null) {
                     mConversation = Conversation.createNew(getActivity());
@@ -1505,12 +1559,12 @@ public class ComposeMessageFragment extends ListFragment implements
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.
-                    setTitle(R.string.title_user_not_found)
-                    .setMessage(R.string.message_user_not_found)
-                    // nothing happens if user chooses to contact the user anyway
-                    .setPositiveButton(R.string.yes_user_not_found, null)
-                    .setNegativeButton(R.string.no_user_not_found, noListener)
-                    .show();
+                        setTitle(R.string.title_user_not_found)
+                        .setMessage(R.string.message_user_not_found)
+                                // nothing happens if user chooses to contact the user anyway
+                        .setPositiveButton(R.string.yes_user_not_found, null)
+                        .setNegativeButton(R.string.no_user_not_found, noListener)
+                        .show();
 
             }
         }
@@ -1637,18 +1691,18 @@ public class ComposeMessageFragment extends ListFragment implements
                 };
 
                 mInvitationBar.findViewById(R.id.button_accept)
-                    .setOnClickListener(listener);
+                        .setOnClickListener(listener);
                 mInvitationBar.findViewById(R.id.button_block)
-                    .setOnClickListener(listener);
+                        .setOnClickListener(listener);
 
                 // identity button has its own listener
                 mInvitationBar.findViewById(R.id.button_identity)
-                    .setOnClickListener(new View.OnClickListener() {
-                        public void onClick(View v) {
-                            showIdentityDialog();
-                        }
-                    }
-                );
+                        .setOnClickListener(new View.OnClickListener() {
+                                                public void onClick(View v) {
+                                                    showIdentityDialog();
+                                                }
+                                            }
+                        );
 
             }
         }
@@ -1688,7 +1742,7 @@ public class ComposeMessageFragment extends ListFragment implements
         // FIXME this won't work on new threads
 
         ctx.getContentResolver().update(Requests.CONTENT_URI,
-            values, CommonColumns.PEER + "=?",
+                values, CommonColumns.PEER + "=?",
                 new String[] { mUserJID });
 
         // setup broadcast receiver for block/unblock reply
@@ -1697,7 +1751,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 mPrivacyListener = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
                         String from = XmppStringUtils.parseBareAddress(intent
-                            .getStringExtra(MessageCenterService.EXTRA_FROM));
+                                .getStringExtra(MessageCenterService.EXTRA_FROM));
 
                         if (mUserJID.equals(from)) {
                             // this will trigger a Contact reload
@@ -1714,8 +1768,8 @@ public class ComposeMessageFragment extends ListFragment implements
                             }
                             else {
                                 Toast.makeText(getActivity(),
-                                    R.string.msg_user_blocked,
-                                    Toast.LENGTH_LONG).show();
+                                        R.string.msg_user_blocked,
+                                        Toast.LENGTH_LONG).show();
                             }
 
                             // we don't need this receiver anymore
@@ -1754,22 +1808,22 @@ public class ComposeMessageFragment extends ListFragment implements
         Contact c = mConversation.getContact();
         if (c != null)
             text = getString(R.string.text_invitation_known,
-                c.getName(),
-                c.getNumber(),
-                uid, fingerprint);
+                    c.getName(),
+                    c.getNumber(),
+                    uid, fingerprint);
         else
             text = getString(R.string.text_invitation_unknown,
-                uid, fingerprint);
+                    uid, fingerprint);
 
         /*
          * TODO include an "Open" button on the dialog to ignore the request
          * and go on with the compose window.
          */
         new AlertDialog.Builder(getActivity())
-            .setPositiveButton(android.R.string.ok, null)
-            .setTitle(R.string.title_invitation)
-            .setMessage(text)
-            .show();
+                .setPositiveButton(android.R.string.ok, null)
+                .setTitle(R.string.title_invitation)
+                .setMessage(text)
+                .show();
 
     }
 
@@ -1956,7 +2010,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                 if (count <= 1 || mPresenceId == null) {
                                     // we got all presence stanzas
                                     Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
-                                        ", status=" + mMostAvailable.status + ")");
+                                            ", status=" + mMostAvailable.status + ")");
 
                                     // stop receiving presence probes
                                     mPresenceId = null;
@@ -1971,7 +2025,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                     if (mAvailableResources.size() == 0) {
                                         if (mMostAvailable.stamp != null) {
                                             statusText = MessageUtils.formatRelativeTimeSpan(context,
-                                                mMostAvailable.stamp.getTime());
+                                                    mMostAvailable.stamp.getTime());
                                         }
                                     }
                                 }
@@ -2422,7 +2476,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
         @Override
         protected synchronized void onQueryComplete(int token, Object cookie,
-                Cursor cursor) {
+                                                    Cursor cursor) {
             if (cursor == null || isFinishing()) {
                 // close cursor - if any
                 if (cursor != null)
@@ -2440,12 +2494,12 @@ public class ComposeMessageFragment extends ListFragment implements
                     // no messages to show - exit
                     if (cursor.getCount() == 0
                             && (mConversation == null ||
-                                // no draft
-                                (mConversation.getDraft() == null &&
-                                // no subscription request
-                                mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
-                                // no text in compose entry
-                                mTextEntry.getText().length() == 0))) {
+                            // no draft
+                            (mConversation.getDraft() == null &&
+                                    // no subscription request
+                                    mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
+                                    // no text in compose entry
+                                    mTextEntry.getText().length() == 0))) {
 
                         Log.i(TAG, "no data to view - exit");
 
@@ -2543,7 +2597,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (Preferences.getOfflineMode(getActivity()) && !mOfflineModeWarned) {
             mOfflineModeWarned = true;
             Toast.makeText(getActivity(), R.string.warning_offline_mode,
-                Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -2725,6 +2779,64 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mMediaPlayerUpdater != null) {
             mHandler.removeCallbacks(mMediaPlayerUpdater);
             mMediaPlayerUpdater = null;
+        }
+    }
+
+    private void animateRecordFrame() {
+        if (mCheckRecordingAudio) {
+            mRecordLayout.setVisibility(View.VISIBLE);
+            if(Build.VERSION.SDK_INT > 13) {
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
+                params.leftMargin = KontalkUtilities.getDensityPixel(30);
+                mSlideText.setLayoutParams(params);
+                mSlideText.setAlpha(1);
+                mRecordLayout.setX(KontalkUtilities.displaySize.x);
+                mRecordLayout.animate().setInterpolator(new AccelerateDecelerateInterpolator()).setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        mRecordLayout.setX(0);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
+                    }
+                }).setDuration(300).translationX(0).start();
+            }
+        } else {
+            if(Build.VERSION.SDK_INT > 13) {
+                mRecordLayout.animate().setInterpolator(new AccelerateDecelerateInterpolator()).setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
+                        params.leftMargin = KontalkUtilities.getDensityPixel(30);
+                        mSlideText.setLayoutParams(params);
+                        mSlideText.setAlpha(1);
+                        mRecordLayout.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
+                    }
+                }).setDuration(300).translationX(KontalkUtilities.displaySize.x).start();
+            } else {
+                mRecordLayout.setVisibility(View.GONE);
+            }
         }
     }
 }
