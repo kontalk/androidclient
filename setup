@@ -2,7 +2,7 @@
 
 echo "sdk.dir=$1" >local.properties
 
-[ -z "$2" ] && export BRANCH="master" || export BRANCH="$2"
+#[ -z "$2" ] && export BRANCH="master" || export BRANCH="$2"
 
-git clone -b "$BRANCH" https://github.com/kontalk/client-common-java.git
-git clone -b "$BRANCH" https://github.com/kontalk/emojicon.git
+#git clone -b "$BRANCH" https://github.com/kontalk/client-common-java.git
+#git clone -b "$BRANCH" https://github.com/kontalk/emojicon.git
