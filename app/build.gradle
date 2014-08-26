@@ -15,7 +15,7 @@ task checkstyle(type: Checkstyle){
         'googleplay/java/org/kontalk/billing/Purchase.java'
     // 3rd-party code
     exclude '**/IconContextMenu.java', '**/RegistrationFormProvider.java', '**/CircularSeekBar.java',
-        '**/KeyboardAwareFrameLayout.java'
+        '**/KeyboardAwareFrameLayout.java', '**/FrameLayoutFixed.java'
     classpath = files()
 }
 

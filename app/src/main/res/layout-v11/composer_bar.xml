@@ -78,7 +78,7 @@
             android:imeOptions="actionSend|flagNoEnterAction"
             />
 
-        <org.kontalk.ui.FrameLayoutPtt
+        <org.kontalk.ui.FrameLayoutFixed
             android:layout_height="48dp"
             android:layout_width="fill_parent"
             android:layout_marginRight="48dp"
@@ -140,7 +140,7 @@
 
             </LinearLayout>
 
-        </org.kontalk.ui.FrameLayoutPtt>
+        </org.kontalk.ui.FrameLayoutFixed>
 
         <ImageButton
             android:layout_width="48dp"

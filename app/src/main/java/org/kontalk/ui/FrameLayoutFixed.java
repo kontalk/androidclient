@@ -1,3 +1,11 @@
+/*
+ * This is the source code of Telegram for Android v. 1.3.2.
+ * It is licensed under GNU GPL v. 2 or later.
+ * You should have received a copy of the license in this archive (see LICENSE).
+ *
+ * Copyright Nikolai Kudashov, 2013.
+ */
+
 package org.kontalk.ui;
 
 import android.content.Context;
@@ -9,18 +17,18 @@ import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 
-public class FrameLayoutPtt extends FrameLayout {
+public class FrameLayoutFixed extends FrameLayout {
     private final ArrayList<View> mMatchParentChildren = new ArrayList<View>(1);
 
-    public FrameLayoutPtt(Context context) {
+    public FrameLayoutFixed(Context context) {
         super(context);
     }
 
-    public FrameLayoutPtt(Context context, AttributeSet attrs) {
+    public FrameLayoutFixed(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public FrameLayoutPtt(Context context, AttributeSet attrs, int defStyle) {
+    public FrameLayoutFixed(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 

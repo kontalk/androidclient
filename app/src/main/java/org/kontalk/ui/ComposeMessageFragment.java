@@ -2858,7 +2858,8 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void startRecording() {
-        resetAudio(mAudioControl);
+        if (mPlayer != null)
+            resetAudio(mAudioControl);
         try {
             mRecordFile = MediaStorage.getTempAudio(getActivity());
         }
