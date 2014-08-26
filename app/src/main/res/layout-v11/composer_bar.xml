@@ -124,6 +124,7 @@
                 <ImageView
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
+                    android:id="@+id/rec_image"
                     android:src="@drawable/bar_rec"
                     android:layout_gravity="center_vertical"
                     android:layout_marginTop="1dp"/>
@@ -132,7 +133,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/recording_time"
-                    android:text="00:00"
                     android:textColor="#4d4c4b"
                     android:textSize="16dp"
                     android:layout_gravity="center_vertical"

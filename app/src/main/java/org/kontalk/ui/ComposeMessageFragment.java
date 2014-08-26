@@ -60,10 +60,12 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
@@ -74,6 +76,7 @@ import android.text.Html;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -208,6 +211,11 @@ public class ComposeMessageFragment extends ListFragment implements
     private float mDistMove = KontalkUtilities.getDensityPixel(80);
     private boolean mCheckRecordingAudio = false;
     private TextView mRecordText;
+    private File mRecordFile;
+    private MediaRecorder mRecord;
+    private long startTime = 0L;
+    private long elapsedTime = 0L;
+    private boolean mCheckMove;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -376,18 +384,26 @@ public class ComposeMessageFragment extends ListFragment implements
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    Log.e(TAG,"Start Record");
+                    mCheckMove = false;
                     mDraggingX = -1;
                     mCheckRecordingAudio = true;
+                    startRecording();
                     animateRecordFrame();
                     mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
-                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+                } else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
+                    Log.e(TAG,"Send File");
                     mDraggingX = -1;
+                    stopRecording(true);
                     mCheckRecordingAudio = false;
                     animateRecordFrame();
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mCheckRecordingAudio) {
                     float x = motionEvent.getX();
                     if (x < -mDistMove) {
+                        Log.e(TAG,"Delete File");
+                        mCheckMove = true;
                         mCheckRecordingAudio = false;
+                        stopRecording(false);
                         animateRecordFrame();
                     }
                     x = x + mAudioButton.getX();
@@ -2785,6 +2801,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void animateRecordFrame() {
         if (mCheckRecordingAudio) {
             mRecordLayout.setVisibility(View.VISIBLE);
+            mRecordText.setText("00:00");
             if(Build.VERSION.SDK_INT > 13) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
                 params.leftMargin = KontalkUtilities.getDensityPixel(30);
@@ -2838,5 +2855,68 @@ public class ComposeMessageFragment extends ListFragment implements
                 mRecordLayout.setVisibility(View.GONE);
             }
         }
+    }
+
+    private void startRecording() {
+        try {
+            mRecordFile = MediaStorage.getTempAudio(getActivity());
+        }
+        catch (IOException e) {
+            Log.e(TAG, "file error: ", e);
+        }
+        mRecord = new MediaRecorder();
+        mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mRecord.setOutputFile(mRecordFile.getAbsolutePath());
+        mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        try {
+            mRecord.prepare();
+            // Start recording
+            mRecord.start();
+            startTimer();
+        }
+        catch (IllegalStateException e) {
+            Log.e (TAG, "error starting audio recording:", e);
+        }
+        catch (IOException e) {
+            Log.e(TAG, "error writing on external storage:", e);
+            new AlertDialog.Builder(getActivity())
+                    .setMessage(R.string.err_audio_record_writing)
+                    .setNegativeButton(getActivity().getString(android.R.string.ok), (DialogInterface.OnClickListener) null)
+                    .show();
+        }
+        catch (RuntimeException e) {
+            Log.e(TAG, "error starting audio recording:", e);
+            new AlertDialog.Builder(getActivity().getApplicationContext())
+                    .setMessage(R.string.err_audio_record)
+                    .setNegativeButton(getActivity().getString(android.R.string.ok), (DialogInterface.OnClickListener) null)
+                    .show();
+        }
+    }
+
+    private void stopRecording(Boolean send) {
+        mHandler.removeCallbacks(mMediaPlayerUpdater);
+        mRecord.stop();
+        mRecord.reset();
+        mRecord.release();
+        if (send && (elapsedTime > 800)) {
+            sendBinaryMessage(Uri.fromFile(mRecordFile), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+        }
+        else {
+            mRecordFile.delete();
+        }
+    }
+
+    private void startTimer() {
+        startTime = SystemClock.uptimeMillis();
+        mMediaPlayerUpdater = new Runnable() {
+            @Override
+            public void run() {
+                elapsedTime = SystemClock.uptimeMillis() - startTime;
+                mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
+                mHandler.postDelayed(this, 100);
+            }
+        };
+        mHandler.postDelayed(mMediaPlayerUpdater, 100);
     }
 }
