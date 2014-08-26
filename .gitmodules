@@ -1,0 +1,6 @@
+[submodule "client-common-java"]
+	path = client-common-java
+	url = https://github.com/kontalk/client-common-java.git
+[submodule "emojicon"]
+	path = emojicon
+	url = https://github.com/kontalk/emojicon.git
