@@ -18,7 +18,9 @@
 
 package org.kontalk.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +40,7 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -213,6 +216,49 @@ public abstract class MediaStorage {
         return mime;
     }
 
+    public static Uri resizeImage(Context context, Uri uri, float maxWidth, float maxHeight, int quality) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
+        } catch (IOException e) {
+            Log.e(TAG, "error", e);
+        }
+
+        if (bitmap == null) {
+            return null;
+        }
+        float photoW = bitmap.getWidth();
+        float photoH = bitmap.getHeight();
+        if (photoW == 0 || photoH == 0) {
+            return null;
+        }
+        float scaleFactor = Math.max(photoW / maxWidth, photoH / maxHeight);
+        int w = (int)(photoW / scaleFactor);
+        int h = (int)(photoH / scaleFactor);
+        if (h == 0 || w == 0) {
+            return null;
+        }
+
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+
+        String timeStamp =
+                new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String filename = "image" + timeStamp + ".jpg";
+
+        final File compressedFile = new File(context.getCacheDir(), filename);
+
+        FileOutputStream stream = null;
+
+        try {
+            stream = new FileOutputStream(compressedFile);
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "file not found: ", e);
+        }
+
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+
+        return Uri.fromFile(compressedFile);
+    }
 
     /**
      * Returns true if the running platform is using SAF, therefore we'll need
