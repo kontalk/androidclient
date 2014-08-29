@@ -167,7 +167,7 @@ class PresenceListener extends MessageCenterPacketListener {
              * 3. user will either accept or refuse
              */
 
-            String from = p.getFrom();
+            String from = XmppStringUtils.parseBareAddress(p.getFrom());
 
             // extract public key
             String name = null, fingerprint = null;
