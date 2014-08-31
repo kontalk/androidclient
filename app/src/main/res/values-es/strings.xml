@@ -79,6 +79,7 @@
   <string name="pref_maintenance">Mantenimiento</string>
   <string name="pref_regenerate_keypair">Volver a generar clave personal</string>
   <string name="pref_title_regenerate_keypair">Use esto en caso de que su clave personal haya sido comprometida</string>
+  <string name="pref_regenerate_keypair_confirm">Un nuevo par de claves se generarán y serán asignadas a su cuenta. La antigua clave pasar a a ser inválida</string>
   <string name="contacts_list_title">Elija un contacto</string>
   <string name="pref_messaging_settings">Ajustes de mensajes</string>
   <string name="pref_privacy_settings">Ajustes de privacidad</string>
@@ -130,6 +131,7 @@
   <string name="send_mime_not_supported">Tipo de archivo no soportado.</string>
   <string name="button_validate">Solicitar código de verificación</string>
   <string name="button_validation_code">Ya tengo un código de verificación</string>
+  <string name="button_import_keys">Importar claves de otro dispositivo</string>
   <string name="button_validation_register">Verificar</string>
   <string name="notify_ticker_download_completed">Descarga completada</string>
   <string name="notify_title_download_completed">Descarga completada</string>
@@ -175,6 +177,7 @@
   <string name="open_file">Abrir el archivo</string>
   <string name="msg_msgcenter_restarted">Centro de mensajería reiniciado.</string>
   <string name="downloading_attachment">Descargando el archivo adjunto…</string>
+  <string name="decrypting_attachment">Descrifrando el archivo adjunto...</string>
   <string name="attachment_download">Descargar adjunto</string>
   <string name="attachment_upload">Enviar adjunto</string>
   <string name="seen_moment_ago_label">hace un momento</string>
@@ -189,10 +192,19 @@
   <string name="serverlist_updating">Actualizando la lista de servidores…</string>
   <string name="serverlist_update_error">No se pudo descargar la lista de servidores. Por favor, inténtelo más tarde.</string>
   <string name="serverlist_update_nodata">No se encontró ninguna lista de servidores disponible.</string>
+  <string name="serverlist_update_nonetwork">Red no disponible. Por favor, inténtelo más tarde.</string>
+  <string name="serverlist_update_offline">El modo sin conexión está habilitado.</string>
   <string name="pref_remove_prefix">Prefijo telefónico</string>
+  <string name="pref_change_passphrase">Cambiar la contraseña de la clave personal</string>
   <string name="pref_title_remove_prefix">Borrar algunos prefijos telefónicos en Kontalk para encontrar números de teléfono adecuadamente</string>
   <string name="pref_export_keypair">Exportar clave personal</string>
   <string name="pref_title_export_keypair">Exportar clave personal y certificado de inicio de sesión a almacenamiento externo</string>
+  <string name="pref_import_keypair">Importar clave personal</string>
+  <string name="pref_title_import_keypair">Importar clave personal y certificado de inicio de sesión a almacenamiento externo</string>
+  <string name="msg_import_keypair">Kontalk importará sus claves desde %s en su almacenamiento externo. Asegúrese de que el fichero existe y es un archivo válido de claves exportadas</string>
+  <string name="msg_import_keypair_complete">Importado de la clave personal completado.</string>
+  <string name="err_import_keypair_failed">Fallo al importar la clave personal</string>
+  <string name="title_passphrase">Contraseña</string>
   <string name="msg_status_sending">Enviando</string>
   <string name="msg_status_sent">Enviado</string>
   <string name="msg_status_notaccepted">Rechazado</string>
@@ -226,7 +238,7 @@
   <string name="social_identica">Identi.ca</string>
   <string name="donate_text">Kontalk necesita dinero para seguir funcionando. Por favor, considere hacer una donación, aunque sea pequeña.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
-  <string name="text_bitcoin_dialog">Dirección Bitcoin:\n%s</string>
+  <string name="text_bitcoin_dialog">Dirección de Bitcoin:\n%s</string>
   <string name="donate_wallet">Google Play</string>
   <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
@@ -236,6 +248,7 @@
   <string name="notify_gen_keypair_ticker">Generando la clave personal...</string>
   <string name="notify_gen_keypair_title">Generando la clave personal</string>
   <string name="notify_gen_keypair_text">Puede continuar trabajando normalmente.</string>
+  <string name="msg_xmpp_upgrading">Actualizando...</string>
   <string name="title_no_personal_key">Sin clave personal</string>
   <string name="msg_no_personal_key">No se encuentra disponible en estos momentos una clave personal (probablemente porque actualizó recientemente). No podrá iniciar sesión en la red Kontalk si no genera una clave personal. Por favor introduzca su nombre cerrando Kontalk y abriéndolo de nuevo.</string>
   <string name="msg_keypair_exported">Clave personal y certificado de inicio de sesión exportados a almacenamiento externo.</string>
@@ -250,8 +263,8 @@
   <string name="security_error_integrity_check">\u0020(comprobación de integridad)</string>
   <string name="security_error_public_key_unavail">\u0020(clave pública no disponible)</string>
   <string name="title_invitation">Invitación a un chat</string>
-  <string name="text_invitation_known">Solicitud de\n%1$s &lt;%2$s&gt;\n(%3$s)\nHuella digital: %4$s</string>
-  <string name="text_invitation_unknown">Solicitada por\n%1$s\nHuella digital: %2$s</string>
+  <string name="text_invitation_known">Solicitado por\n%1$s &lt;%2$s&gt;\n(%3$s)\nHuella digital: %4$s</string>
+  <string name="text_invitation_unknown">Solicitado por\n%1$s\nHuella digital: %2$s</string>
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
   <string name="msg_connecting_iab">Conectándose a Google Play ...</string>
@@ -267,6 +280,9 @@
   <string name="pref_title_off_sync_sim_contacts">No incluir los contactos de la SIM al comprobar los usuarios registrados</string>
   <string name="pref_title_on_sync_sim_contacts">Los contactos de la SIM se incluyen al comprobar usuarios registrados</string>
   <string name="pref_accept_any_certificate">Aceptar cualquier certificado SSL</string>
+  <string name="pref_delete_account">Borrar su cuenta</string>
+  <string name="msg_delete_account">El borrado de su cuenta también borrará todos sus mensajes. Su cuenta en el servidor será borrada automáticamente pasadas unas semanas.</string>
+  <string name="msg_delete_account_progress">Borrando su cuenta...</string>
   <string name="msg_user_blocked">El usuario ha sido bloqueado</string>
   <string name="msg_user_unblocked">El usuario ha sido desbloqueado.</string>
   <string name="msg_block_user_warning">&lt;b&gt;¡POR FAVOR LEE ESTO ATENTAMENTE!&lt;/b&gt;&lt;br&gt;Estás a punto de bloquear a este usuario. Si haces eso, este usuario no podrá mandarte ningún mensaje o archivo multimedia hasta que le desbloquees. Este usuario tampoco podrá ver tu estado o la última vez que te conectaste y tu tampoco serás capaz de ver su estado. Como efecto secundario, tampoco podrás mandarle mensajes o archivos multimedia.</string>
@@ -278,4 +294,10 @@
   <string name="pref_text_enter">Mostrar la tecla Intro</string>
   <string name="pref_title_on_text_enter">Se muestra la tecla Intro mientras escribes los mensajes</string>
   <string name="pref_title_off_text_enter">Se muestra la tecla por defecto mientras escribes los mensajes</string>
+  <string name="title_password1">Contraseña:</string>
+  <string name="title_password2">Confirmar contraseña:</string>
+  <string name="err_password_too_short">La contraseña debe tener al menos %d caracteres.</string>
+  <string name="err_passwords_mismatch">¡Las contraseñas no coinciden!</string>
+  <string name="err_password_invalid">Contraseña errónea.</string>
+  <string name="err_change_passphrase">Imposible cambiar la contraseña de la clave personal</string>
 </resources>
