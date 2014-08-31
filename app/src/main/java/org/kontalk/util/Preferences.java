@@ -177,7 +177,7 @@ public final class Preferences {
     }
 
     public static int getImageCompression(Context context) {
-        return getInt(context, "pref_image_resize", 1024);
+        return Integer.parseInt(getString(context, "pref_image_resize", "1024"));
     }
 
     public static boolean setLastCountryCode(Context context, int countryCode) {
