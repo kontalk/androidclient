@@ -79,6 +79,7 @@
   <string name="pref_maintenance">Údržba</string>
   <string name="pref_regenerate_keypair">Vygenerovat nový osobní klíč</string>
   <string name="pref_title_regenerate_keypair">Použijte tuto volbu, pokud byl váš osobní klíč kompromitován</string>
+  <string name="pref_regenerate_keypair_confirm">Bude vygenerován nový pár klíčů a bude přiřazen k vašemu účtu. Váš starý klíč bude zneplatněn.</string>
   <string name="contacts_list_title">Vyberte kontakt</string>
   <string name="pref_messaging_settings">Nastavení zpráv</string>
   <string name="pref_privacy_settings">Nastavení soukromí</string>
@@ -130,6 +131,7 @@
   <string name="send_mime_not_supported">Tento typ souboru není podporován.</string>
   <string name="button_validate">Požádat o ověřovací kód</string>
   <string name="button_validation_code">Již mám ověřovací kód</string>
+  <string name="button_import_keys">Importovat klíče z jiného zařízení</string>
   <string name="button_validation_register">Ověřit</string>
   <string name="notify_ticker_download_completed">Stahování bylo dokončeno</string>
   <string name="notify_title_download_completed">Stahování bylo dokončeno</string>
@@ -175,6 +177,7 @@
   <string name="open_file">Otevřít soubor</string>
   <string name="msg_msgcenter_restarted">Centrum zpráv bylo restartováno.</string>
   <string name="downloading_attachment">Stahuji přílohu...</string>
+  <string name="decrypting_attachment">Probíhá dešifrování přílohy...</string>
   <string name="attachment_download">Stáhnout přílohu</string>
   <string name="attachment_upload">Nahrát přílohu</string>
   <string name="seen_moment_ago_label">před chvilkou</string>
@@ -189,10 +192,19 @@
   <string name="serverlist_updating">Aktualizuji seznam serverů...</string>
   <string name="serverlist_update_error">Nepodařilo se stáhnout seznam serverů. Zkuste to prosím později.</string>
   <string name="serverlist_update_nodata">Není k dispozici žádný seznam serverů.</string>
+  <string name="serverlist_update_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
+  <string name="serverlist_update_offline">Byl aktivován mód Offline.</string>
   <string name="pref_remove_prefix">Předvolba</string>
+  <string name="pref_change_passphrase">Změnit heslo k osobnímu klíči</string>
   <string name="pref_title_remove_prefix">Odstranit z uloženého čísla kontaktu předvolbu, aby byl kontakt nalezen v seznamu registrovaných uživatelů</string>
   <string name="pref_export_keypair">Exportovat osobní klíč</string>
   <string name="pref_title_export_keypair">Exportovat osobní klíč a přihlašovací certifikát na externí úložiště</string>
+  <string name="pref_import_keypair">Importovat osobní klíč</string>
+  <string name="pref_title_import_keypair">Importovat osobní klíč a přihlašovací certifikát z externího úložiště</string>
+  <string name="msg_import_keypair">Kontalk naimportuje vaše klíče z %s na vašem externím úložišti. Ujistěte se, že tento soubor existuje a že to je platný archiv s vyexportovanými klíči.</string>
+  <string name="msg_import_keypair_complete">Import osobního klíče byl dokončen.</string>
+  <string name="err_import_keypair_failed">Při importu osobního klíče došlo k chybě.</string>
+  <string name="title_passphrase">Heslo</string>
   <string name="msg_status_sending">Odesílám</string>
   <string name="msg_status_sent">Odesláno</string>
   <string name="msg_status_notaccepted">Odmítnuto</string>
@@ -236,6 +248,7 @@
   <string name="notify_gen_keypair_ticker">Generuji osobní klíč...</string>
   <string name="notify_gen_keypair_title">Generuji osobní klíč</string>
   <string name="notify_gen_keypair_text">Můžete pokračovat v práci běžným způsobem.</string>
+  <string name="msg_xmpp_upgrading">Probíhá aktualizace...</string>
   <string name="title_no_personal_key">Žádný osobní klíč</string>
   <string name="msg_no_personal_key">Osobní klíč není aktuálně dostupný (pravděpodobně proto, že jste právě aktualizovali aplikaci). Do sítě Kontalk se nebudete moct přihlásit, pokud si nevygenerujete osobní klíč. Zadejte prosím svoje jméno tak, že zavřete Kontalk a poté ho znovu otevřete.</string>
   <string name="msg_keypair_exported">Osobní klíč a přihlašovací certifikát byly vyexportovány na externí úložiště.</string>
@@ -267,6 +280,9 @@
   <string name="pref_title_off_sync_sim_contacts">Při zjišťování registrovaných uživatelů se nepoužijí kontakty na kartě SIM</string>
   <string name="pref_title_on_sync_sim_contacts">Při zjišťování registrovaných uživatelů se použijí i kontakty na kartě SIM</string>
   <string name="pref_accept_any_certificate">Akceptovat jakýkoliv SSL certifikát</string>
+  <string name="pref_delete_account">Smazat váš účet</string>
+  <string name="msg_delete_account">Při smazání vašeho účtu dojde také ke smazání všech vašich zpráv. Váš účet na serveru bude smazán automaticky po několika týdnech.</string>
+  <string name="msg_delete_account_progress">Probíhá mazání vašeho účtu...</string>
   <string name="msg_user_blocked">Uživatel byl zablokován.</string>
   <string name="msg_user_unblocked">Uživatel byl odblokován.</string>
   <string name="msg_block_user_warning">&lt;b&gt;ČTĚTE PROSÍM POZORNĚ!&lt;/b&gt;&lt;br&gt;Chystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
@@ -278,4 +294,10 @@
   <string name="pref_text_enter">Zobrazit klávesu Enter</string>
   <string name="pref_title_on_text_enter">Zobrazuji klávesu Enter při psaní zprávy.</string>
   <string name="pref_title_off_text_enter">Zobrazuji výchozí akční klávesu při psaní zprávy.</string>
+  <string name="title_password1">Heslo:</string>
+  <string name="title_password2">Potvrďte heslo:</string>
+  <string name="err_password_too_short">Heslo musí mít nejméně %d znaků.</string>
+  <string name="err_passwords_mismatch">Heslo nesouhlasí!</string>
+  <string name="err_password_invalid">Špatné heslo.</string>
+  <string name="err_change_passphrase">Nepodařilo se změnit heslo k osobnímu klíči.</string>
 </resources>
