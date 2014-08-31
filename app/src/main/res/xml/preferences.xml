@@ -130,6 +130,16 @@
             android:defaultValue="always"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:key="pref_media_settings"
+        android:title="@string/pref_media_settings">
+        <ListPreference android:key="pref_image_resize"
+            android:title="Image Compression"
+            android:summary="@string/pref_image_resize"
+            android:entries="@array/image_resize_labels"
+            android:entryValues="@array/image_resize_values"
+            android:defaultValue="1024"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:key="pref_maintenance"
         android:title="@string/pref_maintenance">
         <ListPreference android:key="pref_idle_time"
