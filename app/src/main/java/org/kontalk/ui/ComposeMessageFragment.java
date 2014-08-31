@@ -390,6 +390,10 @@ public class ComposeMessageFragment extends ListFragment implements
         // reset compose sent flag
         mComposeSent = false;
         mTextEntry.addTextChangedListener(mChatStateListener);
+        // revert to keyboard if emoji panel was open
+        if (mEmojiDrawer.isVisible()) {
+            hideEmojiDrawer();
+        }
     }
 
     /** Sends out a binary message. */
