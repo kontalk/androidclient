@@ -510,6 +510,10 @@ public class ComposeMessageFragment extends ListFragment implements
         // reset compose sent flag
         mComposeSent = false;
         mTextEntry.addTextChangedListener(mChatStateListener);
+        // revert to keyboard if emoji panel was open
+        if (mEmojiDrawer.isVisible()) {
+            hideEmojiDrawer();
+        }
     }
 
     /** Sends out a binary message. */
@@ -1443,12 +1447,15 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
-        // so we can restore it later
-        out.putBoolean("emojiDrawer", mEmojiDrawer.isVisible());
+        if (mCurrentPhoto != null)
+            out.putString("currentPhoto", mCurrentPhoto.toString());
+        if (mEmojiDrawer != null)
+            // so we can restore it later
+            out.putBoolean("emojiDrawer", mEmojiDrawer.isVisible());
     }
 
     private void processArguments(Bundle savedInstanceState) {
-        Bundle args = null;
+        Bundle args;
         if (savedInstanceState != null) {
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
             // threadId = ContentUris.parseId(uri);
@@ -1458,6 +1465,11 @@ public class ComposeMessageFragment extends ListFragment implements
 
             if (savedInstanceState.getBoolean("emojiDrawer", false)) {
                 showEmojiDrawer();
+            }
+
+            String currentPhoto = savedInstanceState.getString("currentPhoto");
+            if (currentPhoto != null) {
+                mCurrentPhoto = new File(currentPhoto);
             }
 
         }

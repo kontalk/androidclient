@@ -248,6 +248,7 @@
   <string name="notify_gen_keypair_ticker">Generazione chiave personale in corso...</string>
   <string name="notify_gen_keypair_title">Generazione chiave personale</string>
   <string name="notify_gen_keypair_text">Puoi continuare a lavorare normalmente.</string>
+  <string name="msg_xmpp_upgrading">Aggiornamento in corso…</string>
   <string name="title_no_personal_key">Chiave personale non trovata</string>
   <string name="msg_no_personal_key">La tua chiave personale non è stata trovata (probabilmente hai appena aggiornato). Non sarai in grado di autenticarti sulla rete di Kontalk se non generi una chiave personale. Inserisci il tuo nome dopo aver chiuso e riaperto Kontalk.</string>
   <string name="msg_keypair_exported">Chiave personale e certificato di login salvati nella memoria esterna.</string>

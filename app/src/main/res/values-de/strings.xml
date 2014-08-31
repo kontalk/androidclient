@@ -238,7 +238,7 @@
   <string name="social_identica">Identi.ca</string>
   <string name="donate_text">Kontalk hat laufende Kosten. Jede kleine Spende hilft den Service am Laufen zu halten.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
-  <string name="text_bitcoin_dialog">Bitcoinadresse:\n%s</string>
+  <string name="text_bitcoin_dialog">Bitcoin Adresse:\n%s</string>
   <string name="donate_wallet">Google Play</string>
   <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
@@ -248,6 +248,7 @@
   <string name="notify_gen_keypair_ticker">Erzeuge privaten Schlüssel...</string>
   <string name="notify_gen_keypair_title">Privaten Schlüssel erzeugen</string>
   <string name="notify_gen_keypair_text">Sie können Ihre Arbeit normal fortsetzen.</string>
+  <string name="msg_xmpp_upgrading">Upgraden...</string>
   <string name="title_no_personal_key">Kein privater Schlüssel</string>
   <string name="msg_no_personal_key">Ein privater Schlüssel ist zur Zeit nicht verfügbar (wahrscheinlich weil sie die App gerade aktuallisiert haben). Sie können sich nicht am Kontalk Netzwerk anmelden wenn Sie keinen prviaten Schlüssel erzeugen. Geben Sie bitte Ihren Namen ein, schließen sie Kontalk und starten sie es erneut.</string>
   <string name="msg_keypair_exported">Privater Schlüssel und Loginzertifikat auf externen Speicher exportiert.</string>
