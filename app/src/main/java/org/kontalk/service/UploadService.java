@@ -229,7 +229,9 @@ public class UploadService extends IntentService implements ProgressListener {
 
     public void completed() {
         stopForeground();
-
+        File imageResized = new File(getApplicationContext().getCacheDir(), "compress_" + mMessageId + ".jpg");
+        if (imageResized.exists())
+            imageResized.delete();
         // upload completed - no need for notification
 
         // TODO broadcast upload completed intent
