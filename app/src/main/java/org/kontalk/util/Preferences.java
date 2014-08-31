@@ -176,6 +176,10 @@ public final class Preferences {
         return getString(context, "pref_ringtone", null);
     }
 
+    public static int getImageCompression(Context context) {
+        return getInt(context, "pref_image_resize", 1024);
+    }
+
     public static boolean setLastCountryCode(Context context, int countryCode) {
         return sPreferences.edit()
             .putInt("pref_countrycode", countryCode)

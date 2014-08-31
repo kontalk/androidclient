@@ -216,7 +216,7 @@ public abstract class MediaStorage {
         return mime;
     }
 
-    public static Uri resizeImage(Context context, Uri uri, float maxWidth, float maxHeight, int quality) {
+    public static Uri resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality) {
         Bitmap bitmap = null;
         try {
             bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
@@ -241,9 +241,7 @@ public abstract class MediaStorage {
 
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
 
-        String timeStamp =
-                new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String filename = "image" + timeStamp + ".jpg";
+        String filename = "compress_" + msgId + ".jpg";
 
         final File compressedFile = new File(context.getCacheDir(), filename);
 
