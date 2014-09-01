@@ -1030,6 +1030,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 continue;
             }
 
+            File imageResized = new File(getApplicationContext().getCacheDir(), "compress_" + id + ".jpg");
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
@@ -1044,13 +1045,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (attFetchUrl != null) {
                 b.putString("org.kontalk.message.mime", attMime);
                 b.putString("org.kontalk.message.fetch.url", attFetchUrl);
-                b.putString("org.kontalk.message.preview.uri", attFileUri);
+                b.putString("org.kontalk.message.preview.uri", imageResized.exists() ? Uri.fromFile(imageResized).toString() : attFileUri);
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
             }
             // check if the message contains some large file to be sent
             else if (attFileUri != null) {
                 b.putString("org.kontalk.message.mime", attMime);
-                b.putString("org.kontalk.message.media.uri", attFileUri);
+                b.putString("org.kontalk.message.media.uri", imageResized.exists() ? Uri.fromFile(imageResized).toString() : attFileUri);
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
                 b.putLong("org.kontalk.message.length", attLength);
             }

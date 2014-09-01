@@ -405,6 +405,7 @@ public class ComposeMessageFragment extends ListFragment implements
         long length = -1;
 
         boolean encrypted = Preferences.getEncryptionEnabled(getActivity());
+        int imageResize = Preferences.getImageCompression(getActivity());
 
         try {
             // TODO convert to thread (?)
@@ -478,9 +479,17 @@ public class ComposeMessageFragment extends ListFragment implements
             // send message!
             // FIXME do not encrypt binary messages for now
             String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
-            MessageCenterService.sendBinaryMessage(getActivity(),
-                mUserJID, mime, uri, length, previewPath, encrypted,
-                ContentUris.parseId(newMsg));
+            if (imageResize == 0 || klass != ImageComponent.class) {
+                MessageCenterService.sendBinaryMessage(getActivity(),
+                        mUserJID, mime, uri, length, previewPath, encrypted,
+                        ContentUris.parseId(newMsg));
+            }
+            else {
+                MessageCenterService.sendBinaryMessage(getActivity(), mUserJID, mime,
+                        MediaStorage.resizeImage(getActivity(), uri, ContentUris.parseId(newMsg),
+                        imageResize, imageResize, 80),
+                        length, previewPath, encrypted, ContentUris.parseId(newMsg));
+            }
         }
         else {
             getActivity().runOnUiThread(new Runnable() {
