@@ -238,7 +238,6 @@
   <string name="social_identica">identi.ca</string>
   <string name="donate_text">Kontalk necessita diners per a continuar donant-vos servei. Si podeu, feu una donació;  encara que siga petita.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
-  <string name="text_bitcoin_dialog">Adreça bitcoin:\n%s</string>
   <string name="donate_wallet">Google Play</string>
   <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
@@ -262,8 +261,6 @@
   <string name="security_error_integrity_check">\u0020(verificació de la integritat)</string>
   <string name="security_error_public_key_unavail">\u0020(la clau pública no està disponible)</string>
   <string name="title_invitation">Invitació a un xat</string>
-  <string name="text_invitation_known">Sol·licitud de\n%1$s &lt;%2$s&gt;\n(%3$s)\nemprempta digital: %4$s</string>
-  <string name="text_invitation_unknown">Sol·licitud de\n%1$s\nEmprempta digital: %2$s</string>
   <string name="button_accept">Accepta</string>
   <string name="button_block">Bloca</string>
   <string name="msg_connecting_iab">S\'està connectant amb Google Play...</string>

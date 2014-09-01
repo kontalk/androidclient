@@ -224,7 +224,6 @@
   <string name="social_identica">Identi.ca</string>
   <string name="donate_text">Kontalk precisa de diñeiro para seguir a súa andaina. Por favor, considera facer unha doazón, aínda que sexa pequena.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
-  <string name="text_bitcoin_dialog">Enderezo de Bitcoin:\n%s</string>
   <string name="donate_wallet">Google Play</string>
   <string name="donate_bitcoin">Bitcoin</string>
   <string name="donate_flattr">Flattr</string>
@@ -247,7 +246,6 @@
   <string name="security_error_integrity_check">\u0020(verificación de integridade)</string>
   <string name="security_error_public_key_unavail">\u0020(clave pública non dispoñible)</string>
   <string name="title_invitation">Convite de conversa</string>
-  <string name="text_invitation_unknown">Solicitado por\n%1$s\nPegada dixital: %2$s</string>
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
   <string name="msg_connecting_iab">Conectando a Google Play…</string>
