@@ -62,5 +62,5 @@ dependencies {
     compile 'com.jcraft:jzlib:+'
     compile "org.igniterealtime.smack:smack-android:4.1.0-alpha1-SNAPSHOT"
 
-    googleplayCompile 'com.google.android.gms:play-services:+'
+    googleplayCompile 'com.google.android.gms:play-services:5.0.89'
 }
