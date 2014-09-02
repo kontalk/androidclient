@@ -134,12 +134,12 @@ public class AudioContentView extends RelativeLayout
 
     @Override
     public void play() {
-        mPlayButton.setBackgroundResource(R.drawable.pause);
+        mPlayButton.setBackgroundResource(R.drawable.pause_balloon);
     }
 
     @Override
     public void pause() {
-        mPlayButton.setBackgroundResource(R.drawable.play);
+        mPlayButton.setBackgroundResource(R.drawable.play_balloon);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class AudioContentView extends RelativeLayout
 
     @Override
     public void end() {
-        mPlayButton.setBackgroundResource(R.drawable.play);
+        mPlayButton.setBackgroundResource(R.drawable.play_balloon);
         updatePosition(-1);
     }
 
