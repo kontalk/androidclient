@@ -9,33 +9,39 @@
         android:id="@+id/balloon_audio_download"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_launcher_audio" />
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:src="@drawable/download_audio" />
 
     <ImageButton
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/balloon_audio_player"
+        android:layout_marginTop="12dp"
         android:focusable="false"
-        android:background="@drawable/play"
+        android:background="@drawable/play_balloon"
         android:layout_alignParentLeft="true" />
+
     <SeekBar
         android:id="@+id/balloon_audio_seekbar"
-        android:layout_width="130dp"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:layout_marginTop="4dp"
         android:focusable="false"
         android:layout_toRightOf="@+id/balloon_audio_player" />
+
     <TextView
         android:id="@+id/balloon_audio_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00:00"
         android:layout_below="@id/balloon_audio_player"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="8dp"
         android:layout_alignLeft="@id/balloon_audio_player"
-        android:layout_alignRight="@id/balloon_audio_player"
         android:textSize="11sp"
         android:gravity="center_horizontal" />
 
