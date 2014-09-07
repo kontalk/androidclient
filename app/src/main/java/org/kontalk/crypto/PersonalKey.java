@@ -45,6 +45,7 @@ import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
 import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.spongycastle.operator.OperatorCreationException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -54,7 +55,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -352,9 +352,9 @@ public class PersonalKey implements Parcelable {
 
     /** Stores the public keyring to the system {@link AccountManager}. */
     public void updateAccountManager(Context context)
-            throws IOException, CertificateEncodingException, InvalidKeyException,
-            IllegalStateException, NoSuchAlgorithmException, SignatureException,
-            CertificateException, NoSuchProviderException, PGPException {
+        throws IOException, InvalidKeyException,
+        IllegalStateException, NoSuchAlgorithmException, SignatureException,
+        CertificateException, NoSuchProviderException, PGPException, OperatorCreationException {
 
         AccountManager am = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
         Account account = Authenticator.getDefaultAccount(am);
