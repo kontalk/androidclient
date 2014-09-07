@@ -1410,6 +1410,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // message server id
             String serverId = data.getString("org.kontalk.message.ack");
+            boolean ackRequest = !data.getBoolean("org.kontalk.message.standalone", false);
 
             // received receipt
             if (serverId != null) {
@@ -1421,11 +1422,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     m.addExtension(new ChatStateExtension(chatState));
 
                 // standalone message: no receipt
-                if (!data.getBoolean("org.kontalk.message.standalone", false))
+                if (ackRequest)
                     m.addExtension(new ServerReceiptRequest());
             }
 
             sendPacket(m);
+
+            // no ack request, release message center immediately
+            if (!ackRequest)
+                mIdleHandler.release();
         }
     }
 
