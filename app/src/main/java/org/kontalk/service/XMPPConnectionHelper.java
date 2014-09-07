@@ -296,9 +296,17 @@ public class XMPPConnectionHelper extends Thread {
         return mConnecting;
     }
 
+    public boolean isServerDirty() {
+        return mServerDirty;
+    }
+
     /** Shortcut for {@link EndpointServer#getNetwork()}. */
     public String getNetwork() {
         return mServer.getNetwork();
+    }
+
+    public EndpointServer getServer() {
+        return mServer;
     }
 
     /** Sets the server the next time we will connect to. */

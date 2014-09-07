@@ -54,7 +54,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     private String mName;
     private String mPhone;
     private String mPassphrase;
-    private EndpointServer mServer;
+    private EndpointServer.EndpointServerProvider mServerProvider;
 
     private byte[] mImportedPrivateKey;
     private byte[] mImportedPublicKey;
@@ -104,7 +104,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         String server = i.getStringExtra("server");
         if (server != null)
-            mServer = new EndpointServer(server);
+            mServerProvider = new EndpointServer.SingleServerProvider(server);
         else
             /*
              * FIXME HUGE problem here. If we already have a verification code,
@@ -112,7 +112,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
              * @see issue 184.
              * http://code.google.com/p/kontalk/issues/detail?id=184
              */
-            mServer = Preferences.getEndpointServer(this);
+            mServerProvider = Preferences.getEndpointServerProvider(this);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         // send the code
         boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
-        mValidator = new NumberValidator(this, mServer, mName, mPhone,
+        mValidator = new NumberValidator(this, mServerProvider, mName, mPhone,
             imported ? null : mKey, mPassphrase);
         mValidator.setListener(this);
         if (imported)
