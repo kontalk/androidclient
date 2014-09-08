@@ -156,6 +156,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
 
+    private static final int MAX_DURATION = 60000;
+
     /** Context menu group ID for this fragment. */
     private static final int CONTEXT_MENU_GROUP_ID = 2;
 
@@ -215,6 +217,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private MediaRecorder mRecord;
     private long startTime = 0L;
     private long elapsedTime = 0L;
+    private boolean mStopped = false;
     private boolean mCheckMove;
 
     private PeerObserver mPeerObserver;
@@ -394,7 +397,8 @@ public class ComposeMessageFragment extends ListFragment implements
                 } else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
                     Log.e(TAG,"Send File");
                     mDraggingX = -1;
-                    stopRecording(true);
+                    if (!mStopped)
+                        stopRecording(true);
                     mCheckRecordingAudio = false;
                     animateRecordFrame();
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mCheckRecordingAudio) {
@@ -2908,17 +2912,18 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    private void stopRecording(Boolean send) {
+    private void stopRecording(boolean send) {
         mHandler.removeCallbacks(mMediaPlayerUpdater);
         mRecord.stop();
         mRecord.reset();
         mRecord.release();
-        if (send && (elapsedTime > 800)) {
+        if (send && (elapsedTime > 900)) {
             sendBinaryMessage(Uri.fromFile(mRecordFile), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
         }
         else {
             mRecordFile.delete();
         }
+        mStopped = true;
     }
 
     private void startTimer() {
@@ -2929,6 +2934,12 @@ public class ComposeMessageFragment extends ListFragment implements
                 elapsedTime = SystemClock.uptimeMillis() - startTime;
                 mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
                 mHandler.postDelayed(this, 100);
+                if (elapsedTime >= 60000) {
+                    mCheckRecordingAudio = false;
+                    animateRecordFrame();
+                    mAudioButton.setPressed(false);
+                    stopRecording(true);
+                }
             }
         };
         mHandler.postDelayed(mMediaPlayerUpdater, 100);
