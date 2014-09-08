@@ -61,6 +61,9 @@ public abstract class MediaStorage {
     private static final int THUMBNAIL_HEIGHT = 256;
     public static final String THUMBNAIL_MIME = "image/png";
 
+    private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
+    private static final int COMPRESSION_QUALITY = 85;
+
     public static boolean isExternalStorageAvailable() {
         return Environment.getExternalStorageState()
             .equals(Environment.MEDIA_MOUNTED);
@@ -216,7 +219,13 @@ public abstract class MediaStorage {
         return mime;
     }
 
-    public static Uri resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality) {
+    public static Uri resizeImage(Context context, Uri uri, long msgId, int maxSize)
+        throws FileNotFoundException {
+        return resizeImage(context, uri, msgId, maxSize, maxSize, COMPRESSION_QUALITY);
+    }
+
+    public static Uri resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality)
+        throws FileNotFoundException {
         Bitmap bitmap = null;
         try {
             bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
@@ -241,21 +250,24 @@ public abstract class MediaStorage {
 
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
 
-        String filename = "compress_" + msgId + ".jpg";
-
+        String filename = String.format(COMPRESS_FILENAME_FORMAT, msgId);
         final File compressedFile = new File(context.getCacheDir(), filename);
 
         FileOutputStream stream = null;
 
         try {
             stream = new FileOutputStream(compressedFile);
-        } catch (FileNotFoundException e) {
-            Log.e(TAG, "file not found: ", e);
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+            return Uri.fromFile(compressedFile);
         }
-
-        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
-
-        return Uri.fromFile(compressedFile);
+        finally {
+            try {
+                stream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
     }
 
     /**
