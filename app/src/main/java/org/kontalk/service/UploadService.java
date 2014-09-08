@@ -141,6 +141,8 @@ public class UploadService extends IntentService implements ProgressListener {
         String previewPath = intent.getStringExtra(EXTRA_PREVIEW_PATH);
         // encryption flag
         boolean encrypt = intent.getBooleanExtra(EXTRA_ENCRYPT, false);
+        // compress ratio
+        int compress = intent.getIntExtra(EXTRA_COMPRESS, 1024);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -155,7 +157,9 @@ public class UploadService extends IntentService implements ProgressListener {
 
             mCanceled = false;
 
-            // TODO compress file
+            if (compress > 0) {
+                file = MediaStorage.resizeImage(getApplicationContext(), file, msgId, compress);
+            }
 
             if (mConn == null) {
                 PersonalKey key = ((Kontalk) getApplication()).getPersonalKey();
