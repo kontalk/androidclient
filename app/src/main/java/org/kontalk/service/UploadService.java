@@ -77,6 +77,8 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String EXTRA_PREVIEW_PATH = "org.kontalk.upload.PREVIEW_PATH";
     /** Encryption flag. */
     public static final String EXTRA_ENCRYPT = "org.kontalk.upload.ENCRYPT";
+    /** Compression ratio. */
+    public static final String EXTRA_COMPRESS = "org.kontalk.upload.COMPRESS";
     // Intent data is the local file Uri
 
     private ProgressNotificationBuilder mNotificationBuilder;
@@ -152,6 +154,8 @@ public class UploadService extends IntentService implements ProgressListener {
             startForeground(0);
 
             mCanceled = false;
+
+            // TODO compress file
 
             if (mConn == null) {
                 PersonalKey key = ((Kontalk) getApplication()).getPersonalKey();
