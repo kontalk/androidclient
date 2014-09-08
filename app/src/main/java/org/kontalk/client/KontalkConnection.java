@@ -38,6 +38,8 @@ import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
+
+import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 
 import android.util.Log;
@@ -77,6 +79,8 @@ public class KontalkConnection extends XMPPTCPConnection {
         config.setSendPresence(false);
         // disable session initiation
         config.setLegacySessionDisabled(true);
+        // enable debugging
+        config.setDebuggerEnabled(BuildConfig.DEBUG);
 
         setupSSL(secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);
     }

@@ -289,6 +289,17 @@ public class ConversationList extends ActionBarActivity
             NumberValidation.startValidation(this);
             finish();
         }
+        else {
+            // hold message center
+            MessageCenterService.hold(this);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // release message center
+        MessageCenterService.release(this);
     }
 
     @Override

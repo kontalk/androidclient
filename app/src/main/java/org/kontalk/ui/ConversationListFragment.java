@@ -337,18 +337,8 @@ public class ConversationListFragment extends ListFragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        // release message center
-        MessageCenterService.release(getActivity());
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-
-        // hold message center
-        MessageCenterService.hold(getActivity());
 
         // update offline mode
         updateOffline();
