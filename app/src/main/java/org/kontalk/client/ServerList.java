@@ -21,7 +21,9 @@ package org.kontalk.client;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 
 /**
@@ -53,6 +55,26 @@ public class ServerList extends ArrayList<EndpointServer> {
     public EndpointServer random() {
         return (size() > 0) ?
             get(mSeed.nextInt(size())) : null;
+    }
+
+    /** A simple server provider backed by a server list. */
+    public static class ServerListProvider implements EndpointServer.EndpointServerProvider {
+        private ServerList mList;
+
+        public ServerListProvider(ServerList list) {
+            mList = new ServerList(list.getDate(), list);
+        }
+
+        @Override
+        public EndpointServer next() {
+            while (mList.size() > 0) {
+                EndpointServer s = mList.random();
+                mList.remove(s);
+                return s;
+            }
+            // list exausted
+            return null;
+        }
     }
 
 }

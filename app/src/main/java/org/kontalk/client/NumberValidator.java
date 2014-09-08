@@ -81,7 +81,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     public static final int ERROR_THROTTLING = 1;
 
-    private final EndpointServer mServer;
+    private final EndpointServer.EndpointServerProvider mServerProvider;
     private final String mName;
     private final String mPhone;
     private PersonalKey mKey;
@@ -103,15 +103,16 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private HandlerThread mServiceHandler;
     private Handler mInternalHandler;
 
-    public NumberValidator(Context context, EndpointServer server, String name, String phone, PersonalKey key, String passphrase) {
+    public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
+        String name, String phone, PersonalKey key, String passphrase) {
         mContext = context.getApplicationContext();
-        mServer = server;
+        mServerProvider = serverProvider;
         mName = name;
         mPhone = phone;
         mKey = key;
         mPassphrase = passphrase;
 
-        mConnector = new XMPPConnectionHelper(mContext, mServer, true);
+        mConnector = new XMPPConnectionHelper(mContext, mServerProvider.next(), true);
         mConnector.setRetryEnabled(false);
 
         configure();
@@ -139,7 +140,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     public EndpointServer getServer() {
-        return mServer;
+        return mConnector.getServer();
     }
 
     public synchronized void start() {
@@ -164,21 +165,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         try {
             // begin!
             if (mStep == STEP_INIT) {
-                /*
-                // check that server is authorized to generate auth tokens
-                mStep = STEP_CHECK_INFO;
-                boolean supportsToken = checkServer();
-
-                // server doesn't support authentication token
-                if (!supportsToken) {
-                    if (mListener != null) {
-                        mStep = STEP_INIT;
-                        mListener.onServerCheckFailed(this);
-                        return;
-                    }
-                }
-                */
-
                 synchronized (mKeyLock) {
                     if (mKey == null) {
                         Log.v(TAG, "waiting for key generator");
@@ -197,10 +183,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 // request number validation via sms
                 mStep = STEP_VALIDATION;
                 initConnection();
+
+                XMPPConnection conn = mConnector.getConnection();
+
                 Packet form = createRegistrationForm();
 
                 // setup listener for form response
-                XMPPConnection conn = mConnector.getConnection();
                 conn.addPacketListener(new PacketListener() {
                     public void processPacket(Packet packet) {
                         int reason = 0;
@@ -236,10 +224,22 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 }
 
                                 else {
-                                    mListener.onServerCheckFailed(NumberValidator.this);
-                                    // onValidationFailed will not be called
-                                    reason = -1;
+                                    // no registration support - try next the server
 
+                                    EndpointServer server = mServerProvider.next();
+                                    if (server != null) {
+                                        // run again with new server
+                                        mStep = STEP_INIT;
+                                        mConnector.setServer(server);
+                                        run();
+                                        return;
+                                    }
+                                    else {
+                                        // last server to try, no chance for registration
+                                        mListener.onServerCheckFailed(NumberValidator.this);
+                                        // onValidationFailed will not be called
+                                        reason = -1;
+                                    }
                                 }
                             }
 
@@ -373,7 +373,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             NoSuchAlgorithmException, CertificateException,
             IOException {
 
-        if (!mConnector.isConnected()) {
+        if (!mConnector.isConnected() || mConnector.isServerDirty()) {
             mConnector.setListener(this);
             mConnector.connectOnce(null);
         }
@@ -387,7 +387,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         FormField type = new FormField("FORM_TYPE");
         type.setType(FormField.TYPE_HIDDEN);
-        type.addValue("jabber:iq:register");
+        type.addValue(Registration.NAMESPACE);
         form.addField(type);
 
         FormField phone = new FormField("phone");
@@ -423,7 +423,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 if (mKey != null) {
                     String userId = MessageUtils.sha1(mPhone);
                     // TODO what in name and comment fields here?
-                    mKeyRing = mKey.storeNetwork(userId, mServer.getNetwork(),
+                    mKeyRing = mKey.storeNetwork(userId, mConnector.getNetwork(),
                         mName, mPassphrase);
                 }
                 else {

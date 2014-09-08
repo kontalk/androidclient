@@ -148,6 +148,18 @@ public final class Preferences {
         return (list != null) ? list.random() : null;
     }
 
+    /** Returns a server provider reflecting the current settings. */
+    public static EndpointServer.EndpointServerProvider getEndpointServerProvider(Context context) {
+        final String customUri = getServerURI(context);
+        if (!TextUtils.isEmpty(customUri)) {
+            return new EndpointServer.SingleServerProvider(customUri);
+        }
+        else {
+            ServerList list = ServerListUpdater.getCurrentList(context);
+            return new ServerList.ServerListProvider(list);
+        }
+    }
+
     public static boolean getEncryptionEnabled(Context context) {
         return getBoolean(context, "pref_encrypt", true);
     }

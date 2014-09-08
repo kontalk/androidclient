@@ -54,10 +54,11 @@ dependencies {
     compile project(':emojicon:library')
 
     compile 'com.android.support:appcompat-v7:20.0.0'
-    compile 'com.madgag.spongycastle:core:1.50.0.0'
-    compile 'com.madgag.spongycastle:prov:1.50.0.0'
-    compile 'com.madgag.spongycastle:pg:1.50.0.0'
-    compile 'com.googlecode.libphonenumber:libphonenumber:6.2'
+    compile 'com.madgag.spongycastle:core:1.51.0.0'
+    compile 'com.madgag.spongycastle:prov:1.51.0.0'
+    compile 'com.madgag.spongycastle:pkix:1.51.0.0'
+    compile 'com.madgag.spongycastle:pg:1.51.0.0'
+    compile 'com.googlecode.libphonenumber:libphonenumber:6.2.2'
     compile 'dnsjava:dnsjava:2.1.6'
     compile 'com.jcraft:jzlib:+'
     compile "org.igniterealtime.smack:smack-android:4.1.0-alpha1-SNAPSHOT"
