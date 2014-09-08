@@ -90,8 +90,6 @@ public class EndpointServer {
 
     /** Interface for providing a server. */
     public interface EndpointServerProvider {
-        /** Returns a random server. */
-        public EndpointServer random();
         /** Returns the next server that hasn't been picked yet. */
         public EndpointServer next();
     }
@@ -106,23 +104,20 @@ public class EndpointServer {
         }
 
         @Override
-        public EndpointServer random() {
-            mCalled = true;
-            try {
-                return new EndpointServer(mUri);
-            }
-            catch (Exception e) {
-                // custom is not valid
-                return null;
-            }
-        }
-
-        @Override
         public EndpointServer next() {
-            if (mCalled)
+            if (mCalled) {
                 return null;
-            else
-                return random();
+            }
+            else {
+                mCalled = true;
+                try {
+                    return new EndpointServer(mUri);
+                }
+                catch (Exception e) {
+                    // custom is not valid
+                    return null;
+                }
+            }
         }
     }
 

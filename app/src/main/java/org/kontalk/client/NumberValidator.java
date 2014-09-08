@@ -186,25 +186,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 XMPPConnection conn = mConnector.getConnection();
 
-                // check for registration support
-                if (conn.getFeature(Registration.Feature.ELEMENT,
-                    Registration.Feature.NAMESPACE) == null) {
-
-                    mStep = STEP_INIT;
-
-                    EndpointServer server = mServerProvider.next();
-                    if (server != null) {
-                        // run again with new server
-                        mConnector.setServer(server);
-                        run();
-                    }
-                    else {
-                        // last server to try, no chance for registration
-                        mListener.onServerCheckFailed(this);
-                    }
-                    return;
-                }
-
                 Packet form = createRegistrationForm();
 
                 // setup listener for form response
@@ -243,10 +224,22 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 }
 
                                 else {
-                                    mListener.onServerCheckFailed(NumberValidator.this);
-                                    // onValidationFailed will not be called
-                                    reason = -1;
+                                    // no registration support - try next the server
 
+                                    EndpointServer server = mServerProvider.next();
+                                    if (server != null) {
+                                        // run again with new server
+                                        mStep = STEP_INIT;
+                                        mConnector.setServer(server);
+                                        run();
+                                        return;
+                                    }
+                                    else {
+                                        // last server to try, no chance for registration
+                                        mListener.onServerCheckFailed(NumberValidator.this);
+                                        // onValidationFailed will not be called
+                                        reason = -1;
+                                    }
                                 }
                             }
 

@@ -60,28 +60,17 @@ public class ServerList extends ArrayList<EndpointServer> {
     /** A simple server provider backed by a server list. */
     public static class ServerListProvider implements EndpointServer.EndpointServerProvider {
         private ServerList mList;
-        private Set<EndpointServer> mUsed;
 
         public ServerListProvider(ServerList list) {
-            mList = list;
-            mUsed = new HashSet<EndpointServer>();
-        }
-
-        @Override
-        public EndpointServer random() {
-            EndpointServer s = mList.random();
-            mUsed.add(s);
-            return s;
+            mList = new ServerList(list.getDate(), list);
         }
 
         @Override
         public EndpointServer next() {
-            while (mUsed.size() < mList.size()) {
+            while (mList.size() > 0) {
                 EndpointServer s = mList.random();
-                if (!mUsed.contains(s))
-                    return s;
-                else
-                    mUsed.add(s);
+                mList.remove(s);
+                return s;
             }
             // list exausted
             return null;

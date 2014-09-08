@@ -109,8 +109,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             /*
              * FIXME HUGE problem here. If we already have a verification code,
              * how are we supposed to know from what server it came from??
-             * @see issue 184.
-             * http://code.google.com/p/kontalk/issues/detail?id=184
+             * https://github.com/kontalk/androidclient/issues/118
              */
             mServerProvider = Preferences.getEndpointServerProvider(this);
     }
