@@ -55,6 +55,19 @@ public class EndpointServer {
     }
 
     @Override
+    public boolean equals(Object o) {
+        return o instanceof EndpointServer &&
+            ((EndpointServer) o).mHost.equalsIgnoreCase(mHost) &&
+            ((EndpointServer) o).mNetwork.equalsIgnoreCase(mNetwork) &&
+            ((EndpointServer) o).mPort == mPort;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
     public String toString() {
         return mNetwork + "|" + mHost + ":" + mPort;
     }
@@ -73,6 +86,39 @@ public class EndpointServer {
 
     public String getNetwork() {
         return mNetwork;
+    }
+
+    /** Interface for providing a server. */
+    public interface EndpointServerProvider {
+        /** Returns the next server that hasn't been picked yet. */
+        public EndpointServer next();
+    }
+
+    /** A basic server provider for a single server. */
+    public static class SingleServerProvider implements EndpointServerProvider {
+        private String mUri;
+        private boolean mCalled;
+
+        public SingleServerProvider(String uri) {
+            mUri = uri;
+        }
+
+        @Override
+        public EndpointServer next() {
+            if (mCalled) {
+                return null;
+            }
+            else {
+                mCalled = true;
+                try {
+                    return new EndpointServer(mUri);
+                }
+                catch (Exception e) {
+                    // custom is not valid
+                    return null;
+                }
+            }
+        }
     }
 
 }

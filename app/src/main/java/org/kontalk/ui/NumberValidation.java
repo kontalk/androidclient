@@ -474,8 +474,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             startProgress();
 
             // key generation finished, start immediately
-            EndpointServer server = Preferences.getEndpointServer(this);
-            mValidator = new NumberValidator(this, server, mName, mPhoneNumber, mKey, mPassphrase);
+            EndpointServer.EndpointServerProvider provider =
+                Preferences.getEndpointServerProvider(this);
+            mValidator = new NumberValidator(this, provider, mName, mPhoneNumber, mKey, mPassphrase);
             mValidator.setListener(this);
             mValidator.start();
         }
