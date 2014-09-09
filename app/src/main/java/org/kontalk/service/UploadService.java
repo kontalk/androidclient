@@ -164,6 +164,7 @@ public class UploadService extends IntentService implements ProgressListener {
                     try {
                         mCompressed = MediaStorage
                             .resizeImage(this, file, msgId, compress);
+                        mTotalBytes = length = mCompressed.length();
                         file = Uri.fromFile(mCompressed);
                     }
                     catch (Exception e) {
