@@ -529,6 +529,10 @@ public class ComposeMessageFragment extends ListFragment implements
         long length = -1;
 
         boolean encrypted = Preferences.getEncryptionEnabled(getActivity());
+        int compress = 0;
+        if (klass == ImageComponent.class) {
+            compress = Preferences.getImageCompression(getActivity());
+        }
 
         try {
             // TODO convert to thread (?)
@@ -574,6 +578,7 @@ public class ComposeMessageFragment extends ListFragment implements
             values.put(Messages.ATTACHMENT_MIME, mime);
             values.put(Messages.ATTACHMENT_LOCAL_URI, uri.toString());
             values.put(Messages.ATTACHMENT_LENGTH, length);
+            values.put(Messages.ATTACHMENT_COMPRESS, compress);
 
             newMsg = getActivity().getContentResolver().insert(
                     Messages.CONTENT_URI, values);
@@ -600,11 +605,10 @@ public class ComposeMessageFragment extends ListFragment implements
             }
 
             // send message!
-            // FIXME do not encrypt binary messages for now
             String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
             MessageCenterService.sendBinaryMessage(getActivity(),
-                    mUserJID, mime, uri, length, previewPath, encrypted,
-                    ContentUris.parseId(newMsg));
+                mUserJID, mime, uri, length, previewPath, encrypted, compress,
+                ContentUris.parseId(newMsg));
         }
         else {
             getActivity().runOnUiThread(new Runnable() {
