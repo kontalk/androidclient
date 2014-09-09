@@ -339,8 +339,8 @@
     <string name="warn_invite_no_app">No application available to invite users.</string>
 
     <string name="pref_text_enter">Show enter key</string>
-    <string name="pref_title_on_text_enter">Showing the enter key while composing messages.</string>
-    <string name="pref_title_off_text_enter">Showing the default action key while composing messages.</string>
+    <string name="pref_title_on_text_enter">Showing the enter key while composing messages</string>
+    <string name="pref_title_off_text_enter">Showing the default action key while composing messages</string>
 
     <string name="title_password1">Password:</string>
     <string name="title_password2">Confirm password:</string>
