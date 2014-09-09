@@ -62,10 +62,10 @@
     </string-array>
 
     <string-array name="image_resize_labels">
-        <item>None</item>
-        <item>Small</item>
-        <item>Medium</item>
-        <item>Large</item>
+        <item>Original</item>
+        <item>Small (0.3MP)</item>
+        <item>Medium (0.5MP)</item>
+        <item>Large (0.8MP)</item>
     </string-array>
 
     <string-array name="idle_time_values" translate="false">

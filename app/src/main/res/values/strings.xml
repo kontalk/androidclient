@@ -87,8 +87,6 @@
     <string name="size_label">Size:\u0020</string>
     <string name="size_unknown">(unknown)</string>
     <string name="title_file_info">File information</string>
-    <string name="pref_media_settings">Media Settings</string>
-    <string name="pref_image_resize">Image Compression size</string>
     <string name="pref_restart_msgcenter">Restart message center</string>
     <string name="pref_title_restart_msgcenter">Use this if the message center is not working properly</string>
     <string name="pref_idle_time">Disconnect when idle</string>
@@ -352,5 +350,9 @@
     <string name="err_password_invalid">Wrong password.</string>
 
     <string name="err_change_passphrase">Unable to change the personal key password.</string>
+
+    <string name="pref_media_settings">Media settings</string>
+    <string name="pref_image_resize">Resize images</string>
+    <string name="pref_title_image_resize">Resize images before sending</string>
 
 </resources>
