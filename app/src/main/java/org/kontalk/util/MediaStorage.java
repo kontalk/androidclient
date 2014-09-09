@@ -18,7 +18,6 @@
 
 package org.kontalk.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -40,7 +39,6 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -219,12 +217,12 @@ public abstract class MediaStorage {
         return mime;
     }
 
-    public static Uri resizeImage(Context context, Uri uri, long msgId, int maxSize)
+    public static File resizeImage(Context context, Uri uri, long msgId, int maxSize)
         throws FileNotFoundException {
         return resizeImage(context, uri, msgId, maxSize, maxSize, COMPRESSION_QUALITY);
     }
 
-    public static Uri resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality)
+    public static File resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality)
         throws FileNotFoundException {
         Bitmap bitmap = null;
         try {
@@ -258,7 +256,7 @@ public abstract class MediaStorage {
         try {
             stream = new FileOutputStream(compressedFile);
             scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
-            return Uri.fromFile(compressedFile);
+            return compressedFile;
         }
         finally {
             try {

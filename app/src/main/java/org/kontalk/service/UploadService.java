@@ -91,6 +91,7 @@ public class UploadService extends IntentService implements ProgressListener {
     private long mMessageId;
     private UploadConnection mConn;
     private boolean mCanceled;
+    private File mCompressed;
 
     public UploadService() {
         super(UploadService.class.getSimpleName());
@@ -142,7 +143,7 @@ public class UploadService extends IntentService implements ProgressListener {
         // encryption flag
         boolean encrypt = intent.getBooleanExtra(EXTRA_ENCRYPT, false);
         // compress ratio
-        int compress = intent.getIntExtra(EXTRA_COMPRESS, 1024);
+        int compress = intent.getIntExtra(EXTRA_COMPRESS, 0);
 
         // check if upload has already been queued
         if (queue.get(filename) != null) return;
@@ -157,8 +158,20 @@ public class UploadService extends IntentService implements ProgressListener {
 
             mCanceled = false;
 
+            // compress data if needed
             if (compress > 0) {
-                file = MediaStorage.resizeImage(getApplicationContext(), file, msgId, compress);
+                if (mime.startsWith("image/")) {
+                    try {
+                        mCompressed = MediaStorage
+                            .resizeImage(this, file, msgId, compress);
+                        file = Uri.fromFile(mCompressed);
+                    }
+                    catch (Exception e) {
+                        Log.w(TAG, "error compressing image", e);
+                        // what to do now? Should we warn the user or just go on?
+                        // or maybe just a Toast notification?
+                    }
+                }
             }
 
             if (mConn == null) {
@@ -191,6 +204,14 @@ public class UploadService extends IntentService implements ProgressListener {
         finally {
             queue.remove(filename);
             mMessageId = 0;
+            try {
+                // delete compressed file (if any)
+                mCompressed.delete();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            mCompressed = null;
         }
     }
 
@@ -237,9 +258,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
     public void completed() {
         stopForeground();
-        File imageResized = new File(getApplicationContext().getCacheDir(), "compress_" + mMessageId + ".jpg");
-        if (imageResized.exists())
-            imageResized.delete();
+
         // upload completed - no need for notification
 
         // TODO broadcast upload completed intent
