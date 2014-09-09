@@ -916,6 +916,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 // this is the password to the private key
                 am.addAccountExplicitly(account, passphrase, data);
 
+                // put data once more (workaround for Android bug http://stackoverflow.com/a/11698139/1045199)
+                am.setUserData(account, Authenticator.DATA_PRIVATEKEY, data.getString(Authenticator.DATA_PRIVATEKEY));
+                am.setUserData(account, Authenticator.DATA_PUBLICKEY, data.getString(Authenticator.DATA_PUBLICKEY));
+                am.setUserData(account, Authenticator.DATA_BRIDGECERT, data.getString(Authenticator.DATA_BRIDGECERT));
+                am.setUserData(account, Authenticator.DATA_NAME, data.getString(Authenticator.DATA_NAME));
+
                 // Set contacts sync for this account.
                 ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
                 ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 1);
