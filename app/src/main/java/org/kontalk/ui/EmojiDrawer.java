@@ -62,10 +62,15 @@ public class EmojiDrawer extends KeyboardAwareFrameLayout {
         if (mFragmentManager != null) {
             Fragment f = mFragmentManager.findFragmentById(getId());
             if (f != null) {
-                // remove fragment
-                mFragmentManager.beginTransaction()
-                    .remove(f)
-                    .commit();
+                try {
+                    // remove fragment
+                    mFragmentManager.beginTransaction()
+                        .remove(f)
+                        .commit();
+                }
+                catch (IllegalStateException e) {
+                    // workaround for #209 (this will be removed anyway)
+                }
             }
         }
     }

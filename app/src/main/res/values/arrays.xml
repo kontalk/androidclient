@@ -54,6 +54,20 @@
         <item>iPhone</item>
     </string-array>
 
+    <string-array name="image_resize_values" translate="false">
+        <item>0</item>
+        <item>640</item>
+        <item>800</item>
+        <item>1024</item>
+    </string-array>
+
+    <string-array name="image_resize_labels">
+        <item>Original</item>
+        <item>Small (0.3MP)</item>
+        <item>Medium (0.5MP)</item>
+        <item>Large (0.8MP)</item>
+    </string-array>
+
     <string-array name="idle_time_values" translate="false">
         <item>0</item>
         <item>60000</item>

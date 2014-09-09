@@ -79,7 +79,7 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> fulltextProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
-        private static final int DATABASE_VERSION = 7;
+        private static final int DATABASE_VERSION = 8;
         private static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
@@ -109,6 +109,7 @@ public class MessagesProvider extends ContentProvider {
             "att_fetch_url TEXT," +
             "att_local_uri TEXT," +
             "att_length INTEGER NOT NULL DEFAULT 0," +
+            "att_compress INTEGER NOT NULL DEFAULT 0," +
             "att_encrypted INTEGER NOT NULL DEFAULT 0," +
             "att_security_flags INTEGER NOT NULL DEFAULT 0," +
 
@@ -249,7 +250,7 @@ public class MessagesProvider extends ContentProvider {
             "_id, thread_id, msg_id, peer || '@' || ?, direction, unread, 0, timestamp, status_changed, status, 'text/plain', " +
             "CASE WHEN mime <> 'text/plain' THEN NULL ELSE content END, "+
             "CASE WHEN mime <> 'text/plain' THEN 0 ELSE length(content) END, " +
-            "CASE WHEN mime <> 'text/plain' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, encrypted, " +
+            "CASE WHEN mime <> 'text/plain' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, 0, encrypted, " +
             "CASE WHEN encrypt_key IS NOT NULL THEN " + Coder.SECURITY_LEGACY_ENCRYPTED + " ELSE " + Coder.SECURITY_CLEARTEXT + " END, "+
             "strftime('%s', server_timestamp)*1000" +
                 " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
@@ -292,6 +293,10 @@ public class MessagesProvider extends ContentProvider {
             "UPDATE " + TABLE_THREADS + " SET peer = peer || '@' || ?",
             "UPDATE " + TABLE_MESSAGES + " SET peer = peer || '@' || ?",
         };
+
+        private static final String SCHEMA_UPGRADE_V7 =
+            // new column for attachment compression ratio
+            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN att_compress INTEGER NOT NULL DEFAULT 0";
 
         private Context mContext;
 
@@ -345,7 +350,14 @@ public class MessagesProvider extends ContentProvider {
 
                 for (String sql : SCHEMA_UPGRADE_V6)
                     db.execSQL(sql, new Object[] { host });
+                // trigger version 7 upgrade
+                oldVersion = 7;
             }
+
+            if (oldVersion == 7) {
+                db.execSQL(SCHEMA_UPGRADE_V7);
+            }
+
         }
     }
 
@@ -1268,6 +1280,7 @@ public class MessagesProvider extends ContentProvider {
         messagesProjectionMap.put(Messages.ATTACHMENT_FETCH_URL, Messages.ATTACHMENT_FETCH_URL);
         messagesProjectionMap.put(Messages.ATTACHMENT_LOCAL_URI, Messages.ATTACHMENT_LOCAL_URI);
         messagesProjectionMap.put(Messages.ATTACHMENT_LENGTH, Messages.ATTACHMENT_LENGTH);
+        messagesProjectionMap.put(Messages.ATTACHMENT_COMPRESS, Messages.ATTACHMENT_COMPRESS);
         messagesProjectionMap.put(Messages.ATTACHMENT_ENCRYPTED, Messages.ATTACHMENT_ENCRYPTED);
         messagesProjectionMap.put(Messages.ATTACHMENT_SECURITY_FLAGS, Messages.ATTACHMENT_SECURITY_FLAGS);
 

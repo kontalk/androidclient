@@ -342,8 +342,8 @@
     <string name="warn_invite_no_app">No application available to invite users.</string>
 
     <string name="pref_text_enter">Show enter key</string>
-    <string name="pref_title_on_text_enter">Showing the enter key while composing messages.</string>
-    <string name="pref_title_off_text_enter">Showing the default action key while composing messages.</string>
+    <string name="pref_title_on_text_enter">Showing the enter key while composing messages</string>
+    <string name="pref_title_off_text_enter">Showing the default action key while composing messages</string>
 
     <string name="title_password1">Password:</string>
     <string name="title_password2">Confirm password:</string>
@@ -358,5 +358,9 @@
     <string name="err_audio_record_writing">Error writing on external storage.</string>
     <string name="err_playing_audio">Error playing audio.</string>
     <string name="err_playing_sdcard">Error reading from external storage.</string>
+
+    <string name="pref_media_settings">Media settings</string>
+    <string name="pref_image_resize">Resize images</string>
+    <string name="pref_title_image_resize">Resize images before sending</string>
 
 </resources>
