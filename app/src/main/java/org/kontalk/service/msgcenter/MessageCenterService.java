@@ -1260,6 +1260,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // preview file path (if any)
                 String previewPath = data.getString("org.kontalk.message.preview.path");
+                // compress ratio (if any)
+                int compress = data.getInt("org.kontalk.message.compress");
 
                 // start upload intent service
                 Intent i = new Intent(this, UploadService.class);
@@ -1270,6 +1272,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.putExtra(UploadService.EXTRA_MIME, mime);
                 i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
                 i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
+                i.putExtra(UploadService.EXTRA_COMPRESS, compress);
                 i.putExtra(UploadService.EXTRA_USER, to);
                 startService(i);
             }
@@ -1662,8 +1665,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void sendBinaryMessage(final Context context,
             String to,
             String mime, Uri localUri, long length, String previewPath,
-            boolean encrypt,
-            long msgId) {
+            boolean encrypt, int compress,
+        long msgId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
@@ -1672,6 +1675,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
         i.putExtra("org.kontalk.message.length", length);
         i.putExtra("org.kontalk.message.preview.path", previewPath);
+        i.putExtra("org.kontalk.message.compress", compress);
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);

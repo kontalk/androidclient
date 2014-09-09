@@ -108,6 +108,16 @@
             android:defaultValue="false"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:key="pref_media_settings"
+            android:title="@string/pref_media_settings">
+        <ListPreference android:key="pref_image_resize"
+            android:title="@string/pref_image_resize"
+            android:summary="@string/pref_title_image_resize"
+            android:entries="@array/image_resize_labels"
+            android:entryValues="@array/image_resize_values"
+            android:defaultValue="1024"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:key="pref_notification_settings"
         android:title="@string/pref_notification_settings">
         <CheckBoxPreference android:key="pref_enable_notifications"

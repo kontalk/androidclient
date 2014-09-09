@@ -91,6 +91,7 @@ public final class MyMessages {
         public static final String ATTACHMENT_FETCH_URL = "att_fetch_url";
         public static final String ATTACHMENT_LOCAL_URI = "att_local_uri";
         public static final String ATTACHMENT_LENGTH = "att_length";
+        public static final String ATTACHMENT_COMPRESS = "att_compress";
         public static final String ATTACHMENT_ENCRYPTED = "att_encrypted";
         public static final String ATTACHMENT_SECURITY_FLAGS = "att_security_flags";
 
