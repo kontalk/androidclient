@@ -410,36 +410,38 @@ public class ComposeMessageFragment extends ListFragment implements
                         stopRecording(false);
                         animateRecordFrame();
                     }
-                    x = x + mAudioButton.getX();
-                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
-                    if (mDraggingX != -1) {
-                        float dist = (x - mDraggingX);
-                        params.leftMargin = KontalkUtilities.getDensityPixel(30) + (int)dist;
-                        mSlideText.setLayoutParams(params);
-                        float alpha = 1.0f + dist / mDistMove;
-                        if (alpha > 1) {
-                            alpha = 1;
-                        } else if (alpha < 0) {
-                            alpha = 0;
+                    if(android.os.Build.VERSION.SDK_INT > 13) {
+                        x = x + mAudioButton.getX();
+                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
+                        if (mDraggingX != -1) {
+                            float dist = (x - mDraggingX);
+                            params.leftMargin = KontalkUtilities.getDensityPixel(30) + (int) dist;
+                            mSlideText.setLayoutParams(params);
+                            float alpha = 1.0f + dist / mDistMove;
+                            if (alpha > 1) {
+                                alpha = 1;
+                            } else if (alpha < 0) {
+                                alpha = 0;
+                            }
+                            mSlideText.setAlpha(alpha);
                         }
-                        mSlideText.setAlpha(alpha);
-                    }
-                    if (x <= mSlideText.getX() + mSlideText.getWidth() + KontalkUtilities.getDensityPixel(30)) {
-                        if (mDraggingX == -1) {
-                            mDraggingX = x;
-                            mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - KontalkUtilities.getDensityPixel(48)) / 2.0f;
-                            if (mDistMove <= 0) {
-                                mDistMove = KontalkUtilities.getDensityPixel(80);
-                            } else if (mDistMove > KontalkUtilities.getDensityPixel(80)) {
-                                mDistMove = KontalkUtilities.getDensityPixel(80);
+                        if (x <= mSlideText.getX() + mSlideText.getWidth() + KontalkUtilities.getDensityPixel(30)) {
+                            if (mDraggingX == -1) {
+                                mDraggingX = x;
+                                mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - KontalkUtilities.getDensityPixel(48)) / 2.0f;
+                                if (mDistMove <= 0) {
+                                    mDistMove = KontalkUtilities.getDensityPixel(80);
+                                } else if (mDistMove > KontalkUtilities.getDensityPixel(80)) {
+                                    mDistMove = KontalkUtilities.getDensityPixel(80);
+                                }
                             }
                         }
-                    }
-                    if (params.leftMargin > KontalkUtilities.getDensityPixel(30)) {
-                        params.leftMargin = KontalkUtilities.getDensityPixel(30);
-                        mSlideText.setLayoutParams(params);
-                        mSlideText.setAlpha(1);
-                        mDraggingX = -1;
+                        if (params.leftMargin > KontalkUtilities.getDensityPixel(30)) {
+                            params.leftMargin = KontalkUtilities.getDensityPixel(30);
+                            mSlideText.setLayoutParams(params);
+                            mSlideText.setAlpha(1);
+                            mDraggingX = -1;
+                        }
                     }
                 }
                 view.onTouchEvent(motionEvent);
