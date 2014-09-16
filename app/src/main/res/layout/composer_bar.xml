@@ -34,8 +34,7 @@
                 style="?android:attr/buttonStyle"
                 android:src="@drawable/ic_emoji_dark"
                 android:adjustViewBounds="false"
-                android:drawablePadding="0dip"
-                android:layout_width="48dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="48dip"
                 android:contentDescription="@string/menu_smileys" />
@@ -62,7 +61,6 @@
 
                 <Button
                     android:id="@+id/send_button"
-                    android:layout_marginLeft="5dip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="?android:attr/buttonStyle"

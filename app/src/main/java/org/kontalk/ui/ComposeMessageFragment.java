@@ -387,7 +387,7 @@ public class ComposeMessageFragment extends ListFragment implements
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    Log.e(TAG,"Start Record");
+                    Log.e(TAG, "Start Record");
                     mCheckMove = false;
                     mDraggingX = -1;
                     mCheckRecordingAudio = true;
@@ -395,7 +395,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     animateRecordFrame();
                     mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
                 } else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
-                    Log.e(TAG,"Send File");
+                    Log.e(TAG, "Send File");
                     mDraggingX = -1;
                     if (!mStopped)
                         stopRecording(true);
@@ -404,13 +404,13 @@ public class ComposeMessageFragment extends ListFragment implements
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mCheckRecordingAudio) {
                     float x = motionEvent.getX();
                     if (x < -mDistMove) {
-                        Log.e(TAG,"Delete File");
+                        Log.e(TAG, "Delete File");
                         mCheckMove = true;
                         mCheckRecordingAudio = false;
                         stopRecording(false);
                         animateRecordFrame();
                     }
-                    if(android.os.Build.VERSION.SDK_INT > 13) {
+                    if (android.os.Build.VERSION.SDK_INT > 13) {
                         x = x + mAudioButton.getX();
                         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
                         if (mDraggingX != -1) {
@@ -2681,10 +2681,9 @@ public class ComposeMessageFragment extends ListFragment implements
             mPlayer = new MediaPlayer();
 
         stopMediaPlayerUpdater();
-
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
-            mPlayer.setDataSource(audioFile.getPath());
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mPlayer.setDataSource(audioFile.getAbsolutePath());
             mPlayer.prepare();
 
             // prepare was successful
