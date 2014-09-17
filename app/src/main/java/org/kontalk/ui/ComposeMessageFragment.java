@@ -221,7 +221,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private MediaRecorder mRecord;
     private long startTime = 0L;
     private long elapsedTime = 0L;
-    private boolean mStopped = false;
     private boolean mCheckMove;
     private int mOrientation;
     private Vibrator mVibrator = (Vibrator) Kontalk.mApplicationContext.getSystemService(Context.VIBRATOR_SERVICE);
@@ -405,8 +404,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     if (mOrientation == getActivity().getWindowManager().getDefaultDisplay().getRotation()) {
                         Log.e(TAG, "Send File");
                         mDraggingX = -1;
-                        if (!mStopped)
-                            stopRecording(true);
+                        stopRecording(true);
                         mCheckRecordingAudio = false;
                         animateRecordFrame();
                     }
@@ -1028,6 +1026,7 @@ public class ComposeMessageFragment extends ListFragment implements
         }
         mEmojiDrawer.hide();
         mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
+
     }
 
     boolean tryHideEmojiDrawer() {
@@ -2910,10 +2909,10 @@ public class ComposeMessageFragment extends ListFragment implements
         mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
             mVibrator.vibrate(20);
+            startTimer();
             mRecord.prepare();
             // Start recording
             mRecord.start();
-            startTimer();
         }
         catch (IllegalStateException e) {
             Log.e (TAG, "error starting audio recording:", e);
@@ -2937,16 +2936,23 @@ public class ComposeMessageFragment extends ListFragment implements
     private void stopRecording(boolean send) {
         mVibrator.vibrate(20);
         mHandler.removeCallbacks(mMediaPlayerUpdater);
-        mRecord.stop();
-        mRecord.reset();
-        mRecord.release();
-        if (send && (elapsedTime > 900)) {
-            sendBinaryMessage(Uri.fromFile(mRecordFile), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+        try {
+            mRecord.stop();
+            mRecord.reset();
+            mRecord.release();
+            if (send && (elapsedTime > 900)) {
+                sendBinaryMessage(Uri.fromFile(mRecordFile), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+            } else {
+                Log.e(TAG,"File Cancellato");
+                mRecordFile.delete();
+            }
         }
-        else {
-            mRecordFile.delete();
+        catch (IllegalStateException e) {
+            //ignore
         }
-        mStopped = true;
+        catch (RuntimeException e) {
+            //ignore
+        }
     }
 
     private void startTimer() {
