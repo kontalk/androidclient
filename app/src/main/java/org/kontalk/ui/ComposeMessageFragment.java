@@ -50,6 +50,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -86,6 +87,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -219,6 +221,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private long elapsedTime = 0L;
     private boolean mStopped = false;
     private boolean mCheckMove;
+    private int mOrientation;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -387,6 +390,7 @@ public class ComposeMessageFragment extends ListFragment implements
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    mOrientation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
                     Log.e(TAG, "Start Record");
                     mCheckMove = false;
                     mDraggingX = -1;
@@ -395,12 +399,14 @@ public class ComposeMessageFragment extends ListFragment implements
                     animateRecordFrame();
                     mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
                 } else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
-                    Log.e(TAG, "Send File");
-                    mDraggingX = -1;
-                    if (!mStopped)
-                        stopRecording(true);
-                    mCheckRecordingAudio = false;
-                    animateRecordFrame();
+                    if (mOrientation == getActivity().getWindowManager().getDefaultDisplay().getRotation()) {
+                        Log.e(TAG, "Send File");
+                        mDraggingX = -1;
+                        if (!mStopped)
+                            stopRecording(true);
+                        mCheckRecordingAudio = false;
+                        animateRecordFrame();
+                    }
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mCheckRecordingAudio) {
                     float x = motionEvent.getX();
                     if (x < -mDistMove) {
@@ -479,6 +485,13 @@ public class ComposeMessageFragment extends ListFragment implements
         super.onConfigurationChanged(newConfig);
 
         onKeyboardStateChanged(newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
+
+        if(mCheckRecordingAudio && mOrientation != newConfig.orientation) {
+            mCheckRecordingAudio = false;
+            animateRecordFrame();
+            stopRecording(false);
+            mAudioButton.setPressed(false);
+        }
     }
 
     public void reload() {
