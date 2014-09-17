@@ -67,6 +67,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.ListFragment;
@@ -103,6 +104,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
@@ -222,6 +224,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private boolean mStopped = false;
     private boolean mCheckMove;
     private int mOrientation;
+    private Vibrator mVibrator = (Vibrator) Kontalk.mApplicationContext.getSystemService(Context.VIBRATOR_SERVICE);
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -2906,6 +2909,7 @@ public class ComposeMessageFragment extends ListFragment implements
         mRecord.setOutputFile(mRecordFile.getAbsolutePath());
         mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
+            mVibrator.vibrate(20);
             mRecord.prepare();
             // Start recording
             mRecord.start();
@@ -2931,6 +2935,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void stopRecording(boolean send) {
+        mVibrator.vibrate(20);
         mHandler.removeCallbacks(mMediaPlayerUpdater);
         mRecord.stop();
         mRecord.reset();
