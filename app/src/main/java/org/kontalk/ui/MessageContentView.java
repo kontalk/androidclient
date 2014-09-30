@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public interface MessageContentView<T> {
 
     /** Binds the given component with this view. */
-    public void bind(long id, T component, Contact contact, Pattern highlight);
+    public void bind(long id, String messageSender, T component, Contact contact, Pattern highlight);
 
     /** Unbinds and release all resources from this view. */
     public void unbind();

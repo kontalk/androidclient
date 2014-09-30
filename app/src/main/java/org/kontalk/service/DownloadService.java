@@ -93,6 +93,10 @@ public class DownloadService extends IntentService implements DownloadListener {
     private String mPeer;
     private boolean mEncrypted;
 
+    public static final String INTENT_ACTION = "org.kontalk.receiver.intent.action.TEST";
+    public static final String INTENT_PROGRESS  = "PROGRESS_DATA";
+    public static final String INTENT_MSGID = "MSGID_DATA";
+
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
 
@@ -362,6 +366,11 @@ public class DownloadService extends IntentService implements DownloadListener {
     public void progress(String url, File destination, long bytes) {
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
+            Intent intent = new Intent();
+            intent.setAction(INTENT_ACTION);
+            intent.putExtra(INTENT_PROGRESS, progress);
+            intent.putExtra(INTENT_MSGID, mMessageId);
+            sendBroadcast(intent);
             foregroundNotification(progress);
             // send the updates to the notification manager
             mNotificationManager.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
@@ -373,4 +382,5 @@ public class DownloadService extends IntentService implements DownloadListener {
     public static boolean isQueued(String url) {
         return sQueue.containsKey(url);
     }
+
 }

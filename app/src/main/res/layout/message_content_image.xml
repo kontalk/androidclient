@@ -19,4 +19,30 @@
 <org.kontalk.ui.ImageContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants">
+
+<ImageView
+    android:id="@+id/image_balloon"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:src="@drawable/rec"/>
+
+<Button
+    android:id="@+id/download_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:text="Down"/>
+
+<ProgressBar
+    android:id="@+id/progress_balloon"
+    style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
+    android:max="100"
+    android:layout_width="80dp"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/download_button"
+    android:layout_centerInParent="true"/>
+
+</org.kontalk.ui.ImageContentView>

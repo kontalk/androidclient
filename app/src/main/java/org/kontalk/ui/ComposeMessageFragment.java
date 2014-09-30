@@ -149,7 +149,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  */
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
-        OnAudioDialogResult, AudioPlayerControl,
+        OnAudioDialogResult, AudioPlayerControl, BalloonProgressBar,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         EmojiconGridFragment.OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
@@ -231,6 +231,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private LocalBroadcastManager mLocalBroadcastManager;
     private BroadcastReceiver mPresenceReceiver;
     private BroadcastReceiver mPrivacyListener;
+    private IntentFilter mFilter =new IntentFilter(DownloadService.INTENT_ACTION);
 
     private boolean mOfflineModeWarned;
     private boolean mComposeSent;
@@ -289,6 +290,7 @@ public class ComposeMessageFragment extends ListFragment implements
         list.setFastScrollEnabled(true);
         registerForContextMenu(list);
 
+        getActivity().registerReceiver(mReceiver, mFilter);
         // footer (for tablet presence status)
         mStatusText = (TextView) getView().findViewById(R.id.status_text);
 
@@ -1665,7 +1667,7 @@ public class ComposeMessageFragment extends ListFragment implements
             }
 
             mListAdapter = new MessageListAdapter(getActivity(), null,
-                    highlight, getListView(), this);
+                    highlight, getListView(), this, this);
             mListAdapter.setOnContentChangedListener(mContentChangedListener);
             setListAdapter(mListAdapter);
         }
@@ -2442,6 +2444,8 @@ public class ComposeMessageFragment extends ListFragment implements
             mPlayer.release();
             mPlayer = null;
         }
+
+        getActivity().unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -2972,5 +2976,27 @@ public class ComposeMessageFragment extends ListFragment implements
             }
         };
         mHandler.postDelayed(mMediaPlayerUpdater, 100);
+    }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+        }
+    };
+
+    @Override
+    public void setProgress(int progress) {
+
+    }
+
+    @Override
+    public void onBind() {
+
+    }
+
+    @Override
+    public void onUnBind() {
+
     }
 }

@@ -81,7 +81,7 @@ public class AudioContentView extends RelativeLayout
         super(context, attrs, defStyle);
     }
 
-    public void bind(long messageId, AudioComponent component, Contact contact, Pattern highlight) {
+    public void bind(long messageId, String messageSender, AudioComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
         mMessageId = messageId;
         mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
