@@ -61,7 +61,7 @@ dependencies {
     compile 'com.googlecode.libphonenumber:libphonenumber:6.2.2'
     compile 'dnsjava:dnsjava:2.1.6'
     compile 'com.jcraft:jzlib:+'
-    compile "org.igniterealtime.smack:smack-android:4.1.0-alpha1-SNAPSHOT"
+    compile 'org.igniterealtime.smack:smack-android:4.1.0-alpha2'
 
     googleplayCompile 'com.google.android.gms:play-services:5.0.89'
 }
