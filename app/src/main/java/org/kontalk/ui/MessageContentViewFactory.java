@@ -45,7 +45,7 @@ public class MessageContentViewFactory {
     @SuppressWarnings("unchecked")
     public static <T> MessageContentView<T> createContent(LayoutInflater inflater,
             ViewGroup parent, T component,
-            Contact contact, Pattern highlight, AudioPlayerControl audioPlayerControl, BalloonProgressBar balloonProgressBar, long messageId, String messageSender) {
+            Contact contact, Pattern highlight, AudioPlayerControl audioPlayerControl, BalloonProgress balloonProgress, long messageId, String messageSender) {
 
         // using conditionals to avoid reflection
         MessageContentView<T> view = null;
@@ -55,7 +55,7 @@ public class MessageContentViewFactory {
         }
         else if (component instanceof ImageComponent) {
             view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
-            ((ImageContentView) view).setBalloonProgressBar(balloonProgressBar);
+            ((ImageContentView) view).setBalloonProgressBar(balloonProgress);
         }
         else if (component instanceof AudioComponent) {
             view = (MessageContentView<T>) AudioContentView.create(inflater, parent);

@@ -18,7 +18,6 @@
 
 package org.kontalk.ui;
 
-import java.util.Date;
 import java.util.regex.Pattern;
 
 import org.kontalk.R;
@@ -46,14 +45,14 @@ public class MessageListAdapter extends CursorAdapter {
 
     private Contact mContact;
     private AudioPlayerControl mAudioPlayerControl;
-    private BalloonProgressBar mBalloonProgressBar;
+    private BalloonProgress mBalloonProgress;
 
-    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list, AudioPlayerControl audioPlayerControl, BalloonProgressBar balloonProgressBar) {
+    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list, AudioPlayerControl audioPlayerControl, BalloonProgress balloonProgress) {
         super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
         mHighlight = highlight;
         mAudioPlayerControl = audioPlayerControl;
-        mBalloonProgressBar = balloonProgressBar;
+        mBalloonProgress = balloonProgress;
 
         list.setRecyclerListener(new RecyclerListener() {
             public void onMovedToScrapHeap(View view) {
@@ -82,7 +81,7 @@ public class MessageListAdapter extends CursorAdapter {
             cursor.moveToNext();
         }
 
-        headerView.bind(context, msg, mContact, mHighlight, previous, mAudioPlayerControl, mBalloonProgressBar);
+        headerView.bind(context, msg, mContact, mHighlight, previous, mAudioPlayerControl, mBalloonProgress);
     }
 
     @Override

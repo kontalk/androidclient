@@ -50,7 +50,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -88,7 +87,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -149,7 +147,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  */
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
-        OnAudioDialogResult, AudioPlayerControl, BalloonProgressBar,
+        OnAudioDialogResult, AudioPlayerControl, BalloonProgress,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         EmojiconGridFragment.OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
@@ -204,6 +202,12 @@ public class ComposeMessageFragment extends ListFragment implements
     /** Available resources. */
     private Set<String> mAvailableResources = new HashSet<String>();
 
+    /** Balloon Progress */
+    private BalloonProgressControl mBalloonControl;
+    private long mBalloonMessageId;
+    private boolean mBalloonCheck = false;
+    private IntentFilter mFilter =new IntentFilter(DownloadService.INTENT_ACTION);
+
     /** MediaPlayer */
     private MediaPlayer mPlayer;
     private int mStatus = AudioContentView.STATUS_IDLE;
@@ -231,7 +235,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private LocalBroadcastManager mLocalBroadcastManager;
     private BroadcastReceiver mPresenceReceiver;
     private BroadcastReceiver mPrivacyListener;
-    private IntentFilter mFilter =new IntentFilter(DownloadService.INTENT_ACTION);
 
     private boolean mOfflineModeWarned;
     private boolean mComposeSent;
@@ -290,7 +293,6 @@ public class ComposeMessageFragment extends ListFragment implements
         list.setFastScrollEnabled(true);
         registerForContextMenu(list);
 
-        getActivity().registerReceiver(mReceiver, mFilter);
         // footer (for tablet presence status)
         mStatusText = (TextView) getView().findViewById(R.id.status_text);
 
@@ -2338,6 +2340,8 @@ public class ComposeMessageFragment extends ListFragment implements
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
             onFocus();
         }
+
+        getActivity().registerReceiver(mReceiver, mFilter);
     }
 
     public void onFocus() {
@@ -2981,22 +2985,55 @@ public class ComposeMessageFragment extends ListFragment implements
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
+            int progress = intent.getIntExtra(DownloadService.INTENT_PROGRESS, -1);
+            long msgId = intent.getLongExtra(DownloadService.INTENT_MSGID, -1);
+            if(mBalloonMessageId == msgId)
+                mBalloonControl.setProgress(progress, msgId);
         }
     };
 
     @Override
-    public void setProgress(int progress) {
-
+    public void buttonClick(long messageId, BalloonProgressControl balloonProgressControl,
+                            AttachmentComponent attachment, ImageView button) {
+        if (mBalloonMessageId == messageId) {
+            if(!mBalloonCheck) {
+                mBalloonCheck = true;
+                button.setBackgroundResource(R.drawable.attachement_cancel);
+                mBalloonControl.startDownload(attachment);
+            }
+            else {
+                button.setBackgroundResource(R.drawable.attachement_download);
+                mBalloonControl.stopDownload(attachment);
+                mBalloonCheck = false;
+            }
+        }
+        else {
+            mBalloonMessageId = messageId;
+            mBalloonControl = balloonProgressControl;
+            if(!mBalloonCheck) {
+                mBalloonCheck = true;
+                button.setBackgroundResource(R.drawable.attachement_cancel);
+                mBalloonControl.startDownload(attachment);
+            }
+            else {
+                button.setBackgroundResource(R.drawable.attachement_download);
+                mBalloonControl.stopDownload(attachment);
+                mBalloonCheck = false;
+            }
+        }
     }
 
     @Override
-    public void onBind() {
-
+    public void onBind(BalloonProgressControl balloonProgressControl, long messageId) {
+        if(mBalloonMessageId == messageId) {
+            mBalloonControl = balloonProgressControl;
+        }
     }
 
     @Override
-    public void onUnBind() {
-
+    public void onUnBind(BalloonProgressControl balloonProgressControl, long messageId) {
+        if(mBalloonMessageId == messageId) {
+            mBalloonControl = null;
+        }
     }
 }
