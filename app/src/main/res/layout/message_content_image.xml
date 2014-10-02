@@ -29,12 +29,12 @@
     android:layout_centerInParent="true"
     android:src="@drawable/rec"/>
 
-<Button
+<ImageView
     android:id="@+id/download_button"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_centerInParent="true"
-    android:text="Down"/>
+    android:background="@drawable/attachment_download" />
 
 <ProgressBar
     android:id="@+id/progress_balloon"

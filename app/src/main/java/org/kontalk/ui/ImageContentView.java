@@ -18,10 +18,8 @@
 
 package org.kontalk.ui;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.util.AttributeSet;
@@ -31,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -48,29 +47,18 @@ import java.util.regex.Pattern;
  * Message component for {@link ImageComponent}.
  * @author Daniele Ricci
  */
-public class ImageContentView extends View
-        implements MessageContentView<ImageComponent> {
+public class ImageContentView extends RelativeLayout
+        implements MessageContentView<ImageComponent>, BalloonProgressControl, View.OnClickListener {
 
     private ImageComponent mComponent;
     private ImageView mImage;
-    private Button mButton;
+    private ImageView mButton;
     private ProgressBar mProgressBar;
 
-    private BalloonProgressBar mBalloonProgressBar;
-
-    private IntentFilter filter =new IntentFilter(DownloadService.INTENT_ACTION);
+    private BalloonProgress mBalloonProgress;
 
     private Long mMessageId;
     private String mMessageSender;
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int progress = intent.getIntExtra(DownloadService.INTENT_PROGRESS, 0);
-            mButton.setText(""+progress);
-            mProgressBar.setProgress(progress);
-        }
-    };
 
     public ImageContentView(Context context) {
         super(context);
@@ -95,10 +83,8 @@ public class ImageContentView extends View
         mProgressBar = (ProgressBar) findViewById(R.id.progress_balloon);
         mProgressBar.setMax(100);
 
-        getContext().registerReceiver(mReceiver, filter);
         mImage = (ImageView) findViewById(R.id.image_balloon);
-        mButton = (Button) findViewById(R.id.download_button);
-
+        mButton = (ImageView) findViewById(R.id.download_button);
         boolean fetched = component.getLocalUri() != null;
 
         // prepend some text for the ImageSpan
@@ -112,18 +98,16 @@ public class ImageContentView extends View
 
         mButton.setVisibility(fetched ? GONE : VISIBLE);
 
-        mButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-             startDownload(mComponent);
-            }
-        });
+        mBalloonProgress.onBind(this, mMessageId);
+
+        mButton.setOnClickListener(this);
 
 
     }
 
     public void unbind() {
         clear();
+        mBalloonProgress.onUnBind(this, mMessageId);
     }
 
     public ImageComponent getComponent() {
@@ -146,7 +130,23 @@ public class ImageContentView extends View
             parent, false);
     }
 
-    private void startDownload(AttachmentComponent attachment) {
+    public void  setBalloonProgressBar (BalloonProgress bpb) {
+        mBalloonProgress = bpb;
+    }
+
+    @Override
+    public void onClick(View view) {
+        mBalloonProgress.buttonClick(mMessageId, this, mComponent, mButton);
+        startDownload(mComponent);
+    }
+
+    @Override
+    public void setProgress(int progress, long messageId) {
+        mProgressBar.setProgress(progress);
+    }
+
+    @Override
+    public void startDownload(AttachmentComponent attachment) {
         if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getContext(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
@@ -163,10 +163,8 @@ public class ImageContentView extends View
         }
     }
 
-    private void stopDownload(CompositeMessage msg) {
-        AttachmentComponent attachment = (AttachmentComponent) msg
-                .getComponent(AttachmentComponent.class);
-
+    @Override
+    public void stopDownload(AttachmentComponent attachment) {
         if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getContext(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);
@@ -174,9 +172,4 @@ public class ImageContentView extends View
             getContext().startService(i);
         }
     }
-
-    public void  setBalloonProgressBar (BalloonProgressBar bpb) {
-        mBalloonProgressBar = bpb;
-    }
-
 }

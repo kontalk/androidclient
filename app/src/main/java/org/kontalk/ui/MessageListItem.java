@@ -149,7 +149,7 @@ public class MessageListItem extends RelativeLayout {
 
     public final void bind(Context context, final CompositeMessage msg,
        final Contact contact, final Pattern highlight, long previous,
-       AudioPlayerControl audioPlayerControl, BalloonProgressBar balloonProgressBar) {
+       AudioPlayerControl audioPlayerControl, BalloonProgress balloonProgress) {
 
         mMessage = msg;
 
@@ -175,7 +175,7 @@ public class MessageListItem extends RelativeLayout {
             List<MessageComponent<?>> components = msg.getComponents();
             for (MessageComponent<?> cmp : components) {
                 MessageContentView<?> view = MessageContentViewFactory
-                    .createContent(mInflater, mContent, cmp, contact, highlight, audioPlayerControl, balloonProgressBar, mMessage.getDatabaseId(), mMessage.getSender());
+                    .createContent(mInflater, mContent, cmp, contact, highlight, audioPlayerControl, balloonProgress, mMessage.getDatabaseId(), mMessage.getSender());
 
                 mContent.addContent(view);
             }
