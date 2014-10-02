@@ -22,7 +22,7 @@ package org.kontalk.client;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.packet.Registration;
+import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smack.provider.IQProvider;
 import org.jivesoftware.smack.util.PacketParserUtils;
 import org.xmlpull.v1.XmlPullParser;
