@@ -36,6 +36,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -49,6 +50,7 @@ import android.widget.Toast;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.service.ServerListUpdater;
@@ -327,6 +329,8 @@ public final class PreferencesActivity extends PreferenceActivity {
         }
 
         // manual server address is handled in Application context
+        // we just handle validation here
+        setupPreferences(this);
 
         // server list last update timestamp
         final Preference updateServerList = findPreference("pref_update_server_list");
@@ -515,6 +519,26 @@ public final class PreferencesActivity extends PreferenceActivity {
     public static void start(Activity context) {
         Intent intent = new Intent(context, PreferencesActivity.class);
         context.startActivityIfNeeded(intent, -1);
+    }
+
+    static void setupPreferences(final PreferenceActivity activity) {
+        final Preference manualServer = activity.findPreference("pref_network_uri");
+        manualServer.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                if (!EndpointServer.validate(newValue.toString())) {
+                    new AlertDialog.Builder(activity)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle(R.string.pref_network_uri)
+                            // TODO i18n
+                        .setMessage("Invalid address format.")
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+                    return false;
+                }
+                return true;
+            }
+        });
+
     }
 
 }
