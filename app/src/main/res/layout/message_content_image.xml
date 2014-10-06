@@ -26,8 +26,7 @@
     android:id="@+id/image_balloon"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_centerInParent="true"
-    android:src="@drawable/rec"/>
+    android:layout_centerInParent="true"/>
 
 <ImageView
     android:id="@+id/download_button"
@@ -37,12 +36,15 @@
     android:background="@drawable/attachment_download" />
 
 <ProgressBar
-    android:id="@+id/progress_balloon"
-    style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
+    android:id="@+id/balloon_progress"
+    android:layout_width="wrap_content"
+    android:layout_height="69dp"
+    android:indeterminate="false"
+    android:layout_centerInParent="true"
+    android:progressDrawable="@drawable/circular_progress_bar"
+    android:background="@drawable/circle_shape"
+    style="?android:attr/progressBarStyleHorizontal"
     android:max="100"
-    android:layout_width="80dp"
-    android:layout_height="wrap_content"
-    android:layout_below="@+id/download_button"
-    android:layout_centerInParent="true"/>
+    android:visibility="gone"/>
 
 </org.kontalk.ui.ImageContentView>

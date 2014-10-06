@@ -21,8 +21,14 @@ package org.kontalk.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +38,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
@@ -39,6 +46,7 @@ import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.service.DownloadService;
+import org.kontalk.util.KontalkUtilities;
 
 import java.util.regex.Pattern;
 
@@ -80,9 +88,7 @@ public class ImageContentView extends RelativeLayout
         if(mProgressBar == null)
             mProgressBar = new ProgressBar(getContext());
 
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_balloon);
-        mProgressBar.setMax(100);
-
+        mProgressBar = (ProgressBar) findViewById(R.id.balloon_progress);
         mImage = (ImageView) findViewById(R.id.image_balloon);
         mButton = (ImageView) findViewById(R.id.download_button);
         boolean fetched = component.getLocalUri() != null;
@@ -96,6 +102,7 @@ public class ImageContentView extends RelativeLayout
 
         // TODO else: maybe some placeholder like Image: image/jpeg
 
+        mButton.setVisibility(fetched ? GONE : VISIBLE);
         mButton.setVisibility(fetched ? GONE : VISIBLE);
 
         mBalloonProgress.onBind(this, mMessageId);
@@ -137,12 +144,18 @@ public class ImageContentView extends RelativeLayout
     @Override
     public void onClick(View view) {
         mBalloonProgress.buttonClick(mMessageId, this, mComponent, mButton);
-        startDownload(mComponent);
     }
 
     @Override
     public void setProgress(int progress, long messageId) {
-        mProgressBar.setProgress(progress);
+        if (mMessageId == messageId) {
+            mProgressBar.setProgress(progress);
+        }
+    }
+
+    @Override
+    public void setVisible(int visibility) {
+       mProgressBar.setVisibility(visibility);
     }
 
     @Override

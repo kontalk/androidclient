@@ -7,6 +7,7 @@ import org.kontalk.message.AttachmentComponent;
  */
 public interface BalloonProgressControl {
     public void setProgress(int progress, long messageId);
+    public void setVisible(int visibility);
     public void startDownload(AttachmentComponent attachment);
     public void stopDownload(AttachmentComponent attachment);
 }
