@@ -67,26 +67,37 @@ public class PersonalKeyImporter {
 
     public void load() throws IOException {
         ByteArrayOutputStream publicKey = null, privateKey = null;
+        IOException zipException = null;
 
         ZipEntry entry;
-        while ((entry = mKeyPack.getNextEntry()) != null) {
+        try {
+            while ((entry = mKeyPack.getNextEntry()) != null) {
 
-            // PGP public key
-            if (PUBLIC_KEY_FILENAME.equals(entry.getName())) {
-                // I don't really know if this is good...
-                publicKey = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
+                // PGP public key
+                if (PUBLIC_KEY_FILENAME.equals(entry.getName())) {
+                    // I don't really know if this is good...
+                    publicKey = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
+                }
+
+                // PGP private key
+                else if (PRIVATE_KEY_FILENAME.equals(entry.getName())) {
+                    // I don't really know if this is good...
+                    privateKey = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
+                }
+
             }
-
-            // PGP private key
-            else if (PRIVATE_KEY_FILENAME.equals(entry.getName())) {
-                // I don't really know if this is good...
-                privateKey = MessageUtils.readFully(mKeyPack, MAX_KEY_SIZE);
-            }
-
+        }
+        catch (IOException e) {
+            // this is to workaround any problem
+            // this exception will be logged if data is corrupted or not present
+            zipException = e;
         }
 
-        if (privateKey == null || publicKey == null)
-            throw new IOException("invalid data");
+        if (privateKey == null || publicKey == null) {
+            IOException e = new IOException("invalid data");
+            e.initCause(zipException);
+            throw e;
+        }
 
         mPrivateKey = privateKey;
         mPublicKey = publicKey;

@@ -19,6 +19,7 @@
 package org.kontalk.client;
 
 
+import java.util.regex.Pattern;
 
 /**
  * Defines a server address and features.
@@ -29,6 +30,10 @@ package org.kontalk.client;
 public class EndpointServer {
     /** Default Kontalk client port. */
     public static final int DEFAULT_PORT = 5222;
+
+    /** Validation pattern. Very basic. */
+    // TODO use this for parsing
+    private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-\\.]+\\|[A-Za-z0-9\\-\\.]+(:\\d+)?$");
 
     private String mHost;
     private int mPort;
@@ -119,6 +124,11 @@ public class EndpointServer {
                 }
             }
         }
+    }
+
+    /** Returns true if the input value is a valid endpoint address. */
+    public static boolean validate(String value) {
+        return sPattern.matcher(value).matches();
     }
 
 }
