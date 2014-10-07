@@ -62,7 +62,7 @@ dependencies {
     compile 'dnsjava:dnsjava:2.1.6'
     compile 'com.jcraft:jzlib:+'
     compile 'com.nineoldandroids:library:2.4.0+'
-    compile 'org.igniterealtime.smack:smack-android:4.1.0-alpha1'
+    compile 'org.igniterealtime.smack:smack-android:4.1.0-alpha3'
 
     googleplayCompile 'com.google.android.gms:play-services:5.0.89'
 }

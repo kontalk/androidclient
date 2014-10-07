@@ -41,6 +41,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smackx.iqregister.provider.RegistrationProvider;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
@@ -119,7 +120,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     private void configure() {
-        ProviderManager.addIQProvider("query", "jabber:iq:register", new RegistrationFormProvider());
+        ProviderManager.addIQProvider("query", "jabber:iq:register", new RegistrationProvider());
         ProviderManager.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
     }
 

@@ -49,6 +49,7 @@ public class BootstrapPreferences extends PreferenceActivity {
         }
 
         setupActivity();
+        PreferencesActivity.setupPreferences(this);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
