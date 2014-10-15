@@ -15,7 +15,14 @@
     <item>Klassisch (alt)</item>
     <item>iPhone</item>
   </string-array>
+  <string-array name="image_resize_labels">
+    <item>Original</item>
+    <item>Klein (0.3MP)</item>
+    <item>Mittel (0.5MP)</item>
+    <item>Groß (0.8MP)</item>
+  </string-array>
   <string-array name="idle_time_labels">
+    <item>Nie</item>
     <item>1 Minute</item>
     <item>2 Minuten</item>
     <item>3 Minuten</item>

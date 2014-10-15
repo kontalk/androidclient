@@ -525,7 +525,8 @@ public final class PreferencesActivity extends PreferenceActivity {
         final Preference manualServer = activity.findPreference("pref_network_uri");
         manualServer.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                if (!EndpointServer.validate(newValue.toString())) {
+                String value = newValue.toString().trim();
+                if (value.length() > 0 && !EndpointServer.validate(value)) {
                     new AlertDialog.Builder(activity)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle(R.string.pref_network_uri)
