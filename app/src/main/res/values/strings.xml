@@ -355,4 +355,6 @@
     <string name="pref_image_resize">Resize images</string>
     <string name="pref_title_image_resize">Resize images before sending</string>
 
+    <string name="err_server_invalid_format">Invalid address format.</string>
+
 </resources>
