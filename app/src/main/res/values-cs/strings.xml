@@ -292,12 +292,15 @@
   <string name="msg_auth_error">&lt;b&gt;UPOZORNĚNÍ!&lt;/b&gt;&lt;br&gt;Při posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
   <string name="warn_invite_no_app">Není dostupná žádná aplikace na pozvání uživatelů</string>
   <string name="pref_text_enter">Zobrazit klávesu Enter</string>
-  <string name="pref_title_on_text_enter">Zobrazuji klávesu Enter při psaní zprávy.</string>
-  <string name="pref_title_off_text_enter">Zobrazuji výchozí akční klávesu při psaní zprávy.</string>
+  <string name="pref_title_on_text_enter">Zobrazuji klávesu Enter při psaní zprávy</string>
+  <string name="pref_title_off_text_enter">Zobrazuji výchozí akční klávesu při psaní zprávy</string>
   <string name="title_password1">Heslo:</string>
   <string name="title_password2">Potvrďte heslo:</string>
   <string name="err_password_too_short">Heslo musí mít nejméně %d znaků.</string>
   <string name="err_passwords_mismatch">Heslo nesouhlasí!</string>
   <string name="err_password_invalid">Špatné heslo.</string>
   <string name="err_change_passphrase">Nepodařilo se změnit heslo k osobnímu klíči.</string>
+  <string name="pref_media_settings">Nastavení médií</string>
+  <string name="pref_image_resize">Měnit velikost obrázků</string>
+  <string name="pref_title_image_resize">Před odesláním měnit velikost obrázků</string>
 </resources>

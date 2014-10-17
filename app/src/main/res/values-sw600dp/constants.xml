@@ -18,5 +18,5 @@
 -->
 
 <resources>
-    <bool name="has_two_panes">true</bool>
+    <bool name="has_two_panes" translatable="false">true</bool>
 </resources>
