@@ -44,6 +44,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.kontalk.Kontalk;
@@ -93,15 +94,22 @@ public class DownloadService extends IntentService implements DownloadListener {
     private String mPeer;
     private boolean mEncrypted;
 
-    public static final String INTENT_ACTION = "org.kontalk.receiver.intent.action.TEST";
+    public static final String INTENT_ACTION = "org.kontalk.receiver.intent.action.DOWNLOAD_PROGRESS";
     public static final String INTENT_PROGRESS  = "PROGRESS_DATA";
     public static final String INTENT_MSGID = "MSGID_DATA";
+    private LocalBroadcastManager mLbm;
 
     private ClientHTTPConnection mDownloadClient;
     private boolean mCanceled;
 
     public DownloadService() {
         super(DownloadService.class.getSimpleName());
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mLbm = LocalBroadcastManager.getInstance(this);
     }
 
     @Override
@@ -370,7 +378,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             intent.setAction(INTENT_ACTION);
             intent.putExtra(INTENT_PROGRESS, progress);
             intent.putExtra(INTENT_MSGID, mMessageId);
-            sendBroadcast(intent);
+            mLbm.sendBroadcast(intent);
             foregroundNotification(progress);
             // send the updates to the notification manager
             mNotificationManager.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);

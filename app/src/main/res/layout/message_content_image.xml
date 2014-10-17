@@ -35,6 +35,14 @@
     android:layout_centerInParent="true"
     android:background="@drawable/attachment_download" />
 
+<ImageView
+    android:id="@+id/upload_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:visibility="gone"
+    android:background="@drawable/attachement_cancel"/>
+
 <ProgressBar
     android:id="@+id/balloon_progress"
     android:layout_width="wrap_content"

@@ -205,9 +205,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Balloon Progress */
     private BalloonProgressControl mBalloonControl;
-    private long mBalloonMessageId;
-    private boolean mBalloonCheck = false;
-    private IntentFilter mFilter =new IntentFilter(DownloadService.INTENT_ACTION);
+    private Context mProgressContext;
+    private LocalBroadcastManager mLbm;
+    private BroadcastReceiver mDownloadReceiver;
 
     /** MediaPlayer */
     private MediaPlayer mPlayer;
@@ -2341,8 +2341,6 @@ public class ComposeMessageFragment extends ListFragment implements
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
             onFocus();
         }
-
-        getActivity().registerReceiver(mReceiver, mFilter);
     }
 
     public void onFocus() {
@@ -2450,7 +2448,10 @@ public class ComposeMessageFragment extends ListFragment implements
             mPlayer = null;
         }
 
-        getActivity().unregisterReceiver(mReceiver);
+        if(mProgressContext != null) {
+            //mLbm = LocalBroadcastManager.getInstance(mProgressContext);
+            //mLbm.unregisterReceiver(mDownloadReceiver);
+        }
     }
 
     @Override
@@ -2983,67 +2984,19 @@ public class ComposeMessageFragment extends ListFragment implements
         mHandler.postDelayed(mMediaPlayerUpdater, 100);
     }
 
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int progress = intent.getIntExtra(DownloadService.INTENT_PROGRESS, -1);
-            long msgId = intent.getLongExtra(DownloadService.INTENT_MSGID, -1);
-            Log.e(TAG, "Msg: "+msgId+" Progress: "+progress);
-            if(mBalloonControl != null)
-                mBalloonControl.setProgress(progress, msgId);
-        }
-    };
-
     @Override
     public void buttonClick(long messageId, BalloonProgressControl balloonProgressControl,
                             AttachmentComponent attachment, ImageView button) {
-        if (mBalloonMessageId == messageId) {
-            if(!mBalloonCheck) {
-                mBalloonCheck = true;
-                mBalloonControl.setVisible(0);
-                button.setBackgroundResource(R.drawable.attachement_cancel);
-                mBalloonControl.startDownload(attachment);
-            }
-            else {
-                mBalloonControl.setVisible(8);
-                button.setBackgroundResource(R.drawable.attachement_download);
-                mBalloonControl.stopDownload(attachment);
-                mBalloonCheck = false;
-            }
-        }
-        else {
-            mBalloonMessageId = messageId;
-            mBalloonControl = balloonProgressControl;
-            if(!mBalloonCheck) {
-                mBalloonControl.setVisible(0);
-                mBalloonCheck = true;
-                button.setBackgroundResource(R.drawable.attachement_cancel);
-                mBalloonControl.startDownload(attachment);
-            }
-            else {
-                mBalloonControl.setVisible(8);
-                button.setBackgroundResource(R.drawable.attachement_download);
-                mBalloonControl.stopDownload(attachment);
-                mBalloonCheck = false;
-            }
-        }
     }
 
     @Override
-    public void onBind(BalloonProgressControl balloonProgressControl, long messageId) {
-        if(mBalloonMessageId == messageId) {
-            mBalloonControl = balloonProgressControl;
-        }
-        else {
-            mBalloonMessageId = messageId;
-            mBalloonControl = balloonProgressControl;
-        }
+    public void onBind(BalloonProgressControl balloonProgressControl, Context context, BroadcastReceiver receiver) {
+        mBalloonControl = balloonProgressControl;
+        mProgressContext = context;
+        mDownloadReceiver = receiver;
     }
 
     @Override
     public void onUnBind(BalloonProgressControl balloonProgressControl, long messageId) {
-        if(mBalloonMessageId == messageId) {
-            mBalloonControl = null;
-        }
     }
 }
