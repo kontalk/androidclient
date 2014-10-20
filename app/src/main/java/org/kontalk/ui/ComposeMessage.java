@@ -132,10 +132,11 @@ public class ComposeMessage extends ActionBarActivity {
             homeId = android.support.v7.appcompat.R.id.home;
 
         ImageView icon = (ImageView) findViewById(homeId);
-
-        FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
-        iconLp.topMargin = iconLp.bottomMargin = 0;
-        icon.setLayoutParams(iconLp);
+        if (icon != null) {
+            FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
+            iconLp.topMargin = iconLp.bottomMargin = 0;
+            icon.setLayoutParams(iconLp);
+        }
     }
 
     @Override
