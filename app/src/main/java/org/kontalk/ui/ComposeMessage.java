@@ -203,6 +203,8 @@ public class ComposeMessage extends ActionBarActivity {
     private void processIntent(Bundle savedInstanceState) {
         Intent intent;
         if (savedInstanceState != null) {
+            mLostFocus = savedInstanceState.getBoolean("lostFocus");
+
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
             intent = new Intent(ACTION_VIEW_USERID, uri);
         }
@@ -454,6 +456,7 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
+        out.putBoolean("lostFocus", mLostFocus);
     }
 
     @Override

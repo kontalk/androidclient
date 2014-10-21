@@ -344,9 +344,19 @@ public class ComposeMessageFragment extends ListFragment implements
         Configuration config = getResources().getConfiguration();
         onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
 
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
-
         processArguments(savedInstanceState);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(activity);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mLocalBroadcastManager = null;
     }
 
     @Override
@@ -1972,27 +1982,28 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Sends a subscription request for the current peer. */
     private void presenceSubscribe() {
-        // all of this shall be done only if there isn't a request from the other contact
-        if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+        Context context = getActivity();
+        if (context != null) {
+            // all of this shall be done only if there isn't a request from the other contact
+            if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+                Contact c = mConversation.getContact();
 
-            Contact c = mConversation.getContact();
+                // pre-approve our presence if we don't have contact's key
+                if (c == null || c.getPublicKeyRing() == null) {
+                    Intent i = new Intent(context, MessageCenterService.class);
+                    i.setAction(MessageCenterService.ACTION_PRESENCE);
+                    i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                    i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+                    context.startService(i);
+                }
 
-            // pre-approve our presence if we don't have contact's key
-            if (c == null || c.getPublicKeyRing() == null) {
-                Intent i = new Intent(getActivity(), MessageCenterService.class);
+                // send subscription request
+                Intent i = new Intent(context, MessageCenterService.class);
                 i.setAction(MessageCenterService.ACTION_PRESENCE);
                 i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-                getActivity().startService(i);
+                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+                context.startService(i);
             }
-
-            // send subscription request
-            Intent i = new Intent(getActivity(), MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-            getActivity().startService(i);
-
         }
     }
 
