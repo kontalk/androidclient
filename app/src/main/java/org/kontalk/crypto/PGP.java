@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
@@ -64,6 +65,7 @@ import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
+import android.util.Log;
 
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
@@ -147,6 +149,8 @@ public class PGP {
         else {
 
             gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
+            Log.v("CRYPTO", "Generator: " + gen.getClass().getName());
+            Log.v("CRYPTO", "SecureRandom: " + new SecureRandom().getAlgorithm());
             gen.initialize(RSA_KEY_LENGTH);
 
             encryptKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
