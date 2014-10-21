@@ -130,13 +130,21 @@ public abstract class MediaStorage {
             .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
         bitmap.recycle();
 
+        thumbnail = bitmapOrientation(context, media, thumbnail);
+
+        // write down to file
+        thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
+        thumbnail.recycle();
+    }
+
+    private static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
             Cursor cursor = context.getContentResolver().query(media,
                 new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
 
-            cursor.moveToFirst();
             if (cursor != null) {
+                cursor.moveToFirst();
                 int orientation = cursor.getInt(0);
                 cursor.close();
 
@@ -144,9 +152,10 @@ public abstract class MediaStorage {
                     Matrix m = new Matrix();
                     m.postRotate(orientation);
 
-                    Bitmap rotated = Bitmap.createBitmap(thumbnail, 0, 0, thumbnail.getWidth(), thumbnail.getHeight(), m, true);
-                    thumbnail.recycle();
-                    thumbnail = rotated;
+                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
+                    bitmap.recycle();
+                    bitmap = rotated;
+
                 }
             }
         }
@@ -154,9 +163,7 @@ public abstract class MediaStorage {
             Log.w(TAG, "unable to check for rotation data", e);
         }
 
-        // write down to file
-        thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
-        thumbnail.recycle();
+        return bitmap;
     }
 
     public static File writeMedia(String filename, InputStream source) throws IOException {
@@ -248,6 +255,9 @@ public abstract class MediaStorage {
 
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
 
+        // check for rotation data
+        scaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
+
         String filename = String.format(COMPRESS_FILENAME_FORMAT, msgId);
         final File compressedFile = new File(context.getCacheDir(), filename);
 
@@ -256,6 +266,7 @@ public abstract class MediaStorage {
         try {
             stream = new FileOutputStream(compressedFile);
             scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+
             return compressedFile;
         }
         finally {
