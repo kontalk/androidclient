@@ -22,12 +22,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +51,7 @@ import java.util.regex.Pattern;
  * @author Daniele Ricci
  */
 public class ImageContentView extends RelativeLayout
-        implements MessageContentView<ImageComponent>, BalloonProgressControl, View.OnClickListener {
+        implements MessageContentView<ImageComponent>, View.OnClickListener {
 
     private ImageComponent mComponent;
     private ImageView mImage;
@@ -146,9 +144,9 @@ public class ImageContentView extends RelativeLayout
         }
 
         if (DownloadService.isQueued(mMessageId))
-            mBalloonProgress.onBind(this, getContext(), mDownloadReceiver);
+            mBalloonProgress.onBalloonBind(getContext(), mDownloadReceiver);
         if (UploadService.isQueued(mMessageId))
-            mBalloonProgress.onBind(this, getContext(), mUploadReceiver);
+            mBalloonProgress.onBalloonBind(getContext(), mUploadReceiver);
 
         mDownloadButton.setOnClickListener(this);
     }
@@ -203,17 +201,7 @@ public class ImageContentView extends RelativeLayout
         }
     }
 
-    @Override
-    public void setProgress(int progress, long messageId) {
-    }
-
-    @Override
-    public void setVisible(int visibility) {
-       mProgressBar.setVisibility(visibility);
-    }
-
-    @Override
-    public void startDownload(AttachmentComponent attachment) {
+    private void startDownload(AttachmentComponent attachment) {
         if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getContext(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
@@ -230,8 +218,7 @@ public class ImageContentView extends RelativeLayout
         }
     }
 
-    @Override
-    public void stopDownload(AttachmentComponent attachment) {
+    private void stopDownload(AttachmentComponent attachment) {
         if (attachment != null && attachment.getFetchUrl() != null) {
             Intent i = new Intent(getContext(), DownloadService.class);
             i.setAction(DownloadService.ACTION_DOWNLOAD_ABORT);

@@ -28,5 +28,5 @@ import org.kontalk.message.AttachmentComponent;
  * @author Andrea Cappelli
  */
 public interface BalloonProgress {
-    public void onBind(BalloonProgressControl balloonProgressControl, Context context, BroadcastReceiver receiver);
+    public void onBalloonBind(Context context, BroadcastReceiver receiver);
 }

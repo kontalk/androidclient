@@ -204,7 +204,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private Set<String> mAvailableResources = new HashSet<String>();
 
     /** Balloon Progress */
-    private BalloonProgressControl mBalloonControl;
     private Context mProgressContext;
     private LocalBroadcastManager mLbm;
     private BroadcastReceiver mProgressReceiver;
@@ -2996,8 +2995,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     @Override
-    public void onBind(BalloonProgressControl balloonProgressControl, Context context, BroadcastReceiver receiver) {
-        mBalloonControl = balloonProgressControl;
+    public void onBalloonBind(Context context, BroadcastReceiver receiver) {
         mProgressContext = context;
         mProgressReceiver = receiver;
     }
