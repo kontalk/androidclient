@@ -391,4 +391,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         return sQueue.containsKey(url);
     }
 
+    public static boolean isQueued(long messageId) {
+        return sQueue.containsValue(messageId);
+    }
 }

@@ -207,7 +207,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private BalloonProgressControl mBalloonControl;
     private Context mProgressContext;
     private LocalBroadcastManager mLbm;
-    private BroadcastReceiver mDownloadReceiver;
+    private BroadcastReceiver mProgressReceiver;
 
     /** MediaPlayer */
     private MediaPlayer mPlayer;
@@ -2449,8 +2449,8 @@ public class ComposeMessageFragment extends ListFragment implements
         }
 
         if(mProgressContext != null) {
-            //mLbm = LocalBroadcastManager.getInstance(mProgressContext);
-            //mLbm.unregisterReceiver(mDownloadReceiver);
+            mLbm = LocalBroadcastManager.getInstance(mProgressContext);
+            mLbm.unregisterReceiver(mProgressReceiver);
         }
     }
 
@@ -2985,18 +2985,9 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     @Override
-    public void buttonClick(long messageId, BalloonProgressControl balloonProgressControl,
-                            AttachmentComponent attachment, ImageView button) {
-    }
-
-    @Override
     public void onBind(BalloonProgressControl balloonProgressControl, Context context, BroadcastReceiver receiver) {
         mBalloonControl = balloonProgressControl;
         mProgressContext = context;
-        mDownloadReceiver = receiver;
-    }
-
-    @Override
-    public void onUnBind(BalloonProgressControl balloonProgressControl, long messageId) {
+        mProgressReceiver = receiver;
     }
 }

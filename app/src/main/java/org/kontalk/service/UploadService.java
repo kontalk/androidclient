@@ -48,6 +48,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 
@@ -64,6 +65,11 @@ public class UploadService extends IntentService implements ProgressListener {
 
     public static final String ACTION_UPLOAD = "org.kontalk.action.UPLOAD";
     public static final String ACTION_UPLOAD_ABORT = "org.kontalk.action.UPLOAD_ABORT";
+
+    public static final String INTENT_ACTION = "org.kontalk.receiver.intent.action.UPLOAD_PROGRESS";
+    public static final String INTENT_PROGRESS  = "PROGRESS_DATA";
+    public static final String INTENT_MSGID = "MSGID_DATA";
+    private LocalBroadcastManager mLbm;
 
     /** Message database ID. Use with ACTION_UPLOAD. */
     public static final String EXTRA_MESSAGE_ID = "org.kontalk.upload.MESSAGE_ID";
@@ -95,6 +101,12 @@ public class UploadService extends IntentService implements ProgressListener {
 
     public UploadService() {
         super(UploadService.class.getSimpleName());
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mLbm = LocalBroadcastManager.getInstance(this);
     }
 
     @Override
@@ -184,7 +196,6 @@ public class UploadService extends IntentService implements ProgressListener {
 
             mMessageId = msgId;
             queue.put(filename, mMessageId);
-
             // upload content
             String mediaUrl = mConn.upload(file, mime, encrypt, to, this);
             Log.d(TAG, "uploaded with media URL: " + mediaUrl);
@@ -305,6 +316,11 @@ public class UploadService extends IntentService implements ProgressListener {
         //Log.v(TAG, "bytes = " + bytes);
         if (mCurrentNotification != null) {
             int progress = (int)((100 * bytes) / mTotalBytes);
+            Intent intent = new Intent();
+            intent.setAction(INTENT_ACTION);
+            intent.putExtra(INTENT_PROGRESS, progress);
+            intent.putExtra(INTENT_MSGID, mMessageId);
+            mLbm.sendBroadcast(intent);
             foregroundNotification(progress);
             // send the updates to the notification manager
             mNotificationManager.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
@@ -315,5 +331,11 @@ public class UploadService extends IntentService implements ProgressListener {
 
     public static boolean isQueued(String url) {
         return queue.containsKey(url);
+    }
+
+    public static boolean isQueued(long messageId) {
+        //if(queue != null)
+            return queue.containsValue(messageId);
+        //return false;
     }
 }

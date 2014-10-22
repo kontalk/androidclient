@@ -47,7 +47,6 @@
     android:id="@+id/balloon_progress"
     android:layout_width="wrap_content"
     android:layout_height="69dp"
-    android:indeterminate="false"
     android:layout_centerInParent="true"
     android:progressDrawable="@drawable/circular_progress_bar"
     android:background="@drawable/circle_shape"

@@ -43,6 +43,7 @@ import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.service.DownloadService;
+import org.kontalk.service.UploadService;
 
 import java.util.regex.Pattern;
 
@@ -57,6 +58,7 @@ public class ImageContentView extends RelativeLayout
     private ImageComponent mComponent;
     private ImageView mImage;
     private ImageView mDownloadButton;
+    private ImageView mUploadButton;
     private ProgressBar mProgressBar;
 
     private BalloonProgress mBalloonProgress;
@@ -65,12 +67,8 @@ public class ImageContentView extends RelativeLayout
     private String mMessageSender;
 
     private IntentFilter mDownloadFilter =new IntentFilter(DownloadService.INTENT_ACTION);
-    private IntentFilter mUploadFilter;
+    private IntentFilter mUploadFilter = new IntentFilter(UploadService.INTENT_ACTION);
     private LocalBroadcastManager mLbm;
-
-    private int mStatus = 0;
-    private static final int IDLE = 0;
-    private static final int DOwNLOAD = 1;
 
     public ImageContentView(Context context) {
         super(context);
@@ -91,10 +89,16 @@ public class ImageContentView extends RelativeLayout
             long msgId = intent.getLongExtra(DownloadService.INTENT_MSGID, -1);
             if (mMessageId == msgId)
                 mProgressBar.setProgress(progress);
-            if (mMessageId == msgId && progress>=99 && mLbm != null) {
-                mLbm.unregisterReceiver(mDownloadReceiver);
-                mProgressBar.setVisibility(GONE);
-            }
+        }
+    };
+
+    private BroadcastReceiver mUploadReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int progress = intent.getIntExtra(DownloadService.INTENT_PROGRESS, -1);
+            long msgId = intent.getLongExtra(DownloadService.INTENT_MSGID, -1);
+            if (mMessageId == msgId)
+                mProgressBar.setProgress(progress);
         }
     };
 
@@ -109,6 +113,8 @@ public class ImageContentView extends RelativeLayout
         mProgressBar = (ProgressBar) findViewById(R.id.balloon_progress);
         mImage = (ImageView) findViewById(R.id.image_balloon);
         mDownloadButton = (ImageView) findViewById(R.id.download_button);
+        mUploadButton = (ImageView) findViewById(R.id.upload_button);
+
         boolean fetched = component.getLocalUri() != null;
 
         // prepend some text for the ImageSpan
@@ -120,32 +126,40 @@ public class ImageContentView extends RelativeLayout
 
         // TODO else: maybe some placeholder like Image: image/jpeg
 
+        mUploadButton.setVisibility(GONE);
         mDownloadButton.setVisibility(fetched ? GONE : VISIBLE);
         mProgressBar.setVisibility(GONE);
 
-        if(mLbm == null && mMessageId == getShared() && !fetched) {
+        if(DownloadService.isQueued(mMessageId)) {
             mLbm = LocalBroadcastManager.getInstance(getContext());
             mLbm.registerReceiver(mDownloadReceiver, mDownloadFilter);
             mDownloadButton.setBackgroundResource(R.drawable.attachement_cancel);
             mProgressBar.setVisibility(VISIBLE);
         }
 
-        mBalloonProgress.onBind(this, getContext(), mDownloadReceiver);
+        if (UploadService.isQueued(mMessageId)) {
+            mLbm = LocalBroadcastManager.getInstance(getContext());
+            mLbm.registerReceiver(mUploadReceiver, mUploadFilter);
+            mUploadButton.setVisibility(VISIBLE);
+            mUploadButton.setBackgroundResource(R.drawable.attachement_cancel);
+            mProgressBar.setVisibility(VISIBLE);
+        }
+
+        if (DownloadService.isQueued(mMessageId))
+            mBalloonProgress.onBind(this, getContext(), mDownloadReceiver);
+        if (UploadService.isQueued(mMessageId))
+            mBalloonProgress.onBind(this, getContext(), mUploadReceiver);
 
         mDownloadButton.setOnClickListener(this);
     }
 
     public void unbind() {
         clear();
-        try {
-            if (mLbm != null) {
-                mLbm.unregisterReceiver(mDownloadReceiver);
-                mLbm = null;
-            }
-        }
-        catch (IllegalStateException e) {
-
-        }
+        if (DownloadService.isQueued(mMessageId)  && mLbm != null)
+            mLbm.unregisterReceiver(mDownloadReceiver);
+        if (UploadService.isQueued(mMessageId) && mLbm != null)
+            mLbm.unregisterReceiver(mUploadReceiver);
+        mLbm = null;
     }
 
     public ImageComponent getComponent() {
@@ -168,41 +182,24 @@ public class ImageContentView extends RelativeLayout
             parent, false);
     }
 
-    private long getShared() {
-        SharedPreferences sp = getContext().getSharedPreferences("Key", Context.MODE_PRIVATE);
-        return sp.getLong("messageId", -1);
-    }
-
-    private void setShared(long value) {
-        SharedPreferences sharedPref = getContext().getSharedPreferences("Key", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putLong("messageId", value);
-        editor.commit();
-    }
-
     public void  setBalloonProgressBar (BalloonProgress bpb) {
         mBalloonProgress = bpb;
     }
 
     @Override
     public void onClick(View view) {
-        switch (mStatus) {
-            case IDLE:
-                mLbm = LocalBroadcastManager.getInstance(getContext());
-                mLbm.registerReceiver(mDownloadReceiver, mDownloadFilter);
-                mDownloadButton.setBackgroundResource(R.drawable.attachement_cancel);
-                mProgressBar.setVisibility(VISIBLE);
-                startDownload(mComponent);
-                setShared(mMessageId);
-                mStatus = DOwNLOAD;
-                break;
-            case DOwNLOAD:
-                mDownloadButton.setBackgroundResource(R.drawable.attachement_download);
-                getContext().unregisterReceiver(mDownloadReceiver);
-                mProgressBar.setVisibility(GONE);
-                stopDownload(mComponent);
-                mStatus = IDLE;
-                break;
+        if(!DownloadService.isQueued(mMessageId)) {
+            mLbm = LocalBroadcastManager.getInstance(getContext());
+            mLbm.registerReceiver(mDownloadReceiver, mDownloadFilter);
+            mDownloadButton.setBackgroundResource(R.drawable.attachement_cancel);
+            mProgressBar.setVisibility(VISIBLE);
+            startDownload(mComponent);
+        }
+        else {
+            mDownloadButton.setBackgroundResource(R.drawable.attachement_download);
+            mLbm.unregisterReceiver(mDownloadReceiver);
+            mProgressBar.setVisibility(GONE);
+            stopDownload(mComponent);
         }
     }
 

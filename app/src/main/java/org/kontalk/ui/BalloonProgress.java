@@ -28,9 +28,5 @@ import org.kontalk.message.AttachmentComponent;
  * @author Andrea Cappelli
  */
 public interface BalloonProgress {
-    public void buttonClick(long messageId, BalloonProgressControl balloonProgressControl,
-                            AttachmentComponent attachment, ImageView button);
     public void onBind(BalloonProgressControl balloonProgressControl, Context context, BroadcastReceiver receiver);
-    public void onUnBind(BalloonProgressControl balloonProgressControl, long messageId);
-
 }
