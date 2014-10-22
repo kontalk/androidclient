@@ -132,10 +132,11 @@ public class ComposeMessage extends ActionBarActivity {
             homeId = android.support.v7.appcompat.R.id.home;
 
         ImageView icon = (ImageView) findViewById(homeId);
-
-        FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
-        iconLp.topMargin = iconLp.bottomMargin = 0;
-        icon.setLayoutParams(iconLp);
+        if (icon != null) {
+            FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
+            iconLp.topMargin = iconLp.bottomMargin = 0;
+            icon.setLayoutParams(iconLp);
+        }
     }
 
     @Override
@@ -202,6 +203,8 @@ public class ComposeMessage extends ActionBarActivity {
     private void processIntent(Bundle savedInstanceState) {
         Intent intent;
         if (savedInstanceState != null) {
+            mLostFocus = savedInstanceState.getBoolean("lostFocus");
+
             Uri uri = savedInstanceState.getParcelable(Uri.class.getName());
             intent = new Intent(ACTION_VIEW_USERID, uri);
         }
@@ -453,6 +456,7 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mFragment.getUserId()));
+        out.putBoolean("lostFocus", mLostFocus);
     }
 
     @Override
