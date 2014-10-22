@@ -80,4 +80,10 @@
 
   </style>
 
+  <style name="RoundProgressBar" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:indeterminateOnly">false</item>
+        <item name="android:background">@drawable/circle_shape</item>
+        <item name="android:progressDrawable">@drawable/circular_progress_bar</item>
+  </style>
+
 </resources>

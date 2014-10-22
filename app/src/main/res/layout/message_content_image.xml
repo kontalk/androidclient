@@ -48,9 +48,7 @@
     android:layout_width="wrap_content"
     android:layout_height="69dp"
     android:layout_centerInParent="true"
-    android:progressDrawable="@drawable/circular_progress_bar"
-    android:background="@drawable/circle_shape"
-    style="?android:attr/progressBarStyleHorizontal"
+    style="@style/RoundProgressBar"
     android:max="100"
     android:visibility="gone"/>
 
