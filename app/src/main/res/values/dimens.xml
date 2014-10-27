@@ -11,4 +11,6 @@
     <dimen name="emoji_textview_size">22sp</dimen>
     <dimen name="emoji_edittext_size">22sp</dimen>
     <dimen name="emoji_listitem_size">18sp</dimen>
+
+    <dimen name="cpb_stroke_width">4dp</dimen>
 </resources>

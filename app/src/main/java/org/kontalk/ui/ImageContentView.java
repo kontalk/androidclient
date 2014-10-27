@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.AttributeSet;
@@ -37,11 +38,13 @@ import android.widget.Toast;
 import org.kontalk.R;
 import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
+import org.kontalk.dd.CircularProgressButton;
 import org.kontalk.message.AttachmentComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.UploadService;
+import org.kontalk.util.MessageUtils;
 
 import java.util.regex.Pattern;
 
@@ -55,9 +58,7 @@ public class ImageContentView extends RelativeLayout
 
     private ImageComponent mComponent;
     private ImageView mImage;
-    private ImageView mDownloadButton;
-    private ImageView mUploadButton;
-    private ProgressBar mProgressBar;
+    private CircularProgressButton mProgressBar;
 
     private BalloonProgress mBalloonProgress;
 
@@ -85,8 +86,11 @@ public class ImageContentView extends RelativeLayout
         public void onReceive(Context context, Intent intent) {
             int progress = intent.getIntExtra(DownloadService.INTENT_PROGRESS, -1);
             long msgId = intent.getLongExtra(DownloadService.INTENT_MSGID, -1);
-            if (mMessageId == msgId)
+            if (mMessageId == msgId) {
                 mProgressBar.setProgress(progress);
+                if(progress >= 98)
+                    mProgressBar.setVisibility(GONE);
+            }
         }
     };
 
@@ -95,8 +99,11 @@ public class ImageContentView extends RelativeLayout
         public void onReceive(Context context, Intent intent) {
             int progress = intent.getIntExtra(DownloadService.INTENT_PROGRESS, -1);
             long msgId = intent.getLongExtra(DownloadService.INTENT_MSGID, -1);
-            if (mMessageId == msgId)
+            if (mMessageId == msgId) {
                 mProgressBar.setProgress(progress);
+                if (progress >= 98)
+                    mProgressBar.setVisibility(GONE);
+            }
         }
     };
 
@@ -106,12 +113,15 @@ public class ImageContentView extends RelativeLayout
         mMessageSender = messageSender;
 
         if(mProgressBar == null)
-            mProgressBar = new ProgressBar(getContext());
+            mProgressBar = new CircularProgressButton(getContext());
 
-        mProgressBar = (ProgressBar) findViewById(R.id.balloon_progress);
+        mProgressBar = (CircularProgressButton) findViewById(R.id.circularProgress);
         mImage = (ImageView) findViewById(R.id.image_balloon);
-        mDownloadButton = (ImageView) findViewById(R.id.download_button);
-        mUploadButton = (ImageView) findViewById(R.id.upload_button);
+
+
+        mProgressBar.setText(MessageUtils.humanReadableByteCount(mComponent.getLength(), false));
+        mProgressBar.setBackgroundColorProgress(Color.TRANSPARENT);
+        mProgressBar.setIndeterminateProgressMode(false);
 
         boolean fetched = component.getLocalUri() != null;
 
@@ -124,22 +134,18 @@ public class ImageContentView extends RelativeLayout
 
         // TODO else: maybe some placeholder like Image: image/jpeg
 
-        mUploadButton.setVisibility(GONE);
-        mDownloadButton.setVisibility(fetched ? GONE : VISIBLE);
-        mProgressBar.setVisibility(GONE);
+        mProgressBar.setVisibility(fetched ? GONE : VISIBLE);
 
         if(DownloadService.isQueued(mMessageId)) {
             mLbm = LocalBroadcastManager.getInstance(getContext());
             mLbm.registerReceiver(mDownloadReceiver, mDownloadFilter);
-            mDownloadButton.setBackgroundResource(R.drawable.attachement_cancel);
             mProgressBar.setVisibility(VISIBLE);
         }
 
         if (UploadService.isQueued(mMessageId)) {
+            mProgressBar.setProgress(1);
             mLbm = LocalBroadcastManager.getInstance(getContext());
             mLbm.registerReceiver(mUploadReceiver, mUploadFilter);
-            mUploadButton.setVisibility(VISIBLE);
-            mUploadButton.setBackgroundResource(R.drawable.attachement_cancel);
             mProgressBar.setVisibility(VISIBLE);
         }
 
@@ -148,7 +154,8 @@ public class ImageContentView extends RelativeLayout
         if (UploadService.isQueued(mMessageId))
             mBalloonProgress.onBalloonBind(getContext(), mUploadReceiver);
 
-        mDownloadButton.setOnClickListener(this);
+        //mDownloadButton.setOnClickListener(this);
+        mProgressBar.setOnClickListener(this);
     }
 
     public void unbind() {
@@ -187,16 +194,14 @@ public class ImageContentView extends RelativeLayout
     @Override
     public void onClick(View view) {
         if(!DownloadService.isQueued(mMessageId)) {
+            mProgressBar.setProgress(1);
             mLbm = LocalBroadcastManager.getInstance(getContext());
             mLbm.registerReceiver(mDownloadReceiver, mDownloadFilter);
-            mDownloadButton.setBackgroundResource(R.drawable.attachement_cancel);
-            mProgressBar.setVisibility(VISIBLE);
             startDownload(mComponent);
         }
         else {
-            mDownloadButton.setBackgroundResource(R.drawable.attachement_download);
             mLbm.unregisterReceiver(mDownloadReceiver);
-            mProgressBar.setVisibility(GONE);
+            mProgressBar.setProgress(0);
             stopDownload(mComponent);
         }
     }

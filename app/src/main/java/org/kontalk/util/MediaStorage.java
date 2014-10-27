@@ -55,9 +55,9 @@ public abstract class MediaStorage {
 
     public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
 
-    private static final int THUMBNAIL_WIDTH = 256;
-    private static final int THUMBNAIL_HEIGHT = 256;
-    public static final String THUMBNAIL_MIME = "image/png";
+    private static final int THUMBNAIL_WIDTH = 512;
+    private static final int THUMBNAIL_HEIGHT = 512;
+    public static final String THUMBNAIL_MIME = "image/jpg";
 
     private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
@@ -133,7 +133,7 @@ public abstract class MediaStorage {
         thumbnail = bitmapOrientation(context, media, thumbnail);
 
         // write down to file
-        thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
+        thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, fout);
         thumbnail.recycle();
     }
 

@@ -16,8 +16,8 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.ImageContentView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<org.kontalk.ui.ImageContentView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:descendantFocusability="blocksDescendants">
@@ -28,28 +28,13 @@
     android:layout_height="wrap_content"
     android:layout_centerInParent="true"/>
 
-<ImageView
-    android:id="@+id/download_button"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+<org.kontalk.dd.CircularProgressButton
+    android:id="@+id/circularProgress"
+    android:layout_width="130dp"
+    android:layout_height="64dp"
     android:layout_centerInParent="true"
-    android:background="@drawable/attachment_download" />
-
-<ImageView
-    android:id="@+id/upload_button"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_centerInParent="true"
-    android:visibility="gone"
-    android:background="@drawable/attachement_cancel"/>
-
-<ProgressBar
-    android:id="@+id/balloon_progress"
-    android:layout_width="wrap_content"
-    android:layout_height="69dp"
-    android:layout_centerInParent="true"
-    style="@style/RoundProgressBar"
-    android:max="100"
-    android:visibility="gone"/>
+    android:textColor="@android:color/white"
+    android:textSize="14sp"
+    app:cpb_colorText="@color/cpb_white" />
 
 </org.kontalk.ui.ImageContentView>
