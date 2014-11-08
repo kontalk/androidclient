@@ -80,6 +80,10 @@ public class KontalkConnection extends XMPPTCPConnection {
         // enable debugging
         config.setDebuggerEnabled(BuildConfig.DEBUG);
 
+        // enable SM without resumption
+        setUseStreamManagement(true);
+        setUseStreamManagementResumption(false);
+
         setupSSL(secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);
     }
 
