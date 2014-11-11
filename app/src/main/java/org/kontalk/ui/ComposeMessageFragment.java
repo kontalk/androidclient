@@ -149,6 +149,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  */
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
+        // TODO these two interfaces should be handled by an inner class
         OnAudioDialogResult, AudioPlayerControl,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         EmojiconGridFragment.OnEmojiconClickedListener {
@@ -476,9 +477,19 @@ public class ComposeMessageFragment extends ListFragment implements
         Configuration config = getResources().getConfiguration();
         onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
 
-        mLocalBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
-
         processArguments(savedInstanceState);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(activity);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mLocalBroadcastManager = null;
     }
 
     @Override
@@ -873,17 +884,6 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void openFile(CompositeMessage msg) {
-        AttachmentComponent attachment = (AttachmentComponent) msg
-                .getComponent(AttachmentComponent.class);
-
-        if (attachment != null && !(attachment instanceof AudioComponent)) {
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
-            startActivity(i);
-        }
-    }
-
-    private void openAudio(CompositeMessage msg) {
         AttachmentComponent attachment = (AttachmentComponent) msg
                 .getComponent(AttachmentComponent.class);
 
@@ -1312,13 +1312,7 @@ public class ComposeMessageFragment extends ListFragment implements
             }
 
             case MENU_OPEN: {
-                AttachmentComponent attachment = (AttachmentComponent) msg
-                        .getComponent(AttachmentComponent.class);
-
-                if (!(attachment instanceof AudioComponent))
-                    openFile(msg);
-                else
-                    openAudio(msg);
+                openFile(msg);
                 return true;
             }
         }
@@ -2140,27 +2134,28 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Sends a subscription request for the current peer. */
     private void presenceSubscribe() {
-        // all of this shall be done only if there isn't a request from the other contact
-        if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+        Context context = getActivity();
+        if (context != null) {
+            // all of this shall be done only if there isn't a request from the other contact
+            if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
+                Contact c = mConversation.getContact();
 
-            Contact c = mConversation.getContact();
+                // pre-approve our presence if we don't have contact's key
+                if (c == null || c.getPublicKeyRing() == null) {
+                    Intent i = new Intent(context, MessageCenterService.class);
+                    i.setAction(MessageCenterService.ACTION_PRESENCE);
+                    i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                    i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+                    context.startService(i);
+                }
 
-            // pre-approve our presence if we don't have contact's key
-            if (c == null || c.getPublicKeyRing() == null) {
-                Intent i = new Intent(getActivity(), MessageCenterService.class);
+                // send subscription request
+                Intent i = new Intent(context, MessageCenterService.class);
                 i.setAction(MessageCenterService.ACTION_PRESENCE);
                 i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-                getActivity().startService(i);
+                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+                context.startService(i);
             }
-
-            // send subscription request
-            Intent i = new Intent(getActivity(), MessageCenterService.class);
-            i.setAction(MessageCenterService.ACTION_PRESENCE);
-            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-            getActivity().startService(i);
-
         }
     }
 
@@ -2655,9 +2650,9 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     @Override
-    public void onResult(String path) {
-        if (path != null)
-            sendBinaryMessage(Uri.fromFile(new File(path)), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+    public void onRecordingSuccessful(File file) {
+        if (file != null)
+            sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
     }
 
     @Override
@@ -2750,7 +2745,8 @@ public class ComposeMessageFragment extends ListFragment implements
             stopMediaPlayerUpdater();
             view.end();
         }
-        mPlayer.reset();
+        if (mPlayer != null)
+            mPlayer.reset();
         mMediaPlayerMessageId = -1;
     }
 
@@ -2762,23 +2758,26 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onBind(long messageId, final AudioContentViewControl view) {
         if (mMediaPlayerMessageId == messageId) {
             mAudioControl = view;
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    stopMediaPlayerUpdater();
-                    view.end();
-                    mPlayer.seekTo(0);
-                    setAudioStatus(AudioContentView.STATUS_ENDED);
+            if (mPlayer != null) {
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        stopMediaPlayerUpdater();
+                        view.end();
+                        mPlayer.seekTo(0);
+                        setAudioStatus(AudioContentView.STATUS_ENDED);
+                    }
+                });
+
+                view.setProgressChangeListener(true);
+                view.prepare(mPlayer.getDuration());
+                if (mPlayer.isPlaying()) {
+                    startMediaPlayerUpdater(view);
+                    view.play();
                 }
-            });
-            view.setProgressChangeListener(true);
-            view.prepare(mPlayer.getDuration());
-            if (mPlayer.isPlaying()) {
-                startMediaPlayerUpdater(view);
-                view.play();
-            }
-            else {
-                view.pause();
+                else {
+                    view.pause();
+                }
             }
         }
     }
@@ -2787,13 +2786,16 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onUnbind(long messageId, AudioContentViewControl view) {
         if (mMediaPlayerMessageId == messageId) {
             mAudioControl = null;
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    mPlayer.seekTo(0);
-                    setAudioStatus(AudioContentView.STATUS_ENDED);
-                }
-            });
+            if (mPlayer != null) {
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mPlayer.seekTo(0);
+                        setAudioStatus(AudioContentView.STATUS_ENDED);
+                    }
+                });
+            }
+
             view.setProgressChangeListener(false);
             if (!MessagesProvider.exists(getActivity(), messageId)) {
                 resetAudio(view);

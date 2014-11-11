@@ -292,12 +292,15 @@
   <string name="msg_auth_error">&lt;b&gt;ATTENZIONE!&lt;/b&gt;&lt;br&gt;L\'autenticazione ad un server di Kontalk è fallita durante l\'ultimo tentativo di connessione. Potrebbe essere un problema temporeaneo del server oppure, più probabilmente, il server sta rifiutando la tua chiave personale. Ti raccomandiamo di cancellare il tuo account e di registrarti nuovamente (tuttavia perderai tutti i tuoi messaggi).</string>
   <string name="warn_invite_no_app">Nessuna applicazione trovata per invitare altri utenti.</string>
   <string name="pref_text_enter">Mostra tasto invio</string>
-  <string name="pref_title_on_text_enter">Il tasto invio sarà mostrato mentre si scrivono messaggi.</string>
-  <string name="pref_title_off_text_enter">Il tasto di azione predefinito sarà mostrato mentre si scrivono messaggi.</string>
+  <string name="pref_title_on_text_enter">Il tasto invio sarà mostrato mentre si scrivono messaggi</string>
+  <string name="pref_title_off_text_enter">Il tasto di azione predefinito sarà mostrato mentre si scrivono messaggi</string>
   <string name="title_password1">Password:</string>
   <string name="title_password2">Conferma password:</string>
   <string name="err_password_too_short">La password deve essere di almeno %d caratteri.</string>
   <string name="err_passwords_mismatch">Le password non corrispondono!</string>
   <string name="err_password_invalid">Password errata.</string>
   <string name="err_change_passphrase">Impossibile modificare la password della chiave personale.</string>
+  <string name="pref_media_settings">Impostazioni messaggi multimediali</string>
+  <string name="pref_image_resize">Compressione immagini</string>
+  <string name="pref_title_image_resize">Compressione delle immagini prima dell\'invio</string>
 </resources>

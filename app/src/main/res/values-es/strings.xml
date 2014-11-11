@@ -292,12 +292,15 @@
   <string name="msg_auth_error">&lt;b&gt;¡ATENCIÓN!&lt;/b&gt;&lt;br&gt; La autenticación con un servidor de Kontalk falló la última vez que intentamos conectar. Podría ser un fallo temporal del servidor o, más probablemente, que el servidor esté rechazando tu clave personal. Te recomendamos borrar tu cuenta de Kontalk desde las preferencias del sistema Android y que te registres de nuevo (lamentablemente, haciendo esto perderás todos tus mensajes de Kontalk).</string>
   <string name="warn_invite_no_app">No hay ninguna aplicación para invitar usuarios</string>
   <string name="pref_text_enter">Mostrar la tecla Intro</string>
-  <string name="pref_title_on_text_enter">Se muestra la tecla Intro mientras escribes los mensajes</string>
-  <string name="pref_title_off_text_enter">Se muestra la tecla por defecto mientras escribes los mensajes</string>
+  <string name="pref_title_on_text_enter">Se está mostrando la tecla Intro mientras escribes los mensajes</string>
+  <string name="pref_title_off_text_enter">Se está mostrando la tecla por defecto mientras escribes los mensajes</string>
   <string name="title_password1">Contraseña:</string>
   <string name="title_password2">Confirmar contraseña:</string>
   <string name="err_password_too_short">La contraseña debe tener al menos %d caracteres.</string>
   <string name="err_passwords_mismatch">¡Las contraseñas no coinciden!</string>
   <string name="err_password_invalid">Contraseña errónea.</string>
   <string name="err_change_passphrase">Imposible cambiar la contraseña de la clave personal</string>
+  <string name="pref_media_settings">Archivos multimedia</string>
+  <string name="pref_image_resize">Redimensionar imágenes</string>
+  <string name="pref_title_image_resize">Redimensionar las imágenes antes de enviarlas</string>
 </resources>

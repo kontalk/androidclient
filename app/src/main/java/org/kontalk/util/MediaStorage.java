@@ -130,13 +130,21 @@ public abstract class MediaStorage {
             .extractThumbnail(bitmap, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
         bitmap.recycle();
 
+        thumbnail = bitmapOrientation(context, media, thumbnail);
+
+        // write down to file
+        thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
+        thumbnail.recycle();
+    }
+
+    private static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
             Cursor cursor = context.getContentResolver().query(media,
                 new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
 
-            cursor.moveToFirst();
             if (cursor != null) {
+                cursor.moveToFirst();
                 int orientation = cursor.getInt(0);
                 cursor.close();
 
@@ -144,9 +152,10 @@ public abstract class MediaStorage {
                     Matrix m = new Matrix();
                     m.postRotate(orientation);
 
-                    Bitmap rotated = Bitmap.createBitmap(thumbnail, 0, 0, thumbnail.getWidth(), thumbnail.getHeight(), m, true);
-                    thumbnail.recycle();
-                    thumbnail = rotated;
+                    Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
+                    bitmap.recycle();
+                    bitmap = rotated;
+
                 }
             }
         }
@@ -154,9 +163,7 @@ public abstract class MediaStorage {
             Log.w(TAG, "unable to check for rotation data", e);
         }
 
-        // write down to file
-        thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
-        thumbnail.recycle();
+        return bitmap;
     }
 
     public static File writeMedia(String filename, InputStream source) throws IOException {
@@ -236,11 +243,60 @@ public abstract class MediaStorage {
 
     public static File resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality)
         throws FileNotFoundException {
-        Bitmap bitmap = null;
+
+        final int MAX_IMAGE_SIZE = 1200000; // 1.2MP
+
+        ContentResolver cr = context.getContentResolver();
+
+        // compute optimal image scale size
+        int scale = 1;
+        InputStream in = cr.openInputStream(uri);
+
         try {
-            bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-        } catch (IOException e) {
-            Log.e(TAG, "error", e);
+            // decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(in, null, o);
+            in.close();
+
+            // calculate optimal image scale size
+            while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) > MAX_IMAGE_SIZE)
+                scale++;
+
+            Log.d(TAG, "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight);
+        }
+        catch (IOException e) {
+            Log.d(TAG, "unable to calculate optimal scale size, using original image");
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+
+        // open image again for the actual scaling
+        Bitmap bitmap = null;
+
+        try {
+            in = cr.openInputStream(uri);
+            BitmapFactory.Options o = new BitmapFactory.Options();
+
+            if (scale > 1) {
+                o.inSampleSize = scale - 1;
+            }
+
+            bitmap = BitmapFactory.decodeStream(in, null, o);
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
         }
 
         if (bitmap == null) {
@@ -260,6 +316,9 @@ public abstract class MediaStorage {
 
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
 
+        // check for rotation data
+        scaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
+
         String filename = String.format(COMPRESS_FILENAME_FORMAT, msgId);
         final File compressedFile = new File(context.getCacheDir(), filename);
 
@@ -268,6 +327,7 @@ public abstract class MediaStorage {
         try {
             stream = new FileOutputStream(compressedFile);
             scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+
             return compressedFile;
         }
         finally {

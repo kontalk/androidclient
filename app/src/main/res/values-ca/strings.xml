@@ -238,6 +238,7 @@
   <string name="social_identica">identi.ca</string>
   <string name="donate_text">Kontalk necessita diners per a continuar donant-vos servei. Si podeu, feu una donació;  encara que siga petita.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
+  <string name="text_bitcoin_dialog">Adreça bitcoin:\n%s</string>
   <string name="donate_wallet">Google Play</string>
   <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
@@ -247,6 +248,7 @@
   <string name="notify_gen_keypair_ticker">S\'està generant la clau personal...</string>
   <string name="notify_gen_keypair_title">S\'està generant la clau personal</string>
   <string name="notify_gen_keypair_text">Podeu continuar treballant normalment.</string>
+  <string name="msg_xmpp_upgrading">S\'està actualitzant…</string>
   <string name="title_no_personal_key">No hi ha cap clau personal</string>
   <string name="msg_no_personal_key">No hi ha disponible cap clau personal (probablement a causa d\'una actualització). No podreu connectar a la xarxa Kontalk si no genereu una clau personal. Per favor introduïu el vostre nom tancant Kontalk i tornant-lo a obrir.</string>
   <string name="msg_keypair_exported">S\'ha exportat la clau i el certificat de connexió a l\'emmagatzemament extern.</string>
@@ -261,6 +263,8 @@
   <string name="security_error_integrity_check">\u0020(verificació de la integritat)</string>
   <string name="security_error_public_key_unavail">\u0020(la clau pública no està disponible)</string>
   <string name="title_invitation">Invitació a un xat</string>
+  <string name="text_invitation_known">Sol·licitud de\n%1$s &lt;%2$s&gt;\n(%3$s)\nEmpremta: %4$s</string>
+  <string name="text_invitation_unknown">Sol·licitud de\n%1$s\nEmpremta: %2$s</string>
   <string name="button_accept">Accepta</string>
   <string name="button_block">Bloca</string>
   <string name="msg_connecting_iab">S\'està connectant amb Google Play...</string>
@@ -288,12 +292,15 @@
   <string name="msg_auth_error">&lt;b&gt;WARNING!&lt;/b&gt;&lt;br&gt;L\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
   <string name="warn_invite_no_app">No hi ha cap aplicació disponible per a convidar usuaris.</string>
   <string name="pref_text_enter">Mostra la tecla ENTER</string>
-  <string name="pref_title_on_text_enter">Es mostra la tecla ENTER mentre s\'escriuen els missatges</string>
-  <string name="pref_title_off_text_enter">Es mostra la tecla per defecte mentre s\'escriuen els missatges.</string>
+  <string name="pref_title_on_text_enter">Es mostra la tecla retorn mentre s\'escriu</string>
+  <string name="pref_title_off_text_enter">Es mostra la tecla per defecte mentre s\'escriu</string>
   <string name="title_password1">Contrasenya:</string>
   <string name="title_password2">Confirmació de la contrasenya:</string>
   <string name="err_password_too_short">La contrasenya ha de tenir, si més no, %d caràcters.</string>
   <string name="err_passwords_mismatch">Les contrasenyes no coincideixen!</string>
   <string name="err_password_invalid">Contrasenya incorrecta.</string>
   <string name="err_change_passphrase">No ha estat possible canviar la contrasenya de la clau personal.</string>
+  <string name="pref_media_settings">Configuració multimèdia</string>
+  <string name="pref_image_resize">Redimensiona les imatges</string>
+  <string name="pref_title_image_resize">Redimensiona les imatges abans d\'enviar-les</string>
 </resources>

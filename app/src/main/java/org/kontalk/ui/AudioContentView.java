@@ -49,12 +49,10 @@ public class AudioContentView extends RelativeLayout
         implements MessageContentView<AudioComponent>, View.OnClickListener,
         AudioContentViewControl {
 
-    static final String TAG = AudioContentView.class.getSimpleName();
-
     private AudioComponent mComponent;
     private ImageButton mPlayButton;
     private SeekBar mSeekBar;
-    private ImageView mDownload;
+    private ImageView mDownloadButton;
     private TextView mTime;
     private StringBuilder mTimeBuilder = new StringBuilder();
     private int mDuration = -1;
@@ -81,18 +79,26 @@ public class AudioContentView extends RelativeLayout
         super(context, attrs, defStyle);
     }
 
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+
+        mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
+        mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
+        mDownloadButton = (ImageView) findViewById(R.id.balloon_audio_download);
+        mTime = (TextView) findViewById(R.id.balloon_audio_time);
+    }
+
     public void bind(long messageId, AudioComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
         mMessageId = messageId;
-        mPlayButton = (ImageButton) findViewById(R.id.balloon_audio_player);
-        mSeekBar = (SeekBar) findViewById(R.id.balloon_audio_seekbar);
-        mDownload = (ImageView) findViewById(R.id.balloon_audio_download);
-        mTime = (TextView) findViewById(R.id.balloon_audio_time);
+
         boolean fetched = component.getLocalUri() != null;
         mPlayButton.setVisibility(fetched ? VISIBLE : GONE);
         mSeekBar.setVisibility(fetched ? VISIBLE : GONE);
-        mDownload.setVisibility(fetched ? GONE : VISIBLE);
+        mDownloadButton.setVisibility(fetched ? GONE : VISIBLE);
         mTime.setVisibility(fetched ? VISIBLE : GONE);
+
         updatePosition(-1);
         mSeekBar.setMax(getAudioDuration());
         mPlayButton.setOnClickListener(this);
@@ -120,10 +126,6 @@ public class AudioContentView extends RelativeLayout
     @Override
     public void onClick(View v) {
         mAudioPlayerControl.buttonClick(new File(mComponent.getLocalUri().getPath()), this, mMessageId);
-    }
-
-    public void  setAudioPlayerControl (AudioPlayerControl apc) {
-        mAudioPlayerControl = apc;
     }
 
     @Override
@@ -227,8 +229,11 @@ public class AudioContentView extends RelativeLayout
         }
     }
 
-    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent) {
-        return (AudioContentView) inflater.inflate(R.layout.message_content_audio,
+    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent, AudioPlayerControl control) {
+        AudioContentView view = (AudioContentView) inflater.inflate(R.layout.message_content_audio,
                 parent, false);
+        if (view != null)
+            view.mAudioPlayerControl = control;
+        return view;
     }
 }

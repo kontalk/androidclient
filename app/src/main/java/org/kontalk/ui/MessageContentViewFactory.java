@@ -44,8 +44,8 @@ public class MessageContentViewFactory {
     /** Builds the content for the given component. */
     @SuppressWarnings("unchecked")
     public static <T> MessageContentView<T> createContent(LayoutInflater inflater,
-            ViewGroup parent, T component,
-            Contact contact, Pattern highlight, AudioPlayerControl audioPlayerControl, long messageId) {
+            ViewGroup parent, T component, long messageId,
+            Contact contact, Pattern highlight, Object... args) {
 
         // using conditionals to avoid reflection
         MessageContentView<T> view = null;
@@ -57,8 +57,7 @@ public class MessageContentViewFactory {
             view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
         }
         else if (component instanceof AudioComponent) {
-            view = (MessageContentView<T>) AudioContentView.create(inflater, parent);
-            ((AudioContentView) view).setAudioPlayerControl(audioPlayerControl);
+            view = (MessageContentView<T>) AudioContentView.create(inflater, parent, (AudioPlayerControl) args[0]);
         }
         else if (component instanceof VCardComponent) {
             view = (MessageContentView<T>) VCardContentView.create(inflater, parent);

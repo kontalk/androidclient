@@ -38,6 +38,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PRNGFixes;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.DownloadService;
@@ -98,15 +99,16 @@ public class Kontalk extends Application {
      */
     private int mRefCounter;
 
-    static {
-        // register security provider
-        PGP.registerProvider();
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
         mHandler = new Handler();
+
+        // register security provider
+        PGP.registerProvider();
+
+        // apply RNG fixes
+        PRNGFixes.apply();
 
         // init preferences
         Preferences.init(this);
