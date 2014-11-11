@@ -2620,7 +2620,8 @@ public class ComposeMessageFragment extends ListFragment implements
             stopMediaPlayerUpdater();
             view.end();
         }
-        mPlayer.reset();
+        if (mPlayer != null)
+            mPlayer.reset();
         mMediaPlayerMessageId = -1;
     }
 
@@ -2632,23 +2633,26 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onBind(long messageId, final AudioContentViewControl view) {
         if (mMediaPlayerMessageId == messageId) {
             mAudioControl = view;
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    stopMediaPlayerUpdater();
-                    view.end();
-                    mPlayer.seekTo(0);
-                    setAudioStatus(AudioContentView.STATUS_ENDED);
+            if (mPlayer != null) {
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        stopMediaPlayerUpdater();
+                        view.end();
+                        mPlayer.seekTo(0);
+                        setAudioStatus(AudioContentView.STATUS_ENDED);
+                    }
+                });
+
+                view.setProgressChangeListener(true);
+                view.prepare(mPlayer.getDuration());
+                if (mPlayer.isPlaying()) {
+                    startMediaPlayerUpdater(view);
+                    view.play();
                 }
-            });
-            view.setProgressChangeListener(true);
-            view.prepare(mPlayer.getDuration());
-            if (mPlayer.isPlaying()) {
-                startMediaPlayerUpdater(view);
-                view.play();
-            }
-            else {
-                view.pause();
+                else {
+                    view.pause();
+                }
             }
         }
     }
@@ -2657,13 +2661,16 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onUnbind(long messageId, AudioContentViewControl view) {
         if (mMediaPlayerMessageId == messageId) {
             mAudioControl = null;
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    mPlayer.seekTo(0);
-                    setAudioStatus(AudioContentView.STATUS_ENDED);
-                }
-            });
+            if (mPlayer != null) {
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mPlayer.seekTo(0);
+                        setAudioStatus(AudioContentView.STATUS_ENDED);
+                    }
+                });
+            }
+
             view.setProgressChangeListener(false);
             if (!MessagesProvider.exists(getActivity(), messageId)) {
                 resetAudio(view);
