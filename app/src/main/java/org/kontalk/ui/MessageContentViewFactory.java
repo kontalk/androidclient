@@ -22,9 +22,9 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.kontalk.data.Contact;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
-import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.message.VCardComponent;
 
@@ -44,8 +44,8 @@ public class MessageContentViewFactory {
     /** Builds the content for the given component. */
     @SuppressWarnings("unchecked")
     public static <T> MessageContentView<T> createContent(LayoutInflater inflater,
-            ViewGroup parent, T component,
-            Contact contact, Pattern highlight) {
+            ViewGroup parent, T component, long messageId,
+            Contact contact, Pattern highlight, Object... args) {
 
         // using conditionals to avoid reflection
         MessageContentView<T> view = null;
@@ -56,14 +56,16 @@ public class MessageContentViewFactory {
         else if (component instanceof ImageComponent) {
             view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
         }
+        else if (component instanceof AudioComponent) {
+            view = (MessageContentView<T>) AudioContentView.create(inflater, parent, (AudioPlayerControl) args[0]);
+        }
         else if (component instanceof VCardComponent) {
             view = (MessageContentView<T>) VCardContentView.create(inflater, parent);
         }
 
         if (view != null)
-            view.bind(component, contact, highlight);
+            view.bind(messageId, component, contact, highlight);
 
         return view;
     }
-
 }

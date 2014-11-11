@@ -25,6 +25,7 @@
     <string name="download_service">Download Service</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="send">Send</string>
     <string name="menu_compose">Compose</string>
     <string name="menu_delete_all">Delete threads</string>
     <string name="menu_search">Search</string>
@@ -62,7 +63,6 @@
     <string name="new_messages">New messages</string>
     <string name="unread_messages">%d unread messages</string>
     <string name="only_one_account_supported">Only one Kontalk account is supported.</string>
-    <string name="send">Send</string>
     <string name="hint_enter_text">Enter your text here</string>
     <string name="hint_type_to_compose">Type to compose</string>
     <string name="hint_open_kbd_to_compose">Open keyboard to compose message</string>
@@ -73,6 +73,7 @@
     <string name="message_type_label">Type:\u0020</string>
     <string name="text_message">Text message</string>
     <string name="image_message">Image message</string>
+    <string name="audio_message">Audio message</string>
     <string name="from_label">From:\u0020</string>
     <string name="to_address_label">To:\u0020</string>
     <string name="sent_label">Sent:\u0020</string>
@@ -192,6 +193,7 @@
     <string name="menu_unblock_user">Unblock</string>
     <string name="vcard_message">vCard message</string>
     <string name="open_file">Open file</string>
+    <string name="open_audio">Play audio file</string>
     <string name="msg_msgcenter_restarted">Message center restarted.</string>
     <string name="downloading_attachment">Downloading attachment&#8230;</string>
     <string name="decrypting_attachment">Decrypting attachment&#8230;</string>
@@ -236,7 +238,8 @@
 
     <string name="attachment_picture">Picture</string>
     <string name="attachment_contact">Contact</string>
-
+    <string name="attachment_audio">Audio</string>
+    
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
 
@@ -350,6 +353,11 @@
     <string name="err_password_invalid">Wrong password.</string>
 
     <string name="err_change_passphrase">Unable to change the personal key password.</string>
+    <string name="err_file_not_found">File not found.</string>
+    <string name="err_audio_record">Error starting audio recording.</string>
+    <string name="err_audio_record_writing">Error writing on external storage.</string>
+    <string name="err_playing_audio">Error playing audio.</string>
+    <string name="err_playing_sdcard">Error reading from external storage.</string>
 
     <string name="pref_media_settings">Media settings</string>
     <string name="pref_image_resize">Resize images</string>

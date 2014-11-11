@@ -50,6 +50,7 @@ public class CompositeMessage {
     @SuppressWarnings("unchecked")
     private static final Class<AttachmentComponent>[] TRY_COMPONENTS = new Class[] {
         ImageComponent.class,
+        AudioComponent.class,
         VCardComponent.class,
     };
 
@@ -130,7 +131,7 @@ public class CompositeMessage {
 
     /** Creates a new composite message. */
     public CompositeMessage(Context context, String id, long timestamp, String sender, boolean encrypted, int securityFlags) {
-        this();
+    	this();
 
         mContext = context;
 
@@ -147,7 +148,7 @@ public class CompositeMessage {
 
     /** Empty constructor for local use. */
     private CompositeMessage() {
-        mComponents = new ArrayList<MessageComponent<?>>();
+    	mComponents = new ArrayList<MessageComponent<?>>();
     }
 
     public String getId() {
@@ -201,7 +202,7 @@ public class CompositeMessage {
 
     @Override
     public String toString() {
-        // FIXME include components
+    	// FIXME include components
         return getClass().getSimpleName() + ": id=" + mId;
     }
 
@@ -235,11 +236,11 @@ public class CompositeMessage {
     }
 
     public void addComponent(MessageComponent<?> c) {
-        mComponents.add(c);
+    	mComponents.add(c);
     }
 
     public void clearComponents() {
-        mComponents.clear();
+    	mComponents.clear();
     }
 
     /** Returns the first component of the given type. */
@@ -253,7 +254,7 @@ public class CompositeMessage {
     }
 
     public List<MessageComponent<?>> getComponents() {
-        return mComponents;
+    	return mComponents;
     }
 
     private void populateFromCursor(Cursor c) {
@@ -284,65 +285,70 @@ public class CompositeMessage {
 
         // encrypted message - single raw encrypted component
         if (mEncrypted) {
-            RawComponent raw = new RawComponent(body, true, mSecurityFlags);
-            addComponent(raw);
+        	RawComponent raw = new RawComponent(body, true, mSecurityFlags);
+        	addComponent(raw);
         }
 
         else {
 
-            String mime = c.getString(COLUMN_BODY_MIME);
+	        String mime = c.getString(COLUMN_BODY_MIME);
 
-            if (body != null) {
+	        if (body != null) {
 
-                // text data
-                if (TextComponent.supportsMimeType(mime)) {
-                    TextComponent txt = new TextComponent(new String(body));
-                    addComponent(txt);
+		        // text data
+		        if (TextComponent.supportsMimeType(mime)) {
+		        	TextComponent txt = new TextComponent(new String(body));
+		        	addComponent(txt);
+		        }
+
+		        // unknown data
+		        else {
+		        	RawComponent raw = new RawComponent(body, false, mSecurityFlags);
+		        	addComponent(raw);
+		        }
+	        }
+
+	        // attachment
+	        String attMime = c.getString(COLUMN_ATTACHMENT_MIME);
+	        if (attMime != null) {
+
+	        	String attPreview = c.getString(COLUMN_ATTACHMENT_PREVIEW_PATH);
+	        	String attLocal = c.getString(COLUMN_ATTACHMENT_LOCAL_URI);
+	        	String attFetch = c.getString(COLUMN_ATTACHMENT_FETCH_URL);
+	        	long attLength = c.getLong(COLUMN_ATTACHMENT_LENGTH);
+	        	boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
+	        	int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
+
+	        	AttachmentComponent att = null;
+        		File previewFile = (attPreview != null) ? new File(attPreview) : null;
+        		Uri localUri = (attLocal != null) ? Uri.parse(attLocal) : null;
+
+	        	if (ImageComponent.supportsMimeType(attMime)) {
+	        		att = new ImageComponent(attMime, previewFile,
+	        				localUri, attFetch, attLength,
+	        				attEncrypted, attSecurityFlags);
+	        	}
+
+	        	else if (VCardComponent.supportsMimeType(attMime)) {
+	        		att = new VCardComponent(previewFile,
+	        				localUri, attFetch, attLength,
+	        				attEncrypted, attSecurityFlags);
+	        	}
+
+                else if (AudioComponent.supportsMimeType(attMime)) {
+                    att = new AudioComponent(attMime,
+                            localUri, attFetch,
+                            attLength, attEncrypted, attSecurityFlags);
                 }
 
-                // unknown data
-                else {
-                    RawComponent raw = new RawComponent(body, false, mSecurityFlags);
-                    addComponent(raw);
-                }
-            }
+	        	// TODO other type of attachments
 
-            // attachment
-            String attMime = c.getString(COLUMN_ATTACHMENT_MIME);
-            if (attMime != null) {
-
-                String attPreview = c.getString(COLUMN_ATTACHMENT_PREVIEW_PATH);
-                String attLocal = c.getString(COLUMN_ATTACHMENT_LOCAL_URI);
-                String attFetch = c.getString(COLUMN_ATTACHMENT_FETCH_URL);
-                long attLength = c.getLong(COLUMN_ATTACHMENT_LENGTH);
-                boolean attEncrypted = c.getInt(COLUMN_ATTACHMENT_ENCRYPTED) > 0;
-                int attSecurityFlags = c.getInt(COLUMN_ATTACHMENT_SECURITY_FLAGS);
-
-                AttachmentComponent att = null;
-                File previewFile = (attPreview != null) ? new File(attPreview) : null;
-                Uri localUri = (attLocal != null) ? Uri.parse(attLocal) : null;
-
-                if (ImageComponent.supportsMimeType(attMime)) {
-                    att = new ImageComponent(attMime, previewFile,
-                            localUri, attFetch, attLength,
-                            attEncrypted, attSecurityFlags);
+	        	if (att != null) {
                     att.populateFromCursor(mContext, c);
-                }
-
-                else if (VCardComponent.supportsMimeType(attMime)) {
-                    att = new VCardComponent(previewFile,
-                            localUri, attFetch, attLength,
-                            attEncrypted, attSecurityFlags);
-                    att.populateFromCursor(mContext, c);
-                }
-
-                // TODO other type of attachments
-
-
-                if (att != null)
                     addComponent(att);
+                }
 
-            }
+	        }
 
         }
     }
@@ -364,9 +370,9 @@ public class CompositeMessage {
 
     /** Builds an instance from a {@link Cursor} row. */
     public static CompositeMessage fromCursor(Context context, Cursor cursor) {
-        CompositeMessage msg = new CompositeMessage();
-        msg.populateFromCursor(cursor);
-        // TODO
+    	CompositeMessage msg = new CompositeMessage();
+    	msg.populateFromCursor(cursor);
+    	// TODO
         return msg;
     }
 
@@ -380,27 +386,27 @@ public class CompositeMessage {
 
     /** A sample text content from class name and mime type. */
     public static String getSampleTextContent(String mime) {
-        // TODO i18n
-        // FIXME using reflection BAD BAD BAD !!!
-        for (Class<AttachmentComponent> klass : TRY_COMPONENTS) {
-            Boolean supported = null;
-            try {
-                Method m = klass.getMethod("supportsMimeType", new Class[] { String.class });
-                supported = (Boolean) m.invoke(klass, mime);
-            }
-            catch (Exception e) {
-                // ignored
-            }
+    	// TODO i18n
+    	// FIXME using reflection BAD BAD BAD !!!
+    	for (Class<AttachmentComponent> klass : TRY_COMPONENTS) {
+    		Boolean supported = null;
+    		try {
+				Method m = klass.getMethod("supportsMimeType", new Class[] { String.class });
+				supported = (Boolean) m.invoke(klass, mime);
+			}
+    		catch (Exception e) {
+    			// ignored
+			}
 
-            if (supported != null && supported.booleanValue()) {
-                String cname = klass.getSimpleName();
-                return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
-                    ": " + mime;
-            }
-        }
+    		if (supported != null && supported.booleanValue()) {
+		        String cname = klass.getSimpleName();
+		        return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
+		            ": " + mime;
+    		}
+    	}
 
-        // no supporting component - return mime
-        return "Unknown: " + mime;
+    	// no supporting component - return mime
+    	return "Unknown: " + mime;
     }
 
     /** Still unused.

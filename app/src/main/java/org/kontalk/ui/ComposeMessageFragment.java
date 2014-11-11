@@ -57,6 +57,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -99,6 +101,7 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.AttachmentComponent;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -114,6 +117,7 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -132,6 +136,8 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  */
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
+        // TODO these two interfaces should be handled by an inner class
+        OnAudioDialogResult, AudioPlayerControl,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         EmojiconGridFragment.OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
@@ -149,6 +155,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int CONTEXT_MENU_ATTACHMENT = 1;
     private static final int ATTACHMENT_ACTION_PICTURE = 1;
     private static final int ATTACHMENT_ACTION_CONTACT = 2;
+    private static final int ATTACHMENT_ACTION_AUDIO = 3;
     private IconContextMenu attachmentMenu;
 
     private MessageListQueryHandler mQueryHandler;
@@ -179,6 +186,14 @@ public class ComposeMessageFragment extends ListFragment implements
     private PresenceData mMostAvailable;
     /** Available resources. */
     private Set<String> mAvailableResources = new HashSet<String>();
+
+    /** MediaPlayer */
+    private MediaPlayer mPlayer;
+    private int mStatus = AudioContentView.STATUS_IDLE;
+    private long mMediaPlayerMessageId;
+    private Handler mHandler;
+    private Runnable mMediaPlayerUpdater;
+    private AudioContentViewControl mAudioControl;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -389,6 +404,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
         setHasOptionsMenu(true);
         mQueryHandler = new MessageListQueryHandler();
+        mHandler = new Handler();
 
         // list adapter creation is post-poned
     }
@@ -427,14 +443,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
             String msgId = "draft" + (new Random().nextInt());
 
-            // generate thumbnail
-            // FIXME this is blocking!!!!
-            if (media) {
-                // FIXME hard-coded to ImageComponent
-                String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
-                previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
-                        filename);
-            }
+			// generate thumbnail
+			// FIXME this is blocking!!!!
+			if (media && klass == ImageComponent.class) {
+				// FIXME hard-coded to ImageComponent
+				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
+				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
+						filename);
+			}
 
             length = MediaStorage.getLength(getActivity(), uri);
 
@@ -763,6 +779,9 @@ public class ComposeMessageFragment extends ListFragment implements
             case ATTACHMENT_ACTION_CONTACT:
                 selectContactAttachment();
                 break;
+            case ATTACHMENT_ACTION_AUDIO:
+                selectAudioAttachment();
+                break;
         }
     }
 
@@ -775,16 +794,17 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    /** Starts dialog for attachment selection. */
-    public void selectAttachment() {
-        if (attachmentMenu == null) {
-            attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
-            attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
-            attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
-            attachmentMenu.setOnClickListener(this);
-        }
-        attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
-    }
+	/** Starts dialog for attachment selection. */
+	public void selectAttachment() {
+	    if (attachmentMenu == null) {
+	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
+	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
+	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
+	        attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
+	        attachmentMenu.setOnClickListener(this);
+	    }
+	    attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
+	}
 
     /** Starts activity for an image attachment. */
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -834,6 +854,10 @@ public class ComposeMessageFragment extends ListFragment implements
     private void selectContactAttachment() {
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
+	}
+
+    private void selectAudioAttachment() {
+        new AudioDialog(getActivity(), this).show();
     }
 
     @Override
@@ -1029,6 +1053,8 @@ public class ComposeMessageFragment extends ListFragment implements
                     int resId;
                     if (attachment instanceof ImageComponent)
                         resId = R.string.view_image;
+                    else if (attachment instanceof  AudioComponent)
+                        resId = R.string.open_audio;
                     else
                         resId = R.string.open_file;
 
@@ -1507,7 +1533,7 @@ public class ComposeMessageFragment extends ListFragment implements
             }
 
             mListAdapter = new MessageListAdapter(getActivity(), null,
-                    highlight, getListView());
+                    highlight, getListView(), this);
             mListAdapter.setOnContentChangedListener(mContentChangedListener);
             setListAdapter(mListAdapter);
         }
@@ -2278,6 +2304,13 @@ public class ComposeMessageFragment extends ListFragment implements
 
         // release message center
         MessageCenterService.release(getActivity());
+
+        // release audio player
+        if (mPlayer != null) {
+            stopMediaPlayerUpdater();
+            mPlayer.release();
+            mPlayer = null;
+        }
     }
 
     @Override
@@ -2487,6 +2520,194 @@ public class ComposeMessageFragment extends ListFragment implements
             mOfflineModeWarned = true;
             Toast.makeText(getActivity(), R.string.warning_offline_mode,
                 Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onRecordingSuccessful(File file) {
+        if (file != null)
+            sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+    }
+
+    @Override
+    public void buttonClick(File audioFile, AudioContentViewControl view, long messageId) {
+        if (mMediaPlayerMessageId == messageId) {
+            switch (mStatus) {
+                case AudioContentView.STATUS_PLAYING:
+                    pauseAudio(view);
+                    break;
+                case AudioContentView.STATUS_PAUSED:
+                case AudioContentView.STATUS_ENDED:
+                    playAudio(view, messageId);
+                    break;
+
+            }
+        }
+        else {
+            switch (mStatus) {
+                case AudioContentView.STATUS_IDLE:
+                    if (prepareAudio(audioFile, view, messageId))
+                        playAudio(view, messageId);
+                    break;
+                case AudioContentView.STATUS_ENDED:
+                case AudioContentView.STATUS_PLAYING:
+                case AudioContentView.STATUS_PAUSED:
+                    resetAudio(mAudioControl);
+                    if (prepareAudio(audioFile, view, messageId))
+                        playAudio(view, messageId);
+                    break;
+            }
+        }
+    }
+
+    private boolean prepareAudio(File audioFile, final AudioContentViewControl view, final long messageId) {
+        if (mPlayer == null)
+            mPlayer = new MediaPlayer();
+
+        stopMediaPlayerUpdater();
+
+        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        try {
+            mPlayer.setDataSource(audioFile.getPath());
+            mPlayer.prepare();
+
+            // prepare was successful
+            mMediaPlayerMessageId = messageId;
+            mAudioControl = view;
+
+            view.prepare(mPlayer.getDuration());
+            mPlayer.seekTo(view.getPosition());
+            view.setProgressChangeListener(true);
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    stopMediaPlayerUpdater();
+                    view.end();
+                    mPlayer.seekTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+            });
+            return true;
+        }
+        catch (IOException e) {
+            Toast.makeText(getActivity(), R.string.err_file_not_found, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
+    @Override
+    public void playAudio(AudioContentViewControl view, long messageId) {
+        view.play();
+        mPlayer.start();
+        setAudioStatus(AudioContentView.STATUS_PLAYING);
+        startMediaPlayerUpdater(view);
+    }
+
+    private void updatePosition(AudioContentViewControl view) {
+        view.updatePosition(mPlayer.getCurrentPosition());
+    }
+
+    @Override
+    public void pauseAudio(AudioContentViewControl view) {
+        view.pause();
+        mPlayer.pause();
+        stopMediaPlayerUpdater();
+        setAudioStatus(AudioContentView.STATUS_PAUSED);
+    }
+
+    private void resetAudio(AudioContentViewControl view) {
+        if (view != null){
+            stopMediaPlayerUpdater();
+            view.end();
+        }
+        if (mPlayer != null)
+            mPlayer.reset();
+        mMediaPlayerMessageId = -1;
+    }
+
+    private void setAudioStatus(int audioStatus) {
+        mStatus = audioStatus;
+    }
+
+    @Override
+    public void onBind(long messageId, final AudioContentViewControl view) {
+        if (mMediaPlayerMessageId == messageId) {
+            mAudioControl = view;
+            if (mPlayer != null) {
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        stopMediaPlayerUpdater();
+                        view.end();
+                        mPlayer.seekTo(0);
+                        setAudioStatus(AudioContentView.STATUS_ENDED);
+                    }
+                });
+
+                view.setProgressChangeListener(true);
+                view.prepare(mPlayer.getDuration());
+                if (mPlayer.isPlaying()) {
+                    startMediaPlayerUpdater(view);
+                    view.play();
+                }
+                else {
+                    view.pause();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onUnbind(long messageId, AudioContentViewControl view) {
+        if (mMediaPlayerMessageId == messageId) {
+            mAudioControl = null;
+            if (mPlayer != null) {
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mPlayer.seekTo(0);
+                        setAudioStatus(AudioContentView.STATUS_ENDED);
+                    }
+                });
+            }
+
+            view.setProgressChangeListener(false);
+            if (!MessagesProvider.exists(getActivity(), messageId)) {
+                resetAudio(view);
+            }
+
+            else {
+                stopMediaPlayerUpdater();
+            }
+        }
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mPlayer.isPlaying();
+    }
+
+    @Override
+    public void seekTo(int position) {
+        mPlayer.seekTo(position);
+    }
+
+    private void startMediaPlayerUpdater(final AudioContentViewControl view) {
+        updatePosition(view);
+        mMediaPlayerUpdater = new Runnable() {
+            @Override
+            public void run() {
+                updatePosition(view);
+                mHandler.postDelayed(this, 100);
+            }
+        };
+        mHandler.postDelayed(mMediaPlayerUpdater, 100);
+    }
+
+    private void stopMediaPlayerUpdater() {
+        if (mMediaPlayerUpdater != null) {
+            mHandler.removeCallbacks(mMediaPlayerUpdater);
+            mMediaPlayerUpdater = null;
         }
     }
 
