@@ -53,7 +53,7 @@ public class ImageContentView extends ImageView
         super(context, attrs, defStyle);
     }
 
-    public void bind(ImageComponent component, Contact contact, Pattern highlight) {
+    public void bind(long messageId, ImageComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
 
         // prepend some text for the ImageSpan

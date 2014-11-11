@@ -122,7 +122,7 @@ public class TextContentView extends EmojiconTextView
         return max_width;
     }
 
-    public void bind(TextComponent component, Contact contact, Pattern highlight) {
+    public void bind(long databaseId, TextComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
         Context context = getContext();
 

@@ -42,6 +42,7 @@ import org.kontalk.client.SentServerReceipt;
 import org.kontalk.client.ServerReceipt;
 import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.crypto.Coder;
+import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.MessageComponent;
@@ -266,6 +267,8 @@ class MessageListener extends MessageCenterPacketListener {
 
                 }
 
+                // TODO duplicated code (MessageUtils#decryptMessage)
+
                 // out of band data
                 PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
                 if (_media != null && _media instanceof OutOfBandData) {
@@ -316,6 +319,11 @@ class MessageListener extends MessageCenterPacketListener {
                     else if (VCardComponent.supportsMimeType(mime)) {
                         // cleartext only for now
                         attachment = new VCardComponent(previewFile, null, fetchUrl, length,
+                            encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
+                    }
+
+                    else if (AudioComponent.supportsMimeType(mime)) {
+                        attachment = new AudioComponent(mime, null, fetchUrl, length,
                             encrypted, encrypted ? Coder.SECURITY_BASIC : Coder.SECURITY_CLEARTEXT);
                     }
 

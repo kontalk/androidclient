@@ -45,11 +45,13 @@ public class MessageListAdapter extends CursorAdapter {
     private OnContentChangedListener mOnContentChangedListener;
 
     private Contact mContact;
+    private AudioPlayerControl mAudioPlayerControl;
 
-    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list) {
+    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list, AudioPlayerControl audioPlayerControl) {
         super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
         mHighlight = highlight;
+        mAudioPlayerControl = audioPlayerControl;
 
         list.setRecyclerListener(new RecyclerListener() {
             public void onMovedToScrapHeap(View view) {
@@ -78,7 +80,7 @@ public class MessageListAdapter extends CursorAdapter {
             cursor.moveToNext();
         }
 
-        headerView.bind(context, msg, mContact, mHighlight, previous);
+        headerView.bind(context, msg, mContact, mHighlight, previous, mAudioPlayerControl);
     }
 
     @Override

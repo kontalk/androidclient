@@ -54,7 +54,7 @@ public class VCardContentView extends TextView
         super(context, attrs, defStyle);
     }
 
-    public void bind(VCardComponent component, Contact contact, Pattern highlight) {
+    public void bind(long id, VCardComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
 
         // TODO set text appearance (since this is text)

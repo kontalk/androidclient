@@ -215,6 +215,18 @@ public abstract class MediaStorage {
         return File.createTempFile(filename, ".jpg", path);
     }
 
+    /** Creates a temporary 3gp file. */
+    public static File getTempAudio(Context context) throws IOException {
+        File path = new File(Environment
+            .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                "Kontalk");
+        path.mkdirs();
+        String timeStamp =
+            new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String filename = "record" + timeStamp + "_";
+        return File.createTempFile(filename, ".3gp", path);
+    }
+
     /** Guesses the MIME type of an {@link Uri}. */
     public static String getType(Context context, Uri uri) {
         String mime = context.getContentResolver().getType(uri);
@@ -231,11 +243,60 @@ public abstract class MediaStorage {
 
     public static File resizeImage(Context context, Uri uri, long msgId, int maxWidth, int maxHeight, int quality)
         throws FileNotFoundException {
-        Bitmap bitmap = null;
+
+        final int MAX_IMAGE_SIZE = 1200000; // 1.2MP
+
+        ContentResolver cr = context.getContentResolver();
+
+        // compute optimal image scale size
+        int scale = 1;
+        InputStream in = cr.openInputStream(uri);
+
         try {
-            bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-        } catch (IOException e) {
-            Log.e(TAG, "error", e);
+            // decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(in, null, o);
+            in.close();
+
+            // calculate optimal image scale size
+            while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) > MAX_IMAGE_SIZE)
+                scale++;
+
+            Log.d(TAG, "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight);
+        }
+        catch (IOException e) {
+            Log.d(TAG, "unable to calculate optimal scale size, using original image");
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+
+        // open image again for the actual scaling
+        Bitmap bitmap = null;
+
+        try {
+            in = cr.openInputStream(uri);
+            BitmapFactory.Options o = new BitmapFactory.Options();
+
+            if (scale > 1) {
+                o.inSampleSize = scale - 1;
+            }
+
+            bitmap = BitmapFactory.decodeStream(in, null, o);
+        }
+        finally {
+            try {
+                in.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
         }
 
         if (bitmap == null) {
