@@ -136,6 +136,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  */
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
+        // TODO these two interfaces should be handled by an inner class
         OnAudioDialogResult, AudioPlayerControl,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         EmojiconGridFragment.OnEmojiconClickedListener {
@@ -761,17 +762,6 @@ public class ComposeMessageFragment extends ListFragment implements
         AttachmentComponent attachment = (AttachmentComponent) msg
                 .getComponent(AttachmentComponent.class);
 
-        if (attachment != null && !(attachment instanceof AudioComponent)) {
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
-            startActivity(i);
-        }
-    }
-
-    private void openAudio(CompositeMessage msg) {
-        AttachmentComponent attachment = (AttachmentComponent) msg
-                .getComponent(AttachmentComponent.class);
-
         if (attachment != null) {
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setDataAndType(attachment.getLocalUri(), attachment.getMime());
@@ -1196,13 +1186,7 @@ public class ComposeMessageFragment extends ListFragment implements
             }
 
             case MENU_OPEN: {
-                AttachmentComponent attachment = (AttachmentComponent) msg
-                        .getComponent(AttachmentComponent.class);
-
-                if (!(attachment instanceof AudioComponent))
-                    openFile(msg);
-                else
-                    openAudio(msg);
+                openFile(msg);
                 return true;
             }
         }
@@ -2540,9 +2524,9 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     @Override
-    public void onResult(String path) {
-        if (path != null)
-            sendBinaryMessage(Uri.fromFile(new File(path)), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+    public void onRecordingSuccessful(File file) {
+        if (file != null)
+            sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
     }
 
     @Override

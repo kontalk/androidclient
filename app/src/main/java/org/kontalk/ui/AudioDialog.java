@@ -52,13 +52,12 @@ import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
 
 
 /**
- * AudioDialog Attachments.
+ * Audio message recording dialog.
  * @author Andrea Cappelli
  * @author Daniele Ricci
  */
 public class AudioDialog extends AlertDialog {
-   static final String TAG = AudioDialog.class.getSimpleName();
-
+    private static final String TAG = ComposeMessage.TAG;
 
     public static final String DEFAULT_MIME = "audio/3gpp";
 
@@ -80,7 +79,6 @@ public class AudioDialog extends AlertDialog {
     private ObjectAnimator mProgressBarAnimator;
     private ImageView mImageButton;
     private TextView mTimeTxt;
-    private boolean mAnimationHasEnded = false;
 
     private File mFile;
 
@@ -144,8 +142,9 @@ public class AudioDialog extends AlertDialog {
                         startRecord();
                     }
                     catch (IOException e) {
-                        Log.e (TAG, "error starting audio recording: ", e); // TODO i18n
-                        Toast.makeText(getContext(), "Error", Toast.LENGTH_SHORT).show();
+                        Log.e (TAG, "error starting audio recording: ", e);
+                        // TODO i18n
+                        Toast.makeText(getContext(), "Unable to start recording.", Toast.LENGTH_SHORT).show();
                     }
                 }
                 else if (mStatus == STATUS_RECORDING) {
@@ -164,18 +163,16 @@ public class AudioDialog extends AlertDialog {
         });
 
         setButton(Dialog.BUTTON_POSITIVE, getContext().getString(R.string.send), new OnClickListener() {
-
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null) {
                     mPlayer.setOnCompletionListener(null);
-                    mResult.onResult(mFile.getAbsolutePath());
+                    mResult.onRecordingSuccessful(mFile);
                     mStatus = STATUS_SEND;
                 }
             }
         });
         setButton(Dialog.BUTTON_NEGATIVE, getContext().getString(android.R.string.cancel), new OnClickListener() {
-
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null)
@@ -185,7 +182,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     public interface OnAudioDialogResult  {
-        public void onResult (String path);
+        public void onRecordingSuccessful(File file);
     }
 
     @Override
@@ -235,18 +232,18 @@ public class AudioDialog extends AlertDialog {
         }
         catch (IOException e) {
             Log.e (TAG, "error writing on external storage:", e);
-            this.cancel();
+            cancel();
             new Builder(getContext())
                 .setMessage(R.string.err_audio_record_writing)
-                .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
+                .setNegativeButton(android.R.string.ok, null)
                 .show();
         }
         catch (RuntimeException e) {
             Log.e (TAG, "error starting audio recording:", e);
-            this.cancel();
+            cancel();
             new AlertDialog.Builder(getContext())
                 .setMessage(R.string.err_audio_record)
-                .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
+                .setNegativeButton(android.R.string.ok, null)
                 .show();
         }
     }
@@ -286,7 +283,7 @@ public class AudioDialog extends AlertDialog {
             Log.e (TAG, "error reading from external storage", e);
             new AlertDialog.Builder(getContext())
             .setMessage(R.string.err_playing_sdcard)
-            .setNegativeButton(getContext().getString(android.R.string.ok), (OnClickListener) null)
+            .setNegativeButton(android.R.string.ok, null)
             .show();
         }
         mTimeTxt.setVisibility(View.VISIBLE);
@@ -319,7 +316,6 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void animate(final CircularSeekBar progressBar, final AnimatorListener listener, final float progress, final int duration) {
-
         mProgressBarAnimator = ObjectAnimator.ofFloat(progressBar, "progress", progress);
         mProgressBarAnimator.setInterpolator(new LinearInterpolator());
         mProgressBarAnimator.setDuration(duration);
@@ -374,7 +370,6 @@ public class AudioDialog extends AlertDialog {
             mProgressBarAnimator.addListener(listener);
         }
         mProgressBarAnimator.addUpdateListener(new AnimatorUpdateListener() {
-
             public void onAnimationUpdate(final ValueAnimator animation) {
                 progressBar.setProgress((Float) animation.getAnimatedValue());
                 long time = animation.getCurrentPlayTime();
