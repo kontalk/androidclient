@@ -33,14 +33,9 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
-import org.kontalk.client.AckServerReceipt;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.OutOfBandData;
-import org.kontalk.client.ReceivedServerReceipt;
-import org.kontalk.client.SentServerReceipt;
-import org.kontalk.client.ServerReceipt;
-import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
@@ -160,34 +155,6 @@ class MessageListener extends MessageCenterPacketListener {
                         ack.addExtension(receipt);
 
                         sendPacket(ack);
-                    }
-
-                    else if (ext instanceof SentServerReceipt) {
-                        long now = System.currentTimeMillis();
-
-                        if (msgId > 0) {
-                            ContentValues values = new ContentValues(3);
-                            values.put(Messages.MESSAGE_ID, ext.getId());
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, now);
-                            values.put(Messages.SERVER_TIMESTAMP, now);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionOutgoing, null);
-
-                            waitingReceipt.remove(id);
-
-                            // we can now release the message center. Hopefully
-                            // there will be one hold and one matching release.
-                            getIdleHandler().release();
-                        }
-                        else {
-                            Uri msg = Messages.getUri(ext.getId());
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, now);
-                            values.put(Messages.SERVER_TIMESTAMP, now);
-                            cr.update(msg, values, selectionOutgoing, null);
-                        }
                     }
 
                     // ack is received after sending a <received/> message

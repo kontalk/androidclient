@@ -32,6 +32,7 @@ import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -427,6 +428,7 @@ public class ComposeMessageFragment extends ListFragment implements
             Class<? extends MessageComponent<?>> klass) {
         Log.v(TAG, "sending binary content: " + uri);
         Uri newMsg = null;
+        String msgId = null;
         File previewFile = null;
         long length = -1;
 
@@ -441,7 +443,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
             offlineModeWarning();
 
-            String msgId = "draft" + (new Random().nextInt());
+            msgId = StringUtils.randomString(30);
 
 			// generate thumbnail
 			// FIXME this is blocking!!!!
@@ -456,7 +458,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
             // save to database
             ContentValues values = new ContentValues();
-            // must supply a message ID...
             values.put(Messages.MESSAGE_ID, msgId);
             values.put(Messages.PEER, mUserJID);
 
@@ -510,7 +511,7 @@ public class ComposeMessageFragment extends ListFragment implements
             String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
             MessageCenterService.sendBinaryMessage(getActivity(),
                 mUserJID, mime, uri, length, previewPath, encrypted, compress,
-                ContentUris.parseId(newMsg));
+                ContentUris.parseId(newMsg), msgId);
         }
         else {
             getActivity().runOnUiThread(new Runnable() {
@@ -543,10 +544,12 @@ public class ComposeMessageFragment extends ListFragment implements
                 */
                 byte[] bytes = mText.getBytes();
 
+                String msgId = StringUtils.randomString(30);
+
                 // save to local storage
                 ContentValues values = new ContentValues();
                 // must supply a message ID...
-                values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
+                values.put(Messages.MESSAGE_ID, msgId);
                 values.put(Messages.PEER, mUserJID);
                 values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
                 values.put(Messages.BODY_CONTENT, bytes);
@@ -581,7 +584,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     // send message!
                     MessageCenterService.sendTextMessage(getActivity(),
                         mUserJID, mText, encrypted,
-                        ContentUris.parseId(newMsg));
+                        ContentUris.parseId(newMsg), msgId);
                 }
                 else {
                     getActivity().runOnUiThread(new Runnable() {

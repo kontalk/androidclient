@@ -42,11 +42,15 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smack.tcp.sm.StreamManagementException;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.ping.packet.Ping;
+import org.jivesoftware.smackx.receipts.DeliveryReceipt;
+import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -82,7 +86,6 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.AckServerReceipt;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
@@ -91,9 +94,6 @@ import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
-import org.kontalk.client.ReceivedServerReceipt;
-import org.kontalk.client.SentServerReceipt;
-import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.client.ServerlistCommand;
 import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.SubscribePublicKey;
@@ -464,10 +464,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
         ProviderManager.addIQProvider(ServerlistCommand.ELEMENT_NAME, ServerlistCommand.NAMESPACE, new ServerlistCommand.ResultProvider());
         ProviderManager.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
-        ProviderManager.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
-        ProviderManager.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
-        ProviderManager.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
-        ProviderManager.addExtensionProvider(AckServerReceipt.ELEMENT_NAME, AckServerReceipt.NAMESPACE, new AckServerReceipt.Provider());
         ProviderManager.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
         ProviderManager.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
         ProviderManager.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
@@ -876,6 +872,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // we want to manually handle roster stuff
         mConnection.getRoster().setSubscriptionMode(SubscriptionMode.manual);
 
+        // add message ack listener
+        try {
+            mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
+        }
+        catch (StreamManagementException.StreamManagementNotEnabledException e) {
+            Log.w(TAG, "stream management not available - disabling delivery receipts");
+        }
+
         PacketFilter filter;
 
         filter = new PacketTypeFilter(Ping.class);
@@ -998,6 +1002,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,
+                Messages.MESSAGE_ID,
                 Messages.PEER,
                 Messages.BODY_CONTENT,
                 Messages.SECURITY_FLAGS,
@@ -1013,15 +1018,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         while (c.moveToNext()) {
             long id = c.getLong(0);
-            String peer = c.getString(1);
-            byte[] textContent = c.getBlob(2);
-            int securityFlags = c.getInt(3);
-            String attMime = c.getString(4);
-            String attFileUri = c.getString(5);
-            String attFetchUrl = c.getString(6);
-            String attPreviewPath = c.getString(7);
-            long attLength = c.getLong(8);
-            // TODO int attSecurityFlags = c.getInt(9);
+            String msgId = c.getString(1);
+            String peer = c.getString(2);
+            byte[] textContent = c.getBlob(3);
+            int securityFlags = c.getInt(4);
+            String attMime = c.getString(5);
+            String attFileUri = c.getString(6);
+            String attFetchUrl = c.getString(7);
+            String attPreviewPath = c.getString(8);
+            long attLength = c.getLong(9);
+            // TODO int attSecurityFlags = c.getInt(10);
 
             // media message encountered and no upload service available - delay message
             if (attFileUri != null && attFetchUrl == null && getUploadService() == null && !retrying) {
@@ -1032,6 +1038,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
+            b.putString("org.kontalk.message.packetId", msgId);
             b.putString("org.kontalk.message.to", peer);
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
@@ -1080,6 +1087,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
+            b.putString("org.kontalk.message.packetId", msgId);
             b.putString("org.kontalk.message.to", peer);
             b.putString("org.kontalk.message.ack", msgId);
 
@@ -1291,7 +1299,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (to != null) m.setTo(to);
 
             if (msgId > 0) {
-                String id = m.getPacketID();
+                // generate random id
+                String id = StringUtils.randomString(30);
+                m.setPacketID(id);
                 mWaitingReceipt.put(id, msgId);
             }
 
@@ -1416,7 +1426,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // received receipt
             if (serverId != null) {
-                m.addExtension(new ReceivedServerReceipt(serverId));
+                m.addExtension(new DeliveryReceipt(serverId));
             }
             else {
                 // add chat state if message is not a received receipt
@@ -1425,7 +1435,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // standalone message: no receipt
                 if (ackRequest)
-                    m.addExtension(new ServerReceiptRequest());
+                    m.addExtension(new DeliveryReceiptRequest());
             }
 
             sendPacket(m);
@@ -1648,10 +1658,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a text message. */
-    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId) {
+    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
@@ -1665,10 +1676,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String to,
             String mime, Uri localUri, long length, String previewPath,
             boolean encrypt, int compress,
-        long msgId) {
+        long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
@@ -1682,10 +1694,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void sendUploadedMedia(final Context context, String to,
             String mime, Uri localUri, long length, String previewPath, String fetchUrl,
-            boolean encrypt, long msgId) {
+            boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
