@@ -530,8 +530,7 @@ public final class PreferencesActivity extends PreferenceActivity {
                     new AlertDialog.Builder(activity)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle(R.string.pref_network_uri)
-                            // TODO i18n
-                        .setMessage("Invalid address format.")
+                        .setMessage(R.string.err_server_invalid_format)
                         .setPositiveButton(android.R.string.ok, null)
                         .show();
                     return false;

@@ -7,27 +7,33 @@ task checkstyle(type: Checkstyle){
     source 'src'
     include '**/*.java'
     // code from Google/AOSP
-    exclude '**/ThumbnailUtils.java', '**/AccountAuthenticatorActionBarActivity.java',
+    exclude 'main/java/org/kontalk/util/ThumbnailUtils.java',
+        'main/java/org/kontalk/crypto/PRNGFixes.java',
+        'main/java/org/kontalk/ui/AccountAuthenticatorActionBarActivity.java',
         'main/java/org/kontalk/billing/*.java',
         'googleplay/java/org/kontalk/billing/GoogleBillingService.java',
         'googleplay/java/org/kontalk/billing/Inventory.java',
         'googleplay/java/org/kontalk/billing/ProductDetails.java',
         'googleplay/java/org/kontalk/billing/Purchase.java'
     // 3rd-party code
-    exclude '**/IconContextMenu.java', '**/RegistrationFormProvider.java', '**/CircularSeekBar.java',
+    exclude '**/IconContextMenu.java', '**/CircularSeekBar.java',
         '**/KeyboardAwareFrameLayout.java'
     classpath = files()
 }
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion '20.0.0'
+    compileSdkVersion 21
+    buildToolsVersion '21.1.1'
 
     defaultConfig {
     }
 
     buildTypes {
         release {
+            runProguard true
+            proguardFiles 'proguard.cfg'
+        }
+        debug {
             runProguard true
             proguardFiles 'proguard.cfg'
         }
@@ -62,7 +68,11 @@ dependencies {
     compile 'dnsjava:dnsjava:2.1.6'
     compile 'com.jcraft:jzlib:+'
     compile 'com.nineoldandroids:library:2.4.0+'
-    compile 'org.igniterealtime.smack:smack-android:4.1.0-alpha3'
+    compile 'com.jcraft:jzlib:1.1.3'
+    compile 'org.igniterealtime.smack:smack-android:4.1.0-alpha5'
+    compile 'org.igniterealtime.smack:smack-core:4.1.0-alpha5'
+    compile 'org.igniterealtime.smack:smack-tcp:4.1.0-alpha5'
+    compile 'org.igniterealtime.smack:smack-extensions:4.1.0-alpha5'
 
     googleplayCompile 'com.google.android.gms:play-services:5.0.89'
 }

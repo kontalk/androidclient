@@ -46,6 +46,7 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jivesoftware.smackx.ping.packet.Ping;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -88,7 +89,6 @@ import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.OutOfBandData;
-import org.kontalk.client.Ping;
 import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
 import org.kontalk.client.ReceivedServerReceipt;
@@ -459,7 +459,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void configure() {
-        ProviderManager.addIQProvider(Ping.ELEMENT_NAME, Ping.NAMESPACE, new Ping.Provider());
         ProviderManager.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
         ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
         ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
