@@ -193,7 +193,7 @@
     <string name="menu_unblock_user">Unblock</string>
     <string name="vcard_message">vCard message</string>
     <string name="open_file">Open file</string>
-    <string name="open_audio">Open Audio</string>
+    <string name="open_audio">Play audio file</string>
     <string name="msg_msgcenter_restarted">Message center restarted.</string>
     <string name="downloading_attachment">Downloading attachment&#8230;</string>
     <string name="decrypting_attachment">Decrypting attachment&#8230;</string>
