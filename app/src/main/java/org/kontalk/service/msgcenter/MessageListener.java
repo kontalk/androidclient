@@ -33,6 +33,9 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jivesoftware.smackx.receipts.DeliveryReceipt;
+import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.OutOfBandData;
@@ -114,12 +117,10 @@ class MessageListener extends MessageCenterPacketListener {
             else
                 serverTimestamp = System.currentTimeMillis();
 
-            PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
+            DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
 
             // delivery receipt
-            if (_ext != null && !ServerReceiptRequest.ELEMENT_NAME.equals(_ext.getElementName())) {
-                ServerReceipt ext = (ServerReceipt) _ext;
-
+            if (deliveryReceipt != null) {
                 synchronized (waitingReceipt) {
                     String id = m.getPacketID();
                     Long _msgId = waitingReceipt.get(id);
@@ -158,6 +159,9 @@ class MessageListener extends MessageCenterPacketListener {
                     }
 
                     // ack is received after sending a <received/> message
+                    /*
+                     * this should be part of MessageAckListener
+                     */
                     else if (ext instanceof AckServerReceipt) {
                         // mark message as confirmed
                         ContentValues values = new ContentValues(1);
@@ -173,16 +177,7 @@ class MessageListener extends MessageCenterPacketListener {
 
             // incoming message
             else {
-                String msgId = null;
-                if (_ext != null) {
-                    ServerReceiptRequest req = (ServerReceiptRequest) _ext;
-                    // prepare for ack
-                    msgId = req.getId();
-                }
-
-                if (msgId == null)
-                    msgId = "incoming" + StringUtils.randomString(6);
-
+                String msgId = m.getPacketID();
                 String sender = from;
                 String body = m.getBody();
 
@@ -313,9 +308,10 @@ class MessageListener extends MessageCenterPacketListener {
                 if (msg != null) {
 
                     Uri msgUri = incoming(msg);
-                    if (_ext != null) {
+
+                    if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
                         // send ack :)
-                        ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
+                        DeliveryReceipt receipt = new DeliveryReceipt(msgId);
                         org.jivesoftware.smack.packet.Message ack =
                             new org.jivesoftware.smack.packet.Message(from,
                                 org.jivesoftware.smack.packet.Message.Type.chat);

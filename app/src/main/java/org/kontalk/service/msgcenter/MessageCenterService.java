@@ -1435,7 +1435,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // standalone message: no receipt
                 if (ackRequest)
-                    m.addExtension(new DeliveryReceiptRequest());
+                    DeliveryReceiptRequest.addTo(m);
             }
 
             sendPacket(m);
