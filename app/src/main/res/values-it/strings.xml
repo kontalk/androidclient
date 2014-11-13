@@ -8,6 +8,7 @@
   <string name="download_service">Download file</string>
   <string name="yes">Sì</string>
   <string name="no">No</string>
+  <string name="send">Invia</string>
   <string name="menu_compose">Nuovo messaggio</string>
   <string name="menu_delete_all">Elimina conversazioni</string>
   <string name="menu_search">Cerca</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Nuovi messaggi</string>
   <string name="unread_messages">%d messaggi non letti</string>
   <string name="only_one_account_supported">Puoi usare un solo account Kontalk.</string>
-  <string name="send">Invia</string>
   <string name="hint_enter_text">Inserisci il testo qui</string>
   <string name="hint_type_to_compose">Digita il testo qui</string>
   <string name="hint_open_kbd_to_compose">Apri la tastiera per scrivere</string>
@@ -56,6 +56,7 @@
   <string name="message_type_label">Type:\u0020</string>
   <string name="text_message">Messaggio di testo</string>
   <string name="image_message">Immagine</string>
+  <string name="audio_message">Messaggio vocale</string>
   <string name="from_label">Da:\u0020</string>
   <string name="to_address_label">A:\u0020</string>
   <string name="sent_label">Inviato:\u0020</string>
@@ -175,6 +176,7 @@
   <string name="menu_unblock_user">Sblocca</string>
   <string name="vcard_message">Messaggio vCard</string>
   <string name="open_file">Apri file</string>
+  <string name="open_audio">Riproduci file audio</string>
   <string name="msg_msgcenter_restarted">Centro messaggi riavviato.</string>
   <string name="downloading_attachment">Download in corso…</string>
   <string name="decrypting_attachment">Decifratura allegato…</string>
@@ -215,6 +217,7 @@
   <string name="pref_title_balloons">Scegli il tema delle chat</string>
   <string name="attachment_picture">Immagine</string>
   <string name="attachment_contact">Contatto</string>
+  <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Invia immagine</string>
   <string name="chooser_error_no_camera">Memoria esterna non disponibile. Non sarà possibile scattare una nuovo foto da spedire.</string>
   <string name="status_activity_title">Messaggio di stato</string>
@@ -243,7 +246,7 @@
   <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
   <string name="donate_flattr">Flattr</string>
-  <string name="msg_generating_keypair">La chiave personale è in corso di rigenerazione.</string>
+  <string name="msg_generating_keypair">Generazione chiave personale in corso.</string>
   <string name="msg_gen_keypair_complete">Rigenerazione della chiave personale completata.</string>
   <string name="notify_gen_keypair_ticker">Generazione chiave personale in corso...</string>
   <string name="notify_gen_keypair_title">Generazione chiave personale</string>
@@ -300,7 +303,13 @@
   <string name="err_passwords_mismatch">Le password non corrispondono!</string>
   <string name="err_password_invalid">Password errata.</string>
   <string name="err_change_passphrase">Impossibile modificare la password della chiave personale.</string>
+  <string name="err_file_not_found">File non trovato.</string>
+  <string name="err_audio_record">Errore durante la registrazione.</string>
+  <string name="err_audio_record_writing">Errore durante la scrittura sulla memoria esterna.</string>
+  <string name="err_playing_audio">Impossibile riprodurre il file.</string>
+  <string name="err_playing_sdcard">Errore durante la lettura dalla memoria esterna.</string>
   <string name="pref_media_settings">Impostazioni messaggi multimediali</string>
-  <string name="pref_image_resize">Compressione immagini</string>
-  <string name="pref_title_image_resize">Compressione delle immagini prima dell\'invio</string>
+  <string name="pref_image_resize">Comprimi immagini</string>
+  <string name="pref_title_image_resize">Comprimi le immagini prima di inviarle</string>
+  <string name="err_server_invalid_format">Formato indirizzo non valido.</string>
 </resources>

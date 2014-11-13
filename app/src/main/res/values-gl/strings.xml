@@ -8,6 +8,7 @@
   <string name="download_service">Servizo de descargas</string>
   <string name="yes">Si</string>
   <string name="no">Non</string>
+  <string name="send">Enviar</string>
   <string name="menu_compose">Redactar</string>
   <string name="menu_delete_all">Eliminar conversas</string>
   <string name="menu_search">Buscar</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Novas mensaxes</string>
   <string name="unread_messages">%d mensaxes non lidas</string>
   <string name="only_one_account_supported">Só é admitida unha conta Kontalk.</string>
-  <string name="send">Enviar</string>
   <string name="hint_enter_text">Insire o teu texto aquí</string>
   <string name="hint_type_to_compose">Teclea para escribir</string>
   <string name="hint_open_kbd_to_compose">Abre o teclado para redactar a mensaxe</string>

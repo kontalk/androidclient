@@ -8,6 +8,7 @@
   <string name="download_service">Служба загрузок</string>
   <string name="yes">Да</string>
   <string name="no">Нет</string>
+  <string name="send">Отправить</string>
   <string name="menu_compose">Написать</string>
   <string name="menu_delete_all">Удалить беседы</string>
   <string name="menu_search">Поиск</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Новые сообщения</string>
   <string name="unread_messages">%d непрочитанных сообщений</string>
   <string name="only_one_account_supported">Поддерживается только один аккаунт Kontalk.</string>
-  <string name="send">Отправить</string>
   <string name="hint_enter_text">Введите текст сообщения</string>
   <string name="hint_type_to_compose">Печатайте для создания</string>
   <string name="hint_open_kbd_to_compose">Выведите клавиатуру для написания сообщения</string>

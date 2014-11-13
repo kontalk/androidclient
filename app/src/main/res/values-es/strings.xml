@@ -8,6 +8,7 @@
   <string name="download_service">Servicio de descargas</string>
   <string name="yes">Sí</string>
   <string name="no">No</string>
+  <string name="send">Enviar</string>
   <string name="menu_compose">Escribir</string>
   <string name="menu_delete_all">Eliminar conversaciones</string>
   <string name="menu_search">Búsqueda</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Mensajes nuevos</string>
   <string name="unread_messages">%d mensajes no leídos</string>
   <string name="only_one_account_supported">Solo se soporta una cuenta de Kontalk.</string>
-  <string name="send">Enviar</string>
   <string name="hint_enter_text">Escriba aquí su texto</string>
   <string name="hint_type_to_compose">Teclee para escribir</string>
   <string name="hint_open_kbd_to_compose">Abra el teclado para escribir su mensaje</string>
@@ -303,4 +303,5 @@
   <string name="pref_media_settings">Archivos multimedia</string>
   <string name="pref_image_resize">Redimensionar imágenes</string>
   <string name="pref_title_image_resize">Redimensionar las imágenes antes de enviarlas</string>
+  <string name="err_server_invalid_format">Formato de dirección inválido</string>
 </resources>

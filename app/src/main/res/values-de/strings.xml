@@ -8,6 +8,7 @@
   <string name="download_service">Downloadservice</string>
   <string name="yes">Ja</string>
   <string name="no">Nein</string>
+  <string name="send">Senden</string>
   <string name="menu_compose">Verfassen</string>
   <string name="menu_delete_all">Gespräche löschen</string>
   <string name="menu_search">Suche</string>
@@ -20,7 +21,7 @@
   <string name="number_validation_intro1">Bitte Ihren Namen und Ihre Mobilfunknummer eingeben sowie den Ländercode auswählen. Eine SMS mit einem Verfikationscode wird Ihnen zugesendet. Ihre Tel.Nr. wird nur einmalig benutzt und dann verworfen.</string>
   <string name="number_validation_intro2">Wenn Sie auf diesem Gerät keine SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an und geben Sie den Verifikationscode ein, den Sie per SMS erhalten.</string>
   <string name="code_validation_intro">Sie sollten in Kürze eine SMS an die angegebene Tel.Nr. erhalten. Bitte geben Sie den darin enthaltenen Code unten ein.</string>
-  <string name="code_validation_intro2">Bitte geben Sie den Verifikationscode ein, den Sie empfangen haben. Bitte beachten sie, dass ein Verifizierungscode nur einmalig genutzt werden kann.</string>
+  <string name="code_validation_intro2">Bitte geben Sie den Verifikationscode ein, den Sie empfangen haben. Bitte beachten Sie, dass ein Verifizierungscode nur einmalig genutzt werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
   <string name="hint_validation_number">Ihre Nummer</string>
   <string name="hint_validation_code">Verfikationscode</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Neue Nachrichten</string>
   <string name="unread_messages">%d ungelesene Nachrichten</string>
   <string name="only_one_account_supported">Es wird nur ein Kontalk Account unterstützt.</string>
-  <string name="send">Senden</string>
   <string name="hint_enter_text">Geben Sie hier Ihren Text ein.</string>
   <string name="hint_type_to_compose">Zum Verfassen antippen</string>
   <string name="hint_open_kbd_to_compose">Tastatur öffnen um eine Nachricht zu verfassen.</string>
@@ -120,7 +120,7 @@
   <string name="confirm_will_delete_message">Die Nachricht wird gelöscht.</string>
   <string name="err_authentication_failed">Verifikationscode abgelehnt. Authentifizierung fehlgeschlagen.</string>
   <string name="err_validation_failed">Überprüfung der Tel.Nr. fehlgeschlagen.</string>
-  <string name="err_validation_retry_later">Zu viele Versuche. Bitte versuchen Sie es in ein paar Minuten erneut.</string>
+  <string name="err_validation_retry_later">Zu viele Versuche. Bitte probieren Sie es in ein paar Minuten erneut.</string>
   <string name="msg_validation_canceled">Verifizierung abgebrochen. Möglicherweise bekommen Sie trotzdem eine SMS.</string>
   <string name="err_validation_error">Bei der Verifizierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_validation_network_error">Server nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
@@ -276,7 +276,7 @@
   <string name="warn_no_personal_key">Laden des privaten Schlüssels nicht möglich. Verschlüsselung deaktivieren um die Nachricht dennoch zu senden.</string>
   <string name="warn_no_public_key">Öffentlicher Schlüssel unbekannt. Kontaktliste aktualisieren oder Verschlüsselung deaktivieren um die Nachricht dennoch zu senden.</string>
   <string name="warn_encryption_failed">Verschlüsselung nicht möglich. Verschlüsselung deaktivieren um die Nachricht dennoch zu senden.</string>
-  <string name="pref_sync_sim_contacts">Synchronisiere Kontakte von SIM-Karte</string>
+  <string name="pref_sync_sim_contacts">Kontakte von SIM-Karte synchronisieren</string>
   <string name="pref_title_off_sync_sim_contacts">SIM-Kartenkontakte bei der Suche nach registrierten Nutzern nicht mit einbeziehen.</string>
   <string name="pref_title_on_sync_sim_contacts">Auch SIM-Kartenkontakte bei der Suche nach registrierten Nutzern mit einbeziehen.</string>
   <string name="pref_accept_any_certificate">Jedes SSL-Zertifikat akzeptieren </string>
@@ -303,4 +303,5 @@
   <string name="pref_media_settings">Medieneinstellungen</string>
   <string name="pref_image_resize">Bildgröße anpassen</string>
   <string name="pref_title_image_resize">Bildgröße vorm Senden anpassen</string>
+  <string name="err_server_invalid_format">Ungültiges Adressformat.</string>
 </resources>
