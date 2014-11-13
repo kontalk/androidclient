@@ -443,7 +443,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
             offlineModeWarning();
 
-            msgId = StringUtils.randomString(30);
+            msgId = MessageCenterService.messageId();
 
 			// generate thumbnail
 			// FIXME this is blocking!!!!

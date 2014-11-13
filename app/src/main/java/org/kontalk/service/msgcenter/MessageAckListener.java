@@ -21,6 +21,7 @@ package org.kontalk.service.msgcenter;
 import java.util.Map;
 
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -37,6 +38,7 @@ import org.kontalk.provider.MyMessages.Messages;
 class MessageAckListener extends MessageCenterPacketListener {
 
     private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+    private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageAckListener(MessageCenterService instance) {
         super(instance);
@@ -54,6 +56,18 @@ class MessageAckListener extends MessageCenterPacketListener {
 
             long now = System.currentTimeMillis();
 
+            DeliveryReceipt receipt = DeliveryReceipt.from(packet);
+            if (receipt != null) {
+                // ack received for outgoing delivery receipt
+                // mark message as confirmed
+                ContentValues values = new ContentValues(1);
+                values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
+                cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
+                    values, selectionIncoming, null);
+
+                waitingReceipt.remove(id);
+            }
+
             if (msgId > 0) {
                 // we have a message awaiting ack from server
                 ContentValues values = new ContentValues(3);
@@ -70,6 +84,7 @@ class MessageAckListener extends MessageCenterPacketListener {
             else {
                 // the user wasn't expecting ack for this message
                 // so we simply update it using the packet id as key
+                // FIXME this could lead to fake acks because message IDs are client-generated
                 Uri msg = Messages.getUri(id);
                 ContentValues values = new ContentValues(3);
                 values.put(Messages.STATUS, Messages.STATUS_SENT);

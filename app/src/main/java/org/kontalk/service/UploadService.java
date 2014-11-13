@@ -66,6 +66,8 @@ public class UploadService extends IntentService implements ProgressListener {
     public static final String ACTION_UPLOAD_ABORT = "org.kontalk.action.UPLOAD_ABORT";
 
     /** Message database ID. Use with ACTION_UPLOAD. */
+    public static final String EXTRA_DATABASE_ID = "org.kontalk.upload.DATABASE_ID";
+    /** Message ID. Use with ACTION_UPLOAD. */
     public static final String EXTRA_MESSAGE_ID = "org.kontalk.upload.MESSAGE_ID";
     /** URL to post to. Use with ACTION_UPLOAD. */
     public static final String EXTRA_POST_URL = "org.kontalk.upload.POST_URL";
@@ -130,8 +132,10 @@ public class UploadService extends IntentService implements ProgressListener {
         // local file to upload
         Uri file = intent.getData();
         String filename = file.toString();
+        // message database id
+        long databaseId = intent.getLongExtra(EXTRA_DATABASE_ID, 0);
         // message id
-        long msgId = intent.getLongExtra(EXTRA_MESSAGE_ID, 0);
+        String msgId = intent.getStringExtra(EXTRA_MESSAGE_ID);
         // url to post to
         String url = intent.getStringExtra(EXTRA_POST_URL);
         // user to send message to
@@ -163,7 +167,7 @@ public class UploadService extends IntentService implements ProgressListener {
                 if (mime.startsWith("image/")) {
                     try {
                         mCompressed = MediaStorage
-                            .resizeImage(this, file, msgId, compress);
+                            .resizeImage(this, file, databaseId, compress);
                         mTotalBytes = length = mCompressed.length();
                         file = Uri.fromFile(mCompressed);
                     }
@@ -182,7 +186,7 @@ public class UploadService extends IntentService implements ProgressListener {
                     key.getBridgePrivateKey(), key.getBridgeCertificate());
             }
 
-            mMessageId = msgId;
+            mMessageId = databaseId;
             queue.put(filename, mMessageId);
 
             // upload content
@@ -190,11 +194,11 @@ public class UploadService extends IntentService implements ProgressListener {
             Log.d(TAG, "uploaded with media URL: " + mediaUrl);
 
             // update message fetch_url
-            MessagesProvider.uploaded(this, msgId, mediaUrl);
+            MessagesProvider.uploaded(this, databaseId, mediaUrl);
 
             // send message with fetch url to server
             MessageCenterService.sendUploadedMedia(this, to, mime, file, length,
-                previewPath, mediaUrl, encrypt, msgId);
+                previewPath, mediaUrl, encrypt, databaseId, msgId);
 
             // end operations
             completed();

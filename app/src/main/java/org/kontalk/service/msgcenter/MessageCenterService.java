@@ -1246,13 +1246,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendMessage(Bundle data) {
-
         // check if message is already pending
         long msgId = data.getLong("org.kontalk.message.msgId");
         if (mWaitingReceipt.containsValue(msgId)) {
             Log.v(TAG, "message already queued and waiting - dropping");
             return;
         }
+
+        String id = data.getString("org.kontalk.message.packetId");
 
         boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
         String mime = data.getString("org.kontalk.message.mime");
@@ -1275,7 +1276,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.setData(mediaUri);
                 i.setAction(UploadService.ACTION_UPLOAD);
                 i.putExtra(UploadService.EXTRA_POST_URL, postUrl);
-                i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
+                i.putExtra(UploadService.EXTRA_DATABASE_ID, msgId);
+                i.putExtra(UploadService.EXTRA_MESSAGE_ID, id);
                 i.putExtra(UploadService.EXTRA_MIME, mime);
                 i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
                 i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
@@ -1298,12 +1300,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
             if (to != null) m.setTo(to);
 
-            if (msgId > 0) {
-                // generate random id
-                String id = StringUtils.randomString(30);
-                m.setPacketID(id);
+            // set message id
+            m.setPacketID(id);
+            if (msgId > 0)
                 mWaitingReceipt.put(id, msgId);
-            }
 
             String body = data.getString("org.kontalk.message.body");
             if (body != null)
@@ -1708,6 +1708,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
+    }
+
+    public static String messageId() {
+        return StringUtils.randomString(30);
     }
 
     /** Replies to a presence subscription request. */

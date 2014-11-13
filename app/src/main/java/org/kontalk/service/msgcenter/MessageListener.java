@@ -66,7 +66,6 @@ import android.util.Log;
 class MessageListener extends MessageCenterPacketListener {
 
     private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
-    private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageListener(MessageCenterService instance) {
         super(instance);
@@ -127,51 +126,25 @@ class MessageListener extends MessageCenterPacketListener {
                     long msgId = (_msgId != null) ? _msgId : 0;
                     ContentResolver cr = getContext().getContentResolver();
 
-                    // TODO compress this code
-                    if (ext instanceof ReceivedServerReceipt) {
-
-                        // message has been delivered: check if we have previously stored the server id
-                        if (msgId > 0) {
-                            ContentValues values = new ContentValues(3);
-                            values.put(Messages.MESSAGE_ID, ext.getId());
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionOutgoing, null);
-
-                            waitingReceipt.remove(id);
-                        }
-                        else {
-                            Uri msg = Messages.getUri(ext.getId());
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                            cr.update(msg, values, selectionOutgoing, null);
-                        }
-
-                        // send ack
-                        AckServerReceipt receipt = new AckServerReceipt(id);
-                        org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
-                            org.jivesoftware.smack.packet.Message.Type.chat);
-                        ack.addExtension(receipt);
-
-                        sendPacket(ack);
-                    }
-
-                    // ack is received after sending a <received/> message
-                    /*
-                     * this should be part of MessageAckListener
-                     */
-                    else if (ext instanceof AckServerReceipt) {
-                        // mark message as confirmed
-                        ContentValues values = new ContentValues(1);
-                        values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
+                    // message has been delivered: check if we have previously stored the server id
+                    if (msgId > 0) {
+                        ContentValues values = new ContentValues(3);
+                        values.put(Messages.MESSAGE_ID, deliveryReceipt.getId());
+                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                        values.put(Messages.STATUS_CHANGED, serverTimestamp);
                         cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                            values, selectionIncoming, null);
+                            values, selectionOutgoing, null);
 
                         waitingReceipt.remove(id);
                     }
-
+                    else {
+                        // FIXME this could lead to fake delivery receipts because message IDs are client-generated
+                        Uri msg = Messages.getUri(deliveryReceipt.getId());
+                        ContentValues values = new ContentValues(2);
+                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                        values.put(Messages.STATUS_CHANGED, serverTimestamp);
+                        cr.update(msg, values, selectionOutgoing, null);
+                    }
                 }
             }
 
