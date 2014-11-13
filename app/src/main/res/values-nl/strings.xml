@@ -8,6 +8,7 @@
   <string name="download_service">Downloadservice</string>
   <string name="yes">Ja</string>
   <string name="no">Nee</string>
+  <string name="send">Verzenden</string>
   <string name="menu_compose">Nieuw bericht</string>
   <string name="menu_delete_all">Gesprekken verwijderen</string>
   <string name="menu_search">Zoeken</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Nieuwe berichten</string>
   <string name="unread_messages">%d ongelezen berichten</string>
   <string name="only_one_account_supported">Je kunt slechts één Kontalk-account gebruiken.</string>
-  <string name="send">Verzenden</string>
   <string name="hint_enter_text">Typ je tekst hier</string>
   <string name="hint_type_to_compose">Typ je bericht hier</string>
   <string name="hint_open_kbd_to_compose">Open het toetsenbord om een nieuw bericht te schrijven</string>

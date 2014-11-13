@@ -8,6 +8,7 @@
   <string name="download_service">Servei de descàrregues</string>
   <string name="yes">Sí</string>
   <string name="no">No</string>
+  <string name="send">Envia</string>
   <string name="menu_compose">Redacta</string>
   <string name="menu_delete_all">Esborra converses</string>
   <string name="menu_search">Cerca</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Missatges nous</string>
   <string name="unread_messages">%d missatges sense llegir</string>
   <string name="only_one_account_supported">Només s\'admet un compte de Kontalk.</string>
-  <string name="send">Envia</string>
   <string name="hint_enter_text">Escriviu ací</string>
   <string name="hint_type_to_compose">Escriviu ací</string>
   <string name="hint_open_kbd_to_compose">Obriu el teclat per a redactar un missatge</string>

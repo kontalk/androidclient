@@ -8,6 +8,7 @@
   <string name="download_service">Stahovací služba</string>
   <string name="yes">Ano</string>
   <string name="no">Ne</string>
+  <string name="send">Odeslat</string>
   <string name="menu_compose">Napsat</string>
   <string name="menu_delete_all">Smazat konverzace</string>
   <string name="menu_search">Hledat</string>
@@ -45,7 +46,6 @@
   <string name="new_messages">Nové zprávy</string>
   <string name="unread_messages">%d nepřečtených zpráv</string>
   <string name="only_one_account_supported">Je podporován pouze jeden Kontalk účet.</string>
-  <string name="send">Odeslat</string>
   <string name="hint_enter_text">Sem zadejte svůj text</string>
   <string name="hint_type_to_compose">Zde začněte psát</string>
   <string name="hint_open_kbd_to_compose">Pro napsání zprávy otevřete klávesnici</string>
