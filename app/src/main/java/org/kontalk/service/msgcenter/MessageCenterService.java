@@ -21,6 +21,7 @@ package org.kontalk.service.msgcenter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.sm.StreamManagementException;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
@@ -872,6 +874,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // we want to manually handle roster stuff
         mConnection.getRoster().setSubscriptionMode(SubscriptionMode.manual);
 
+        // HACK dirty workaround for Smack behavior
+        try {
+            Field smWasEnabledAtLeastOnce = XMPPTCPConnection.class.getDeclaredField("smWasEnabledAtLeastOnce");
+            smWasEnabledAtLeastOnce.setAccessible(true);
+            smWasEnabledAtLeastOnce.set(mConnection, true);
+        }
+        catch (Exception e) {
+            Log.w(TAG, "dirty Smack workaround didn't work (" + e + ")");
+        }
         // add message ack listener
         try {
             mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
