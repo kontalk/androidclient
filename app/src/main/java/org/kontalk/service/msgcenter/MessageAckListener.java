@@ -20,6 +20,7 @@ package org.kontalk.service.msgcenter;
 
 import java.util.Map;
 
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 
@@ -46,6 +47,10 @@ class MessageAckListener extends MessageCenterPacketListener {
 
     @Override
     public void processPacket(Packet packet) {
+        if (!(packet instanceof Message)) {
+            return;
+        }
+
         Map<String, Long> waitingReceipt = getWaitingReceiptList();
 
         synchronized (waitingReceipt) {
