@@ -18,53 +18,46 @@
 
 package org.kontalk.service.msgcenter;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_JIDLIST;
-
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.RosterPacket;
 
 import android.content.Intent;
 
+import org.kontalk.client.RosterMatch;
+
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_JIDLIST;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
+
 
 /**
- * Packet listener for roster iq stanzas.
+ * Packet listener for roster match iq stanzas.
  * @author Daniele Ricci
  */
-class RosterListener extends MessageCenterPacketListener {
+class RosterMatchListener extends MessageCenterPacketListener {
 
-    public RosterListener(MessageCenterService instance) {
+    public RosterMatchListener(MessageCenterService instance) {
         super(instance);
     }
 
     @Override
     public void processPacket(Packet packet) {
-        RosterPacket p = (RosterPacket) packet;
+        RosterMatch p = (RosterMatch) packet;
         Intent i = new Intent(ACTION_ROSTER);
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
-        // here we are not using() because Type is a class, not an enum
         i.putExtra(EXTRA_TYPE, p.getType().toString());
         i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-        Collection<RosterPacket.Item> items = p.getRosterItems();
-        String[] list = new String[items.size()];
-
-        int index = 0;
-        for (Iterator<RosterPacket.Item> iter = items.iterator(); iter.hasNext(); ) {
-            RosterPacket.Item item = iter.next();
-            list[index] = item.getUser();
-            index++;
+        List<String> items = p.getItems();
+        if (items != null) {
+            String[] list = new String[items.size()];
+            i.putExtra(EXTRA_JIDLIST, items.toArray(list));
         }
-
-        i.putExtra(EXTRA_JIDLIST, list);
 
         sendBroadcast(i);
     }

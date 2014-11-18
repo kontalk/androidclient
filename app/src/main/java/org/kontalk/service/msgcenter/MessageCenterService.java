@@ -93,6 +93,7 @@ import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
+import org.kontalk.client.RosterMatch;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
@@ -144,8 +145,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
 
-    /** Request roster match. */
+    /** Request the roster. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
+
+    /** Request roster match. */
+    public static final String ACTION_ROSTER_MATCH = "org.kontalk.action.ROSTER_MATCH";
 
     /**
      * Broadcasted when we are connected and authenticated to the server.
@@ -461,6 +465,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void configure() {
+        ProviderManager.addIQProvider(RosterMatch.ELEMENT_NAME, RosterMatch.NAMESPACE, new RosterMatch.Provider());
         ProviderManager.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
         ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
         ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
@@ -653,17 +658,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     sendMessage(intent.getExtras());
             }
 
-            else if (ACTION_ROSTER.equals(action)) {
+            else if (ACTION_ROSTER.equals(action) || ACTION_ROSTER_MATCH.equals(action)) {
                 if (canConnect && isConnected) {
+                    Packet iq;
+
+                    if (ACTION_ROSTER_MATCH.equals(action)) {
+                        iq = new RosterMatch();
+                        String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
+
+                        for (String item : list) {
+                            ((RosterMatch) iq).addItem(item);
+                        }
+                    }
+                    else {
+                        iq = new RosterPacket();
+                    }
+
                     String id = intent.getStringExtra(EXTRA_PACKET_ID);
-                    String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
-                    int c = list.length;
-                    RosterPacket iq = new RosterPacket();
                     iq.setPacketID(id);
                     // iq default type is get
-
-                    for (int i = 0; i < c; i++)
-                        iq.addRosterItem(new RosterPacket.Item(list[i], null));
 
                     sendPacket(iq);
                 }
@@ -899,8 +912,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         filter = new PacketTypeFilter(Presence.class);
         mConnection.addPacketListener(new PresenceListener(this), filter);
 
-        filter = new PacketTypeFilter(RosterPacket.class);
-        mConnection.addPacketListener(new RosterListener(this), filter);
+        filter = new PacketTypeFilter(RosterMatch.class);
+        mConnection.addPacketListener(new RosterMatchListener(this), filter);
 
         filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
         mConnection.addPacketListener(new MessageListener(this), filter);

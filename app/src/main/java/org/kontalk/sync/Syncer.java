@@ -24,17 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
-
-import org.kontalk.R;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.crypto.PGP;
-import org.kontalk.data.Contact;
-import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -56,6 +47,13 @@ import android.provider.ContactsContract.RawContacts;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
+
+import org.kontalk.R;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.crypto.PGP;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 
 /**
@@ -106,7 +104,8 @@ public class Syncer {
         private int vCardCount;
         private int rosterCount = -1;
         private boolean allPresenceReceived;
-        private boolean blocklistReceived;
+        // TODO this will be replaced by privacy lists
+        private boolean blocklistReceived = true;
 
         public PresenceBroadcastReceiver(String iq, List<String> jidList, Syncer notifyTo) {
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
@@ -155,8 +154,8 @@ public class Syncer {
                 }
             }
 
-            // roster result received
-            else if (MessageCenterService.ACTION_ROSTER.equals(action)) {
+            // roster match result received
+            else if (MessageCenterService.ACTION_ROSTER_MATCH.equals(action)) {
                 String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                 if (iq.equals(id)) {
                     String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
@@ -242,8 +241,8 @@ public class Syncer {
                  */
                 Syncer w = notifyTo.get();
                 if (w != null) {
-                    w.sendRoster(iq, jidList);
-                    w.requestBlocklist();
+                    w.requestRosterMatch(iq, jidList);
+                    // TODO request privacy lists -- w.requestBlocklist();
                 }
             }
         }
@@ -386,7 +385,7 @@ public class Syncer {
             PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
-            f.addAction(MessageCenterService.ACTION_ROSTER);
+            f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
             f.addAction(MessageCenterService.ACTION_CONNECTED);
             f.addAction(MessageCenterService.ACTION_VCARD);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
@@ -537,14 +536,15 @@ public class Syncer {
         return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
     }
 
-    private void sendRoster(String id, List<String> list) {
+    private void requestRosterMatch(String id, List<String> list) {
         Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_ROSTER);
+        i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[0]));
         mContext.startService(i);
     }
 
+    // TODO convert to privacy lists
     private void requestBlocklist() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_BLOCKLIST);
