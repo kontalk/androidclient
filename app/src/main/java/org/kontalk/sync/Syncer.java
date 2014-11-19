@@ -101,9 +101,7 @@ public class Syncer {
         private final String iq;
         private final List<String> jidList;
         private int presenceCount;
-        private int vCardCount;
         private int rosterCount = -1;
-        private boolean allPresenceReceived;
         // TODO this will be replaced by privacy lists
         private boolean blocklistReceived = true;
 
@@ -142,12 +140,9 @@ public class Syncer {
                             }
                         }
 
-                        int groupCount = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
-                        allPresenceReceived = (groupCount <= 1);
-
                         // done with presence data and blocklist
-                        if (rosterCount >= 0 && allPresenceReceived &&
-                                vCardCount == presenceCount && blocklistReceived)
+                        if (rosterCount >= 0 && presenceCount >= rosterCount &&
+                                blocklistReceived)
                             finish();
 
                     }
@@ -175,30 +170,6 @@ public class Syncer {
                 }
             }
 
-            else if (MessageCenterService.ACTION_VCARD.equals(action)) {
-                if (response != null) {
-                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    // see if bare JID is present in roster response
-                    String compare = XmppStringUtils.parseBareAddress(jid);
-                    for (PresenceItem item : response) {
-                        if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
-                            item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
-
-                            // increment vcard count
-                            vCardCount++;
-                            break;
-                        }
-                    }
-
-                    // done with presence data and blocklist
-                    if (rosterCount >= 0 && allPresenceReceived &&
-                            vCardCount == presenceCount && blocklistReceived)
-                        finish();
-
-                }
-
-            }
-
             else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
                 blocklistReceived = true;
 
@@ -220,8 +191,7 @@ public class Syncer {
                 }
 
                 // done with presence data and blocklist
-                if (rosterCount >= 0 && allPresenceReceived &&
-                        vCardCount >= presenceCount)
+                if (rosterCount >= 0 && presenceCount >= rosterCount)
                     finish();
             }
 
@@ -241,8 +211,11 @@ public class Syncer {
                  */
                 Syncer w = notifyTo.get();
                 if (w != null) {
+                    // request a roster match
                     w.requestRosterMatch(iq, jidList);
                     // TODO request privacy lists -- w.requestBlocklist();
+                    // request public keys for the whole roster
+                    w.requestPublicKeys();
                 }
             }
         }
@@ -387,7 +360,6 @@ public class Syncer {
             f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
             f.addAction(MessageCenterService.ACTION_CONNECTED);
-            f.addAction(MessageCenterService.ACTION_VCARD);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
@@ -541,6 +513,12 @@ public class Syncer {
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[0]));
+        mContext.startService(i);
+    }
+
+    private void requestPublicKeys() {
+        Intent i = new Intent(mContext, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         mContext.startService(i);
     }
 

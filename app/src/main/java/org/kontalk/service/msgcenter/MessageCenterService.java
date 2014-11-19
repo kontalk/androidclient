@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.security.GeneralSecurityException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.zip.ZipInputStream;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
+import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
@@ -93,6 +95,7 @@ import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
+import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.RosterMatch;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
@@ -192,6 +195,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Send this intent to update your own vCard.
      */
     public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
+
+    /**
+     * Broadcasted when receiving a public key.
+     * Send this intent to request a public key.
+     */
+    public static final String ACTION_PUBLICKEY = "org.kontalk.action.PUBLICKEY";
 
     /**
      * Broadcasted when receiving the server list.
@@ -737,6 +746,30 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     p.setTo(intent.getStringExtra(EXTRA_TO));
 
                     sendPacket(p);
+                }
+            }
+
+            else if (ACTION_PUBLICKEY.equals(action)) {
+                if (canConnect && isConnected) {
+                    String to = intent.getStringExtra(EXTRA_TO);
+                    if (to != null) {
+                        // request public key for a specific user
+                        PublicKeyPublish p = new PublicKeyPublish();
+                        p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
+                        p.setTo(to);
+
+                        sendPacket(p);
+                    }
+                    else {
+                        // request public keys for the whole roster
+                        Collection<RosterEntry> buddies = mConnection.getRoster().getEntries();
+                        for (RosterEntry buddy : buddies) {
+                            PublicKeyPublish p = new PublicKeyPublish();
+                            p.setTo(buddy.getUser());
+
+                            sendPacket(p);
+                        }
+                    }
                 }
             }
 
