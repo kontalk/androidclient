@@ -56,6 +56,7 @@
   <string name="message_type_label">Type:\u0020</string>
   <string name="text_message">Missatge de text</string>
   <string name="image_message">Image</string>
+  <string name="audio_message">Missatge d\'àudio</string>
   <string name="from_label">De:\u0020</string>
   <string name="to_address_label">Per a:\u0020</string>
   <string name="sent_label">Enviat:\u0020</string>
@@ -175,6 +176,7 @@
   <string name="menu_unblock_user">Desbloca</string>
   <string name="vcard_message">Missatge vCard</string>
   <string name="open_file">Obre el fitxer</string>
+  <string name="open_audio">Reprodueix el fitxer d\'àudio</string>
   <string name="msg_msgcenter_restarted">S\'ha reiniciat el centre de missatges.</string>
   <string name="downloading_attachment">S\'està descarregant el fitxer adjunt...</string>
   <string name="decrypting_attachment">S\'està desxifrant l\'adjunt...</string>
@@ -215,6 +217,7 @@
   <string name="pref_title_balloons">Tria un tema per als globus del xat</string>
   <string name="attachment_picture">Imatge</string>
   <string name="attachment_contact">Contacte</string>
+  <string name="attachment_audio">Àudio</string>
   <string name="chooser_send_picture">Envia imatge</string>
   <string name="chooser_error_no_camera">No hi ha emmatzemament extern disponible. No es podran fer fotos amb la càmera.</string>
   <string name="status_activity_title">Missatge d\'estat</string>
@@ -300,7 +303,13 @@
   <string name="err_passwords_mismatch">Les contrasenyes no coincideixen!</string>
   <string name="err_password_invalid">Contrasenya incorrecta.</string>
   <string name="err_change_passphrase">No ha estat possible canviar la contrasenya de la clau personal.</string>
+  <string name="err_file_not_found">No s\'ha trobat el fitxer.</string>
+  <string name="err_audio_record">Error en iniciar la gravació d\'àudio.</string>
+  <string name="err_audio_record_writing">Error en escriure a l\'emmagatzematge extern.</string>
+  <string name="err_playing_audio">Error en reproduir l\'àudio.</string>
+  <string name="err_playing_sdcard">Error en llegir de l\'emmagatzematge extern.</string>
   <string name="pref_media_settings">Configuració multimèdia</string>
   <string name="pref_image_resize">Redimensiona les imatges</string>
   <string name="pref_title_image_resize">Redimensiona les imatges abans d\'enviar-les</string>
+  <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
 </resources>
