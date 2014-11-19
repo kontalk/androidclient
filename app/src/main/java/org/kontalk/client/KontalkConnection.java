@@ -67,8 +67,8 @@ public class KontalkConnection extends XMPPTCPConnection {
                  server.getNetwork()));
 
         mServer = server;
-        // we don't need the roster
-        config.setRosterLoadedAtLogin(false);
+        // TODO requesting the roster could be expensive
+        config.setRosterLoadedAtLogin(true);
         // enable compression
         config.setCompressionEnabled(true);
         // enable encryption
