@@ -1802,6 +1802,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void subscribePresence() {
         // TODO this needs serious refactoring
+        // TODO remove the latest presence calculation stuff
         if (mPresenceReceiver == null) {
             mPresenceReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
@@ -1812,7 +1813,25 @@ public class ComposeMessageFragment extends ListFragment implements
                         // we handle only (un)available presence stanzas
                         String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
 
-                        if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
+                        if (type == null) {
+                            // no roster entry found, request subscription
+
+                            // pre-approve our presence if we don't have contact's key
+                            Intent i = new Intent(context, MessageCenterService.class);
+                            i.setAction(MessageCenterService.ACTION_PRESENCE);
+                            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+                            context.startService(i);
+
+                            // request subscription
+                            i = new Intent(context, MessageCenterService.class);
+                            i.setAction(MessageCenterService.ACTION_PRESENCE);
+                            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+                            context.startService(i);
+                        }
+
+                        else if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
 
                             CharSequence statusText = null;
 
@@ -1962,9 +1981,9 @@ public class ComposeMessageFragment extends ListFragment implements
                             }
                         }
 
-                        // subscription accepted, send presence probe
+                        // subscription accepted, probe presence
                         else if (Presence.Type.subscribed.name().equals(type)) {
-                            mPresenceId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                            presenceSubscribe();
                         }
                     }
 
@@ -1972,7 +1991,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         // reset compose sent flag
                         mComposeSent = false;
 
-                        // send subscription request
+                        // probe presence
                         presenceSubscribe();
                     }
 
@@ -2015,22 +2034,13 @@ public class ComposeMessageFragment extends ListFragment implements
         if (context != null) {
             // all of this shall be done only if there isn't a request from the other contact
             if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
-                Contact c = mConversation.getContact();
-
-                // pre-approve our presence if we don't have contact's key
-                if (c == null || c.getPublicKeyRing() == null) {
-                    Intent i = new Intent(context, MessageCenterService.class);
-                    i.setAction(MessageCenterService.ACTION_PRESENCE);
-                    i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                    i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-                    context.startService(i);
-                }
-
-                // send subscription request
+                // request last presence
+                mPresenceId = StringUtils.randomString(8);
                 Intent i = new Intent(context, MessageCenterService.class);
                 i.setAction(MessageCenterService.ACTION_PRESENCE);
+                i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mPresenceId);
                 i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
                 context.startService(i);
             }
         }
@@ -2042,8 +2052,7 @@ public class ComposeMessageFragment extends ListFragment implements
             mPresenceReceiver = null;
         }
 
-        /* DEPRECATED: it should use privacy lists
-        // send unsubscription request
+        /* send unsubscription request
         Intent i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);

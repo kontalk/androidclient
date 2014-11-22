@@ -49,6 +49,7 @@ import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.sm.StreamManagementException;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
@@ -162,6 +163,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Broadcasted when a presence stanza is received.
      * Send this intent to broadcast presence.
+     * Send this intent with type="probe" to request a presence in the roster.
      */
     public static final String ACTION_PRESENCE = "org.kontalk.action.PRESENCE";
 
@@ -693,19 +695,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_PRESENCE.equals(action)) {
                 if (canConnect && isConnected) {
+                    final String id = intent.getStringExtra(EXTRA_PACKET_ID);
                     String type = intent.getStringExtra(EXTRA_TYPE);
-                    String id = intent.getStringExtra(EXTRA_PACKET_ID);
-
                     String to = intent.getStringExtra(EXTRA_TO);
 
-                    Packet pack;
                     if ("probe".equals(type)) {
-                        /*
-                         * Smack doesn't support probe stanzas so we have to
-                         * create it manually.
-                         */
-                        String probe = String.format("<presence type=\"probe\" to=\"%s\" id=\"%s\"/>", to, id);
-                        pack = new RawPacket(probe);
+                        // probing is actually looking into the roster
+                        Roster roster = mConnection.getRoster();
+
+                        Intent i;
+                        if (roster.getEntry(to) != null) {
+                            // roster entry found, look for presence
+                            Presence presence = roster.getPresence(to);
+                            i = PresenceListener.createIntent(presence);
+                        }
+                        else {
+                            // null type indicates no roster entry found
+                            i = new Intent(ACTION_PRESENCE);
+                            i.putExtra(EXTRA_FROM, to);
+                        }
+
+                        // to keep track of request-reply
+                        i.putExtra(EXTRA_PACKET_ID, id);
+                        mLocalBroadcastManager.sendBroadcast(i);
                     }
                     else {
                         String show = intent.getStringExtra(EXTRA_SHOW);
@@ -722,10 +734,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         if (!TextUtils.isEmpty(regId))
                             p.addExtension(new PushRegistration(regId));
 
-                        pack = p;
+                        sendPacket(p);
                     }
 
-                    sendPacket(pack);
                 }
             }
 
@@ -963,10 +974,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void authenticated(XMPPConnection connection) {
         Log.v(TAG, "authenticated!");
-        // discovery
-        discovery();
+        // load the roster now
+        roster();
         // send presence
         sendPresence();
+        // discovery
+        discovery();
         // resend failed and pending messages
         resendPendingMessages(false);
         // resend failed and pending received receipts
@@ -1008,12 +1021,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(info);
     }
 
+    /** Requests the roster. */
+    private void roster() {
+        mConnection.getRoster();
+    }
+
     /** Sends our initial presence. */
     private void sendPresence() {
         String status = Preferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
             p.setStatus(status);
+
+        // TODO find a place for this
+        p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
 
         sendPacket(p);
     }

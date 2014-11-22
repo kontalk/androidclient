@@ -240,6 +240,12 @@ class PresenceListener extends MessageCenterPacketListener {
     private void handlePresence(Presence p) {
         updateUsersDatabase(p);
 
+        Intent i = createIntent(p);
+        Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
+        sendBroadcast(i);
+    }
+
+    public static Intent createIntent(Presence p) {
         Intent i = new Intent(ACTION_PRESENCE);
         Presence.Type type = p.getType();
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
@@ -268,8 +274,7 @@ class PresenceListener extends MessageCenterPacketListener {
             }
         }
 
-        Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
-        sendBroadcast(i);
+        return i;
     }
 
     private void updateUsersDatabase(Presence p) {
