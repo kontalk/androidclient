@@ -32,6 +32,7 @@ import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
@@ -481,6 +482,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         ProviderManager.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
         ProviderManager.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
         ProviderManager.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
+        // we want to manually handle roster stuff
+        Roster.setDefaultSubscriptionMode(SubscriptionMode.manual);
     }
 
     @Override
@@ -913,9 +916,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public synchronized void created(XMPPConnection connection) {
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
-
-        // we want to manually handle roster stuff
-        mConnection.getRoster().setSubscriptionMode(SubscriptionMode.manual);
 
         // HACK dirty workaround for Smack behavior
         try {
