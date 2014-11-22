@@ -22,11 +22,10 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jxmpp.util.XmppStringUtils;
 
-import android.content.Intent;
 import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.VCard4;
+import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
@@ -35,30 +34,24 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VCARD;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
-
 
 /**
- * Packet Listener for vCard4 iq stanzas.
+ * Packet Listener for public key publish iq stanzas.
  * @author Daniele Ricci
  */
-class VCardListener extends MessageCenterPacketListener {
+class PublicKeyListener extends MessageCenterPacketListener {
 
-    public VCardListener(MessageCenterService instance) {
+    public PublicKeyListener(MessageCenterService instance) {
         super(instance);
     }
 
     @Override
     public void processPacket(Packet packet) {
-        VCard4 p = (VCard4) packet;
+        PublicKeyPublish p = (PublicKeyPublish) packet;
 
         // will be true if it's our card
         boolean myCard = false;
-        byte[] _publicKey = p.getPGPKey();
+        byte[] _publicKey = p.getPublicKey();
 
         // vcard was requested, store but do not broadcast
         if (p.getType() == IQ.Type.result) {
@@ -117,21 +110,6 @@ class VCardListener extends MessageCenterPacketListener {
                     Log.e(MessageCenterService.TAG, "unable to update user key", e);
                 }
             }
-
-        }
-
-        // vcard coming from sync, send a broadcast but do not store
-        else if (p.getType() == IQ.Type.set) {
-
-            Intent i = new Intent(ACTION_VCARD);
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-            i.putExtra(EXTRA_FROM, p.getFrom());
-            i.putExtra(EXTRA_TO, p.getTo());
-            i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
-
-            Log.v(MessageCenterService.TAG, "broadcasting vcard: " + i);
-            sendBroadcast(i);
 
         }
     }

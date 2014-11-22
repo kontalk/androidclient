@@ -120,32 +120,27 @@ public class Syncer {
                 // consider only presences received *after* roster response
                 if (response != null) {
 
-                    // consider only presences with our group ID
-                    String gid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
-                    if (iq.equals(gid)) {
-
-                        String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                        // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareAddress(jid);
-                        for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
-                                item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                                item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                if (!item.presence) {
-                                    item.presence = true;
-                                    // increment presence count
-                                    presenceCount++;
-                                }
-                                break;
+                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    // see if bare JID is present in roster response
+                    String compare = XmppStringUtils.parseBareAddress(jid);
+                    for (PresenceItem item : response) {
+                        if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                            item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                            if (!item.presence) {
+                                item.presence = true;
+                                // increment presence count
+                                presenceCount++;
                             }
+                            break;
                         }
-
-                        // done with presence data and blocklist
-                        if (rosterCount >= 0 && presenceCount >= rosterCount &&
-                                blocklistReceived)
-                            finish();
-
                     }
+
+                    // done with presence data and blocklist
+                    if (rosterCount >= 0 && presenceCount >= rosterCount &&
+                            blocklistReceived)
+                        finish();
+
                 }
             }
 

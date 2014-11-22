@@ -26,7 +26,7 @@ import android.content.Intent;
 
 import org.kontalk.client.RosterMatch;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER_MATCH;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_JIDLIST;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
@@ -47,7 +47,7 @@ class RosterMatchListener extends MessageCenterPacketListener {
     @Override
     public void processPacket(Packet packet) {
         RosterMatch p = (RosterMatch) packet;
-        Intent i = new Intent(ACTION_ROSTER);
+        Intent i = new Intent(ACTION_ROSTER_MATCH);
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
         i.putExtra(EXTRA_TYPE, p.getType().toString());

@@ -101,7 +101,6 @@ import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
 import org.kontalk.client.ServerlistCommand;
-import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.SubscribePublicKey;
 import org.kontalk.client.UploadInfo;
 import org.kontalk.client.VCard4;
@@ -242,8 +241,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_STATUS = "org.kontalk.presence.status";
     public static final String EXTRA_SHOW = "org.kontalk.presence.show";
     public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
-    public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
-    public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
     public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
     public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
@@ -476,10 +473,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void configure() {
         ProviderManager.addIQProvider(RosterMatch.ELEMENT_NAME, RosterMatch.NAMESPACE, new RosterMatch.Provider());
         ProviderManager.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
+        ProviderManager.addIQProvider(PublicKeyPublish.ELEMENT_NAME, PublicKeyPublish.NAMESPACE, new PublicKeyPublish.Provider());
         ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
         ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
         ProviderManager.addIQProvider(ServerlistCommand.ELEMENT_NAME, ServerlistCommand.NAMESPACE, new ServerlistCommand.ResultProvider());
-        ProviderManager.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
         ProviderManager.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
         ProviderManager.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
         ProviderManager.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
@@ -954,8 +951,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         filter = new PacketTypeFilter(LastActivity.class);
         mConnection.addPacketListener(new LastActivityListener(this), filter);
 
-        filter = new PacketTypeFilter(VCard4.class);
-        mConnection.addPacketListener(new VCardListener(this), filter);
+        filter = new PacketTypeFilter(PublicKeyPublish.class);
+        mConnection.addPacketListener(new PublicKeyListener(this), filter);
     }
 
     @Override

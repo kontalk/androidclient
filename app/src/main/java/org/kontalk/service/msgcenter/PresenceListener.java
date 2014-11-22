@@ -19,7 +19,6 @@
 package org.kontalk.service.msgcenter;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.packet.IQ;
@@ -38,7 +37,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import org.kontalk.client.StanzaGroupExtension;
 import org.kontalk.client.SubscribePublicKey;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.PGP;
@@ -54,8 +52,6 @@ import org.kontalk.util.Preferences;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIBED;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_COUNT;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PRIORITY;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SHOW;
@@ -242,6 +238,8 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handlePresence(Presence p) {
+        updateUsersDatabase(p);
+
         Intent i = new Intent(ACTION_PRESENCE);
         Presence.Type type = p.getType();
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
@@ -254,16 +252,9 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
         i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
-        // TODO see if getExtension works with new Smack 4.1 here
-        Iterator<PacketExtension> iter = p.getExtensions().iterator();
-        while (iter.hasNext()) {
-            PacketExtension _ext = iter.next();
-            if (_ext instanceof DelayInformation) {
-                DelayInformation delay = (DelayInformation) _ext;
-                i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
-                break;
-            }
-        }
+        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        if (delay != null)
+            i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
 
         // public key extension (for fingerprint)
         PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
@@ -277,16 +268,33 @@ class PresenceListener extends MessageCenterPacketListener {
             }
         }
 
-        // non-standard stanza group extension
-        PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
-        if (ext != null && ext instanceof StanzaGroupExtension) {
-            StanzaGroupExtension g = (StanzaGroupExtension) ext;
-            i.putExtra(EXTRA_GROUP_ID, g.getId());
-            i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
-        }
-
         Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
         sendBroadcast(i);
+    }
+
+    private void updateUsersDatabase(Presence p) {
+        String jid = XmppStringUtils.parseBareJid(p.getFrom());
+
+        ContentValues values = new ContentValues(3);
+        values.put(Users.REGISTERED, 1);
+
+        // status
+        String status = p.getStatus();
+        if (status != null)
+            values.put(Users.STATUS, status);
+        else
+            values.putNull(Users.STATUS);
+
+        // delay
+        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        if (delay != null)
+            values.put(Users.LAST_SEEN, delay.getStamp().getTime());
+        else
+            values.putNull(Users.LAST_SEEN);
+
+        getContext().getContentResolver().update(Users.CONTENT_URI,
+            values, Users.JID + " = ?", new String[] { jid });
+
     }
 
 }

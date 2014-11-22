@@ -1801,6 +1801,7 @@ public class ComposeMessageFragment extends ListFragment implements
     */
 
     private void subscribePresence() {
+        // TODO this needs serious refactoring
         if (mPresenceReceiver == null) {
             mPresenceReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
@@ -1815,7 +1816,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
                             CharSequence statusText = null;
 
-                            String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
                             String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                             String bareFrom = from != null ? XmppStringUtils.parseBareAddress(from) : null;
 
@@ -1847,7 +1847,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                         setStatusText(mCurrentStatus);
 
                                     // abort presence probe if non-group stanza
-                                    if (groupId == null) mPresenceId = null;
+                                    mPresenceId = null;
                                 }
                                 else if (Presence.Type.unavailable.toString().equals(type)) {
                                     mAvailableResources.remove(from);
@@ -1891,7 +1891,7 @@ public class ComposeMessageFragment extends ListFragment implements
                             }
 
                             // we have a presence group
-                            if (mPresenceId != null && mPresenceId.equals(groupId)) {
+                            if (mPresenceId != null) {
                                 if (mMostAvailable == null)
                                     mMostAvailable = new PresenceData();
 
@@ -1930,7 +1930,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                     mMostAvailable.priority = priority;
                                 }
 
-                                int count = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
+                                int count = 0; // EXTRA_GROUP_COUNT
                                 if (count <= 1 || mPresenceId == null) {
                                     // we got all presence stanzas
                                     Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
@@ -2042,12 +2042,14 @@ public class ComposeMessageFragment extends ListFragment implements
             mPresenceReceiver = null;
         }
 
+        /* DEPRECATED: it should use privacy lists
         // send unsubscription request
         Intent i = new Intent(getActivity(), MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
         i.putExtra(MessageCenterService.EXTRA_TYPE, "unsubscribe");
         getActivity().startService(i);
+         */
     }
 
     /*
