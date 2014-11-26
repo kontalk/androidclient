@@ -44,6 +44,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
@@ -61,7 +62,7 @@ import org.kontalk.util.XMPPUtils;
 
 
 public class UsersProvider extends ContentProvider {
-    public static final String AUTHORITY = "org.kontalk.users";
+    public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
     private static final int DATABASE_VERSION = 7;
     private static final String DATABASE_NAME = "users.db";

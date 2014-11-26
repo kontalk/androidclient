@@ -78,11 +78,11 @@
         <!-- Content providers -->
         <provider android:name=".provider.MessagesProvider"
             android:exported="false"
-            android:authorities="org.kontalk.messages"/>
+            android:authorities="${applicationId}.messages"/>
 
         <provider android:name=".provider.UsersProvider"
             android:exported="false"
-            android:authorities="org.kontalk.users"/>
+            android:authorities="${applicationId}.users"/>
 
         <!-- Broadcast receivers -->
         <receiver android:name=".service.SystemBootStartup"
@@ -131,7 +131,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.item/org.kontalk.user"
+                <data android:mimeType="vnd.android.cursor.item/${applicationId}.user"
                     android:host="com.android.contacts"/>
             </intent-filter>
             <intent-filter>

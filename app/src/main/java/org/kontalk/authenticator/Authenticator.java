@@ -64,6 +64,7 @@ import android.os.Looper;
 import android.util.Base64;
 import android.widget.Toast;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
@@ -87,7 +88,7 @@ import static org.kontalk.crypto.PersonalKeyImporter.PUBLIC_KEY_FILENAME;
  */
 public class Authenticator extends AbstractAccountAuthenticator {
 
-    public static final String ACCOUNT_TYPE = "org.kontalk.account";
+    public static final String ACCOUNT_TYPE = BuildConfig.ACCOUNT_TYPE;
     public static final String ACCOUNT_TYPE_LEGACY = "org.kontalk.legacy.account";
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";

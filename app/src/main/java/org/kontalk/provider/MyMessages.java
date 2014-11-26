@@ -22,6 +22,9 @@ package org.kontalk.provider;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import org.kontalk.BuildConfig;
+
+
 public final class MyMessages {
     private MyMessages() {}
 
@@ -76,8 +79,9 @@ public final class MyMessages {
             public static final String CONTENT = "content";
         }
 
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.message";
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.message";
+        private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".message";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
 
         public static final String THREAD_ID = "thread_id";
         public static final String SERVER_TIMESTAMP = "server_timestamp";
@@ -142,8 +146,9 @@ public final class MyMessages {
                     + MessagesProvider.AUTHORITY + "/threads/" + Uri.encode(peer));
         }
 
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.thread";
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.thread";
+        private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".thread";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
 
         public static final String MIME = "mime";
         public static final String CONTENT = "content";

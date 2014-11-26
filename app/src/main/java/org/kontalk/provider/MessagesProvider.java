@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.CommonColumns;
@@ -55,7 +56,7 @@ import android.util.Log;
 public class MessagesProvider extends ContentProvider {
 
     private static final String TAG = MessagesProvider.class.getSimpleName();
-    public static final String AUTHORITY = "org.kontalk.messages";
+    public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".messages";
 
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";

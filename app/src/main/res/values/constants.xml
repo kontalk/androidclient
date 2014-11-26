@@ -18,8 +18,6 @@
 -->
 
 <resources>
-    <bool name="has_two_panes" translatable="false">false</bool>
-
     <string name="website" translatable="false">www.kontalk.org</string>
 	<string name="mailto" translatable="false">devteam@kontalk.org</string>
 	<string name="facebook_link" translatable="false">http://www.facebook.com/kontalknet</string>

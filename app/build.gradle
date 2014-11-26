@@ -26,6 +26,10 @@ android {
     buildToolsVersion '21.1.1'
 
     defaultConfig {
+        applicationId "org.kontalk"
+        resValue "string", "account_type", applicationId + '.account'
+        resValue "string", "user_itemtype", "vnd.android.cursor.item/org.kontalk.user"
+        buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
     }
 
     buildTypes {
@@ -46,6 +50,12 @@ android {
         basic {
         }
         googleplay {
+        }
+        tigase {
+            applicationId "org.kontalk.tigase"
+            resValue "string", "account_type", applicationId + '.account'
+            resValue "string", "user_itemtype", "vnd.android.cursor.item/org.kontalk.tigase.user"
+            buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.tigase.account"'
         }
     }
 
