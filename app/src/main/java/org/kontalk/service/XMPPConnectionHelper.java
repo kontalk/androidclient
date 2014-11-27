@@ -158,7 +158,7 @@ public class XMPPConnectionHelper extends Thread {
 
             if (key == null) {
                 mConn = new KontalkConnection(mServer, !USE_STARTTLS,
-                    acceptAnyCertificate, trustStore);
+                    acceptAnyCertificate, trustStore, token);
             }
 
             else {
@@ -166,7 +166,7 @@ public class XMPPConnectionHelper extends Thread {
                     key.getBridgePrivateKey(),
                     key.getBridgeCertificate(),
                     acceptAnyCertificate,
-                    trustStore);
+                    trustStore, token);
             }
 
             if (mListener != null)
@@ -183,8 +183,7 @@ public class XMPPConnectionHelper extends Thread {
 
         // login
         if (key != null || token != null)
-            // the dummy value is not actually used
-            mConn.login(null, token != null ? token : "dummy");
+            mConn.login();
 
     }
 

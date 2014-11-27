@@ -18,6 +18,7 @@
 
 package org.kontalk.client;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -27,22 +28,25 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
+import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
+
+import android.util.Log;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
-
-import android.util.Log;
 
 
 public class KontalkConnection extends XMPPTCPConnection {
@@ -51,44 +55,80 @@ public class KontalkConnection extends XMPPTCPConnection {
     protected EndpointServer mServer;
 
     public KontalkConnection(EndpointServer server, boolean secure,
-        boolean acceptAnyCertificate, KeyStore trustStore)
+        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
             throws XMPPException {
 
-        this(server, secure, null, null, acceptAnyCertificate, trustStore);
+        this(server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
     }
 
     public KontalkConnection(EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
-            boolean acceptAnyCertificate, KeyStore trustStore) throws XMPPException {
+            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException {
 
-        super(new AndroidConnectionConfiguration
-                (server.getHost(),
-                 secure ? server.getSecurePort() : server.getPort(),
-                 server.getNetwork()));
+        super(buildConfiguration(server, secure,
+            privateKey, bridgeCert, acceptAnyCertificate, trustStore, legacyAuthToken));
 
         mServer = server;
-        // TODO requesting the roster could be expensive
-        config.setRosterLoadedAtLogin(true);
-        // enable compression
-        config.setCompressionEnabled(true);
-        // enable encryption
-        config.setSecurityMode(secure ? SecurityMode.disabled : SecurityMode.required);
-        // we will send a custom presence
-        config.setSendPresence(false);
-        // disable session initiation
-        config.setLegacySessionDisabled(true);
-        // enable debugging
-        config.setDebuggerEnabled(BuildConfig.DEBUG);
 
         // enable SM without resumption
         setUseStreamManagement(true);
         setUseStreamManagementResumption(false);
-
-        setupSSL(secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);
     }
 
-    private void setupSSL(boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
-            boolean acceptAnyCertificate, KeyStore trustStore) {
+    @Override
+    public void disconnect() throws NotConnectedException {
+        Log.v(TAG, "disconnecting (no presence)");
+        super.disconnect();
+    }
+
+    @Override
+    public synchronized void disconnect(Presence presence) throws NotConnectedException {
+        Log.v(TAG, "disconnecting ("+presence+")");
+        super.disconnect(presence);
+    }
+
+    private static XMPPTCPConnectionConfiguration buildConfiguration(EndpointServer server,
+        boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
+        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
+        XMPPTCPConnectionConfiguration.XMPPTCPConnectionConfigurationBuilder builder =
+            XMPPTCPConnectionConfiguration.builder();
+
+        builder
+            // connection parameters
+            .setHost(server.getHost())
+            .setPort(secure ? server.getSecurePort() : server.getPort())
+            .setServiceName(server.getNetwork())
+            // the dummy value is not actually used
+            .setUsernameAndPassword(null, legacyAuthToken != null ? legacyAuthToken : "dummy")
+            .setCallbackHandler(new CallbackHandler() {
+                @Override
+                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                    for (Callback cb : callbacks)
+                        Log.v(TAG, "callback = " + cb);
+                }
+            })
+            // TODO requesting the roster could be expensive
+            .setRosterLoadedAtLogin(true)
+            // enable compression
+            .setCompressionEnabled(true)
+            // enable encryption
+            .setSecurityMode(secure ? SecurityMode.disabled : SecurityMode.required)
+            // we will send a custom presence
+            .setSendPresence(false)
+            // disable session initiation
+            .setLegacySessionDisabled(true)
+            // enable debugging
+            .setDebuggerEnabled(BuildConfig.DEBUG);
+
+        // setup SSL
+        setupSSL(builder, secure, privateKey, bridgeCert, acceptAnyCertificate, trustStore);
+
+        return builder.build();
+    }
+
+    private static void setupSSL(XMPPTCPConnectionConfiguration.XMPPTCPConnectionConfigurationBuilder builder,
+        boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
+        boolean acceptAnyCertificate, KeyStore trustStore) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
 
@@ -136,16 +176,16 @@ public class KontalkConnection extends XMPPTCPConnection {
             else {
                 // builtin keystore
                 TrustManagerFactory tmFactory = TrustManagerFactory
-                        .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 tmFactory.init(trustStore);
 
                 tm = tmFactory.getTrustManagers();
             }
 
             ctx.init(km, tm, null);
-            config.setCustomSSLContext(ctx);
+            builder.setCustomSSLContext(ctx);
             if (direct)
-                config.setSocketFactory(ctx.getSocketFactory());
+                builder.setSocketFactory(ctx.getSocketFactory());
 
             // SASL EXTERNAL is already enabled in Smack
         }
@@ -153,17 +193,4 @@ public class KontalkConnection extends XMPPTCPConnection {
             Log.w(TAG, "unable to setup SSL connection", e);
         }
     }
-
-    @Override
-    public void disconnect() throws NotConnectedException {
-        Log.v(TAG, "disconnecting (no presence)");
-        super.disconnect();
-    }
-
-    @Override
-    public synchronized void disconnect(Presence presence) throws NotConnectedException {
-        Log.v(TAG, "disconnecting ("+presence+")");
-        super.disconnect(presence);
-    }
-
 }

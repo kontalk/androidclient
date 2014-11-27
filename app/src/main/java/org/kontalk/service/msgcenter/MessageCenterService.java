@@ -20,8 +20,9 @@ package org.kontalk.service.msgcenter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,6 +39,8 @@ import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.debugger.SmackDebugger;
+import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -46,12 +49,12 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.sm.StreamManagementException;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
+import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.ping.packet.Ping;
@@ -486,6 +489,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         ProviderManager.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
         // we want to manually handle roster stuff
         Roster.setDefaultSubscriptionMode(SubscriptionMode.manual);
+        // use Android debugger
+        SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
+            @Override
+            public SmackDebugger create(XMPPConnection connection, Writer writer, Reader reader) throws IllegalArgumentException {
+                return new AndroidDebugger(connection, writer, reader);
+            }
+        });
     }
 
     @Override
@@ -931,23 +941,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
-        // HACK dirty workaround for Smack behavior
-        try {
-            Field smWasEnabledAtLeastOnce = XMPPTCPConnection.class.getDeclaredField("smWasEnabledAtLeastOnce");
-            smWasEnabledAtLeastOnce.setAccessible(true);
-            smWasEnabledAtLeastOnce.set(mConnection, true);
-        }
-        catch (Exception e) {
-            Log.w(TAG, "dirty Smack workaround didn't work (" + e + ")");
-        }
-        // add message ack listener
-        try {
-            mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
-        }
-        catch (StreamManagementException.StreamManagementNotEnabledException e) {
-            Log.w(TAG, "stream management not available - disabling delivery receipts");
-        }
-
         PacketFilter filter;
 
         filter = new PacketTypeFilter(Ping.class);
@@ -977,6 +970,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void authenticated(XMPPConnection connection) {
         Log.v(TAG, "authenticated!");
+
+        // add message ack listener
+        try {
+            mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
+        }
+        catch (StreamManagementException.StreamManagementNotEnabledException e) {
+            Log.w(TAG, "stream management not available - disabling delivery receipts");
+        }
         // load the roster now
         roster();
         // send presence
