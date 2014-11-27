@@ -1443,6 +1443,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 new org.jivesoftware.smack.packet.Message(m.getTo(),
                                         m.getType());
 
+                        encMsg.setBody(getString(R.string.text_encrypted));
                         encMsg.setPacketID(m.getPacketID());
                         encMsg.addExtension(new E2EEncryption(toMessage));
 
