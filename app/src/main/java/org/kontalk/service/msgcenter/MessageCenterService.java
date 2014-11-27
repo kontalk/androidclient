@@ -704,7 +704,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         Roster roster = mConnection.getRoster();
 
                         Intent i;
-                        if (roster.getEntry(to) != null) {
+                        RosterEntry entry = roster.getEntry(to);
+                        // entry present and not pending subscription
+                        if (entry != null && (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) &&
+                                entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING) {
                             // roster entry found, look for presence
                             Presence presence = roster.getPresence(to);
                             i = PresenceListener.createIntent(presence);
