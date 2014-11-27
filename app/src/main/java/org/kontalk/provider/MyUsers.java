@@ -32,6 +32,8 @@ public class MyUsers {
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
                 + UsersProvider.AUTHORITY + "/users");
+        public static final Uri CONTENT_URI_OFFLINE =  Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.OFFLINE, "true").build();
 
         private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".user";
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;

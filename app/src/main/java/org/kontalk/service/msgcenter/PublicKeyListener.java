@@ -22,6 +22,7 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jxmpp.util.XmppStringUtils;
 
+import android.content.Intent;
 import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
@@ -31,8 +32,16 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
+
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VCARD;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 
 /**
@@ -95,19 +104,36 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     }
                 }
 
-                try {
-                    if (networkUser) {
-                        String fingerprint = PGP.getFingerprint(_publicKey);
-                        UsersProvider.setUserKey(getContext(), from,
-                            _publicKey, fingerprint);
+                if (SyncAdapter.isActive(getContext())) {
+                    // sync currently active, broadcast the key
+                    Intent i = new Intent(ACTION_PUBLICKEY);
+                    i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-                        // invalidate cache for this user
-                        Contact.invalidate(from);
-                    }
+                    i.putExtra(EXTRA_FROM, p.getFrom());
+                    i.putExtra(EXTRA_TO, p.getTo());
+                    i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
+
+                    Log.v(MessageCenterService.TAG, "broadcasting public key: " + i);
+                    sendBroadcast(i);
                 }
-                catch (Exception e) {
-                    // TODO warn user
-                    Log.e(MessageCenterService.TAG, "unable to update user key", e);
+
+                else {
+                    try {
+                        Log.v("pubkey", "networkUser = " + networkUser + " (" + from + ")");
+                        if (networkUser) {
+                            String fingerprint = PGP.getFingerprint(_publicKey);
+                            Log.v("pubkey", "Updating key for " + from + " fingerprint " + fingerprint);
+                            UsersProvider.setUserKey(getContext(), from,
+                                _publicKey, fingerprint);
+
+                            // invalidate cache for this user
+                            Contact.invalidate(from);
+                        }
+                    }
+                    catch (Exception e) {
+                        // TODO warn user
+                        Log.e(MessageCenterService.TAG, "unable to update user key", e);
+                    }
                 }
             }
 

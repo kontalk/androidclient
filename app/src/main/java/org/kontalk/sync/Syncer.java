@@ -101,6 +101,7 @@ public class Syncer {
         private final String iq;
         private final List<String> jidList;
         private int presenceCount;
+        private int pubkeyCount;
         private int rosterCount = -1;
         // TODO this will be replaced by privacy lists
         private boolean blocklistReceived = true;
@@ -137,8 +138,7 @@ public class Syncer {
                     }
 
                     // done with presence data and blocklist
-                    if (rosterCount >= 0 && presenceCount >= rosterCount &&
-                            blocklistReceived)
+                    if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
                         finish();
 
                 }
@@ -159,10 +159,45 @@ public class Syncer {
                     }
 
                     // no roster elements
-                    if (rosterCount == 0 && blocklistReceived)
+                    if (rosterCount == 0 && blocklistReceived) {
+                        finish();
+                    }
+                    else {
+                        Syncer w = notifyTo.get();
+                        if (w != null) {
+                            // TODO request presence data
+                            // request public keys for the whole roster
+                            w.requestPublicKeys();
+                        }
+                    }
+                }
+            }
+
+            else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
+                Log.v(TAG, "public key received: " + intent + " (response=" + response + ")");
+                if (response != null) {
+                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    // see if bare JID is present in roster response
+                    String compare = XmppStringUtils.parseBareJid(jid);
+                    Log.v(TAG, "looking in the roster: " + compare);
+                    for (PresenceItem item : response) {
+                        Log.v(TAG, "matching public key with roster element: " + item.from);
+                        if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
+                            item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
+
+                            // increment vcard count
+                            Log.v(TAG, "public key saved.");
+                            pubkeyCount++;
+                            break;
+                        }
+                    }
+
+                    // done with presence data and blocklist
+                    if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
                         finish();
 
                 }
+
             }
 
             else if (MessageCenterService.ACTION_BLOCKLIST.equals(action)) {
@@ -186,7 +221,7 @@ public class Syncer {
                 }
 
                 // done with presence data and blocklist
-                if (rosterCount >= 0 && presenceCount >= rosterCount)
+                if (rosterCount >= 0 && pubkeyCount >= presenceCount)
                     finish();
             }
 
@@ -209,8 +244,6 @@ public class Syncer {
                     // request a roster match
                     w.requestRosterMatch(iq, jidList);
                     // TODO request privacy lists -- w.requestBlocklist();
-                    // request public keys for the whole roster
-                    w.requestPublicKeys();
                 }
             }
         }
@@ -287,10 +320,8 @@ public class Syncer {
 
         // query all contacts
         Cursor cursor;
-        Uri offlineUri = Users.CONTENT_URI.buildUpon()
-            .appendQueryParameter(Users.OFFLINE, "true").build();
         try {
-            cursor = usersProvider.query(offlineUri,
+            cursor = usersProvider.query(Users.CONTENT_URI_OFFLINE,
                 new String[] { Users.JID, Users.NUMBER, Users.LOOKUP_KEY },
                 null, null, null);
         }
@@ -354,8 +385,9 @@ public class Syncer {
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
-            f.addAction(MessageCenterService.ACTION_CONNECTED);
+            f.addAction(MessageCenterService.ACTION_PUBLICKEY);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
+            f.addAction(MessageCenterService.ACTION_CONNECTED);
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
             // request current connection status
@@ -444,7 +476,7 @@ public class Syncer {
                         // blocked status
                         registeredValues.put(Users.BLOCKED, entry.blocked);
 
-                        usersProvider.update(offlineUri, registeredValues,
+                        usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { entry.from });
                     }
                     catch (RemoteException e) {
