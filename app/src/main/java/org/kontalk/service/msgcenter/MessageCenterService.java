@@ -1830,6 +1830,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    public static void requestPublicKey(final Context context, String to) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
+        i.putExtra(EXTRA_TO, to);
+        context.startService(i);
+    }
+
     public static void requestServerList(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_SERVERLIST);
