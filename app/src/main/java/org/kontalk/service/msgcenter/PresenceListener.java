@@ -194,6 +194,7 @@ class PresenceListener extends MessageCenterPacketListener {
             values.put(Users.PUBLIC_KEY, publicKey);
             values.put(Users.FINGERPRINT, fingerprint);
             values.put(Users.DISPLAY_NAME, name);
+            values.put(Users.REGISTERED, true);
             cr.insert(Users.CONTENT_URI.buildUpon()
                     .appendQueryParameter(Users.DISCARD_NAME, "true")
                     .build(), values);
