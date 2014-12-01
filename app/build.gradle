@@ -83,4 +83,5 @@ dependencies {
     compile 'org.igniterealtime.smack:smack-extensions:4.1.0-alpha7-SNAPSHOT'
 
     googleplayCompile 'com.google.android.gms:play-services:5.0.89'
+    tigaseCompile 'com.google.android.gms:play-services:5.0.89'
 }
