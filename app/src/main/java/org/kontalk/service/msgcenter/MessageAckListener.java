@@ -38,7 +38,9 @@ import org.kontalk.provider.MyMessages.Messages;
  */
 class MessageAckListener extends MessageCenterPacketListener {
 
-    private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+    // condition on delivered status in case we receive the receipt before the ack
+    private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT + " AND " +
+        Messages.STATUS + "<>" + Messages.STATUS_RECEIVED;
     private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageAckListener(MessageCenterService instance) {
