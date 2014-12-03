@@ -37,6 +37,7 @@ import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.debugger.SmackDebugger;
@@ -247,7 +248,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_STATUS = "org.kontalk.presence.status";
     public static final String EXTRA_SHOW = "org.kontalk.presence.show";
     public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
-    public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
     public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
 
@@ -277,6 +277,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // other
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
+    private static final String DEFAULT_PUSH_PROVIDER = "gcm";
 
     /** Idle signal. */
     private static final int MSG_IDLE = 1;
@@ -591,18 +592,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void handleIntent(Intent intent) {
-        boolean offlineMode = isOfflineMode(this);
-
         // stop immediately
-        if (offlineMode)
+        if (isOfflineMode(this))
             stopSelf();
 
         if (intent != null) {
             String action = intent.getAction();
 
             // proceed to start only if network is available
-            boolean canConnect = isNetworkConnectionAvailable(this) && !offlineMode;
-            boolean isConnected = mConnection != null && mConnection.isAuthenticated();
+            boolean canConnect = canConnect();
+            boolean isConnected = isConnected();
             boolean doConnect = false;
 
             if (ACTION_PACKET.equals(action)) {
@@ -742,10 +741,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         p.setStatus(intent.getStringExtra(EXTRA_STATUS));
                         if (show != null)
                             p.setMode(Presence.Mode.valueOf(show));
-
-                        String regId = intent.getStringExtra(EXTRA_PUSH_REGID);
-                        if (!TextUtils.isEmpty(regId))
-                            p.addExtension(new PushRegistration(regId));
 
                         sendPacket(p);
                     }
@@ -1245,7 +1240,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-            values, CommonColumns.PEER + "=?", new String[] { to });
+            values, CommonColumns.PEER + "=?", new String[]{to});
     }
 
     private void sendPrivacyListCommand(final String to, final int action) {
@@ -1626,6 +1621,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    public boolean canConnect() {
+        return isNetworkConnectionAvailable(this) && !isOfflineMode(this);
+    }
+
+    public boolean isConnected() {
+        return mConnection != null && mConnection.isAuthenticated();
+    }
+
     /** Checks for network availability. */
     public static boolean isNetworkConnectionAvailable(Context context) {
         final ConnectivityManager cm = (ConnectivityManager) context
@@ -1712,18 +1715,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void updateStatus(final Context context) {
-        updateStatus(context, PushServiceManager.getInstance(context)
-                .getRegistrationId());
-    }
-
     /** Broadcasts our presence to the server. */
-    public static void updateStatus(final Context context, String pushRegistrationId) {
+    public static void updateStatus(final Context context) {
         // FIXME this is what sendPresence already does
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
         i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage(context));
-        i.putExtra(EXTRA_PUSH_REGID, pushRegistrationId);
         context.startService(i);
     }
 
@@ -1904,8 +1901,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mPushRegistrationId = regId;
 
         // notify the server about the change
-        updateStatus(this, mPushRegistrationId);
-        mPushService.setRegisteredOnServer(mPushRegistrationId != null);
+        if (regId != null && canConnect() && isConnected())
+            sendPushRegistration(regId);
+    }
+
+    private void sendPushRegistration(final String regId) {
+        IQ iq = new PushRegistration(DEFAULT_PUSH_PROVIDER, regId);
+        iq.setTo("push@" + mServer.getNetwork());
+        try {
+            mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
+                @Override
+                public void processPacket(Packet packet) throws NotConnectedException {
+                    if (mPushService != null)
+                        mPushService.setRegisteredOnServer(regId != null);
+                }
+            });
+        }
+        catch (NotConnectedException e) {
+            // ignored
+        }
     }
 
     public static String getPushSenderId() {
