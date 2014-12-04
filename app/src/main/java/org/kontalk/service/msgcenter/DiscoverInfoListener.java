@@ -43,10 +43,11 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
 
     @Override
     public void processPacket(Packet packet) {
+        XMPPConnection conn = getConnection();
         EndpointServer server = getServer();
 
         // we don't need this listener anymore
-        removePacketListener(this);
+        conn.removePacketListener(this);
 
         DiscoverInfo query = (DiscoverInfo) packet;
         List<DiscoverInfo.Feature> features = query.getFeatures();
@@ -65,7 +66,7 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
                 items.setTo(server.getNetwork());
 
                 PacketFilter filter = new PacketIDFilter(items.getPacketID());
-                addPacketListener(new PushDiscoverItemsListener(getInstance()), filter);
+                conn.addPacketListener(new PushDiscoverItemsListener(getInstance()), filter);
 
                 sendPacket(items);
             }
@@ -85,7 +86,7 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
                 items.setTo(server.getNetwork());
 
                 PacketFilter filter = new PacketIDFilter(items.getPacketID());
-                addPacketListener(new UploadDiscoverItemsListener(getInstance()), filter);
+                conn.addPacketListener(new UploadDiscoverItemsListener(getInstance()), filter);
 
                 sendPacket(items);
             }

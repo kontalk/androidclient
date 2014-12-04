@@ -31,11 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipInputStream;
 
+import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.debugger.SmackDebugger;
@@ -48,7 +50,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.sm.StreamManagementException;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
@@ -95,11 +96,11 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.RosterMatch;
 import org.kontalk.client.OutOfBandData;
@@ -121,6 +122,8 @@ import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.UploadService;
+import org.kontalk.service.XMPPConnectionHelper;
+import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -134,7 +137,7 @@ import org.kontalk.util.Preferences;
  * @author Daniele Ricci
  * @version 4.0
  */
-public class MessageCenterService extends Service implements ConnectionHelper.ConnectionHelperListener {
+public class MessageCenterService extends Service implements ConnectionHelperListener {
     public static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
@@ -303,7 +306,9 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
     /** Cached last used server. */
     EndpointServer mServer;
     /** The connection helper instance. */
-    ConnectionHelper mHelper;
+    private XMPPConnectionHelper mHelper;
+    /** The connection instance. */
+    KontalkConnection mConnection;
     /** My username (account name). */
     String mMyUsername;
 
@@ -461,9 +466,9 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
         // reset idler if requested
         if (bumpIdle) mIdleHandler.reset();
 
-        if (mHelper != null) {
+        if (mConnection != null) {
             try {
-                mHelper.sendPacket(packet);
+                mConnection.sendPacket(packet);
             }
             catch (NotConnectedException e) {
                 // ignored
@@ -521,20 +526,28 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
         }
         else {
             // reset the reference counter
-            int refCount = ((Kontalk) getApplication()).getReferenceCounter();
+            int refCount = ((Kontalk) getApplicationContext()).getReferenceCounter();
             mIdleHandler.reset(refCount);
         }
 
+        // disable listeners
+        if (mHelper != null)
+            mHelper.setListener(null);
+        if (mConnection != null)
+            mConnection.removeConnectionListener(this);
+
+        // abort connection helper (if any)
         if (mHelper != null) {
-            ConnectionHelper helper = mHelper;
-            if (!restarting) {
-                // disable listeners
-                mHelper.setListener(null);
-                mHelper = null;
-            }
-            // abort connection helper
             // this is because of NetworkOnMainThreadException
-            new AbortThread(helper, restarting).start();
+            new AbortThread(mHelper).start();
+            mHelper = null;
+        }
+
+        // disconnect from server (if any)
+        if (mConnection != null) {
+            // this is because of NetworkOnMainThreadException
+            new DisconnectThread(mConnection).start();
+            mConnection = null;
         }
 
         // stop any key pair regeneration service
@@ -545,20 +558,32 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
     }
 
     private static final class AbortThread extends Thread {
-        private final ConnectionHelper mHelper;
-        private final boolean mRestart;
-        public AbortThread(ConnectionHelper helper, boolean restart) {
+        private final XMPPConnectionHelper mHelper;
+        public AbortThread(XMPPConnectionHelper helper) {
             mHelper = helper;
-            mRestart = restart;
         }
 
         @Override
         public void run() {
             try {
-                if (mRestart)
-                    mHelper.reconnect();
-                else
-                    mHelper.disconnect();
+                mHelper.shutdown();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+    }
+
+    private static final class DisconnectThread extends Thread {
+        private final AbstractXMPPConnection mConn;
+        public DisconnectThread(AbstractXMPPConnection conn) {
+            mConn = conn;
+        }
+
+        @Override
+        public void run() {
+            try {
+                mConn.disconnect();
             }
             catch (Exception e) {
                 // ignored
@@ -645,6 +670,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
             // restart
             else if (ACTION_RESTART.equals(action)) {
                 quit(true);
+                doConnect = true;
             }
 
             else if (ACTION_MESSAGE.equals(action)) {
@@ -684,7 +710,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
 
                     if ("probe".equals(type)) {
                         // probing is actually looking into the roster
-                        Roster roster = mHelper.getRoster();
+                        Roster roster = mConnection.getRoster();
 
                         Intent i;
                         RosterEntry entry = roster.getEntry(to);
@@ -755,7 +781,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
                     }
                     else {
                         // request public keys for the whole roster
-                        Collection<RosterEntry> buddies = mHelper.getRoster().getEntries();
+                        Collection<RosterEntry> buddies = mConnection.getRoster().getEntries();
                         for (RosterEntry buddy : buddies) {
                             PublicKeyPublish p = new PublicKeyPublish();
                             p.setTo(buddy.getUser());
@@ -773,7 +799,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
 
                     PacketFilter filter = new PacketIDFilter(p.getPacketID());
                     // TODO cache the listener (it shouldn't change)
-                    mHelper.addPacketListener(new PacketListener() {
+                    mConnection.addPacketListener(new PacketListener() {
                         public void processPacket(Packet packet) throws NotConnectedException {
                             Intent i = new Intent(ACTION_SERVERLIST);
                             List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
@@ -841,7 +867,9 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
 
     /** Creates a connection to server if needed. */
     private synchronized void createConnection() {
-        if (mHelper == null) {
+        if (mConnection == null && mHelper == null) {
+            mConnection = null;
+
             // acquire the wakelock
             mWakeLock.acquire();
 
@@ -858,39 +886,22 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
             // get server from preferences
             mServer = Preferences.getEndpointServer(this);
 
-            mHelper = new ConnectionHelper(mServer, false);
+            mHelper = new XMPPConnectionHelper(this, mServer, false);
             mHelper.setListener(this);
             mHelper.start();
         }
     }
 
     @Override
-    public void created(XMPPConnection connection) {
-        PacketFilter filter;
-
-        filter = new PacketTypeFilter(Ping.class);
-        connection.addPacketListener(new PingListener(this), filter);
-
-        filter = new PacketTypeFilter(Presence.class);
-        connection.addPacketListener(new PresenceListener(this), filter);
-
-        filter = new PacketTypeFilter(RosterMatch.class);
-        connection.addPacketListener(new RosterMatchListener(this), filter);
-
-        filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        connection.addPacketListener(new MessageListener(this), filter);
-
-        filter = new PacketTypeFilter(LastActivity.class);
-        connection.addPacketListener(new LastActivityListener(this), filter);
-
-        filter = new PacketTypeFilter(PublicKeyPublish.class);
-        connection.addPacketListener(new PublicKeyListener(this), filter);
+    public void connectionClosed() {
+        Log.v(TAG, "connection closed");
     }
 
     @Override
-    public void aborted(Exception e) {
-        // unrecoverable error
-        stopSelf();
+    public void connectionClosedOnError(Exception error) {
+        Log.w(TAG, "connection closed with error", error);
+        quit(true);
+        createConnection();
     }
 
     @Override
@@ -899,22 +910,56 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
         MessagingNotification.authenticationError(this);
     }
 
-    public PersonalKey getPersonalKey() {
-        try {
-            return ((Kontalk) getApplication()).getPersonalKey();
-        }
-        catch (Exception e) {
-            Log.e(TAG, "unable to retrieve personal key", e);
-            return null;
-        }
+    @Override
+    public void reconnectingIn(int seconds) {
+        Log.v(TAG, "reconnecting in " + seconds + " seconds");
     }
 
-    public String getLegacyAuthToken() {
-        return LegacyAuthentication.getAuthToken(this);
+    @Override
+    public void reconnectionFailed(Exception error) {
+        Log.w(TAG, "reconnection failed", error);
     }
 
-    public Context getContext() {
-        return this;
+    @Override
+    public void reconnectionSuccessful() {
+        // not used
+    }
+
+    @Override
+    public void aborted(Exception e) {
+        // unrecoverable error - exit
+        stopSelf();
+    }
+
+    @Override
+    public synchronized void created(XMPPConnection connection) {
+        Log.v(TAG, "connection created.");
+        mConnection = (KontalkConnection) connection;
+
+        PacketFilter filter;
+
+        filter = new PacketTypeFilter(Ping.class);
+        mConnection.addPacketListener(new PingListener(this), filter);
+
+        filter = new PacketTypeFilter(Presence.class);
+        mConnection.addPacketListener(new PresenceListener(this), filter);
+
+        filter = new PacketTypeFilter(RosterMatch.class);
+        mConnection.addPacketListener(new RosterMatchListener(this), filter);
+
+        filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
+        mConnection.addPacketListener(new MessageListener(this), filter);
+
+        filter = new PacketTypeFilter(LastActivity.class);
+        mConnection.addPacketListener(new LastActivityListener(this), filter);
+
+        filter = new PacketTypeFilter(PublicKeyPublish.class);
+        mConnection.addPacketListener(new PublicKeyListener(this), filter);
+    }
+
+    @Override
+    public void connected(XMPPConnection connection) {
+        // not used.
     }
 
     @Override
@@ -923,8 +968,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
 
         // add message ack listener
         try {
-            ((XMPPTCPConnection) connection).
-                addStanzaAcknowledgedListener(new MessageAckListener(this));
+            mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
         }
         catch (StreamManagementException.StreamManagementNotEnabledException e) {
             Log.w(TAG, "stream management not available - disabling delivery receipts");
@@ -941,6 +985,9 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
         resendPendingReceipts();
         // send pending subscription replies
         sendPendingSubscriptionReplies();
+
+        // helper is not needed any more
+        mHelper = null;
 
         broadcast(ACTION_CONNECTED);
 
@@ -969,13 +1016,13 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
         info.setTo(mServer.getNetwork());
 
         PacketFilter filter = new PacketIDFilter(info.getPacketID());
-        mHelper.addPacketListener(new DiscoverInfoListener(this), filter);
+        mConnection.addPacketListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
     }
 
     /** Requests the roster. */
     private void roster() {
-        mHelper.getRoster();
+        mConnection.getRoster();
     }
 
     /** Sends our initial presence. */
@@ -1234,7 +1281,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
 
             }
         };
-        mHelper.addPacketListener(listener, filter);
+        mConnection.addPacketListener(listener, filter);
 
         // send IQ
         sendPacket(p);
@@ -1245,12 +1292,11 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
         String packetId = p.getPacketID();
 
         // listen for response (TODO cache the listener, it shouldn't change)
-        // TODO turn this into sendPacketWithIq... bla bla
         PacketFilter idFilter = new PacketIDFilter(packetId);
-        mHelper.addPacketListener(new PacketListener() {
+        mConnection.addPacketListener(new PacketListener() {
             public void processPacket(Packet packet) {
                 // we don't need this listener anymore
-                mHelper.removePacketListener(this);
+                mConnection.removePacketListener(this);
 
                 if (packet instanceof BlockingCommand) {
                     BlockingCommand blocklist = (BlockingCommand) packet;
@@ -1580,7 +1626,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
     }
 
     public boolean isConnected() {
-        return mHelper != null && mHelper.isConnected();
+        return mConnection != null && mConnection.isAuthenticated();
     }
 
     /** Checks for network availability. */
@@ -1863,7 +1909,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
         IQ iq = new PushRegistration(DEFAULT_PUSH_PROVIDER, regId);
         iq.setTo("push@" + mServer.getNetwork());
         try {
-            mHelper.sendIqWithResponseCallback(iq, new PacketListener() {
+            mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
                 @Override
                 public void processPacket(Packet packet) throws NotConnectedException {
                     if (mPushService != null)

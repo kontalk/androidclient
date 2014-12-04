@@ -41,10 +41,11 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
 
     @Override
     public void processPacket(Packet packet) {
+        XMPPConnection conn = getConnection();
         EndpointServer server = getServer();
 
         // we don't need this listener anymore
-        removePacketListener(this);
+        conn.removePacketListener(this);
 
         initUploadServices();
 
@@ -61,7 +62,7 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
                 iq.setType(IQ.Type.get);
                 iq.setTo(server.getNetwork());
 
-                addPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));
+                conn.addPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));
                 sendPacket(iq);
             }
         }

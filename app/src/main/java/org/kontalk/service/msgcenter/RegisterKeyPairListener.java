@@ -83,7 +83,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
 
                 Registration iq = new Registration();
                 iq.setType(IQ.Type.set);
-                iq.setTo(getServer().getNetwork());
+                iq.setTo(getConnection().getServiceName());
                 Form form = new Form(Form.TYPE_SUBMIT);
 
                 // form type: register#key
@@ -136,7 +136,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
 
                         // setup packet filter for response
                         PacketIDFilter filter = new PacketIDFilter(iq.getPacketID());
-                        addPacketListener(RegisterKeyPairListener.this, filter);
+                        getConnection().addPacketListener(RegisterKeyPairListener.this, filter);
 
                         // send the key out
                         sendPacket(iq);
