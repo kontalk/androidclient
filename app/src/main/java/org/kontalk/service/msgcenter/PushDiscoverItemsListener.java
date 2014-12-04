@@ -38,7 +38,7 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
     @Override
     public void processPacket(Packet packet) {
         // we don't need this listener anymore
-        getConnection().removePacketListener(this);
+        removePacketListener(this);
 
         DiscoverItems query = (DiscoverItems) packet;
         List<DiscoverItems.Item> items = query.getItems();

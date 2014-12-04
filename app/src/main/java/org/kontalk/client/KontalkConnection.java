@@ -55,15 +55,14 @@ public class KontalkConnection extends XMPPTCPConnection {
     protected EndpointServer mServer;
 
     public KontalkConnection(EndpointServer server, boolean secure,
-        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
-            throws XMPPException {
+        boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
 
         this(server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
     }
 
     public KontalkConnection(EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
-            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException {
+            boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
 
         super(buildConfiguration(server, secure,
             privateKey, bridgeCert, acceptAnyCertificate, trustStore, legacyAuthToken));
