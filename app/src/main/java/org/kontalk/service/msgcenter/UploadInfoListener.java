@@ -37,7 +37,7 @@ class UploadInfoListener extends MessageCenterPacketListener {
     @Override
     public void processPacket(Packet packet) {
         // we don't need this listener anymore
-        getConnection().removePacketListener(this);
+        removePacketListener(this);
 
         UploadInfo info = (UploadInfo) packet;
         String node = info.getNode();

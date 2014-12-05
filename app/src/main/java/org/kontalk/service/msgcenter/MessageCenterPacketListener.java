@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
@@ -61,11 +63,6 @@ abstract class MessageCenterPacketListener implements PacketListener {
         return (Kontalk) mInstance.get().getApplicationContext();
     }
 
-    protected KontalkConnection getConnection() {
-        MessageCenterService instance = mInstance.get();
-        return (instance != null) ? instance.mConnection : null;
-    }
-
     protected EndpointServer getServer() {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.mServer : null;
@@ -100,6 +97,18 @@ abstract class MessageCenterPacketListener implements PacketListener {
             instance.sendPacket(packet);
     }
 
+    protected void addPacketListener(PacketListener listener, PacketFilter filter) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mHelper.addPacketListener(listener, filter);
+    }
+
+    protected void removePacketListener(PacketListener listener) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.mHelper.removePacketListener(listener);
+    }
+
     protected void sendPacket(Packet packet, boolean bumpIdle) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
@@ -130,7 +139,7 @@ abstract class MessageCenterPacketListener implements PacketListener {
 
     protected boolean isPushNotificationsEnabled() {
         MessageCenterService instance = mInstance.get();
-        return (instance != null) ? instance.mPushNotifications : false;
+        return instance != null &&  instance.mPushNotifications;
     }
 
     protected void setPushSenderId(String senderId) {
