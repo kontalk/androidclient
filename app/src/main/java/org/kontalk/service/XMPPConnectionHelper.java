@@ -68,7 +68,7 @@ public class XMPPConnectionHelper extends Thread {
     private int mRetryCount;
 
     /** Connection is re-created on demand if necessary. */
-    protected AbstractXMPPConnection mConn;
+    protected KontalkConnection mConn;
 
     /** Client listener. */
     private ConnectionHelperListener mListener;
@@ -321,7 +321,7 @@ public class XMPPConnectionHelper extends Thread {
         interrupt();
 
         if (mConn != null)
-            mConn.disconnect();
+            mConn.instantShutdown();
     }
 
 
