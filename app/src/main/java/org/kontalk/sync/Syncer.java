@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
 
@@ -165,7 +166,8 @@ public class Syncer {
                     else {
                         Syncer w = notifyTo.get();
                         if (w != null) {
-                            // TODO request presence data
+                            // request presence data for the whole roster
+                            w.requestPresenceData();
                             // request public keys for the whole roster
                             w.requestPublicKeys();
                         }
@@ -540,6 +542,13 @@ public class Syncer {
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[list.size()]));
+        mContext.startService(i);
+    }
+
+    private void requestPresenceData() {
+        Intent i = new Intent(mContext, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
         mContext.startService(i);
     }
 

@@ -604,6 +604,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             boolean isConnected = isConnected();
             boolean doConnect = false;
 
+            // TODO convert actions to classes
+
             if (ACTION_PACKET.equals(action)) {
                 Object data;
                 String[] group = intent.getStringArrayExtra(EXTRA_PACKET_GROUP);
@@ -712,24 +714,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // probing is actually looking into the roster
                         Roster roster = mConnection.getRoster();
 
-                        Intent i;
-                        RosterEntry entry = roster.getEntry(to);
-                        // entry present and not pending subscription
-                        if (entry != null && (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) &&
-                                entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING) {
-                            // roster entry found, look for presence
-                            Presence presence = roster.getPresence(to);
-                            i = PresenceListener.createIntent(this, presence);
+                        if (to == null) {
+                            for (RosterEntry entry : roster.getEntries()) {
+                                broadcastPresence(roster, entry);
+                            }
                         }
                         else {
-                            // null type indicates no roster entry found
-                            i = new Intent(ACTION_PRESENCE);
-                            i.putExtra(EXTRA_FROM, to);
+                            broadcastPresence(roster, to);
                         }
-
-                        // to keep track of request-reply
-                        i.putExtra(EXTRA_PACKET_ID, id);
-                        mLocalBroadcastManager.sendBroadcast(i);
                     }
                     else {
                         String show = intent.getStringExtra(EXTRA_SHOW);
@@ -1210,6 +1202,38 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         c.close();
+    }
+
+    private boolean isRosterEntrySubscribed(RosterEntry entry) {
+        return (entry != null && (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) &&
+            entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING);
+    }
+
+    private void broadcastPresence(Roster roster, RosterEntry entry) {
+        broadcastPresence(roster, entry, entry.getUser());
+    }
+
+    private void broadcastPresence(Roster roster, String jid) {
+        broadcastPresence(roster, roster.getEntry(jid), jid);
+    }
+
+    private void broadcastPresence(Roster roster, RosterEntry entry, String jid) {
+        Intent i;
+        // entry present and not pending subscription
+        if (isRosterEntrySubscribed(entry)) {
+            // roster entry found, look for presence
+            Presence presence = roster.getPresence(jid);
+            i = PresenceListener.createIntent(this, presence);
+        }
+        else {
+            // null type indicates no roster entry found
+            i = new Intent(ACTION_PRESENCE);
+            i.putExtra(EXTRA_FROM, jid);
+        }
+
+        // to keep track of request-reply
+        i.putExtra(EXTRA_PACKET_ID, jid);
+        mLocalBroadcastManager.sendBroadcast(i);
     }
 
     private void sendSubscriptionReply(String to, String packetId, int action) {
