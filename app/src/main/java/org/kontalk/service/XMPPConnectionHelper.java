@@ -44,6 +44,7 @@ import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
+import android.provider.Settings;
 import android.util.Log;
 
 
@@ -156,13 +157,15 @@ public class XMPPConnectionHelper extends Thread {
             if (!acceptAnyCertificate)
                 trustStore = InternalTrustStore.getTrustStore(mContext);
 
+            String resource = getResource(mContext);
+
             if (key == null) {
-                mConn = new KontalkConnection(mServer, !USE_STARTTLS,
+                mConn = new KontalkConnection(resource, mServer, !USE_STARTTLS,
                     acceptAnyCertificate, trustStore, token);
             }
 
             else {
-                mConn = new KontalkConnection(mServer, !USE_STARTTLS,
+                mConn = new KontalkConnection(resource, mServer, !USE_STARTTLS,
                     key.getBridgePrivateKey(),
                     key.getBridgeCertificate(),
                     acceptAnyCertificate,
@@ -284,6 +287,10 @@ public class XMPPConnectionHelper extends Thread {
             mRetryCount = 0;
         }
         mConnecting = false;
+    }
+
+    private static String getResource(Context context) {
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
     public AbstractXMPPConnection getConnection() {

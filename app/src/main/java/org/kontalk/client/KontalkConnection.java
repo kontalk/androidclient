@@ -54,18 +54,18 @@ public class KontalkConnection extends XMPPTCPConnection {
 
     protected EndpointServer mServer;
 
-    public KontalkConnection(EndpointServer server, boolean secure,
+    public KontalkConnection(String resource, EndpointServer server, boolean secure,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken)
             throws XMPPException {
 
-        this(server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
+        this(resource, server, secure, null, null, acceptAnyCertificate, trustStore, legacyAuthToken);
     }
 
-    public KontalkConnection(EndpointServer server, boolean secure,
+    public KontalkConnection(String resource, EndpointServer server, boolean secure,
             PrivateKey privateKey, X509Certificate bridgeCert,
             boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) throws XMPPException {
 
-        super(buildConfiguration(server, secure,
+        super(buildConfiguration(resource, server, secure,
             privateKey, bridgeCert, acceptAnyCertificate, trustStore, legacyAuthToken));
 
         mServer = server;
@@ -87,8 +87,8 @@ public class KontalkConnection extends XMPPTCPConnection {
         super.disconnect(presence);
     }
 
-    private static XMPPTCPConnectionConfiguration buildConfiguration(EndpointServer server,
-        boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
+    private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
+        EndpointServer server, boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
         XMPPTCPConnectionConfiguration.XMPPTCPConnectionConfigurationBuilder builder =
             XMPPTCPConnectionConfiguration.builder();
@@ -98,6 +98,7 @@ public class KontalkConnection extends XMPPTCPConnection {
             .setHost(server.getHost())
             .setPort(secure ? server.getSecurePort() : server.getPort())
             .setServiceName(server.getNetwork())
+            .setResource(resource)
             // the dummy value is not actually used
             .setUsernameAndPassword(null, legacyAuthToken != null ? legacyAuthToken : "dummy")
             .setCallbackHandler(new CallbackHandler() {
