@@ -539,7 +539,7 @@ public class Syncer {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
-        i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[0]));
+        i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[list.size()]));
         mContext.startService(i);
     }
 
