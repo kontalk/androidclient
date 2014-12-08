@@ -1103,7 +1103,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
                 Messages.PEER,
             },
             Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
-            Messages.STATUS + " = " + Messages.STATUS_RECEIVED,
+            Messages.STATUS + " = " + Messages.STATUS_INCOMING,
             null, Messages._ID);
 
         while (c.moveToNext()) {
