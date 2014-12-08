@@ -604,6 +604,24 @@ public class UsersProvider extends ContentProvider {
         return null;
     }
 
+    /** Retrieves the last seen timestamp for a user. */
+    public static long getLastSeen(Context context, String jid) {
+        long timestamp = -1;
+        ContentResolver res = context.getContentResolver();
+        Cursor c = res.query(Users.CONTENT_URI,
+            new String[] { Users.LAST_SEEN },
+            Users.JID + "=?",
+            new String[] { jid },
+            null);
+
+        if (c.moveToFirst())
+            timestamp = c.getLong(0);
+
+        c.close();
+
+        return timestamp;
+    }
+
     /** Updates a user public key. */
     public static void setUserKey(Context context, String jid, byte[] keydata, String fingerprint) {
         ContentValues values = new ContentValues(2);

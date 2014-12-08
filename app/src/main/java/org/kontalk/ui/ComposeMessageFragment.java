@@ -149,6 +149,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
 
+    private static final int PRESENCE_DELAY_THRESHOLD = 5000;
+
     /** Context menu group ID for this fragment. */
     private static final int CONTEXT_MENU_GROUP_ID = 2;
 
@@ -1899,7 +1901,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
                                         // user offline
                                         long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                        if (stamp >= 0) {
+                                        if (stamp >= 0 && ((System.currentTimeMillis() - stamp) > PRESENCE_DELAY_THRESHOLD)) {
                                             statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
                                         }
                                         else {

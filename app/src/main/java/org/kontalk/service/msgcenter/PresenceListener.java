@@ -241,12 +241,12 @@ class PresenceListener extends MessageCenterPacketListener {
     private void handlePresence(Presence p) {
         updateUsersDatabase(p);
 
-        Intent i = createIntent(p);
+        Intent i = createIntent(getContext(), p);
         Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
         sendBroadcast(i);
     }
 
-    public static Intent createIntent(Presence p) {
+    public static Intent createIntent(Context ctx, Presence p) {
         Intent i = new Intent(ACTION_PRESENCE);
         Presence.Type type = p.getType();
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
@@ -259,9 +259,19 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
         i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
+        long timestamp;
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
-        if (delay != null)
-            i.putExtra(EXTRA_STAMP, delay.getStamp().getTime());
+        if (delay != null) {
+            timestamp = delay.getStamp().getTime();
+        }
+        else {
+            // try last seen from database
+            timestamp = UsersProvider.getLastSeen(ctx, XmppStringUtils.parseBareJid(p.getFrom()));
+            if (timestamp < 0)
+                timestamp = System.currentTimeMillis();
+        }
+
+        i.putExtra(EXTRA_STAMP, timestamp);
 
         // public key extension (for fingerprint)
         PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
@@ -278,10 +288,10 @@ class PresenceListener extends MessageCenterPacketListener {
         return i;
     }
 
-    private void updateUsersDatabase(Presence p) {
+    private int updateUsersDatabase(Presence p) {
         String jid = XmppStringUtils.parseBareJid(p.getFrom());
 
-        ContentValues values = new ContentValues(3);
+        ContentValues values = new ContentValues(4);
         values.put(Users.REGISTERED, 1);
 
         // status
@@ -292,16 +302,25 @@ class PresenceListener extends MessageCenterPacketListener {
             values.putNull(Users.STATUS);
 
         // delay
+        long timestamp;
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
         if (delay != null)
-            values.put(Users.LAST_SEEN, delay.getStamp().getTime());
+            timestamp = delay.getStamp().getTime();
         else
-            values.putNull(Users.LAST_SEEN);
+            timestamp = System.currentTimeMillis();
 
-        getContext().getContentResolver().update(Users.CONTENT_URI,
+        values.put(Users.LAST_SEEN, timestamp);
+
+        // public key extension (for fingerprint)
+        SubscribePublicKey pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+        if (pkey != null) {
+            String fingerprint = pkey.getFingerprint();
+            if (fingerprint != null)
+                values.put(Users.FINGERPRINT, fingerprint);
+        }
+
+        return getContext().getContentResolver().update(Users.CONTENT_URI,
             values, Users.JID + " = ?", new String[] { jid });
-
     }
 
 }
-

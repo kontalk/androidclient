@@ -693,7 +693,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
                                 entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING) {
                             // roster entry found, look for presence
                             Presence presence = roster.getPresence(to);
-                            i = PresenceListener.createIntent(presence);
+                            i = PresenceListener.createIntent(this, presence);
                         }
                         else {
                             // null type indicates no roster entry found
