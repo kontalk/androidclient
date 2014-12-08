@@ -149,7 +149,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
             Packet r = createSubscribe(p);
             if (r != null)
-                sendPacket(r);
+                getConnection().sendPacket(r);
 
         }
 
