@@ -36,7 +36,6 @@ android {
         release {
             minifyEnabled true
             proguardFile 'proguard.cfg'
-            debuggable true
         }
         debug {
         }
