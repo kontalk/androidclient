@@ -312,7 +312,7 @@ class MessageListener extends MessageCenterPacketListener {
 
                 // message has been rejected: mark as error
                 if (msgId > 0) {
-                    ContentValues values = new ContentValues(3);
+                    ContentValues values = new ContentValues(2);
                     values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
                     values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
                     cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
@@ -323,6 +323,14 @@ class MessageListener extends MessageCenterPacketListener {
                     // we can now release the message center. Hopefully
                     // there will be one hold and one matching release.
                     getIdleHandler().release();
+                }
+                else {
+                    // FIXME this could lead to fake delivery receipts because message IDs are client-generated
+                    Uri msg = Messages.getUri(m.getPacketID());
+                    ContentValues values = new ContentValues(2);
+                    values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
+                    values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                    cr.update(msg, values, selectionOutgoing, null);
                 }
             }
         }

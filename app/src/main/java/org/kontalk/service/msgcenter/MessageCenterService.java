@@ -1486,6 +1486,7 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
 
         MessageUtils.fillContentValues(values, msg);
 
+        values.put(Messages.STATUS, Messages.STATUS_INCOMING);
         values.put(Messages.UNREAD, true);
         values.put(Messages.NEW, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
