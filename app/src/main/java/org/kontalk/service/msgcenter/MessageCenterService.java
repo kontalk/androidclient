@@ -1507,9 +1507,11 @@ public class MessageCenterService extends Service implements ConnectionHelper.Co
             }
         }).start();
 
-        if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
+        // fire notification only if message was actually inserted to database
+        if (msgUri != null && !sender.equalsIgnoreCase(MessagingNotification.getPaused())) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+        }
 
         return msgUri;
     }
