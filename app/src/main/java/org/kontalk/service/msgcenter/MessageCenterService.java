@@ -37,7 +37,6 @@ import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.debugger.SmackDebugger;
@@ -58,6 +57,8 @@ import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jivesoftware.smackx.ping.PingFailedListener;
+import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.ping.packet.Ping;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
@@ -143,6 +144,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     static {
         SmackConfiguration.DEBUG_ENABLED = BuildConfig.DEBUG;
     }
+
+    /** Ping to server interval in seconds. */
+    private static final int PING_INTERVAL = 120;
 
     public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
@@ -928,25 +932,38 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
+        final PingManager pingMgr = PingManager.getInstanceFor(connection);
+        pingMgr.setPingInterval(PING_INTERVAL);
+        pingMgr.registerPingFailedListener(new PingFailedListener() {
+            @Override
+            public void pingFailed() {
+                Log.v(TAG, "ping failed, restarting message center");
+                // unregister this listener
+                pingMgr.unregisterPingFailedListener(this);
+                // restart the message center
+                restart(getApplicationContext());
+            }
+        });
+
         PacketFilter filter;
 
         filter = new PacketTypeFilter(Ping.class);
-        mConnection.addPacketListener(new PingListener(this), filter);
+        connection.addPacketListener(new PingListener(this), filter);
 
         filter = new PacketTypeFilter(Presence.class);
-        mConnection.addPacketListener(new PresenceListener(this), filter);
+        connection.addPacketListener(new PresenceListener(this), filter);
 
         filter = new PacketTypeFilter(RosterMatch.class);
-        mConnection.addPacketListener(new RosterMatchListener(this), filter);
+        connection.addPacketListener(new RosterMatchListener(this), filter);
 
         filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        mConnection.addPacketListener(new MessageListener(this), filter);
+        connection.addPacketListener(new MessageListener(this), filter);
 
         filter = new PacketTypeFilter(LastActivity.class);
-        mConnection.addPacketListener(new LastActivityListener(this), filter);
+        connection.addPacketListener(new LastActivityListener(this), filter);
 
         filter = new PacketTypeFilter(PublicKeyPublish.class);
-        mConnection.addPacketListener(new PublicKeyListener(this), filter);
+        connection.addPacketListener(new PublicKeyListener(this), filter);
     }
 
     @Override
