@@ -23,7 +23,7 @@ task checkstyle(type: Checkstyle){
 
 android {
     compileSdkVersion 21
-    buildToolsVersion '21.1.1'
+    buildToolsVersion '21.1.2'
 
     defaultConfig {
         applicationId "org.kontalk"
@@ -32,10 +32,20 @@ android {
         buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
     }
 
+    signingConfigs {
+        release {
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             proguardFile 'proguard.cfg'
+            signingConfig signingConfigs.release
         }
         debug {
         }
