@@ -97,6 +97,8 @@ public class EndpointServer {
     public interface EndpointServerProvider {
         /** Returns the next server that hasn't been picked yet. */
         public EndpointServer next();
+        /** Resets the provider to its initial state. */
+        public void reset();
     }
 
     /** A basic server provider for a single server. */
@@ -123,6 +125,11 @@ public class EndpointServer {
                     return null;
                 }
             }
+        }
+
+        @Override
+        public void reset() {
+            mCalled = false;
         }
     }
 

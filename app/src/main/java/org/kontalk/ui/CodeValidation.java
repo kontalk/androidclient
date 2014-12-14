@@ -173,6 +173,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         // send the code
         boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
+        mServerProvider.reset();
         mValidator = new NumberValidator(this, mServerProvider, mName, mPhone,
             imported ? null : mKey, mPassphrase);
         mValidator.setListener(this);

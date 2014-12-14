@@ -75,6 +75,11 @@ public class ServerList extends ArrayList<EndpointServer> {
             // list exausted
             return null;
         }
+
+        @Override
+        public void reset() {
+            throw new RuntimeException("unsupported method");
+        }
     }
 
 }
