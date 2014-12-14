@@ -183,10 +183,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private String mUserName;
     private String mUserPhone;
 
-    /** Presence probe packet id. */
-    private String mPresenceId;
-    /** Last most available stanza. */
-    private PresenceData mMostAvailable;
     /** Available resources. */
     private Set<String> mAvailableResources = new HashSet<String>();
 
@@ -1838,7 +1834,7 @@ public class ComposeMessageFragment extends ListFragment implements
                             CharSequence statusText = null;
 
                             String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                            String bareFrom = from != null ? XmppStringUtils.parseBareAddress(from) : null;
+                            String bareFrom = from != null ? XmppStringUtils.parseBareJid(from) : null;
 
                             // we are receiving a presence from our peer, upgrade available resources
                             if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
@@ -1863,39 +1859,16 @@ public class ComposeMessageFragment extends ListFragment implements
 
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
-                                    mCurrentStatus = getString(R.string.seen_online_label);
-                                    if (!mIsTyping)
-                                        setStatusText(mCurrentStatus);
-
-                                    // abort presence probe if non-group stanza
-                                    mPresenceId = null;
+                                    statusText = getString(R.string.seen_online_label);
                                 }
                                 else if (Presence.Type.unavailable.toString().equals(type)) {
                                     mAvailableResources.remove(from);
                                     /*
-                                     * All available resources have gone. If we are
-                                     * not waiting for presence probe response, mark
+                                     * All available resources have gone. Mark
                                      * the user as offline immediately and use the
-                                     * timestamp provided with the stanza.
+                                     * timestamp provided with the stanza (if any).
                                      */
-                                    /*
-                                     * FIXME this part has a serious bug.
-                                     * Client might receive a certain set of
-                                     * presence stanzas (e.g. while syncer is
-                                     * running) which will empty mAvailableResources,
-                                     * thus taking the latest stanza (this one) as
-                                     * reference for last presence indication.
-                                     * In fact, the most important presence is
-                                     * always the most available or the most recent
-                                     * one.
-                                     * Anyway, this method is not reliable either
-                                     * because of presence information not being
-                                     * accounted for from the beginning. Therefore,
-                                     * we don't know when a presence informs us
-                                     * about a user being unavailable in that moment
-                                     * or because a probe has been requested.
-                                     */
-                                    if (mAvailableResources.size() == 0 && mPresenceId == null) {
+                                    if (mAvailableResources.size() == 0) {
                                         // an offline user can't be typing
                                         mIsTyping = false;
 
@@ -1906,71 +1879,6 @@ public class ComposeMessageFragment extends ListFragment implements
                                         }
                                         else {
                                             statusText = getString(R.string.seen_moment_ago_label);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // we have a presence group
-                            if (mPresenceId != null) {
-                                if (mMostAvailable == null)
-                                    mMostAvailable = new PresenceData();
-
-                                boolean take = false;
-
-                                boolean available = (type == null || Presence.Type.available.toString().equals(type));
-                                long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                int priority = intent.getIntExtra(MessageCenterService.EXTRA_PRIORITY, 0);
-
-                                if (available) {
-                                    // take if higher priority
-                                    if (priority >= mMostAvailable.priority)
-                                        take = true;
-                                }
-                                else {
-                                    // take if most recent
-                                    long old = mMostAvailable.stamp != null ? mMostAvailable.stamp.getTime() : -1;
-                                    if (stamp >= old)
-                                        take = true;
-                                }
-
-                                if (take) {
-                                    // available stanza - null stamp
-                                    if (available) {
-                                        mMostAvailable.stamp = null;
-                                    }
-                                    // unavailable stanza - update stamp
-                                    else {
-                                        if (mMostAvailable.stamp == null)
-                                            mMostAvailable.stamp = new Date(stamp);
-                                        else
-                                            mMostAvailable.stamp.setTime(stamp);
-                                    }
-
-                                    mMostAvailable.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                                    mMostAvailable.priority = priority;
-                                }
-
-                                int count = 0; // EXTRA_GROUP_COUNT
-                                if (count <= 1 || mPresenceId == null) {
-                                    // we got all presence stanzas
-                                    Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
-                                        ", status=" + mMostAvailable.status + ")");
-
-                                    // stop receiving presence probes
-                                    mPresenceId = null;
-
-                                    /*
-                                     * TODO if we receive a presence unavailable stanza
-                                     * we shall consider it only if there is no other
-                                     * available resource. So we shall keep a reference
-                                     * to all available resources and sync them
-                                     * whenever a presence stanza is received.
-                                     */
-                                    if (mAvailableResources.size() == 0) {
-                                        if (mMostAvailable.stamp != null) {
-                                            statusText = MessageUtils.formatRelativeTimeSpan(context,
-                                                mMostAvailable.stamp.getTime());
                                         }
                                     }
                                 }
@@ -1992,6 +1900,8 @@ public class ComposeMessageFragment extends ListFragment implements
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
                         // reset compose sent flag
                         mComposeSent = false;
+                        // reset available resources list
+                        mAvailableResources.clear();
 
                         // probe presence
                         presenceSubscribe();
@@ -2037,10 +1947,8 @@ public class ComposeMessageFragment extends ListFragment implements
             // all of this shall be done only if there isn't a request from the other contact
             if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
                 // request last presence
-                mPresenceId = StringUtils.randomString(8);
                 Intent i = new Intent(context, MessageCenterService.class);
                 i.setAction(MessageCenterService.ACTION_PRESENCE);
-                i.putExtra(MessageCenterService.EXTRA_PACKET_ID, mPresenceId);
                 i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
                 i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
                 context.startService(i);
@@ -2053,99 +1961,7 @@ public class ComposeMessageFragment extends ListFragment implements
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
             mPresenceReceiver = null;
         }
-
-        /* send unsubscription request
-        Intent i = new Intent(getActivity(), MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, "unsubscribe");
-        getActivity().startService(i);
-         */
     }
-
-    /*
-    @Override
-    public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
-        if (pack instanceof UserLookupResponse) {
-            UserLookupResponse _pack = (UserLookupResponse) pack;
-            if (_pack.getEntryCount() > 0) {
-                UserLookupResponse.Entry res = _pack.getEntry(0);
-                CharSequence text = null;
-                try {
-                    Activity context = getActivity();
-                    if (context != null) {
-                        if (res.hasTimediff()) {
-                            long diff = res.getTimediff();
-                            if (diff == 0) {
-                                text = getResources().getString(R.string.seen_online_label);
-                            }
-                            else if (diff <= 10) {
-                                text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
-                            }
-                        }
-
-                        String afterText = null;
-
-                        // update UsersProvider if necessary
-                        ContentValues values = new ContentValues(2);
-                        if (res.hasTimestamp())
-                            values.put(Users.LAST_SEEN, res.getTimestamp());
-
-                        if (res.hasStatus()) {
-                            afterText = res.getStatus();
-                            if (!TextUtils.isEmpty(afterText)) {
-                                Contact c = getContact();
-                                if (c != null)
-                                    afterText = Preferences
-                                        .decryptUserdata(getActivity(), afterText, c.getNumber());
-                            }
-
-                            values.put(Users.STATUS, afterText);
-                        }
-                        else {
-                            values.putNull(Users.STATUS);
-                        }
-
-                        context.getContentResolver().update(
-                            Users.CONTENT_URI, values,
-                            Users.HASH + "=?", new String[] { userId });
-                        // time to invalidate cache
-                        // TODO this should be done by cursor notification
-                        Contact.invalidate(userId);
-
-                        if (text == null && res.hasTimestamp()) {
-                            long time = res.getTimestamp();
-                            if (time > 0) {
-                                text = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, time * 1000));
-                            }
-                        }
-
-                        if (text != null) {
-                            final CharSequence banner = text;
-                            // show last seen banner
-                            context.runOnUiThread(new Runnable() {
-                                public void run() {
-                                    try {
-                                        setStatusText(banner);
-                                    }
-                                    catch (Exception e) {
-                                        // something could happen in the meanwhile e.g. fragment destruction
-                                    }
-                                }
-                            });
-                        }
-                    }
-                }
-                catch (Exception e) {
-                    // what here?
-                    Log.e(TAG, "user lookup response error!", e);
-                }
-            }
-        }
-
-        return false;
-    }
-    */
 
     private void setStatusText(CharSequence text) {
         Activity parent = getActivity();
