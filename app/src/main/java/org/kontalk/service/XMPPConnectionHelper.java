@@ -138,13 +138,7 @@ public class XMPPConnectionHelper extends Thread {
 
             // destroy connection
             if (mConn != null) {
-                try {
-                    mConn.disconnect();
-                }
-                catch (NotConnectedException e) {
-                    // ignored
-                }
-
+                mConn.instantShutdown();
                 mConn = null;
             }
         }
@@ -225,12 +219,7 @@ public class XMPPConnectionHelper extends Thread {
                 if (mConnecting) {
                     Log.e(TAG, "connection error", ie);
                     // forcibly close connection, no matter what
-                    try {
-                        mConn.disconnect();
-                    }
-                    catch (Exception e) {
-                        // ignored
-                    }
+                    mConn.instantShutdown();
                     // EXTERMINATE!!
                     mConn = null;
 

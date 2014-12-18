@@ -75,18 +75,6 @@ public class KontalkConnection extends XMPPTCPConnection {
         setUseStreamManagementResumption(false);
     }
 
-    @Override
-    public void disconnect() throws NotConnectedException {
-        Log.v(TAG, "disconnecting (no presence)");
-        super.disconnect();
-    }
-
-    @Override
-    public synchronized void disconnect(Presence presence) throws NotConnectedException {
-        Log.v(TAG, "disconnecting ("+presence+")");
-        super.disconnect(presence);
-    }
-
     private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
         EndpointServer server, boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
