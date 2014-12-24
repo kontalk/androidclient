@@ -52,6 +52,9 @@ import org.kontalk.Kontalk;
 public class KontalkConnection extends XMPPTCPConnection {
     private static final String TAG = Kontalk.TAG;
 
+    /** Packet reply timeout. */
+    private static final int DEFAULT_PACKET_TIMEOUT = 15000;
+
     protected EndpointServer mServer;
 
     public KontalkConnection(String resource, EndpointServer server, boolean secure,
@@ -73,6 +76,8 @@ public class KontalkConnection extends XMPPTCPConnection {
         // enable SM without resumption
         setUseStreamManagement(true);
         setUseStreamManagementResumption(false);
+        // set custom packet reply timeout
+        setPacketReplyTimeout(DEFAULT_PACKET_TIMEOUT);
     }
 
     private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
