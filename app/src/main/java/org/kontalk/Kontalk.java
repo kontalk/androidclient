@@ -36,6 +36,7 @@ import android.util.Log;
 import org.apache.http.impl.conn.IdleConnectionHandler;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.KontalkConnection;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PRNGFixes;
@@ -111,6 +112,9 @@ public class Kontalk extends Application {
 
         // init preferences
         Preferences.init(this);
+
+        // init Smack stuff
+        KontalkConnection.init();
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPrefChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {

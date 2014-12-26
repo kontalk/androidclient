@@ -67,7 +67,7 @@ public class ServerList extends ArrayList<EndpointServer> {
 
         @Override
         public EndpointServer next() {
-            while (mList.size() > 0) {
+            if (mList.size() > 0) {
                 EndpointServer s = mList.random();
                 mList.remove(s);
                 return s;

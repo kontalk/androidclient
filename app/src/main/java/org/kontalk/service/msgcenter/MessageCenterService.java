@@ -39,8 +39,6 @@ import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.debugger.SmackDebugger;
-import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -54,7 +52,6 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
-import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.ping.PingFailedListener;
@@ -494,13 +491,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         ProviderManager.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
         // we want to manually handle roster stuff
         Roster.setDefaultSubscriptionMode(SubscriptionMode.manual);
-        // use Android debugger
-        SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
-            @Override
-            public SmackDebugger create(XMPPConnection connection, Writer writer, Reader reader) throws IllegalArgumentException {
-                return new AndroidDebugger(connection, writer, reader);
-            }
-        });
     }
 
     @Override
