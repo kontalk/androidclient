@@ -37,7 +37,6 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VCARD;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;

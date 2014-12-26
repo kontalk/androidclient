@@ -37,6 +37,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.SubscribePublicKey;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.PGP;
@@ -214,17 +215,16 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private void handleSubscribed(Presence p) {
-        String from = XmppStringUtils.parseBareAddress(p.getFrom());
+        String from = XmppStringUtils.parseBareJid(p.getFrom());
 
         if (UsersProvider.getPublicKey(getContext(), from) == null) {
             // public key not found
             // assuming the user has allowed us, request it
 
-            VCard4 vcard = new VCard4();
-            vcard.setType(IQ.Type.get);
-            vcard.setTo(XmppStringUtils.parseBareAddress(p.getFrom()));
+            PublicKeyPublish pkey = new PublicKeyPublish();
+            pkey.setTo(XmppStringUtils.parseBareJid(p.getFrom()));
 
-            sendPacket(vcard);
+            sendPacket(pkey);
         }
 
         // send a broadcast
