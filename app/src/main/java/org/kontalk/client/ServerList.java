@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -60,9 +62,11 @@ public class ServerList extends ArrayList<EndpointServer> {
     /** A simple server provider backed by a server list. */
     public static class ServerListProvider implements EndpointServer.EndpointServerProvider {
         private ServerList mList;
+        private List<EndpointServer> mUsed;
 
         public ServerListProvider(ServerList list) {
             mList = new ServerList(list.getDate(), list);
+            mUsed = new LinkedList<EndpointServer>();
         }
 
         @Override
@@ -70,6 +74,7 @@ public class ServerList extends ArrayList<EndpointServer> {
             if (mList.size() > 0) {
                 EndpointServer s = mList.random();
                 mList.remove(s);
+                mUsed.add(s);
                 return s;
             }
             // list exausted
@@ -78,7 +83,8 @@ public class ServerList extends ArrayList<EndpointServer> {
 
         @Override
         public void reset() {
-            throw new RuntimeException("unsupported method");
+            mList.addAll(mUsed);
+            mUsed.clear();
         }
     }
 

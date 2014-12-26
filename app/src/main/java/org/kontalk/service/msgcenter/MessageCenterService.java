@@ -233,8 +233,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
 
     // common parameters
-    /** connect to custom server -- TODO not used yet */
-    public static final String EXTRA_SERVER = "org.kontalk.server";
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
 
@@ -1681,10 +1679,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static Intent getStartIntent(Context context) {
-        final Intent intent = new Intent(context, MessageCenterService.class);
-        EndpointServer server = Preferences.getEndpointServer(context);
-        intent.putExtra(EndpointServer.class.getName(), server.toString());
-        return intent;
+        return new Intent(context, MessageCenterService.class);
     }
 
     public static void start(Context context) {
@@ -1714,9 +1709,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "restarting message center");
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_RESTART);
-        // include server uri if server needs to be started
-        EndpointServer server = Preferences.getEndpointServer(context);
-        i.putExtra(EXTRA_SERVER, server.toString());
         context.startService(i);
     }
 
@@ -1730,9 +1722,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_HOLD);
-        // include server uri if server needs to be started
-        EndpointServer server = Preferences.getEndpointServer(context);
-        i.putExtra(EXTRA_SERVER, server.toString());
         context.startService(i);
     }
 

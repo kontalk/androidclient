@@ -252,6 +252,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             public void run() {
                 abort(true);
                 Intent i = new Intent();
+                i.putExtra(NumberValidation.PARAM_SERVER_URI, v.getServer().toString());
                 i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
                 i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
                 setResult(RESULT_OK, i);

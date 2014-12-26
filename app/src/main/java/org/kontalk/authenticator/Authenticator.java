@@ -66,6 +66,7 @@ import android.widget.Toast;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
@@ -95,6 +96,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
     public static final String DATA_NAME = "org.kontalk.key.name";
     public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
+    public static final String DATA_SERVER_URI = "org.kontalk.server";
 
     /** @deprecated This was obviously deprecated from the beginning. */
     @Deprecated
@@ -140,6 +142,16 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     public static String getDisplayName(AccountManager am, Account account) {
         return am.getUserData(account, DATA_NAME);
+    }
+
+    public static EndpointServer getDefaultServer(Context context) {
+        AccountManager am = AccountManager.get(context);
+        Account account = getDefaultAccount(am);
+        return getServer(am, account);
+    }
+
+    public static EndpointServer getServer(AccountManager am, Account account) {
+        return new EndpointServer(am.getUserData(account, DATA_SERVER_URI));
     }
 
     public static boolean hasPersonalKey(AccountManager am, Account account) {
