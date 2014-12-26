@@ -223,16 +223,17 @@ public class XMPPConnectionHelper extends Thread {
                     // EXTERMINATE!!
                     mConn = null;
 
-                    // SASL: not-authorized
-                    if (ie instanceof SASLErrorException && ((SASLErrorException) ie)
-                        .getSASLFailure().getSASLError() == SASLError.not_authorized &&
-                        mRetryCount >= MAX_AUTH_ERRORS) {
+                    // SASL: not authorized
+                    if (ie instanceof SASLErrorException) {
+                        SASLError error = ((SASLErrorException) ie).getSASLFailure().getSASLError();
+                        if ((error == SASLError.not_authorized || error == SASLError.invalid_authzid) &&
+                            mRetryCount >= MAX_AUTH_ERRORS) {
 
-                        if (mListener != null) {
-                            mListener.authenticationFailed();
-
-                            // this ends here.
-                            break;
+                            if (mListener != null) {
+                                mListener.authenticationFailed();
+                                // this ends here.
+                                break;
+                            }
                         }
                     }
 
