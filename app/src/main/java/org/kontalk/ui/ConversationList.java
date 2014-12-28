@@ -37,6 +37,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -75,6 +76,8 @@ public class ConversationList extends ActionBarActivity
 
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
 
+    private ProgressDialog mTigaseUpgradeWait;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,7 +99,34 @@ public class ConversationList extends ActionBarActivity
     }
 
     private boolean tigaseUpgrade() {
-        return ((Kontalk) getApplication()).waitForTigaseUpgrade();
+        AccountManager am = AccountManager.get(this);
+        Account account = Authenticator.getDefaultAccount(am);
+        if (account != null && Authenticator.getServer(am, account) == null) {
+            mTigaseUpgradeWait = new LockedProgressDialog(this);
+            mTigaseUpgradeWait.setMessage("Please wait...");
+            mTigaseUpgradeWait.show();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ((Kontalk) getApplication()).waitForTigaseUpgrade();
+                    mTigaseUpgradeWait.dismiss();
+                    mTigaseUpgradeWait = null;
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            NumberValidation.startValidation(ConversationList.this);
+                            finish();
+                        }
+                    });
+                }
+            }).start();
+
+            return true;
+        }
+
+        return false;
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */

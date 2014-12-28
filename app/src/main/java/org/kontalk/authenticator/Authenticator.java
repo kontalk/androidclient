@@ -141,7 +141,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static String getDisplayName(AccountManager am, Account account) {
-        return am.getUserData(account, DATA_NAME);
+        return account != null ? am.getUserData(account, DATA_NAME) : null;
     }
 
     public static EndpointServer getDefaultServer(Context context) {
@@ -151,11 +151,16 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static EndpointServer getServer(AccountManager am, Account account) {
-        return new EndpointServer(am.getUserData(account, DATA_SERVER_URI));
+        if (account != null) {
+            String uri = am.getUserData(account, DATA_SERVER_URI);
+            return uri != null ? new EndpointServer(uri) : null;
+        }
+        return null;
     }
 
     public static boolean hasPersonalKey(AccountManager am, Account account) {
-        return am.getUserData(account, DATA_PRIVATEKEY) != null &&
+        return account != null &&
+            am.getUserData(account, DATA_PRIVATEKEY) != null &&
             am.getUserData(account, DATA_PUBLICKEY) != null &&
             am.getUserData(account, DATA_BRIDGECERT) != null;
     }

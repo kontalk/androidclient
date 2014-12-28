@@ -133,9 +133,13 @@ public class Kontalk extends Application {
 
                 // manual server address
                 if ("pref_network_uri".equals(key)) {
-                    // just restart the message center for now
-                    android.util.Log.w(TAG, "network address changed");
-                    MessageCenterService.restart(Kontalk.this);
+                    // temporary measure for users coming from old betas
+                    // this is triggered because manual server address is cleared
+                    if (Authenticator.getDefaultServer(getApplicationContext()) != null) {
+                        // just restart the message center for now
+                        android.util.Log.w(TAG, "network address changed");
+                        MessageCenterService.restart(Kontalk.this);
+                    }
                 }
 
                 // hide presence flag / encrypt user data flag
@@ -208,7 +212,7 @@ public class Kontalk extends Application {
         setServicesEnabled(this, account != null);
     }
 
-    private void tigaseUpgrade(AccountManager am, Account account) {
+    private void tigaseUpgrade(final AccountManager am, final Account account) {
         // delete all messages
         MessagesProvider.deleteDatabase(Kontalk.this);
         // delete custom server
@@ -231,18 +235,23 @@ public class Kontalk extends Application {
                 // ignored
             }
         }
-        am.removeAccount(account, new AccountManagerCallback<Boolean>() {
+        new Thread(new Runnable() {
             @Override
-            public void run(AccountManagerFuture<Boolean> future) {
-                synchronized (tigaseUpgradeWaiting) {
-                    // end the looper thread
-                    tigaseUpgradeHandler.getLooper().quit();
-                    tigaseUpgradeHandler = null;
-                    // notify the UI that the operation has completed
-                    tigaseUpgradeWaiting.notify();
-                }
+            public void run() {
+                am.removeAccount(account, new AccountManagerCallback<Boolean>() {
+                    @Override
+                    public void run(AccountManagerFuture<Boolean> future) {
+                        synchronized (tigaseUpgradeWaiting) {
+                            // end the looper thread
+                            tigaseUpgradeHandler.getLooper().quit();
+                            tigaseUpgradeHandler = null;
+                            // notify the UI that the operation has completed
+                            tigaseUpgradeWaiting.notify();
+                        }
+                    }
+                }, tigaseUpgradeHandler);
             }
-        }, tigaseUpgradeHandler);
+        }).start();
     }
 
     public boolean waitForTigaseUpgrade() {
