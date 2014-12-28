@@ -20,6 +20,8 @@ package org.kontalk;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.accounts.OnAccountsUpdateListener;
 import android.app.Application;
 import android.content.ComponentName;
@@ -29,6 +31,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -76,6 +79,10 @@ public class Kontalk extends Application {
     private Handler mHandler;
     private SharedPreferences.OnSharedPreferenceChangeListener mPrefChangedListener;
     private PersonalKey mDefaultKey;
+
+    // tigase upgrade waiting lock
+    private final Object tigaseUpgradeWaiting = new Object();
+    private Handler tigaseUpgradeHandler; // created by upgrade thread
 
     /**
      * Passphrase to decrypt the personal private key.
@@ -149,43 +156,110 @@ public class Kontalk extends Application {
         AccountManager am = AccountManager.get(this);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
-            if (!Authenticator.hasPersonalKey(am, account))
-                xmppUpgrade();
+            // tigase upgrade
+            // temporary measure for users coming from old betas
+            if (Authenticator.getServer(am, account) == null) {
+                tigaseUpgrade(am, account);
+                account = null;
+            }
 
-            // update notifications from locally unread messages
-            MessagingNotification.updateMessagesNotification(this, false);
+            else {
+                if (!Authenticator.hasPersonalKey(am, account))
+                    xmppUpgrade();
 
-            // register account change listener
-            final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
-                @Override
-                public void onAccountsUpdated(Account[] accounts) {
-                    Account my = null;
-                    for (int i = 0; i < accounts.length; i++) {
-                        if (accounts[i].type.equals(Authenticator.ACCOUNT_TYPE)) {
-                            my = accounts[i];
-                            break;
+                // update notifications from locally unread messages
+                MessagingNotification.updateMessagesNotification(this, false);
+
+                // register account change listener
+                final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
+                    @Override
+                    public void onAccountsUpdated(Account[] accounts) {
+                        Account my = null;
+                        for (int i = 0; i < accounts.length; i++) {
+                            if (accounts[i].type.equals(Authenticator.ACCOUNT_TYPE)) {
+                                my = accounts[i];
+                                break;
+                            }
+                        }
+
+                        // account removed!!! Shutdown everything.
+                        if (my == null) {
+                            Log.w(TAG, "my account has been removed, shutting down");
+                            // delete all messages
+                            MessagesProvider.deleteDatabase(Kontalk.this);
+                            // stop message center
+                            MessageCenterService.stop(Kontalk.this);
+                            // invalidate cached personal key
+                            invalidatePersonalKey();
                         }
                     }
+                };
 
-                    // account removed!!! Shutdown everything.
-                    if (my == null) {
-                        Log.w(TAG, "my account has been removed, shutting down");
-                        // delete all messages
-                        MessagesProvider.deleteDatabase(Kontalk.this);
-                        // stop message center
-                        MessageCenterService.stop(Kontalk.this);
-                        // invalidate cached personal key
-                        invalidatePersonalKey();
-                    }
-                }
-            };
-
-            // register listener to handle account removal
-            am.addOnAccountsUpdatedListener(listener, mHandler, true);
+                // register listener to handle account removal
+                am.addOnAccountsUpdatedListener(listener, mHandler, true);
+            }
+        }
+        else {
+            // ensure everything is cleared up
+            MessagesProvider.deleteDatabase(Kontalk.this);
         }
 
         // enable/disable components
         setServicesEnabled(this, account != null);
+    }
+
+    private void tigaseUpgrade(AccountManager am, Account account) {
+        // delete all messages
+        MessagesProvider.deleteDatabase(Kontalk.this);
+        // delete custom server
+        Preferences.setServerURI(this, null);
+        // unregister!
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                tigaseUpgradeHandler = new Handler(Looper.myLooper());
+                Looper.loop();
+            }
+        }).start();
+        while (tigaseUpgradeHandler == null) {
+            // this loop will exit as soon as the above thread started
+            try {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e) {
+                // ignored
+            }
+        }
+        am.removeAccount(account, new AccountManagerCallback<Boolean>() {
+            @Override
+            public void run(AccountManagerFuture<Boolean> future) {
+                synchronized (tigaseUpgradeWaiting) {
+                    // end the looper thread
+                    tigaseUpgradeHandler.getLooper().quit();
+                    tigaseUpgradeHandler = null;
+                    // notify the UI that the operation has completed
+                    tigaseUpgradeWaiting.notify();
+                }
+            }
+        }, tigaseUpgradeHandler);
+    }
+
+    public boolean waitForTigaseUpgrade() {
+        synchronized (tigaseUpgradeWaiting) {
+            if (tigaseUpgradeHandler != null) {
+                try {
+                    tigaseUpgradeWaiting.wait();
+                }
+                catch (InterruptedException e) {
+                    // ignored
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void xmppUpgrade() {

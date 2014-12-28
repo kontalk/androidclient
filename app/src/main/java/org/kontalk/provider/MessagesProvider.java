@@ -328,7 +328,6 @@ public class MessagesProvider extends ContentProvider {
             if (oldVersion == 4) {
                 EndpointServer server = Preferences.getEndpointServer(mContext);
                 String host = server.getNetwork();
-
                 for (int i = 0; i < SCHEMA_UPGRADE_V4.length; i++) {
                     if (SCHEMA_UPGRADE_V4[i].startsWith("INSERT "))
                         db.execSQL(SCHEMA_UPGRADE_V4[i], new Object[] { host });

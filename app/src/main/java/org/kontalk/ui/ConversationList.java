@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -82,7 +83,7 @@ public class ConversationList extends ActionBarActivity
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        if (!xmppUpgrade())
+        if (!tigaseUpgrade() && !xmppUpgrade())
             handleIntent(getIntent());
     }
 
@@ -92,6 +93,10 @@ public class ConversationList extends ActionBarActivity
 
     public void titleSearch(View view) {
         onSearchRequested();
+    }
+
+    private boolean tigaseUpgrade() {
+        return ((Kontalk) getApplication()).waitForTigaseUpgrade();
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */
