@@ -1672,7 +1672,7 @@ public class ComposeMessageFragment extends ListFragment implements
             if (mPrivacyListener == null) {
                 mPrivacyListener = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
-                        String from = XmppStringUtils.parseBareAddress(intent
+                        String from = XmppStringUtils.parseBareJid(intent
                             .getStringExtra(MessageCenterService.EXTRA_FROM));
 
                         if (mUserJID.equals(from)) {

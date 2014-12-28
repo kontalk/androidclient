@@ -87,7 +87,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
                 // store key to users table
                 UsersProvider.setUserKey(getContext(),
-                    XmppStringUtils.parseBareAddress(p.getFrom()),
+                    XmppStringUtils.parseBareJid(p.getFrom()),
                     pkey.getKey(), fingerprint);
             }
 
@@ -164,7 +164,7 @@ class PresenceListener extends MessageCenterPacketListener {
              * 3. user will either accept or refuse
              */
 
-            String from = XmppStringUtils.parseBareAddress(p.getFrom());
+            String from = XmppStringUtils.parseBareJid(p.getFrom());
 
             // extract public key
             String name = null, fingerprint = null;

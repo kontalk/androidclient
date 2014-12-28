@@ -66,7 +66,7 @@ class PublicKeyListener extends MessageCenterPacketListener {
 
             if (_publicKey != null) {
 
-                String from = XmppStringUtils.parseBareAddress(p.getFrom());
+                String from = XmppStringUtils.parseBareJid(p.getFrom());
 
                 boolean networkUser = XMPPUtils.isLocalJID(from, getServer().getNetwork());
                 // our network - convert to userId
