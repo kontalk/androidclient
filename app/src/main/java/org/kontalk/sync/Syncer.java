@@ -123,25 +123,27 @@ public class Syncer {
                 if (response != null) {
 
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                    // see if bare JID is present in roster response
-                    String compare = XmppStringUtils.parseBareAddress(jid);
-                    for (PresenceItem item : response) {
-                        if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
-                            item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                            item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                            if (!item.presence) {
-                                item.presence = true;
-                                // increment presence count
-                                presenceCount++;
+                    String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                    if (type != null) {
+                        // see if bare JID is present in roster response
+                        String compare = XmppStringUtils.parseBareJid(jid);
+                        for (PresenceItem item : response) {
+                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
+                                item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                                item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                                if (!item.presence) {
+                                    item.presence = true;
+                                    // increment presence count
+                                    presenceCount++;
+                                }
+                                break;
                             }
-                            break;
                         }
+
+                        // done with presence data and blocklist
+                        if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
+                            finish();
                     }
-
-                    // done with presence data and blocklist
-                    if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
-                        finish();
-
                 }
             }
 
@@ -210,9 +212,9 @@ public class Syncer {
 
                     for (String jid : list) {
                         // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareAddress(jid);
+                        String compare = XmppStringUtils.parseBareJid(jid);
                         for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
                                 item.blocked = true;
 
                                 break;

@@ -767,10 +767,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         // request public keys for the whole roster
                         Collection<RosterEntry> buddies = mConnection.getRoster().getEntries();
                         for (RosterEntry buddy : buddies) {
-                            PublicKeyPublish p = new PublicKeyPublish();
-                            p.setTo(buddy.getUser());
+                            if (isRosterEntrySubscribed(buddy)) {
+                                PublicKeyPublish p = new PublicKeyPublish();
+                                p.setTo(buddy.getUser());
 
-                            sendPacket(p);
+                                sendPacket(p);
+                            }
                         }
                     }
                 }
@@ -1231,7 +1233,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             i = PresenceListener.createIntent(this, presence);
         }
         else {
-            // null type indicates no roster entry found
+            // null type indicates no roster entry found or not authorized
             i = new Intent(ACTION_PRESENCE);
             i.putExtra(EXTRA_FROM, jid);
         }
