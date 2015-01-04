@@ -20,7 +20,6 @@ package org.kontalk.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -118,7 +117,6 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
-import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -138,7 +136,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
-        OnAudioDialogResult, AudioPlayerControl,
+        AudioDialog.AudioDialogListener, AudioPlayerControl,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         EmojiconGridFragment.OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
@@ -193,6 +191,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
+    private AudioDialog mAudioDialog;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -852,7 +851,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
     private void selectAudioAttachment() {
-        new AudioDialog(getActivity(), this).show();
+        mAudioDialog = new AudioDialog(getActivity(), this);
+        mAudioDialog.show();
     }
 
     @Override
@@ -2158,6 +2158,10 @@ public class ComposeMessageFragment extends ListFragment implements
             mTextEntry.removeTextChangedListener(mChatStateListener);
             mTextEntry.setText("");
         }
+        if (mAudioDialog != null) {
+            mAudioDialog.dismiss();
+            mAudioDialog = null;
+        }
     }
 
     private void pauseContentListener() {
@@ -2353,6 +2357,11 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onRecordingSuccessful(File file) {
         if (file != null)
             sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+    }
+
+    @Override
+    public void onRecordingCancel() {
+        mAudioDialog = null;
     }
 
     @Override

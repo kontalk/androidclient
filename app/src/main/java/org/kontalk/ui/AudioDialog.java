@@ -90,11 +90,11 @@ public class AudioDialog extends AlertDialog {
 
     private float mTimeCircle;
     private int mPlayerSeekTo;
-    private OnAudioDialogResult mResult;
+    private AudioDialogListener mListener;
 
-    public AudioDialog(Context context, OnAudioDialogResult result) {
+    public AudioDialog(Context context, AudioDialogListener result) {
         super(context);
-        mResult = result;
+        mListener = result;
         init();
     }
 
@@ -167,7 +167,7 @@ public class AudioDialog extends AlertDialog {
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null) {
                     mPlayer.setOnCompletionListener(null);
-                    mResult.onRecordingSuccessful(mFile);
+                    mListener.onRecordingSuccessful(mFile);
                     mStatus = STATUS_SEND;
                 }
             }
@@ -181,8 +181,9 @@ public class AudioDialog extends AlertDialog {
         });
     }
 
-    public interface OnAudioDialogResult  {
+    public interface AudioDialogListener {
         public void onRecordingSuccessful(File file);
+        public void onRecordingCancel();
     }
 
     @Override
@@ -203,6 +204,7 @@ public class AudioDialog extends AlertDialog {
         if (mStatus != STATUS_SEND && mFile != null) {
             mFile.delete();
         }
+        mListener.onRecordingCancel();
     }
 
     private void startRecord() throws IOException {
