@@ -209,12 +209,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private ImageButton mEmojiButton;
     private EmojiDrawer mEmojiDrawer;
 
-    private static final class PresenceData {
-        public String status;
-        public int priority;
-        public Date stamp;
-    }
-
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromUserId(Context context, String userId) {
         ComposeMessageFragment f = new ComposeMessageFragment();
