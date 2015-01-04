@@ -2134,6 +2134,7 @@ public class ComposeMessageFragment extends ListFragment implements
         // release audio player
         if (mPlayer != null) {
             stopMediaPlayerUpdater();
+            mMediaPlayerMessageId = -1;
             mPlayer.release();
             mPlayer = null;
         }
