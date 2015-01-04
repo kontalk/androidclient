@@ -25,6 +25,8 @@ import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+import org.jxmpp.util.XmppStringUtils;
+
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.UploadInfo;
 
@@ -54,13 +56,13 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
         List<DiscoverItems.Item> items = query.getItems();
         for (DiscoverItems.Item item : items) {
             String jid = item.getEntityID();
-            if ((server.getNetwork()).equals(jid)) {
+            if (jid != null && server.getNetwork().equals(XmppStringUtils.parseDomain(jid))) {
                 setUploadService(item.getNode(), null);
 
                 // request upload url
                 UploadInfo iq = new UploadInfo(item.getNode());
                 iq.setType(IQ.Type.get);
-                iq.setTo(server.getNetwork());
+                iq.setTo("upload@" + server.getNetwork());
 
                 conn.addPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));
                 sendPacket(iq);
