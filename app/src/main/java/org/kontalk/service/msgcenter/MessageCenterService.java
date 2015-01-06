@@ -1482,7 +1482,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // FIXME notify just once per session (store in Kontalk instance?)
 
                 catch (PGPException pgpe) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will not be sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_no_personal_key,
                             Toast.LENGTH_LONG).show();
@@ -1490,7 +1490,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 catch (IOException io) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will not be sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_no_personal_key,
                             Toast.LENGTH_LONG).show();
@@ -1498,7 +1498,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 catch (IllegalArgumentException noPublicKey) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will be not sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_no_public_key,
                             Toast.LENGTH_LONG).show();
@@ -1506,7 +1506,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 catch (GeneralSecurityException e) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will not be sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_encryption_failed,
                             Toast.LENGTH_LONG).show();
@@ -1521,6 +1521,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             (Messages.CONTENT_URI, msgId), values, null, null);
 
                     // do not send the message
+                    if (msgId > 0)
+                        mWaitingReceipt.remove(id);
                     mIdleHandler.release();
                     return;
                 }
