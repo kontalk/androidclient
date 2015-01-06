@@ -377,7 +377,8 @@ public class Syncer {
                 Log.e(TAG, "contact delete error", e);
                 syncResult.databaseError = true;
             }
-            return;
+
+            commit(usersProvider, syncResult);
         }
 
         else {
@@ -502,21 +503,7 @@ public class Syncer {
                     return;
                 }
 
-                // commit users table
-                uri = Users.CONTENT_URI.buildUpon()
-                    .appendQueryParameter(Users.RESYNC, "true")
-                    .appendQueryParameter(Users.COMMIT, "true")
-                    .build();
-                try {
-                    usersProvider.update(uri, null, null, null);
-                    Log.d(TAG, "users database committed");
-                    Contact.invalidate();
-                }
-                catch (RemoteException e) {
-                    Log.e(TAG, "error committing users database - aborting sync", e);
-                    syncResult.databaseError = true;
-                    return;
-                }
+                commit(usersProvider, syncResult);
             }
 
             // timeout or error
@@ -532,6 +519,23 @@ public class Syncer {
 
                 syncResult.stats.numIoExceptions++;
             }
+        }
+    }
+
+    private void commit(ContentProviderClient usersProvider, SyncResult syncResult) {
+        // commit users table
+        Uri uri = Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.RESYNC, "true")
+            .appendQueryParameter(Users.COMMIT, "true")
+            .build();
+        try {
+            usersProvider.update(uri, null, null, null);
+            Log.d(TAG, "users database committed");
+            Contact.invalidate();
+        }
+        catch (RemoteException e) {
+            Log.e(TAG, "error committing users database - aborting sync", e);
+            syncResult.databaseError = true;
         }
     }
 
