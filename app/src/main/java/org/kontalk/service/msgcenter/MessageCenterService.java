@@ -1084,6 +1084,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_FETCH_URL,
                 Messages.ATTACHMENT_PREVIEW_PATH,
                 Messages.ATTACHMENT_LENGTH,
+                Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
             },
             filter.toString(),
@@ -1100,7 +1101,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String attFetchUrl = c.getString(7);
             String attPreviewPath = c.getString(8);
             long attLength = c.getLong(9);
-            // TODO int attSecurityFlags = c.getInt(10);
+            int compress = c.getInt(10);
+            // TODO int attSecurityFlags = c.getInt(11);
 
             // media message encountered and no upload service available - delay message
             if (attFileUri != null && attFetchUrl == null && getUploadService() == null && !retrying) {
@@ -1132,6 +1134,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 b.putString("org.kontalk.message.media.uri", attFileUri);
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
                 b.putLong("org.kontalk.message.length", attLength);
+                b.putInt("org.kontalk.message.compress", compress);
             }
 
             Log.v(TAG, "resending pending message " + id);
