@@ -902,8 +902,8 @@ public class MessagesProvider extends ContentProvider {
                 boolean tigase = Boolean.parseBoolean(uri.getQueryParameter("tigase"));
                 if (tigase) {
                     final String[] SCHEMA_UPGRADE = {
-                        "UPDATE " + TABLE_THREADS + " SET peer = REPLACE(peer, 'kontalk.net', ?)",
-                        "UPDATE " + TABLE_MESSAGES + " SET peer = REPLACE(peer, 'kontalk.net', ?)",
+                        "UPDATE " + TABLE_THREADS + " SET peer = REPLACE(peer, '@kontalk.net', ?)",
+                        "UPDATE " + TABLE_MESSAGES + " SET peer = REPLACE(peer, '@kontalk.net', ?)",
                     };
                     // temporary change from network domain to server domain
                     // this is actually only for beta testers coming from beta3
@@ -912,7 +912,7 @@ public class MessagesProvider extends ContentProvider {
                     String host = server.getNetwork();
 
                     for (String sql : SCHEMA_UPGRADE)
-                        db.execSQL(sql, new Object[] { host });
+                        db.execSQL(sql, new Object[] { "@" + host });
 
                     return 0;
                 }
