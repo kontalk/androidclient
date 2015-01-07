@@ -56,6 +56,7 @@
   <string name="message_type_label">Typ:\u0020</string>
   <string name="text_message">Textová zpráva</string>
   <string name="image_message">Obrázková zpráva</string>
+  <string name="audio_message">Hlasová zpráva</string>
   <string name="from_label">Od:\u0020</string>
   <string name="to_address_label">Komu:\u0020</string>
   <string name="sent_label">Odesláno:\u0020</string>
@@ -175,6 +176,7 @@
   <string name="menu_unblock_user">Odblokovat</string>
   <string name="vcard_message">vCard zpráva</string>
   <string name="open_file">Otevřít soubor</string>
+  <string name="open_audio">Přehrát zvukový soubor</string>
   <string name="msg_msgcenter_restarted">Centrum zpráv bylo restartováno.</string>
   <string name="downloading_attachment">Stahuji přílohu...</string>
   <string name="decrypting_attachment">Probíhá dešifrování přílohy...</string>
@@ -215,6 +217,7 @@
   <string name="pref_title_balloons">Vyberte vzhled konverzační bubliny</string>
   <string name="attachment_picture">Obrázek</string>
   <string name="attachment_contact">Kontakt</string>
+  <string name="attachment_audio">Zvuk</string>
   <string name="chooser_send_picture">Odeslat obrázek</string>
   <string name="chooser_error_no_camera">Externí úložiště není dostupné. Snímání fotek fotoaparátem nebude povoleno.</string>
   <string name="status_activity_title">Stavová zpráva</string>
@@ -300,7 +303,13 @@
   <string name="err_passwords_mismatch">Heslo nesouhlasí!</string>
   <string name="err_password_invalid">Špatné heslo.</string>
   <string name="err_change_passphrase">Nepodařilo se změnit heslo k osobnímu klíči.</string>
+  <string name="err_file_not_found">Soubor nebyl nalezen.</string>
+  <string name="err_audio_record">Chyba při spuštění nahrávání zvuku</string>
+  <string name="err_audio_record_writing">Chyba při zápisu na externí úložiště.</string>
+  <string name="err_playing_audio">Chyba při přehrávání zvuku.</string>
+  <string name="err_playing_sdcard">Chyba při čtení z externího úložiště.</string>
   <string name="pref_media_settings">Nastavení médií</string>
   <string name="pref_image_resize">Měnit velikost obrázků</string>
   <string name="pref_title_image_resize">Před odesláním měnit velikost obrázků</string>
+  <string name="err_server_invalid_format">Neplatný formát adresy.</string>
 </resources>

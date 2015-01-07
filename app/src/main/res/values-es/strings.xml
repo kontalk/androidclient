@@ -56,6 +56,7 @@
   <string name="message_type_label">Tipo:\u0020</string>
   <string name="text_message">Mensaje de texto</string>
   <string name="image_message">Mensaje con imagen</string>
+  <string name="audio_message">Mensaje de audio</string>
   <string name="from_label">De:\u0020</string>
   <string name="to_address_label">Para:\u0020</string>
   <string name="sent_label">Enviado:\u0020</string>
@@ -175,6 +176,7 @@
   <string name="menu_unblock_user">Desbloquear</string>
   <string name="vcard_message">Mensaje con vCard</string>
   <string name="open_file">Abrir el archivo</string>
+  <string name="open_audio">Reproducir archivo de audio</string>
   <string name="msg_msgcenter_restarted">Centro de mensajería reiniciado.</string>
   <string name="downloading_attachment">Descargando el archivo adjunto…</string>
   <string name="decrypting_attachment">Descrifrando el archivo adjunto...</string>
@@ -215,6 +217,7 @@
   <string name="pref_title_balloons">Escoger un tema de globos de conversación</string>
   <string name="attachment_picture">Imagen</string>
   <string name="attachment_contact">Contacto</string>
+  <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture"> Enviar imagen</string>
   <string name="chooser_error_no_camera">El almacenamiento externo no está disponible. No se pueden hacer fotografías con la cámara</string>
   <string name="status_activity_title">Mensaje de estado</string>
@@ -300,6 +303,11 @@
   <string name="err_passwords_mismatch">¡Las contraseñas no coinciden!</string>
   <string name="err_password_invalid">Contraseña errónea.</string>
   <string name="err_change_passphrase">Imposible cambiar la contraseña de la clave personal</string>
+  <string name="err_file_not_found">Archivo no encontrado.</string>
+  <string name="err_audio_record">Error intentando grabar audio.</string>
+  <string name="err_audio_record_writing">Error escribiendo en el almacenamiento externo.</string>
+  <string name="err_playing_audio">Error reproduciendo audio.</string>
+  <string name="err_playing_sdcard">Error leyendo el almacenamiento externo.</string>
   <string name="pref_media_settings">Archivos multimedia</string>
   <string name="pref_image_resize">Redimensionar imágenes</string>
   <string name="pref_title_image_resize">Redimensionar las imágenes antes de enviarlas</string>

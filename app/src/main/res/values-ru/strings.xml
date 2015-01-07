@@ -56,6 +56,7 @@
   <string name="message_type_label">Тип:\u0020</string>
   <string name="text_message">Текстовое сообщение</string>
   <string name="image_message">Сообщение с изображением</string>
+  <string name="audio_message">Аудиосообщение</string>
   <string name="from_label">От:\u0020</string>
   <string name="to_address_label">Кому:\u0020</string>
   <string name="sent_label">Отправлено:\u0020</string>
@@ -175,6 +176,7 @@
   <string name="menu_unblock_user">Разблокировать</string>
   <string name="vcard_message">vCard-сообщение</string>
   <string name="open_file">Открыть файл</string>
+  <string name="open_audio">Воспроизведение аудиофайла</string>
   <string name="msg_msgcenter_restarted">Центр сообщений перезапущен.</string>
   <string name="downloading_attachment">Загрузка вложения…</string>
   <string name="decrypting_attachment">Дешифровка приложения...</string>
@@ -215,6 +217,7 @@
   <string name="pref_title_balloons">Выберите стиль окна чатов</string>
   <string name="attachment_picture">Изображение</string>
   <string name="attachment_contact">Контакт</string>
+  <string name="attachment_audio">Аудио</string>
   <string name="chooser_send_picture">Отправить изображение</string>
   <string name="chooser_error_no_camera">Внешнее хранилище недоступно. Использование снимков из камеры будет отключено.</string>
   <string name="status_activity_title">Статусное сообщение</string>
@@ -238,6 +241,7 @@
   <string name="social_identica">Identi.ca</string>
   <string name="donate_text">Kontalk требуются деньги для поддержания работы. Пожалуйста, подумайте о взносе, пусть небольшом.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
+  <string name="text_bitcoin_dialog">Адрес биткойн:\n%s</string>
   <string name="donate_wallet">Google Play</string>
   <string name="donate_paypal">PayPal</string>
   <string name="donate_bitcoin">Bitcoin</string>
@@ -247,6 +251,7 @@
   <string name="notify_gen_keypair_ticker">Генерация персонального ключа...</string>
   <string name="notify_gen_keypair_title">Генерация персонального ключа</string>
   <string name="notify_gen_keypair_text">Можете продолжать работу в обычном режиме.</string>
+  <string name="msg_xmpp_upgrading">Обновление...</string>
   <string name="title_no_personal_key">Персональный ключ отсутствует</string>
   <string name="msg_no_personal_key">Персональный ключ в настоящее время недоступен (возможно из-за обновления). Вы не сможете войти в сеть Kontalk без генерации персонального ключа. Пожалуйста, введите Ваше имя, закрыв и повторно открыв Kontalk.</string>
   <string name="msg_keypair_exported">Персональный ключ и сертификат входа экспортированы во внешнее хранилище.</string>
@@ -261,6 +266,8 @@
   <string name="security_error_integrity_check">\u0020(проверка целостности)</string>
   <string name="security_error_public_key_unavail">\u0020(публичный ключ недоступен)</string>
   <string name="title_invitation">Приглашение в чат</string>
+  <string name="text_invitation_known">Запрос от\n%1$s &lt;%2$s&gt;\n(%3$s)\nОтпечаток: %4$s</string>
+  <string name="text_invitation_unknown">Запрос от\n%1$s\nОтпечаток: %2$s</string>
   <string name="button_accept">Принять</string>
   <string name="button_block">Блокировать</string>
   <string name="msg_connecting_iab">соединение с Google Play…</string>
@@ -288,10 +295,21 @@
   <string name="msg_auth_error">&lt;b&gt;ПРЕДУПРЕЖДЕНИЕ!&lt;/b&gt;&lt;br&gt;Аутентификация на сервере Kontalk при последнем соединении не удалась. Это может быть временной ошибкой сервера или, что более вероятно, сервер не распознаёт Вашу ключевую пару. Рекомендуем удалить Вашу учётную запись Kontalk в настройках системы Андроид и зарегистрироваться снова (при этом, однако, Вы потеряете все Ваши сообщения Kontalk).</string>
   <string name="warn_invite_no_app">Нет приложений для приглашения пользователей.</string>
   <string name="pref_text_enter">Показать ввод</string>
+  <string name="pref_title_on_text_enter">Показывать клавишу ввода при написании сообщений</string>
+  <string name="pref_title_off_text_enter">Показывать клавишу действия по умолчанию при написании сообщений</string>
   <string name="title_password1">Пароль</string>
   <string name="title_password2">Подтвердить пароль</string>
   <string name="err_password_too_short">Пароль должен содержать минимум %d знаков.</string>
   <string name="err_passwords_mismatch">Пароли не совпадают!</string>
   <string name="err_password_invalid">Неправильный пароль.</string>
   <string name="err_change_passphrase">Невозможно изменить пароль ключевой пары.</string>
+  <string name="err_file_not_found">Файл не найден.</string>
+  <string name="err_audio_record">Ошибка запуска записи аудио.</string>
+  <string name="err_audio_record_writing">Ошибка записи во внешнюю память.</string>
+  <string name="err_playing_audio">Ошибка воспроизведения аудио.</string>
+  <string name="err_playing_sdcard">Ошибка чтения из внешней памяти.</string>
+  <string name="pref_media_settings">Параметры медиа</string>
+  <string name="pref_image_resize">Изменение размера изображений</string>
+  <string name="pref_title_image_resize">Изменение размера изображений перед отправкой</string>
+  <string name="err_server_invalid_format">Неверный формат адреса.</string>
 </resources>

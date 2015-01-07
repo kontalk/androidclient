@@ -56,6 +56,7 @@
   <string name="message_type_label">Type:\u0020</string>
   <string name="text_message">Tekstbericht</string>
   <string name="image_message">Afbeeldingsbericht</string>
+  <string name="audio_message">Geluidsbericht</string>
   <string name="from_label">Van:\u0020</string>
   <string name="to_address_label">Aan:\u0020</string>
   <string name="sent_label">Verzonden:\u0020</string>
@@ -175,6 +176,7 @@
   <string name="menu_unblock_user">Deblokkeren</string>
   <string name="vcard_message">vCard-bericht</string>
   <string name="open_file">Bestand openen</string>
+  <string name="open_audio">Geluidsbestand afspelen</string>
   <string name="msg_msgcenter_restarted">Herstarten berichtencentrum voltooid.</string>
   <string name="downloading_attachment">Bezig met downloaden van bijlage…</string>
   <string name="decrypting_attachment">Bezig met bijlage ontsleutelen…</string>
@@ -215,6 +217,7 @@
   <string name="pref_title_balloons">Een thema voor de tekstballonnen kiezen</string>
   <string name="attachment_picture">Afbeelding</string>
   <string name="attachment_contact">Contact</string>
+  <string name="attachment_audio">Geluid</string>
   <string name="chooser_send_picture">Afbeelding verzenden</string>
   <string name="chooser_error_no_camera">Externe opslag niet beschikbaar. Kan geen foto opslaan.</string>
   <string name="status_activity_title">Statusbericht</string>
@@ -300,7 +303,13 @@
   <string name="err_passwords_mismatch">De wachtwoorden zijn niet hetzelfde!</string>
   <string name="err_password_invalid">Verkeerde wachtwoord.</string>
   <string name="err_change_passphrase">Kan niet het wachtwoord van het persoonlijk sleutelpaar veranderen.</string>
+  <string name="err_file_not_found">Bestand niet gevonden.</string>
+  <string name="err_audio_record">Fout tijdens beginnen met opnemen van geluid.</string>
+  <string name="err_audio_record_writing">Fout tijdens schrijven op externe opslag.</string>
+  <string name="err_playing_audio">Fout bij afspelen geluid.</string>
+  <string name="err_playing_sdcard">Fout tijdens lezen van externe opslag.</string>
   <string name="pref_media_settings">Media</string>
   <string name="pref_image_resize">Afbeeldingen schalen</string>
   <string name="pref_title_image_resize">Afbeelding schalen voordat ze verzonden worden</string>
+  <string name="err_server_invalid_format">Ongeldig adres.</string>
 </resources>

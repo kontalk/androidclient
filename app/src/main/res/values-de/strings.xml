@@ -56,6 +56,7 @@
   <string name="message_type_label">Typ:\u0020</string>
   <string name="text_message">Textnachricht</string>
   <string name="image_message">Bildnachricht</string>
+  <string name="audio_message">Audionachricht</string>
   <string name="from_label">Von:\u0020</string>
   <string name="to_address_label">An:\u0020</string>
   <string name="sent_label">Gesendet:\u0020</string>
@@ -175,6 +176,7 @@
   <string name="menu_unblock_user">Freigeben</string>
   <string name="vcard_message">vCard-Nachricht</string>
   <string name="open_file">Datei öffnen</string>
+  <string name="open_audio">Audiodatei abspielen</string>
   <string name="msg_msgcenter_restarted">Nachrichtenzentrale neu gestartet.</string>
   <string name="downloading_attachment">Lade Anhang herunter…</string>
   <string name="decrypting_attachment">Anhang entschlüsseln...</string>
@@ -215,6 +217,7 @@
   <string name="pref_title_balloons">Ein Sprechblasendesign auswählen</string>
   <string name="attachment_picture">Bild</string>
   <string name="attachment_contact">Kontakt</string>
+  <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Bild senden</string>
   <string name="chooser_error_no_camera">Externer Speicher nicht verfügbar. Es ist nicht möglich, ein Bild von der Kamera aufzunehmen.</string>
   <string name="status_activity_title">Statusnachricht</string>
@@ -300,6 +303,11 @@
   <string name="err_passwords_mismatch">Passworte stimmen nicht überein!</string>
   <string name="err_password_invalid">Falsches Passwort.</string>
   <string name="err_change_passphrase">Ändern den Passwortes für den privaten Schlüssel nicht möglich.</string>
+  <string name="err_file_not_found">Datei nicht gefunden</string>
+  <string name="err_audio_record">Fehler beim Start der Audioaufnahme</string>
+  <string name="err_audio_record_writing">Fehler beim Schreiben auf den externen Speicher</string>
+  <string name="err_playing_audio">Fehler beim Audio abspielen</string>
+  <string name="err_playing_sdcard">Fehler beim Lesen vom externen Speicher</string>
   <string name="pref_media_settings">Medieneinstellungen</string>
   <string name="pref_image_resize">Bildgröße anpassen</string>
   <string name="pref_title_image_resize">Bildgröße vorm Senden anpassen</string>
