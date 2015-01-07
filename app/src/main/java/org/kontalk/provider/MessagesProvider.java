@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.kontalk.BuildConfig;
-import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
+import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -901,18 +901,22 @@ public class MessagesProvider extends ContentProvider {
                 // special case: Tigase upgrade
                 boolean tigase = Boolean.parseBoolean(uri.getQueryParameter("tigase"));
                 if (tigase) {
+                    final String SCHEMA_UPGRADE_PRE = "DROP trigger update_thread_on_update";
                     final String[] SCHEMA_UPGRADE = {
-                        "UPDATE " + TABLE_THREADS + " SET peer = REPLACE(peer, '@kontalk.net', ?)",
-                        "UPDATE " + TABLE_MESSAGES + " SET peer = REPLACE(peer, '@kontalk.net', ?)",
+                        "UPDATE " + TABLE_THREADS + " SET peer = SUBSTR(peer, 1, ?) || ?",
+                        "UPDATE " + TABLE_MESSAGES + " SET peer = SUBSTR(peer, 1, ?) || ?",
                     };
+                    final String SCHEMA_UPGRADE_POST = DatabaseHelper.TRIGGER_THREADS_UPDATE_COUNT;
                     // temporary change from network domain to server domain
                     // this is actually only for beta testers coming from beta3
                     ServerList list = ServerListUpdater.getCurrentList(getContext());
                     EndpointServer server = list.get(0);
                     String host = server.getNetwork();
 
+                    db.execSQL(SCHEMA_UPGRADE_PRE);
                     for (String sql : SCHEMA_UPGRADE)
-                        db.execSQL(sql, new Object[] { "@" + host });
+                        db.execSQL(sql, new Object[]{CompositeMessage.USERID_LENGTH, "@" + host});
+                    db.execSQL(SCHEMA_UPGRADE_POST);
 
                     return 0;
                 }
