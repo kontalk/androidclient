@@ -21,7 +21,6 @@ package org.kontalk.service.msgcenter;
 import java.io.IOException;
 
 import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
@@ -37,9 +36,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.kontalk.client.PublicKeyPresence;
 import org.kontalk.client.PublicKeyPublish;
-import org.kontalk.client.SubscribePublicKey;
-import org.kontalk.client.VCard4;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages.CommonColumns;
@@ -74,12 +72,12 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private Packet createSubscribe(Presence p) {
-        PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+        PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
         try {
 
-            if (_pkey instanceof SubscribePublicKey) {
-                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
+            if (_pkey instanceof PublicKeyPresence) {
+                PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
 
                 PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
                 PGPPublicKey publicKey = PGP.getMasterKey(pubRing);
@@ -169,9 +167,9 @@ class PresenceListener extends MessageCenterPacketListener {
             // extract public key
             String name = null, fingerprint = null;
             byte[] publicKey = null;
-            PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
-            if (_pkey instanceof SubscribePublicKey) {
-                SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
+            PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+            if (_pkey instanceof PublicKeyPresence) {
+                PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
                 byte[] _publicKey = pkey.getKey();
                 // extract the name from the uid
                 PGPPublicKeyRing ring = PGP.readPublicKeyring(_publicKey);
@@ -274,10 +272,10 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_STAMP, timestamp);
 
         // public key extension (for fingerprint)
-        PacketExtension _pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+        PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
-        if (_pkey instanceof SubscribePublicKey) {
-            SubscribePublicKey pkey = (SubscribePublicKey) _pkey;
+        if (_pkey instanceof PublicKeyPresence) {
+            PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
 
             String fingerprint = pkey.getFingerprint();
             if (fingerprint != null) {
@@ -312,7 +310,7 @@ class PresenceListener extends MessageCenterPacketListener {
         values.put(Users.LAST_SEEN, timestamp);
 
         // public key extension (for fingerprint)
-        SubscribePublicKey pkey = p.getExtension(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE);
+        PublicKeyPresence pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
         if (pkey != null) {
             String fingerprint = pkey.getFingerprint();
             if (fingerprint != null)
