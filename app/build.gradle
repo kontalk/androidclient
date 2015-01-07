@@ -64,12 +64,6 @@ android {
         }
         googleplay {
         }
-        tigase {
-            applicationId "org.kontalk.tigase"
-            resValue "string", "account_type", applicationId + '.account'
-            resValue "string", "user_itemtype", "vnd.android.cursor.item/org.kontalk.tigase.user"
-            buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.tigase.account"'
-        }
     }
 
 }
@@ -96,5 +90,4 @@ dependencies {
     compile 'org.igniterealtime.smack:smack-extensions:4.1.0-alpha6'
 
     googleplayCompile 'com.google.android.gms:play-services:5.0.89'
-    tigaseCompile 'com.google.android.gms:play-services:5.0.89'
 }
