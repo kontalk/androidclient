@@ -213,8 +213,8 @@ public class Kontalk extends Application {
     }
 
     private void tigaseUpgrade(final AccountManager am, final Account account) {
-        // delete all messages
-        MessagesProvider.deleteDatabase(Kontalk.this);
+        // upgrade messages
+        MessagesProvider.tigaseUpgrade(Kontalk.this);
         // delete custom server
         Preferences.setServerURI(this, null);
         // unregister!

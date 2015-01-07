@@ -23,13 +23,16 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.Preferences;
 
 import android.annotation.TargetApi;
@@ -894,6 +897,26 @@ public class MessagesProvider extends ContentProvider {
             // special case: delete all content
             case CONVERSATIONS_ALL_ID: {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+                // special case: Tigase upgrade
+                boolean tigase = Boolean.parseBoolean(uri.getQueryParameter("tigase"));
+                if (tigase) {
+                    final String[] SCHEMA_UPGRADE = {
+                        "UPDATE " + TABLE_THREADS + " SET peer = REPLACE(peer, 'kontalk.net', ?)",
+                        "UPDATE " + TABLE_MESSAGES + " SET peer = REPLACE(peer, 'kontalk.net', ?)",
+                    };
+                    // temporary change from network domain to server domain
+                    // this is actually only for beta testers coming from beta3
+                    ServerList list = ServerListUpdater.getCurrentList(getContext());
+                    EndpointServer server = list.get(0);
+                    String host = server.getNetwork();
+
+                    for (String sql : SCHEMA_UPGRADE)
+                        db.execSQL(sql, new Object[] { host });
+
+                    return 0;
+                }
+
                 boolean success = false;
                 int num = 0;
                 try {
@@ -1250,6 +1273,20 @@ public class MessagesProvider extends ContentProvider {
             b = true;
         c.close();
         return b;
+    }
+
+    /** Temporary method for Tigase switch upgrade. */
+    public static boolean tigaseUpgrade(Context ctx) {
+        try {
+            ContentResolver c = ctx.getContentResolver();
+            c.delete(Conversations.CONTENT_URI.buildUpon()
+                .appendQueryParameter("tigase", "true").build(), null, null);
+            return true;
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error during database delete!", e);
+            return false;
+        }
     }
 
     static {
