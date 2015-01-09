@@ -1832,22 +1832,23 @@ public class ComposeMessageFragment extends ListFragment implements
 
                             // we are receiving a presence from our peer, upgrade available resources
                             if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
-                                // our presence!!!
-
-                                // check if fingerprint changed
-                                String fingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
-                                if (fingerprint != null) {
-                                    Contact contact = mConversation != null ? mConversation.getContact() : null;
-                                    if (contact != null) {
-                                        PGPPublicKeyRing publicKey = contact.getPublicKeyRing();
-                                        if (publicKey != null) {
-                                            String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
-                                            if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
-                                                // fingerprint has changed since last time
-                                                // request public key - new key will be stored in users
-                                                MessageCenterService.requestPublicKey(getActivity(), bareFrom);
-                                            }
+                                // really not much sense in requesting the key for a non-existing contact
+                                Contact contact = mConversation != null ? mConversation.getContact() : null;
+                                if (contact != null) {
+                                    boolean requestKey = true;
+                                    PGPPublicKeyRing publicKey = contact.getPublicKeyRing();
+                                    // check if fingerprint changed
+                                    if (publicKey != null) {
+                                        String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
+                                        String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
+                                        if (newFingerprint == null || newFingerprint.equalsIgnoreCase(oldFingerprint)) {
+                                            // no fingerprint available or fingerprint has not changed since last time
+                                            requestKey = false;
                                         }
+                                    }
+
+                                    if (requestKey) {
+                                        MessageCenterService.requestPublicKey(getActivity(), bareFrom);
                                     }
                                 }
 
