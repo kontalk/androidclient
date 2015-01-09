@@ -166,6 +166,9 @@ public class XMPPConnectionHelper extends Thread {
                     trustStore, token);
             }
 
+            // apply packet timeout based on retry count
+            mConn.setPacketReplyTimeout((mRetryCount + 1) * KontalkConnection.DEFAULT_PACKET_TIMEOUT);
+
             if (mListener != null)
                 mListener.created(mConn);
         }

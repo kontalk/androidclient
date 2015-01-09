@@ -60,7 +60,7 @@ public class KontalkConnection extends XMPPTCPConnection {
     private static final String TAG = Kontalk.TAG;
 
     /** Packet reply timeout. */
-    private static final int DEFAULT_PACKET_TIMEOUT = 15000;
+    public static final int DEFAULT_PACKET_TIMEOUT = 15000;
 
     protected EndpointServer mServer;
 
