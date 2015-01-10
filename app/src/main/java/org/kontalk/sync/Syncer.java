@@ -152,13 +152,18 @@ public class Syncer {
                 String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                 if (iq.equals(id)) {
                     String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
-                    rosterCount = list.length;
-                    // prepare list to be filled in with presence data
-                    response = new ArrayList<PresenceItem>(rosterCount);
-                    for (String jid : list) {
-                        PresenceItem p = new PresenceItem();
-                        p.from = jid;
-                        response.add(p);
+                    if (list != null) {
+                        rosterCount = list.length;
+                        // prepare list to be filled in with presence data
+                        response = new ArrayList<PresenceItem>(rosterCount);
+                        for (String jid : list) {
+                            PresenceItem p = new PresenceItem();
+                            p.from = jid;
+                            response.add(p);
+                        }
+                    }
+                    else {
+                        rosterCount = 0;
                     }
 
                     // no roster elements
