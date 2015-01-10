@@ -1228,7 +1228,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void broadcastPresence(Roster roster, RosterEntry entry, String jid) {
         Intent i;
         // entry present and not pending subscription
-        if (isRosterEntrySubscribed(entry)) {
+        if (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid)) {
             // roster entry found, look for presence
             Presence presence = roster.getPresence(jid);
             i = PresenceListener.createIntent(this, presence);
