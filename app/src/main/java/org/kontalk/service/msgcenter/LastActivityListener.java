@@ -22,14 +22,11 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_LAST_ACT
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_GROUP_COUNT;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
 
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
-import org.kontalk.client.StanzaGroupExtension;
 
 import android.content.Intent;
 import android.util.Log;
@@ -54,14 +51,6 @@ class LastActivityListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
         i.putExtra(EXTRA_SECONDS, p.lastActivity);
-
-        // non-standard stanza group extension
-        PacketExtension ext = p.getExtension(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE);
-        if (ext != null && ext instanceof StanzaGroupExtension) {
-            StanzaGroupExtension g = (StanzaGroupExtension) ext;
-            i.putExtra(EXTRA_GROUP_ID, g.getId());
-            i.putExtra(EXTRA_GROUP_COUNT, g.getCount());
-        }
 
         Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
         sendBroadcast(i);

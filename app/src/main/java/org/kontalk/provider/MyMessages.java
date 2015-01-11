@@ -22,6 +22,9 @@ package org.kontalk.provider;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import org.kontalk.BuildConfig;
+
+
 public final class MyMessages {
     private MyMessages() {}
 
@@ -46,13 +49,21 @@ public final class MyMessages {
         public static final int DIRECTION_IN = 0;
         public static final int DIRECTION_OUT = 1;
 
+        /** Incoming message, not confirmed. */
         public static final int STATUS_INCOMING = 0;
+        /** Outgoing message, not sent. */
         public static final int STATUS_SENDING = 1;
+        /** Message was rejected with an error. */
         public static final int STATUS_ERROR = 2;
+        /** Message was not accepted (not used as of now). */
         public static final int STATUS_NOTACCEPTED = 3;
+        /** Message sent. */
         public static final int STATUS_SENT = 4;
+        /** Message was delivered to destination. */
         public static final int STATUS_RECEIVED = 5;
+        /** Incoming message was confirmed. */
         public static final int STATUS_CONFIRMED = 6;
+        /** Message was NOT delivered to destination. */
         public static final int STATUS_NOTDELIVERED = 7;
         /** Pending user review (e.g. unencryptable message). */
         public static final int STATUS_PENDING = 8;
@@ -76,8 +87,9 @@ public final class MyMessages {
             public static final String CONTENT = "content";
         }
 
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.message";
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.message";
+        private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".message";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
 
         public static final String THREAD_ID = "thread_id";
         public static final String SERVER_TIMESTAMP = "server_timestamp";
@@ -142,8 +154,9 @@ public final class MyMessages {
                     + MessagesProvider.AUTHORITY + "/threads/" + Uri.encode(peer));
         }
 
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.thread";
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.thread";
+        private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".thread";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
 
         public static final String MIME = "mime";
         public static final String CONTENT = "content";

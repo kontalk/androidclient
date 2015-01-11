@@ -5,7 +5,7 @@ Kontalk official Android client
 
 This is the official Android client for the Kontalk messaging system. It always implements the latest protocol.
 
-Latest alpha builds are available in the [Releases](https://github.com/kontalk/androidclient/wiki/Releases) page.
+Latest beta releases are available in the [Releases](//github.com/kontalk/androidclient/releases) page.
 
 Stable versions are also available through Google Play Store and F-Droid:  
 <a href="https://play.google.com/store/apps/details?id=org.kontalk">

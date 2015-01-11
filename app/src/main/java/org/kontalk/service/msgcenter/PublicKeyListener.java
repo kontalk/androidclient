@@ -26,16 +26,17 @@ import android.content.Intent;
 import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.VCard4;
+import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
-import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_VCARD;
+import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PUBLIC_KEY;
@@ -43,29 +44,29 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 
 
 /**
- * Packet Listener for vCard4 iq stanzas.
+ * Packet Listener for public key publish iq stanzas.
  * @author Daniele Ricci
  */
-class VCardListener extends MessageCenterPacketListener {
+class PublicKeyListener extends MessageCenterPacketListener {
 
-    public VCardListener(MessageCenterService instance) {
+    public PublicKeyListener(MessageCenterService instance) {
         super(instance);
     }
 
     @Override
     public void processPacket(Packet packet) {
-        VCard4 p = (VCard4) packet;
+        PublicKeyPublish p = (PublicKeyPublish) packet;
 
         // will be true if it's our card
         boolean myCard = false;
-        byte[] _publicKey = p.getPGPKey();
+        byte[] _publicKey = p.getPublicKey();
 
         // vcard was requested, store but do not broadcast
         if (p.getType() == IQ.Type.result) {
 
             if (_publicKey != null) {
 
-                String from = XmppStringUtils.parseBareAddress(p.getFrom());
+                String from = XmppStringUtils.parseBareJid(p.getFrom());
 
                 boolean networkUser = XMPPUtils.isLocalJID(from, getServer().getNetwork());
                 // our network - convert to userId
@@ -102,36 +103,38 @@ class VCardListener extends MessageCenterPacketListener {
                     }
                 }
 
-                try {
-                    if (networkUser) {
-                        String fingerprint = PGP.getFingerprint(_publicKey);
-                        UsersProvider.setUserKey(getContext(), from,
-                            _publicKey, fingerprint);
+                if (SyncAdapter.isActive(getContext())) {
+                    // sync currently active, broadcast the key
+                    Intent i = new Intent(ACTION_PUBLICKEY);
+                    i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
 
-                        // invalidate cache for this user
-                        Contact.invalidate(from);
+                    i.putExtra(EXTRA_FROM, p.getFrom());
+                    i.putExtra(EXTRA_TO, p.getTo());
+                    i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
+
+                    Log.v(MessageCenterService.TAG, "broadcasting public key: " + i);
+                    sendBroadcast(i);
+                }
+
+                else {
+                    try {
+                        Log.v("pubkey", "networkUser = " + networkUser + " (" + from + ")");
+                        if (networkUser) {
+                            String fingerprint = PGP.getFingerprint(_publicKey);
+                            Log.v("pubkey", "Updating key for " + from + " fingerprint " + fingerprint);
+                            UsersProvider.setUserKey(getContext(), from,
+                                _publicKey, fingerprint);
+
+                            // invalidate cache for this user
+                            Contact.invalidate(from);
+                        }
+                    }
+                    catch (Exception e) {
+                        // TODO warn user
+                        Log.e(MessageCenterService.TAG, "unable to update user key", e);
                     }
                 }
-                catch (Exception e) {
-                    // TODO warn user
-                    Log.e(MessageCenterService.TAG, "unable to update user key", e);
-                }
             }
-
-        }
-
-        // vcard coming from sync, send a broadcast but do not store
-        else if (p.getType() == IQ.Type.set) {
-
-            Intent i = new Intent(ACTION_VCARD);
-            i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
-
-            i.putExtra(EXTRA_FROM, p.getFrom());
-            i.putExtra(EXTRA_TO, p.getTo());
-            i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
-
-            Log.v(MessageCenterService.TAG, "broadcasting vcard: " + i);
-            sendBroadcast(i);
 
         }
     }

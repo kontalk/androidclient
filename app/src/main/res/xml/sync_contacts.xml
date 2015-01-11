@@ -18,5 +18,5 @@
 
 <sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
     android:contentAuthority="com.android.contacts"
-    android:accountType="org.kontalk.account"
+    android:accountType="@string/account_type"
     android:supportsUploading="false"/>

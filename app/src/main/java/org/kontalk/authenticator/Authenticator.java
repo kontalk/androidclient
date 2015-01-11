@@ -64,7 +64,9 @@ import android.os.Looper;
 import android.util.Base64;
 import android.widget.Toast;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
+import org.kontalk.client.EndpointServer;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
@@ -87,13 +89,14 @@ import static org.kontalk.crypto.PersonalKeyImporter.PUBLIC_KEY_FILENAME;
  */
 public class Authenticator extends AbstractAccountAuthenticator {
 
-    public static final String ACCOUNT_TYPE = "org.kontalk.account";
+    public static final String ACCOUNT_TYPE = BuildConfig.ACCOUNT_TYPE;
     public static final String ACCOUNT_TYPE_LEGACY = "org.kontalk.legacy.account";
     public static final String DATA_PRIVATEKEY = "org.kontalk.key.private";
     public static final String DATA_PUBLICKEY = "org.kontalk.key.public";
     public static final String DATA_BRIDGECERT = "org.kontalk.key.bridgeCert";
     public static final String DATA_NAME = "org.kontalk.key.name";
     public static final String DATA_USER_PASSPHRASE = "org.kontalk.userPassphrase";
+    public static final String DATA_SERVER_URI = "org.kontalk.server";
 
     /** @deprecated This was obviously deprecated from the beginning. */
     @Deprecated
@@ -124,11 +127,9 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     public static boolean isSelfJID(Context ctx, String bareJid) {
         String name = getDefaultAccountName(ctx);
-        if (name != null) {
-            return XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name))
+        return name != null &&
+            XMPPUtils.createLocalJID(ctx, MessageUtils.sha1(name))
                 .equalsIgnoreCase(bareJid);
-        }
-        return false;
     }
 
     public static String getDefaultDisplayName(Context context) {
@@ -138,11 +139,26 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     public static String getDisplayName(AccountManager am, Account account) {
-        return am.getUserData(account, DATA_NAME);
+        return account != null ? am.getUserData(account, DATA_NAME) : null;
+    }
+
+    public static EndpointServer getDefaultServer(Context context) {
+        AccountManager am = AccountManager.get(context);
+        Account account = getDefaultAccount(am);
+        return getServer(am, account);
+    }
+
+    public static EndpointServer getServer(AccountManager am, Account account) {
+        if (account != null) {
+            String uri = am.getUserData(account, DATA_SERVER_URI);
+            return uri != null ? new EndpointServer(uri) : null;
+        }
+        return null;
     }
 
     public static boolean hasPersonalKey(AccountManager am, Account account) {
-        return am.getUserData(account, DATA_PRIVATEKEY) != null &&
+        return account != null &&
+            am.getUserData(account, DATA_PRIVATEKEY) != null &&
             am.getUserData(account, DATA_PUBLICKEY) != null &&
             am.getUserData(account, DATA_BRIDGECERT) != null;
     }

@@ -20,7 +20,6 @@ package org.kontalk.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -32,6 +31,7 @@ import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -128,7 +128,6 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
-import org.kontalk.ui.AudioDialog.OnAudioDialogResult;
 import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.util.KontalkUtilities;
 import org.kontalk.util.MediaStorage;
@@ -150,7 +149,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
-        OnAudioDialogResult, AudioPlayerControl,
+        AudioDialog.AudioDialogListener, AudioPlayerControl,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         EmojiconGridFragment.OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
@@ -161,7 +160,9 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
 
+
     private static final int MAX_DURATION = 60000;
+    private static final int PRESENCE_DELAY_THRESHOLD = 5000;
 
     /** Context menu group ID for this fragment. */
     private static final int CONTEXT_MENU_GROUP_ID = 2;
@@ -198,10 +199,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private String mUserName;
     private String mUserPhone;
 
-    /** Presence probe packet id. */
-    private String mPresenceId;
-    /** Last most available stanza. */
-    private PresenceData mMostAvailable;
     /** Available resources. */
     private Set<String> mAvailableResources = new HashSet<String>();
 
@@ -212,6 +209,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
+    private AudioDialog mAudioDialog;
 
     /** PTT Message */
     private float mDraggingX = -1;
@@ -240,12 +238,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private TextWatcher mChatStateListener;
     private ImageButton mEmojiButton;
     private EmojiDrawer mEmojiDrawer;
-
-    private static final class PresenceData {
-        public String status;
-        public int priority;
-        public Date stamp;
-    }
 
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromUserId(Context context, String userId) {
@@ -552,6 +544,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                   Class<? extends MessageComponent<?>> klass) {
         Log.v(TAG, "sending binary content: " + uri);
         Uri newMsg = null;
+        String msgId = null;
         File previewFile = null;
         long length = -1;
 
@@ -566,7 +559,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
             offlineModeWarning();
 
-            String msgId = "draft" + (new Random().nextInt());
+            msgId = MessageCenterService.messageId();
 
             // generate thumbnail
             // FIXME this is blocking!!!!
@@ -581,7 +574,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
             // save to database
             ContentValues values = new ContentValues();
-            // must supply a message ID...
             values.put(Messages.MESSAGE_ID, msgId);
             values.put(Messages.PEER, mUserJID);
 
@@ -635,7 +627,7 @@ public class ComposeMessageFragment extends ListFragment implements
             String previewPath = (previewFile != null) ? previewFile.getAbsolutePath() : null;
             MessageCenterService.sendBinaryMessage(getActivity(),
                 mUserJID, mime, uri, length, previewPath, encrypted, compress,
-                ContentUris.parseId(newMsg));
+                ContentUris.parseId(newMsg), msgId);
         }
         else {
             getActivity().runOnUiThread(new Runnable() {
@@ -668,10 +660,12 @@ public class ComposeMessageFragment extends ListFragment implements
                 */
                 byte[] bytes = mText.getBytes();
 
+                String msgId = StringUtils.randomString(30);
+
                 // save to local storage
                 ContentValues values = new ContentValues();
                 // must supply a message ID...
-                values.put(Messages.MESSAGE_ID, "draft" + (new Random().nextInt()));
+                values.put(Messages.MESSAGE_ID, msgId);
                 values.put(Messages.PEER, mUserJID);
                 values.put(Messages.BODY_MIME, TextComponent.MIME_TYPE);
                 values.put(Messages.BODY_CONTENT, bytes);
@@ -705,8 +699,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
                     // send message!
                     MessageCenterService.sendTextMessage(getActivity(),
-                            mUserJID, mText, encrypted,
-                            ContentUris.parseId(newMsg));
+                        mUserJID, mText, encrypted,
+                        ContentUris.parseId(newMsg), msgId);
                 }
                 else {
                     getActivity().runOnUiThread(new Runnable() {
@@ -982,7 +976,8 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void selectAudioAttachment() {
-        new AudioDialog(getActivity(), this).show();
+        mAudioDialog = new AudioDialog(getActivity(), this);
+        mAudioDialog.show();
     }
 
     @Override
@@ -1797,8 +1792,8 @@ public class ComposeMessageFragment extends ListFragment implements
             if (mPrivacyListener == null) {
                 mPrivacyListener = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
-                        String from = XmppStringUtils.parseBareAddress(intent
-                                .getStringExtra(MessageCenterService.EXTRA_FROM));
+                        String from = XmppStringUtils.parseBareJid(intent
+                            .getStringExtra(MessageCenterService.EXTRA_FROM));
 
                         if (mUserJID.equals(from)) {
                             // this will trigger a Contact reload
@@ -1924,6 +1919,8 @@ public class ComposeMessageFragment extends ListFragment implements
     */
 
     private void subscribePresence() {
+        // TODO this needs serious refactoring
+        // TODO remove the latest presence calculation stuff
         if (mPresenceReceiver == null) {
             mPresenceReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
@@ -1934,145 +1931,75 @@ public class ComposeMessageFragment extends ListFragment implements
                         // we handle only (un)available presence stanzas
                         String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
 
-                        if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
+                        if (type == null) {
+                            // no roster entry found, request subscription
+
+                            // pre-approve our presence if we don't have contact's key
+                            Intent i = new Intent(context, MessageCenterService.class);
+                            i.setAction(MessageCenterService.ACTION_PRESENCE);
+                            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+                            context.startService(i);
+
+                            // request subscription
+                            i = new Intent(context, MessageCenterService.class);
+                            i.setAction(MessageCenterService.ACTION_PRESENCE);
+                            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+                            context.startService(i);
+                        }
+
+                        else if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
 
                             CharSequence statusText = null;
 
-                            String groupId = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
                             String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                            String bareFrom = from != null ? XmppStringUtils.parseBareAddress(from) : null;
+                            String bareFrom = from != null ? XmppStringUtils.parseBareJid(from) : null;
 
                             // we are receiving a presence from our peer, upgrade available resources
                             if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
-                                // our presence!!!
-
-                                // check if fingerprint changed
-                                String fingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
-                                if (fingerprint != null) {
-                                    Contact contact = mConversation != null ? mConversation.getContact() : null;
-                                    if (contact != null) {
-                                        PGPPublicKeyRing publicKey = contact.getPublicKeyRing();
-                                        if (publicKey != null) {
-                                            String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
-                                            if (!fingerprint.equalsIgnoreCase(oldFingerprint)) {
-                                                // fingerprint has changed since last time
-                                                // request vCard - new key will be stored in users
-                                                MessageCenterService.requestVCard(getActivity(), bareFrom);
-                                            }
+                                // really not much sense in requesting the key for a non-existing contact
+                                Contact contact = mConversation != null ? mConversation.getContact() : null;
+                                if (contact != null) {
+                                    boolean requestKey = true;
+                                    PGPPublicKeyRing publicKey = contact.getPublicKeyRing();
+                                    // check if fingerprint changed
+                                    if (publicKey != null) {
+                                        String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
+                                        String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
+                                        if (newFingerprint == null || newFingerprint.equalsIgnoreCase(oldFingerprint)) {
+                                            // no fingerprint available or fingerprint has not changed since last time
+                                            requestKey = false;
                                         }
+                                    }
+
+                                    if (requestKey) {
+                                        MessageCenterService.requestPublicKey(getActivity(), bareFrom);
                                     }
                                 }
 
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
-                                    mCurrentStatus = getString(R.string.seen_online_label);
-                                    if (!mIsTyping)
-                                        setStatusText(mCurrentStatus);
-
-                                    // abort presence probe if non-group stanza
-                                    if (groupId == null) mPresenceId = null;
+                                    statusText = getString(R.string.seen_online_label);
                                 }
                                 else if (Presence.Type.unavailable.toString().equals(type)) {
                                     mAvailableResources.remove(from);
                                     /*
-                                     * All available resources have gone. If we are
-                                     * not waiting for presence probe response, mark
+                                     * All available resources have gone. Mark
                                      * the user as offline immediately and use the
-                                     * timestamp provided with the stanza.
+                                     * timestamp provided with the stanza (if any).
                                      */
-                                    /*
-                                     * FIXME this part has a serious bug.
-                                     * Client might receive a certain set of
-                                     * presence stanzas (e.g. while syncer is
-                                     * running) which will empty mAvailableResources,
-                                     * thus taking the latest stanza (this one) as
-                                     * reference for last presence indication.
-                                     * In fact, the most important presence is
-                                     * always the most available or the most recent
-                                     * one.
-                                     * Anyway, this method is not reliable either
-                                     * because of presence information not being
-                                     * accounted for from the beginning. Therefore,
-                                     * we don't know when a presence informs us
-                                     * about a user being unavailable in that moment
-                                     * or because a probe has been requested.
-                                     */
-                                    if (mAvailableResources.size() == 0 && mPresenceId == null) {
+                                    if (mAvailableResources.size() == 0) {
                                         // an offline user can't be typing
                                         mIsTyping = false;
 
                                         // user offline
                                         long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                        if (stamp >= 0) {
+                                        if (stamp >= 0 && ((System.currentTimeMillis() - stamp) > PRESENCE_DELAY_THRESHOLD)) {
                                             statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
                                         }
                                         else {
                                             statusText = getString(R.string.seen_moment_ago_label);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // we have a presence group
-                            if (mPresenceId != null && mPresenceId.equals(groupId)) {
-                                if (mMostAvailable == null)
-                                    mMostAvailable = new PresenceData();
-
-                                boolean take = false;
-
-                                boolean available = (type == null || Presence.Type.available.toString().equals(type));
-                                long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                int priority = intent.getIntExtra(MessageCenterService.EXTRA_PRIORITY, 0);
-
-                                if (available) {
-                                    // take if higher priority
-                                    if (priority >= mMostAvailable.priority)
-                                        take = true;
-                                }
-                                else {
-                                    // take if most recent
-                                    long old = mMostAvailable.stamp != null ? mMostAvailable.stamp.getTime() : -1;
-                                    if (stamp >= old)
-                                        take = true;
-                                }
-
-                                if (take) {
-                                    // available stanza - null stamp
-                                    if (available) {
-                                        mMostAvailable.stamp = null;
-                                    }
-                                    // unavailable stanza - update stamp
-                                    else {
-                                        if (mMostAvailable.stamp == null)
-                                            mMostAvailable.stamp = new Date(stamp);
-                                        else
-                                            mMostAvailable.stamp.setTime(stamp);
-                                    }
-
-                                    mMostAvailable.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                                    mMostAvailable.priority = priority;
-                                }
-
-                                int count = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
-                                if (count <= 1 || mPresenceId == null) {
-                                    // we got all presence stanzas
-                                    Log.v(TAG, "got all presence stanzas or available stanza found (stamp=" + mMostAvailable.stamp +
-                                            ", status=" + mMostAvailable.status + ")");
-
-                                    // stop receiving presence probes
-                                    mPresenceId = null;
-
-                                    /*
-                                     * TODO if we receive a presence unavailable stanza
-                                     * we shall consider it only if there is no other
-                                     * available resource. So we shall keep a reference
-                                     * to all available resources and sync them
-                                     * whenever a presence stanza is received.
-                                     */
-                                    if (mAvailableResources.size() == 0) {
-                                        if (mMostAvailable.stamp != null) {
-                                            statusText = MessageUtils.formatRelativeTimeSpan(context,
-                                                    mMostAvailable.stamp.getTime());
                                         }
                                     }
                                 }
@@ -2085,17 +2012,19 @@ public class ComposeMessageFragment extends ListFragment implements
                             }
                         }
 
-                        // subscription accepted, send presence probe
+                        // subscription accepted, probe presence
                         else if (Presence.Type.subscribed.name().equals(type)) {
-                            mPresenceId = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                            presenceSubscribe();
                         }
                     }
 
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
                         // reset compose sent flag
                         mComposeSent = false;
+                        // reset available resources list
+                        mAvailableResources.clear();
 
-                        // send subscription request
+                        // probe presence
                         presenceSubscribe();
                     }
 
@@ -2138,22 +2067,11 @@ public class ComposeMessageFragment extends ListFragment implements
         if (context != null) {
             // all of this shall be done only if there isn't a request from the other contact
             if (mConversation.getRequestStatus() != Threads.REQUEST_WAITING) {
-                Contact c = mConversation.getContact();
-
-                // pre-approve our presence if we don't have contact's key
-                if (c == null || c.getPublicKeyRing() == null) {
-                    Intent i = new Intent(context, MessageCenterService.class);
-                    i.setAction(MessageCenterService.ACTION_PRESENCE);
-                    i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                    i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-                    context.startService(i);
-                }
-
-                // send subscription request
+                // request last presence
                 Intent i = new Intent(context, MessageCenterService.class);
                 i.setAction(MessageCenterService.ACTION_PRESENCE);
                 i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.name());
                 context.startService(i);
             }
         }
@@ -2164,98 +2082,7 @@ public class ComposeMessageFragment extends ListFragment implements
             mLocalBroadcastManager.unregisterReceiver(mPresenceReceiver);
             mPresenceReceiver = null;
         }
-
-        // send unsubscription request
-        Intent i = new Intent(getActivity(), MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_PRESENCE);
-        i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-        i.putExtra(MessageCenterService.EXTRA_TYPE, "unsubscribe");
-        getActivity().startService(i);
     }
-
-    /*
-    @Override
-    public boolean tx(ClientConnection connection, String txId, MessageLite pack) {
-        if (pack instanceof UserLookupResponse) {
-            UserLookupResponse _pack = (UserLookupResponse) pack;
-            if (_pack.getEntryCount() > 0) {
-                UserLookupResponse.Entry res = _pack.getEntry(0);
-                CharSequence text = null;
-                try {
-                    Activity context = getActivity();
-                    if (context != null) {
-                        if (res.hasTimediff()) {
-                            long diff = res.getTimediff();
-                            if (diff == 0) {
-                                text = getResources().getString(R.string.seen_online_label);
-                            }
-                            else if (diff <= 10) {
-                                text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
-                            }
-                        }
-
-                        String afterText = null;
-
-                        // update UsersProvider if necessary
-                        ContentValues values = new ContentValues(2);
-                        if (res.hasTimestamp())
-                            values.put(Users.LAST_SEEN, res.getTimestamp());
-
-                        if (res.hasStatus()) {
-                            afterText = res.getStatus();
-                            if (!TextUtils.isEmpty(afterText)) {
-                                Contact c = getContact();
-                                if (c != null)
-                                    afterText = Preferences
-                                        .decryptUserdata(getActivity(), afterText, c.getNumber());
-                            }
-
-                            values.put(Users.STATUS, afterText);
-                        }
-                        else {
-                            values.putNull(Users.STATUS);
-                        }
-
-                        context.getContentResolver().update(
-                            Users.CONTENT_URI, values,
-                            Users.HASH + "=?", new String[] { userId });
-                        // time to invalidate cache
-                        // TODO this should be done by cursor notification
-                        Contact.invalidate(userId);
-
-                        if (text == null && res.hasTimestamp()) {
-                            long time = res.getTimestamp();
-                            if (time > 0) {
-                                text = buildLastSeenText(MessageUtils.formatRelativeTimeSpan(context, time * 1000));
-                            }
-                        }
-
-                        if (text != null) {
-                            final CharSequence banner = text;
-                            // show last seen banner
-                            context.runOnUiThread(new Runnable() {
-                                public void run() {
-                                    try {
-                                        setStatusText(banner);
-                                    }
-                                    catch (Exception e) {
-                                        // something could happen in the meanwhile e.g. fragment destruction
-                                    }
-                                }
-                            });
-                        }
-                    }
-                }
-                catch (Exception e) {
-                    // what here?
-                    Log.e(TAG, "user lookup response error!", e);
-                }
-            }
-        }
-
-        return false;
-    }
-    */
 
     private void setStatusText(CharSequence text) {
         Activity parent = getActivity();
@@ -2434,6 +2261,7 @@ public class ComposeMessageFragment extends ListFragment implements
         // release audio player
         if (mPlayer != null) {
             stopMediaPlayerUpdater();
+            mMediaPlayerMessageId = -1;
             mPlayer.release();
             mPlayer = null;
         }
@@ -2457,6 +2285,10 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mTextEntry != null) {
             mTextEntry.removeTextChangedListener(mChatStateListener);
             mTextEntry.setText("");
+        }
+        if (mAudioDialog != null) {
+            mAudioDialog.dismiss();
+            mAudioDialog = null;
         }
     }
 
@@ -2653,6 +2485,11 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onRecordingSuccessful(File file) {
         if (file != null)
             sendBinaryMessage(Uri.fromFile(file), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+    }
+
+    @Override
+    public void onRecordingCancel() {
+        mAudioDialog = null;
     }
 
     @Override

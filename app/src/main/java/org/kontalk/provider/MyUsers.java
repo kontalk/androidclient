@@ -21,6 +21,8 @@ package org.kontalk.provider;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import org.kontalk.BuildConfig;
+
 
 public class MyUsers {
     private MyUsers() {}
@@ -30,9 +32,12 @@ public class MyUsers {
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
                 + UsersProvider.AUTHORITY + "/users");
+        public static final Uri CONTENT_URI_OFFLINE =  Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.OFFLINE, "true").build();
 
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.kontalk.user";
-        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.kontalk.user";
+        private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".user";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/" + ITEM_TYPE;
+        public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + ITEM_TYPE;
 
         public static final String HASH = "hash";
         public static final String NUMBER = "number";

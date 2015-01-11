@@ -44,6 +44,7 @@ import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
+import android.provider.Settings;
 import android.util.Log;
 
 
@@ -53,6 +54,9 @@ import android.util.Log;
  */
 public class XMPPConnectionHelper extends Thread {
     private static final String TAG = MessageCenterService.TAG;
+
+    /** Whether to use STARTTLS or direct SSL connection. */
+    private static final boolean USE_STARTTLS = true;
 
     /** Max connection retry count if idle. */
     private static final int MAX_IDLE_BACKOFF = 10;
@@ -68,7 +72,7 @@ public class XMPPConnectionHelper extends Thread {
     private int mRetryCount;
 
     /** Connection is re-created on demand if necessary. */
-    protected AbstractXMPPConnection mConn;
+    protected KontalkConnection mConn;
 
     /** Client listener. */
     private ConnectionHelperListener mListener;
@@ -134,13 +138,7 @@ public class XMPPConnectionHelper extends Thread {
 
             // destroy connection
             if (mConn != null) {
-                try {
-                    mConn.disconnect();
-                }
-                catch (NotConnectedException e) {
-                    // ignored
-                }
-
+                mConn.instantShutdown();
                 mConn = null;
             }
         }
@@ -153,18 +151,23 @@ public class XMPPConnectionHelper extends Thread {
             if (!acceptAnyCertificate)
                 trustStore = InternalTrustStore.getTrustStore(mContext);
 
+            String resource = getResource(mContext);
+
             if (key == null) {
-                mConn = new KontalkConnection(mServer, true,
-                    acceptAnyCertificate, trustStore);
+                mConn = new KontalkConnection(resource, mServer, !USE_STARTTLS,
+                    acceptAnyCertificate, trustStore, token);
             }
 
             else {
-                mConn = new KontalkConnection(mServer, true,
+                mConn = new KontalkConnection(resource, mServer, !USE_STARTTLS,
                     key.getBridgePrivateKey(),
                     key.getBridgeCertificate(),
                     acceptAnyCertificate,
-                    trustStore);
+                    trustStore, token);
             }
+
+            // apply packet timeout based on retry count
+            mConn.setPacketReplyTimeout((mRetryCount + 1) * KontalkConnection.DEFAULT_PACKET_TIMEOUT);
 
             if (mListener != null)
                 mListener.created(mConn);
@@ -180,8 +183,7 @@ public class XMPPConnectionHelper extends Thread {
 
         // login
         if (key != null || token != null)
-            // the dummy value is not actually used
-            mConn.login(null, token != null ? token : "dummy");
+            mConn.login();
 
     }
 
@@ -220,25 +222,21 @@ public class XMPPConnectionHelper extends Thread {
                 if (mConnecting) {
                     Log.e(TAG, "connection error", ie);
                     // forcibly close connection, no matter what
-                    try {
-                        mConn.disconnect();
-                    }
-                    catch (Exception e) {
-                        // ignored
-                    }
+                    mConn.instantShutdown();
                     // EXTERMINATE!!
                     mConn = null;
 
-                    // SASL: not-authorized
-                    if (ie instanceof SASLErrorException && ((SASLErrorException) ie)
-                        .getSASLFailure().getSASLError() == SASLError.not_authorized &&
-                        mRetryCount >= MAX_AUTH_ERRORS) {
+                    // SASL: not authorized
+                    if (ie instanceof SASLErrorException) {
+                        SASLError error = ((SASLErrorException) ie).getSASLFailure().getSASLError();
+                        if ((error == SASLError.not_authorized || error == SASLError.invalid_authzid) &&
+                            mRetryCount >= MAX_AUTH_ERRORS) {
 
-                        if (mListener != null) {
-                            mListener.authenticationFailed();
-
-                            // this ends here.
-                            break;
+                            if (mListener != null) {
+                                mListener.authenticationFailed();
+                                // this ends here.
+                                break;
+                            }
                         }
                     }
 
@@ -284,6 +282,10 @@ public class XMPPConnectionHelper extends Thread {
         mConnecting = false;
     }
 
+    private static String getResource(Context context) {
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
     public AbstractXMPPConnection getConnection() {
         return mConn;
     }
@@ -321,7 +323,7 @@ public class XMPPConnectionHelper extends Thread {
         interrupt();
 
         if (mConn != null)
-            mConn.disconnect();
+            mConn.instantShutdown();
     }
 
 

@@ -22,13 +22,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
 import org.kontalk.crypto.Coder;
+import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.util.Preferences;
 
 import android.annotation.TargetApi;
@@ -55,7 +59,7 @@ import android.util.Log;
 public class MessagesProvider extends ContentProvider {
 
     private static final String TAG = MessagesProvider.class.getSimpleName();
-    public static final String AUTHORITY = "org.kontalk.messages";
+    public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".messages";
 
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";
@@ -327,7 +331,6 @@ public class MessagesProvider extends ContentProvider {
             if (oldVersion == 4) {
                 EndpointServer server = Preferences.getEndpointServer(mContext);
                 String host = server.getNetwork();
-
                 for (int i = 0; i < SCHEMA_UPGRADE_V4.length; i++) {
                     if (SCHEMA_UPGRADE_V4[i].startsWith("INSERT "))
                         db.execSQL(SCHEMA_UPGRADE_V4[i], new Object[] { host });
@@ -894,6 +897,30 @@ public class MessagesProvider extends ContentProvider {
             // special case: delete all content
             case CONVERSATIONS_ALL_ID: {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+                // special case: Tigase upgrade
+                boolean tigase = Boolean.parseBoolean(uri.getQueryParameter("tigase"));
+                if (tigase) {
+                    final String SCHEMA_UPGRADE_PRE = "DROP trigger update_thread_on_update";
+                    final String[] SCHEMA_UPGRADE = {
+                        "UPDATE " + TABLE_THREADS + " SET peer = SUBSTR(peer, 1, ?) || ?",
+                        "UPDATE " + TABLE_MESSAGES + " SET peer = SUBSTR(peer, 1, ?) || ?",
+                    };
+                    final String SCHEMA_UPGRADE_POST = DatabaseHelper.TRIGGER_THREADS_UPDATE_COUNT;
+                    // temporary change from network domain to server domain
+                    // this is actually only for beta testers coming from beta3
+                    ServerList list = ServerListUpdater.getCurrentList(getContext());
+                    EndpointServer server = list.get(0);
+                    String host = server.getNetwork();
+
+                    db.execSQL(SCHEMA_UPGRADE_PRE);
+                    for (String sql : SCHEMA_UPGRADE)
+                        db.execSQL(sql, new Object[]{CompositeMessage.USERID_LENGTH, "@" + host});
+                    db.execSQL(SCHEMA_UPGRADE_POST);
+
+                    return 0;
+                }
+
                 boolean success = false;
                 int num = 0;
                 try {
@@ -1250,6 +1277,20 @@ public class MessagesProvider extends ContentProvider {
             b = true;
         c.close();
         return b;
+    }
+
+    /** Temporary method for Tigase switch upgrade. */
+    public static boolean tigaseUpgrade(Context ctx) {
+        try {
+            ContentResolver c = ctx.getContentResolver();
+            c.delete(Conversations.CONTENT_URI.buildUpon()
+                .appendQueryParameter("tigase", "true").build(), null, null);
+            return true;
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error during database delete!", e);
+            return false;
+        }
     }
 
     static {

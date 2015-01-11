@@ -161,7 +161,7 @@ public class CompositeMessage {
 
     public String getSender(boolean generic) {
         return generic && XmppStringUtils.isFullJID(mSender) ?
-            XmppStringUtils.parseBareAddress(mSender) : mSender;
+            XmppStringUtils.parseBareJid(mSender) : mSender;
     }
 
     public String getSender() {

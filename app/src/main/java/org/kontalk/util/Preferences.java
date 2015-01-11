@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.provider.MyMessages.Messages;
@@ -144,8 +145,8 @@ public final class Preferences {
             }
         }
 
-        ServerList list = ServerListUpdater.getCurrentList(context);
-        return (list != null) ? list.random() : null;
+        // return server stored in the default account
+        return Authenticator.getDefaultServer(context);
     }
 
     /** Returns a server provider reflecting the current settings. */

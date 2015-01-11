@@ -96,7 +96,7 @@ public class XMPPUtils {
     }
 
     public static boolean equalsBareJID(String full, String bare) {
-        return XmppStringUtils.parseBareAddress(full).equalsIgnoreCase(bare);
+        return XmppStringUtils.parseBareJid(full).equalsIgnoreCase(bare);
     }
 
 }

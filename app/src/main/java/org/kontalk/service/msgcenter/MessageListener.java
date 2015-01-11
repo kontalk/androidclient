@@ -33,14 +33,12 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
-import org.kontalk.client.AckServerReceipt;
+import org.jivesoftware.smackx.receipts.DeliveryReceipt;
+import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.OutOfBandData;
-import org.kontalk.client.ReceivedServerReceipt;
-import org.kontalk.client.SentServerReceipt;
-import org.kontalk.client.ServerReceipt;
-import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.crypto.Coder;
 import org.kontalk.message.AudioComponent;
 import org.kontalk.message.CompositeMessage;
@@ -68,7 +66,6 @@ import android.util.Log;
 class MessageListener extends MessageCenterPacketListener {
 
     private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
-    private static final String selectionIncoming = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageListener(MessageCenterService instance) {
         super(instance);
@@ -119,103 +116,41 @@ class MessageListener extends MessageCenterPacketListener {
             else
                 serverTimestamp = System.currentTimeMillis();
 
-            PacketExtension _ext = m.getExtension(ServerReceipt.NAMESPACE);
+            DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
 
             // delivery receipt
-            if (_ext != null && !ServerReceiptRequest.ELEMENT_NAME.equals(_ext.getElementName())) {
-                ServerReceipt ext = (ServerReceipt) _ext;
-
+            if (deliveryReceipt != null) {
                 synchronized (waitingReceipt) {
                     String id = m.getPacketID();
                     Long _msgId = waitingReceipt.get(id);
                     long msgId = (_msgId != null) ? _msgId : 0;
                     ContentResolver cr = getContext().getContentResolver();
 
-                    // TODO compress this code
-                    if (ext instanceof ReceivedServerReceipt) {
-
-                        // message has been delivered: check if we have previously stored the server id
-                        if (msgId > 0) {
-                            ContentValues values = new ContentValues(3);
-                            values.put(Messages.MESSAGE_ID, ext.getId());
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionOutgoing, null);
-
-                            waitingReceipt.remove(id);
-                        }
-                        else {
-                            Uri msg = Messages.getUri(ext.getId());
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
-                            values.put(Messages.STATUS_CHANGED, serverTimestamp);
-                            cr.update(msg, values, selectionOutgoing, null);
-                        }
-
-                        // send ack
-                        AckServerReceipt receipt = new AckServerReceipt(id);
-                        org.jivesoftware.smack.packet.Message ack = new org.jivesoftware.smack.packet.Message(m.getFrom(),
-                            org.jivesoftware.smack.packet.Message.Type.chat);
-                        ack.addExtension(receipt);
-
-                        sendPacket(ack);
-                    }
-
-                    else if (ext instanceof SentServerReceipt) {
-                        long now = System.currentTimeMillis();
-
-                        if (msgId > 0) {
-                            ContentValues values = new ContentValues(3);
-                            values.put(Messages.MESSAGE_ID, ext.getId());
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, now);
-                            values.put(Messages.SERVER_TIMESTAMP, now);
-                            cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                                values, selectionOutgoing, null);
-
-                            waitingReceipt.remove(id);
-
-                            // we can now release the message center. Hopefully
-                            // there will be one hold and one matching release.
-                            getIdleHandler().release();
-                        }
-                        else {
-                            Uri msg = Messages.getUri(ext.getId());
-                            ContentValues values = new ContentValues(2);
-                            values.put(Messages.STATUS, Messages.STATUS_SENT);
-                            values.put(Messages.STATUS_CHANGED, now);
-                            values.put(Messages.SERVER_TIMESTAMP, now);
-                            cr.update(msg, values, selectionOutgoing, null);
-                        }
-                    }
-
-                    // ack is received after sending a <received/> message
-                    else if (ext instanceof AckServerReceipt) {
-                        // mark message as confirmed
-                        ContentValues values = new ContentValues(1);
-                        values.put(Messages.STATUS, Messages.STATUS_CONFIRMED);
+                    // message has been delivered: check if we have previously stored the server id
+                    if (msgId > 0) {
+                        ContentValues values = new ContentValues(3);
+                        values.put(Messages.MESSAGE_ID, deliveryReceipt.getId());
+                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                        values.put(Messages.STATUS_CHANGED, serverTimestamp);
                         cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
-                            values, selectionIncoming, null);
+                            values, selectionOutgoing, null);
 
                         waitingReceipt.remove(id);
                     }
-
+                    else {
+                        // FIXME this could lead to fake delivery receipts because message IDs are client-generated
+                        Uri msg = Messages.getUri(deliveryReceipt.getId());
+                        ContentValues values = new ContentValues(2);
+                        values.put(Messages.STATUS, Messages.STATUS_RECEIVED);
+                        values.put(Messages.STATUS_CHANGED, serverTimestamp);
+                        cr.update(msg, values, selectionOutgoing, null);
+                    }
                 }
             }
 
             // incoming message
             else {
-                String msgId = null;
-                if (_ext != null) {
-                    ServerReceiptRequest req = (ServerReceiptRequest) _ext;
-                    // prepare for ack
-                    msgId = req.getId();
-                }
-
-                if (msgId == null)
-                    msgId = "incoming" + StringUtils.randomString(6);
-
+                String msgId = m.getPacketID();
                 String sender = from;
                 String body = m.getBody();
 
@@ -346,15 +281,18 @@ class MessageListener extends MessageCenterPacketListener {
                 if (msg != null) {
 
                     Uri msgUri = incoming(msg);
-                    if (_ext != null) {
+
+                    if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
                         // send ack :)
-                        ReceivedServerReceipt receipt = new ReceivedServerReceipt(msgId);
+                        DeliveryReceipt receipt = new DeliveryReceipt(msgId);
                         org.jivesoftware.smack.packet.Message ack =
                             new org.jivesoftware.smack.packet.Message(from,
                                 org.jivesoftware.smack.packet.Message.Type.chat);
                         ack.addExtension(receipt);
 
                         if (msgUri != null) {
+                            // hold on to message center
+                            getIdleHandler().hold();
                             // will mark this message as confirmed
                             long storageId = ContentUris.parseId(msgUri);
                             waitingReceipt.put(ack.getPacketID(), storageId);
@@ -376,7 +314,7 @@ class MessageListener extends MessageCenterPacketListener {
 
                 // message has been rejected: mark as error
                 if (msgId > 0) {
-                    ContentValues values = new ContentValues(3);
+                    ContentValues values = new ContentValues(2);
                     values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
                     values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
                     cr.update(ContentUris.withAppendedId(Messages.CONTENT_URI, msgId),
@@ -387,6 +325,14 @@ class MessageListener extends MessageCenterPacketListener {
                     // we can now release the message center. Hopefully
                     // there will be one hold and one matching release.
                     getIdleHandler().release();
+                }
+                else {
+                    // FIXME this could lead to fake delivery receipts because message IDs are client-generated
+                    Uri msg = Messages.getUri(m.getPacketID());
+                    ContentValues values = new ContentValues(2);
+                    values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
+                    values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                    cr.update(msg, values, selectionOutgoing, null);
                 }
             }
         }

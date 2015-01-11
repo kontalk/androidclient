@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,9 @@ import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.Roster.SubscriptionMode;
+import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
@@ -42,11 +45,18 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smack.tcp.sm.StreamManagementException;
+import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jivesoftware.smackx.ping.PingFailedListener;
+import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.ping.packet.Ping;
+import org.jivesoftware.smackx.receipts.DeliveryReceipt;
+import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -82,21 +92,18 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.AckServerReceipt;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
+import org.kontalk.client.PublicKeyPresence;
+import org.kontalk.client.PublicKeyPublish;
+import org.kontalk.client.RosterMatch;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
-import org.kontalk.client.ReceivedServerReceipt;
-import org.kontalk.client.SentServerReceipt;
-import org.kontalk.client.ServerReceiptRequest;
 import org.kontalk.client.ServerlistCommand;
-import org.kontalk.client.StanzaGroupExtension;
-import org.kontalk.client.SubscribePublicKey;
 import org.kontalk.client.UploadInfo;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
@@ -133,6 +140,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         SmackConfiguration.DEBUG_ENABLED = BuildConfig.DEBUG;
     }
 
+    /** Ping to server interval in seconds. */
+    private static final int PING_INTERVAL = 120;
+
     public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
     public static final String ACTION_RELEASE = "org.kontalk.action.RELEASE";
@@ -142,8 +152,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
 
-    /** Request roster match. */
+    /** Request the roster. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
+
+    /** Request roster match. */
+    public static final String ACTION_ROSTER_MATCH = "org.kontalk.action.ROSTER_MATCH";
 
     /**
      * Broadcasted when we are connected and authenticated to the server.
@@ -153,6 +166,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /**
      * Broadcasted when a presence stanza is received.
      * Send this intent to broadcast presence.
+     * Send this intent with type="probe" to request a presence in the roster.
      */
     public static final String ACTION_PRESENCE = "org.kontalk.action.PRESENCE";
 
@@ -188,6 +202,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_VCARD = "org.kontalk.action.VCARD";
 
     /**
+     * Broadcasted when receiving a public key.
+     * Send this intent to request a public key.
+     */
+    public static final String ACTION_PUBLICKEY = "org.kontalk.action.PUBLICKEY";
+
+    /**
      * Broadcasted when receiving the server list.
      * Send this intent to request the server list.
      */
@@ -211,8 +231,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
 
     // common parameters
-    /** connect to custom server -- TODO not used yet */
-    public static final String EXTRA_SERVER = "org.kontalk.server";
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
 
@@ -227,9 +245,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_STATUS = "org.kontalk.presence.status";
     public static final String EXTRA_SHOW = "org.kontalk.presence.show";
     public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
-    public static final String EXTRA_GROUP_ID = "org.kontalk.presence.groupId";
-    public static final String EXTRA_GROUP_COUNT = "org.kontalk.presence.groupCount";
-    public static final String EXTRA_PUSH_REGID = "org.kontalk.presence.push.regId";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
     public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
 
@@ -259,6 +274,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // other
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
+    private static final String DEFAULT_PUSH_PROVIDER = "gcm";
 
     /** Idle signal. */
     private static final int MSG_IDLE = 1;
@@ -459,19 +475,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void configure() {
+        ProviderManager.addIQProvider(RosterMatch.ELEMENT_NAME, RosterMatch.NAMESPACE, new RosterMatch.Provider());
         ProviderManager.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
+        ProviderManager.addIQProvider(PublicKeyPublish.ELEMENT_NAME, PublicKeyPublish.NAMESPACE, new PublicKeyPublish.Provider());
         ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
         ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
         ProviderManager.addIQProvider(ServerlistCommand.ELEMENT_NAME, ServerlistCommand.NAMESPACE, new ServerlistCommand.ResultProvider());
-        ProviderManager.addExtensionProvider(StanzaGroupExtension.ELEMENT_NAME, StanzaGroupExtension.NAMESPACE, new StanzaGroupExtension.Provider());
-        ProviderManager.addExtensionProvider(SentServerReceipt.ELEMENT_NAME, SentServerReceipt.NAMESPACE, new SentServerReceipt.Provider());
-        ProviderManager.addExtensionProvider(ReceivedServerReceipt.ELEMENT_NAME, ReceivedServerReceipt.NAMESPACE, new ReceivedServerReceipt.Provider());
-        ProviderManager.addExtensionProvider(ServerReceiptRequest.ELEMENT_NAME, ServerReceiptRequest.NAMESPACE, new ServerReceiptRequest.Provider());
-        ProviderManager.addExtensionProvider(AckServerReceipt.ELEMENT_NAME, AckServerReceipt.NAMESPACE, new AckServerReceipt.Provider());
         ProviderManager.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
         ProviderManager.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
-        ProviderManager.addExtensionProvider(SubscribePublicKey.ELEMENT_NAME, SubscribePublicKey.NAMESPACE, new SubscribePublicKey.Provider());
+        ProviderManager.addExtensionProvider(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE, new PublicKeyPresence.Provider());
         ProviderManager.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
+        // we want to manually handle roster stuff
+        Roster.setDefaultSubscriptionMode(SubscriptionMode.manual);
     }
 
     @Override
@@ -567,19 +582,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void handleIntent(Intent intent) {
-        boolean offlineMode = isOfflineMode(this);
-
         // stop immediately
-        if (offlineMode)
+        if (isOfflineMode(this))
             stopSelf();
 
         if (intent != null) {
             String action = intent.getAction();
 
             // proceed to start only if network is available
-            boolean canConnect = isNetworkConnectionAvailable(this) && !offlineMode;
-            boolean isConnected = mConnection != null && mConnection.isAuthenticated();
+            boolean canConnect = canConnect();
+            boolean isConnected = isConnected();
             boolean doConnect = false;
+
+            // TODO convert actions to classes
 
             if (ACTION_PACKET.equals(action)) {
                 Object data;
@@ -655,17 +670,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     sendMessage(intent.getExtras());
             }
 
-            else if (ACTION_ROSTER.equals(action)) {
+            else if (ACTION_ROSTER.equals(action) || ACTION_ROSTER_MATCH.equals(action)) {
                 if (canConnect && isConnected) {
+                    Packet iq;
+
+                    if (ACTION_ROSTER_MATCH.equals(action)) {
+                        iq = new RosterMatch();
+                        String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
+
+                        for (String item : list) {
+                            ((RosterMatch) iq).addItem(item);
+                        }
+                    }
+                    else {
+                        iq = new RosterPacket();
+                    }
+
                     String id = intent.getStringExtra(EXTRA_PACKET_ID);
-                    String[] list = intent.getStringArrayExtra(EXTRA_JIDLIST);
-                    int c = list.length;
-                    RosterPacket iq = new RosterPacket();
                     iq.setPacketID(id);
                     // iq default type is get
-
-                    for (int i = 0; i < c; i++)
-                        iq.addRosterItem(new RosterPacket.Item(list[i], null));
 
                     sendPacket(iq);
                 }
@@ -673,19 +696,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_PRESENCE.equals(action)) {
                 if (canConnect && isConnected) {
+                    final String id = intent.getStringExtra(EXTRA_PACKET_ID);
                     String type = intent.getStringExtra(EXTRA_TYPE);
-                    String id = intent.getStringExtra(EXTRA_PACKET_ID);
-
                     String to = intent.getStringExtra(EXTRA_TO);
 
-                    Packet pack;
                     if ("probe".equals(type)) {
-                        /*
-                         * Smack doesn't support probe stanzas so we have to
-                         * create it manually.
-                         */
-                        String probe = String.format("<presence type=\"probe\" to=\"%s\" id=\"%s\"/>", to, id);
-                        pack = new RawPacket(probe);
+                        // probing is actually looking into the roster
+                        Roster roster = mConnection.getRoster();
+
+                        if (to == null) {
+                            for (RosterEntry entry : roster.getEntries()) {
+                                broadcastPresence(roster, entry);
+                            }
+                        }
+                        else {
+                            broadcastPresence(roster, to);
+                        }
                     }
                     else {
                         String show = intent.getStringExtra(EXTRA_SHOW);
@@ -698,14 +724,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         if (show != null)
                             p.setMode(Presence.Mode.valueOf(show));
 
-                        String regId = intent.getStringExtra(EXTRA_PUSH_REGID);
-                        if (!TextUtils.isEmpty(regId))
-                            p.addExtension(new PushRegistration(regId));
-
-                        pack = p;
+                        sendPacket(p);
                     }
 
-                    sendPacket(pack);
                 }
             }
 
@@ -726,6 +747,32 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     p.setTo(intent.getStringExtra(EXTRA_TO));
 
                     sendPacket(p);
+                }
+            }
+
+            else if (ACTION_PUBLICKEY.equals(action)) {
+                if (canConnect && isConnected) {
+                    String to = intent.getStringExtra(EXTRA_TO);
+                    if (to != null) {
+                        // request public key for a specific user
+                        PublicKeyPublish p = new PublicKeyPublish();
+                        p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
+                        p.setTo(to);
+
+                        sendPacket(p);
+                    }
+                    else {
+                        // request public keys for the whole roster
+                        Collection<RosterEntry> buddies = mConnection.getRoster().getEntries();
+                        for (RosterEntry buddy : buddies) {
+                            if (isRosterEntrySubscribed(buddy)) {
+                                PublicKeyPublish p = new PublicKeyPublish();
+                                p.setTo(buddy.getUser());
+
+                                sendPacket(p);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -873,28 +920,38 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
-        // we want to manually handle roster stuff
-        mConnection.getRoster().setSubscriptionMode(SubscriptionMode.manual);
+        final PingManager pingMgr = PingManager.getInstanceFor(connection);
+        pingMgr.setPingInterval(PING_INTERVAL);
+        pingMgr.registerPingFailedListener(new PingFailedListener() {
+            @Override
+            public void pingFailed() {
+                Log.v(TAG, "ping failed, restarting message center");
+                // unregister this listener
+                pingMgr.unregisterPingFailedListener(this);
+                // restart the message center
+                restart(getApplicationContext());
+            }
+        });
 
         PacketFilter filter;
 
         filter = new PacketTypeFilter(Ping.class);
-        mConnection.addPacketListener(new PingListener(this), filter);
+        connection.addPacketListener(new PingListener(this), filter);
 
         filter = new PacketTypeFilter(Presence.class);
-        mConnection.addPacketListener(new PresenceListener(this), filter);
+        connection.addPacketListener(new PresenceListener(this), filter);
 
-        filter = new PacketTypeFilter(RosterPacket.class);
-        mConnection.addPacketListener(new RosterListener(this), filter);
+        filter = new PacketTypeFilter(RosterMatch.class);
+        connection.addPacketListener(new RosterMatchListener(this), filter);
 
         filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        mConnection.addPacketListener(new MessageListener(this), filter);
+        connection.addPacketListener(new MessageListener(this), filter);
 
         filter = new PacketTypeFilter(LastActivity.class);
-        mConnection.addPacketListener(new LastActivityListener(this), filter);
+        connection.addPacketListener(new LastActivityListener(this), filter);
 
-        filter = new PacketTypeFilter(VCard4.class);
-        mConnection.addPacketListener(new VCardListener(this), filter);
+        filter = new PacketTypeFilter(PublicKeyPublish.class);
+        connection.addPacketListener(new PublicKeyListener(this), filter);
     }
 
     @Override
@@ -905,10 +962,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     @Override
     public void authenticated(XMPPConnection connection) {
         Log.v(TAG, "authenticated!");
-        // discovery
-        discovery();
+
+        // add message ack listener
+        try {
+            mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
+        }
+        catch (StreamManagementException.StreamManagementNotEnabledException e) {
+            Log.w(TAG, "stream management not available - disabling delivery receipts");
+        }
+        // load the roster now
+        roster();
         // send presence
         sendPresence();
+        // discovery
+        discovery();
         // resend failed and pending messages
         resendPendingMessages(false);
         // resend failed and pending received receipts
@@ -950,12 +1017,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPacket(info);
     }
 
+    /** Requests the roster. */
+    private void roster() {
+        mConnection.getRoster();
+    }
+
     /** Sends our initial presence. */
     private void sendPresence() {
         String status = Preferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
             p.setStatus(status);
+
+        // TODO find a place for this
+        p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
 
         sendPacket(p);
     }
@@ -998,6 +1073,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,
+                Messages.MESSAGE_ID,
                 Messages.PEER,
                 Messages.BODY_CONTENT,
                 Messages.SECURITY_FLAGS,
@@ -1006,6 +1082,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.ATTACHMENT_FETCH_URL,
                 Messages.ATTACHMENT_PREVIEW_PATH,
                 Messages.ATTACHMENT_LENGTH,
+                Messages.ATTACHMENT_COMPRESS,
                 // TODO Messages.ATTACHMENT_SECURITY_FLAGS,
             },
             filter.toString(),
@@ -1013,15 +1090,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         while (c.moveToNext()) {
             long id = c.getLong(0);
-            String peer = c.getString(1);
-            byte[] textContent = c.getBlob(2);
-            int securityFlags = c.getInt(3);
-            String attMime = c.getString(4);
-            String attFileUri = c.getString(5);
-            String attFetchUrl = c.getString(6);
-            String attPreviewPath = c.getString(7);
-            long attLength = c.getLong(8);
-            // TODO int attSecurityFlags = c.getInt(9);
+            String msgId = c.getString(1);
+            String peer = c.getString(2);
+            byte[] textContent = c.getBlob(3);
+            int securityFlags = c.getInt(4);
+            String attMime = c.getString(5);
+            String attFileUri = c.getString(6);
+            String attFetchUrl = c.getString(7);
+            String attPreviewPath = c.getString(8);
+            long attLength = c.getLong(9);
+            int compress = c.getInt(10);
+            // TODO int attSecurityFlags = c.getInt(11);
 
             // media message encountered and no upload service available - delay message
             if (attFileUri != null && attFetchUrl == null && getUploadService() == null && !retrying) {
@@ -1032,6 +1111,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
+            b.putString("org.kontalk.message.packetId", msgId);
             b.putString("org.kontalk.message.to", peer);
             // TODO shouldn't we pass security flags directly here??
             b.putBoolean("org.kontalk.message.encrypt", securityFlags != Coder.SECURITY_CLEARTEXT);
@@ -1052,6 +1132,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 b.putString("org.kontalk.message.media.uri", attFileUri);
                 b.putString("org.kontalk.message.preview.path", attPreviewPath);
                 b.putLong("org.kontalk.message.length", attLength);
+                b.putInt("org.kontalk.message.compress", compress);
             }
 
             Log.v(TAG, "resending pending message " + id);
@@ -1069,7 +1150,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 Messages.PEER,
             },
             Messages.DIRECTION + " = " + Messages.DIRECTION_IN + " AND " +
-            Messages.STATUS + " = " + Messages.STATUS_RECEIVED,
+            Messages.STATUS + " = " + Messages.STATUS_INCOMING,
             null, Messages._ID);
 
         while (c.moveToNext()) {
@@ -1080,6 +1161,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Bundle b = new Bundle();
 
             b.putLong("org.kontalk.message.msgId", id);
+            b.putString("org.kontalk.message.packetId", msgId);
             b.putString("org.kontalk.message.to", peer);
             b.putString("org.kontalk.message.ack", msgId);
 
@@ -1130,6 +1212,38 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
+    private boolean isRosterEntrySubscribed(RosterEntry entry) {
+        return (entry != null && (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) &&
+            entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING);
+    }
+
+    private void broadcastPresence(Roster roster, RosterEntry entry) {
+        broadcastPresence(roster, entry, entry.getUser());
+    }
+
+    private void broadcastPresence(Roster roster, String jid) {
+        broadcastPresence(roster, roster.getEntry(jid), jid);
+    }
+
+    private void broadcastPresence(Roster roster, RosterEntry entry, String jid) {
+        Intent i;
+        // entry present and not pending subscription
+        if (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid)) {
+            // roster entry found, look for presence
+            Presence presence = roster.getPresence(jid);
+            i = PresenceListener.createIntent(this, presence);
+        }
+        else {
+            // null type indicates no roster entry found or not authorized
+            i = new Intent(ACTION_PRESENCE);
+            i.putExtra(EXTRA_FROM, jid);
+        }
+
+        // to keep track of request-reply
+        i.putExtra(EXTRA_PACKET_ID, jid);
+        mLocalBroadcastManager.sendBroadcast(i);
+    }
+
     private void sendSubscriptionReply(String to, String packetId, int action) {
 
         if (action == PRIVACY_ACCEPT) {
@@ -1158,7 +1272,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         values.put(Threads.REQUEST_STATUS, Threads.REQUEST_NONE);
 
         getContentResolver().update(Requests.CONTENT_URI,
-            values, CommonColumns.PEER + "=?", new String[] { to });
+            values, CommonColumns.PEER + "=?", new String[]{to});
     }
 
     private void sendPrivacyListCommand(final String to, final int action) {
@@ -1238,13 +1352,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendMessage(Bundle data) {
-
         // check if message is already pending
         long msgId = data.getLong("org.kontalk.message.msgId");
         if (mWaitingReceipt.containsValue(msgId)) {
             Log.v(TAG, "message already queued and waiting - dropping");
             return;
         }
+
+        String id = data.getString("org.kontalk.message.packetId");
 
         boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
         String mime = data.getString("org.kontalk.message.mime");
@@ -1267,7 +1382,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 i.setData(mediaUri);
                 i.setAction(UploadService.ACTION_UPLOAD);
                 i.putExtra(UploadService.EXTRA_POST_URL, postUrl);
-                i.putExtra(UploadService.EXTRA_MESSAGE_ID, msgId);
+                i.putExtra(UploadService.EXTRA_DATABASE_ID, msgId);
+                i.putExtra(UploadService.EXTRA_MESSAGE_ID, id);
                 i.putExtra(UploadService.EXTRA_MIME, mime);
                 i.putExtra(UploadService.EXTRA_ENCRYPT, encrypt);
                 i.putExtra(UploadService.EXTRA_PREVIEW_PATH, previewPath);
@@ -1290,10 +1406,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             m.setType(org.jivesoftware.smack.packet.Message.Type.chat);
             if (to != null) m.setTo(to);
 
-            if (msgId > 0) {
-                String id = m.getPacketID();
+            // set message id
+            m.setPacketID(id);
+            if (msgId > 0)
                 mWaitingReceipt.put(id, msgId);
-            }
 
             String body = data.getString("org.kontalk.message.body");
             if (body != null)
@@ -1355,6 +1471,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 new org.jivesoftware.smack.packet.Message(m.getTo(),
                                         m.getType());
 
+                        encMsg.setBody(getString(R.string.text_encrypted));
                         encMsg.setPacketID(m.getPacketID());
                         encMsg.addExtension(new E2EEncryption(toMessage));
 
@@ -1366,7 +1483,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // FIXME notify just once per session (store in Kontalk instance?)
 
                 catch (PGPException pgpe) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will not be sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_no_personal_key,
                             Toast.LENGTH_LONG).show();
@@ -1374,7 +1491,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 catch (IOException io) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will not be sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_no_personal_key,
                             Toast.LENGTH_LONG).show();
@@ -1382,7 +1499,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 catch (IllegalArgumentException noPublicKey) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will be not sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_no_public_key,
                             Toast.LENGTH_LONG).show();
@@ -1390,7 +1507,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
 
                 catch (GeneralSecurityException e) {
-                    // warn user: message will be sent cleartext
+                    // warn user: message will not be sent
                     if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
                         Toast.makeText(this, R.string.warn_encryption_failed,
                             Toast.LENGTH_LONG).show();
@@ -1405,6 +1522,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             (Messages.CONTENT_URI, msgId), values, null, null);
 
                     // do not send the message
+                    if (msgId > 0)
+                        mWaitingReceipt.remove(id);
                     mIdleHandler.release();
                     return;
                 }
@@ -1416,7 +1535,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // received receipt
             if (serverId != null) {
-                m.addExtension(new ReceivedServerReceipt(serverId));
+                m.addExtension(new DeliveryReceipt(serverId));
             }
             else {
                 // add chat state if message is not a received receipt
@@ -1425,7 +1544,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // standalone message: no receipt
                 if (ackRequest)
-                    m.addExtension(new ServerReceiptRequest());
+                    DeliveryReceiptRequest.addTo(m);
             }
 
             sendPacket(m);
@@ -1447,6 +1566,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         MessageUtils.fillContentValues(values, msg);
 
+        values.put(Messages.STATUS, Messages.STATUS_INCOMING);
         values.put(Messages.UNREAD, true);
         values.put(Messages.NEW, true);
         values.put(Messages.DIRECTION, Messages.DIRECTION_IN);
@@ -1468,9 +1588,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
         }).start();
 
-        if (!sender.equalsIgnoreCase(MessagingNotification.getPaused()))
+        // fire notification only if message was actually inserted to database
+        if (msgUri != null && !sender.equalsIgnoreCase(MessagingNotification.getPaused())) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
+        }
 
         return msgUri;
     }
@@ -1536,6 +1658,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
     }
 
+    public boolean canConnect() {
+        return isNetworkConnectionAvailable(this) && !isOfflineMode(this);
+    }
+
+    public boolean isConnected() {
+        return mConnection != null && mConnection.isAuthenticated();
+    }
+
     /** Checks for network availability. */
     public static boolean isNetworkConnectionAvailable(Context context) {
         final ConnectivityManager cm = (ConnectivityManager) context
@@ -1554,10 +1684,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static Intent getStartIntent(Context context) {
-        final Intent intent = new Intent(context, MessageCenterService.class);
-        EndpointServer server = Preferences.getEndpointServer(context);
-        intent.putExtra(EndpointServer.class.getName(), server.toString());
-        return intent;
+        return new Intent(context, MessageCenterService.class);
     }
 
     public static void start(Context context) {
@@ -1587,9 +1714,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "restarting message center");
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_RESTART);
-        // include server uri if server needs to be started
-        EndpointServer server = Preferences.getEndpointServer(context);
-        i.putExtra(EXTRA_SERVER, server.toString());
         context.startService(i);
     }
 
@@ -1603,9 +1727,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_HOLD);
-        // include server uri if server needs to be started
-        EndpointServer server = Preferences.getEndpointServer(context);
-        i.putExtra(EXTRA_SERVER, server.toString());
         context.startService(i);
     }
 
@@ -1622,18 +1743,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
-    public static void updateStatus(final Context context) {
-        updateStatus(context, PushServiceManager.getInstance(context)
-                .getRegistrationId());
-    }
-
     /** Broadcasts our presence to the server. */
-    public static void updateStatus(final Context context, String pushRegistrationId) {
+    public static void updateStatus(final Context context) {
         // FIXME this is what sendPresence already does
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_PRESENCE);
         i.putExtra(EXTRA_STATUS, Preferences.getStatusMessage(context));
-        i.putExtra(EXTRA_PUSH_REGID, pushRegistrationId);
         context.startService(i);
     }
 
@@ -1648,10 +1763,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     /** Sends a text message. */
-    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId) {
+    public static void sendTextMessage(final Context context, String to, String text, boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", TextComponent.MIME_TYPE);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.body", text);
@@ -1665,10 +1781,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             String to,
             String mime, Uri localUri, long length, String previewPath,
             boolean encrypt, int compress,
-        long msgId) {
+        long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.media.uri", localUri.toString());
@@ -1682,10 +1799,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public static void sendUploadedMedia(final Context context, String to,
             String mime, Uri localUri, long length, String previewPath, String fetchUrl,
-            boolean encrypt, long msgId) {
+            boolean encrypt, long msgId, String packetId) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_MESSAGE);
         i.putExtra("org.kontalk.message.msgId", msgId);
+        i.putExtra("org.kontalk.message.packetId", packetId);
         i.putExtra("org.kontalk.message.mime", mime);
         i.putExtra("org.kontalk.message.to", to);
         i.putExtra("org.kontalk.message.preview.uri", localUri.toString());
@@ -1695,6 +1813,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         i.putExtra("org.kontalk.message.encrypt", encrypt);
         i.putExtra("org.kontalk.message.chatState", ChatState.active.name());
         context.startService(i);
+    }
+
+    public static String messageId() {
+        return StringUtils.randomString(30);
     }
 
     /** Replies to a presence subscription request. */
@@ -1729,6 +1851,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestVCard(final Context context, String to) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_VCARD);
+        i.putExtra(EXTRA_TO, to);
+        context.startService(i);
+    }
+
+    public static void requestPublicKey(final Context context, String to) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
         i.putExtra(EXTRA_TO, to);
         context.startService(i);
     }
@@ -1800,8 +1929,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mPushRegistrationId = regId;
 
         // notify the server about the change
-        updateStatus(this, mPushRegistrationId);
-        mPushService.setRegisteredOnServer(mPushRegistrationId != null);
+        if (regId != null && canConnect() && isConnected())
+            sendPushRegistration(regId);
+    }
+
+    private void sendPushRegistration(final String regId) {
+        IQ iq = new PushRegistration(DEFAULT_PUSH_PROVIDER, regId);
+        iq.setTo("push@" + mServer.getNetwork());
+        try {
+            mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
+                @Override
+                public void processPacket(Packet packet) throws NotConnectedException {
+                    if (mPushService != null)
+                        mPushService.setRegisteredOnServer(regId != null);
+                }
+            });
+        }
+        catch (NotConnectedException e) {
+            // ignored
+        }
     }
 
     public static String getPushSenderId() {

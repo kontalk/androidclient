@@ -173,6 +173,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         // send the code
         boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
+        mServerProvider.reset();
         mValidator = new NumberValidator(this, mServerProvider, mName, mPhone,
             imported ? null : mKey, mPassphrase);
         mValidator.setListener(this);
@@ -251,6 +252,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             public void run() {
                 abort(true);
                 Intent i = new Intent();
+                i.putExtra(NumberValidation.PARAM_SERVER_URI, v.getServer().toString());
                 i.putExtra(NumberValidation.PARAM_PUBLICKEY, publicKeyData);
                 i.putExtra(NumberValidation.PARAM_PRIVATEKEY, privateKeyData);
                 setResult(RESULT_OK, i);

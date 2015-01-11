@@ -24,17 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
-
-import org.kontalk.R;
-import org.kontalk.client.NumberValidator;
-import org.kontalk.crypto.PGP;
-import org.kontalk.data.Contact;
-import org.kontalk.provider.MyUsers.Users;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.util.MessageUtils;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -56,6 +48,13 @@ import android.provider.ContactsContract.RawContacts;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
+
+import org.kontalk.R;
+import org.kontalk.client.NumberValidator;
+import org.kontalk.crypto.PGP;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.service.msgcenter.MessageCenterService;
 
 
 /**
@@ -103,10 +102,10 @@ public class Syncer {
         private final String iq;
         private final List<String> jidList;
         private int presenceCount;
-        private int vCardCount;
+        private int pubkeyCount;
         private int rosterCount = -1;
-        private boolean allPresenceReceived;
-        private boolean blocklistReceived;
+        // TODO this will be replaced by privacy lists
+        private boolean blocklistReceived = true;
 
         public PresenceBroadcastReceiver(String iq, List<String> jidList, Syncer notifyTo) {
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
@@ -123,15 +122,13 @@ public class Syncer {
                 // consider only presences received *after* roster response
                 if (response != null) {
 
-                    // consider only presences with our group ID
-                    String gid = intent.getStringExtra(MessageCenterService.EXTRA_GROUP_ID);
-                    if (iq.equals(gid)) {
-
-                        String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                    String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                    if (type != null) {
                         // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareAddress(jid);
+                        String compare = XmppStringUtils.parseBareJid(jid);
                         for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
                                 item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
                                 item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
                                 if (!item.presence) {
@@ -143,57 +140,69 @@ public class Syncer {
                             }
                         }
 
-                        int groupCount = intent.getIntExtra(MessageCenterService.EXTRA_GROUP_COUNT, 0);
-                        allPresenceReceived = (groupCount <= 1);
-
                         // done with presence data and blocklist
-                        if (rosterCount >= 0 && allPresenceReceived &&
-                                vCardCount == presenceCount && blocklistReceived)
+                        if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
                             finish();
-
                     }
                 }
             }
 
-            // roster result received
-            else if (MessageCenterService.ACTION_ROSTER.equals(action)) {
+            // roster match result received
+            else if (MessageCenterService.ACTION_ROSTER_MATCH.equals(action)) {
                 String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                 if (iq.equals(id)) {
                     String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
-                    rosterCount = list.length;
-                    // prepare list to be filled in with presence data
-                    response = new ArrayList<PresenceItem>(rosterCount);
-                    for (String jid : list) {
-                        PresenceItem p = new PresenceItem();
-                        p.from = jid;
-                        response.add(p);
+                    if (list != null) {
+                        rosterCount = list.length;
+                        // prepare list to be filled in with presence data
+                        response = new ArrayList<PresenceItem>(rosterCount);
+                        for (String jid : list) {
+                            PresenceItem p = new PresenceItem();
+                            p.from = jid;
+                            response.add(p);
+                        }
+                    }
+                    else {
+                        rosterCount = 0;
                     }
 
                     // no roster elements
-                    if (rosterCount == 0 && blocklistReceived)
+                    if (rosterCount == 0 && blocklistReceived) {
                         finish();
-
+                    }
+                    else {
+                        Syncer w = notifyTo.get();
+                        if (w != null) {
+                            // request presence data for the whole roster
+                            w.requestPresenceData();
+                            // request public keys for the whole roster
+                            w.requestPublicKeys();
+                        }
+                    }
                 }
             }
 
-            else if (MessageCenterService.ACTION_VCARD.equals(action)) {
+            else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
+                Log.v(TAG, "public key received: " + intent + " (response=" + response + ")");
                 if (response != null) {
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     // see if bare JID is present in roster response
-                    String compare = XmppStringUtils.parseBareAddress(jid);
+                    String compare = XmppStringUtils.parseBareJid(jid);
+                    Log.v(TAG, "looking in the roster: " + compare);
                     for (PresenceItem item : response) {
-                        if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                        Log.v(TAG, "matching public key with roster element: " + item.from);
+                        if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
                             item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
 
                             // increment vcard count
-                            vCardCount++;
+                            Log.v(TAG, "public key saved.");
+                            pubkeyCount++;
                             break;
                         }
                     }
 
                     // done with presence data and blocklist
-                    if (rosterCount >= 0 && allPresenceReceived &&
-                            vCardCount == presenceCount && blocklistReceived)
+                    if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
                         finish();
 
                 }
@@ -208,9 +217,9 @@ public class Syncer {
 
                     for (String jid : list) {
                         // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareAddress(jid);
+                        String compare = XmppStringUtils.parseBareJid(jid);
                         for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareAddress(item.from).equalsIgnoreCase(compare)) {
+                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
                                 item.blocked = true;
 
                                 break;
@@ -221,8 +230,7 @@ public class Syncer {
                 }
 
                 // done with presence data and blocklist
-                if (rosterCount >= 0 && allPresenceReceived &&
-                        vCardCount >= presenceCount)
+                if (rosterCount >= 0 && pubkeyCount >= presenceCount)
                     finish();
             }
 
@@ -242,8 +250,9 @@ public class Syncer {
                  */
                 Syncer w = notifyTo.get();
                 if (w != null) {
-                    w.sendRoster(iq, jidList);
-                    w.requestBlocklist();
+                    // request a roster match
+                    w.requestRosterMatch(iq, jidList);
+                    // TODO request privacy lists -- w.requestBlocklist();
                 }
             }
         }
@@ -320,10 +329,8 @@ public class Syncer {
 
         // query all contacts
         Cursor cursor;
-        Uri offlineUri = Users.CONTENT_URI.buildUpon()
-            .appendQueryParameter(Users.OFFLINE, "true").build();
         try {
-            cursor = usersProvider.query(offlineUri,
+            cursor = usersProvider.query(Users.CONTENT_URI_OFFLINE,
                 new String[] { Users.JID, Users.NUMBER, Users.LOOKUP_KEY },
                 null, null, null);
         }
@@ -375,7 +382,8 @@ public class Syncer {
                 Log.e(TAG, "contact delete error", e);
                 syncResult.databaseError = true;
             }
-            return;
+
+            commit(usersProvider, syncResult);
         }
 
         else {
@@ -386,10 +394,10 @@ public class Syncer {
             PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
-            f.addAction(MessageCenterService.ACTION_ROSTER);
-            f.addAction(MessageCenterService.ACTION_CONNECTED);
-            f.addAction(MessageCenterService.ACTION_VCARD);
+            f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
+            f.addAction(MessageCenterService.ACTION_PUBLICKEY);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
+            f.addAction(MessageCenterService.ACTION_CONNECTED);
             mLocalBroadcastManager.registerReceiver(receiver, f);
 
             // request current connection status
@@ -478,7 +486,7 @@ public class Syncer {
                         // blocked status
                         registeredValues.put(Users.BLOCKED, entry.blocked);
 
-                        usersProvider.update(offlineUri, registeredValues,
+                        usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { entry.from });
                     }
                     catch (RemoteException e) {
@@ -500,21 +508,7 @@ public class Syncer {
                     return;
                 }
 
-                // commit users table
-                uri = Users.CONTENT_URI.buildUpon()
-                    .appendQueryParameter(Users.RESYNC, "true")
-                    .appendQueryParameter(Users.COMMIT, "true")
-                    .build();
-                try {
-                    usersProvider.update(uri, null, null, null);
-                    Log.d(TAG, "users database committed");
-                    Contact.invalidate();
-                }
-                catch (RemoteException e) {
-                    Log.e(TAG, "error committing users database - aborting sync", e);
-                    syncResult.databaseError = true;
-                    return;
-                }
+                commit(usersProvider, syncResult);
             }
 
             // timeout or error
@@ -533,18 +527,49 @@ public class Syncer {
         }
     }
 
+    private void commit(ContentProviderClient usersProvider, SyncResult syncResult) {
+        // commit users table
+        Uri uri = Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.RESYNC, "true")
+            .appendQueryParameter(Users.COMMIT, "true")
+            .build();
+        try {
+            usersProvider.update(uri, null, null, null);
+            Log.d(TAG, "users database committed");
+            Contact.invalidate();
+        }
+        catch (RemoteException e) {
+            Log.e(TAG, "error committing users database - aborting sync", e);
+            syncResult.databaseError = true;
+        }
+    }
+
     public static boolean isError(SyncResult syncResult) {
         return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
     }
 
-    private void sendRoster(String id, List<String> list) {
+    private void requestRosterMatch(String id, List<String> list) {
         Intent i = new Intent(mContext, MessageCenterService.class);
-        i.setAction(MessageCenterService.ACTION_ROSTER);
+        i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
         i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
-        i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[0]));
+        i.putExtra(MessageCenterService.EXTRA_JIDLIST, list.toArray(new String[list.size()]));
         mContext.startService(i);
     }
 
+    private void requestPresenceData() {
+        Intent i = new Intent(mContext, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PRESENCE);
+        i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
+        mContext.startService(i);
+    }
+
+    private void requestPublicKeys() {
+        Intent i = new Intent(mContext, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_PUBLICKEY);
+        mContext.startService(i);
+    }
+
+    // TODO convert to privacy lists
     private void requestBlocklist() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_BLOCKLIST);

@@ -103,6 +103,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
     public static final String PARAM_PRIVATEKEY = "org.kontalk.privatekey";
+    public static final String PARAM_SERVER_URI = "org.kontalk.server";
 
     private AccountManager mAccountManager;
     private EditText mNameText;
@@ -378,7 +379,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
-            finishLogin(data.getByteArrayExtra(PARAM_PRIVATEKEY), data.getByteArrayExtra(PARAM_PUBLICKEY));
+            finishLogin(data.getStringExtra(PARAM_SERVER_URI),
+                data.getByteArrayExtra(PARAM_PRIVATEKEY), data.getByteArrayExtra(PARAM_PUBLICKEY));
         }
     }
 
@@ -759,7 +761,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final byte[] privateKeyData, final byte[] publicKeyData) {
+    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
@@ -772,10 +774,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             throw new RuntimeException("error decoding public key", e);
         }
 
-        completeLogin(privateKeyData, publicKeyData);
+        completeLogin(serverUri, privateKeyData, publicKeyData);
     }
 
-    private void completeLogin(byte[] privateKeyData, byte[] publicKeyData) {
+    private void completeLogin(String serverUri, byte[] privateKeyData, byte[] publicKeyData) {
         // generate the bridge certificate
         byte[] bridgeCertData;
         try {
@@ -793,7 +795,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // procedure will continue in removeAccount callback
         mAccountManager.removeAccount(account,
             new AccountRemovalCallback(this, account, mPassphrase,
-                privateKeyData, publicKeyData, bridgeCertData, mName),
+                privateKeyData, publicKeyData, bridgeCertData, mName, serverUri),
             mHandler);
     }
 
@@ -886,10 +888,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         private final byte[] publicKeyData;
         private final byte[] bridgeCertData;
         private final String name;
+        private final String serverUri;
 
         public AccountRemovalCallback(NumberValidation activity, Account account,
                 String passphrase, byte[] privateKeyData, byte[] publicKeyData,
-                byte[] bridgeCertData, String name) {
+                byte[] bridgeCertData, String name, String serverUri) {
             this.a = new WeakReference<NumberValidation>(activity);
             this.account = account;
             this.passphrase = passphrase;
@@ -897,6 +900,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             this.publicKeyData = publicKeyData;
             this.bridgeCertData = bridgeCertData;
             this.name = name;
+            this.serverUri = serverUri;
         }
 
         @Override
@@ -912,6 +916,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 data.putString(Authenticator.DATA_PUBLICKEY, Base64.encodeToString(publicKeyData, Base64.NO_WRAP));
                 data.putString(Authenticator.DATA_BRIDGECERT, Base64.encodeToString(bridgeCertData, Base64.NO_WRAP));
                 data.putString(Authenticator.DATA_NAME, name);
+                data.putString(Authenticator.DATA_SERVER_URI, serverUri);
 
                 // this is the password to the private key
                 am.addAccountExplicitly(account, passphrase, data);
@@ -921,6 +926,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 am.setUserData(account, Authenticator.DATA_PUBLICKEY, data.getString(Authenticator.DATA_PUBLICKEY));
                 am.setUserData(account, Authenticator.DATA_BRIDGECERT, data.getString(Authenticator.DATA_BRIDGECERT));
                 am.setUserData(account, Authenticator.DATA_NAME, data.getString(Authenticator.DATA_NAME));
+                am.setUserData(account, Authenticator.DATA_SERVER_URI, serverUri);
 
                 // Set contacts sync for this account.
                 ContentResolver.setSyncAutomatically(account, ContactsContract.AUTHORITY, true);
