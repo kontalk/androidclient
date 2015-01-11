@@ -189,10 +189,12 @@ public class Kontalk extends Application {
                         // account removed!!! Shutdown everything.
                         if (my == null) {
                             Log.w(TAG, "my account has been removed, shutting down");
-                            // delete all messages
-                            MessagesProvider.deleteDatabase(Kontalk.this);
                             // stop message center
                             MessageCenterService.stop(Kontalk.this);
+                            // disable components
+                            setServicesEnabled(Kontalk.this, false);
+                            // delete all messages
+                            MessagesProvider.deleteDatabase(Kontalk.this);
                             // invalidate cached personal key
                             invalidatePersonalKey();
                         }
