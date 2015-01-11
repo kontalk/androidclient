@@ -49,6 +49,7 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
+import org.jivesoftware.smackx.iqversion.VersionManager;
 
 import android.util.Log;
 
@@ -203,5 +204,7 @@ public class KontalkConnection extends XMPPTCPConnection {
                 return new AndroidDebugger(connection, writer, reader);
             }
         });
+        // do not append Smack version
+        VersionManager.setAutoAppendSmackVersion(false);
     }
 }

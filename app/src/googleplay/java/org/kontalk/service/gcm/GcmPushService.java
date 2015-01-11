@@ -32,6 +32,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import org.kontalk.Kontalk;
 import org.kontalk.service.msgcenter.IPushListener;
 import org.kontalk.service.msgcenter.IPushService;
+import org.kontalk.util.SystemUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -204,7 +205,7 @@ public class GcmPushService implements IPushService {
         // since the existing regID is not guaranteed to work with the new
         // app version.
         int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-        int currentVersion = Kontalk.getVersionCode(mContext);
+        int currentVersion = SystemUtils.getVersionCode(mContext);
         if (registeredVersion != currentVersion) {
             Log.i(TAG, "App version changed.");
             return "";
@@ -266,7 +267,7 @@ public class GcmPushService implements IPushService {
 
     private void storeRegistrationId(String regId) {
         final SharedPreferences prefs = getGCMPreferences(mContext);
-        int appVersion = Kontalk.getVersionCode(mContext);
+        int appVersion = SystemUtils.getVersionCode(mContext);
         prefs.edit()
             .putString(PROPERTY_REG_ID, regId)
             .putInt(PROPERTY_APP_VERSION, appVersion)

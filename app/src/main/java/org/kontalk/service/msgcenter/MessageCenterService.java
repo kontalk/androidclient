@@ -52,6 +52,7 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.ping.packet.Ping;
@@ -124,6 +125,7 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -920,6 +922,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
+        // setup ping manager
         final PingManager pingMgr = PingManager.getInstanceFor(connection);
         pingMgr.setPingInterval(PING_INTERVAL);
         pingMgr.registerPingFailedListener(new PingFailedListener() {
@@ -932,6 +935,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 restart(getApplicationContext());
             }
         });
+
+        // setup version manager
+        final VersionManager verMgr = VersionManager.getInstanceFor(connection);
+        verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionName(this));
 
         PacketFilter filter;
 

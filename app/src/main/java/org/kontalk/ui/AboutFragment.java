@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.util.SystemUtils;
 
 import android.content.Context;
 import android.content.Intent;
@@ -48,7 +49,7 @@ public class AboutFragment extends Fragment implements OnClickListener {
         try {
             Context parent = getActivity();
             if (parent != null) {
-                PackageInfo pInfo = parent.getPackageManager().getPackageInfo(parent.getPackageName(), 0);
+                PackageInfo pInfo = SystemUtils.getPackageInfo(parent);
 
                 TextView txtVersion = (TextView) view.findViewById(R.id.version);
                 txtVersion.setText(getString(R.string.about_version,

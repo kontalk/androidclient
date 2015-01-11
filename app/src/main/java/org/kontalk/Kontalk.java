@@ -27,9 +27,7 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -57,6 +55,7 @@ import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
 import org.kontalk.util.Preferences;
+
 import org.spongycastle.openpgp.PGPException;
 
 import java.io.IOException;
@@ -357,19 +356,6 @@ public class Kontalk extends Application {
         pm.setComponentEnabledSetting(new ComponentName(context, klass),
             enabled ? PackageManager.COMPONENT_ENABLED_STATE_DEFAULT : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
-    }
-
-    public static int getVersionCode(Context context) {
-        try {
-            PackageInfo pInfo = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), 0);
-
-            return pInfo.versionCode;
-        }
-        catch (NameNotFoundException e) {
-            // shouldn't happen
-            return 0;
-        }
     }
 
     /** Increments the reference counter. */
