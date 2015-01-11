@@ -794,7 +794,8 @@ public class ComposeMessageFragment extends ListFragment implements
 	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
 	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
 	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
+            if (AudioDialog.isSupported(getActivity()))
+	            attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
 	        attachmentMenu.setOnClickListener(this);
 	    }
 	    attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
