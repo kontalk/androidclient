@@ -23,6 +23,7 @@ import com.rockerhieu.emojicon.EmojiconTextView;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
@@ -96,16 +97,21 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         mConversation = conv;
         mChecked = false;
 
-        String recipient;
+        String recipient = null;
 
         Contact contact = mConversation.getContact();
 
         if (contact != null) {
             recipient = contact.getName();
         }
-        else {
-            // FIXME debug mode -- recipient = conv.getRecipient();
-            recipient = context.getString(R.string.peer_unknown);
+
+        if (recipient == null) {
+            if (BuildConfig.DEBUG) {
+                recipient = conv.getRecipient();
+            }
+            else {
+                recipient = context.getString(R.string.peer_unknown);
+            }
         }
 
         loadAvatar(contact);
