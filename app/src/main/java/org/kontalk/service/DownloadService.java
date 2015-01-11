@@ -43,6 +43,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -106,19 +107,13 @@ public class DownloadService extends IntentService implements DownloadListener {
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (ACTION_DOWNLOAD_ABORT.equals(intent.getAction())) {
-            String url = intent.getData().toString();
-            Long msgId = sQueue.get(url);
-            if (msgId != null) {
-                // interrupt worker if running
-                if (msgId.longValue() == mMessageId) {
-                    mDownloadClient.abort();
-                    mCanceled = true;
+            final Uri uri = intent.getData();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    onDownloadAbort(uri);
                 }
-                // remove from queue - will never be processed
-                else
-                    sQueue.remove(url);
-            }
-            return START_NOT_STICKY;
+            }).start();
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -126,10 +121,14 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        // unknown action
-        if (!ACTION_DOWNLOAD_URL.equals(intent.getAction())) return;
+        String action = intent.getAction();
 
-        Uri uri = intent.getData();
+        if (ACTION_DOWNLOAD_URL.equals(action)) {
+            onDownloadURL(intent.getData(), intent.getExtras());
+        }
+    }
+
+    private void onDownloadURL(Uri uri, Bundle args) {
         String url = uri.toString();
 
         // check if download has already been queued
@@ -160,16 +159,16 @@ public class DownloadService extends IntentService implements DownloadListener {
             // check if external storage is available
             if (!MediaStorage.isExternalStorageAvailable()) {
                 errorNotification(getString(R.string.notify_ticker_external_storage),
-                        getString(R.string.notify_text_external_storage));
+                    getString(R.string.notify_text_external_storage));
                 return;
             }
 
             // make sure storage directory is present
             MediaStorage.MEDIA_ROOT.mkdirs();
 
-            mMessageId = intent.getLongExtra(CompositeMessage.MSG_ID, 0);
-            mPeer = intent.getStringExtra(CompositeMessage.MSG_SENDER);
-            mEncrypted = intent.getBooleanExtra(CompositeMessage.MSG_ENCRYPTED, false);
+            mMessageId = args.getLong(CompositeMessage.MSG_ID, 0);
+            mPeer = args.getString(CompositeMessage.MSG_SENDER);
+            mEncrypted = args.getBoolean(CompositeMessage.MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
             // download content
@@ -182,6 +181,21 @@ public class DownloadService extends IntentService implements DownloadListener {
             sQueue.remove(url);
             mMessageId = 0;
             mPeer = null;
+        }
+    }
+
+    private void onDownloadAbort(Uri uri) {
+        String url = uri.toString();
+        Long msgId = sQueue.get(url);
+        if (msgId != null) {
+            // interrupt worker if running
+            if (msgId == mMessageId) {
+                mDownloadClient.abort();
+                mCanceled = true;
+            }
+            // remove from queue - will never be processed
+            else
+                sQueue.remove(url);
         }
     }
 
