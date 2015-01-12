@@ -76,16 +76,17 @@ public abstract class MediaStorage {
         return file;
     }
 
-    private static BitmapFactory.Options processOptions(BitmapFactory.Options options) {
+    private static BitmapFactory.Options processOptions(BitmapFactory.Options options,
+            int scaleWidth, int scaleHeight) {
         int w = options.outWidth;
         int h = options.outHeight;
         // error :(
         if (w < 0 || h < 0) return null;
 
-        if (w > THUMBNAIL_WIDTH)
-            options.inSampleSize = (w / THUMBNAIL_WIDTH);
-        else if (h > THUMBNAIL_HEIGHT)
-            options.inSampleSize = (h / THUMBNAIL_HEIGHT);
+        if (w > scaleWidth)
+            options.inSampleSize = (w / scaleWidth);
+        else if (h > scaleHeight)
+            options.inSampleSize = (h / scaleHeight);
 
         options.inJustDecodeBounds = false;
         options.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -93,12 +94,12 @@ public abstract class MediaStorage {
     }
 
     /** Generates {@link BitmapFactory.Options} for the given {@link InputStream}. */
-    private static BitmapFactory.Options preloadBitmap(InputStream in) {
+    public static BitmapFactory.Options preloadBitmap(InputStream in, int scaleWidth, int scaleHeight) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(in, null, options);
 
-        return processOptions(options);
+        return processOptions(options, scaleWidth, scaleHeight);
     }
 
     /** Writes a thumbnail of a media to the internal cache. */
@@ -118,7 +119,7 @@ public abstract class MediaStorage {
     private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout) throws IOException {
         ContentResolver cr = context.getContentResolver();
         InputStream in = cr.openInputStream(media);
-        BitmapFactory.Options options = preloadBitmap(in);
+        BitmapFactory.Options options = preloadBitmap(in, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
         in.close();
 
         // open again
@@ -137,7 +138,7 @@ public abstract class MediaStorage {
         thumbnail.recycle();
     }
 
-    private static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
+    public static Bitmap bitmapOrientation(Context context, Uri media, Bitmap bitmap) {
         // check if we have to (and can) rotate the thumbnail
         try {
             Cursor cursor = context.getContentResolver().query(media,
