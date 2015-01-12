@@ -54,7 +54,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     private TextView mDateView;
     //private View mAttachmentView;
     private ImageView mErrorIndicator;
-    //private ImageView mPresenceView;
     private TextView mCounterView;
 
     private boolean mChecked = false;
@@ -77,7 +76,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         mDateView = (TextView) findViewById(R.id.date);
         //mAttachmentView = findViewById(R.id.attachment);
         mErrorIndicator = (ImageView) findViewById(R.id.error);
-        //mPresenceView = (ImageView) findViewById(R.id.presence);
         mCounterView = (TextView) findViewById(R.id.counter);
 
         if (isInEditMode()) {
