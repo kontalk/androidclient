@@ -88,7 +88,7 @@ class MessageAckListener extends MessageCenterPacketListener {
                 // there will be one hold and one matching release.
                 getIdleHandler().release();
             }
-            else {
+            else if (id != null) {
                 // the user wasn't expecting ack for this message
                 // so we simply update it using the packet id as key
                 // FIXME this could lead to fake acks because message IDs are client-generated

@@ -31,7 +31,6 @@ import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -535,7 +534,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 */
                 byte[] bytes = mText.getBytes();
 
-                String msgId = StringUtils.randomString(30);
+                String msgId = MessageUtils.messageId();
 
                 // save to local storage
                 ContentValues values = new ContentValues();

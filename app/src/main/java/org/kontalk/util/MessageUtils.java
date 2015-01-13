@@ -41,6 +41,8 @@ import android.widget.ImageView;
 
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.util.StringUtils;
+
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.client.BitsOfBinary;
@@ -536,6 +538,10 @@ public final class MessageUtils {
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    public static String messageId() {
+        return StringUtils.randomString(30);
     }
 
     /** Decrypts a message, modifying the object <b>in place</b>. */
