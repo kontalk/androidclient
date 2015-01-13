@@ -125,6 +125,7 @@ import org.kontalk.util.XMPPUtils;
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_BLOCK;
+import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_REJECT;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK;
 
 
@@ -1600,7 +1601,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         if (v.getId() == R.id.button_accept)
                             action = PRIVACY_ACCEPT;
                         else
-                            action = PRIVACY_BLOCK;
+                            action = PRIVACY_REJECT;
 
                         setPrivacy(action);
                     }
@@ -1638,6 +1639,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 break;
 
             case PRIVACY_BLOCK:
+            case PRIVACY_REJECT:
                 status = Threads.REQUEST_REPLY_PENDING_BLOCK;
                 break;
 
@@ -1662,7 +1664,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 new String[] { mUserJID });
 
         // setup broadcast receiver for block/unblock reply
-        if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+        if (action == PRIVACY_REJECT || action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
             if (mPrivacyListener == null) {
                 mPrivacyListener = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
