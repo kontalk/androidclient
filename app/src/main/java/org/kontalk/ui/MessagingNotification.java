@@ -31,6 +31,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.util.Preferences;
 
+import android.accounts.Account;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -142,6 +143,10 @@ public class MessagingNotification {
     public static void updateMessagesNotification(Context context, boolean isNew) {
         // notifications are disabled
         if (!Preferences.getNotificationsEnabled(context))
+            return;
+        // no default account. WTF?!?
+        Account account = Authenticator.getDefaultAccount(context);
+        if (account == null)
             return;
 
         // if notifying new messages, wait a little bit
@@ -300,7 +305,7 @@ public class MessagingNotification {
                     // TODO i18n
                     summary = "+" + (convs.size() - count) + " more";
                 else
-                    summary = Authenticator.getDefaultAccount(context).name;
+                    summary = account.name;
 
                 ((InboxStyle) style).setSummaryText(summary);
             }
@@ -312,7 +317,7 @@ public class MessagingNotification {
                 // big text content
                 style = new BigTextStyle();
                 ((BigTextStyle) style).bigText(content);
-                ((BigTextStyle) style).setSummaryText(Authenticator.getDefaultAccount(context).name);
+                ((BigTextStyle) style).setSummaryText(account.name);
 
                 // ticker
                 Contact contact = Contact.findByUserId(context, peer);
