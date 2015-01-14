@@ -146,6 +146,8 @@ class PresenceListener extends MessageCenterPacketListener {
         // auto-accept subscription
         if (Preferences.getAutoAcceptSubscriptions(ctx)) {
 
+            // TODO user database entry should be stored here too
+
             Packet r = createSubscribe(p);
             if (r != null)
                 getConnection().sendPacket(r);

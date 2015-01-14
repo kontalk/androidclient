@@ -518,8 +518,10 @@ public class UsersProvider extends ContentProvider {
                 // discard display_name if requested
                 boolean discardName = Boolean.parseBoolean(uri
                         .getQueryParameter(Users.DISCARD_NAME));
-                if (discardName)
+                if (discardName) {
                     values.remove(Users.DISPLAY_NAME);
+                    values.remove(Users.NUMBER);
+                }
 
                 db.update(table, values, Users.HASH + "=?", new String[] { hash });
             }
