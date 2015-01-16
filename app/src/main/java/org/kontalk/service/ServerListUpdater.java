@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Properties;
 
 import android.content.BroadcastReceiver;
@@ -56,7 +57,7 @@ public class ServerListUpdater extends BroadcastReceiver {
     private static ServerList sCurrentList;
 
     private static DateFormat sTimestampFormat =
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US);
 
     private final Context mContext;
     private final LocalBroadcastManager mLocalBroadcastManager;
@@ -180,6 +181,11 @@ public class ServerListUpdater extends BroadcastReceiver {
                     mListener.error(null);
             }
         }
+    }
+
+    public static void deleteCachedList(Context context) {
+        File file = getCachedListFile(context);
+        file.delete();
     }
 
     /** The path to the locally cached downloaded server list. */

@@ -20,32 +20,24 @@ package org.kontalk;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
 import android.accounts.OnAccountsUpdateListener;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Handler;
-import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 import org.apache.http.impl.conn.IdleConnectionHandler;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
-import org.kontalk.client.ServerList;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PRNGFixes;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
-import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -68,21 +60,11 @@ import java.security.cert.CertificateException;
 /**
  * The Application.
  * @author Daniele Ricci
-
  */
 public class Kontalk extends Application {
     public static final String TAG = Kontalk.class.getSimpleName();
 
-    /** Supported client protocol revision. */
-    public static final int CLIENT_PROTOCOL = 4;
-
-    private Handler mHandler;
-    private SharedPreferences.OnSharedPreferenceChangeListener mPrefChangedListener;
     private PersonalKey mDefaultKey;
-
-    // tigase upgrade waiting lock
-    private final Object tigaseUpgradeWaiting = new Object();
-    private Handler tigaseUpgradeHandler; // created by upgrade thread
 
     /**
      * Passphrase to decrypt the personal private key.
@@ -109,7 +91,6 @@ public class Kontalk extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        mHandler = new Handler();
 
         // register security provider
         PGP.registerProvider();
@@ -124,7 +105,8 @@ public class Kontalk extends Application {
         KontalkConnection.init();
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mPrefChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        SharedPreferences.OnSharedPreferenceChangeListener prefListener =
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 // no account - abort
@@ -137,7 +119,7 @@ public class Kontalk extends Application {
                     // this is triggered because manual server address is cleared
                     if (Authenticator.getDefaultServer(getApplicationContext()) != null) {
                         // just restart the message center for now
-                        android.util.Log.w(TAG, "network address changed");
+                        Log.w(TAG, "network address changed");
                         MessageCenterService.restart(Kontalk.this);
                     }
                 }
@@ -153,60 +135,51 @@ public class Kontalk extends Application {
                 }
             }
         };
-        prefs.registerOnSharedPreferenceChangeListener(mPrefChangedListener);
+        prefs.registerOnSharedPreferenceChangeListener(prefListener);
 
         // TODO listen for changes to phone numbers
 
         AccountManager am = AccountManager.get(this);
         Account account = Authenticator.getDefaultAccount(am);
         if (account != null) {
-            // tigase upgrade
-            // temporary measure for users coming from old betas
-            if (Authenticator.getServer(am, account) == null) {
-                tigaseUpgrade(am, account);
-                account = null;
-            }
+            if (!Authenticator.hasPersonalKey(am, account))
+                xmppUpgrade();
 
-            else {
-                if (!Authenticator.hasPersonalKey(am, account))
-                    xmppUpgrade();
+            // update notifications from locally unread messages
+            MessagingNotification.updateMessagesNotification(this, false);
 
-                // update notifications from locally unread messages
-                MessagingNotification.updateMessagesNotification(this, false);
-
-                // register account change listener
-                final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
-                    @Override
-                    public void onAccountsUpdated(Account[] accounts) {
-                        Account my = null;
-                        for (int i = 0; i < accounts.length; i++) {
-                            if (accounts[i].type.equals(Authenticator.ACCOUNT_TYPE)) {
-                                my = accounts[i];
-                                break;
-                            }
-                        }
-
-                        // account removed!!! Shutdown everything.
-                        if (my == null) {
-                            Log.w(TAG, "my account has been removed, shutting down");
-                            // stop message center
-                            MessageCenterService.stop(Kontalk.this);
-                            // disable components
-                            setServicesEnabled(Kontalk.this, false);
-                            // unregister from push notifications
-                            PushServiceManager.getInstance(Kontalk.this)
-                                .unregister(PushServiceManager.getDefaultListener());
-                            // delete all messages
-                            MessagesProvider.deleteDatabase(Kontalk.this);
-                            // invalidate cached personal key
-                            invalidatePersonalKey();
+            // register account change listener
+            final OnAccountsUpdateListener listener = new OnAccountsUpdateListener() {
+                @Override
+                public void onAccountsUpdated(Account[] accounts) {
+                    Account my = null;
+                    for (Account acc : accounts) {
+                        if (acc.type.equals(Authenticator.ACCOUNT_TYPE)) {
+                            my = acc;
+                            break;
                         }
                     }
-                };
 
-                // register listener to handle account removal
-                am.addOnAccountsUpdatedListener(listener, mHandler, true);
-            }
+                    // account removed!!! Shutdown everything.
+                    if (my == null) {
+                        Log.w(TAG, "my account has been removed, shutting down");
+                        // stop message center
+                        MessageCenterService.stop(Kontalk.this);
+                        // disable components
+                        setServicesEnabled(Kontalk.this, false);
+                        // unregister from push notifications
+                        PushServiceManager.getInstance(Kontalk.this)
+                            .unregister(PushServiceManager.getDefaultListener());
+                        // delete all messages
+                        MessagesProvider.deleteDatabase(Kontalk.this);
+                        // invalidate cached personal key
+                        invalidatePersonalKey();
+                    }
+                }
+            };
+
+            // register listener to handle account removal
+            am.addOnAccountsUpdatedListener(listener, null, true);
         }
         else {
             // ensure everything is cleared up
@@ -217,77 +190,9 @@ public class Kontalk extends Application {
         setServicesEnabled(this, account != null);
     }
 
-    private void tigaseUpgrade(final AccountManager am, final Account account) {
-        // upgrade messages
-        MessagesProvider.tigaseUpgrade(Kontalk.this);
+    private void xmppUpgrade() {
         // delete custom server
         Preferences.setServerURI(this, null);
-        // unregister!
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                tigaseUpgradeHandler = new Handler(Looper.myLooper());
-                Looper.loop();
-            }
-        }).start();
-        while (tigaseUpgradeHandler == null) {
-            // this loop will exit as soon as the above thread started
-            try {
-                Thread.sleep(100);
-            }
-            catch (InterruptedException e) {
-                // ignored
-            }
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                am.removeAccount(account, new AccountManagerCallback<Boolean>() {
-                    @Override
-                    public void run(AccountManagerFuture<Boolean> future) {
-                        synchronized (tigaseUpgradeWaiting) {
-                            // end the looper thread
-                            tigaseUpgradeHandler.getLooper().quit();
-                            tigaseUpgradeHandler = null;
-                            // notify the UI that the operation has completed
-                            tigaseUpgradeWaiting.notify();
-                        }
-                    }
-                }, tigaseUpgradeHandler);
-            }
-        }).start();
-    }
-
-    public boolean waitForTigaseUpgrade() {
-        synchronized (tigaseUpgradeWaiting) {
-            if (tigaseUpgradeHandler != null) {
-                try {
-                    tigaseUpgradeWaiting.wait();
-                }
-                catch (InterruptedException e) {
-                    // ignored
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void xmppUpgrade() {
-        // adjust manual server address if any
-        String manualServer = Preferences.getServerURI(this);
-        if (!TextUtils.isEmpty(manualServer) && manualServer.indexOf('|') < 0) {
-            ServerList list = ServerListUpdater.getCurrentList(this);
-            if (list != null) {
-                EndpointServer server = list.random();
-                String newServer = server.getNetwork() + "|" + manualServer;
-
-                Preferences.setServerURI(this, newServer);
-            }
-        }
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {

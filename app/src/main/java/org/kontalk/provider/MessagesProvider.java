@@ -33,7 +33,6 @@ import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.service.ServerListUpdater;
-import org.kontalk.util.Preferences;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -251,7 +250,7 @@ public class MessagesProvider extends ContentProvider {
             "CREATE TABLE " + TABLE_THREADS + "_new " + _SCHEMA_THREADS,
             // copy contents of messages table
             "INSERT INTO " + TABLE_MESSAGES + "_new SELECT " +
-            "_id, thread_id, msg_id, peer || '@' || ?, direction, unread, 0, timestamp, status_changed, status, 'text/plain', " +
+            "_id, thread_id, msg_id, SUBSTR(peer, 1, ?) || '@' || ?, direction, unread, 0, timestamp, status_changed, status, 'text/plain', " +
             "CASE WHEN mime <> 'text/plain' THEN NULL ELSE content END, "+
             "CASE WHEN mime <> 'text/plain' THEN 0 ELSE length(content) END, " +
             "CASE WHEN mime <> 'text/plain' THEN mime ELSE NULL END, preview_path, fetch_url, local_uri, length, 0, 0, 0, encrypted, " +
@@ -260,7 +259,7 @@ public class MessagesProvider extends ContentProvider {
                 " FROM " + TABLE_MESSAGES + " WHERE encrypted = 0",
             // copy contents of threads table
             "INSERT INTO " + TABLE_THREADS + "_new SELECT " +
-            "_id, msg_id, peer || '@' || ?, direction, count, unread, 0, 'text/plain', content, timestamp, status_changed, status, 0, draft, 0" +
+            "_id, msg_id, SUBSTR(peer, 1, ?) || '@' || ?, direction, count, unread, 0, 'text/plain', content, timestamp, status_changed, status, 0, draft, 0" +
                 " FROM " + TABLE_THREADS,
             // drop table messages
             "DROP TABLE " + TABLE_MESSAGES,
@@ -279,28 +278,6 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_THREADS_UPDATE_COUNT,
             TRIGGER_THREADS_DELETE_COUNT
         };
-
-        private static final String[] SCHEMA_UPGRADE_V5 = {
-            // new messages counter: notified vs. unread
-            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
-            "ALTER TABLE " + TABLE_THREADS + " ADD COLUMN new INTEGER NOT NULL DEFAULT 0",
-            // recreate triggers for the new messages count
-            "DROP TRIGGER update_thread_on_insert",
-            TRIGGER_THREADS_INSERT_COUNT,
-            "DROP TRIGGER update_thread_on_update",
-            TRIGGER_THREADS_UPDATE_COUNT,
-            "DROP TRIGGER update_thread_on_delete",
-            TRIGGER_THREADS_DELETE_COUNT,
-        };
-
-        private static final String[] SCHEMA_UPGRADE_V6 = {
-            "UPDATE " + TABLE_THREADS + " SET peer = peer || '@' || ?",
-            "UPDATE " + TABLE_MESSAGES + " SET peer = peer || '@' || ?",
-        };
-
-        private static final String SCHEMA_UPGRADE_V7 =
-            // new column for attachment compression ratio
-            "ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN att_compress INTEGER NOT NULL DEFAULT 0";
 
         private Context mContext;
 
@@ -323,44 +300,30 @@ public class MessagesProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (oldVersion < 4) {
+            if (oldVersion != 4 && oldVersion < 8) {
                 // unsupported version
-                throw new SQLException("Upgrade from version less than 4 is unsupported.");
+                throw new SQLException("database can only be upgraded from version 4 or versions greather than 7");
             }
 
             if (oldVersion == 4) {
-                EndpointServer server = Preferences.getEndpointServer(mContext);
+                // take the first server from the builtin list
+                ServerListUpdater.deleteCachedList(mContext);
+                ServerList list = ServerListUpdater.getCurrentList(mContext);
+                EndpointServer server = list.get(0);
                 String host = server.getNetwork();
-                for (int i = 0; i < SCHEMA_UPGRADE_V4.length; i++) {
-                    if (SCHEMA_UPGRADE_V4[i].startsWith("INSERT "))
-                        db.execSQL(SCHEMA_UPGRADE_V4[i], new Object[] { host });
-                    else
-                        db.execSQL(SCHEMA_UPGRADE_V4[i]);
+
+                for (String sql : SCHEMA_UPGRADE_V4) {
+                    if (sql.startsWith("INSERT ")) {
+                        db.execSQL(sql, new Object[]{
+                            CompositeMessage.USERID_LENGTH,
+                            host
+                        });
+                    }
+                    else {
+                        db.execSQL(sql);
+                    }
                 }
             }
-
-            else if (oldVersion == 5) {
-                for (int i = 0; i < SCHEMA_UPGRADE_V5.length; i++)
-                    db.execSQL(SCHEMA_UPGRADE_V5[i]);
-                // trigger version 6 upgrade
-                oldVersion = 6;
-            }
-
-            // version 6 appends a host part to all peers
-            if (oldVersion == 6) {
-                EndpointServer server = Preferences.getEndpointServer(mContext);
-                String host = server.getNetwork();
-
-                for (String sql : SCHEMA_UPGRADE_V6)
-                    db.execSQL(sql, new Object[] { host });
-                // trigger version 7 upgrade
-                oldVersion = 7;
-            }
-
-            if (oldVersion == 7) {
-                db.execSQL(SCHEMA_UPGRADE_V7);
-            }
-
         }
     }
 
@@ -898,29 +861,6 @@ public class MessagesProvider extends ContentProvider {
             case CONVERSATIONS_ALL_ID: {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-                // special case: Tigase upgrade
-                boolean tigase = Boolean.parseBoolean(uri.getQueryParameter("tigase"));
-                if (tigase) {
-                    final String SCHEMA_UPGRADE_PRE = "DROP trigger update_thread_on_update";
-                    final String[] SCHEMA_UPGRADE = {
-                        "UPDATE " + TABLE_THREADS + " SET peer = SUBSTR(peer, 1, ?) || ?",
-                        "UPDATE " + TABLE_MESSAGES + " SET peer = SUBSTR(peer, 1, ?) || ?",
-                    };
-                    final String SCHEMA_UPGRADE_POST = DatabaseHelper.TRIGGER_THREADS_UPDATE_COUNT;
-                    // temporary change from network domain to server domain
-                    // this is actually only for beta testers coming from beta3
-                    ServerList list = ServerListUpdater.getCurrentList(getContext());
-                    EndpointServer server = list.get(0);
-                    String host = server.getNetwork();
-
-                    db.execSQL(SCHEMA_UPGRADE_PRE);
-                    for (String sql : SCHEMA_UPGRADE)
-                        db.execSQL(sql, new Object[]{CompositeMessage.USERID_LENGTH, "@" + host});
-                    db.execSQL(SCHEMA_UPGRADE_POST);
-
-                    return 0;
-                }
-
                 boolean success = false;
                 int num = 0;
                 try {
@@ -1277,20 +1217,6 @@ public class MessagesProvider extends ContentProvider {
             b = true;
         c.close();
         return b;
-    }
-
-    /** Temporary method for Tigase switch upgrade. */
-    public static boolean tigaseUpgrade(Context ctx) {
-        try {
-            ContentResolver c = ctx.getContentResolver();
-            c.delete(Conversations.CONTENT_URI.buildUpon()
-                .appendQueryParameter("tigase", "true").build(), null, null);
-            return true;
-        }
-        catch (Exception e) {
-            Log.e(TAG, "error during database delete!", e);
-            return false;
-        }
     }
 
     static {
