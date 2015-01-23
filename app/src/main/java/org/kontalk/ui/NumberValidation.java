@@ -97,8 +97,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
 
-    public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
-
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
@@ -136,10 +134,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private static final class RetainData {
         NumberValidator validator;
-        /** @derpecated Use saved instance state. */
+        /** @deprecated Use saved instance state. */
         @Deprecated
         CharSequence progressMessage;
-        /** @derpecated Use saved instance state. */
+        /** @deprecated Use saved instance state. */
         @Deprecated
         boolean syncing;
     }

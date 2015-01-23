@@ -182,7 +182,7 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // login
-        if (key != null || token != null)
+        if (!mLimited && (key != null || token != null))
             mConn.login();
 
     }
