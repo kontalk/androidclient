@@ -18,6 +18,7 @@
 
 package org.kontalk.ui;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -127,8 +128,10 @@ public class ConversationList extends ActionBarActivity
         DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // no key pair found, generate a new one
-                Toast.makeText(ConversationList.this,
-                    R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
+                if (BuildConfig.DEBUG) {
+                    Toast.makeText(ConversationList.this,
+                        R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
+                }
 
                 String name = InputDialog
                         .getInputText((Dialog) dialog)
