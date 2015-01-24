@@ -62,6 +62,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.service.XMPPConnectionHelper;
 import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
 import org.kontalk.util.MessageUtils;
 
 
@@ -131,6 +132,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             mKey = key;
             mKeyLock.notifyAll();
         }
+    }
+
+    @Override
+    public PGPKeyPairRingProvider getKeyPairRingProvider() {
+        // not supported
+        return null;
     }
 
     public void importKey(byte[] privateKeyData, byte[] publicKeyData) {

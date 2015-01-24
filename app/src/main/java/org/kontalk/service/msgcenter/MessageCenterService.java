@@ -93,6 +93,7 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
@@ -548,7 +549,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // stop any key pair regeneration service
-        endKeyPairRegeneration();
+        if (!LegacyAuthentication.isUpgrading())
+            endKeyPairRegeneration();
 
         // release the wakelock
         mWakeLock.release();
@@ -1646,6 +1648,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mKeyPairRegenerator.abort();
             mKeyPairRegenerator = null;
         }
+    }
+
+    /**
+     * Used by {@link XMPPConnectionHelper} to retrieve the keyring that will
+     * be used for the next login while upgrading from legacy.
+     */
+    @Override
+    public PGPKeyPairRingProvider getKeyPairRingProvider() {
+        return mKeyPairRegenerator;
     }
 
     private void beginKeyPairImport(Uri keypack, String passphrase) {

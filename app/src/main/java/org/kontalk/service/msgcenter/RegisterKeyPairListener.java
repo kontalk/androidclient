@@ -34,6 +34,7 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
@@ -50,7 +51,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_CONNECTE
 
 
 /** Abstract listener and manager for a key pair registration cycle. */
-abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
+abstract class RegisterKeyPairListener extends MessageCenterPacketListener implements PGPKeyPairRingProvider {
     private BroadcastReceiver mConnReceiver;
     protected PGPKeyPairRing mKeyRing;
     protected PGPPublicKey mRevoked;
@@ -61,6 +62,11 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
     public RegisterKeyPairListener(MessageCenterService instance, String passphrase) {
         super(instance);
         mPassphrase = passphrase;
+    }
+
+    @Override
+    public PGPKeyPairRing getKeyPair() {
+        return mKeyRing;
     }
 
     public void run() throws CertificateException, SignatureException,
@@ -166,7 +172,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener {
     public void processPacket(Packet packet) {
         IQ iq = (IQ) packet;
         if (iq.getType() == IQ.Type.result) {
-            DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
+            DataForm response = iq.getExtension("x", "jabber:x:data");
             if (response != null) {
                 String publicKey = null;
 

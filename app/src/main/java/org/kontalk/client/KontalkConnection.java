@@ -53,6 +53,7 @@ import android.util.Log;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.authenticator.LegacyAuthentication;
 
 
 public class KontalkConnection extends XMPPTCPConnection {
@@ -109,8 +110,8 @@ public class KontalkConnection extends XMPPTCPConnection {
             })
             // TODO requesting the roster could be expensive
             .setRosterLoadedAtLogin(true)
-            // enable compression
-            .setCompressionEnabled(true)
+            // enable compression (FIXME workaround for compression bug)
+            .setCompressionEnabled(!LegacyAuthentication.isUpgrading())
             // enable encryption
             .setSecurityMode(secure ? SecurityMode.disabled : SecurityMode.required)
             // we will send a custom presence
@@ -145,8 +146,11 @@ public class KontalkConnection extends XMPPTCPConnection {
 
                 km = kmFactory.getKeyManagers();
 
-                // blacklist PLAIN mechanism
-                SASLAuthentication.blacklistSASLMechanism("PLAIN");
+                // disable PLAIN mechanism if not upgrading from legacy
+                if (!LegacyAuthentication.isUpgrading()) {
+                    // blacklist PLAIN mechanism
+                    SASLAuthentication.blacklistSASLMechanism("PLAIN");
+                }
             }
 
             // trust managers
