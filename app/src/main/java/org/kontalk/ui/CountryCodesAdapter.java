@@ -308,10 +308,9 @@ public class CountryCodesAdapter extends BaseAdapter {
             if (o != null && o instanceof CountryCode) {
                 CountryCode other = (CountryCode) o;
 
-                if (regionCode != null && regionCode.equals(other.regionCode))
-                    return true;
-
-                return (countryCode == other.countryCode);
+                return regionCode != null &&
+                    regionCode.equals(other.regionCode) ||
+                    (countryCode == other.countryCode);
             }
 
             return false;
@@ -371,7 +370,6 @@ public class CountryCodesAdapter extends BaseAdapter {
     }
 
     public int getPositionForId(CountryCode cc) {
-        Log.d("CC", "looking for region " + cc);
         return cc != null ? mData.indexOf(cc) : -1;
     }
 
