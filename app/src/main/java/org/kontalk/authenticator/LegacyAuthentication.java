@@ -18,6 +18,9 @@
 
 package org.kontalk.authenticator;
 
+import org.kontalk.client.EndpointServer;
+import org.kontalk.client.ServerList;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
 import android.accounts.Account;
@@ -56,6 +59,11 @@ public class LegacyAuthentication {
 
             // save uid name
             am.setUserData(account, Authenticator.DATA_NAME, name);
+
+            // set server to first in built-in server list
+            ServerList list = ServerListUpdater.getCurrentList(context);
+            EndpointServer server = list.get(0);
+            am.setUserData(account, Authenticator.DATA_SERVER_URI, server.toString());
 
             // start key pair generation
             MessageCenterService.regenerateKeyPair(context);

@@ -38,6 +38,7 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.NetworkStateReceiver;
+import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -193,6 +194,8 @@ public class Kontalk extends Application {
     private void xmppUpgrade() {
         // delete custom server
         Preferences.setServerURI(this, null);
+        // delete cached server list
+        ServerListUpdater.deleteCachedList(this);
     }
 
     public PersonalKey getPersonalKey() throws PGPException, IOException, CertificateException {

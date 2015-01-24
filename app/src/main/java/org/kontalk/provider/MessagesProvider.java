@@ -307,7 +307,6 @@ public class MessagesProvider extends ContentProvider {
 
             if (oldVersion == 4) {
                 // take the first server from the builtin list
-                ServerListUpdater.deleteCachedList(mContext);
                 ServerList list = ServerListUpdater.getCurrentList(mContext);
                 EndpointServer server = list.get(0);
                 String host = server.getNetwork();
