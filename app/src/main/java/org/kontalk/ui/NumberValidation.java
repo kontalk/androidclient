@@ -40,7 +40,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
@@ -97,8 +99,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
 
-    public static final String ACTION_LOGIN = "org.kontalk.sync.LOGIN";
-
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
@@ -136,10 +136,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private static final class RetainData {
         NumberValidator validator;
-        /** @derpecated Use saved instance state. */
+        /** @deprecated Use saved instance state. */
         @Deprecated
         CharSequence progressMessage;
-        /** @derpecated Use saved instance state. */
+        /** @deprecated Use saved instance state. */
         @Deprecated
         boolean syncing;
     }
@@ -214,6 +214,24 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
             public void onNothingSelected(AdapterView<?> parent) {
                 // TODO Auto-generated method stub
+            }
+        });
+
+        // listener for autoselecting country code from typed phone number
+        mPhone.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // unused
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // unused
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                syncCountryCodeSelector();
             }
         });
 
@@ -326,7 +344,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     }
 
                     // no key, key pair generation started
-                    else {
+                    else if (BuildConfig.DEBUG) {
                         Toast.makeText(NumberValidation.this,
                             R.string.msg_generating_keypair,
                             Toast.LENGTH_LONG).show();
@@ -398,6 +416,28 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         context.startActivity(i);
     }
 
+    /** Sync country code with text entered by the user, if possible. */
+    private void syncCountryCodeSelector() {
+        try {
+            PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+            CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
+            PhoneNumber phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+            // autoselect correct country if user entered country code too
+            if (phone.hasCountryCode()) {
+                CountryCode ccLookup = new CountryCode();
+                ccLookup.regionCode = util.getRegionCodeForCountryCode(phone.getCountryCode());
+                ccLookup.countryCode = phone.getCountryCode();
+                int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
+                if (position >= 0) {
+                    mCountryCode.setSelection(position);
+                }
+            }
+        }
+        catch (NumberParseException e) {
+            // ignored
+        }
+    }
+
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
         mImportKeys.setEnabled(enabled);
@@ -431,6 +471,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             PhoneNumber phone;
             try {
                 phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+                // autoselect correct country if user entered country code too
+                if (phone.hasCountryCode()) {
+                    CountryCode ccLookup = new CountryCode();
+                    ccLookup.regionCode = util.getRegionCodeForCountryCode(phone.getCountryCode());
+                    ccLookup.countryCode = phone.getCountryCode();
+                    int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
+                    if (position >= 0) {
+                        mCountryCode.setSelection(position);
+                        cc = (CountryCode) mCountryCode.getItemAtPosition(position);
+                    }
+                }
                 if (!util.isValidNumberForRegion(phone, cc.regionCode)) {
                     throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE, "invalid number for region " + cc.regionCode);
                 }

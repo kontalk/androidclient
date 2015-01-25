@@ -130,7 +130,7 @@ abstract class MessageCenterPacketListener implements PacketListener {
 
     protected boolean isPushNotificationsEnabled() {
         MessageCenterService instance = mInstance.get();
-        return (instance != null) ? instance.mPushNotifications : false;
+        return instance != null && instance.mPushNotifications;
     }
 
     protected void setPushSenderId(String senderId) {

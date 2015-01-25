@@ -40,20 +40,20 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.debugger.SmackDebugger;
 import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
+import org.jivesoftware.smackx.iqversion.VersionManager;
 
 import android.util.Log;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
+import org.kontalk.authenticator.LegacyAuthentication;
 
 
 public class KontalkConnection extends XMPPTCPConnection {
@@ -110,8 +110,8 @@ public class KontalkConnection extends XMPPTCPConnection {
             })
             // TODO requesting the roster could be expensive
             .setRosterLoadedAtLogin(true)
-            // enable compression
-            .setCompressionEnabled(true)
+            // enable compression (FIXME workaround for compression bug)
+            .setCompressionEnabled(!LegacyAuthentication.isUpgrading())
             // enable encryption
             .setSecurityMode(secure ? SecurityMode.disabled : SecurityMode.required)
             // we will send a custom presence
@@ -146,8 +146,11 @@ public class KontalkConnection extends XMPPTCPConnection {
 
                 km = kmFactory.getKeyManagers();
 
-                // blacklist PLAIN mechanism
-                SASLAuthentication.blacklistSASLMechanism("PLAIN");
+                // disable PLAIN mechanism if not upgrading from legacy
+                if (!LegacyAuthentication.isUpgrading()) {
+                    // blacklist PLAIN mechanism
+                    SASLAuthentication.blacklistSASLMechanism("PLAIN");
+                }
             }
 
             // trust managers
@@ -203,5 +206,7 @@ public class KontalkConnection extends XMPPTCPConnection {
                 return new AndroidDebugger(connection, writer, reader);
             }
         });
+        // do not append Smack version
+        VersionManager.setAutoAppendSmackVersion(false);
     }
 }

@@ -146,6 +146,8 @@ class PresenceListener extends MessageCenterPacketListener {
         // auto-accept subscription
         if (Preferences.getAutoAcceptSubscriptions(ctx)) {
 
+            // TODO user database entry should be stored here too
+
             Packet r = createSubscribe(p);
             if (r != null)
                 getConnection().sendPacket(r);
@@ -185,13 +187,19 @@ class PresenceListener extends MessageCenterPacketListener {
             }
 
             ContentResolver cr = ctx.getContentResolver();
-            ContentValues values = new ContentValues(4);
+            ContentValues values = new ContentValues(7);
+
+            if (name == null)
+                name = from;
 
             // insert public key into the users table
             values.put(Users.HASH, XmppStringUtils.parseLocalpart(from));
             values.put(Users.JID, from);
-            values.put(Users.PUBLIC_KEY, publicKey);
-            values.put(Users.FINGERPRINT, fingerprint);
+            values.put(Users.NUMBER, from);
+            if (publicKey != null && fingerprint != null) {
+                values.put(Users.PUBLIC_KEY, publicKey);
+                values.put(Users.FINGERPRINT, fingerprint);
+            }
             values.put(Users.DISPLAY_NAME, name);
             values.put(Users.REGISTERED, true);
             cr.insert(Users.CONTENT_URI.buildUpon()

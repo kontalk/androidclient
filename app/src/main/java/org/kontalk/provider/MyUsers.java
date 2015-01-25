@@ -62,8 +62,8 @@ public class MyUsers {
         public static final String COMMIT = "commit";
         // uri parameter for select: use offline table
         public static final String OFFLINE = "offline";
-        // uri parameter for insert: discard name when updating
-        // (e.g. insert from a new public key)
+        // uri parameter for insert: discard name and number when updating
+        // (e.g. update a subscription entry from an existing contact)
         public static final String DISCARD_NAME = "discardName";
     }
 }

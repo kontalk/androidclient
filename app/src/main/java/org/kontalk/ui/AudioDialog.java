@@ -28,6 +28,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -380,5 +381,10 @@ public class AudioDialog extends AlertDialog {
         });
         progressBar.setProgress(0);
         mProgressBarAnimator.start();
+    }
+
+    public static boolean isSupported(Context context) {
+        return context.getPackageManager().hasSystemFeature(
+            PackageManager.FEATURE_MICROPHONE);
     }
 }

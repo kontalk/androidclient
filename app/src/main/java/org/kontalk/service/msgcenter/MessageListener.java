@@ -151,7 +151,9 @@ class MessageListener extends MessageCenterPacketListener {
             // incoming message
             else {
                 String msgId = m.getPacketID();
-                String sender = from;
+                if (msgId == null)
+                    msgId = MessageUtils.messageId();
+
                 String body = m.getBody();
 
                 // create message
@@ -159,7 +161,7 @@ class MessageListener extends MessageCenterPacketListener {
                         getContext(),
                         msgId,
                         serverTimestamp,
-                        sender,
+                        from,
                         false,
                         Coder.SECURITY_CLEARTEXT
                     );
@@ -326,9 +328,9 @@ class MessageListener extends MessageCenterPacketListener {
                     // there will be one hold and one matching release.
                     getIdleHandler().release();
                 }
-                else {
+                else if (id != null) {
                     // FIXME this could lead to fake delivery receipts because message IDs are client-generated
-                    Uri msg = Messages.getUri(m.getPacketID());
+                    Uri msg = Messages.getUri(id);
                     ContentValues values = new ContentValues(2);
                     values.put(Messages.STATUS, Messages.STATUS_NOTDELIVERED);
                     values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());

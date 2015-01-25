@@ -18,7 +18,7 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.Kontalk;
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -86,7 +86,7 @@ public class ConversationList extends ActionBarActivity
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
 
-        if (!tigaseUpgrade() && !xmppUpgrade())
+        if (!xmppUpgrade())
             handleIntent(getIntent());
     }
 
@@ -96,37 +96,6 @@ public class ConversationList extends ActionBarActivity
 
     public void titleSearch(View view) {
         onSearchRequested();
-    }
-
-    private boolean tigaseUpgrade() {
-        AccountManager am = AccountManager.get(this);
-        Account account = Authenticator.getDefaultAccount(am);
-        if (account != null && Authenticator.getServer(am, account) == null) {
-            mTigaseUpgradeWait = new LockedProgressDialog(this);
-            mTigaseUpgradeWait.setMessage("Please wait...");
-            mTigaseUpgradeWait.show();
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ((Kontalk) getApplication()).waitForTigaseUpgrade();
-                    mTigaseUpgradeWait.dismiss();
-                    mTigaseUpgradeWait = null;
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            NumberValidation.startValidation(ConversationList.this);
-                            finish();
-                        }
-                    });
-                }
-            }).start();
-
-            return true;
-        }
-
-        return false;
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */
@@ -159,8 +128,10 @@ public class ConversationList extends ActionBarActivity
         DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // no key pair found, generate a new one
-                Toast.makeText(ConversationList.this,
-                    R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
+                if (BuildConfig.DEBUG) {
+                    Toast.makeText(ConversationList.this,
+                        R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
+                }
 
                 String name = InputDialog
                         .getInputText((Dialog) dialog)

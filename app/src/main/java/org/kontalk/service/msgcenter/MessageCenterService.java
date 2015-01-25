@@ -52,6 +52,7 @@ import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
+import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.ping.packet.Ping;
@@ -92,6 +93,7 @@ import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
@@ -124,6 +126,7 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -265,9 +268,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
 
     // used for org.kontalk.presence.privacy.action extra
+    /** Accept subscription. */
     public static final int PRIVACY_ACCEPT = 0;
+    /** Block user. */
     public static final int PRIVACY_BLOCK = 1;
+    /** Unblock user. */
     public static final int PRIVACY_UNBLOCK = 2;
+    /** Reject subscription and block. */
+    public static final int PRIVACY_REJECT = 3;
 
     /** Message URI. */
     public static final String EXTRA_MESSAGE = "org.kontalk.message";
@@ -541,7 +549,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // stop any key pair regeneration service
-        endKeyPairRegeneration();
+        if (!LegacyAuthentication.isUpgrading())
+            endKeyPairRegeneration();
 
         // release the wakelock
         mWakeLock.release();
@@ -920,6 +929,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
+        // setup ping manager
         final PingManager pingMgr = PingManager.getInstanceFor(connection);
         pingMgr.setPingInterval(PING_INTERVAL);
         pingMgr.registerPingFailedListener(new PingFailedListener() {
@@ -932,6 +942,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 restart(getApplicationContext());
             }
         });
+
+        // setup version manager
+        final VersionManager verMgr = VersionManager.getInstanceFor(connection);
+        verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionName(this));
 
         PacketFilter filter;
 
@@ -1249,21 +1263,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (action == PRIVACY_ACCEPT) {
             // standard response: subscribed
             Presence p = new Presence(Presence.Type.subscribed);
-
             p.setPacketID(packetId);
             p.setTo(to);
-
-            // send the subscribed response
             sendPacket(p);
 
             // send a subscription request anyway
             p = new Presence(Presence.Type.subscribe);
             p.setTo(to);
-
             sendPacket(p);
         }
 
-        else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+        else if (action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK || action == PRIVACY_REJECT) {
             sendPrivacyListCommand(to, action);
         }
 
@@ -1278,7 +1288,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void sendPrivacyListCommand(final String to, final int action) {
         IQ p;
 
-        if (action == PRIVACY_BLOCK) {
+        if (action == PRIVACY_BLOCK || action == PRIVACY_REJECT) {
             // blocking command: block
             p = BlockingCommand.block(to);
         }
@@ -1293,6 +1303,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             throw new IllegalArgumentException("unsupported action: " + action);
         }
 
+        if (action == PRIVACY_REJECT) {
+            // send unsubscribed too
+            Presence unsub = new Presence(Presence.Type.unsubscribe);
+            unsub.setTo(to);
+            sendPacket(unsub);
+        }
+
         // setup packet filter for response
         PacketFilter filter = new PacketIDFilter(p.getPacketID());
         PacketListener listener = new PacketListener() {
@@ -1300,13 +1317,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
                     UsersProvider.setBlockStatus(MessageCenterService.this,
-                        to, action == PRIVACY_BLOCK);
+                        to, action == PRIVACY_BLOCK || action == PRIVACY_REJECT);
 
                     // invalidate cached contact
                     Contact.invalidate(to);
 
                     // broadcast result
-                    broadcast(action == PRIVACY_BLOCK ?
+                    broadcast((action == PRIVACY_BLOCK || action == PRIVACY_REJECT) ?
                         ACTION_BLOCKED : ACTION_UNBLOCKED,
                         EXTRA_FROM, to);
                 }
@@ -1631,6 +1648,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mKeyPairRegenerator.abort();
             mKeyPairRegenerator = null;
         }
+    }
+
+    /**
+     * Used by {@link XMPPConnectionHelper} to retrieve the keyring that will
+     * be used for the next login while upgrading from legacy.
+     */
+    @Override
+    public PGPKeyPairRingProvider getKeyPairRingProvider() {
+        return mKeyPairRegenerator;
     }
 
     private void beginKeyPairImport(Uri keypack, String passphrase) {

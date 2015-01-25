@@ -123,7 +123,7 @@ public class ImageComponent extends AttachmentComponent {
                  * Of course a thumbnail can be generated only if the image has
                  * already been downloaded.
                  */
-                if (previewFile != null && localUri != null) {
+                if (localUri != null) {
                     MediaStorage.cacheThumbnail(context, localUri, previewFile);
                     loadPreview(previewFile);
                 }

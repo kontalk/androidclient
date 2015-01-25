@@ -24,6 +24,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionListener;
@@ -37,8 +38,11 @@ import org.kontalk.Kontalk;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
+import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.X509Bridge;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
 import org.kontalk.util.InternalTrustStore;
 import org.kontalk.util.Preferences;
 import org.spongycastle.openpgp.PGPException;
@@ -182,18 +186,43 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // login
-        if (key != null || token != null)
+        if (!mLimited && (key != null || token != null))
             mConn.login();
 
     }
 
     public void connect() {
         PersonalKey key = null;
-        try {
-            key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
+
+        if (LegacyAuthentication.isUpgrading() && mListener != null) {
+            PGPKeyPairRingProvider keyProv = mListener.getKeyPairRingProvider();
+            if (keyProv != null) {
+                PGP.PGPKeyPairRing keyring = keyProv.getKeyPair();
+                if (keyring != null) {
+                    String passphrase = ((Kontalk) mContext.getApplicationContext()).getCachedPassphrase();
+
+                    try {
+                        X509Certificate bridgeCert = X509Bridge.createCertificate(keyring.publicKey,
+                            keyring.secretKey.getSecretKey(), passphrase, null);
+
+                        key = PersonalKey.load(keyring.secretKey, keyring.publicKey,
+                            passphrase, bridgeCert);
+                    }
+                    catch (Exception e) {
+                        // this will go crap...
+                        Log.e(TAG, "unable to create temporary personal key - not using SSL", e);
+                    }
+                }
+            }
         }
-        catch (Exception e) {
-            Log.e(TAG, "unable to retrieve personal key - not using SSL", e);
+
+        if (key == null) {
+            try {
+                key = ((Kontalk) mContext.getApplicationContext()).getPersonalKey();
+            }
+            catch (Exception e) {
+                Log.e(TAG, "unable to retrieve personal key - not using SSL", e);
+            }
         }
 
         String token = LegacyAuthentication.getAuthToken(mContext);
@@ -333,5 +362,7 @@ public class XMPPConnectionHelper extends Thread {
         public void aborted(Exception e);
 
         public void authenticationFailed();
+
+        public PGPKeyPairRingProvider getKeyPairRingProvider();
     }
 }

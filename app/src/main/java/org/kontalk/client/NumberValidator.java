@@ -18,13 +18,14 @@
 
 package org.kontalk.client;
 
-import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.telephony.TelephonyManager;
-import android.text.TextUtils;
-import android.util.Base64;
-import android.util.Log;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.Locale;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -38,28 +39,31 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.iqregister.provider.RegistrationProvider;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
-import org.kontalk.crypto.PGP.PGPKeyPairRing;
-import org.kontalk.crypto.PersonalKey;
-import org.kontalk.service.XMPPConnectionHelper;
-import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
-import org.kontalk.util.MessageUtils;
 import org.spongycastle.openpgp.PGPException;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
-import java.util.List;
-import java.util.Locale;
+import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.util.Base64;
+import android.util.Log;
+
+import org.kontalk.crypto.PGP.PGPKeyPairRing;
+import org.kontalk.crypto.PersonalKey;
+import org.kontalk.crypto.X509Bridge;
+import org.kontalk.service.XMPPConnectionHelper;
+import org.kontalk.service.XMPPConnectionHelper.ConnectionHelperListener;
+import org.kontalk.service.msgcenter.PGPKeyPairRingProvider;
+import org.kontalk.util.MessageUtils;
 
 
 /**
@@ -87,8 +91,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private final String mPhone;
     private PersonalKey mKey;
     private PGPKeyPairRing mKeyRing;
+    private X509Certificate mBridgeCert;
     private String mPassphrase;
-    private volatile Object mKeyLock = new Object();
+    private final Object mKeyLock = new Object();
 
     private byte[] mImportedPrivateKey;
     private byte[] mImportedPublicKey;
@@ -98,7 +103,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     private volatile int mStep;
     private CharSequence mValidationCode;
 
-    private final Context mContext;
     private Thread mThread;
 
     private HandlerThread mServiceHandler;
@@ -106,14 +110,13 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
     public NumberValidator(Context context, EndpointServer.EndpointServerProvider serverProvider,
         String name, String phone, PersonalKey key, String passphrase) {
-        mContext = context.getApplicationContext();
         mServerProvider = serverProvider;
         mName = name;
         mPhone = phone;
         mKey = key;
         mPassphrase = passphrase;
 
-        mConnector = new XMPPConnectionHelper(mContext, mServerProvider.next(), true);
+        mConnector = new XMPPConnectionHelper(context.getApplicationContext(), mServerProvider.next(), true);
         mConnector.setRetryEnabled(false);
 
         configure();
@@ -131,8 +134,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
     }
 
-    public PersonalKey getKey() {
-        return mKey;
+    @Override
+    public PGPKeyPairRingProvider getKeyPairRingProvider() {
+        // not supported
+        return null;
     }
 
     public void importKey(byte[] privateKeyData, byte[] publicKeyData) {
@@ -213,7 +218,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         IQ iq = (IQ) packet;
 
                         if (iq.getType() == IQ.Type.result) {
-                            DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
+                            DataForm response = iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 // ok! message will be sent
                                 List<FormField> iter = response.getFields();
@@ -267,7 +272,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                             mListener.onValidationFailed(NumberValidator.this, reason);
 
                         mStep = STEP_INIT;
-                        return;
                     }
                 }, new PacketIDFilter(form.getPacketID()));
 
@@ -279,7 +283,25 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             else if (mStep == STEP_AUTH_TOKEN) {
                 Log.d(TAG, "requesting authentication token");
 
+                // generate keyring immediately
+                // needed for connection
+                if (mKey != null) {
+                    String userId = MessageUtils.sha1(mPhone);
+                    mKeyRing = mKey.storeNetwork(userId, mConnector.getNetwork(),
+                        mName, mPassphrase);
+                }
+                else {
+                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                }
+
+                // bridge certificate for connection
+                mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
+                    mKeyRing.secretKey.getSecretKey(), mPassphrase, null);
+
+                // connect to server
                 initConnection();
+
+                // prepare final verification form
                 Packet form = createValidationForm();
 
                 XMPPConnection conn = mConnector.getConnection();
@@ -287,7 +309,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                     public void processPacket(Packet packet) {
                         IQ iq = (IQ) packet;
                         if (iq.getType() == IQ.Type.result) {
-                            DataForm response = (DataForm) iq.getExtension("x", "jabber:x:data");
+                            DataForm response = iq.getExtension("x", "jabber:x:data");
                             if (response != null) {
                                 String publicKey = null;
 
@@ -325,7 +347,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         // we must call onServerCheckFailed()
                         mListener.onAuthTokenFailed(NumberValidator.this, -1);
                         mStep = STEP_INIT;
-                        return;
                     }
                 }, new PacketIDFilter(form.getPacketID()));
 
@@ -381,10 +402,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mThread = null;
     }
 
-    public int getStep() {
-        return mStep;
-    }
-
     private void initConnection() throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException,
@@ -392,7 +409,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         if (!mConnector.isConnected() || mConnector.isServerDirty()) {
             mConnector.setListener(this);
-            mConnector.connectOnce(null);
+            mConnector.connectOnce(mKey.copy(mBridgeCert));
         }
     }
 
@@ -417,7 +434,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return iq;
     }
 
-    private Packet createValidationForm() {
+    private Packet createValidationForm() throws IOException {
         Registration iq = new Registration();
         iq.setType(IQ.Type.set);
         iq.setTo(mConnector.getConnection().getServiceName());
@@ -433,36 +450,6 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         code.setType(FormField.TYPE_TEXT_SINGLE);
         code.addValue(mValidationCode.toString());
         form.addField(code);
-
-        if (mKey != null || (mImportedPrivateKey != null && mImportedPublicKey != null)) {
-            String publicKey;
-            try {
-                if (mKey != null) {
-                    String userId = MessageUtils.sha1(mPhone);
-                    // TODO what in name and comment fields here?
-                    mKeyRing = mKey.storeNetwork(userId, mConnector.getNetwork(),
-                        mName, mPassphrase);
-                }
-                else {
-                    mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
-                }
-
-                publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
-            }
-            catch (Exception e) {
-                // TODO
-                Log.v(TAG, "error saving key", e);
-                publicKey = null;
-            }
-
-            if (publicKey != null) {
-                FormField key = new FormField("publickey");
-                key.setLabel("Public key");
-                key.setType(FormField.TYPE_TEXT_SINGLE);
-                key.addValue(publicKey);
-                form.addField(key);
-            }
-        }
 
         iq.addExtension(form.getDataFormToSend());
         return iq;

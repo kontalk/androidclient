@@ -266,15 +266,35 @@ public final class Preferences {
         InputStream in = null;
         OutputStream out = null;
         try {
-            in = context.getContentResolver().openInputStream(uri);
-
-            Bitmap bmap = BitmapFactory.decodeStream(in, null, null);
-
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();
+            int width;
+            int height;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
+                Point size = new Point();
+                display.getSize(size);
+                width = size.x;
+                height = size.y;
+            }
+            else {
+                width = display.getWidth();
+                height = display.getHeight();
+            }
 
-            Bitmap tn = ThumbnailUtils.extractThumbnail(bmap, display.getWidth(), display.getHeight());
-            bmap.recycle();
+            in = context.getContentResolver().openInputStream(uri);
+            BitmapFactory.Options options = MediaStorage.preloadBitmap(in, width, height);
+            in.close();
+
+            // open again
+            in = context.getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
+            in.close();
+
+            Bitmap tn = ThumbnailUtils.extractThumbnail(bitmap, width, height);
+            bitmap.recycle();
+
+            // check for rotation data
+            tn = MediaStorage.bitmapOrientation(context, uri, tn);
 
             File outFile = new File(context.getFilesDir(), "background.png");
             out = new FileOutputStream(outFile);
