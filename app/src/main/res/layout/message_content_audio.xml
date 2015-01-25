@@ -29,8 +29,8 @@
         android:id="@+id/balloon_audio_seekbar"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginLeft="9dp"
+        android:layout_marginTop="6dp"
         android:focusable="false"
         android:layout_toRightOf="@+id/balloon_audio_player" />
 
