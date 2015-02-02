@@ -365,4 +365,6 @@
 
     <string name="err_server_invalid_format">Invalid address format.</string>
 
+    <string name="err_no_contacts_app">No contacts app found.</string>
+
 </resources>
