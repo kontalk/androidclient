@@ -2038,7 +2038,7 @@ public class ComposeMessageFragment extends ListFragment implements
         super.onResume();
 
         if (Authenticator.getDefaultAccount(getActivity()) == null) {
-            NumberValidation.startValidation(getActivity());
+            NumberValidation.start(getActivity());
             getActivity().finish();
             return;
         }

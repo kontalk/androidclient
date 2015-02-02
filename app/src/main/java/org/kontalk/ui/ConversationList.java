@@ -293,7 +293,7 @@ public class ConversationList extends ActionBarActivity
         }).start();
 
         if (Authenticator.getDefaultAccount(this) == null) {
-            NumberValidation.startValidation(this);
+            NumberValidation.start(this);
             finish();
         }
         else {

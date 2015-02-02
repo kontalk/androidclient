@@ -411,7 +411,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     /** Starts the validation activity. */
-    public static void startValidation(Context context) {
+    public static void start(Context context) {
         Intent i = new Intent(context, NumberValidation.class);
         i.putExtra(PARAM_FROM_INTERNAL, true);
         context.startActivity(i);
@@ -916,6 +916,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void startValidationCode(int requestCode) {
+        // validator might be null if we are skipping verification code request
+        String serverUri = null;
+        if (mValidator != null)
+            serverUri = mValidator.getServer().toString();
+
+        // save state to preferences
+        Preferences.saveRegistrationProgress(this,
+            mName, mPhoneNumber, mKey, serverUri);
+
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
         i.putExtra("name", mName);
@@ -923,10 +932,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
-
-        // validator might be null if we are skipping verification code request
-        if (mValidator != null)
-            i.putExtra("server", mValidator.getServer().toString());
+        i.putExtra("server", serverUri);
 
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);

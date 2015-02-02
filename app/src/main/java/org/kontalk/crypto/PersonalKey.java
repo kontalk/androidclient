@@ -24,6 +24,7 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Base64;
+import android.util.Base64OutputStream;
 import android.util.Log;
 
 import org.kontalk.Kontalk;
@@ -31,6 +32,8 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.util.MessageUtils;
+
+import org.spongycastle.crypto.util.SubjectPublicKeyInfoFactory;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPObjectFactory;
@@ -50,6 +53,7 @@ import org.spongycastle.operator.OperatorCreationException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -158,6 +162,32 @@ public class PersonalKey implements Parcelable {
 
     public PersonalKey copy(X509Certificate bridgeCert) {
         return new PersonalKey(mPair, bridgeCert);
+    }
+
+    public String toBase64() {
+        try {
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            Base64OutputStream enc = new Base64OutputStream(buf, Base64.NO_WRAP);
+            ObjectOutputStream os = new ObjectOutputStream(enc);
+
+            // master (signing) key
+            os.writeObject(mPair.encryptKey.getPublicKey());
+            os.writeObject(mPair.encryptKey.getPrivateKey());
+            // sub (encryption) key
+            os.writeObject(mPair.signKey.getPublicKey());
+            os.writeObject(mPair.signKey.getPrivateKey());
+
+            return buf.toString();
+        }
+        catch (IOException e) {
+            // shouldn't happen - crash
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static PersonalKey fromBase64(String data) {
+        // TODO
+        return null;
     }
 
     /** Checks that the given personal key data is correct. */

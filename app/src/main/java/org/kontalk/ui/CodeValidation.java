@@ -200,6 +200,10 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             setSupportProgressBarIndeterminateVisibility(false);
             enableControls(true);
         }
+        else {
+            // ending - clear registration progress
+            Preferences.clearRegistrationProgress(this);
+        }
         keepScreenOn(false);
         if (mValidator != null) {
             mValidator.shutdown();

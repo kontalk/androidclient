@@ -20,6 +20,7 @@ package org.kontalk.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -27,9 +28,11 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
+import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.ui.NumberValidation;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -43,6 +46,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
@@ -446,6 +450,42 @@ public final class Preferences {
 
     public static boolean getEnterKeyEnabled(Context context) {
         return getBoolean(context, "pref_text_enter", false);
+    }
+
+    /**
+     * Saves the current registration progress data. Used for recoverying a
+     * registration after a restart or in very low memory situations.
+     */
+    public static boolean saveRegistrationProgress(Context context, String name,
+        String phoneNumber, PersonalKey key, String serverUri) {
+        return sPreferences.edit()
+            .putString("registration_name", name)
+            .putString("registration_phone", phoneNumber)
+            .putString("registration_key", key.toBase64())
+            .putString("registration_server", serverUri)
+            .commit();
+    }
+
+    public static Bundle getRegistrationProgress(Context context) {
+        String name = getString(context, "registration_name", null);
+        if (name != null) {
+            // TODO maybe we should use a bean class here for performance reasons
+            Bundle b = new Bundle(4);
+            b.putString("name", name);
+            b.putString("phone", getString(context, "registration_phone", null));
+            b.putString("server", getString(context, "registration_server", null));
+            b.putParcelable("key", PersonalKey.fromBase64(getString(context, "registration_key", null)));
+            return b;
+        }
+        return null;
+    }
+
+    public static boolean clearRegistrationProgress(Context context) {
+        return sPreferences.edit()
+            .remove("registration_name")
+            .remove("registration_phone")
+            .remove("registration_server")
+            .commit();
     }
 
     /** Recent statuses database helper. */

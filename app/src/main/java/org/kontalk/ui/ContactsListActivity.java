@@ -89,7 +89,7 @@ public class ContactsListActivity extends ActionBarActivity
         super.onResume();
 
         if (Authenticator.getDefaultAccount(this) == null) {
-            NumberValidation.startValidation(this);
+            NumberValidation.start(this);
             finish();
             return;
         }
