@@ -24,6 +24,7 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Base64;
+import android.util.Base64InputStream;
 import android.util.Base64OutputStream;
 import android.util.Log;
 
@@ -33,7 +34,6 @@ import org.kontalk.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.util.MessageUtils;
 
-import org.spongycastle.crypto.util.SubjectPublicKeyInfoFactory;
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPObjectFactory;
@@ -50,9 +50,11 @@ import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBu
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.operator.OperatorCreationException;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -165,29 +167,55 @@ public class PersonalKey implements Parcelable {
     }
 
     public String toBase64() {
+        ObjectOutputStream os = null;
         try {
             ByteArrayOutputStream buf = new ByteArrayOutputStream();
             Base64OutputStream enc = new Base64OutputStream(buf, Base64.NO_WRAP);
-            ObjectOutputStream os = new ObjectOutputStream(enc);
+            os = new ObjectOutputStream(enc);
 
-            // master (signing) key
-            os.writeObject(mPair.encryptKey.getPublicKey());
-            os.writeObject(mPair.encryptKey.getPrivateKey());
-            // sub (encryption) key
-            os.writeObject(mPair.signKey.getPublicKey());
-            os.writeObject(mPair.signKey.getPrivateKey());
+            PGP.serialize(mPair, os);
 
+            os.close();
             return buf.toString();
         }
-        catch (IOException e) {
+        catch (Exception e) {
             // shouldn't happen - crash
             throw new RuntimeException(e);
+        }
+        finally {
+            try {
+                if (os != null)
+                    os.close();
+            }
+            catch (IOException ignored) {
+            }
         }
     }
 
     public static PersonalKey fromBase64(String data) {
-        // TODO
-        return null;
+        ObjectInputStream is = null;
+        try {
+            ByteArrayInputStream buf = new ByteArrayInputStream(data.getBytes());
+            Base64InputStream dec = new Base64InputStream(buf, Base64.NO_WRAP);
+            is = new ObjectInputStream(dec);
+
+            PGPDecryptedKeyPairRing pair = PGP.unserialize(is);
+
+            dec.close();
+            return new PersonalKey(pair, null);
+        }
+        catch (Exception e) {
+            // shouldn't happen - crash
+            throw new RuntimeException(e);
+        }
+        finally {
+            try {
+                if (is != null)
+                    is.close();
+            }
+            catch (IOException ignored) {
+            }
+        }
     }
 
     /** Checks that the given personal key data is correct. */

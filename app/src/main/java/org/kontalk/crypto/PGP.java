@@ -20,6 +20,8 @@ package org.kontalk.crypto;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -301,6 +303,56 @@ public class PGP {
         dest.writeInt(algoEnc);
         dest.writeLong(dateEnc.getTime());
 
+    }
+
+    public static void serialize(PGPDecryptedKeyPairRing pair, ObjectOutputStream dest)
+            throws PGPException, IOException {
+
+        PrivateKey privSign = convertPrivateKey(pair.signKey.getPrivateKey());
+        PublicKey pubSign = convertPublicKey(pair.signKey.getPublicKey());
+        int algoSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
+        Date dateSign = pair.signKey.getPrivateKey().getPublicKeyPacket().getTime();
+
+        PrivateKey privEnc = convertPrivateKey(pair.encryptKey.getPrivateKey());
+        PublicKey pubEnc = convertPublicKey(pair.encryptKey.getPublicKey());
+        int algoEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
+        Date dateEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getTime();
+
+        dest.writeObject(privSign);
+        dest.writeObject(pubSign);
+        dest.writeInt(algoSign);
+        dest.writeLong(dateSign.getTime());
+
+        dest.writeObject(privEnc);
+        dest.writeObject(pubEnc);
+        dest.writeInt(algoEnc);
+        dest.writeLong(dateEnc.getTime());
+    }
+
+    public static PGPDecryptedKeyPairRing unserialize(ObjectInputStream in)
+            throws IOException, ClassNotFoundException, PGPException {
+        ensureKeyConverter();
+
+        // TODO read byte data
+        PrivateKey privSign = (PrivateKey) in.readObject();
+        PublicKey pubSign = (PublicKey) in.readObject();
+        int algoSign = in.readInt();
+        Date dateSign = new Date(in.readLong());
+
+        PGPPublicKey pubKeySign = sKeyConverter.getPGPPublicKey(algoSign, pubSign, dateSign);
+        PGPPrivateKey privKeySign = sKeyConverter.getPGPPrivateKey(pubKeySign, privSign);
+        PGPKeyPair signKp = new PGPKeyPair(pubKeySign, privKeySign);
+
+        PrivateKey privEnc = (PrivateKey) in.readObject();
+        PublicKey pubEnc = (PublicKey) in.readObject();
+        int algoEnc = in.readInt();
+        Date dateEnc = new Date(in.readLong());
+
+        PGPPublicKey pubKeyEnc = sKeyConverter.getPGPPublicKey(algoEnc, pubEnc, dateEnc);
+        PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
+        PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
+
+        return new PGPDecryptedKeyPairRing(signKp, encryptKp);
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {

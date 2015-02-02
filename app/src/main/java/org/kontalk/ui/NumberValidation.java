@@ -334,6 +334,21 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
+        Preferences.RegistrationProgress saved = Preferences.getRegistrationProgress(this);
+        if (saved != null) {
+            mName = saved.name;
+            mPhoneNumber = saved.phone;
+            mKey = saved.key;
+            mPassphrase = saved.passphrase;
+
+            // update UI
+            mNameText.setText(mName);
+            mPhone.setText(mPhoneNumber);
+            syncCountryCodeSelector();
+
+            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.server, false);
+        }
+
         if (mKey == null) {
             PersonalKeyRunnable action = new PersonalKeyRunnable() {
                 public void run(PersonalKey key) {
@@ -916,14 +931,22 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void startValidationCode(int requestCode) {
+        startValidationCode(requestCode, null, true);
+    }
+
+    private void startValidationCode(int requestCode, EndpointServer server, boolean saveProgress) {
         // validator might be null if we are skipping verification code request
         String serverUri = null;
-        if (mValidator != null)
+        if (server != null)
+            serverUri = server.toString();
+        else if (mValidator != null)
             serverUri = mValidator.getServer().toString();
 
         // save state to preferences
-        Preferences.saveRegistrationProgress(this,
-            mName, mPhoneNumber, mKey, serverUri);
+        if (saveProgress) {
+            Preferences.saveRegistrationProgress(this,
+                mName, mPhoneNumber, mKey, mPassphrase, serverUri);
+        }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
@@ -933,8 +956,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
         i.putExtra("server", serverUri);
-
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
+
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }
 

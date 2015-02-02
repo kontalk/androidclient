@@ -20,7 +20,6 @@ package org.kontalk.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -32,7 +31,6 @@ import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.ui.NumberValidation;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -46,7 +44,6 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
@@ -457,25 +454,27 @@ public final class Preferences {
      * registration after a restart or in very low memory situations.
      */
     public static boolean saveRegistrationProgress(Context context, String name,
-        String phoneNumber, PersonalKey key, String serverUri) {
+        String phoneNumber, PersonalKey key, String passphrase, String serverUri) {
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
             .putString("registration_key", key.toBase64())
+            .putString("registration_passphrase", passphrase)
             .putString("registration_server", serverUri)
             .commit();
     }
 
-    public static Bundle getRegistrationProgress(Context context) {
+    public static RegistrationProgress getRegistrationProgress(Context context) {
         String name = getString(context, "registration_name", null);
         if (name != null) {
-            // TODO maybe we should use a bean class here for performance reasons
-            Bundle b = new Bundle(4);
-            b.putString("name", name);
-            b.putString("phone", getString(context, "registration_phone", null));
-            b.putString("server", getString(context, "registration_server", null));
-            b.putParcelable("key", PersonalKey.fromBase64(getString(context, "registration_key", null)));
-            return b;
+            RegistrationProgress p = new RegistrationProgress();
+            p.name = name;
+            p.phone = getString(context, "registration_phone", null);
+            String serverUri = getString(context, "registration_server", null);
+            p.server = serverUri != null ? new EndpointServer(serverUri) : null;
+            p.key = PersonalKey.fromBase64(getString(context, "registration_key", null));
+            p.passphrase = getString(context, "registration_passphrase", null);
+            return p;
         }
         return null;
     }
@@ -484,8 +483,18 @@ public final class Preferences {
         return sPreferences.edit()
             .remove("registration_name")
             .remove("registration_phone")
+            .remove("registration_key")
+            .remove("registration_passphrase")
             .remove("registration_server")
             .commit();
+    }
+
+    public static final class RegistrationProgress {
+        public String name;
+        public String phone;
+        public PersonalKey key;
+        public String passphrase;
+        public EndpointServer server;
     }
 
     /** Recent statuses database helper. */

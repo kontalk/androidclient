@@ -126,6 +126,13 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        // we are going back voluntarily
+        Preferences.clearRegistrationProgress(this);
+        super.onBackPressed();
+    }
+
     /** No search here. */
     @Override
     public boolean onSearchRequested() {
