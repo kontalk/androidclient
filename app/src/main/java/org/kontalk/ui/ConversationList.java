@@ -28,6 +28,7 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
+import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
@@ -63,7 +64,7 @@ import android.widget.Toast;
  */
 public class ConversationList extends ActionBarActivity
         implements ContactsSyncActivity, ContactPickerListener {
-    static final String TAG = ConversationList.class.getSimpleName();
+    public static final String TAG = ConversationList.class.getSimpleName();
 
     private ConversationListFragment mFragment;
 

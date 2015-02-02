@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
 import java.util.ArrayList;
 

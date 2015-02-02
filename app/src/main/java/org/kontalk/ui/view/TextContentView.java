@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
 import android.content.Context;
 import android.text.Layout;
@@ -27,13 +27,10 @@ import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
-import org.kontalk.message.RawComponent;
 import org.kontalk.message.TextComponent;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 import java.util.regex.Matcher;

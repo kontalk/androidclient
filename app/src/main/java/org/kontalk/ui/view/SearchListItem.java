@@ -16,27 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
-import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.data.SearchItem;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
-public class ContactsListItem extends AvatarListItem {
+public class SearchListItem extends RelativeLayout {
 
-    private Contact mContact;
+    private SearchItem mFound;
     private TextView mText1;
     private TextView mText2;
 
-    public ContactsListItem(Context context) {
+    public SearchListItem(Context context) {
         super(context);
     }
 
-    public ContactsListItem(Context context, AttributeSet attrs) {
+    public SearchListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -49,41 +50,30 @@ public class ContactsListItem extends AvatarListItem {
 
         if (isInEditMode()) {
             mText1.setText("Test contact");
-            mText2.setText("+393375423981");
+            mText2.setText("...hello buddy! How...");
         }
     }
 
-    public final void bind(Context context, final Contact contact) {
-        mContact = contact;
+    public final void bind(Context context, final SearchItem found) {
+        mFound = found;
 
-        loadAvatar(contact);
+        final Contact contact = found.getContact();
+        String name;
+        if (contact != null)
+            name = contact.getName() + " <" + contact.getNumber() + ">";
+        else
+            name = found.getUserId();
 
-        mText1.setText(contact.getName());
-        String text2 = contact.getStatus();
-        if (text2 == null) {
-            text2 = contact.getNumber();
-            mText2.setTextColor(getResources().getColor(R.color.grayed_out));
-        }
-        else {
-            mText2.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
-        }
-        mText2.setText(text2);
+        mText1.setText(name);
+        mText2.setText(found.getText());
     }
 
     public final void unbind() {
-        mContact = null;
-        /*
-        mAvatarView.setImageDrawable(null);
-        BitmapDrawable d = (BitmapDrawable) mAvatarView.getDrawable();
-        if (d != null) {
-            Bitmap b = d.getBitmap();
-            if (b != null) b.recycle();
-        }
-        */
+        // TODO unbind (?)
     }
 
-    public Contact getContact() {
-        return mContact;
+    public SearchItem getSearchItem() {
+        return mFound;
     }
 
 }

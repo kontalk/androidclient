@@ -78,7 +78,8 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.ui.CountryCodesAdapter.CountryCode;
+import org.kontalk.ui.adapter.CountryCodesAdapter;
+import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.util.Preferences;
 
 import java.io.IOException;

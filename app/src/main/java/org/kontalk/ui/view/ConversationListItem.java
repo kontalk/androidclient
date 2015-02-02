@@ -16,12 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
-
-import com.rockerhieu.emojicon.EmojiconEditText;
-import com.rockerhieu.emojicon.EmojiconTextView;
-import com.rockerhieu.emojicon.EmojiconsFragment;
-import com.rockerhieu.emojicon.emoji.Emojicon;
+package org.kontalk.ui.view;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.R;

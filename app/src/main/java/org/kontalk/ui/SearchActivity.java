@@ -32,7 +32,7 @@ import android.view.MenuItem;
  * @author Daniele Ricci
  */
 public class SearchActivity extends ActionBarActivity {
-    static final String TAG = SearchActivity.class.getSimpleName();
+    public static final String TAG = SearchActivity.class.getSimpleName();
 
     private SearchFragment mFragment;
 

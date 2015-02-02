@@ -16,19 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.view;
+
+import org.kontalk.data.Contact;
+import org.kontalk.ui.ContactsListFragment;
 
 
 /**
- * This interface gives access to the currently playing audio content view by the composer.
- * @author Andrea Cappelli
+ * Implementors are supposed to be parents of the {@link org.kontalk.ui.ContactsListFragment}.
+ * @author Daniele Ricci
  */
-public interface AudioContentViewControl {
-    public void setProgressChangeListener(boolean enabled);
-    public void prepare(int duration);
-    public void play();
-    public void pause();
-    public void updatePosition(int position);
-    public void end();
-    public int getPosition();
+public interface ContactPickerListener {
+
+    /** Called when a contact has been selected from a {@link org.kontalk.ui.ContactsListFragment}. */
+    public void onContactSelected(ContactsListFragment fragment, Contact contact);
+
 }

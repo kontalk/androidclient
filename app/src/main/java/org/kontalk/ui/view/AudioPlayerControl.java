@@ -16,18 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
-import org.kontalk.data.Contact;
+import java.io.File;
+
+import org.kontalk.ui.view.AudioContentViewControl;
 
 
 /**
- * Implementors are supposed to be parents of the {@link ContactsListFragment}.
- * @author Daniele Ricci
+ * This interface gives access to composer by the audio content view.
+ * @author Andrea Cappelli
  */
-public interface ContactPickerListener {
-
-    /** Called when a contact has been selected from a {@link ContactsListFragment}. */
-    public void onContactSelected(ContactsListFragment fragment, Contact contact);
+public interface AudioPlayerControl {
+    public void buttonClick (File audioFile, AudioContentViewControl view, long messageId);
+    public void playAudio(AudioContentViewControl view, long messageId);
+    public void pauseAudio(AudioContentViewControl view);
+    public void onBind (long messageId, AudioContentViewControl view);
+    public void onUnbind(long messageId, AudioContentViewControl view);
+    public void seekTo(int position);
+    public boolean isPlaying();
 
 }

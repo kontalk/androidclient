@@ -16,10 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.adapter;
 
 import org.kontalk.R;
 import org.kontalk.data.Conversation;
+import org.kontalk.ui.ConversationList;
+import org.kontalk.ui.view.ConversationListItem;
+import org.kontalk.ui.view.MessageListItem;
 
 import android.content.Context;
 import android.database.Cursor;

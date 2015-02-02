@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 
 
 /**
- * A message list item to be used in {@link ComposeMessage} activity.
+ * A message list item to be used in {@link org.kontalk.ui.ComposeMessage} activity.
  * @author Daniele Ricci
  * @version 1.0
  */

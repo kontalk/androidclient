@@ -16,28 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
+import org.kontalk.R;
 import org.kontalk.data.Contact;
-import org.kontalk.data.SearchItem;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
-public class SearchListItem extends RelativeLayout {
+public class ContactsListItem extends AvatarListItem {
 
-    private SearchItem mFound;
+    private Contact mContact;
     private TextView mText1;
     private TextView mText2;
 
-    public SearchListItem(Context context) {
+    public ContactsListItem(Context context) {
         super(context);
     }
 
-    public SearchListItem(Context context, AttributeSet attrs) {
+    public ContactsListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -50,30 +49,41 @@ public class SearchListItem extends RelativeLayout {
 
         if (isInEditMode()) {
             mText1.setText("Test contact");
-            mText2.setText("...hello buddy! How...");
+            mText2.setText("+393375423981");
         }
     }
 
-    public final void bind(Context context, final SearchItem found) {
-        mFound = found;
+    public final void bind(Context context, final Contact contact) {
+        mContact = contact;
 
-        final Contact contact = found.getContact();
-        String name;
-        if (contact != null)
-            name = contact.getName() + " <" + contact.getNumber() + ">";
-        else
-            name = found.getUserId();
+        loadAvatar(contact);
 
-        mText1.setText(name);
-        mText2.setText(found.getText());
+        mText1.setText(contact.getName());
+        String text2 = contact.getStatus();
+        if (text2 == null) {
+            text2 = contact.getNumber();
+            mText2.setTextColor(getResources().getColor(R.color.grayed_out));
+        }
+        else {
+            mText2.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
+        }
+        mText2.setText(text2);
     }
 
     public final void unbind() {
-        // TODO unbind (?)
+        mContact = null;
+        /*
+        mAvatarView.setImageDrawable(null);
+        BitmapDrawable d = (BitmapDrawable) mAvatarView.getDrawable();
+        if (d != null) {
+            Bitmap b = d.getBitmap();
+            if (b != null) b.recycle();
+        }
+        */
     }
 
-    public SearchItem getSearchItem() {
-        return mFound;
+    public Contact getContact() {
+        return mContact;
     }
 
 }

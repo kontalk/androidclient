@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.kontalk.R;
+import org.kontalk.ui.view.CircularSeekBar;
 import org.kontalk.util.MediaStorage;
 
 import android.app.AlertDialog;

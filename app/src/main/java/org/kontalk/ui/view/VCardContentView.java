@@ -16,79 +16,72 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
-
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.message.ImageComponent;
+package org.kontalk.ui.view;
 
 import java.util.regex.Pattern;
 
+import android.content.Context;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.message.VCardComponent;
+
 
 /**
- * Message component for {@link ImageComponent}.
+ * Message component for {@link org.kontalk.message.VCardComponent}.
  * @author Daniele Ricci
  */
-public class ImageContentView extends ImageView
-        implements MessageContentView<ImageComponent> {
+public class VCardContentView extends TextView
+    implements MessageContentView<VCardComponent> {
 
-    private ImageComponent mComponent;
+    private VCardComponent mComponent;
 
-    public ImageContentView(Context context) {
+    public VCardContentView(Context context) {
         super(context);
     }
 
-    public ImageContentView(Context context, AttributeSet attrs) {
+    public VCardContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public ImageContentView(Context context, AttributeSet attrs, int defStyle) {
+    public VCardContentView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
-    public void bind(long messageId, ImageComponent component, Contact contact, Pattern highlight) {
+    public void bind(long id, VCardComponent component, Contact contact, Pattern highlight) {
         mComponent = component;
 
-        // prepend some text for the ImageSpan
-        //String placeholder = CompositeMessage.getSampleTextContent(component.getContent().getMime());
-
-        Bitmap bitmap = mComponent.getBitmap();
-        if (bitmap != null)
-            setImageBitmap(bitmap);
-
-        // TODO else: maybe some placeholder like Image: image/jpeg
-
+        // TODO set text appearance (since this is text)
+        String text = CompositeMessage.getSampleTextContent(component.getMime());
+        setText(text);
     }
 
     public void unbind() {
         clear();
     }
 
-    public ImageComponent getComponent() {
+    public VCardComponent getComponent() {
         return mComponent;
     }
 
-    /** Image is always on top. */
     @Override
     public int getPriority() {
-        return 1;
+        return 7;
     }
 
     private void clear() {
         mComponent = null;
-        setImageBitmap(null);
     }
 
-    public static ImageContentView create(LayoutInflater inflater, ViewGroup parent) {
-        return (ImageContentView) inflater.inflate(R.layout.message_content_image,
+    public static VCardContentView create(LayoutInflater inflater, ViewGroup parent) {
+        VCardContentView view = (VCardContentView) inflater.inflate(R.layout.message_content_vcard,
             parent, false);
+        return view;
     }
 
 }

@@ -20,6 +20,8 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 import org.kontalk.data.SearchItem;
+import org.kontalk.ui.adapter.SearchListAdapter;
+import org.kontalk.ui.view.SearchListItem;
 
 import android.app.Activity;
 import android.content.Intent;

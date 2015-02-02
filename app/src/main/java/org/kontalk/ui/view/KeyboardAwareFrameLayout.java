@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

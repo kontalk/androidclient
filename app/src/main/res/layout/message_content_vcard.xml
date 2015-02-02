@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.VCardContentView
+<org.kontalk.ui.view.VCardContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:maxWidth="@dimen/message_text_width"
     android:layout_width="match_parent"

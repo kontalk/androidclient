@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.TextContentView
+<org.kontalk.ui.view.TextContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:maxWidth="@dimen/message_text_width"
