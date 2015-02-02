@@ -19,4 +19,33 @@
 
 <resources>
     <bool name="has_two_panes" translatable="false">false</bool>
+
+    <!-- network settings defaults -->
+    <bool name="pref_default_push_notifications">true</bool>
+
+    <!-- privacy settings defaults -->
+    <bool name="pref_default_encrypt">true</bool>
+    <bool name="pref_default_auto_accept_subscriptions">false</bool>
+    <bool name="pref_default_send_typing">true</bool>
+
+    <!-- messaging settings defaults -->
+    <bool name="pref_default_sync_sim_contacts">false</bool>
+
+    <!-- appearance settings defaults -->
+    <string name="pref_default_font_size">medium</string>
+    <string name="pref_default_balloons">classic</string>
+    <bool name="pref_default_text_enter">false</bool>
+
+    <!-- media settings defaults -->
+    <integer name="pref_default_image_resize">1024</integer>
+
+    <!-- notification settings defaults -->
+    <bool name="pref_default_enable_notifications">true</bool>
+    <string name="pref_default_ringtone">content://settings/system/notification_sound</string>
+    <string name="pref_default_vibrate">always</string>
+
+    <!-- maintenance settings defaults -->
+    <integer name="pref_default_idle_time">240000</integer>
+    <integer name="pref_default_wakeup_time">900000</integer>
+    <bool name="pref_default_accept_any_certificate">false</bool>
 </resources>

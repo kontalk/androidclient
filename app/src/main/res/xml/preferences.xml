@@ -32,7 +32,7 @@
         <CheckBoxPreference android:key="pref_push_notifications"
             android:summary="@string/pref_title_push_notifications"
             android:title="@string/pref_push_notifications"
-            android:defaultValue="true"/>
+            android:defaultValue="@bool/pref_default_push_notifications"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_messaging_settings"
@@ -43,7 +43,7 @@
                 android:summaryOff="@string/pref_title_off_encrypt"
                 android:summaryOn="@string/pref_title_on_encrypt"
                 android:title="@string/pref_encrypt"
-                android:defaultValue="true"/>
+                android:defaultValue="@bool/pref_default_encrypt"/>
             <!--
             <CheckBoxPreference android:key="pref_encrypt_userdata"
                 android:summaryOff="@string/pref_title_off_encrypt_userdata"
@@ -54,10 +54,10 @@
             <CheckBoxPreference android:key="pref_auto_accept_subscriptions"
                 android:title="@string/pref_auto_accept_subscriptions"
                 android:summary="@string/pref_title_auto_accept_subscriptions"
-                android:defaultValue="false"/>
+                android:defaultValue="@bool/pref_default_auto_accept_subscriptions"/>
             <CheckBoxPreference android:key="pref_send_typing"
                 android:title="@string/pref_send_typing"
-                android:defaultValue="true"/>
+                android:defaultValue="@bool/pref_default_send_typing"/>
             <!--
             <CheckBoxPreference android:key="pref_hide_presence"
                 android:summaryOff="@string/pref_title_off_hide_presence"
@@ -77,7 +77,7 @@
             android:summaryOff="@string/pref_title_off_sync_sim_contacts"
             android:summaryOn="@string/pref_title_on_sync_sim_contacts"
             android:title="@string/pref_sync_sim_contacts"
-            android:defaultValue="false"/>
+            android:defaultValue="@bool/pref_default_sync_sim_contacts"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_appearance_settings"
@@ -86,7 +86,7 @@
             android:title="@string/pref_font_size"
             android:entries="@array/fontsize_labels"
             android:entryValues="@array/fontsize_values"
-            android:defaultValue="medium"/>
+            android:defaultValue="@string/pref_default_font_size"/>
         <CheckBoxPreference android:key="pref_custom_background"
             android:title="@string/pref_custom_background"
             android:summaryOff="@string/pref_title_off_custom_background"
@@ -100,12 +100,12 @@
             android:summary="@string/pref_title_balloons"
             android:entries="@array/balloons_labels"
             android:entryValues="@array/balloons_values"
-            android:defaultValue="classic"/>
+            android:defaultValue="@string/pref_default_balloons"/>
         <CheckBoxPreference android:key="pref_text_enter"
             android:title="@string/pref_text_enter"
             android:summaryOff="@string/pref_title_off_text_enter"
             android:summaryOn="@string/pref_title_on_text_enter"
-            android:defaultValue="false"/>
+            android:defaultValue="@bool/pref_default_text_enter"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_media_settings"
@@ -115,7 +115,7 @@
             android:summary="@string/pref_title_image_resize"
             android:entries="@array/image_resize_labels"
             android:entryValues="@array/image_resize_values"
-            android:defaultValue="1024"/>
+            android:defaultValue="@integer/pref_default_image_resize"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_notification_settings"
@@ -123,12 +123,12 @@
         <CheckBoxPreference android:key="pref_enable_notifications"
             android:summary="@string/pref_title_enable_notifications"
             android:title="@string/pref_enable_notifications"
-            android:defaultValue="true"/>
+            android:defaultValue="@bool/pref_default_enable_notifications"/>
         <RingtonePreference android:key="pref_ringtone"
             android:dependency="pref_enable_notifications"
             android:title="@string/pref_ringtone"
             android:ringtoneType="notification"
-            android:defaultValue="content://settings/system/notification_sound"
+            android:defaultValue="@string/pref_default_ringtone"
             android:showDefault="true"
             android:showSilent="true"/>
         <ListPreference android:key="pref_vibrate"
@@ -137,7 +137,7 @@
             android:summary="@string/pref_title_vibrate"
             android:entries="@array/vibrate_labels"
             android:entryValues="@array/vibrate_values"
-            android:defaultValue="always"/>
+            android:defaultValue="@string/pref_default_vibrate"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintenance"
@@ -147,13 +147,13 @@
             android:summary="@string/pref_title_idle_time"
             android:entries="@array/idle_time_labels"
             android:entryValues="@array/idle_time_values"
-            android:defaultValue="60000"/>
+            android:defaultValue="@integer/pref_default_idle_time"/>
         <ListPreference android:key="pref_wakeup_time"
             android:title="@string/pref_wakeup_time"
             android:summary="@string/pref_title_wakeup_time"
             android:entries="@array/wakeup_time_labels"
             android:entryValues="@array/wakeup_time_values"
-            android:defaultValue="900000"/>
+            android:defaultValue="@integer/pref_default_wakeup_time"/>
         <Preference android:key="pref_restart_msgcenter"
             android:summary="@string/pref_title_restart_msgcenter"
             android:title="@string/pref_restart_msgcenter"/>
@@ -170,7 +170,7 @@
             android:title="@string/pref_import_keypair"/>
         <CheckBoxPreference android:key="pref_accept_any_certificate"
             android:title="@string/pref_accept_any_certificate"
-            android:defaultValue="false"/>
+            android:defaultValue="@bool/pref_default_accept_any_certificate"/>
         <Preference android:key="pref_delete_account"
             android:title="@string/pref_delete_account"/>
     </PreferenceCategory>
