@@ -554,15 +554,13 @@ public class UsersProvider extends ContentProvider {
     /** Returns a {@link Coder} instance for encrypting data. */
     public static Coder getEncryptCoder(Context context, EndpointServer server, PersonalKey key, String[] recipients) {
         // get recipients public keys from users database
-        PGPPublicKey keys[] = new PGPPublicKey[recipients.length];
+        PGPPublicKeyRing keys[] = new PGPPublicKeyRing[recipients.length];
         for (int i = 0; i < recipients.length; i++) {
             PGPPublicKeyRing ring = getPublicKey(context, recipients[i]);
             if (ring == null)
                 throw new IllegalArgumentException("public key not found for user " + recipients[i]);
 
-            keys[i] = PGP.getEncryptionKey(ring);
-            if (keys[i] == null)
-                throw new IllegalArgumentException("public key not found for user " + recipients[i]);
+            keys[i] = ring;
         }
 
         return new PGPCoder(server, key, keys);
@@ -570,11 +568,7 @@ public class UsersProvider extends ContentProvider {
 
     /** Returns a {@link Coder} instance for decrypting data. */
     public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        PGPPublicKeyRing ring = getPublicKey(context, sender);
-        if (ring == null)
-            throw new IllegalArgumentException("public key not found for user " + sender);
-
-        PGPPublicKey senderKey = PGP.getMasterKey(ring);
+        PGPPublicKeyRing senderKey = getPublicKey(context, sender);
         if (senderKey == null)
             throw new IllegalArgumentException("public key not found for user " + sender);
 

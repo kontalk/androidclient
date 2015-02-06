@@ -46,10 +46,13 @@ import org.spongycastle.openpgp.PGPOnePassSignatureList;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyEncryptedData;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
 import org.spongycastle.openpgp.PGPSignatureList;
 import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
+import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPGPContentVerifierBuilderProvider;
 import org.spongycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
@@ -75,6 +78,9 @@ import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION
  */
 public class PGPCoder extends Coder {
 
+    private static final KeyFingerPrintCalculator sFingerprintCalculator =
+        new BcKeyFingerprintCalculator();
+
     /** Buffer size. It should always be a power of 2. */
     private static final int BUFFER_SIZE = 1 << 8;
 
@@ -83,17 +89,17 @@ public class PGPCoder extends Coder {
 
     // either one of these two has a value
 
-    private final PGPPublicKey[] mRecipients;
-    private final PGPPublicKey mSender;
+    private final PGPPublicKeyRing[] mRecipients;
+    private final PGPPublicKeyRing mSender;
 
-    public PGPCoder(EndpointServer server, PersonalKey key, PGPPublicKey[] recipients) {
+    public PGPCoder(EndpointServer server, PersonalKey key, PGPPublicKeyRing[] recipients) {
         mServer = server;
         mKey = key;
         mRecipients = recipients;
         mSender = null;
     }
 
-    public PGPCoder(EndpointServer server, PersonalKey key, PGPPublicKey sender) {
+    public PGPCoder(EndpointServer server, PersonalKey key, PGPPublicKeyRing sender) {
         mServer = server;
         mKey = key;
         mRecipients = null;
@@ -142,8 +148,8 @@ public class PGPCoder extends Coder {
 
         String from = mKey.getUserId(mServer.getNetwork());
         StringBuilder to = new StringBuilder();
-        for (PGPPublicKey rcpt : mRecipients)
-            to.append(PGP.getUserId(rcpt, mServer.getNetwork()))
+        for (PGPPublicKeyRing rcpt : mRecipients)
+            to.append(PGP.getUserId(PGP.getMasterKey(rcpt), mServer.getNetwork()))
                 .append("; ");
 
         // secure the message against the most basic attacks using Message/CPIM
@@ -160,8 +166,8 @@ public class PGPCoder extends Coder {
 
         // add public key recipients
         PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(encryptor);
-        for (PGPPublicKey rcpt : mRecipients)
-            encGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(rcpt));
+        for (PGPPublicKeyRing rcpt : mRecipients)
+            encGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(PGP.getEncryptionKey(rcpt)));
 
         OutputStream encryptedOut = encGen.open(out, new byte[BUFFER_SIZE]);
 
@@ -171,9 +177,9 @@ public class PGPCoder extends Coder {
 
         // setup signature generator
         PGPSignatureGenerator sigGen = new PGPSignatureGenerator
-                (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
+                (new BcPGPContentSignerBuilder(mKey.getEncryptKeyPair()
                     .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
-        sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
+        sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getEncryptKeyPair().getPrivateKey());
 
         PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
         spGen.setSignerUserID(false, mKey.getUserId(mServer.getNetwork()));
@@ -218,7 +224,7 @@ public class PGPCoder extends Coder {
                     throws GeneralSecurityException {
 
         try {
-            PGPObjectFactory pgpF = new PGPObjectFactory(encrypted);
+            PGPObjectFactory pgpF = new PGPObjectFactory(encrypted, sFingerprintCalculator);
             PGPEncryptedDataList enc;
 
             Object o = pgpF.nextObject();
@@ -253,7 +259,7 @@ public class PGPCoder extends Coder {
 
             InputStream clear = pbe.getDataStream(new BcPublicKeyDataDecryptorFactory(sKey));
 
-            PGPObjectFactory plainFact = new PGPObjectFactory(clear);
+            PGPObjectFactory plainFact = new PGPObjectFactory(clear, sFingerprintCalculator);
 
             Object message = plainFact.nextObject();
 
@@ -261,7 +267,7 @@ public class PGPCoder extends Coder {
 
             if (message instanceof PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
-                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream());
+                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream(), sFingerprintCalculator);
 
                 message = pgpFact.nextObject();
 
@@ -269,7 +275,7 @@ public class PGPCoder extends Coder {
                 if (message instanceof PGPOnePassSignatureList) {
                     if (verify) {
                         ops = ((PGPOnePassSignatureList) message).get(0);
-                        ops.init(new BcPGPContentVerifierBuilderProvider(), mSender);
+                        ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getEncryptionKey(mSender));
                     }
 
                     message = pgpFact.nextObject();
@@ -371,7 +377,7 @@ public class PGPCoder extends Coder {
                                     "Destination does not match personal key");
 
                             // check that the sender matches the full uid of the sender's key
-                            String otherUid = PGP.getUserId(mSender, mServer.getNetwork());
+                            String otherUid = PGP.getUserId(PGP.getMasterKey(mSender), mServer.getNetwork());
                             if (!otherUid.equals(msg.getFrom()))
                                 throw new DecryptException(
                                     DECRYPT_EXCEPTION_INVALID_SENDER,
@@ -435,11 +441,6 @@ public class PGPCoder extends Coder {
     @Override
     public void encryptFile(InputStream input, OutputStream output) throws GeneralSecurityException {
         try {
-            StringBuilder to = new StringBuilder();
-            for (PGPPublicKey rcpt : mRecipients)
-                to.append(PGP.getUserId(rcpt, mServer.getNetwork()))
-                    .append("; ");
-
             // setup data encryptor & generator
             BcPGPDataEncryptorBuilder encryptor = new BcPGPDataEncryptorBuilder(PGPEncryptedData.AES_192);
             encryptor.setWithIntegrityPacket(true);
@@ -447,8 +448,8 @@ public class PGPCoder extends Coder {
 
             // add public key recipients
             PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(encryptor);
-            for (PGPPublicKey rcpt : mRecipients)
-                encGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(rcpt));
+            for (PGPPublicKeyRing rcpt : mRecipients)
+                encGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(PGP.getEncryptionKey(rcpt)));
 
             OutputStream encryptedOut = encGen.open(output, new byte[BUFFER_SIZE]);
 
@@ -458,9 +459,9 @@ public class PGPCoder extends Coder {
 
             // setup signature generator
             PGPSignatureGenerator sigGen = new PGPSignatureGenerator
-                (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
+                (new BcPGPContentSignerBuilder(mKey.getEncryptKeyPair()
                     .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
-            sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
+            sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getEncryptKeyPair().getPrivateKey());
 
             PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
             spGen.setSignerUserID(false, mKey.getUserId(mServer.getNetwork()));
@@ -543,13 +544,13 @@ public class PGPCoder extends Coder {
 
             InputStream clear = pbe.getDataStream(new BcPublicKeyDataDecryptorFactory(sKey));
 
-            PGPObjectFactory plainFact = new PGPObjectFactory(clear);
+            PGPObjectFactory plainFact = new PGPObjectFactory(clear, sFingerprintCalculator);
 
             Object message = plainFact.nextObject();
 
             if (message instanceof PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
-                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream());
+                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream(), sFingerprintCalculator);
 
                 message = pgpFact.nextObject();
 
@@ -557,7 +558,7 @@ public class PGPCoder extends Coder {
                 if (message instanceof PGPOnePassSignatureList) {
                     if (verify) {
                         ops = ((PGPOnePassSignatureList) message).get(0);
-                        ops.init(new BcPGPContentVerifierBuilderProvider(), mSender);
+                        ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getEncryptionKey(mSender));
                     }
 
                     message = pgpFact.nextObject();

@@ -399,7 +399,7 @@ public class PGP {
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
-            if (pk.isEncryptionKey())
+            if (!pk.isMasterKey() && pk.isEncryptionKey())
                 return pk;
         }
 
