@@ -312,4 +312,5 @@
   <string name="pref_image_resize">Bildgröße anpassen</string>
   <string name="pref_title_image_resize">Bildgröße vorm Senden anpassen</string>
   <string name="err_server_invalid_format">Ungültiges Adressformat.</string>
+  <string name="err_no_contacts_app">Keine Kontakte App gefunden.</string>
 </resources>
