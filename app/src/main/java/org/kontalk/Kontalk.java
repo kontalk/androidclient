@@ -66,7 +66,6 @@ public class Kontalk extends Application {
     public static final String TAG = Kontalk.class.getSimpleName();
 
     private PersonalKey mDefaultKey;
-    public static volatile Context mApplicationContext = null;
 
     /**
      * Passphrase to decrypt the personal private key.
@@ -190,8 +189,6 @@ public class Kontalk extends Application {
 
         // enable/disable components
         setServicesEnabled(this, account != null);
-
-        mApplicationContext = getApplicationContext();
     }
 
     private void xmppUpgrade() {
