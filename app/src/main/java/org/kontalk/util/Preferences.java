@@ -48,6 +48,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -454,11 +455,16 @@ public final class Preferences {
      * registration after a restart or in very low memory situations.
      */
     public static boolean saveRegistrationProgress(Context context, String name,
-        String phoneNumber, PersonalKey key, String passphrase, String serverUri) {
+        String phoneNumber, PersonalKey key, String passphrase,
+        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri) {
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
             .putString("registration_key", key.toBase64())
+            .putString("registration_importedpublickey", importedPublicKey != null ?
+                Base64.encodeToString(importedPublicKey, Base64.NO_WRAP) : null)
+            .putString("registration_importedprivatekey", importedPrivateKey != null ?
+                Base64.encodeToString(importedPrivateKey, Base64.NO_WRAP) : null)
             .putString("registration_passphrase", passphrase)
             .putString("registration_server", serverUri)
             .commit();
@@ -474,6 +480,14 @@ public final class Preferences {
             p.server = serverUri != null ? new EndpointServer(serverUri) : null;
             p.key = PersonalKey.fromBase64(getString(context, "registration_key", null));
             p.passphrase = getString(context, "registration_passphrase", null);
+
+            String importedPublicKey = getString(context, "registration_importedpublickey", null);
+            if (importedPublicKey != null)
+                p.importedPublicKey = Base64.decode(importedPublicKey, Base64.NO_WRAP);
+            String importedPrivateKey = getString(context, "registration_importedprivatekey", null);
+            if (importedPrivateKey != null)
+                p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
+
             return p;
         }
         return null;
@@ -484,6 +498,8 @@ public final class Preferences {
             .remove("registration_name")
             .remove("registration_phone")
             .remove("registration_key")
+            .remove("registration_importedpublickey")
+            .remove("registration_importedprivatekey")
             .remove("registration_passphrase")
             .remove("registration_server")
             .commit();
@@ -494,6 +510,8 @@ public final class Preferences {
         public String phone;
         public PersonalKey key;
         public String passphrase;
+        public byte[] importedPublicKey;
+        public byte[] importedPrivateKey;
         public EndpointServer server;
     }
 

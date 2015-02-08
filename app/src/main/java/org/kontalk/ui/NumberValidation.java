@@ -340,6 +340,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPhoneNumber = saved.phone;
             mKey = saved.key;
             mPassphrase = saved.passphrase;
+            mImportedPublicKey = saved.importedPublicKey;
+            mImportedPrivateKey = saved.importedPrivateKey;
 
             // update UI
             mNameText.setText(mName);
@@ -944,7 +946,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         // save state to preferences
         if (saveProgress) {
             Preferences.saveRegistrationProgress(this,
-                mName, mPhoneNumber, mKey, mPassphrase, serverUri);
+                mName, mPhoneNumber, mKey, mPassphrase,
+                mImportedPublicKey, mImportedPrivateKey,
+                serverUri);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
