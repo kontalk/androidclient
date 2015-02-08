@@ -32,7 +32,6 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -82,6 +81,7 @@ import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.util.Preferences;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.SocketException;
@@ -594,9 +594,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                         ZipInputStream zip = null;
                         try {
-                            Uri keypack = Uri.fromFile(PersonalKeyImporter.DEFAULT_KEYPACK);
-                            zip = new ZipInputStream(getContentResolver()
-                                .openInputStream(keypack));
+                            zip = new ZipInputStream(new FileInputStream
+                                (PersonalKeyImporter.DEFAULT_KEYPACK));
 
                             // ask passphrase to user and assign to mPassphrase
                             importAskPassphrase(zip);
@@ -605,17 +604,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                             Log.e(TAG, "error importing keys", e);
                             mImportedPublicKey = mImportedPrivateKey = null;
 
+                            try {
+                                if (zip != null)
+                                    zip.close();
+                            }
+                            catch (IOException ignored) {
+                                // ignored.
+                            }
+
                             Toast.makeText(NumberValidation.this,
                                 R.string.err_import_keypair_failed,
                                 Toast.LENGTH_LONG).show();
-                        }
-                        finally {
-                            try {
-                                zip.close();
-                            }
-                            catch (Exception e) {
-                                // ignored.
-                            }
                         }
                     }
                 })
@@ -650,7 +649,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         PersonalKeyImporter importer = null;
 
         try {
-            importer = new PersonalKeyImporter(zip, mPassphrase);
+            importer = new PersonalKeyImporter(zip, passphrase);
             importer.load();
 
             // we do not save this test key into the mKey field
