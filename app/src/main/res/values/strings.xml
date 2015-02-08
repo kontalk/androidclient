@@ -124,6 +124,7 @@
     <string name="pref_update_server_list">Update server list</string>
     <string name="server_list_last_update">Last update: %s</string>
     <string name="pref_title_push_notifications">Use push notifications if server supports it, saves battery</string>
+    <string name="pref_title_disabled_push_notifications">Push notifications are not supported on this device</string>
     <string name="pref_push_notifications">Push notifications</string>
     <string name="hint_search_full">Search messages</string>
     <string name="hint_search_quickbox">Text in your messages</string>
@@ -365,5 +366,7 @@
     <string name="pref_title_image_resize">Resize images before sending</string>
 
     <string name="err_server_invalid_format">Invalid address format.</string>
+
+    <string name="err_no_contacts_app">No contacts app found.</string>
 
 </resources>

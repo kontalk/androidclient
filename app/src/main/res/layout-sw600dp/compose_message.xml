@@ -67,7 +67,8 @@
 
         <include layout="@layout/composer_bar"/>
 
-        <org.kontalk.ui.EmojiDrawer android:id="@+id/emoji_drawer"
+        <org.kontalk.ui.view.EmojiDrawer
+            android:id="@+id/emoji_drawer"
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

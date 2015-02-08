@@ -36,7 +36,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -322,12 +321,6 @@ public final class PreferencesActivity extends PreferenceActivity {
             }
         });
 
-        // disable push notifications if GCM is not available on the device
-        if (!PushServiceManager.getInstance(this).isServiceAvailable()) {
-            final Preference push = findPreference("pref_push_notifications");
-            push.setEnabled(false);
-        }
-
         // manual server address is handled in Application context
         // we just handle validation here
         setupPreferences(this);
@@ -522,6 +515,15 @@ public final class PreferencesActivity extends PreferenceActivity {
     }
 
     static void setupPreferences(final PreferenceActivity activity) {
+        // disable push notifications if GCM is not available on the device
+        if (!PushServiceManager.getInstance(activity).isServiceAvailable()) {
+            final CheckBoxPreference push = (CheckBoxPreference) activity
+                .findPreference("pref_push_notifications");
+            push.setEnabled(false);
+            push.setChecked(false);
+            push.setSummary(R.string.pref_title_disabled_push_notifications);
+        }
+
         final Preference manualServer = activity.findPreference("pref_network_uri");
         manualServer.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {

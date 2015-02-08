@@ -18,24 +18,6 @@
 
 package org.kontalk.ui;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import com.rockerhieu.emojicon.EmojiconGridFragment;
-import com.rockerhieu.emojicon.EmojiconsFragment;
-import com.rockerhieu.emojicon.emoji.Emojicon;
-
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smackx.chatstates.ChatState;
-import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
-
 import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -49,7 +31,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
@@ -87,7 +68,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -103,6 +83,13 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import com.rockerhieu.emojicon.EmojiconGridFragment;
+import com.rockerhieu.emojicon.EmojiconsFragment;
+import com.rockerhieu.emojicon.emoji.Emojicon;
+
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.util.XmppStringUtils;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -127,13 +114,29 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.DownloadService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.Syncer;
-import org.kontalk.ui.IconContextMenu.IconContextMenuOnClickListener;
+import org.kontalk.ui.adapter.MessageListAdapter;
+import org.kontalk.ui.view.AudioContentView;
+import org.kontalk.ui.view.AudioContentViewControl;
+import org.kontalk.ui.view.AudioPlayerControl;
+import org.kontalk.ui.view.EmojiDrawer;
+import org.kontalk.ui.view.IconContextMenu;
+import org.kontalk.ui.view.IconContextMenu.IconContextMenuOnClickListener;
+import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.util.KontalkUtilities;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
+import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
@@ -907,9 +910,18 @@ public class ComposeMessageFragment extends ListFragment implements
     public void viewContact() {
         if (mConversation != null) {
             Contact contact = mConversation.getContact();
-            if (contact != null)
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        contact.getUri()));
+            if (contact != null) {
+                Intent i = new Intent(Intent.ACTION_VIEW, contact.getUri());
+                if (i.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(i);
+                }
+                else {
+                    // no contacts app found (crap device eh?)
+                    Toast.makeText(getActivity(),
+                        R.string.err_no_contacts_app,
+                        Toast.LENGTH_LONG).show();
+                }
+            }
         }
     }
 
@@ -2148,7 +2160,7 @@ public class ComposeMessageFragment extends ListFragment implements
         super.onResume();
 
         if (Authenticator.getDefaultAccount(getActivity()) == null) {
-            NumberValidation.startValidation(getActivity());
+            NumberValidation.start(getActivity());
             getActivity().finish();
             return;
         }

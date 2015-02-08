@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.MessageListItem
+<org.kontalk.ui.view.MessageListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/msg_list_item"
     android:paddingTop="2dip"
@@ -57,7 +57,8 @@
             android:orientation="vertical"
             android:gravity="right">
 
-            <org.kontalk.ui.MessageContentLayout android:id="@+id/content"
+            <org.kontalk.ui.view.MessageContentLayout
+                android:id="@+id/content"
                 android:orientation="vertical"
                 android:maxWidth="@dimen/message_text_width"
                 android:layout_marginLeft="2dp"
@@ -107,4 +108,4 @@
 
     </LinearLayout>
 
-</org.kontalk.ui.MessageListItem>
+</org.kontalk.ui.view.MessageListItem>

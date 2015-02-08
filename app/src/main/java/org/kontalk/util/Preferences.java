@@ -27,6 +27,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
+import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -47,6 +48,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -446,6 +448,71 @@ public final class Preferences {
 
     public static boolean getEnterKeyEnabled(Context context) {
         return getBoolean(context, "pref_text_enter", false);
+    }
+
+    /**
+     * Saves the current registration progress data. Used for recoverying a
+     * registration after a restart or in very low memory situations.
+     */
+    public static boolean saveRegistrationProgress(Context context, String name,
+        String phoneNumber, PersonalKey key, String passphrase,
+        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri) {
+        return sPreferences.edit()
+            .putString("registration_name", name)
+            .putString("registration_phone", phoneNumber)
+            .putString("registration_key", key.toBase64())
+            .putString("registration_importedpublickey", importedPublicKey != null ?
+                Base64.encodeToString(importedPublicKey, Base64.NO_WRAP) : null)
+            .putString("registration_importedprivatekey", importedPrivateKey != null ?
+                Base64.encodeToString(importedPrivateKey, Base64.NO_WRAP) : null)
+            .putString("registration_passphrase", passphrase)
+            .putString("registration_server", serverUri)
+            .commit();
+    }
+
+    public static RegistrationProgress getRegistrationProgress(Context context) {
+        String name = getString(context, "registration_name", null);
+        if (name != null) {
+            RegistrationProgress p = new RegistrationProgress();
+            p.name = name;
+            p.phone = getString(context, "registration_phone", null);
+            String serverUri = getString(context, "registration_server", null);
+            p.server = serverUri != null ? new EndpointServer(serverUri) : null;
+            p.key = PersonalKey.fromBase64(getString(context, "registration_key", null));
+            p.passphrase = getString(context, "registration_passphrase", null);
+
+            String importedPublicKey = getString(context, "registration_importedpublickey", null);
+            if (importedPublicKey != null)
+                p.importedPublicKey = Base64.decode(importedPublicKey, Base64.NO_WRAP);
+            String importedPrivateKey = getString(context, "registration_importedprivatekey", null);
+            if (importedPrivateKey != null)
+                p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
+
+            return p;
+        }
+        return null;
+    }
+
+    public static boolean clearRegistrationProgress(Context context) {
+        return sPreferences.edit()
+            .remove("registration_name")
+            .remove("registration_phone")
+            .remove("registration_key")
+            .remove("registration_importedpublickey")
+            .remove("registration_importedprivatekey")
+            .remove("registration_passphrase")
+            .remove("registration_server")
+            .commit();
+    }
+
+    public static final class RegistrationProgress {
+        public String name;
+        public String phone;
+        public PersonalKey key;
+        public String passphrase;
+        public byte[] importedPublicKey;
+        public byte[] importedPrivateKey;
+        public EndpointServer server;
     }
 
     /** Recent statuses database helper. */

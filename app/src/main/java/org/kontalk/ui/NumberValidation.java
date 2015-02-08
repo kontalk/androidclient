@@ -32,7 +32,6 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -78,9 +77,11 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.ui.CountryCodesAdapter.CountryCode;
+import org.kontalk.ui.adapter.CountryCodesAdapter;
+import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.util.Preferences;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.SocketException;
@@ -333,6 +334,23 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
+        Preferences.RegistrationProgress saved = Preferences.getRegistrationProgress(this);
+        if (saved != null) {
+            mName = saved.name;
+            mPhoneNumber = saved.phone;
+            mKey = saved.key;
+            mPassphrase = saved.passphrase;
+            mImportedPublicKey = saved.importedPublicKey;
+            mImportedPrivateKey = saved.importedPrivateKey;
+
+            // update UI
+            mNameText.setText(mName);
+            mPhone.setText(mPhoneNumber);
+            syncCountryCodeSelector();
+
+            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.server, false);
+        }
+
         if (mKey == null) {
             PersonalKeyRunnable action = new PersonalKeyRunnable() {
                 public void run(PersonalKey key) {
@@ -410,7 +428,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     /** Starts the validation activity. */
-    public static void startValidation(Context context) {
+    public static void start(Context context) {
         Intent i = new Intent(context, NumberValidation.class);
         i.putExtra(PARAM_FROM_INTERNAL, true);
         context.startActivity(i);
@@ -578,9 +596,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                         ZipInputStream zip = null;
                         try {
-                            Uri keypack = Uri.fromFile(PersonalKeyImporter.DEFAULT_KEYPACK);
-                            zip = new ZipInputStream(getContentResolver()
-                                .openInputStream(keypack));
+                            zip = new ZipInputStream(new FileInputStream
+                                (PersonalKeyImporter.DEFAULT_KEYPACK));
 
                             // ask passphrase to user and assign to mPassphrase
                             importAskPassphrase(zip);
@@ -589,17 +606,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                             Log.e(TAG, "error importing keys", e);
                             mImportedPublicKey = mImportedPrivateKey = null;
 
+                            try {
+                                if (zip != null)
+                                    zip.close();
+                            }
+                            catch (IOException ignored) {
+                                // ignored.
+                            }
+
                             Toast.makeText(NumberValidation.this,
                                 R.string.err_import_keypair_failed,
                                 Toast.LENGTH_LONG).show();
-                        }
-                        finally {
-                            try {
-                                zip.close();
-                            }
-                            catch (Exception e) {
-                                // ignored.
-                            }
                         }
                     }
                 })
@@ -634,7 +651,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         PersonalKeyImporter importer = null;
 
         try {
-            importer = new PersonalKeyImporter(zip, mPassphrase);
+            importer = new PersonalKeyImporter(zip, passphrase);
             importer.load();
 
             // we do not save this test key into the mKey field
@@ -915,6 +932,25 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void startValidationCode(int requestCode) {
+        startValidationCode(requestCode, null, true);
+    }
+
+    private void startValidationCode(int requestCode, EndpointServer server, boolean saveProgress) {
+        // validator might be null if we are skipping verification code request
+        String serverUri = null;
+        if (server != null)
+            serverUri = server.toString();
+        else if (mValidator != null)
+            serverUri = mValidator.getServer().toString();
+
+        // save state to preferences
+        if (saveProgress) {
+            Preferences.saveRegistrationProgress(this,
+                mName, mPhoneNumber, mKey, mPassphrase,
+                mImportedPublicKey, mImportedPrivateKey,
+                serverUri);
+        }
+
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
         i.putExtra("name", mName);
@@ -922,12 +958,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
-
-        // validator might be null if we are skipping verification code request
-        if (mValidator != null)
-            i.putExtra("server", mValidator.getServer().toString());
-
+        i.putExtra("server", serverUri);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
+
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);
     }
 

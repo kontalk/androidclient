@@ -126,6 +126,13 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        // we are going back voluntarily
+        Preferences.clearRegistrationProgress(this);
+        super.onBackPressed();
+    }
+
     /** No search here. */
     @Override
     public boolean onSearchRequested() {
@@ -199,6 +206,10 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         if (!ending) {
             setSupportProgressBarIndeterminateVisibility(false);
             enableControls(true);
+        }
+        else {
+            // ending - clear registration progress
+            Preferences.clearRegistrationProgress(this);
         }
         keepScreenOn(false);
         if (mValidator != null) {

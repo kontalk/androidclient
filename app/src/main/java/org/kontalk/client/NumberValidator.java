@@ -409,7 +409,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         if (!mConnector.isConnected() || mConnector.isServerDirty()) {
             mConnector.setListener(this);
-            mConnector.connectOnce(mKey.copy(mBridgeCert));
+            mConnector.connectOnce(mKey != null ? mKey.copy(mBridgeCert) : null);
         }
     }
 

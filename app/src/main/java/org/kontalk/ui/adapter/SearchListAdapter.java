@@ -16,15 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
-
-import java.util.Date;
-import java.util.regex.Pattern;
+package org.kontalk.ui.adapter;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.provider.MyMessages.Messages;
+import org.kontalk.data.SearchItem;
+import org.kontalk.ui.SearchActivity;
+import org.kontalk.ui.view.SearchListItem;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -32,64 +29,40 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView.RecyclerListener;
 import android.widget.CursorAdapter;
-import android.widget.ListView;
 
-public class MessageListAdapter extends CursorAdapter {
 
-    private static final String TAG = ComposeMessage.TAG;
+public class SearchListAdapter extends CursorAdapter {
+
+    private static final String TAG = SearchActivity.TAG;
 
     private final LayoutInflater mFactory;
-    private final Pattern mHighlight;
     private OnContentChangedListener mOnContentChangedListener;
 
-    private Contact mContact;
-    private AudioPlayerControl mAudioPlayerControl;
-
-    public MessageListAdapter(Context context, Cursor cursor, Pattern highlight, ListView list, AudioPlayerControl audioPlayerControl) {
+    public SearchListAdapter(Context context, Cursor cursor) {
         super(context, cursor, false);
         mFactory = LayoutInflater.from(context);
-        mHighlight = highlight;
-        mAudioPlayerControl = audioPlayerControl;
-
-        list.setRecyclerListener(new RecyclerListener() {
-            public void onMovedToScrapHeap(View view) {
-                if (view instanceof MessageListItem) {
-                    ((MessageListItem) view).unbind();
-                }
-            }
-        });
     }
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        if (!(view instanceof MessageListItem)) {
-            Log.e(TAG, "unexpected bound view: " + view);
+        if (!(view instanceof SearchListItem)) {
+            Log.e(TAG, "Unexpected bound view: " + view);
             return;
         }
 
-        MessageListItem headerView = (MessageListItem) view;
-        CompositeMessage msg = CompositeMessage.fromCursor(context, cursor);
-        if (msg.getDirection() == Messages.DIRECTION_IN && mContact == null)
-            mContact = Contact.findByUserId(context, msg.getSender());
-
-        long previous = -1;
-        if (cursor.moveToPrevious()) {
-            previous = cursor.getLong(CompositeMessage.COLUMN_TIMESTAMP);
-            cursor.moveToNext();
-        }
-
-        headerView.bind(context, msg, mContact, mHighlight, previous, mAudioPlayerControl);
+        SearchListItem headerView = (SearchListItem) view;
+        SearchItem found = SearchItem.fromCursor(context, cursor);
+        headerView.bind(context, found);
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.message_list_item, parent, false);
+        return mFactory.inflate(R.layout.search_list_item, parent, false);
     }
 
     public interface OnContentChangedListener {
-        void onContentChanged(MessageListAdapter adapter);
+        void onContentChanged(SearchListAdapter adapter);
     }
 
     public void setOnContentChangedListener(OnContentChangedListener l) {

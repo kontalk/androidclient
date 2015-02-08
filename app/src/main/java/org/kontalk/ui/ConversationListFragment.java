@@ -22,7 +22,8 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
-import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.ui.adapter.ConversationListAdapter;
+import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.Preferences;
 
 import android.app.AlertDialog;
@@ -36,7 +37,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.support.v4.view.MenuItemCompat;
 import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu;

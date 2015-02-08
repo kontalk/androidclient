@@ -16,31 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
-
-import org.kontalk.data.Contact;
-
-import java.util.regex.Pattern;
+package org.kontalk.ui.view;
 
 
 /**
- * Interface for message content views for all message component types.
- * @author Daniele Ricci
+ * This interface gives access to the currently playing audio content view by the composer.
+ * @author Andrea Cappelli
  */
-public interface MessageContentView<T> {
-
-    /** Binds the given component with this view. */
-    public void bind(long id, T component, Contact contact, Pattern highlight);
-
-    /** Unbinds and release all resources from this view. */
-    public void unbind();
-
-    /** Returns the component associated with this view. */
-    public T getComponent();
-
-    /** Returns the priority of the view. Lower values means higher position. */
-    public int getPriority();
-
-    // TODO
-
+public interface AudioContentViewControl {
+    public void setProgressChangeListener(boolean enabled);
+    public void prepare(int duration);
+    public void play();
+    public void pause();
+    public void updatePosition(int position);
+    public void end();
+    public int getPosition();
 }

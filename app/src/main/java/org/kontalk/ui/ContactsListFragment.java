@@ -21,6 +21,9 @@ package org.kontalk.ui;
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.sync.SyncAdapter;
+import org.kontalk.ui.adapter.ContactsListAdapter;
+import org.kontalk.ui.view.ContactPickerListener;
+import org.kontalk.ui.view.ContactsListItem;
 import org.kontalk.util.RunnableBroadcastReceiver;
 
 import android.app.Activity;

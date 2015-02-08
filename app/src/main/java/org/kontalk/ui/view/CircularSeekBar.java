@@ -25,7 +25,7 @@
  * reference material, and as a result, were extremely helpful.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.view;
 
 import org.kontalk.R;
 

@@ -31,7 +31,7 @@
             android:key="pref_push_notifications"
             android:summary="@string/pref_title_push_notifications"
             android:title="@string/pref_push_notifications"
-            android:defaultValue="true"/>
+            android:defaultValue="@bool/pref_default_push_notifications"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_messaging_settings"
@@ -42,7 +42,7 @@
                 android:summaryOff="@string/pref_title_off_encrypt"
                 android:summaryOn="@string/pref_title_on_encrypt"
                 android:title="@string/pref_encrypt"
-                android:defaultValue="true"/>
+                android:defaultValue="@bool/pref_default_encrypt"/>
             <!--
             <CheckBoxPreference android:key="pref_encrypt_userdata"
                 android:summaryOff="@string/pref_title_off_encrypt_userdata"
@@ -53,10 +53,10 @@
             <CheckBoxPreference android:key="pref_auto_accept_subscriptions"
                 android:title="@string/pref_auto_accept_subscriptions"
                 android:summary="@string/pref_title_auto_accept_subscriptions"
-                android:defaultValue="false"/>
+                android:defaultValue="@bool/pref_default_auto_accept_subscriptions"/>
             <CheckBoxPreference android:key="pref_send_typing"
                 android:title="@string/pref_send_typing"
-                android:defaultValue="true"/>
+                android:defaultValue="@bool/pref_default_send_typing"/>
             <!--
             <CheckBoxPreference android:key="pref_hide_presence"
                 android:summaryOff="@string/pref_title_off_hide_presence"
@@ -76,7 +76,7 @@
             android:summaryOff="@string/pref_title_off_sync_sim_contacts"
             android:summaryOn="@string/pref_title_on_sync_sim_contacts"
             android:title="@string/pref_sync_sim_contacts"
-            android:defaultValue="false"/>
+            android:defaultValue="@bool/pref_default_sync_sim_contacts"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintenance"
@@ -86,16 +86,16 @@
             android:summary="@string/pref_title_idle_time"
             android:entries="@array/idle_time_labels"
             android:entryValues="@array/idle_time_values"
-            android:defaultValue="60000"/>
+            android:defaultValue="@integer/pref_default_idle_time"/>
         <ListPreference android:key="pref_wakeup_time"
             android:title="@string/pref_wakeup_time"
             android:summary="@string/pref_title_wakeup_time"
             android:entries="@array/wakeup_time_labels"
             android:entryValues="@array/wakeup_time_values"
-            android:defaultValue="900000"/>
+            android:defaultValue="@integer/pref_default_wakeup_time"/>
         <CheckBoxPreference android:key="pref_accept_any_certificate"
             android:title="@string/pref_accept_any_certificate"
-            android:defaultValue="false"/>
+            android:defaultValue="@bool/pref_default_accept_any_certificate"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_other"

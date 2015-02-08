@@ -16,10 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.kontalk.ui;
+package org.kontalk.ui.adapter;
 
 import org.kontalk.R;
-import org.kontalk.data.SearchItem;
+import org.kontalk.data.Contact;
+import org.kontalk.ui.ContactsListActivity;
+import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.ui.view.MessageListItem;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -28,39 +31,48 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ListView;
+import android.widget.AbsListView.RecyclerListener;
 
 
-public class SearchListAdapter extends CursorAdapter {
-
-    private static final String TAG = SearchActivity.TAG;
+public class ContactsListAdapter extends CursorAdapter {
+    private static final String TAG = ContactsListActivity.TAG;
 
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
-    public SearchListAdapter(Context context, Cursor cursor) {
-        super(context, cursor, false);
+    public ContactsListAdapter(Context context, ListView list) {
+        super(context, null, false);
         mFactory = LayoutInflater.from(context);
+
+        list.setRecyclerListener(new RecyclerListener() {
+            public void onMovedToScrapHeap(View view) {
+                if (view instanceof MessageListItem) {
+                    ((ContactsListItem) view).unbind();
+                }
+            }
+        });
     }
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        if (!(view instanceof SearchListItem)) {
+        if (!(view instanceof ContactsListItem)) {
             Log.e(TAG, "Unexpected bound view: " + view);
             return;
         }
 
-        SearchListItem headerView = (SearchListItem) view;
-        SearchItem found = SearchItem.fromCursor(context, cursor);
-        headerView.bind(context, found);
+        ContactsListItem headerView = (ContactsListItem) view;
+        Contact contact = Contact.fromUsersCursor(context, cursor);
+        headerView.bind(context, contact);
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.search_list_item, parent, false);
+        return mFactory.inflate(R.layout.contacts_list_item, parent, false);
     }
 
     public interface OnContentChangedListener {
-        void onContentChanged(SearchListAdapter adapter);
+        void onContentChanged(ContactsListAdapter adapter);
     }
 
     public void setOnContentChangedListener(OnContentChangedListener l) {
