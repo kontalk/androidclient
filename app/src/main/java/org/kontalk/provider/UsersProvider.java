@@ -18,12 +18,16 @@
 
 package org.kontalk.provider;
 
+import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 
 import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
+import android.accounts.Account;
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -45,6 +49,7 @@ import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
 
 import org.kontalk.BuildConfig;
+import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
@@ -354,7 +359,8 @@ public class UsersProvider extends ContentProvider {
 
             // we are trying to be fast here
             SQLiteStatement stm = db.compileStatement("INSERT INTO " + TABLE_USERS_OFFLINE +
-                " (hash, number, jid, display_name, lookup_key, contact_id) VALUES(?, ?, ?, ?, ?, ?)");
+                " (hash, number, jid, display_name, lookup_key, contact_id, registered, public_key, fingerprint)" +
+                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             Cursor phones = null;
             String dialPrefix = Preferences.getDialPrefix(context);
@@ -409,6 +415,9 @@ public class UsersProvider extends ContentProvider {
                         stm.bindString(4, name);
                         stm.bindString(5, phones.getString(2));
                         stm.bindLong(6, phones.getLong(3));
+                        stm.bindLong(7, 0);
+                        stm.bindNull(8);
+                        stm.bindNull(9);
                         stm.executeInsert();
                         count++;
                     }
@@ -479,6 +488,9 @@ public class UsersProvider extends ContentProvider {
                                 stm.bindString(4, name);
                                 stm.bindNull(5);
                                 stm.bindLong(6, phones.getLong(phones.getColumnIndex(BaseColumns._ID)));
+                                stm.bindLong(7, 0);
+                                stm.bindNull(8);
+                                stm.bindNull(9);
                                 stm.executeInsert();
                                 count++;
                             }
@@ -487,6 +499,48 @@ public class UsersProvider extends ContentProvider {
                             }
                         }
                     }
+                }
+
+                // try to add account number with display name
+                String ownNumber = Authenticator.getDefaultAccountName(getContext());
+                String ownName = Authenticator.getDefaultDisplayName(getContext());
+                String fingerprint = null;
+                byte[] publicKeyData = null;
+                try {
+                    PersonalKey myKey = ((Kontalk) getContext().getApplicationContext())
+                        .getPersonalKey();
+                    if (myKey != null) {
+                        fingerprint = myKey.getFingerprint();
+                        publicKeyData = myKey.getEncodedPublicKeyRing();
+                    }
+                }
+                catch (Exception e) {
+                    Log.w(SyncAdapter.TAG, "unable to load personal key", e);
+                }
+                try {
+                    String hash = MessageUtils.sha1(ownNumber);
+
+                    stm.clearBindings();
+                    stm.bindString(1, hash);
+                    stm.bindString(2, ownNumber);
+                    stm.bindString(3, XMPPUtils.createLocalJID(getContext(), hash));
+                    stm.bindString(4, ownName);
+                    stm.bindNull(5);
+                    stm.bindNull(6);
+                    stm.bindLong(7, 1);
+                    if (fingerprint != null)
+                        stm.bindString(8, fingerprint);
+                    else
+                        stm.bindNull(8);
+                    if (publicKeyData != null)
+                        stm.bindBlob(9, publicKeyData);
+                    else
+                        stm.bindNull(9);
+                    stm.executeInsert();
+                    count++;
+                }
+                catch (SQLiteConstraintException sqe) {
+                    // skip duplicate number
                 }
 
                 success = setTransactionSuccessful(db);
