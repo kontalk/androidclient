@@ -104,8 +104,7 @@ public class Syncer {
         private int presenceCount;
         private int pubkeyCount;
         private int rosterCount = -1;
-        // TODO this will be replaced by privacy lists
-        private boolean blocklistReceived = true;
+        private boolean blocklistReceived;
 
         public PresenceBroadcastReceiver(String iq, List<String> jidList, Syncer notifyTo) {
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
@@ -252,7 +251,8 @@ public class Syncer {
                 if (w != null) {
                     // request a roster match
                     w.requestRosterMatch(iq, jidList);
-                    // TODO request privacy lists -- w.requestBlocklist();
+                    // request block list
+                    w.requestBlocklist();
                 }
             }
         }
@@ -569,7 +569,6 @@ public class Syncer {
         mContext.startService(i);
     }
 
-    // TODO convert to privacy lists
     private void requestBlocklist() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_BLOCKLIST);
