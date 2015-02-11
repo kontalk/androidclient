@@ -639,6 +639,7 @@ public class ComposeMessageFragment extends ListFragment implements
         mCallMenu = menu.findItem(R.id.call_contact);
         mBlockMenu = menu.findItem(R.id.block_user);
         mUnblockMenu = menu.findItem(R.id.unblock_user);
+        updateUI();
     }
 
     @Override
