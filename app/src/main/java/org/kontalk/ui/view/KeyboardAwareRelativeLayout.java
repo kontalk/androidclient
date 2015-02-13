@@ -38,7 +38,6 @@ import org.kontalk.R;
  * https://github.com/WhisperSystems/TextSecure
  */
 public class KeyboardAwareRelativeLayout extends FrameLayout {
-    private static final String TAG  = KeyboardAwareRelativeLayout.class.getSimpleName();
     private static final Rect   rect = new Rect();
     private boolean mKeyboardVisible;
 
@@ -91,8 +90,6 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
     }
 
     protected void onKeyboardShown(int keyboardHeight) {
-        Log.w(TAG, "keyboard shown, height " + keyboardHeight);
-
         WindowManager wm = (WindowManager) getContext().getSystemService(Activity.WINDOW_SERVICE);
         if (wm == null || wm.getDefaultDisplay() == null) {
             return;
