@@ -42,6 +42,8 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
     private static final Rect   rect = new Rect();
     private boolean mKeyboardVisible;
 
+    private OnKeyboardShownListener mListener;
+
     public KeyboardAwareRelativeLayout(Context context) {
         super(context);
     }
@@ -53,6 +55,10 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public KeyboardAwareRelativeLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+    }
+
+    public void setOnKeyboardShownListener(OnKeyboardShownListener listener) {
+        mListener = listener;
     }
 
     /**
@@ -77,6 +83,9 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
         else {
             mKeyboardVisible = false;
         }
+
+        if (mListener != null)
+            mListener.onKeyboardShown(mKeyboardVisible);
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
@@ -154,6 +163,10 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
             editor.commit();
         else
             editor.apply();
+    }
+
+    public interface OnKeyboardShownListener {
+        public void onKeyboardShown(boolean visible);
     }
 
 }

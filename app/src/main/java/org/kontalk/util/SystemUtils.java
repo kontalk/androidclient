@@ -68,7 +68,7 @@ public final class SystemUtils {
         Display display = manager.getDefaultDisplay();
         if (display != null) {
             displaySize = new Point();
-            if (android.os.Build.VERSION.SDK_INT < 13) {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
                 displaySize.set(display.getWidth(), display.getHeight());
             }
             else {

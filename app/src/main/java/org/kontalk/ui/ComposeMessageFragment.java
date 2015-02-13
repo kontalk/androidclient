@@ -26,8 +26,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.rockerhieu.emojicon.EmojiconGridView;
 import com.rockerhieu.emojicon.EmojiconsView;
+import com.rockerhieu.emojicon.OnEmojiconClickedListener;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
 import org.jivesoftware.smack.packet.Presence;
@@ -147,8 +147,7 @@ public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
         AudioDialog.AudioDialogListener, AudioPlayerControl,
-        EmojiconsView.OnEmojiconBackspaceClickedListener,
-        EmojiconGridView.OnEmojiconClickedListener {
+        EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -360,6 +359,15 @@ public class ComposeMessageFragment extends ListFragment implements
             }
         });
         mRootView = (KeyboardAwareRelativeLayout) getView().findViewById(R.id.root_view);
+        // this will handle closing of keyboard while emoji drawer is open
+        mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
+            @Override
+            public void onKeyboardShown(boolean visible) {
+                if (!visible && mRootView.getPaddingBottom() == 0 && isEmojiVisible()) {
+                    hideEmojiDrawer(false);
+                }
+            }
+        });
 
         Configuration config = getResources().getConfiguration();
         onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
