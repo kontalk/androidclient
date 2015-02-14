@@ -240,7 +240,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         PhoneNumber myNum = NumberValidator.getMyNumber(this);
         if (myNum != null) {
             mPhone.setText(String.valueOf(myNum.getNationalNumber()));
-            Log.d(TAG, "selecting country " + util.getRegionCodeForNumber(myNum));
             CountryCode cc = new CountryCode();
             cc.regionCode = util.getRegionCodeForNumber(myNum);
             cc.countryCode = myNum.getCountryCode();
@@ -443,7 +442,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // autoselect correct country if user entered country code too
             if (phone.hasCountryCode()) {
                 CountryCode ccLookup = new CountryCode();
-                ccLookup.regionCode = util.getRegionCodeForCountryCode(phone.getCountryCode());
+                ccLookup.regionCode = util.getRegionCodeForNumber(phone);
                 ccLookup.countryCode = phone.getCountryCode();
                 int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
                 if (position >= 0) {
@@ -492,7 +491,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 // autoselect correct country if user entered country code too
                 if (phone.hasCountryCode()) {
                     CountryCode ccLookup = new CountryCode();
-                    ccLookup.regionCode = util.getRegionCodeForCountryCode(phone.getCountryCode());
+                    ccLookup.regionCode = util.getRegionCodeForNumber(phone);
                     ccLookup.countryCode = phone.getCountryCode();
                     int position = ((CountryCodesAdapter) mCountryCode.getAdapter()).getPositionForId(ccLookup);
                     if (position >= 0) {
