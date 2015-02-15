@@ -39,10 +39,12 @@ public class DecryptException extends GeneralSecurityException {
     public static final int DECRYPT_EXCEPTION_INVALID_SENDER = 4;
     /** Message recipient doesn't match encryption key. */
     public static final int DECRYPT_EXCEPTION_INVALID_RECIPIENT = 5;
+    /** Invalid or unparsable timestamp. */
+    public static final int DECRYPT_EXCEPTION_INVALID_TIMESTAMP = 6;
     /** Invalid packet data. */
-    public static final int DECRYPT_EXCEPTION_INVALID_DATA = 6;
+    public static final int DECRYPT_EXCEPTION_INVALID_DATA = 7;
     /** Message integrity check failed. */
-    public static final int DECRYPT_EXCEPTION_INTEGRITY_CHECK = 7;
+    public static final int DECRYPT_EXCEPTION_INTEGRITY_CHECK = 8;
 
     private final int mCode;
 
