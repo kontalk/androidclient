@@ -110,8 +110,8 @@ public class KontalkConnection extends XMPPTCPConnection {
             })
             // TODO requesting the roster could be expensive
             .setRosterLoadedAtLogin(true)
-            // enable compression (FIXME workaround for compression bug)
-            .setCompressionEnabled(!LegacyAuthentication.isUpgrading())
+            // enable compression
+            .setCompressionEnabled(true)
             // enable encryption
             .setSecurityMode(secure ? SecurityMode.disabled : SecurityMode.required)
             // we will send a custom presence
