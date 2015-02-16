@@ -38,7 +38,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.XMPPError;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
@@ -209,11 +209,11 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                 XMPPConnection conn = mConnector.getConnection();
 
-                Packet form = createRegistrationForm();
+                Stanza form = createRegistrationForm();
 
                 // setup listener for form response
-                conn.addPacketListener(new PacketListener() {
-                    public void processPacket(Packet packet) {
+                conn.addAsyncPacketListener(new PacketListener() {
+                    public void processPacket(Stanza packet) {
                         int reason = 0;
                         IQ iq = (IQ) packet;
 
@@ -273,7 +273,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                         mStep = STEP_INIT;
                     }
-                }, new PacketIDFilter(form.getPacketID()));
+                }, new PacketIDFilter(form.getStanzaId()));
 
                 // send registration form
                 conn.sendPacket(form);
@@ -302,11 +302,11 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 initConnection();
 
                 // prepare final verification form
-                Packet form = createValidationForm();
+                Stanza form = createValidationForm();
 
                 XMPPConnection conn = mConnector.getConnection();
-                conn.addPacketListener(new PacketListener() {
-                    public void processPacket(Packet packet) {
+                conn.addAsyncPacketListener(new PacketListener() {
+                    public void processPacket(Stanza packet) {
                         IQ iq = (IQ) packet;
                         if (iq.getType() == IQ.Type.result) {
                             DataForm response = iq.getExtension("x", "jabber:x:data");
@@ -348,7 +348,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         mListener.onAuthTokenFailed(NumberValidator.this, -1);
                         mStep = STEP_INIT;
                     }
-                }, new PacketIDFilter(form.getPacketID()));
+                }, new PacketIDFilter(form.getStanzaId()));
 
                 // send registration form
                 conn.sendPacket(form);
@@ -413,20 +413,20 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         }
     }
 
-    private Packet createRegistrationForm() {
+    private Stanza createRegistrationForm() {
         Registration iq = new Registration();
         iq.setType(IQ.Type.set);
         iq.setTo(mConnector.getConnection().getServiceName());
-        Form form = new Form(Form.TYPE_SUBMIT);
+        Form form = new Form(DataForm.Type.submit);
 
         FormField type = new FormField("FORM_TYPE");
-        type.setType(FormField.TYPE_HIDDEN);
+        type.setType(FormField.Type.hidden);
         type.addValue(Registration.NAMESPACE);
         form.addField(type);
 
         FormField phone = new FormField("phone");
         phone.setLabel("Phone number");
-        phone.setType(FormField.TYPE_TEXT_SINGLE);
+        phone.setType(FormField.Type.text_single);
         phone.addValue(mPhone);
         form.addField(phone);
 
@@ -434,20 +434,20 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         return iq;
     }
 
-    private Packet createValidationForm() throws IOException {
+    private Stanza createValidationForm() throws IOException {
         Registration iq = new Registration();
         iq.setType(IQ.Type.set);
         iq.setTo(mConnector.getConnection().getServiceName());
-        Form form = new Form(Form.TYPE_SUBMIT);
+        Form form = new Form(DataForm.Type.submit);
 
         FormField type = new FormField("FORM_TYPE");
-        type.setType(FormField.TYPE_HIDDEN);
+        type.setType(FormField.Type.hidden);
         type.addValue("http://kontalk.org/protocol/register#code");
         form.addField(type);
 
         FormField code = new FormField("code");
         code.setLabel("Validation code");
-        code.setType(FormField.TYPE_TEXT_SINGLE);
+        code.setType(FormField.Type.text_single);
         code.addValue(mValidationCode.toString());
         form.addField(code);
 
@@ -584,7 +584,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     @Override
-    public void authenticated(XMPPConnection conn) {
+    public void authenticated(XMPPConnection conn, boolean resumed) {
         // not used
     }
 

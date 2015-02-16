@@ -23,7 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
+
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
@@ -94,13 +95,13 @@ abstract class MessageCenterPacketListener implements PacketListener {
             instance.mLocalBroadcastManager.unregisterReceiver(receiver);
     }
 
-    protected void sendPacket(Packet packet) {
+    protected void sendPacket(Stanza packet) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.sendPacket(packet);
     }
 
-    protected void sendPacket(Packet packet, boolean bumpIdle) {
+    protected void sendPacket(Stanza packet, boolean bumpIdle) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.sendPacket(packet, bumpIdle);

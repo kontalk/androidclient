@@ -20,7 +20,7 @@ package org.kontalk.service.msgcenter;
 
 import java.util.List;
 
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 
 import android.content.Intent;
 
@@ -45,7 +45,7 @@ class RosterMatchListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         RosterMatch p = (RosterMatch) packet;
         Intent i = new Intent(ACTION_ROSTER_MATCH);
         i.putExtra(EXTRA_FROM, p.getFrom());

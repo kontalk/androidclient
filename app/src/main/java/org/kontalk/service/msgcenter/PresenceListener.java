@@ -21,9 +21,9 @@ package org.kontalk.service.msgcenter;
 import java.io.IOException;
 
 import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
@@ -71,7 +71,7 @@ class PresenceListener extends MessageCenterPacketListener {
         super(instance);
     }
 
-    private Packet createSubscribe(Presence p) {
+    private Stanza createSubscribe(Presence p) {
         PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
         try {
@@ -103,7 +103,7 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         try {
             Presence p = (Presence) packet;
 
@@ -148,7 +148,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
             // TODO user database entry should be stored here too
 
-            Packet r = createSubscribe(p);
+            Stanza r = createSubscribe(p);
             if (r != null)
                 getConnection().sendPacket(r);
 
@@ -236,7 +236,7 @@ class PresenceListener extends MessageCenterPacketListener {
         // send a broadcast
         Intent i = new Intent(ACTION_SUBSCRIBED);
         i.putExtra(EXTRA_TYPE, Presence.Type.subscribed.name());
-        i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
@@ -256,7 +256,7 @@ class PresenceListener extends MessageCenterPacketListener {
         Intent i = new Intent(ACTION_PRESENCE);
         Presence.Type type = p.getType();
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
-        i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());

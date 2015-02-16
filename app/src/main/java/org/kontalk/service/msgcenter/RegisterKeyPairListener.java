@@ -28,13 +28,12 @@ import android.util.Log;
 
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
@@ -82,7 +81,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
         }
     }
 
-    private Packet prepareKeyPacket() {
+    private Stanza prepareKeyPacket() {
         if (mKeyRing != null) {
             try {
                 String publicKey = Base64.encodeToString(mKeyRing.publicKey.getEncoded(), Base64.NO_WRAP);
@@ -90,18 +89,18 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                 Registration iq = new Registration();
                 iq.setType(IQ.Type.set);
                 iq.setTo(getConnection().getServiceName());
-                Form form = new Form(Form.TYPE_SUBMIT);
+                Form form = new Form(DataForm.Type.submit);
 
                 // form type: register#key
                 FormField type = new FormField("FORM_TYPE");
-                type.setType(FormField.TYPE_HIDDEN);
+                type.setType(FormField.Type.hidden);
                 type.addValue("http://kontalk.org/protocol/register#key");
                 form.addField(type);
 
                 // new (to-be-signed) public key
                 FormField fieldKey = new FormField("publickey");
                 fieldKey.setLabel("Public key");
-                fieldKey.setType(FormField.TYPE_TEXT_SINGLE);
+                fieldKey.setType(FormField.Type.text_single);
                 fieldKey.addValue(publicKey);
                 form.addField(fieldKey);
 
@@ -111,7 +110,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
 
                     FormField fieldRevoked = new FormField("revoked");
                     fieldRevoked.setLabel("Revoked public key");
-                    fieldRevoked.setType(FormField.TYPE_TEXT_SINGLE);
+                    fieldRevoked.setType(FormField.Type.text_single);
                     fieldRevoked.addValue(revokedKey);
                     form.addField(fieldRevoked);
                 }
@@ -136,13 +135,13 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                     mConnReceiver = null;
 
                     // prepare public key packet
-                    Packet iq = prepareKeyPacket();
+                    Stanza iq = prepareKeyPacket();
 
                     if (iq != null) {
 
                         // setup packet filter for response
-                        PacketIDFilter filter = new PacketIDFilter(iq.getPacketID());
-                        getConnection().addPacketListener(RegisterKeyPairListener.this, filter);
+                        PacketIDFilter filter = new PacketIDFilter(iq.getStanzaId());
+                        getConnection().addAsyncPacketListener(RegisterKeyPairListener.this, filter);
 
                         // send the key out
                         sendPacket(iq);
@@ -169,7 +168,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         IQ iq = (IQ) packet;
         if (iq.getType() == IQ.Type.result) {
             DataForm response = iq.getExtension("x", "jabber:x:data");

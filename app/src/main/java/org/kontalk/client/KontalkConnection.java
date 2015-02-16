@@ -90,7 +90,7 @@ public class KontalkConnection extends XMPPTCPConnection {
     private static XMPPTCPConnectionConfiguration buildConfiguration(String resource,
         EndpointServer server, boolean secure, PrivateKey privateKey, X509Certificate bridgeCert,
         boolean acceptAnyCertificate, KeyStore trustStore, String legacyAuthToken) {
-        XMPPTCPConnectionConfiguration.XMPPTCPConnectionConfigurationBuilder builder =
+        XMPPTCPConnectionConfiguration.Builder builder =
             XMPPTCPConnectionConfiguration.builder();
 
         builder
@@ -108,8 +108,6 @@ public class KontalkConnection extends XMPPTCPConnection {
                         Log.v(TAG, "callback = " + cb);
                 }
             })
-            // TODO requesting the roster could be expensive
-            .setRosterLoadedAtLogin(true)
             // enable compression
             .setCompressionEnabled(true)
             // enable encryption
@@ -127,7 +125,7 @@ public class KontalkConnection extends XMPPTCPConnection {
         return builder.build();
     }
 
-    private static void setupSSL(XMPPTCPConnectionConfiguration.XMPPTCPConnectionConfigurationBuilder builder,
+    private static void setupSSL(XMPPTCPConnectionConfiguration.Builder builder,
         boolean direct, PrivateKey privateKey, X509Certificate bridgeCert,
         boolean acceptAnyCertificate, KeyStore trustStore) {
         try {

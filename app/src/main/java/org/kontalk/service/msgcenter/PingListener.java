@@ -19,7 +19,7 @@
 package org.kontalk.service.msgcenter;
 
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 
 
 /**
@@ -33,7 +33,7 @@ class PingListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         sendPacket(IQ.createResultIQ((IQ) packet), false);
     }
 }

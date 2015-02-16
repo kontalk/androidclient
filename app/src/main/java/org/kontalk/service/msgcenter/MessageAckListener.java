@@ -21,7 +21,7 @@ package org.kontalk.service.msgcenter;
 import java.util.Map;
 
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 
 import android.content.ContentResolver;
@@ -48,7 +48,7 @@ class MessageAckListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         if (!(packet instanceof Message)) {
             return;
         }
@@ -56,7 +56,7 @@ class MessageAckListener extends MessageCenterPacketListener {
         Map<String, Long> waitingReceipt = getWaitingReceiptList();
 
         synchronized (waitingReceipt) {
-            String id = packet.getPacketID();
+            String id = packet.getStanzaId();
             Long _msgId = waitingReceipt.remove(id);
             long msgId = (_msgId != null) ? _msgId : 0;
             ContentResolver cr = getContext().getContentResolver();

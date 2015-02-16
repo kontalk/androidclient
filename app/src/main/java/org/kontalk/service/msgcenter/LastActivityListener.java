@@ -24,8 +24,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
 
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 
 import android.content.Intent;
@@ -43,10 +42,10 @@ class LastActivityListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         LastActivity p = (LastActivity) packet;
         Intent i = new Intent(ACTION_LAST_ACTIVITY);
-        i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());

@@ -20,9 +20,10 @@ package org.kontalk.service.msgcenter;
 
 import android.widget.Toast;
 
-import org.jivesoftware.smack.packet.Packet;
 import org.kontalk.R;
 import org.kontalk.crypto.PersonalKeyImporter;
+
+import org.jivesoftware.smack.packet.Stanza;
 import org.spongycastle.openpgp.PGPException;
 
 import java.io.IOException;
@@ -80,7 +81,7 @@ class ImportKeyPairListener extends RegisterKeyPairListener {
     // TODO
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         super.processPacket(packet);
 
         // we are done here

@@ -23,7 +23,7 @@ import java.util.List;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.jxmpp.util.XmppStringUtils;
 
@@ -42,12 +42,12 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         XMPPConnection conn = getConnection();
         EndpointServer server = getServer();
 
         // we don't need this listener anymore
-        conn.removePacketListener(this);
+        conn.removeAsyncPacketListener(this);
 
         initUploadServices();
 
@@ -64,7 +64,7 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
                 iq.setType(IQ.Type.get);
                 iq.setTo("upload@" + server.getNetwork());
 
-                conn.addPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));
+                conn.addAsyncPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));
                 sendPacket(iq);
             }
         }

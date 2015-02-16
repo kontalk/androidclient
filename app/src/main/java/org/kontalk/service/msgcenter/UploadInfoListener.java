@@ -18,7 +18,8 @@
 
 package org.kontalk.service.msgcenter;
 
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
+
 import org.kontalk.client.UploadInfo;
 
 import android.util.Log;
@@ -35,9 +36,9 @@ class UploadInfoListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         // we don't need this listener anymore
-        getConnection().removePacketListener(this);
+        getConnection().removeAsyncPacketListener(this);
 
         UploadInfo info = (UploadInfo) packet;
         String node = info.getNode();

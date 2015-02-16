@@ -27,7 +27,6 @@ import android.content.IntentFilter;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.jivesoftware.smack.packet.Packet;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
@@ -36,6 +35,8 @@ import org.kontalk.service.KeyPairGeneratorService;
 import org.kontalk.service.KeyPairGeneratorService.KeyGeneratorReceiver;
 import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.util.MessageUtils;
+
+import org.jivesoftware.smack.packet.Stanza;
 import org.spongycastle.openpgp.PGPException;
 
 import java.io.IOException;
@@ -134,7 +135,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         super.processPacket(packet);
 
         // we are done here
