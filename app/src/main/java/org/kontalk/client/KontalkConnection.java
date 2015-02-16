@@ -101,13 +101,8 @@ public class KontalkConnection extends XMPPTCPConnection {
             .setResource(resource)
             // the dummy value is not actually used
             .setUsernameAndPassword(null, legacyAuthToken != null ? legacyAuthToken : "dummy")
-            .setCallbackHandler(new CallbackHandler() {
-                @Override
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    for (Callback cb : callbacks)
-                        Log.v(TAG, "callback = " + cb);
-                }
-            })
+            // for EXTERNAL
+            .allowEmptyOrNullUsernames()
             // enable compression
             .setCompressionEnabled(true)
             // enable encryption
