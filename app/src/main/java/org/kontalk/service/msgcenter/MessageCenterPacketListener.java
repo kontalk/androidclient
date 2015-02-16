@@ -134,7 +134,7 @@ abstract class MessageCenterPacketListener implements PacketListener {
     }
 
     protected void setPushSenderId(String senderId) {
-        MessageCenterService.mPushSenderId = senderId;
+        MessageCenterService.sPushSenderId = senderId;
     }
 
     protected IPushListener getPushListener() {

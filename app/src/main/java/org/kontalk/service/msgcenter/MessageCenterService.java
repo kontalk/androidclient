@@ -299,7 +299,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Push notifications enabled flag. */
     boolean mPushNotifications;
     /** Server push sender id. This is static so the {@link IPushListener} can see it. */
-    static String mPushSenderId;
+    static String sPushSenderId;
     /** Push registration id. */
     private String mPushRegistrationId;
     /** Flag marking a currently ongoing push registration cycle (unregister/register) */
@@ -1928,13 +1928,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     void pushRegister() {
-        if (mPushSenderId != null) {
+        if (sPushSenderId != null) {
             if (mPushService.isServiceAvailable()) {
                 // senderId will be given by serverinfo if any
                 mPushRegistrationId = mPushService.getRegistrationId();
                 if (TextUtils.isEmpty(mPushRegistrationId))
                     // start registration
-                    mPushService.register(sPushListener, mPushSenderId);
+                    mPushService.register(sPushListener, sPushSenderId);
                 else
                     // already registered - send registration id to server
                     setPushRegistrationId(mPushRegistrationId);
@@ -1977,7 +1977,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static String getPushSenderId() {
-        return mPushSenderId;
+        return sPushSenderId;
     }
 
     public static void setWakeupAlarm(Context context) {
