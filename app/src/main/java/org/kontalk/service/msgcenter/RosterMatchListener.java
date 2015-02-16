@@ -51,7 +51,7 @@ class RosterMatchListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
         i.putExtra(EXTRA_TYPE, p.getType().toString());
-        i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
         List<String> items = p.getItems();
         if (items != null) {

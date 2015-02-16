@@ -64,7 +64,7 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
                 iq.setType(IQ.Type.get);
                 iq.setTo("upload@" + server.getNetwork());
 
-                conn.addAsyncPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getPacketID()));
+                conn.addAsyncPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getStanzaId()));
                 sendPacket(iq);
             }
         }

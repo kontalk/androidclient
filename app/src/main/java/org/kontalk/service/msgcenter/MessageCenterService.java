@@ -788,7 +788,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     ServerlistCommand p = new ServerlistCommand();
                     p.setTo(mServer.getNetwork());
 
-                    PacketFilter filter = new PacketIDFilter(p.getPacketID());
+                    PacketFilter filter = new PacketIDFilter(p.getStanzaId());
                     // TODO cache the listener (it shouldn't change)
                     mConnection.addAsyncPacketListener(new PacketListener() {
                         public void processPacket(Stanza packet) throws NotConnectedException {
@@ -1025,7 +1025,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         DiscoverInfo info = new DiscoverInfo();
         info.setTo(mServer.getNetwork());
 
-        PacketFilter filter = new PacketIDFilter(info.getPacketID());
+        PacketFilter filter = new PacketIDFilter(info.getStanzaId());
         mConnection.addPacketListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
     }
@@ -1310,7 +1310,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // setup packet filter for response
-        PacketFilter filter = new PacketIDFilter(p.getPacketID());
+        PacketFilter filter = new PacketIDFilter(p.getStanzaId());
         PacketListener listener = new PacketListener() {
             public void processPacket(Stanza packet) {
 
