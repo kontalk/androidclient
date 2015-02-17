@@ -18,7 +18,6 @@
 
 package org.kontalk.client;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.security.KeyStore;
@@ -33,9 +32,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
@@ -44,10 +40,16 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.debugger.SmackDebugger;
 import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
+import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
 import org.jivesoftware.smackx.iqversion.VersionManager;
+import org.jivesoftware.smackx.receipts.DeliveryReceipt;
+import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
 import android.util.Log;
 
@@ -83,6 +85,8 @@ public class KontalkConnection extends XMPPTCPConnection {
         // enable SM without resumption
         setUseStreamManagement(true);
         setUseStreamManagementResumption(false);
+        // set custom ack predicate
+        addRequestAckPredicate(AckPredicate.INSTANCE);
         // set custom packet reply timeout
         setPacketReplyTimeout(DEFAULT_PACKET_TIMEOUT);
     }
@@ -201,5 +205,26 @@ public class KontalkConnection extends XMPPTCPConnection {
         });
         // do not append Smack version
         VersionManager.setAutoAppendSmackVersion(false);
+    }
+
+    /**
+     * A custom ack predicate that allows ack after a message with a delivery
+     * receipt, a receipt request or a body, or after 5 stanzas.
+     */
+    private static final class AckPredicate extends ForMatchingPredicateOrAfterXStanzas {
+
+        public static final AckPredicate INSTANCE = new AckPredicate();
+
+        private AckPredicate() {
+            super(new PacketFilter() {
+                @Override
+                public boolean accept(Stanza packet) {
+                    return (packet instanceof Message &&
+                        (((Message) packet).getBody() != null ||
+                          DeliveryReceipt.from(packet) != null ||
+                           DeliveryReceiptRequest.from(packet) != null));
+                }
+            }, 5);
+        }
     }
 }
