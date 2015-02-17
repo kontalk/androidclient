@@ -43,6 +43,7 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
@@ -163,6 +164,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Broadcasted when we are connected and authenticated to the server.
      * Send this intent to receive the same as a broadcast if connected. */
     public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
+
+    /**
+     * Broadcasted when the roster has been loaded.
+     * Send this intent to receive the same as a broadcast if the roster has
+     * already been loaded.
+     */
+    public static final String ACTION_ROSTER_LOADED = "org.kontalk.action.ROSTER_LOADED";
 
     /**
      * Broadcasted when a presence stanza is received.
@@ -655,7 +663,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_IMPORT_KEYPAIR.equals(action)) {
                 // zip file with keys
-                Uri file = (Uri) intent.getParcelableExtra(EXTRA_KEYPACK);
+                Uri file = intent.getParcelableExtra(EXTRA_KEYPACK);
                 // passphrase to decrypt files
                 String passphrase = intent.getStringExtra(EXTRA_PASSPHRASE);
                 beginKeyPairImport(file, passphrase);
@@ -701,6 +709,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
+            else if (ACTION_ROSTER_LOADED.equals(action)) {
+                if (isConnected) {
+                    if (getRoster().isLoaded()) {
+                        broadcast(ACTION_ROSTER_LOADED);
+                    }
+                }
+            }
+
             else if (ACTION_PRESENCE.equals(action)) {
                 if (canConnect && isConnected) {
                     final String id = intent.getStringExtra(EXTRA_PACKET_ID);
@@ -709,7 +725,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     if ("probe".equals(type)) {
                         // probing is actually looking into the roster
-                        Roster roster = Roster.getInstanceFor(mConnection);
+                        Roster roster = getRoster();
 
                         if (to == null) {
                             for (RosterEntry entry : roster.getEntries()) {
@@ -770,7 +786,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
                     else {
                         // request public keys for the whole roster
-                        Collection<RosterEntry> buddies = Roster.getInstanceFor(mConnection).getEntries();
+                        Collection<RosterEntry> buddies = getRoster().getEntries();
                         for (RosterEntry buddy : buddies) {
                             if (isRosterEntrySubscribed(buddy)) {
                                 PublicKeyPublish p = new PublicKeyPublish();
@@ -1026,13 +1042,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         info.setTo(mServer.getNetwork());
 
         PacketFilter filter = new PacketIDFilter(info.getStanzaId());
-        mConnection.addPacketListener(new DiscoverInfoListener(this), filter);
+        mConnection.addAsyncPacketListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
     }
 
     /** Requests the roster. */
     private void roster() {
-        Roster.getInstanceFor(mConnection);
+        getRoster().addRosterLoadedListener(new RosterLoadedListener() {
+            @Override
+            public void onRosterLoaded(Roster roster) {
+                broadcast(ACTION_ROSTER_LOADED);
+            }
+        });
     }
 
     /** Sends our initial presence. */
@@ -1223,6 +1244,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         c.close();
+    }
+
+    private Roster getRoster() {
+        return (mConnection != null) ? Roster.getInstanceFor(mConnection) : null;
     }
 
     private boolean isRosterEntrySubscribed(RosterEntry entry) {
@@ -1870,6 +1895,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestConnectionStatus(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_CONNECTED);
+        context.startService(i);
+    }
+
+    public static void requestRosterStatus(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
         context.startService(i);
     }
 

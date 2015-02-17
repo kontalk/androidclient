@@ -1991,7 +1991,9 @@ public class ComposeMessageFragment extends ListFragment implements
                         mComposeSent = false;
                         // reset available resources list
                         mAvailableResources.clear();
+                    }
 
+                    else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
                         // probe presence
                         presenceSubscribe();
                     }
@@ -2020,12 +2022,14 @@ public class ComposeMessageFragment extends ListFragment implements
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_PRESENCE);
             filter.addAction(MessageCenterService.ACTION_CONNECTED);
+            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_MESSAGE);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
-            // request connection status
+            // request connection and roster load status
             MessageCenterService.requestConnectionStatus(getActivity());
+            MessageCenterService.requestRosterStatus(getActivity());
         }
     }
 
