@@ -218,6 +218,25 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
         });
 
+        // FIXME this doesn't consider creation because of configuration change
+        PhoneNumber myNum = NumberValidator.getMyNumber(this);
+        if (myNum != null) {
+            CountryCode cc = new CountryCode();
+            cc.regionCode = util.getRegionCodeForNumber(myNum);
+            if (cc.regionCode == null)
+                cc.regionCode = util.getRegionCodeForCountryCode(myNum.getCountryCode());
+            mCountryCode.setSelection(ccList.getPositionForId(cc));
+            mPhone.setText(String.valueOf(myNum.getNationalNumber()));
+        }
+        else {
+            final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
+            CountryCode cc = new CountryCode();
+            cc.regionCode = regionCode;
+            cc.countryCode = util.getCountryCodeForRegion(regionCode);
+            mCountryCode.setSelection(ccList.getPositionForId(cc));
+        }
+
         // listener for autoselecting country code from typed phone number
         mPhone.addTextChangedListener(new TextWatcher() {
             @Override
@@ -235,24 +254,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 syncCountryCodeSelector();
             }
         });
-
-        // FIXME this doesn't consider creation because of configuration change
-        PhoneNumber myNum = NumberValidator.getMyNumber(this);
-        if (myNum != null) {
-            mPhone.setText(String.valueOf(myNum.getNationalNumber()));
-            CountryCode cc = new CountryCode();
-            cc.regionCode = util.getRegionCodeForNumber(myNum);
-            cc.countryCode = myNum.getCountryCode();
-            mCountryCode.setSelection(ccList.getPositionForId(cc));
-        }
-        else {
-            final TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            final String regionCode = tm.getSimCountryIso().toUpperCase(Locale.US);
-            CountryCode cc = new CountryCode();
-            cc.regionCode = regionCode;
-            cc.countryCode = util.getCountryCodeForRegion(regionCode);
-            mCountryCode.setSelection(ccList.getPositionForId(cc));
-        }
 
         // configuration change??
         RetainData data = (RetainData) getLastCustomNonConfigurationInstance();
@@ -438,7 +439,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         try {
             PhoneNumberUtil util = PhoneNumberUtil.getInstance();
             CountryCode cc = (CountryCode) mCountryCode.getSelectedItem();
-            PhoneNumber phone = util.parse(mPhone.getText().toString(), cc.regionCode);
+            PhoneNumber phone = util.parse(mPhone.getText().toString(), cc != null ? cc.regionCode : null);
             // autoselect correct country if user entered country code too
             if (phone.hasCountryCode()) {
                 CountryCode ccLookup = new CountryCode();
