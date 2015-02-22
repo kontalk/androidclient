@@ -63,10 +63,12 @@ import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.StepTimer;
 
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOADING;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_ERROR;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_DOWNLOAD_OK;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_UPDATE_DELAY;
 
 
 /**
@@ -89,6 +91,8 @@ public class DownloadService extends IntentService implements DownloadListener {
     // data about the download currently being processed
     private Notification mCurrentNotification;
     private long mTotalBytes;
+    /** Step timer for notification updates. */
+    private StepTimer mUpdateTimer = new StepTimer(NOTIFICATION_UPDATE_DELAY);
 
     private long mMessageId;
     private String mPeer;
@@ -237,6 +241,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void start(String url, File destination, long length) {
+        mUpdateTimer.reset();
         startForeground(length);
     }
 
@@ -374,14 +379,12 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     @Override
     public void progress(String url, File destination, long bytes) {
-        if (mCurrentNotification != null) {
-            int progress = (int)((100 * bytes) / mTotalBytes);
+        if (mCurrentNotification != null && (bytes >= mTotalBytes || mUpdateTimer.isStep())) {
+            int progress = (int) ((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
             mNotificationManager.notify(NOTIFICATION_ID_DOWNLOADING, mCurrentNotification);
         }
-
-        Thread.yield();
     }
 
     public static boolean isQueued(String url) {
