@@ -930,13 +930,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
             mWindowLayoutParams = new WindowManager.LayoutParams();
             mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
-            }
-            else {
-                mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-                mWindowLayoutParams.token = activity.getWindow().getDecorView().getWindowToken();
-            }
+            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+            mWindowLayoutParams.token = activity.getWindow().getDecorView().getWindowToken();
             mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
         }
