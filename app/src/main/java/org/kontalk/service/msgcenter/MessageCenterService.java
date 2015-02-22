@@ -52,9 +52,6 @@ import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
-import org.jivesoftware.smackx.ping.PingFailedListener;
-import org.jivesoftware.smackx.ping.PingManager;
-import org.jivesoftware.smackx.ping.packet.Ping;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.spongycastle.openpgp.PGPException;
@@ -141,9 +138,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     static {
         SmackConfiguration.DEBUG = BuildConfig.DEBUG;
     }
-
-    /** Ping to server interval in seconds. */
-    private static final int PING_INTERVAL = 120;
 
     public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
@@ -943,28 +937,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
-        // setup ping manager
-        final PingManager pingMgr = PingManager.getInstanceFor(connection);
-        pingMgr.setPingInterval(PING_INTERVAL);
-        pingMgr.registerPingFailedListener(new PingFailedListener() {
-            @Override
-            public void pingFailed() {
-                Log.v(TAG, "ping failed, restarting message center");
-                // unregister this listener
-                pingMgr.unregisterPingFailedListener(this);
-                // restart the message center
-                restart(getApplicationContext());
-            }
-        });
-
         // setup version manager
         final VersionManager verMgr = VersionManager.getInstanceFor(connection);
         verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionName(this));
 
         PacketFilter filter;
-
-        filter = new PacketTypeFilter(Ping.class);
-        connection.addAsyncPacketListener(new PingListener(this), filter);
 
         filter = new PacketTypeFilter(Presence.class);
         connection.addAsyncPacketListener(new PresenceListener(this), filter);
