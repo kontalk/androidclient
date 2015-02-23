@@ -92,6 +92,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
+import org.kontalk.client.ClientStateIndication;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
@@ -284,9 +285,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
 
-    /** Idle signal. */
-    private static final int MSG_IDLE = 1;
-
     /** How much time before a wakeup alarm triggers. */
     public final static int DEFAULT_WAKEUP_TIME = 900000;
     /** Minimal wakeup time. */
@@ -325,6 +323,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Idle handler. */
     IdleConnectionHandler mIdleHandler;
+    /** Inactive state flag (for CSI). */
+    private boolean mInactive;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
     Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
@@ -333,8 +333,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private ImportKeyPairListener mKeyPairImporter;
 
     static final class IdleConnectionHandler extends Handler implements IdleHandler {
+        /** Idle signal. */
+        private static final int MSG_IDLE = 1;
+        /** Inactive signal (for CSI). */
+        private static final int MSG_INACTIVE = 2;
+
         /** How much time to wait to idle the message center. */
         private final static int DEFAULT_IDLE_TIME = 60000;
+
+        /** How much time to wait to enter inactive state. */
+        private final static int INACTIVE_TIME = 30000;
 
         /** A reference to the message center. */
         private WeakReference<MessageCenterService> s;
@@ -383,6 +391,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 return true;
             }
 
+            else if (msg.what == MSG_INACTIVE && !service.isInactive()) {
+                Log.d(TAG, "entering inactive state");
+                service.inactive();
+                return true;
+            }
+
             return false;
         }
 
@@ -395,6 +409,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         /** Resets the idle timer. */
         public void reset() {
             removeMessages(MSG_IDLE);
+            removeMessages(MSG_INACTIVE);
 
             if (mRefCount <= 0 && getLooper().getThread().isAlive()) {
                 int time;
@@ -407,15 +422,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // zero means no idle (keep-alive forever)
                 if (time > 0)
                     sendMessageDelayed(obtainMessage(MSG_IDLE), time);
+
+                // send inactive state message
+                sendMessageDelayed(obtainMessage(MSG_INACTIVE), INACTIVE_TIME);
             }
         }
 
         public void hold() {
             mRefCount++;
+            if (mRefCount > 0) {
+                MessageCenterService service = s.get();
+                if (service != null && service.isInactive()) {
+                    Log.d(TAG, "entering active state");
+                    service.active();
+                }
+            }
             post(new Runnable() {
                 public void run() {
                     Looper.myQueue().removeIdleHandler(IdleConnectionHandler.this);
                     removeMessages(MSG_IDLE);
+                    removeMessages(MSG_INACTIVE);
                 }
             });
         }
@@ -427,6 +453,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 post(new Runnable() {
                     public void run() {
                         removeMessages(MSG_IDLE);
+                        removeMessages(MSG_INACTIVE);
                         Looper.myQueue().addIdleHandler(IdleConnectionHandler.this);
                     }
                 });
@@ -1031,6 +1058,20 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 broadcast(ACTION_ROSTER_LOADED);
             }
         });
+    }
+
+    private void active() {
+        sendPacket(ClientStateIndication.ACTIVE, false);
+        mInactive = false;
+    }
+
+    private void inactive() {
+        sendPacket(ClientStateIndication.INACTIVE, false);
+        mInactive = true;
+    }
+
+    private boolean isInactive() {
+        return mInactive;
     }
 
     /** Sends our initial presence. */
