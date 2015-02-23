@@ -886,6 +886,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             if (canConnect && doConnect)
                 createConnection();
+
+            // no reason to exist
+            if (!doConnect && !isConnected)
+                stopSelf();
         }
         else {
             Log.v(TAG, "restarting after service crash");
