@@ -403,13 +403,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         /** Resets the idle timer. */
         public void reset(int refCount) {
             mRefCount = refCount;
+
+            removeMessages(MSG_INACTIVE);
+            // queue inactive message again
+            if (mRefCount <= 0)
+                queueInactive();
+
             reset();
         }
 
         /** Resets the idle timer. */
         public void reset() {
             removeMessages(MSG_IDLE);
-            removeMessages(MSG_INACTIVE);
 
             if (mRefCount <= 0 && getLooper().getThread().isAlive()) {
                 int time;
@@ -422,9 +427,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 // zero means no idle (keep-alive forever)
                 if (time > 0)
                     sendMessageDelayed(obtainMessage(MSG_IDLE), time);
-
-                // send inactive state message
-                sendMessageDelayed(obtainMessage(MSG_INACTIVE), INACTIVE_TIME);
             }
         }
 
@@ -455,6 +457,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         removeMessages(MSG_IDLE);
                         removeMessages(MSG_INACTIVE);
                         Looper.myQueue().addIdleHandler(IdleConnectionHandler.this);
+                        queueInactive();
                     }
                 });
             }
@@ -463,6 +466,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         public void quit() {
             Looper.myQueue().removeIdleHandler(IdleConnectionHandler.this);
             getLooper().quit();
+        }
+
+        private void queueInactive() {
+            // send inactive state message
+            sendMessageDelayed(obtainMessage(MSG_INACTIVE), INACTIVE_TIME);
         }
     }
 
@@ -888,7 +896,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 createConnection();
 
             // no reason to exist
-            if (!doConnect && !isConnected)
+            if (!doConnect && !isConnected && !isConnecting())
                 stopSelf();
         }
         else {
@@ -1736,6 +1744,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public boolean isConnected() {
         return mConnection != null && mConnection.isAuthenticated();
+    }
+
+    public boolean isConnecting() {
+        return mHelper != null;
     }
 
     /** Checks for network availability. */
