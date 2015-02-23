@@ -49,6 +49,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
+import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
@@ -92,7 +93,6 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.client.BitsOfBinary;
 import org.kontalk.client.BlockingCommand;
-import org.kontalk.client.ClientStateIndication;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
@@ -392,7 +392,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (msg.what == MSG_INACTIVE && !service.isInactive()) {
-                Log.d(TAG, "entering inactive state");
                 service.inactive();
                 return true;
             }
@@ -434,8 +433,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mRefCount++;
             if (mRefCount > 0) {
                 MessageCenterService service = s.get();
-                if (service != null && service.isInactive()) {
-                    Log.d(TAG, "entering active state");
+                if (service != null && service.isInactive() && service.isConnected()) {
                     service.active();
                 }
             }
@@ -919,6 +917,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // reset waiting messages
             mWaitingReceipt.clear();
 
+            mInactive = false;
+
             // retrieve account name
             Account acc = Authenticator.getDefaultAccount(this);
             mMyUsername = (acc != null) ? acc.name : null;
@@ -1073,13 +1073,29 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void active() {
-        sendPacket(ClientStateIndication.ACTIVE, false);
-        mInactive = false;
+        if (ClientStateIndicationManager.isSupported(mConnection)) {
+            Log.d(TAG, "entering active state");
+            try {
+                ClientStateIndicationManager.active(mConnection);
+                mInactive = false;
+            }
+            catch (NotConnectedException e) {
+                // ignored
+            }
+        }
     }
 
     private void inactive() {
-        sendPacket(ClientStateIndication.INACTIVE, false);
-        mInactive = true;
+        if (ClientStateIndicationManager.isSupported(mConnection)) {
+            Log.d(TAG, "entering inactive state");
+            try {
+                ClientStateIndicationManager.inactive(mConnection);
+                mInactive = true;
+            }
+            catch (NotConnectedException e) {
+                // ignored
+            }
+        }
     }
 
     private boolean isInactive() {
