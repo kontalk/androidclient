@@ -27,9 +27,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
@@ -72,7 +71,7 @@ class MessageListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         Map<String, Long> waitingReceipt = getWaitingReceiptList();
 
         org.jivesoftware.smack.packet.Message m = (org.jivesoftware.smack.packet.Message) packet;
@@ -121,7 +120,7 @@ class MessageListener extends MessageCenterPacketListener {
             // delivery receipt
             if (deliveryReceipt != null) {
                 synchronized (waitingReceipt) {
-                    String id = m.getPacketID();
+                    String id = m.getStanzaId();
                     Long _msgId = waitingReceipt.get(id);
                     long msgId = (_msgId != null) ? _msgId : 0;
                     ContentResolver cr = getContext().getContentResolver();
@@ -150,7 +149,7 @@ class MessageListener extends MessageCenterPacketListener {
 
             // incoming message
             else {
-                String msgId = m.getPacketID();
+                String msgId = m.getStanzaId();
                 if (msgId == null)
                     msgId = MessageUtils.messageId();
 
@@ -297,7 +296,7 @@ class MessageListener extends MessageCenterPacketListener {
                             getIdleHandler().hold();
                             // will mark this message as confirmed
                             long storageId = ContentUris.parseId(msgUri);
-                            waitingReceipt.put(ack.getPacketID(), storageId);
+                            waitingReceipt.put(ack.getStanzaId(), storageId);
                         }
                         sendPacket(ack);
                     }
@@ -309,7 +308,7 @@ class MessageListener extends MessageCenterPacketListener {
         // error message
         else if (m.getType() == org.jivesoftware.smack.packet.Message.Type.error) {
             synchronized (waitingReceipt) {
-                String id = m.getPacketID();
+                String id = m.getStanzaId();
                 Long _msgId = waitingReceipt.get(id);
                 long msgId = (_msgId != null) ? _msgId : 0;
                 ContentResolver cr = getContext().getContentResolver();

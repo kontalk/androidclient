@@ -22,6 +22,9 @@ package org.kontalk.util;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
+import android.view.Display;
+import android.view.WindowManager;
 
 /**
  * System-related utilities.
@@ -57,6 +60,23 @@ public final class SystemUtils {
             // shouldn't happen
             return 0;
         }
+    }
+
+    public static Point getDisplaySize(Context context) {
+        Point displaySize = null;
+        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = manager.getDefaultDisplay();
+        if (display != null) {
+            displaySize = new Point();
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
+                displaySize.set(display.getWidth(), display.getHeight());
+            }
+            else {
+                display.getSize(displaySize);
+            }
+        }
+
+        return displaySize;
     }
 
 }

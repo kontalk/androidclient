@@ -44,7 +44,6 @@ import org.spongycastle.openpgp.PGPObjectFactory;
 import org.spongycastle.openpgp.PGPOnePassSignature;
 import org.spongycastle.openpgp.PGPOnePassSignatureList;
 import org.spongycastle.openpgp.PGPPrivateKey;
-import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyEncryptedData;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
@@ -68,6 +67,7 @@ import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INTEGRITY_CH
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_DATA;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_RECIPIENT;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_SENDER;
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_PRIVATE_KEY_NOT_FOUND;
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION_FAILED;
 
@@ -382,6 +382,11 @@ public class PGPCoder extends Coder {
                                 throw new DecryptException(
                                     DECRYPT_EXCEPTION_INVALID_SENDER,
                                     "Sender does not match sender's key");
+
+                            if (msg.getDate() == null)
+                                errors.add(new DecryptException(
+                                    DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
+                                    "Invalid timestamp"));
 
                             // TODO check DateTime (possibly compare it with <delay/>)
                         }

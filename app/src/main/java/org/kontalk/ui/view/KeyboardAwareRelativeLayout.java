@@ -33,25 +33,31 @@ import org.kontalk.R;
 
 
 /**
- * FrameLayout that, when a view container, will report back when it thinks a soft keyboard
+ * RelativeLayout that, when a view container, will report back when it thinks a soft keyboard
  * has been opened and what its height would be.
  * https://github.com/WhisperSystems/TextSecure
  */
-public class KeyboardAwareFrameLayout extends FrameLayout {
-    private static final String TAG  = KeyboardAwareFrameLayout.class.getSimpleName();
+public class KeyboardAwareRelativeLayout extends FrameLayout {
     private static final Rect   rect = new Rect();
+    private boolean mKeyboardVisible;
 
-    public KeyboardAwareFrameLayout(Context context) {
+    private OnKeyboardShownListener mListener;
+
+    public KeyboardAwareRelativeLayout(Context context) {
         super(context);
     }
 
-    public KeyboardAwareFrameLayout(Context context, AttributeSet attrs) {
+    public KeyboardAwareRelativeLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public KeyboardAwareFrameLayout(Context context, AttributeSet attrs, int defStyle) {
+    public KeyboardAwareRelativeLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+    }
+
+    public void setOnKeyboardShownListener(OnKeyboardShownListener listener) {
+        mListener = listener;
     }
 
     /**
@@ -71,14 +77,19 @@ public class KeyboardAwareFrameLayout extends FrameLayout {
 
         if (keyboardHeight > getResources().getDimensionPixelSize(R.dimen.min_emoji_drawer_height)) {
             onKeyboardShown(keyboardHeight);
+            mKeyboardVisible = true;
         }
+        else {
+            mKeyboardVisible = false;
+        }
+
+        if (mListener != null)
+            mListener.onKeyboardShown(mKeyboardVisible);
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     protected void onKeyboardShown(int keyboardHeight) {
-        Log.w(TAG, "keyboard shown, height " + keyboardHeight);
-
         WindowManager wm = (WindowManager) getContext().getSystemService(Activity.WINDOW_SERVICE);
         if (wm == null || wm.getDefaultDisplay() == null) {
             return;
@@ -94,6 +105,10 @@ public class KeyboardAwareFrameLayout extends FrameLayout {
             case Surface.ROTATION_180:
                 setKeyboardPortraitHeight(keyboardHeight);
         }
+    }
+
+    public boolean isKeyboardVisible() {
+        return mKeyboardVisible;
     }
 
     public int getKeyboardHeight() {
@@ -115,13 +130,13 @@ public class KeyboardAwareFrameLayout extends FrameLayout {
         }
     }
 
-    private int getKeyboardLandscapeHeight() {
+    public int getKeyboardLandscapeHeight() {
         return PreferenceManager.getDefaultSharedPreferences(getContext())
             .getInt("keyboard_height_landscape",
                 getResources().getDimensionPixelSize(R.dimen.min_emoji_drawer_height));
     }
 
-    private int getKeyboardPortraitHeight() {
+    public int getKeyboardPortraitHeight() {
         return PreferenceManager.getDefaultSharedPreferences(getContext())
             .getInt("keyboard_height_portrait",
                 getResources().getDimensionPixelSize(R.dimen.min_emoji_drawer_height));
@@ -145,6 +160,10 @@ public class KeyboardAwareFrameLayout extends FrameLayout {
             editor.commit();
         else
             editor.apply();
+    }
+
+    public interface OnKeyboardShownListener {
+        public void onKeyboardShown(boolean visible);
     }
 
 }

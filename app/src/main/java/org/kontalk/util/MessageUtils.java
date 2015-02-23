@@ -621,6 +621,10 @@ public final class MessageUtils {
                             securityFlags |= Coder.SECURITY_ERROR_INVALID_RECIPIENT;
                             break;
 
+                        case DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP:
+                            securityFlags |= Coder.SECURITY_ERROR_INVALID_TIMESTAMP;
+                            break;
+
                     }
 
                 }

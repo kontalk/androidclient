@@ -23,7 +23,7 @@ import java.util.List;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.kontalk.client.EndpointServer;
@@ -42,12 +42,12 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         XMPPConnection conn = getConnection();
         EndpointServer server = getServer();
 
         // we don't need this listener anymore
-        conn.removePacketListener(this);
+        conn.removeAsyncPacketListener(this);
 
         DiscoverInfo query = (DiscoverInfo) packet;
         List<DiscoverInfo.Feature> features = query.getFeatures();
@@ -65,8 +65,8 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
                 items.setNode(PushRegistration.NAMESPACE);
                 items.setTo(server.getNetwork());
 
-                PacketFilter filter = new PacketIDFilter(items.getPacketID());
-                conn.addPacketListener(new PushDiscoverItemsListener(getInstance()), filter);
+                PacketFilter filter = new PacketIDFilter(items.getStanzaId());
+                conn.addAsyncPacketListener(new PushDiscoverItemsListener(getInstance()), filter);
 
                 sendPacket(items);
             }
@@ -85,8 +85,8 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
                 items.setNode(UploadExtension.NAMESPACE);
                 items.setTo(server.getNetwork());
 
-                PacketFilter filter = new PacketIDFilter(items.getPacketID());
-                conn.addPacketListener(new UploadDiscoverItemsListener(getInstance()), filter);
+                PacketFilter filter = new PacketIDFilter(items.getStanzaId());
+                conn.addAsyncPacketListener(new UploadDiscoverItemsListener(getInstance()), filter);
 
                 sendPacket(items);
             }

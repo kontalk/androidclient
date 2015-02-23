@@ -20,7 +20,7 @@ package org.kontalk.service.msgcenter;
 
 import java.util.List;
 
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.kontalk.util.Preferences;
 
@@ -36,9 +36,9 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         // we don't need this listener anymore
-        getConnection().removePacketListener(this);
+        getConnection().removeAsyncPacketListener(this);
 
         DiscoverItems query = (DiscoverItems) packet;
         List<DiscoverItems.Item> items = query.getItems();

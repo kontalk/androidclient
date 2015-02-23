@@ -19,7 +19,7 @@
 package org.kontalk.service.msgcenter;
 
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jxmpp.util.XmppStringUtils;
 
 import android.content.Intent;
@@ -54,7 +54,7 @@ class PublicKeyListener extends MessageCenterPacketListener {
     }
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
         PublicKeyPublish p = (PublicKeyPublish) packet;
 
         // will be true if it's our card
@@ -106,7 +106,7 @@ class PublicKeyListener extends MessageCenterPacketListener {
                 if (SyncAdapter.isActive(getContext())) {
                     // sync currently active, broadcast the key
                     Intent i = new Intent(ACTION_PUBLICKEY);
-                    i.putExtra(EXTRA_PACKET_ID, p.getPacketID());
+                    i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
                     i.putExtra(EXTRA_FROM, p.getFrom());
                     i.putExtra(EXTRA_TO, p.getTo());

@@ -31,9 +31,6 @@ import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.Roster.SubscriptionMode;
-import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
@@ -41,11 +38,13 @@ import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.RosterPacket;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smack.tcp.sm.StreamManagementException;
+import org.jivesoftware.smack.roster.Roster;
+import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.roster.RosterLoadedListener;
+import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
@@ -53,9 +52,6 @@ import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
-import org.jivesoftware.smackx.ping.PingFailedListener;
-import org.jivesoftware.smackx.ping.PingManager;
-import org.jivesoftware.smackx.ping.packet.Ping;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.spongycastle.openpgp.PGPException;
@@ -140,11 +136,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String TAG = MessageCenterService.class.getSimpleName();
 
     static {
-        SmackConfiguration.DEBUG_ENABLED = BuildConfig.DEBUG;
+        SmackConfiguration.DEBUG = BuildConfig.DEBUG;
     }
-
-    /** Ping to server interval in seconds. */
-    private static final int PING_INTERVAL = 120;
 
     public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
@@ -165,6 +158,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Broadcasted when we are connected and authenticated to the server.
      * Send this intent to receive the same as a broadcast if connected. */
     public static final String ACTION_CONNECTED = "org.kontalk.action.CONNECTED";
+
+    /**
+     * Broadcasted when the roster has been loaded.
+     * Send this intent to receive the same as a broadcast if the roster has
+     * already been loaded.
+     */
+    public static final String ACTION_ROSTER_LOADED = "org.kontalk.action.ROSTER_LOADED";
 
     /**
      * Broadcasted when a presence stanza is received.
@@ -299,7 +299,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Push notifications enabled flag. */
     boolean mPushNotifications;
     /** Server push sender id. This is static so the {@link IPushListener} can see it. */
-    static String mPushSenderId;
+    static String sPushSenderId;
     /** Push registration id. */
     private String mPushRegistrationId;
     /** Flag marking a currently ongoing push registration cycle (unregister/register) */
@@ -459,7 +459,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mHandler = new Handler();
     }
 
-    void sendPacket(Packet packet) {
+    void sendPacket(Stanza packet) {
         sendPacket(packet, true);
     }
 
@@ -467,7 +467,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
      * Sends a packet to the connection if found.
      * @param bumpIdle true if the idle handler must be notified of this event
      */
-    void sendPacket(Packet packet, boolean bumpIdle) {
+    void sendPacket(Stanza packet, boolean bumpIdle) {
         // reset idler if requested
         if (bumpIdle) mIdleHandler.reset();
 
@@ -494,7 +494,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         ProviderManager.addExtensionProvider(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE, new PublicKeyPresence.Provider());
         ProviderManager.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
         // we want to manually handle roster stuff
-        Roster.setDefaultSubscriptionMode(SubscriptionMode.manual);
+        Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.manual);
     }
 
     @Override
@@ -657,7 +657,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_IMPORT_KEYPAIR.equals(action)) {
                 // zip file with keys
-                Uri file = (Uri) intent.getParcelableExtra(EXTRA_KEYPACK);
+                Uri file = intent.getParcelableExtra(EXTRA_KEYPACK);
                 // passphrase to decrypt files
                 String passphrase = intent.getStringExtra(EXTRA_PASSPHRASE);
                 beginKeyPairImport(file, passphrase);
@@ -681,7 +681,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_ROSTER.equals(action) || ACTION_ROSTER_MATCH.equals(action)) {
                 if (canConnect && isConnected) {
-                    Packet iq;
+                    Stanza iq;
 
                     if (ACTION_ROSTER_MATCH.equals(action)) {
                         iq = new RosterMatch();
@@ -696,10 +696,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     }
 
                     String id = intent.getStringExtra(EXTRA_PACKET_ID);
-                    iq.setPacketID(id);
+                    iq.setStanzaId(id);
                     // iq default type is get
 
                     sendPacket(iq);
+                }
+            }
+
+            else if (ACTION_ROSTER_LOADED.equals(action)) {
+                if (isConnected) {
+                    if (getRoster().isLoaded()) {
+                        broadcast(ACTION_ROSTER_LOADED);
+                    }
                 }
             }
 
@@ -711,7 +719,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                     if ("probe".equals(type)) {
                         // probing is actually looking into the roster
-                        Roster roster = mConnection.getRoster();
+                        Roster roster = getRoster();
 
                         if (to == null) {
                             for (RosterEntry entry : roster.getEntries()) {
@@ -725,7 +733,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     else {
                         String show = intent.getStringExtra(EXTRA_SHOW);
                         Presence p = new Presence(type != null ? Presence.Type.valueOf(type) : Presence.Type.available);
-                        p.setPacketID(id);
+                        p.setStanzaId(id);
                         p.setTo(to);
                         if (intent.hasExtra(EXTRA_PRIORITY))
                             p.setPriority(intent.getIntExtra(EXTRA_PRIORITY, 0));
@@ -743,7 +751,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (canConnect && isConnected) {
                     LastActivity p = new LastActivity();
 
-                    p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
+                    p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
                     p.setTo(intent.getStringExtra(EXTRA_TO));
 
                     sendPacket(p);
@@ -765,14 +773,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     if (to != null) {
                         // request public key for a specific user
                         PublicKeyPublish p = new PublicKeyPublish();
-                        p.setPacketID(intent.getStringExtra(EXTRA_PACKET_ID));
+                        p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
                         p.setTo(to);
 
                         sendPacket(p);
                     }
                     else {
                         // request public keys for the whole roster
-                        Collection<RosterEntry> buddies = mConnection.getRoster().getEntries();
+                        Collection<RosterEntry> buddies = getRoster().getEntries();
                         for (RosterEntry buddy : buddies) {
                             if (isRosterEntrySubscribed(buddy)) {
                                 PublicKeyPublish p = new PublicKeyPublish();
@@ -790,10 +798,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     ServerlistCommand p = new ServerlistCommand();
                     p.setTo(mServer.getNetwork());
 
-                    PacketFilter filter = new PacketIDFilter(p.getPacketID());
+                    PacketFilter filter = new PacketIDFilter(p.getStanzaId());
                     // TODO cache the listener (it shouldn't change)
-                    mConnection.addPacketListener(new PacketListener() {
-                        public void processPacket(Packet packet) throws NotConnectedException {
+                    mConnection.addAsyncPacketListener(new PacketListener() {
+                        public void processPacket(Stanza packet) throws NotConnectedException {
                             Intent i = new Intent(ACTION_SERVERLIST);
                             List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
                                 .getItems();
@@ -929,43 +937,26 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
-        // setup ping manager
-        final PingManager pingMgr = PingManager.getInstanceFor(connection);
-        pingMgr.setPingInterval(PING_INTERVAL);
-        pingMgr.registerPingFailedListener(new PingFailedListener() {
-            @Override
-            public void pingFailed() {
-                Log.v(TAG, "ping failed, restarting message center");
-                // unregister this listener
-                pingMgr.unregisterPingFailedListener(this);
-                // restart the message center
-                restart(getApplicationContext());
-            }
-        });
-
         // setup version manager
         final VersionManager verMgr = VersionManager.getInstanceFor(connection);
         verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionName(this));
 
         PacketFilter filter;
 
-        filter = new PacketTypeFilter(Ping.class);
-        connection.addPacketListener(new PingListener(this), filter);
-
         filter = new PacketTypeFilter(Presence.class);
-        connection.addPacketListener(new PresenceListener(this), filter);
+        connection.addAsyncPacketListener(new PresenceListener(this), filter);
 
         filter = new PacketTypeFilter(RosterMatch.class);
-        connection.addPacketListener(new RosterMatchListener(this), filter);
+        connection.addAsyncPacketListener(new RosterMatchListener(this), filter);
 
         filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        connection.addPacketListener(new MessageListener(this), filter);
+        connection.addAsyncPacketListener(new MessageListener(this), filter);
 
         filter = new PacketTypeFilter(LastActivity.class);
-        connection.addPacketListener(new LastActivityListener(this), filter);
+        connection.addAsyncPacketListener(new LastActivityListener(this), filter);
 
         filter = new PacketTypeFilter(PublicKeyPublish.class);
-        connection.addPacketListener(new PublicKeyListener(this), filter);
+        connection.addAsyncPacketListener(new PublicKeyListener(this), filter);
     }
 
     @Override
@@ -974,16 +965,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public void authenticated(XMPPConnection connection) {
+    public void authenticated(XMPPConnection connection, boolean resumed) {
         Log.v(TAG, "authenticated!");
 
         // add message ack listener
-        try {
+        if (mConnection.isSmEnabled()) {
             mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
         }
-        catch (StreamManagementException.StreamManagementNotEnabledException e) {
+        else {
             Log.w(TAG, "stream management not available - disabling delivery receipts");
         }
+
         // load the roster now
         roster();
         // send presence
@@ -1026,14 +1018,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         DiscoverInfo info = new DiscoverInfo();
         info.setTo(mServer.getNetwork());
 
-        PacketFilter filter = new PacketIDFilter(info.getPacketID());
-        mConnection.addPacketListener(new DiscoverInfoListener(this), filter);
+        PacketFilter filter = new PacketIDFilter(info.getStanzaId());
+        mConnection.addAsyncPacketListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
     }
 
     /** Requests the roster. */
     private void roster() {
-        mConnection.getRoster();
+        getRoster().addRosterLoadedListener(new RosterLoadedListener() {
+            @Override
+            public void onRosterLoaded(Roster roster) {
+                broadcast(ACTION_ROSTER_LOADED);
+            }
+        });
     }
 
     /** Sends our initial presence. */
@@ -1226,6 +1223,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
+    private Roster getRoster() {
+        return (mConnection != null) ? Roster.getInstanceFor(mConnection) : null;
+    }
+
     private boolean isRosterEntrySubscribed(RosterEntry entry) {
         return (entry != null && (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) &&
             entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING);
@@ -1263,7 +1264,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (action == PRIVACY_ACCEPT) {
             // standard response: subscribed
             Presence p = new Presence(Presence.Type.subscribed);
-            p.setPacketID(packetId);
+            p.setStanzaId(packetId);
             p.setTo(to);
             sendPacket(p);
 
@@ -1311,9 +1312,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // setup packet filter for response
-        PacketFilter filter = new PacketIDFilter(p.getPacketID());
+        PacketFilter filter = new PacketIDFilter(p.getStanzaId());
         PacketListener listener = new PacketListener() {
-            public void processPacket(Packet packet) {
+            public void processPacket(Stanza packet) {
 
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
                     UsersProvider.setBlockStatus(MessageCenterService.this,
@@ -1330,22 +1331,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             }
         };
-        mConnection.addPacketListener(listener, filter);
+        mConnection.addAsyncPacketListener(listener, filter);
 
         // send IQ
         sendPacket(p);
     }
 
     private void requestBlocklist() {
-        Packet p = BlockingCommand.blocklist();
-        String packetId = p.getPacketID();
+        Stanza p = BlockingCommand.blocklist();
+        String packetId = p.getStanzaId();
 
         // listen for response (TODO cache the listener, it shouldn't change)
         PacketFilter idFilter = new PacketIDFilter(packetId);
-        mConnection.addPacketListener(new PacketListener() {
-            public void processPacket(Packet packet) {
+        mConnection.addAsyncPacketListener(new PacketListener() {
+            public void processPacket(Stanza packet) {
                 // we don't need this listener anymore
-                mConnection.removePacketListener(this);
+                mConnection.removeAsyncPacketListener(this);
 
                 if (packet instanceof BlockingCommand) {
                     BlockingCommand blocklist = (BlockingCommand) packet;
@@ -1424,7 +1425,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (to != null) m.setTo(to);
 
             // set message id
-            m.setPacketID(id);
+            m.setStanzaId(id);
             if (msgId > 0)
                 mWaitingReceipt.put(id, msgId);
 
@@ -1489,7 +1490,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                         m.getType());
 
                         encMsg.setBody(getString(R.string.text_encrypted));
-                        encMsg.setPacketID(m.getPacketID());
+                        encMsg.setStanzaId(m.getStanzaId());
                         encMsg.addExtension(new E2EEncryption(toMessage));
 
                         m = encMsg;
@@ -1874,6 +1875,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         context.startService(i);
     }
 
+    public static void requestRosterStatus(final Context context) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
+        context.startService(i);
+    }
+
     public static void requestVCard(final Context context, String to) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_VCARD);
@@ -1928,13 +1935,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     void pushRegister() {
-        if (mPushSenderId != null) {
+        if (sPushSenderId != null) {
             if (mPushService.isServiceAvailable()) {
                 // senderId will be given by serverinfo if any
                 mPushRegistrationId = mPushService.getRegistrationId();
                 if (TextUtils.isEmpty(mPushRegistrationId))
                     // start registration
-                    mPushService.register(sPushListener, mPushSenderId);
+                    mPushService.register(sPushListener, sPushSenderId);
                 else
                     // already registered - send registration id to server
                     setPushRegistrationId(mPushRegistrationId);
@@ -1965,7 +1972,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         try {
             mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
                 @Override
-                public void processPacket(Packet packet) throws NotConnectedException {
+                public void processPacket(Stanza packet) throws NotConnectedException {
                     if (mPushService != null)
                         mPushService.setRegisteredOnServer(regId != null);
                 }
@@ -1977,7 +1984,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public static String getPushSenderId() {
-        return mPushSenderId;
+        return sPushSenderId;
     }
 
     public static void setWakeupAlarm(Context context) {

@@ -18,6 +18,24 @@
 
 package org.kontalk.ui;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import com.rockerhieu.emojicon.EmojiconsView;
+import com.rockerhieu.emojicon.OnEmojiconClickedListener;
+import com.rockerhieu.emojicon.emoji.Emojicon;
+
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.chatstates.ChatState;
+import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPPublicKey;
+import org.spongycastle.openpgp.PGPPublicKeyRing;
+
 import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -62,6 +80,7 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -71,6 +90,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -83,14 +103,6 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-import com.rockerhieu.emojicon.EmojiconGridFragment;
-import com.rockerhieu.emojicon.EmojiconsFragment;
-import com.rockerhieu.emojicon.emoji.Emojicon;
-
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smackx.chatstates.ChatState;
-import org.jxmpp.util.XmppStringUtils;
-import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.Coder;
@@ -118,25 +130,15 @@ import org.kontalk.ui.adapter.MessageListAdapter;
 import org.kontalk.ui.view.AudioContentView;
 import org.kontalk.ui.view.AudioContentViewControl;
 import org.kontalk.ui.view.AudioPlayerControl;
-import org.kontalk.ui.view.EmojiDrawer;
 import org.kontalk.ui.view.IconContextMenu;
 import org.kontalk.ui.view.IconContextMenu.IconContextMenuOnClickListener;
+import org.kontalk.ui.view.KeyboardAwareRelativeLayout;
 import org.kontalk.ui.view.MessageListItem;
-import org.kontalk.util.KontalkUtilities;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
-import org.spongycastle.openpgp.PGPPublicKey;
-import org.spongycastle.openpgp.PGPPublicKeyRing;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
@@ -153,8 +155,7 @@ public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
         AudioDialog.AudioDialogListener, AudioPlayerControl,
-        EmojiconsFragment.OnEmojiconBackspaceClickedListener,
-        EmojiconGridFragment.OnEmojiconClickedListener {
+        EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -225,7 +226,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private long elapsedTime = 0L;
     private boolean mCheckMove;
     private int mOrientation;
-    private Vibrator mVibrator = (Vibrator) Kontalk.mApplicationContext.getSystemService(Context.VIBRATOR_SERVICE);
+    private Vibrator mVibrator;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -240,7 +241,10 @@ public class ComposeMessageFragment extends ListFragment implements
     private CharSequence mCurrentStatus;
     private TextWatcher mChatStateListener;
     private ImageButton mEmojiButton;
-    private EmojiDrawer mEmojiDrawer;
+    private EmojiconsView mEmojiView;
+    private boolean mEmojiVisible;
+    private KeyboardAwareRelativeLayout mRootView;
+    private WindowManager.LayoutParams mWindowLayoutParams;
 
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromUserId(Context context, String userId) {
@@ -367,13 +371,13 @@ public class ComposeMessageFragment extends ListFragment implements
 
         mTextEntry.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (mEmojiDrawer.isVisible())
+                if (isEmojiVisible())
                     hideEmojiDrawer(false);
             }
         });
         mTextEntry.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus && mEmojiDrawer.isVisible())
+                if (hasFocus && isEmojiVisible())
                     hideEmojiDrawer(false);
             }
         });
@@ -451,6 +455,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 return true;
             }
         });
+        mVibrator = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
 
         mSendButton.setEnabled(mTextEntry.length() > 0);
         mSendButton.setOnClickListener(new View.OnClickListener() {
@@ -460,12 +465,21 @@ public class ComposeMessageFragment extends ListFragment implements
             }
         });
 
-        mEmojiDrawer = (EmojiDrawer) getView().findViewById(R.id.emoji_drawer);
         mEmojiButton = (ImageButton) getView().findViewById(R.id.emoji_button);
         mEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleEmojiDrawer();
+            }
+        });
+        mRootView = (KeyboardAwareRelativeLayout) getView().findViewById(R.id.root_view);
+        // this will handle closing of keyboard while emoji drawer is open
+        mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
+            @Override
+            public void onKeyboardShown(boolean visible) {
+                if (!visible && mRootView.getPaddingBottom() == 0 && isEmojiVisible()) {
+                    hideEmojiDrawer(false);
+                }
             }
         });
 
@@ -537,7 +551,7 @@ public class ComposeMessageFragment extends ListFragment implements
         mComposeSent = false;
         mTextEntry.addTextChangedListener(mChatStateListener);
         // revert to keyboard if emoji panel was open
-        if (mEmojiDrawer.isVisible()) {
+        if (isEmojiVisible()) {
             hideEmojiDrawer();
         }
     }
@@ -760,6 +774,7 @@ public class ComposeMessageFragment extends ListFragment implements
         mCallMenu = menu.findItem(R.id.call_contact);
         mBlockMenu = menu.findItem(R.id.block_user);
         mUnblockMenu = menu.findItem(R.id.unblock_user);
+        updateUI();
     }
 
     @Override
@@ -995,18 +1010,22 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onEmojiconBackspaceClicked(View v) {
-        EmojiconsFragment.backspace(mTextEntry);
+        EmojiconsView.backspace(mTextEntry);
     }
 
     @Override
     public void onEmojiconClicked(Emojicon emojicon) {
-        EmojiconsFragment.input(mTextEntry, emojicon);
+        EmojiconsView.input(mTextEntry, emojicon);
+    }
+
+    private boolean isEmojiVisible() {
+        return mEmojiVisible;
     }
 
     private void toggleEmojiDrawer() {
         // TODO animate drawer enter & exit
 
-        if (mEmojiDrawer.isVisible()) {
+        if (isEmojiVisible()) {
             hideEmojiDrawer();
         }
         else {
@@ -1015,10 +1034,55 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void showEmojiDrawer() {
-        InputMethodManager input = (InputMethodManager) getActivity()
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-        input.hideSoftInputFromWindow(mTextEntry.getWindowToken(), 0);
-        mEmojiDrawer.show(getChildFragmentManager());
+        Activity activity = getActivity();
+        if (activity == null)
+            return;
+
+        int keyboardHeight = mRootView.getKeyboardHeight();
+
+        mEmojiVisible = true;
+
+        if (mEmojiView == null) {
+            mEmojiView = (EmojiconsView) LayoutInflater
+                .from(activity).inflate(R.layout.emojicons, mRootView, false);
+            mEmojiView.setId(R.id.emoji_drawer);
+            mEmojiView.setOnEmojiconBackspaceClickedListener(this);
+            mEmojiView.setOnEmojiconClickedListener(this);
+
+            mWindowLayoutParams = new WindowManager.LayoutParams();
+            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+            mWindowLayoutParams.token = activity.getWindow().getDecorView().getWindowToken();
+            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        }
+
+        mWindowLayoutParams.height = keyboardHeight;
+        mWindowLayoutParams.width = SystemUtils.getDisplaySize(activity).x;
+
+        WindowManager wm = (WindowManager) activity.getSystemService(Activity.WINDOW_SERVICE);
+
+        try {
+            if (mEmojiView.getParent() != null) {
+                wm.removeViewImmediate(mEmojiView);
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error removing emoji view", e);
+        }
+
+        try {
+            wm.addView(mEmojiView, mWindowLayoutParams);
+        } catch (Exception e) {
+            Log.e(TAG, "error adding emoji view", e);
+            return;
+        }
+
+        if (!mRootView.isKeyboardVisible()) {
+            mRootView.setPadding(0, 0, 0, keyboardHeight);
+            // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
+        }
+
         mEmojiButton.setImageResource(R.drawable.ic_keyboard_dark);
     }
 
@@ -1032,13 +1096,20 @@ public class ComposeMessageFragment extends ListFragment implements
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
             input.showSoftInput(mTextEntry, 0);
         }
-        mEmojiDrawer.hide();
-        mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
 
+        if (mEmojiView != null && mEmojiView.getParent() != null) {
+            WindowManager wm = (WindowManager) getActivity()
+                .getSystemService(Context.WINDOW_SERVICE);
+            wm.removeViewImmediate(mEmojiView);
+        }
+
+        mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
+        mRootView.setPadding(0, 0, 0, 0);
+        mEmojiVisible = false;
     }
 
     boolean tryHideEmojiDrawer() {
-        if (mEmojiDrawer.isVisible()) {
+        if (isEmojiVisible()) {
             hideEmojiDrawer(false);
             return true;
         }
@@ -1476,9 +1547,8 @@ public class ComposeMessageFragment extends ListFragment implements
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
         if (mCurrentPhoto != null)
             out.putString("currentPhoto", mCurrentPhoto.toString());
-        if (mEmojiDrawer != null)
-            // so we can restore it later
-            out.putBoolean("emojiDrawer", mEmojiDrawer.isVisible());
+        // so we can restore it later
+        out.putBoolean("emojiVisible", isEmojiVisible());
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1490,7 +1560,7 @@ public class ComposeMessageFragment extends ListFragment implements
             args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
             args.putParcelable("data", uri);
 
-            if (savedInstanceState.getBoolean("emojiDrawer", false)) {
+            if (savedInstanceState.getBoolean("emojiVisible", false)) {
                 showEmojiDrawer();
             }
 
@@ -2037,7 +2107,9 @@ public class ComposeMessageFragment extends ListFragment implements
                         mComposeSent = false;
                         // reset available resources list
                         mAvailableResources.clear();
+                    }
 
+                    else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
                         // probe presence
                         presenceSubscribe();
                     }
@@ -2066,12 +2138,14 @@ public class ComposeMessageFragment extends ListFragment implements
             IntentFilter filter = new IntentFilter();
             filter.addAction(MessageCenterService.ACTION_PRESENCE);
             filter.addAction(MessageCenterService.ACTION_CONNECTED);
+            filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_MESSAGE);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
-            // request connection status
+            // request connection and roster load status
             MessageCenterService.requestConnectionStatus(getActivity());
+            MessageCenterService.requestRosterStatus(getActivity());
         }
     }
 

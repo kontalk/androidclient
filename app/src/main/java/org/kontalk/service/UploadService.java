@@ -24,6 +24,7 @@ package org.kontalk.service;
  */
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOADING;
 import static org.kontalk.ui.MessagingNotification.NOTIFICATION_ID_UPLOAD_ERROR;
+import static org.kontalk.ui.MessagingNotification.NOTIFICATION_UPDATE_DELAY;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -39,6 +40,7 @@ import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.upload.KontalkBoxUploadConnection;
 import org.kontalk.upload.UploadConnection;
 import org.kontalk.util.MediaStorage;
+import org.kontalk.util.StepTimer;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -89,6 +91,8 @@ public class UploadService extends IntentService implements ProgressListener {
     // data about the upload currently being processed
     private Notification mCurrentNotification;
     private long mTotalBytes;
+    /** Step timer for notification updates. */
+    private StepTimer mUpdateTimer = new StepTimer(NOTIFICATION_UPDATE_DELAY);
 
     private long mMessageId;
     private UploadConnection mConn;
@@ -258,6 +262,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
     @Override
     public void start(UploadConnection conn) {
+        mUpdateTimer.reset();
         startForeground(mTotalBytes);
     }
 
@@ -306,15 +311,12 @@ public class UploadService extends IntentService implements ProgressListener {
             mCanceled = true;
         }
 
-        //Log.v(TAG, "bytes = " + bytes);
-        if (mCurrentNotification != null) {
+        if (mCurrentNotification != null && (bytes >= mTotalBytes || mUpdateTimer.isStep())) {
             int progress = (int)((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
             mNotificationManager.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);
         }
-
-        Thread.yield();
     }
 
     public static boolean isQueued(String url) {

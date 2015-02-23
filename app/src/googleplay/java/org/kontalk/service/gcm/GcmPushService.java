@@ -138,12 +138,13 @@ public class GcmPushService implements IPushService {
     }
 
     public void retry() {
-        // retry last call
-        if (isRegistered()) {
+        String senderId = mListener.getSenderId(mContext);
+        if (isRegistered() || senderId == null) {
+            // force unregister if sender id is not present
             unregister(mListener);
         }
         else {
-            register(mListener, mListener.getSenderId(mContext));
+            register(mListener, senderId);
         }
 
     }

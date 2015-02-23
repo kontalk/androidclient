@@ -297,7 +297,7 @@ public class CountryCodesAdapter extends BaseAdapter {
 
         @Override
         public int compareTo(String another) {
-            return regionCode != null && another != null ? regionCode.compareTo(another) : 0;
+            return regionCode != null && another != null ? regionCode.compareTo(another) : 1;
         }
 
         @Override
@@ -309,8 +309,7 @@ public class CountryCodesAdapter extends BaseAdapter {
                 CountryCode other = (CountryCode) o;
 
                 return regionCode != null &&
-                    regionCode.equals(other.regionCode) ||
-                    (countryCode == other.countryCode);
+                    regionCode.equals(other.regionCode);
             }
 
             return false;
