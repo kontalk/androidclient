@@ -41,6 +41,7 @@ import org.kontalk.service.NetworkStateReceiver;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
+import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.sync.SyncAdapter;
@@ -169,8 +170,9 @@ public class Kontalk extends Application {
                         // disable components
                         setServicesEnabled(Kontalk.this, false);
                         // unregister from push notifications
-                        PushServiceManager.getInstance(Kontalk.this)
-                            .unregister(PushServiceManager.getDefaultListener());
+                        IPushService pushMgr = PushServiceManager.getInstance(Kontalk.this);
+                        if (pushMgr.isServiceAvailable())
+                            pushMgr.unregister(PushServiceManager.getDefaultListener());
                         // delete all messages
                         MessagesProvider.deleteDatabase(Kontalk.this);
                         // invalidate cached personal key
