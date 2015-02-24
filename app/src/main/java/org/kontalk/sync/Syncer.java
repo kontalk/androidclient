@@ -176,25 +176,23 @@ public class Syncer {
                             w.requestPresenceData();
                             // request public keys for the whole roster
                             w.requestPublicKeys();
+                            // request block list
+                            w.requestBlocklist();
                         }
                     }
                 }
             }
 
             else if (MessageCenterService.ACTION_PUBLICKEY.equals(action)) {
-                Log.v(TAG, "public key received: " + intent + " (response=" + response + ")");
                 if (response != null) {
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     // see if bare JID is present in roster response
                     String compare = XmppStringUtils.parseBareJid(jid);
-                    Log.v(TAG, "looking in the roster: " + compare);
                     for (PresenceItem item : response) {
-                        Log.v(TAG, "matching public key with roster element: " + item.from);
                         if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
                             item.publicKey = intent.getByteArrayExtra(MessageCenterService.EXTRA_PUBLIC_KEY);
 
                             // increment vcard count
-                            Log.v(TAG, "public key saved.");
                             pubkeyCount++;
                             break;
                         }
@@ -235,24 +233,10 @@ public class Syncer {
 
             // connected! Retry...
             else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
-                /*
-                 * TODO there might be concurrency problem here. If we send the
-                 * roster intent and in the meanwhile message center was already
-                 * connecting, we risk sending it twice: one with the pending
-                 * intent and one here.
-                 *
-                 * In order to cope with that, we would need another broadcast
-                 * receiver only for CONNECTED/DISCONNECTED in order to keep
-                 * track of message center connections/disconnections. That way
-                 * we can distinguish a fresh connect with a race condition
-                 * case.
-                 */
                 Syncer w = notifyTo.get();
                 if (w != null) {
                     // request a roster match
                     w.requestRosterMatch(iq, jidList);
-                    // request block list
-                    w.requestBlocklist();
                 }
             }
         }
@@ -263,10 +247,11 @@ public class Syncer {
 
         private void finish() {
             Syncer w = notifyTo.get();
-            if (w != null)
+            if (w != null) {
                 synchronized (w) {
                     w.notifyAll();
                 }
+            }
         }
     }
 
