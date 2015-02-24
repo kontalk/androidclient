@@ -20,6 +20,7 @@ package org.kontalk.sync;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
@@ -96,6 +97,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 .acquireContentProviderClient(UsersProvider.AUTHORITY);
 
             try {
+                // hold a reference to the message center while syncing
+                MessageCenterService.hold(mContext);
+                // start sync
                 mSyncer = new Syncer(mContext);
                 mSyncer.performSync(mContext, account, authority,
                     provider, usersProvider, syncResult);
@@ -104,7 +108,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Log.w(TAG, "sync canceled!", e);
             }
             finally {
+                // release the message center
+                MessageCenterService.release(mContext);
+                // release user provider
                 usersProvider.release();
+                // some stats :)
                 long endTime = System.currentTimeMillis();
                 Preferences.setLastSyncTimestamp(mContext, endTime);
                 Log.d(TAG, String.format("sync took %.5f seconds", ((float)(endTime - startTime)) / 1000));
