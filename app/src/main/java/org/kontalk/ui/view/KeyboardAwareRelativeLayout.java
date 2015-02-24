@@ -133,13 +133,13 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
     public int getKeyboardLandscapeHeight() {
         return PreferenceManager.getDefaultSharedPreferences(getContext())
             .getInt("keyboard_height_landscape",
-                getResources().getDimensionPixelSize(R.dimen.min_emoji_drawer_height));
+                getResources().getDimensionPixelSize(R.dimen.emoji_drawer_default_height));
     }
 
     public int getKeyboardPortraitHeight() {
         return PreferenceManager.getDefaultSharedPreferences(getContext())
             .getInt("keyboard_height_portrait",
-                getResources().getDimensionPixelSize(R.dimen.min_emoji_drawer_height));
+                getResources().getDimensionPixelSize(R.dimen.emoji_drawer_default_height));
     }
 
     private void setKeyboardLandscapeHeight(int height) {
