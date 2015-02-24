@@ -91,4 +91,6 @@ dependencies {
     compile 'org.igniterealtime.smack:smack-experimental:4.1.0-rc2'
 
     googleplayCompile 'com.google.android.gms:play-services-base:6.5.87'
+
+    testCompile 'junit:junit:4.+'
 }
