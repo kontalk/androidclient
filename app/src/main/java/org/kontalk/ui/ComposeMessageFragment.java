@@ -1426,8 +1426,6 @@ public class ComposeMessageFragment extends ListFragment implements
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
         if (mCurrentPhoto != null)
             out.putString("currentPhoto", mCurrentPhoto.toString());
-        // so we can restore it later
-        out.putBoolean("emojiVisible", isEmojiVisible());
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1438,10 +1436,6 @@ public class ComposeMessageFragment extends ListFragment implements
             args = new Bundle();
             args.putString("action", ComposeMessage.ACTION_VIEW_USERID);
             args.putParcelable("data", uri);
-
-            if (savedInstanceState.getBoolean("emojiVisible", false)) {
-                showEmojiDrawer();
-            }
 
             String currentPhoto = savedInstanceState.getString("currentPhoto");
             if (currentPhoto != null) {
@@ -2150,6 +2144,9 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void onPause() {
         super.onPause();
+
+        // hide emoji drawer
+        tryHideEmojiDrawer();
 
         // pause content watcher
         pauseContentListener();
