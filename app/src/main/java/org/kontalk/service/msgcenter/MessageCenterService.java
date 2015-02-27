@@ -20,6 +20,7 @@ package org.kontalk.service.msgcenter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
@@ -40,6 +41,7 @@ import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.provider.ProviderFileLoader;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
@@ -96,14 +98,12 @@ import org.kontalk.client.BlockingCommand;
 import org.kontalk.client.E2EEncryption;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.KontalkConnection;
-import org.kontalk.client.PublicKeyPresence;
 import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.RosterMatch;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
 import org.kontalk.client.ServerlistCommand;
-import org.kontalk.client.UploadInfo;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
@@ -516,16 +516,28 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void configure() {
-        ProviderManager.addIQProvider(RosterMatch.ELEMENT_NAME, RosterMatch.NAMESPACE, new RosterMatch.Provider());
-        ProviderManager.addIQProvider(UploadInfo.ELEMENT_NAME, UploadInfo.NAMESPACE, new UploadInfo.Provider());
-        ProviderManager.addIQProvider(PublicKeyPublish.ELEMENT_NAME, PublicKeyPublish.NAMESPACE, new PublicKeyPublish.Provider());
+        if (SmackConfiguration.isSmackInitialized())
+            return;
+
+        // disable extensions and experimental - we will load our own extensions
+        SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.extensions.ExtensionsInitializer");
+        SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.experimental.ExperimentalInitializer");
+
+        InputStream is = getResources().openRawResource(R.raw.service);
+        ProviderManager.addLoader(new ProviderFileLoader(is));
+        try {
+            is.close();
+        }
+        catch (IOException ignored) {
+        }
+
+        // FIXME these got to be fixed somehow (VCard4 is not even used anymore)
         ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
-        ProviderManager.addIQProvider(BlockingCommand.BLOCKLIST, BlockingCommand.NAMESPACE, new BlockingCommand.Provider());
         ProviderManager.addIQProvider(ServerlistCommand.ELEMENT_NAME, ServerlistCommand.NAMESPACE, new ServerlistCommand.ResultProvider());
-        ProviderManager.addExtensionProvider(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE, new OutOfBandData.Provider());
-        ProviderManager.addExtensionProvider(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE, new BitsOfBinary.Provider());
-        ProviderManager.addExtensionProvider(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE, new PublicKeyPresence.Provider());
-        ProviderManager.addExtensionProvider(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE, new E2EEncryption.Provider());
+
+        // do not append Smack version
+        VersionManager.setAutoAppendSmackVersion(false);
+
         // we want to manually handle roster stuff
         Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.manual);
     }

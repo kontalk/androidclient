@@ -18,8 +18,6 @@
 
 package org.kontalk.client;
 
-import java.io.Reader;
-import java.io.Writer;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -35,19 +33,13 @@ import javax.net.ssl.X509TrustManager;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
-import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.debugger.SmackDebugger;
-import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
-import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
-import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
@@ -193,18 +185,6 @@ public class KontalkConnection extends XMPPTCPConnection {
         catch (Exception e) {
             Log.w(TAG, "unable to setup SSL connection", e);
         }
-    }
-
-    public static void init() {
-        // use Android debugger
-        SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
-            @Override
-            public SmackDebugger create(XMPPConnection connection, Writer writer, Reader reader) throws IllegalArgumentException {
-                return new AndroidDebugger(connection, writer, reader);
-            }
-        });
-        // do not append Smack version
-        VersionManager.setAutoAppendSmackVersion(false);
     }
 
     /**

@@ -123,8 +123,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     private void configure() {
+        // not moving these into configuration since they are not loaded often
         ProviderManager.addIQProvider("query", "jabber:iq:register", new RegistrationProvider());
         ProviderManager.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
+    }
+
+    private void unconfigure() {
+        ProviderManager.removeIQProvider("query", "jabber:iq:register");
+        ProviderManager.removeExtensionProvider("x", "jabber:x:data");
     }
 
     public void setKey(PersonalKey key) {
@@ -387,6 +393,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 mThread.join();
                 mThread = null;
             }
+
+            unconfigure();
         }
         catch (Exception e) {
             // ignored
