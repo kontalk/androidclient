@@ -196,11 +196,11 @@
     </iqProvider>
 
     <!-- XEP-0066 Out of Band Data -->
-    <iqProvider>
+    <extensionProvider>
         <elementName>x</elementName>
         <namespace>jabber:x:oob</namespace>
         <className>org.kontalk.client.OutOfBandData$Provider</className>
-    </iqProvider>
+    </extensionProvider>
 
     <!-- XEP-0231 Bits of Binary -->
     <extensionProvider>
