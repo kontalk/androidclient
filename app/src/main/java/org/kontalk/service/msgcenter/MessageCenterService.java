@@ -906,7 +906,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 createConnection();
 
             // no reason to exist
-            if (!doConnect && !isConnected && !isConnecting())
+            if (!canConnect && !doConnect && !isConnected && !isConnecting())
                 stopSelf();
         }
         else {
