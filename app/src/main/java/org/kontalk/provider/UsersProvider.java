@@ -18,16 +18,11 @@
 
 package org.kontalk.provider;
 
-import java.io.IOException;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
 
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
-import android.accounts.Account;
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -623,9 +618,6 @@ public class UsersProvider extends ContentProvider {
     /** Returns a {@link Coder} instance for decrypting data. */
     public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
         PGPPublicKeyRing senderKey = getPublicKey(context, sender);
-        if (senderKey == null)
-            throw new IllegalArgumentException("public key not found for user " + sender);
-
         return new PGPCoder(server, key, senderKey);
     }
 
