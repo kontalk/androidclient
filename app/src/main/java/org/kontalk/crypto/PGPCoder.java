@@ -126,10 +126,10 @@ public class PGPCoder extends Coder {
     public byte[] encryptStanza(CharSequence xml) throws GeneralSecurityException {
         try {
             // prepare XML wrapper
-            StringBuilder xmlWrapper = new StringBuilder(
-                        "<xmpp xmlns='jabber:client'>")
-                .append(  xml  )
-                .append("</xmpp>");
+            final String xmlWrapper =
+                "<xmpp xmlns='jabber:client'>" +
+                    xml +
+                "</xmpp>";
 
             return encryptData(XMPPUtils.XML_XMPP_TYPE, xmlWrapper.toString());
         }
@@ -510,11 +510,12 @@ public class PGPCoder extends Coder {
     }
 
     /** Decrypts a file. */
+    @SuppressWarnings("unchecked")
     public void decryptFile(InputStream input, boolean verify,
         OutputStream output, List<DecryptException> errors)
             throws GeneralSecurityException {
         try {
-            PGPObjectFactory pgpF = new PGPObjectFactory(input);
+            PGPObjectFactory pgpF = new PGPObjectFactory(input, sFingerprintCalculator);
             PGPEncryptedDataList enc;
 
             Object o = pgpF.nextObject();
