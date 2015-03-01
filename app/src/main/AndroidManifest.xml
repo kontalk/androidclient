@@ -126,6 +126,7 @@
         </activity>
 
         <activity android:name=".ui.ComposeMessage"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Light.Subtitle"
             android:configChanges="keyboardHidden"
             android:windowSoftInputMode="stateHidden">

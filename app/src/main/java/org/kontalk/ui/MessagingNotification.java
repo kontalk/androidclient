@@ -363,6 +363,9 @@ public class MessagingNotification {
             // more than one unread conversation - open ConversationList
             if (convs.size() > 1) {
                 ni = new Intent(context, ConversationList.class);
+                ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
             // one unread conversation - open ComposeMessage on that peer
             else {
@@ -460,6 +463,9 @@ public class MessagingNotification {
 
         // notification will open the conversation
         Intent ni = ComposeMessage.fromUserId(context, jid);
+        ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+            | Intent.FLAG_ACTIVITY_SINGLE_TOP
+            | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pi = PendingIntent.getActivity(context,
             NOTIFICATION_ID_INVITATION, ni, 0);
 
@@ -509,7 +515,7 @@ public class MessagingNotification {
         // notification will open the conversation
         Intent ni = ConversationList.authenticationErrorWarning(context);
         PendingIntent pi = PendingIntent.getActivity(context,
-            NOTIFICATION_ID_AUTH_ERROR, ni, 0);
+            NOTIFICATION_ID_AUTH_ERROR, ni, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // build the notification
         NotificationCompat.Builder builder = new NotificationCompat
@@ -629,6 +635,9 @@ public class MessagingNotification {
             // more than one unread conversation - open ConversationList
             if (convCount > 1) {
                 ni = new Intent(mContext, ConversationList.class);
+                ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
             // one unread conversation - open ComposeMessage on that peer
             else {
