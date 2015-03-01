@@ -104,6 +104,7 @@ import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
 import org.kontalk.client.RawPacket;
 import org.kontalk.client.ServerlistCommand;
+import org.kontalk.client.SmackInitializer;
 import org.kontalk.client.VCard4;
 import org.kontalk.crypto.Coder;
 import org.kontalk.crypto.PersonalKey;
@@ -516,30 +517,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void configure() {
-        if (SmackConfiguration.isSmackInitialized())
-            return;
-
-        // disable extensions and experimental - we will load our own extensions
-        SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.extensions.ExtensionsInitializer");
-        SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.experimental.ExperimentalInitializer");
-
-        InputStream is = getResources().openRawResource(R.raw.service);
-        ProviderManager.addLoader(new ProviderFileLoader(is));
-        try {
-            is.close();
-        }
-        catch (IOException ignored) {
-        }
-
-        // FIXME these got to be fixed somehow (VCard4 is not even used anymore)
-        ProviderManager.addIQProvider(VCard4.ELEMENT_NAME, VCard4.NAMESPACE, new VCard4.Provider());
-        ProviderManager.addIQProvider(ServerlistCommand.ELEMENT_NAME, ServerlistCommand.NAMESPACE, new ServerlistCommand.ResultProvider());
-
-        // do not append Smack version
-        VersionManager.setAutoAppendSmackVersion(false);
-
-        // we want to manually handle roster stuff
-        Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.manual);
+        SmackInitializer.initialize(this);
     }
 
     @Override
