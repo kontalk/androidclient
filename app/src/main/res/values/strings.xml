@@ -301,6 +301,7 @@
     <string name="security_error_integrity_check">\u0020(integrity check)</string>
     <string name="security_error_public_key_unavail">\u0020(public key unavailable)</string>
 
+    <string name="invite_notification">is inviting you to chat</string>
     <string name="title_invitation">Chat invitation</string>
     <string name="text_invitation_known">Request by\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %4$s</string>
     <string name="text_invitation_unknown">Request by\n%1$s\nFingerprint: %2$s</string>

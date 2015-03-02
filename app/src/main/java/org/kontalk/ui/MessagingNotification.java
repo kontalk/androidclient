@@ -358,6 +358,7 @@ public class MessagingNotification {
             builder.setContentTitle(title);
             builder.setContentText(text);
             builder.setStyle(style);
+            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
 
             Intent ni;
             // more than one unread conversation - open ConversationList
@@ -411,6 +412,7 @@ public class MessagingNotification {
             builder.setContentTitle(accumulator.getTitle());
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
+            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
         }
 
         if (isNew) {
@@ -476,9 +478,9 @@ public class MessagingNotification {
             .setSmallIcon(R.drawable.stat_notify)
             .setTicker(context.getString(R.string.title_invitation))
             .setContentTitle(title)
-            // TODO i18n
-            .setContentText("is inviting you to chat")
-            .setContentIntent(pi);
+            .setContentText(context.getString(R.string.invite_notification))
+            .setContentIntent(pi)
+            .setPriority(NotificationCompat.PRIORITY_HIGH);
 
         // include an avatar if any
         if (contact != null) {
