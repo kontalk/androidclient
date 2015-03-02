@@ -28,7 +28,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
@@ -67,7 +66,6 @@ import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
-import android.util.Log;
 
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
@@ -83,7 +81,7 @@ public class PGP {
     private static final int RSA_KEY_LENGTH = 2048;
 
     // temporary flag for ECC experimentation
-    private static final boolean EXPERIMENTAL_ECC = false;
+    private static final boolean EXPERIMENTAL_ECC = true;
 
     /** Singleton for converting a PGP key to a JCA key. */
     private static JcaPGPKeyConverter sKeyConverter;
@@ -151,8 +149,6 @@ public class PGP {
         else {
 
             gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
-            Log.v("CRYPTO", "Generator: " + gen.getClass().getName());
-            Log.v("CRYPTO", "SecureRandom: " + new SecureRandom().getAlgorithm());
             gen.initialize(RSA_KEY_LENGTH);
 
             encryptKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());

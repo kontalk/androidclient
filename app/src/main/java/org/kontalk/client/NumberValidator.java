@@ -40,13 +40,10 @@ import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.XMPPError;
-import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
-import org.jivesoftware.smackx.iqregister.provider.RegistrationProvider;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
