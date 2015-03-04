@@ -107,6 +107,7 @@
   <string name="pref_update_server_list">Aggiorna lista server</string>
   <string name="server_list_last_update">Ultimo aggiornamento: %s</string>
   <string name="pref_title_push_notifications">Usa notifiche push se il server lo supporta, aumenta la durata della batteria</string>
+  <string name="pref_title_disabled_push_notifications">Le notifiche push non sono supportate su questo dispositivo</string>
   <string name="pref_push_notifications">Notifiche push</string>
   <string name="hint_search_full">Cerca messaggi</string>
   <string name="hint_search_quickbox">Testo nei messaggi</string>
@@ -265,6 +266,7 @@
   <string name="security_error_decrypt_failed">\u0020(decifratura fallita)</string>
   <string name="security_error_integrity_check">\u0020(controllo integrità)</string>
   <string name="security_error_public_key_unavail">\u0020(chiave pubblica non disponibile)</string>
+  <string name="invite_notification">ti invita a chattare</string>
   <string name="title_invitation">Invito in chat</string>
   <string name="text_invitation_known">Richiesta da\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %4$s</string>
   <string name="text_invitation_unknown">Richiesta da\n%1$s\nFingerprint: %2$s</string>
@@ -312,4 +314,5 @@
   <string name="pref_image_resize">Comprimi immagini</string>
   <string name="pref_title_image_resize">Comprimi le immagini prima di inviarle</string>
   <string name="err_server_invalid_format">Formato indirizzo non valido.</string>
+  <string name="err_no_contacts_app">Nessuna applicazione per i contatti trovata.</string>
 </resources>
