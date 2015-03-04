@@ -55,6 +55,7 @@ import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
+import org.jivesoftware.smackx.ping.android.ServerPingWithAlarmManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.spongycastle.openpgp.PGPException;
@@ -477,6 +478,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void onCreate() {
         configure();
 
+        // activate ping manager
+        ServerPingWithAlarmManager.onCreate(this);
+
         // create the global wake lock
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
@@ -537,6 +541,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void onDestroy() {
         Log.d(TAG, "destroying message center");
         quit(false);
+        // deactivate ping manager
+        ServerPingWithAlarmManager.onDestroy();
     }
 
     private synchronized void quit(boolean restarting) {
@@ -969,6 +975,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // setup version manager
         final VersionManager verMgr = VersionManager.getInstanceFor(connection);
         verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionName(this));
+
+        // enable ping manager
+        ServerPingWithAlarmManager.getInstanceFor(connection).setEnabled(true);
 
         PacketFilter filter;
 

@@ -89,6 +89,7 @@ dependencies {
     compile 'org.igniterealtime.smack:smack-tcp:4.1.0-rc2'
     compile 'org.igniterealtime.smack:smack-extensions:4.1.0-rc2'
     compile 'org.igniterealtime.smack:smack-experimental:4.1.0-rc2'
+    compile 'org.igniterealtime.smack:smack-android-extensions:4.1.0-rc2'
 
     googleplayCompile 'com.google.android.gms:play-services-base:6.5.87'
 
