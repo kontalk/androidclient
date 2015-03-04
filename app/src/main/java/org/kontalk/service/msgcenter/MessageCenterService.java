@@ -55,6 +55,8 @@ import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
+import org.jivesoftware.smackx.ping.PingFailedListener;
+import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.ping.android.ServerPingWithAlarmManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
@@ -980,6 +982,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // enable ping manager
         ServerPingWithAlarmManager.getInstanceFor(connection).setEnabled(true);
+        PingManager.getInstanceFor(connection)
+            .registerPingFailedListener(new PingFailedListener() {
+                @Override
+                public void pingFailed() {
+                    Log.v(TAG, "ping failed, restarting message center");
+                    // restart message center
+                    restart(getApplicationContext());
+                }
+            });
 
         PacketFilter filter;
 
