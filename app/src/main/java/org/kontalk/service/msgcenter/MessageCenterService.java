@@ -572,6 +572,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // disconnect from server (if any)
         if (mConnection != null) {
+            // disable ping manager
+            ServerPingWithAlarmManager.getInstanceFor(mConnection).setEnabled(false);
             // this is because of NetworkOnMainThreadException
             new DisconnectThread(mConnection).start();
             mConnection = null;

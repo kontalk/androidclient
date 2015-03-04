@@ -357,8 +357,10 @@ public class XMPPConnectionHelper extends Thread {
 
 
     public interface ConnectionHelperListener extends ConnectionListener {
+        /** Connection has been created. */
         public void created(XMPPConnection connection);
 
+        /** Connection was aborted and will never be tried again. */
         public void aborted(Exception e);
 
         public void authenticationFailed();
