@@ -296,7 +296,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public final static int MIN_WAKEUP_TIME = 300000;
 
     /** Fast ping tester timeout. */
-    private static final int FAST_PING_TIMEOUT = 1500;
+    private static final int FAST_PING_TIMEOUT = 3000;
     /** Minimal interval between connection tests (5 mins). */
     private static final int MIN_TEST_INTERVAL = 5*60*1000;
 
@@ -411,7 +411,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (msg.what == MSG_TEST) {
-                if (!service.fastReply()) {
+                long now = System.currentTimeMillis();
+                if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT &&
+                        !service.fastReply()) {
+                    Log.v(TAG, "test ping failed");
                     restart(service.getApplicationContext());
                 }
                 return true;
@@ -493,7 +496,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         public void test() {
-            sendMessage(obtainMessage(MSG_TEST));
+            sendMessageDelayed(obtainMessage(MSG_TEST), FAST_PING_TIMEOUT);
         }
     }
 
@@ -1123,6 +1126,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             try {
                 ClientStateIndicationManager.active(mConnection);
                 mInactive = false;
+                // test ping
+                mIdleHandler.test();
             }
             catch (NotConnectedException e) {
                 // ignored
@@ -1157,6 +1162,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         catch (NotConnectedException e) {
             return false;
         }
+    }
+
+    private long getLastReceivedStanza() {
+        return mConnection != null ? mConnection.getLastStanzaReceived() : 0;
     }
 
     /** Sends our initial presence. */

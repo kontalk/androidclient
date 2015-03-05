@@ -2021,7 +2021,6 @@ public class ComposeMessageFragment extends ListFragment implements
             if (ctx != null) {
                 MessageCenterService.requestConnectionStatus(ctx);
                 MessageCenterService.requestRosterStatus(ctx);
-                MessageCenterService.test(ctx);
             }
         }
     }
