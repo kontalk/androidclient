@@ -2017,8 +2017,12 @@ public class ComposeMessageFragment extends ListFragment implements
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
             // request connection and roster load status
-            MessageCenterService.requestConnectionStatus(getActivity());
-            MessageCenterService.requestRosterStatus(getActivity());
+            Context ctx = getActivity();
+            if (ctx != null) {
+                MessageCenterService.requestConnectionStatus(ctx);
+                MessageCenterService.requestRosterStatus(ctx);
+                MessageCenterService.test(ctx);
+            }
         }
     }
 

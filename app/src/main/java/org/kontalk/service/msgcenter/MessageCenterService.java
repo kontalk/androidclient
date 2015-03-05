@@ -297,6 +297,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Fast ping tester timeout. */
     private static final int FAST_PING_TIMEOUT = 1500;
+    /** Minimal interval between connection tests (5 mins). */
+    private static final int MIN_TEST_INTERVAL = 5*60*1000;
 
     static final IPushListener sPushListener = PushServiceManager.getDefaultListener();
 
@@ -333,6 +335,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     IdleConnectionHandler mIdleHandler;
     /** Inactive state flag (for CSI). */
     private boolean mInactive;
+    /** Timestamp of last use of {@link #ACTION_TEST}. */
+    private long mLastTest;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
     Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
@@ -726,10 +730,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_TEST.equals(action)) {
                 if (isConnected()) {
-                    mIdleHandler.test();
+                    if (canTest()) {
+                        mLastTest = System.currentTimeMillis();
+                        mIdleHandler.test();
+                    }
                 }
                 else {
-                    doConnect = true;
+                    doConnect = canConnect;
                 }
             }
 
@@ -1802,6 +1809,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mKeyPairImporter.abort();
             mKeyPairImporter = null;
         }
+    }
+
+    private boolean canTest() {
+        long now = System.currentTimeMillis();
+        return ((now - mLastTest) > MIN_TEST_INTERVAL);
     }
 
     public boolean canConnect() {
