@@ -40,6 +40,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 
     private static final int ACTION_START = 1;
     private static final int ACTION_STOP = 2;
+    private static final int ACTION_TEST = 3;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -79,25 +80,37 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 
                 switch (info.getState()) {
                     case CONNECTED:
-                        serviceAction = ACTION_START;
+                        // test connection or reconnect
+                        serviceAction = ACTION_TEST;
+                        break;
+                    case SUSPENDED:
+                        Log.v(TAG, "suspending network traffic");
                         break;
                     default:
                         serviceAction = ACTION_STOP;
                         break;
                 }
             }
-            // no network info available
-            else
+            else {
+                // no network info available
                 serviceAction = ACTION_STOP;
+            }
         }
 
-        if (serviceAction == ACTION_START)
-            // start the message center
-            MessageCenterService.start(context);
-
-        else if (serviceAction == ACTION_STOP)
-            // stop the message center
-            MessageCenterService.stop(context);
+        switch (serviceAction) {
+            case ACTION_START:
+                // start message center
+                MessageCenterService.start(context);
+                break;
+            case ACTION_STOP:
+                // stop message center
+                MessageCenterService.stop(context);
+                break;
+            case ACTION_TEST:
+                // connection test
+                MessageCenterService.test(context);
+                break;
+        }
     }
 
     private boolean shouldReconnect(Context context) {

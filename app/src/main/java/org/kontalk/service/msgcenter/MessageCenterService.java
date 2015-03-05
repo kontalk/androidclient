@@ -148,6 +148,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
     public static final String ACTION_RELEASE = "org.kontalk.action.RELEASE";
     public static final String ACTION_RESTART = "org.kontalk.action.RESTART";
+    public static final String ACTION_TEST = "org.kontalk.action.TEST";
     public static final String ACTION_MESSAGE = "org.kontalk.action.MESSAGE";
     public static final String ACTION_PUSH_START = "org.kontalk.push.START";
     public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
@@ -294,6 +295,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
 
+    /** Fast ping tester timeout. */
+    private static final int FAST_PING_TIMEOUT = 1500;
+
     static final IPushListener sPushListener = PushServiceManager.getDefaultListener();
 
     /** Push service instance. */
@@ -341,6 +345,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private static final int MSG_IDLE = 1;
         /** Inactive signal (for CSI). */
         private static final int MSG_INACTIVE = 2;
+        /** Test signal. */
+        private static final int MSG_TEST = 3;
 
         /** How much time to wait to idle the message center. */
         private final static int DEFAULT_IDLE_TIME = 60000;
@@ -397,6 +403,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (msg.what == MSG_INACTIVE && !service.isInactive()) {
                 service.inactive();
+                return true;
+            }
+
+            else if (msg.what == MSG_TEST) {
+                if (!service.fastReply()) {
+                    restart(service.getApplicationContext());
+                }
                 return true;
             }
 
@@ -473,6 +486,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private void queueInactive() {
             // send inactive state message
             sendMessageDelayed(obtainMessage(MSG_INACTIVE), INACTIVE_TIME);
+        }
+
+        public void test() {
+            sendMessage(obtainMessage(MSG_TEST));
         }
     }
 
@@ -705,6 +722,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else if (ACTION_RESTART.equals(action)) {
                 quit(true);
                 doConnect = true;
+            }
+
+            else if (ACTION_TEST.equals(action)) {
+                if (isConnected()) {
+                    mIdleHandler.test();
+                }
+                else {
+                    doConnect = true;
+                }
             }
 
             else if (ACTION_MESSAGE.equals(action)) {
@@ -1112,6 +1138,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private boolean isInactive() {
         return mInactive;
+    }
+
+    private boolean fastReply() {
+        if (!isConnected()) return false;
+
+        try {
+            return PingManager.getInstanceFor(mConnection)
+                .pingMyServer(false, FAST_PING_TIMEOUT);
+        }
+        catch (NotConnectedException e) {
+            return false;
+        }
     }
 
     /** Sends our initial presence. */
@@ -1826,6 +1864,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "restarting message center");
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_RESTART);
+        context.startService(i);
+    }
+
+    public static void test(Context context) {
+        Log.d(TAG, "testing message center connection");
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_TEST);
         context.startService(i);
     }
 
