@@ -95,8 +95,8 @@ public class GcmIntentService extends IntentService {
                         Preferences.setLastPushNotification(this,
                             System.currentTimeMillis());
 
-                        // start message center
-                        MessageCenterService.start(getApplicationContext());
+                        // test message center connection
+                        MessageCenterService.test(getApplicationContext());
                     }
 
                 }
