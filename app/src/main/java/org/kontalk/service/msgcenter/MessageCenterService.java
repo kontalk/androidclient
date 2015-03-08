@@ -20,7 +20,6 @@ package org.kontalk.service.msgcenter;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
@@ -36,13 +35,11 @@ import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketFilter;
-import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.provider.ProviderFileLoader;
-import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterLoadedListener;
@@ -60,6 +57,7 @@ import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.ping.android.ServerPingWithAlarmManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
@@ -865,9 +863,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else if (ACTION_SERVERLIST.equals(action)) {
                 if (canConnect && isConnected) {
                     ServerlistCommand p = new ServerlistCommand();
-                    p.setTo(mServer.getNetwork());
+                    p.setTo(XmppStringUtils.completeJidFrom("network", mServer.getNetwork()));
 
-                    PacketFilter filter = new PacketIDFilter(p.getStanzaId());
+                    PacketFilter filter = new StanzaIdFilter(p.getStanzaId());
                     // TODO cache the listener (it shouldn't change)
                     mConnection.addAsyncPacketListener(new PacketListener() {
                         public void processPacket(Stanza packet) throws NotConnectedException {
@@ -1105,7 +1103,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         DiscoverInfo info = new DiscoverInfo();
         info.setTo(mServer.getNetwork());
 
-        PacketFilter filter = new PacketIDFilter(info.getStanzaId());
+        PacketFilter filter = new StanzaIdFilter(info.getStanzaId());
         mConnection.addAsyncPacketListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
     }
@@ -1447,7 +1445,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // setup packet filter for response
-        PacketFilter filter = new PacketIDFilter(p.getStanzaId());
+        PacketFilter filter = new StanzaIdFilter(p.getStanzaId());
         PacketListener listener = new PacketListener() {
             public void processPacket(Stanza packet) {
 
@@ -1477,7 +1475,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         String packetId = p.getStanzaId();
 
         // listen for response (TODO cache the listener, it shouldn't change)
-        PacketFilter idFilter = new PacketIDFilter(packetId);
+        PacketFilter idFilter = new StanzaIdFilter(packetId);
         mConnection.addAsyncPacketListener(new PacketListener() {
             public void processPacket(Stanza packet) {
                 // we don't need this listener anymore
