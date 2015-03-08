@@ -102,6 +102,9 @@ public class Kontalk extends Application {
         // init preferences
         Preferences.init(this);
 
+        // init notification system
+        MessagingNotification.init(this);
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.OnSharedPreferenceChangeListener prefListener =
             new SharedPreferences.OnSharedPreferenceChangeListener() {

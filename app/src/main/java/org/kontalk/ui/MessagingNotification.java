@@ -26,6 +26,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -35,9 +36,11 @@ import android.accounts.Account;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -105,8 +108,29 @@ public class MessagingNotification {
     /** Peer of last notified chat invitation. */
     private static volatile String sLastInvitation;
 
+    /** On delete intent stuff. */
+    private static final String ACTION_NOTIFICATION_DELETED = "org.kontalk.ACTION_NOTIFICATION_DELETED";
+    private static final OnDeletedReceiver sNotificationDeletedReceiver = new OnDeletedReceiver();
+    private static Intent sNotificationOnDeleteIntent;
+    private static class OnDeletedReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            // mark all messages as old
+            MessagesProvider.markAllThreadsAsOld(context);
+        }
+    };
+
     /** This class is not instanciable. */
     private MessagingNotification() {}
+
+    public static void init(Context context) {
+        // set up the intent filter for notification deleted action
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ACTION_NOTIFICATION_DELETED);
+        context.registerReceiver(sNotificationDeletedReceiver, intentFilter);
+
+        // initialize the notification deleted action
+        sNotificationOnDeleteIntent = new Intent(ACTION_NOTIFICATION_DELETED);
+    }
 
     public static void setPaused(String jid) {
         sPaused = jid;
@@ -359,6 +383,8 @@ public class MessagingNotification {
             builder.setContentText(text);
             builder.setStyle(style);
             builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+            builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
+                sNotificationOnDeleteIntent, 0));
 
             Intent ni;
             // more than one unread conversation - open ConversationList
@@ -413,6 +439,8 @@ public class MessagingNotification {
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
             builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+            builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
+                sNotificationOnDeleteIntent, 0));
         }
 
         if (isNew) {
