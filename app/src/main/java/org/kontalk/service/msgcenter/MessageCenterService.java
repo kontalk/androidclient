@@ -326,6 +326,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Supported upload services. */
     Map<String, String> mUploadServices;
 
+    /** Roster store. */
+    private SQLiteRosterStore mRosterStore;
+
     /** Service handler. */
     Handler mHandler;
 
@@ -505,6 +508,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // activate ping manager
         ServerPingWithAlarmManager.onCreate(this);
 
+        // create the roster store
+        mRosterStore = new SQLiteRosterStore(this);
+
         // create the global wake lock
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
@@ -567,6 +573,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         quit(false);
         // deactivate ping manager
         ServerPingWithAlarmManager.onDestroy();
+        // destroy roster store
+        mRosterStore.onDestroy();
     }
 
     private synchronized void quit(boolean restarting) {
@@ -1014,6 +1022,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         final VersionManager verMgr = VersionManager.getInstanceFor(connection);
         verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionName(this));
 
+        // setup roster
+        Roster roster = getRoster();
+        roster.addRosterLoadedListener(new RosterLoadedListener() {
+            @Override
+            public void onRosterLoaded(Roster roster) {
+                broadcast(ACTION_ROSTER_LOADED);
+            }
+        });
+        roster.setRosterStore(mRosterStore);
+
         // enable ping manager
         ServerPingWithAlarmManager.getInstanceFor(connection).setEnabled(true);
         PingManager.getInstanceFor(connection)
@@ -1061,8 +1079,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.w(TAG, "stream management not available - disabling delivery receipts");
         }
 
-        // load the roster now
-        roster();
         // send presence
         sendPresence();
         // discovery
@@ -1106,16 +1122,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         PacketFilter filter = new StanzaIdFilter(info.getStanzaId());
         mConnection.addAsyncPacketListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
-    }
-
-    /** Requests the roster. */
-    private void roster() {
-        getRoster().addRosterLoadedListener(new RosterLoadedListener() {
-            @Override
-            public void onRosterLoaded(Roster roster) {
-                broadcast(ACTION_ROSTER_LOADED);
-            }
-        });
     }
 
     private void active() {

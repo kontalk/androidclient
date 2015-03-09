@@ -450,6 +450,16 @@ public final class Preferences {
         return getBoolean(context, "pref_text_enter", false);
     }
 
+    public static String getRosterVersion(Context context) {
+        return getString(context, "roster_version", "");
+    }
+
+    public static boolean setRosterVersion(String version) {
+        return sPreferences.edit()
+            .putString("roster_version", version)
+            .commit();
+    }
+
     /**
      * Saves the current registration progress data. Used for recoverying a
      * registration after a restart or in very low memory situations.
