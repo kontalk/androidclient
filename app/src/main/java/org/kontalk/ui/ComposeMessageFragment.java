@@ -1904,6 +1904,8 @@ public class ComposeMessageFragment extends ListFragment implements
                             i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
                             i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
                             context.startService(i);
+
+                            setStatusText(getString(R.string.invitation_sent_label));
                         }
 
                         else if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
