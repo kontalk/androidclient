@@ -461,9 +461,9 @@ public class ComposeMessageFragment extends ListFragment implements
 			// FIXME this is blocking!!!!
 			if (media && klass == ImageComponent.class) {
 				// FIXME hard-coded to ImageComponent
-				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME);
+				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
 				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
-						filename);
+						filename, true);
 			}
 
             length = MediaStorage.getLength(getActivity(), uri);

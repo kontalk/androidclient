@@ -124,7 +124,8 @@ public class ImageComponent extends AttachmentComponent {
                  * already been downloaded.
                  */
                 if (localUri != null) {
-                    MediaStorage.cacheThumbnail(context, localUri, previewFile);
+                    // FIXME using a false file extension
+                    MediaStorage.cacheThumbnail(context, localUri, previewFile, false);
                     loadPreview(previewFile);
                 }
             }

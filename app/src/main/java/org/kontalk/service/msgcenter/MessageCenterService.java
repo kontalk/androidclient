@@ -1576,14 +1576,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (!previewPath.isFile()) {
                     Uri previewUri = Uri.parse(_previewUri);
                     try {
-                        MediaStorage.cacheThumbnail(this, previewUri, previewPath);
+                        MediaStorage.cacheThumbnail(this, previewUri, previewPath, true);
                     }
                     catch (IOException e) {
                         Log.w(TAG, "unable to generate preview for media", e);
                     }
                 }
 
-                m.addExtension(new BitsOfBinary(MediaStorage.THUMBNAIL_MIME, previewPath));
+                m.addExtension(new BitsOfBinary(MediaStorage.THUMBNAIL_MIME_NETWORK, previewPath));
             }
 
             ChatState chatState;

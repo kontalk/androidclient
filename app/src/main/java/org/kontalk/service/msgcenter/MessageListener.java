@@ -222,7 +222,7 @@ class MessageListener extends MessageCenterPacketListener {
                         BitsOfBinary preview = (BitsOfBinary) _preview;
                         String previewMime = preview.getType();
                         if (previewMime == null)
-                            previewMime = MediaStorage.THUMBNAIL_MIME;
+                            previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
 
                         String filename = null;
 
