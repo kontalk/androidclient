@@ -348,7 +348,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPhone.setText(mPhoneNumber);
             syncCountryCodeSelector();
 
-            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.server, false);
+            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender, saved.server, false);
         }
 
         if (mKey == null) {
@@ -570,7 +570,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validateCode(View v) {
         if (checkInput())
-            startValidationCode(REQUEST_VALIDATION_CODE);
+            startValidationCode(REQUEST_VALIDATION_CODE, null);
     }
 
     /**
@@ -915,27 +915,27 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v) {
+    public void onValidationRequested(NumberValidator v, String sender) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual();
+        proceedManual(sender);
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual() {
+    private void proceedManual(final String sender) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abortProgress(true);
-                startValidationCode(REQUEST_MANUAL_VALIDATION);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, sender);
             }
         });
     }
 
-    private void startValidationCode(int requestCode) {
-        startValidationCode(requestCode, null, true);
+    private void startValidationCode(int requestCode, String sender) {
+        startValidationCode(requestCode, sender, null, true);
     }
 
-    private void startValidationCode(int requestCode, EndpointServer server, boolean saveProgress) {
+    private void startValidationCode(int requestCode, String sender, EndpointServer server, boolean saveProgress) {
         // validator might be null if we are skipping verification code request
         String serverUri = null;
         if (server != null)
@@ -948,7 +948,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(this,
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri);
+                serverUri, sender);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -959,6 +959,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
         i.putExtra("server", serverUri);
+        i.putExtra("sender", sender);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
 
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);

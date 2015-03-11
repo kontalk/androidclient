@@ -229,7 +229,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                     if (field.getVariable().equals("from")) {
                                         String smsFrom = field.getValues().get(0);
                                         Log.d(TAG, "using sms sender id: " + smsFrom);
-                                        mListener.onValidationRequested(NumberValidator.this);
+                                        mListener.onValidationRequested(NumberValidator.this, smsFrom);
 
                                         // prevent error handling
                                         return;
@@ -472,7 +472,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         public void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        public void onValidationRequested(NumberValidator v);
+        public void onValidationRequested(NumberValidator v, String sender);
 
         /** Called if phone number validation failed. */
         public void onValidationFailed(NumberValidator v, int reason);

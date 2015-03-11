@@ -466,7 +466,8 @@ public final class Preferences {
      */
     public static boolean saveRegistrationProgress(Context context, String name,
         String phoneNumber, PersonalKey key, String passphrase,
-        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri) {
+        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
+        String sender) {
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
@@ -477,6 +478,7 @@ public final class Preferences {
                 Base64.encodeToString(importedPrivateKey, Base64.NO_WRAP) : null)
             .putString("registration_passphrase", passphrase)
             .putString("registration_server", serverUri)
+            .putString("registration_sender", sender)
             .commit();
     }
 
@@ -497,6 +499,8 @@ public final class Preferences {
             String importedPrivateKey = getString(context, "registration_importedprivatekey", null);
             if (importedPrivateKey != null)
                 p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
+
+            p.sender = getString(context, "registration_sender", null);
 
             return p;
         }
@@ -523,6 +527,7 @@ public final class Preferences {
         public byte[] importedPublicKey;
         public byte[] importedPrivateKey;
         public EndpointServer server;
+        public String sender;
     }
 
     /** Recent statuses database helper. */
