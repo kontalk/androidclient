@@ -39,7 +39,7 @@
     <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the verification code you will receive via SMS.</string>
     <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
-    <string name="code_validation_intro_manual">Please insert a verification code you received. Please note that a verification code can be used only once.</string>
+    <string name="code_validation_intro_manual">Please insert the verification code you received. Please note that a verification code can be used only once.</string>
     <string name="hint_validation_name">Your name</string>
     <string name="hint_validation_number">Your number</string>
     <string name="hint_validation_code">Verification code</string>
