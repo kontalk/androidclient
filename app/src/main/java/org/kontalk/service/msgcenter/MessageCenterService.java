@@ -2117,12 +2117,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mPushRegistrationId = regId;
 
         // notify the server about the change
-        if (regId != null && canConnect() && isConnected())
-            sendPushRegistration(regId);
+        if (canConnect() && isConnected()) {
+            if (regId != null) {
+                sendPushRegistration(regId);
+            }
+            else {
+                sendPushUnregistration();
+            }
+        }
     }
 
     private void sendPushRegistration(final String regId) {
-        IQ iq = new PushRegistration(DEFAULT_PUSH_PROVIDER, regId);
+        IQ iq = PushRegistration.register(DEFAULT_PUSH_PROVIDER, regId);
         iq.setTo("push@" + mServer.getNetwork());
         try {
             mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
@@ -2130,6 +2136,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 public void processPacket(Stanza packet) throws NotConnectedException {
                     if (mPushService != null)
                         mPushService.setRegisteredOnServer(regId != null);
+                }
+            });
+        }
+        catch (NotConnectedException e) {
+            // ignored
+        }
+    }
+
+    private void sendPushUnregistration() {
+        IQ iq = PushRegistration.unregister(DEFAULT_PUSH_PROVIDER);
+        iq.setTo("push@" + mServer.getNetwork());
+        try {
+            mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
+                @Override
+                public void processPacket(Stanza packet) throws NotConnectedException {
+                    if (mPushService != null)
+                        mPushService.setRegisteredOnServer(false);
                 }
             });
         }
