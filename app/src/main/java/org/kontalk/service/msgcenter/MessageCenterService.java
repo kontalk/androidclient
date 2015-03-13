@@ -1125,7 +1125,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void active() {
-        if (ClientStateIndicationManager.isSupported(mConnection)) {
+        if (mConnection != null && ClientStateIndicationManager.isSupported(mConnection)) {
             Log.d(TAG, "entering active state");
             try {
                 ClientStateIndicationManager.active(mConnection);
@@ -1140,7 +1140,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void inactive() {
-        if (ClientStateIndicationManager.isSupported(mConnection)) {
+        if (mConnection != null && ClientStateIndicationManager.isSupported(mConnection)) {
             Log.d(TAG, "entering inactive state");
             try {
                 ClientStateIndicationManager.inactive(mConnection);
