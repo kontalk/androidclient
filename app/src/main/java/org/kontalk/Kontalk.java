@@ -65,6 +65,8 @@ import java.security.cert.CertificateException;
 public class Kontalk extends Application {
     public static final String TAG = Kontalk.class.getSimpleName();
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
+
     private PersonalKey mDefaultKey;
 
     /**
@@ -106,8 +108,7 @@ public class Kontalk extends Application {
         MessagingNotification.init(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.OnSharedPreferenceChangeListener prefListener =
-            new SharedPreferences.OnSharedPreferenceChangeListener() {
+        mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 // no account - abort
@@ -136,7 +137,7 @@ public class Kontalk extends Application {
                 }
             }
         };
-        prefs.registerOnSharedPreferenceChangeListener(prefListener);
+        prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
 
         // TODO listen for changes to phone numbers
 
