@@ -31,7 +31,7 @@ public class EndpointServer {
 
     /** Validation pattern. Very basic. */
     // TODO use this also for parsing
-    private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-\\.]+\\|[A-Za-z0-9\\-\\.]+(:\\d+)?$");
+    private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-\\.]+(\\|[A-Za-z0-9\\-\\.]+(:\\d+)?)?$");
 
     private String mHost;
     private int mPort;

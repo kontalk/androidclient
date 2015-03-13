@@ -68,8 +68,19 @@ public class EndpointServerTest {
         s = new EndpointServer("beta.kontalk.net");
         assertEquals("beta.kontalk.net", s.toString());
         s = new EndpointServer("beta.kontalk.net|127.0.0.1");
-        assertEquals("beta.kontalk.net|127.0.0.1", s.toString());
+        assertEquals("beta.kontalk.net|127.0.0.1:" + EndpointServer.DEFAULT_PORT, s.toString());
         s = new EndpointServer("beta.kontalk.net|127.0.0.1:5999");
         assertEquals("beta.kontalk.net|127.0.0.1:5999", s.toString());
     }
+
+    @Test
+    public void testValidate() throws Exception {
+        assertTrue(EndpointServer.validate("beta.kontalk.net"));
+        assertTrue(EndpointServer.validate("beta.kontalk.net|127.0.0.1"));
+        assertTrue(EndpointServer.validate("beta.kontalk.net|127.0.0.1:5999"));
+        assertFalse(EndpointServer.validate("beta.kontalk.net|:5999"));
+        assertFalse(EndpointServer.validate("beta.kontalk.net|ping/test/host:5999"));
+        assertFalse(EndpointServer.validate("prova:5999"));
+    }
+
 }
