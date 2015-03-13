@@ -11,6 +11,8 @@
     <property name="lineSeparator" value="lf"/>
   </module>
   <module name="TreeWalker">
-    <module name="AvoidStarImport"/>
+    <module name="AvoidStarImport">
+      <property name="allowStaticMemberImports" value="true"/>
+    </module>
   </module>
 </module>
