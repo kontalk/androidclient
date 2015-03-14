@@ -61,6 +61,8 @@ import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
 public class AudioDialog extends AlertDialog {
     private static final String TAG = ComposeMessage.TAG;
 
+    private static final String STATE_PREFIX = "AudioDialog_";
+
     public static final String DEFAULT_MIME = "audio/3gpp";
 
     private static final int STATUS_IDLE = 0;
@@ -73,9 +75,6 @@ public class AudioDialog extends AlertDialog {
 
     private static final int MAX_DURATE = 120000;
     private static final int MAX_PROGRESS = 100;
-
-    private MediaRecorder mRecorder = new MediaRecorder();
-    private MediaPlayer mPlayer = new MediaPlayer();
 
     private CircularSeekBar mHoloCircularProgressBar;
     private ObjectAnimator mProgressBarAnimator;
@@ -93,10 +92,12 @@ public class AudioDialog extends AlertDialog {
     private float mTimeCircle;
     private int mPlayerSeekTo;
     private AudioDialogListener mListener;
+    private AudioFragment mData;
 
-    public AudioDialog(Context context, AudioDialogListener result) {
+    public AudioDialog(Context context, AudioFragment data, AudioDialogListener result) {
         super(context);
         mListener = result;
+        mData = data;
         init();
     }
 
@@ -124,11 +125,24 @@ public class AudioDialog extends AlertDialog {
         }
     }
 
+    /** Used for saving dialog state on destroy/recreate cycles. */
+    public void onSaveInstanceState(Bundle out) {
+        out.putInt(STATE_PREFIX + "status", mStatus);
+        if (mFile != null) {
+            out.putString(STATE_PREFIX + "file", mFile.toString());
+        }
+    }
+
+    /** Used for restoring dialog state on destroy/recreate cycles. */
+    public void onRestoreInstanceState(Bundle in) {
+        // TODO
+    }
+
     private void init() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View v=inflater.inflate(R.layout.audio_dialog, null);
         setView(v);
-        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        mData.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 mImageButton.setImageResource(R.drawable.play);
@@ -168,7 +182,7 @@ public class AudioDialog extends AlertDialog {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (mFile != null) {
-                    mPlayer.setOnCompletionListener(null);
+                    mData.getPlayer().setOnCompletionListener(null);
                     mListener.onRecordingSuccessful(mFile);
                     mStatus = STATUS_SEND;
                 }
@@ -200,13 +214,14 @@ public class AudioDialog extends AlertDialog {
         }
         else if (mStatus == STATUS_PLAYING || mStatus == STATUS_SEND) {
             pauseAudio(mStatus == STATUS_SEND);
-            mPlayer.release();
+            mData.getPlayer().release();
         }
 
         if (mStatus != STATUS_SEND && mFile != null) {
             mFile.delete();
         }
         mListener.onRecordingCancel();
+        mData.finish();
     }
 
     private void startRecord() throws IOException {
@@ -221,14 +236,16 @@ public class AudioDialog extends AlertDialog {
         animate(mHoloCircularProgressBar, null, 100, MAX_DURATE);
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_record));
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mFile.getAbsolutePath());
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        MediaRecorder recorder = mData.getRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFile(mFile.getAbsolutePath());
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
-            mRecorder.prepare();
+            recorder.prepare();
             // Start recording
-            mRecorder.start();
+            recorder.start();
             mStatus = STATUS_RECORDING;
         }
         catch (IllegalStateException e) {
@@ -253,9 +270,10 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void stopRecord() {
-        mRecorder.stop();
-        mRecorder.reset();
-        mRecorder.release();
+        MediaRecorder recorder = mData.getRecorder();
+        recorder.stop();
+        recorder.reset();
+        recorder.release();
         mImageButton.setImageResource(R.drawable.play);
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
         mStatus = STATUS_STOPPED;
@@ -270,18 +288,10 @@ public class AudioDialog extends AlertDialog {
     private void playAudio() {
         mHoloCircularProgressBar.setClickable(true);
         try {
-            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mPlayer.setDataSource(mFile.getAbsolutePath());
-            mPlayer.prepare();
-        }
-        catch (IllegalArgumentException e) {
-            Log.e (TAG, "error playing audio:", e);
-        }
-        catch (SecurityException e) {
-            Log.e (TAG, "error playing audio:", e);
-        }
-        catch (IllegalStateException e) {
-            Log.e (TAG, "error playing audio:", e);
+            MediaPlayer player = mData.getPlayer();
+            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            player.setDataSource(mFile.getAbsolutePath());
+            player.prepare();
         }
         catch (IOException e) {
             Log.e (TAG, "error reading from external storage", e);
@@ -290,10 +300,13 @@ public class AudioDialog extends AlertDialog {
             .setNegativeButton(android.R.string.ok, null)
             .show();
         }
+        catch (Exception e) {
+            Log.e(TAG, "error playing audio:", e);
+        }
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
-        mTimeCircle = MAX_PROGRESS/(float)mPlayer.getDuration();
-        animate(mHoloCircularProgressBar, null, 100, mPlayer.getDuration());
+        mTimeCircle = MAX_PROGRESS/(float)mData.getPlayer().getDuration();
+        animate(mHoloCircularProgressBar, null, 100, mData.getPlayer().getDuration());
         resumeAudio();
     }
 
@@ -304,7 +317,7 @@ public class AudioDialog extends AlertDialog {
     private void pauseAudio(boolean sending) {
         mImageButton.setImageResource(R.drawable.play);
         mProgressBarAnimator.cancel();
-        mPlayer.pause();
+        mData.getPlayer().pause();
         if (!sending)
             mStatus = STATUS_PAUSED;
     }
@@ -314,8 +327,8 @@ public class AudioDialog extends AlertDialog {
         if (mStatus == STATUS_PAUSED || mStatus == STATUS_ENDED)
             mProgressBarAnimator.start();
         if (mStatus == STATUS_PAUSED)
-            mProgressBarAnimator.setCurrentPlayTime(mPlayer.getCurrentPosition());
-        mPlayer.start();
+            mProgressBarAnimator.setCurrentPlayTime(mData.getPlayer().getCurrentPosition());
+        mData.getPlayer().start();
         mStatus=STATUS_PLAYING;
     }
 
@@ -357,7 +370,7 @@ public class AudioDialog extends AlertDialog {
                         else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
                             progressBar.setPointerAlpha(0);
                             progressBar.setPointerAlphaOnTouch(0);
-                            mPlayer.seekTo(mPlayerSeekTo);
+                            mData.getPlayer().seekTo(mPlayerSeekTo);
                             if (mCheckSeek == STATUS_PLAYING)
                                 resumeAudio();
                           }
