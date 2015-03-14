@@ -34,7 +34,7 @@
     <!-- appearance settings defaults -->
     <string name="pref_default_font_size">medium</string>
     <string name="pref_default_balloons">classic</string>
-    <bool name="pref_default_text_enter">false</bool>
+    <string name="pref_default_text_enter">default</string>
 
     <!-- media settings defaults -->
     <integer name="pref_default_image_resize">1024</integer>

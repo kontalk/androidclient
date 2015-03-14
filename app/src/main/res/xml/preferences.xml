@@ -101,11 +101,12 @@
             android:entries="@array/balloons_labels"
             android:entryValues="@array/balloons_values"
             android:defaultValue="@string/pref_default_balloons"/>
-        <CheckBoxPreference android:key="pref_text_enter"
+        <ListPreference android:key="pref_text_enter"
             android:title="@string/pref_text_enter"
-            android:summaryOff="@string/pref_title_off_text_enter"
-            android:summaryOn="@string/pref_title_on_text_enter"
-            android:defaultValue="@bool/pref_default_text_enter"/>
+            android:summary="@string/pref_title_text_enter"
+            android:entries="@array/text_enter_labels"
+            android:entryValues="@array/text_enter_values"
+            android:defaultValue="@string/pref_default_text_enter"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_media_settings"

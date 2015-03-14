@@ -278,11 +278,22 @@ public class ComposeMessageFragment extends ListFragment implements
         mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
 
         // enter key flag
-        int inputTypeFlags = Preferences.getEnterKeyEnabled(getActivity()) ?
-                InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE :
-                InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
+        int inputTypeFlags;
+        String enterKeyMode = Preferences.getEnterKeyMode(getActivity());
+        if ("newline".equals(enterKeyMode)) {
+            inputTypeFlags = mTextEntry.getInputType() | InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE;
+        }
+        else if ("newline_send".equals(enterKeyMode)) {
+            inputTypeFlags = (mTextEntry.getInputType() & ~InputType.TYPE_TEXT_FLAG_MULTI_LINE) |
+                InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE;
+            mTextEntry.setImeOptions(EditorInfo.IME_ACTION_SEND);
+            mTextEntry.setInputType(inputTypeFlags);
+        }
+        else {
+            inputTypeFlags = mTextEntry.getInputType() | InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
+        }
 
-        mTextEntry.setInputType(mTextEntry.getInputType() | inputTypeFlags);
+        mTextEntry.setInputType(inputTypeFlags);
 
         mTextEntry.addTextChangedListener(new TextWatcher() {
             @Override

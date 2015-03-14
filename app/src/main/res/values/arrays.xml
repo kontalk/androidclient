@@ -54,6 +54,18 @@
         <item>iPhone</item>
     </string-array>
 
+    <string-array name="text_enter_values" translate="false">
+        <item>default</item>
+        <item>newline</item>
+        <item>newline_send</item>
+    </string-array>
+
+    <string-array name="text_enter_labels">
+        <item>Default</item>
+        <item>Enter</item>
+        <item>Send</item>
+    </string-array>
+
     <string-array name="image_resize_values" translate="false">
         <item>0</item>
         <item>640</item>

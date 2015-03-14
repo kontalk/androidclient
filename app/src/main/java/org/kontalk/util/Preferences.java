@@ -446,8 +446,15 @@ public final class Preferences {
             .commit();
     }
 
-    public static boolean getEnterKeyEnabled(Context context) {
-        return getBoolean(context, "pref_text_enter", false);
+    public static String getEnterKeyMode(Context context) {
+        try {
+            return getString(context, "pref_text_enter", "default");
+        }
+        catch (ClassCastException e) {
+            // legacy mode
+            return getBoolean(context, "pref_text_enter", false) ?
+                "newline" : "default";
+        }
     }
 
     public static String getRosterVersion(Context context) {
