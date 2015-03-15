@@ -364,50 +364,12 @@ public class CircularSeekBar extends View {
 		mPointerHaloBorderWidth = attrArray.getFloat(R.styleable.CircularSeekBar_pointer_halo_border_width, DEFAULT_POINTER_HALO_BORDER_WIDTH) * DPTOPX_SCALE;
 		mCircleStrokeWidth = attrArray.getFloat(R.styleable.CircularSeekBar_circle_stroke_width, DEFAULT_CIRCLE_STROKE_WIDTH) * DPTOPX_SCALE;
 
-		String tempColor = attrArray.getString(R.styleable.CircularSeekBar_pointer_color);
-		if (tempColor != null) {
-			try {
-				mPointerColor = Color.parseColor(tempColor);
-			} catch (IllegalArgumentException e) {
-				mPointerColor = DEFAULT_POINTER_COLOR;
-			}
-		}
+		mPointerColor = attrArray.getColor(R.styleable.CircularSeekBar_pointer_color, DEFAULT_POINTER_COLOR);
+		mPointerHaloColor = attrArray.getColor(R.styleable.CircularSeekBar_pointer_halo_color, DEFAULT_POINTER_HALO_COLOR);
 
-		tempColor = attrArray.getString(R.styleable.CircularSeekBar_pointer_halo_color);
-		if (tempColor != null) {
-			try {
-				mPointerHaloColor = Color.parseColor(tempColor);
-			} catch (IllegalArgumentException e) {
-				mPointerHaloColor = DEFAULT_POINTER_HALO_COLOR;
-			}
-		}
-
-		tempColor = attrArray.getString(R.styleable.CircularSeekBar_circle_color);
-		if (tempColor != null) {
-			try {
-				mCircleColor = Color.parseColor(tempColor);
-			} catch (IllegalArgumentException e) {
-				mCircleColor = DEFAULT_CIRCLE_COLOR;
-			}
-		}
-
-		tempColor = attrArray.getString(R.styleable.CircularSeekBar_circle_progress_color);
-		if (tempColor != null) {
-			try {
-				mCircleProgressColor = Color.parseColor(tempColor);
-			} catch (IllegalArgumentException e) {
-				mCircleProgressColor = DEFAULT_CIRCLE_PROGRESS_COLOR;
-			}
-		}
-
-		tempColor = attrArray.getString(R.styleable.CircularSeekBar_circle_fill);
-		if (tempColor != null) {
-			try {
-				mCircleFillColor = Color.parseColor(tempColor);
-			} catch (IllegalArgumentException e) {
-				mCircleFillColor = DEFAULT_CIRCLE_FILL_COLOR;
-			}
-		}
+		mCircleColor = attrArray.getColor(R.styleable.CircularSeekBar_circle_color, DEFAULT_CIRCLE_COLOR);
+		mCircleProgressColor = attrArray.getColor(R.styleable.CircularSeekBar_circle_progress_color, DEFAULT_CIRCLE_PROGRESS_COLOR);
+		mCircleFillColor = attrArray.getColor(R.styleable.CircularSeekBar_circle_fill, DEFAULT_CIRCLE_FILL_COLOR);
 
 		mPointerAlpha = Color.alpha(mPointerHaloColor);
 

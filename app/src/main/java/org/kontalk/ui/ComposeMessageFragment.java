@@ -896,12 +896,12 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void selectAudioAttachment() {
         // create audio fragment if needed
-        AudioFragment audio = createAudioFragment();
+        AudioFragment audio = getAudioFragment();
         mAudioDialog = new AudioDialog(getActivity(), audio, this);
         mAudioDialog.show();
     }
 
-    private AudioFragment createAudioFragment() {
+    private AudioFragment getAudioFragment() {
         FragmentManager fm = getFragmentManager();
         AudioFragment fragment = (AudioFragment) fm
             .findFragmentByTag("audio");
@@ -1476,6 +1476,12 @@ public class ComposeMessageFragment extends ListFragment implements
                 mCurrentPhoto = new File(currentPhoto);
             }
 
+            mAudioDialog = AudioDialog.onRestoreInstanceState(getActivity(),
+                savedInstanceState, getAudioFragment(), this);
+            if (mAudioDialog != null) {
+                Log.d(TAG, "recreating audio dialog");
+                mAudioDialog.show();
+            }
         }
         else {
             args = myArguments();

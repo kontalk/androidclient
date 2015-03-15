@@ -19,9 +19,12 @@
 package org.kontalk.ui;
 
 
+import java.io.IOException;
+
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 
 /**
@@ -33,6 +36,8 @@ public class AudioFragment extends Fragment {
 
     private MediaRecorder mRecorder;
     private MediaPlayer mPlayer;
+
+    private long mStartTime;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,9 +60,38 @@ public class AudioFragment extends Fragment {
         return mRecorder;
     }
 
+    public void startRecording() throws IOException {
+        mStartTime = SystemClock.uptimeMillis();
+        MediaRecorder recorder = getRecorder();
+        recorder.prepare();
+        recorder.start();
+    }
+
+    public long getElapsedTime() {
+        return mStartTime > 0 ? SystemClock.uptimeMillis() - mStartTime : 0;
+    }
+
+    public void stopRecording() {
+        if (mRecorder != null) {
+            mRecorder.stop();
+            mRecorder.reset();
+            mRecorder.release();
+            mRecorder = null;
+            mStartTime = 0;
+        }
+    }
+
+    public void startPlaying() {
+        if (mPlayer != null) {
+            mStartTime = SystemClock.uptimeMillis();
+            mPlayer.start();
+        }
+    }
+
     public void finish() {
         mPlayer = null;
         mRecorder = null;
+        mStartTime = 0;
     }
 
 }

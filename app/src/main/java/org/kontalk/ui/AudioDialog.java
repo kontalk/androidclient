@@ -25,12 +25,12 @@ import org.kontalk.R;
 import org.kontalk.ui.view.CircularSeekBar;
 import org.kontalk.util.MediaStorage;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -73,13 +73,17 @@ public class AudioDialog extends AlertDialog {
     private static final int STATUS_ENDED = 5;
     private static final int STATUS_SEND = 6;
 
-    private static final int MAX_DURATE = 120000;
+    /** Max duration of recorded audio in milliseconds. */
+    private static final int MAX_AUDIO_DURATION = 120*1000;
     private static final int MAX_PROGRESS = 100;
 
-    private CircularSeekBar mHoloCircularProgressBar;
+    private CircularSeekBar mProgressBar;
     private ObjectAnimator mProgressBarAnimator;
     private ImageView mImageButton;
     private TextView mTimeTxt;
+
+    /** Flag indicating that we are stopping due to activity lifecycle. */
+    private boolean mSaved;
 
     private File mFile;
 
@@ -107,10 +111,10 @@ public class AudioDialog extends AlertDialog {
         mTimeTxt=(TextView) findViewById(R.id.time);
         mTimeTxt.setVisibility(View.INVISIBLE);
         mImageButton=(ImageView) findViewById(R.id.image_audio);
-        mHoloCircularProgressBar = (CircularSeekBar) findViewById(R.id.circularSeekBar);
-        mHoloCircularProgressBar.getProgress();
-        mHoloCircularProgressBar.setMax(MAX_PROGRESS);
-        mHoloCircularProgressBar.setVisibility(View.INVISIBLE);
+        mProgressBar = (CircularSeekBar) findViewById(R.id.circularSeekBar);
+        mProgressBar.getProgress();
+        mProgressBar.setMax(MAX_PROGRESS);
+        mProgressBar.setVisibility(View.INVISIBLE);
         getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.GONE);
     }
 
@@ -118,7 +122,7 @@ public class AudioDialog extends AlertDialog {
     public void onWindowFocusChanged(boolean hasFocus) {
         if (!hasFocus) {
             if (mStatus == STATUS_RECORDING)
-                cancel();
+                stopRecord();
 
             else if (mStatus == STATUS_PLAYING)
                 pauseAudio();
@@ -131,11 +135,25 @@ public class AudioDialog extends AlertDialog {
         if (mFile != null) {
             out.putString(STATE_PREFIX + "file", mFile.toString());
         }
+        mSaved = true;
     }
 
     /** Used for restoring dialog state on destroy/recreate cycles. */
-    public void onRestoreInstanceState(Bundle in) {
-        // TODO
+    public static AudioDialog onRestoreInstanceState(Context context, Bundle state,
+            AudioFragment data, AudioDialogListener result) {
+
+        if (state != null && state.getInt(STATE_PREFIX + "status", -1) >= 0) {
+            AudioDialog dialog = new AudioDialog(context, data, result);
+            dialog.mStatus = state.getInt(STATE_PREFIX + "status");
+            String file = state.getString(STATE_PREFIX + "file");
+            if (file != null) {
+                dialog.mFile = new File(file);
+            }
+
+            return dialog;
+        }
+
+        return null;
     }
 
     private void init() {
@@ -198,8 +216,34 @@ public class AudioDialog extends AlertDialog {
     }
 
     public interface AudioDialogListener {
-        public void onRecordingSuccessful(File file);
-        public void onRecordingCancel();
+        void onRecordingSuccessful(File file);
+        void onRecordingCancel();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        switch (mStatus) {
+            case STATUS_RECORDING:
+                setupViewForRecording(calculateRecordingProgress());
+                break;
+            case STATUS_STOPPED:
+            case STATUS_PAUSED:
+            case STATUS_ENDED:
+                // restart
+                animate(mProgressBar, null, 0, MAX_PROGRESS, mData.getPlayer().getDuration());
+                setupViewForPlaying(0, mStatus);
+                mData.getPlayer().seekTo(0);
+                break;
+            case STATUS_PLAYING:
+                // restore animator
+                float progress = calculatePlayingProgress();
+                animate(mProgressBar, null, progress, MAX_PROGRESS, mData.getPlayer().getDuration());
+                setupViewForPlaying(progress);
+                setupForPlaying();
+                resumeAudio();
+                break;
+        }
     }
 
     @Override
@@ -209,6 +253,9 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void finish() {
+        if (mSaved)
+            return;
+
         if (mStatus == STATUS_RECORDING) {
             stopRecord();
         }
@@ -224,18 +271,58 @@ public class AudioDialog extends AlertDialog {
         mData.finish();
     }
 
+    private float calculateRecordingProgress() {
+        long time = mData.getElapsedTime();
+        return (float) (time * 100) / MAX_AUDIO_DURATION;
+    }
+
+    private float calculatePlayingProgress() {
+        long time = mData.getElapsedTime();
+        return (float) (time * 100) / mData.getPlayer().getDuration();
+    }
+
+    @SuppressLint("ResourceAsColor")
+    private void setupViewForRecording(float progress) {
+        mImageButton.setImageResource(R.drawable.rec);
+        setViewsColor(R.color.audio_pbar_record);
+        mProgressBar.setVisibility(View.VISIBLE);
+        animate(mProgressBar, null, progress, MAX_PROGRESS, MAX_AUDIO_DURATION);
+        mTimeTxt.setVisibility(View.VISIBLE);
+    }
+
+    private void setupViewForPlaying(float progress) {
+        setupViewForPlaying(progress, -1);
+    }
+
+    @SuppressLint("ResourceAsColor")
+    private void setupViewForPlaying(float progress, int overrideStatus) {
+        mProgressBar.setVisibility(View.VISIBLE);
+        // set play icon
+        mImageButton.setImageResource(R.drawable.play);
+        // show send button
+        getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
+        // stop animation and hide timer text
+        if (progress == 0) {
+            // set status to stopped to avoid loops in the animator
+            mStatus = overrideStatus >= 0 ? overrideStatus : STATUS_STOPPED;
+            mProgressBarAnimator.end();
+        }
+        mTimeTxt.setVisibility(View.INVISIBLE);
+        // set UI colors
+        setViewsColor(R.color.audio_pbar_play);
+    }
+
+    private void setViewsColor(int resId) {
+        int color = getContext().getResources().getColor(resId);
+        mProgressBar.setCircleProgressColor(color);
+        mProgressBar.setPointerColor(color);
+        mProgressBar.setPointerBorderColor(color);
+        mTimeTxt.setTextColor(color);
+    }
+
     private void startRecord() throws IOException {
         mFile = MediaStorage.getTempAudio(getContext());
-        mImageButton.setImageResource(R.drawable.rec);
-        mHoloCircularProgressBar.setVisibility(View.VISIBLE);
-        mHoloCircularProgressBar.setCircleColor(Color.TRANSPARENT);
-        mHoloCircularProgressBar.setCircleProgressColor(getContext().getResources().getColor(R.color.audio_pbar_record));
-        mHoloCircularProgressBar.setPointerColor(getContext().getResources().getColor(R.color.audio_pbar_record));
-        mHoloCircularProgressBar.setPointerBorderColor(getContext().getResources().getColor(R.color.audio_pbar_record));
-        mHoloCircularProgressBar.setPointerHaloColor(Color.TRANSPARENT);
-        animate(mHoloCircularProgressBar, null, 100, MAX_DURATE);
-        mTimeTxt.setVisibility(View.VISIBLE);
-        mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_record));
+        setupViewForRecording(0);
 
         MediaRecorder recorder = mData.getRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -243,16 +330,15 @@ public class AudioDialog extends AlertDialog {
         recorder.setOutputFile(mFile.getAbsolutePath());
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
-            recorder.prepare();
             // Start recording
-            recorder.start();
+            mData.startRecording();
             mStatus = STATUS_RECORDING;
         }
         catch (IllegalStateException e) {
-            Log.e (TAG, "error starting audio recording:", e);
+            Log.e(TAG, "error starting audio recording:", e);
         }
         catch (IOException e) {
-            Log.e (TAG, "error writing on external storage:", e);
+            Log.e(TAG, "error writing on external storage:", e);
             cancel();
             new Builder(getContext())
                 .setMessage(R.string.err_audio_record_writing)
@@ -260,7 +346,7 @@ public class AudioDialog extends AlertDialog {
                 .show();
         }
         catch (RuntimeException e) {
-            Log.e (TAG, "error starting audio recording:", e);
+            Log.e(TAG, "error starting audio recording:", e);
             cancel();
             new AlertDialog.Builder(getContext())
                 .setMessage(R.string.err_audio_record)
@@ -269,24 +355,17 @@ public class AudioDialog extends AlertDialog {
         }
     }
 
+    @SuppressLint("ResourceAsColor")
     private void stopRecord() {
-        MediaRecorder recorder = mData.getRecorder();
-        recorder.stop();
-        recorder.reset();
-        recorder.release();
-        mImageButton.setImageResource(R.drawable.play);
-        getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
+        // stop recorder
+        mData.stopRecording();
+        setupViewForPlaying(0);
+        // stopped!
         mStatus = STATUS_STOPPED;
-        mProgressBarAnimator.end();
-        mTimeTxt.setVisibility(View.INVISIBLE);
-        mHoloCircularProgressBar.setCircleProgressColor(getContext().getResources().getColor(R.color.audio_pbar_play));
-        mHoloCircularProgressBar.setPointerHaloColor(Color.TRANSPARENT);
-        mHoloCircularProgressBar.setPointerColor(getContext().getResources().getColor(R.color.audio_pbar_play));
-        mHoloCircularProgressBar.setPointerBorderColor(getContext().getResources().getColor(R.color.audio_pbar_play));
     }
 
     private void playAudio() {
-        mHoloCircularProgressBar.setClickable(true);
+        mProgressBar.setClickable(true);
         try {
             MediaPlayer player = mData.getPlayer();
             player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -296,18 +375,22 @@ public class AudioDialog extends AlertDialog {
         catch (IOException e) {
             Log.e (TAG, "error reading from external storage", e);
             new AlertDialog.Builder(getContext())
-            .setMessage(R.string.err_playing_sdcard)
-            .setNegativeButton(android.R.string.ok, null)
-            .show();
+                .setMessage(R.string.err_playing_sdcard)
+                .setNegativeButton(android.R.string.ok, null)
+                .show();
         }
         catch (Exception e) {
             Log.e(TAG, "error playing audio:", e);
         }
+        setupForPlaying();
+        animate(mProgressBar, null, 0, MAX_PROGRESS, mData.getPlayer().getDuration());
+        resumeAudio();
+    }
+
+    private void setupForPlaying() {
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
         mTimeCircle = MAX_PROGRESS/(float)mData.getPlayer().getDuration();
-        animate(mHoloCircularProgressBar, null, 100, mData.getPlayer().getDuration());
-        resumeAudio();
     }
 
     private void pauseAudio() {
@@ -326,14 +409,16 @@ public class AudioDialog extends AlertDialog {
         mImageButton.setImageResource(R.drawable.pause);
         if (mStatus == STATUS_PAUSED || mStatus == STATUS_ENDED)
             mProgressBarAnimator.start();
-        if (mStatus == STATUS_PAUSED)
+        // STATUS_PLAYING is used when restoring dialog
+        if (mStatus == STATUS_PAUSED || mStatus == STATUS_PLAYING)
             mProgressBarAnimator.setCurrentPlayTime(mData.getPlayer().getCurrentPosition());
-        mData.getPlayer().start();
-        mStatus=STATUS_PLAYING;
+        mData.startPlaying();
+        mStatus = STATUS_PLAYING;
     }
 
-    private void animate(final CircularSeekBar progressBar, final AnimatorListener listener, final float progress, final int duration) {
-        mProgressBarAnimator = ObjectAnimator.ofFloat(progressBar, "progress", progress);
+    private void animate(final CircularSeekBar progressBar, final AnimatorListener listener,
+            final float progress, final float maxProgress, final int duration) {
+        mProgressBarAnimator = ObjectAnimator.ofFloat(progressBar, "progress", maxProgress);
         mProgressBarAnimator.setInterpolator(new LinearInterpolator());
         mProgressBarAnimator.setDuration(duration);
 
@@ -366,18 +451,18 @@ public class AudioDialog extends AlertDialog {
                             progressBar.setPointerAlphaOnTouch(100);
                             mCheckSeek = mStatus;
                             pauseAudio();
-                          }
+                        }
                         else if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
                             progressBar.setPointerAlpha(0);
                             progressBar.setPointerAlphaOnTouch(0);
                             mData.getPlayer().seekTo(mPlayerSeekTo);
                             if (mCheckSeek == STATUS_PLAYING)
                                 resumeAudio();
-                          }
-                          else if (event.getAction() == android.view.MotionEvent.ACTION_MOVE && (mStatus == STATUS_PLAYING || mStatus == STATUS_PAUSED)) {
-                            mPlayerSeekTo = (int) (progressBar.getProgress()/mTimeCircle);
+                        }
+                        else if (event.getAction() == android.view.MotionEvent.ACTION_MOVE && (mStatus == STATUS_PLAYING || mStatus == STATUS_PAUSED)) {
+                            mPlayerSeekTo = (int) (progressBar.getProgress() / mTimeCircle);
                             mTimeTxt.setText(DateUtils.formatElapsedTime(mPlayerSeekTo / 1000));
-                          }
+                        }
                         return false;
                     }
                 });
@@ -393,8 +478,11 @@ public class AudioDialog extends AlertDialog {
                 mTimeTxt.setText(DateUtils.formatElapsedTime(time / 1000));
             }
         });
-        progressBar.setProgress(0);
+        progressBar.setProgress(progress);
         mProgressBarAnimator.start();
+        if (progress > 0) {
+            mProgressBarAnimator.setCurrentPlayTime((long) (progress * MAX_AUDIO_DURATION / 100));
+        }
     }
 
     public static boolean isSupported(Context context) {
