@@ -286,7 +286,7 @@ public class UsersProvider extends ContentProvider {
         boolean commit = Boolean.parseBoolean(uri.getQueryParameter(Users.COMMIT));
 
         if (isResync) {
-            if (bootstrap ? dbHelper.isNew() : true)
+            if (!bootstrap || dbHelper.isNew())
                 return resync(commit);
             return 0;
         }

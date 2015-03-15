@@ -1866,55 +1866,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
     }
 
-    /*
-    private final class UserPresenceBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (MessageCenterServiceLegacy.ACTION_USER_PRESENCE.equals(action)) {
-                int event = intent.getIntExtra("org.kontalk.presence.event", 0);
-                CharSequence text = null;
-
-                if (event == UserEvent.EVENT_OFFLINE_VALUE) {
-                    text = buildLastSeenText(getResources().getString(R.string.seen_moment_ago_label));
-                }
-                else if (event == UserEvent.EVENT_ONLINE_VALUE) {
-                    text = getResources().getString(R.string.seen_online_label);
-                }
-                else if (event == UserEvent.EVENT_STATUS_CHANGED_VALUE) {
-                    // update users table
-                    ContentValues values = new ContentValues(1);
-                    values.put(Users.STATUS, intent.getStringExtra("org.kontalk.presence.status"));
-                    context.getContentResolver().update(
-                        Users.CONTENT_URI, values,
-                        Users.HASH + "=?", new String[] { userId });
-                    // time to invalidate cache
-                    // TODO this should be done by cursor notification
-                    Contact.invalidate(userId);
-                }
-
-                if (text != null) {
-                    try {
-                        setStatusText(text);
-                    }
-                    catch (Exception e) {
-                        // something could happen in the mean time - e.g. fragment destruction
-                    }
-                }
-            }
-
-            else if (MessageCenterServiceLegacy.ACTION_CONNECTED.equals(action)) {
-                // request user lookup
-                PresenceServiceConnection conn = new PresenceServiceConnection(userId, true);
-                getActivity().bindService(
-                        new Intent(getActivity().getApplicationContext(),
-                                MessageCenterServiceLegacy.class), conn,
-                        Context.BIND_AUTO_CREATE);
-            }
-        }
-    }
-    */
-
     private void subscribePresence() {
         // TODO this needs serious refactoring
         // TODO remove the latest presence calculation stuff
