@@ -91,6 +91,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -1866,6 +1867,56 @@ public class ComposeMessageFragment extends ListFragment implements
 
     }
 
+    private void hideWarning() {
+        LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
+        TextView warning = (TextView) root.findViewById(R.id.warning_bar);
+        if (warning != null) {
+            root.removeView(warning);
+        }
+    }
+
+    private void showWarning(String text) {
+        LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
+        TextView warning = (TextView) root.findViewById(R.id.warning_bar);
+        if (warning == null) {
+            warning = (TextView) LayoutInflater.from(getActivity())
+                .inflate(R.layout.warning_bar, root, false);
+            warning.setText(text);
+            warning.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO
+                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // hide warning bar
+                            hideWarning();
+
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    // request the new key
+                                    MessageCenterService.requestPublicKey(getActivity(), mUserJID);
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    // block user immediately
+                                    setPrivacy(PRIVACY_BLOCK);
+                                    break;
+                            }
+                        }
+                    };
+                    new AlertDialog.Builder(getActivity())
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle(R.string.title_public_key_warning)
+                        .setMessage(R.string.msg_public_key_warning)
+                        .setPositiveButton(R.string.button_accept, listener)
+                        .setNegativeButton(R.string.button_block, listener)
+                        .show();
+                }
+            });
+            root.addView(warning, 0);
+        }
+    }
+
     private void subscribePresence() {
         // TODO this needs serious refactoring
         // TODO remove the latest presence calculation stuff
@@ -1924,7 +1975,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                     }
 
                                     if (requestKey) {
-                                        MessageCenterService.requestPublicKey(getActivity(), bareFrom);
+                                        // warn user that public key is changed
+                                        showWarning(getString(R.string.warning_public_key));
                                     }
                                 }
 

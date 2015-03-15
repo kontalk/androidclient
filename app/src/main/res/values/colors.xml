@@ -44,4 +44,7 @@
 
     <color name="date_stamp_background">#ff33B5E5</color>
     <color name="date_stamp_text">#dddddd</color>
+
+    <color name="warning_bar_background">#ffdd1812</color>
+
 </resources>
