@@ -64,6 +64,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
@@ -894,8 +895,24 @@ public class ComposeMessageFragment extends ListFragment implements
 	}
 
     private void selectAudioAttachment() {
-        mAudioDialog = new AudioDialog(getActivity(), this);
+        // create audio fragment if needed
+        AudioFragment audio = getAudioFragment();
+        mAudioDialog = new AudioDialog(getActivity(), audio, this);
         mAudioDialog.show();
+    }
+
+    private AudioFragment getAudioFragment() {
+        FragmentManager fm = getFragmentManager();
+        AudioFragment fragment = (AudioFragment) fm
+            .findFragmentByTag("audio");
+        if (fragment == null) {
+            fragment = new AudioFragment();
+            fm.beginTransaction()
+                .add(fragment, "audio")
+                .commit();
+        }
+
+        return fragment;
     }
 
     @Override
@@ -1435,8 +1452,14 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
-        if (mCurrentPhoto != null)
+        // current photo being shot
+        if (mCurrentPhoto != null) {
             out.putString("currentPhoto", mCurrentPhoto.toString());
+        }
+        // audio dialog open
+        if (mAudioDialog != null) {
+            mAudioDialog.onSaveInstanceState(out);
+        }
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -1453,6 +1476,12 @@ public class ComposeMessageFragment extends ListFragment implements
                 mCurrentPhoto = new File(currentPhoto);
             }
 
+            mAudioDialog = AudioDialog.onRestoreInstanceState(getActivity(),
+                savedInstanceState, getAudioFragment(), this);
+            if (mAudioDialog != null) {
+                Log.d(TAG, "recreating audio dialog");
+                mAudioDialog.show();
+            }
         }
         else {
             args = myArguments();
