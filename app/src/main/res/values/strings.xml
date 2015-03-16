@@ -309,6 +309,7 @@
     <string name="text_invitation_unknown">Request by\n%1$s\nFingerprint: %2$s</string>
     <string name="button_accept">Accept</string>
     <string name="button_block">Block</string>
+    <string name="button_identity">Identity</string>
 
     <string name="msg_connecting_iab">Connecting to Google Play&#8230;</string>
     <string name="msg_iab_thankyou">Thank you!</string>

@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     <FrameLayout
@@ -33,6 +34,7 @@
         android:layout_gravity="center"
         android:textAppearance="@android:style/TextAppearance.Large"
         android:layout_marginBottom="10dp"
-        android:text="0:00"/>
+        android:text="00:00"
+        tools:ignore="HardcodedText"/>
 
 </LinearLayout>
