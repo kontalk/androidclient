@@ -664,6 +664,14 @@ public class UsersProvider extends ContentProvider {
         return timestamp;
     }
 
+    /** Sets the last seen timestamp for a user. */
+    public static void setLastSeen(Context context, String jid, long time) {
+        ContentValues values = new ContentValues(1);
+        values.put(Users.LAST_SEEN, time);
+        context.getContentResolver().update(Users.CONTENT_URI, values,
+            Users.JID + "=?", new String[]{jid});
+    }
+
     /** Updates a user public key. */
     public static void setUserKey(Context context, String jid, byte[] keydata, String fingerprint) {
         ContentValues values = new ContentValues(2);

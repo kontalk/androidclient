@@ -223,12 +223,18 @@ class PresenceListener extends MessageCenterPacketListener {
     private void handleSubscribed(Presence p) {
         String from = XmppStringUtils.parseBareJid(p.getFrom());
 
+        // save last seen (if any)
+        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        if (delay != null) {
+            UsersProvider.setLastSeen(getContext(), from, delay.getStamp().getTime());
+        }
+
         if (UsersProvider.getPublicKey(getContext(), from) == null) {
             // public key not found
             // assuming the user has allowed us, request it
 
             PublicKeyPublish pkey = new PublicKeyPublish();
-            pkey.setTo(XmppStringUtils.parseBareJid(p.getFrom()));
+            pkey.setTo(from);
 
             sendPacket(pkey);
         }
