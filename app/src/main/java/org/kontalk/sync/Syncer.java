@@ -49,6 +49,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
@@ -97,18 +98,23 @@ public class Syncer {
 
     // FIXME this class should handle most recent/available presence stanzas
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
+        /** Max number of items in a roster match request. */
+        private static final int MAX_ROSTER_MATCH_SIZE = 500;
+
         private List<PresenceItem> response;
         private final WeakReference<Syncer> notifyTo;
-        private final String iq;
+
         private final List<String> jidList;
+        private int rosterParts;
+        private String[] iq;
+
         private int presenceCount;
         private int pubkeyCount;
-        private int rosterCount = -1;
+        private int rosterCount;
         private boolean blocklistReceived;
 
-        public PresenceBroadcastReceiver(String iq, List<String> jidList, Syncer notifyTo) {
+        public PresenceBroadcastReceiver(List<String> jidList, Syncer notifyTo) {
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
-            this.iq = iq;
             this.jidList = jidList;
         }
 
@@ -140,7 +146,7 @@ public class Syncer {
                         }
 
                         // done with presence data and blocklist
-                        if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
+                        if (pubkeyCount == presenceCount && blocklistReceived)
                             finish();
                     }
                 }
@@ -149,36 +155,47 @@ public class Syncer {
             // roster match result received
             else if (MessageCenterService.ACTION_ROSTER_MATCH.equals(action)) {
                 String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                if (iq.equals(id)) {
-                    String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
-                    if (list != null) {
-                        rosterCount = list.length;
-                        // prepare list to be filled in with presence data
-                        response = new ArrayList<PresenceItem>(rosterCount);
-                        for (String jid : list) {
-                            PresenceItem p = new PresenceItem();
-                            p.from = jid;
-                            response.add(p);
-                        }
-                    }
-                    else {
-                        rosterCount = 0;
-                    }
+                for (String iqId : iq) {
+                    if (iqId.equals(id)) {
+                        // decrease roster parts counter
+                        rosterParts--;
 
-                    // no roster elements
-                    if (rosterCount == 0 && blocklistReceived) {
-                        finish();
-                    }
-                    else {
-                        Syncer w = notifyTo.get();
-                        if (w != null) {
-                            // request presence data for the whole roster
-                            w.requestPresenceData();
-                            // request public keys for the whole roster
-                            w.requestPublicKeys();
-                            // request block list
-                            w.requestBlocklist();
+                        String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
+                        if (list != null) {
+                            rosterCount += list.length;
+                            if (response == null) {
+                                // prepare list to be filled in with presence data
+                                response = new ArrayList<PresenceItem>(rosterCount);
+                            }
+                            for (String jid : list) {
+                                PresenceItem p = new PresenceItem();
+                                p.from = jid;
+                                response.add(p);
+                            }
                         }
+
+                        if (rosterParts == 0) {
+                            // all roster parts received
+
+                            if (rosterCount == 0 && blocklistReceived) {
+                                // no roster elements
+                                finish();
+                            }
+                            else {
+                                Syncer w = notifyTo.get();
+                                if (w != null) {
+                                    // request presence data for the whole roster
+                                    w.requestPresenceData();
+                                    // request public keys for the whole roster
+                                    w.requestPublicKeys();
+                                    // request block list
+                                    w.requestBlocklist();
+                                }
+                            }
+                        }
+
+                        // no need to continue
+                        break;
                     }
                 }
             }
@@ -199,7 +216,7 @@ public class Syncer {
                     }
 
                     // done with presence data and blocklist
-                    if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
+                    if (pubkeyCount == presenceCount && blocklistReceived)
                         finish();
 
                 }
@@ -227,7 +244,7 @@ public class Syncer {
                 }
 
                 // done with presence data and blocklist
-                if (rosterCount >= 0 && pubkeyCount >= presenceCount)
+                if (pubkeyCount >= presenceCount)
                     finish();
             }
 
@@ -236,9 +253,23 @@ public class Syncer {
                 Syncer w = notifyTo.get();
                 if (w != null) {
                     // request a roster match
-                    w.requestRosterMatch(iq, jidList);
+                    rosterParts = getRosterParts(jidList);
+                    iq = new String[rosterParts];
+                    for (int i = 0; i < rosterParts; i++) {
+                        int end = (i+1)*MAX_ROSTER_MATCH_SIZE;
+                        if (end >= jidList.size())
+                            end = jidList.size();
+                        List<String> slice = jidList.subList(i*MAX_ROSTER_MATCH_SIZE, end);
+
+                        iq[i] = StringUtils.randomString(6);
+                        w.requestRosterMatch(iq[i], slice);
+                    }
                 }
             }
+        }
+
+        private int getRosterParts(List<String> jidList) {
+            return (int) Math.ceil((double) jidList.size() / MAX_ROSTER_MATCH_SIZE);
         }
 
         public List<PresenceItem> getResponse() {
@@ -375,8 +406,7 @@ public class Syncer {
             mLocalBroadcastManager = LocalBroadcastManager.getInstance(mContext);
 
             // register presence broadcast receiver
-            String iq = StringUtils.randomString(6);
-            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, jidList, this);
+            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
@@ -620,7 +650,10 @@ public class Syncer {
 
     private void addContact(Account account, String username, String phone, String jid,
             List<ContentProviderOperation> operations, int index) {
-        Log.d(TAG, "adding contact username = \"" + username + "\", phone: " + phone);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "adding contact \"" + username + "\" <" + phone + ">");
+        }
+
         ContentProviderOperation.Builder builder;
         final int NUM_OPS = 4;
 
