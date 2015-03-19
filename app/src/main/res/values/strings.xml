@@ -371,8 +371,8 @@
 
     <string name="err_no_contacts_app">No contacts app found.</string>
 
-    <string name="warning_public_key">WARNING! The public key for this user changed unexpectedly! Click here for details.</string>
-    <string name="title_public_key_warning">Public key changed</string>
-    <string name="msg_public_key_warning">Public key for this user has changed. Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
+    <string name="warning_public_key">WARNING! The personal key for this user changed unexpectedly! Click here for details.</string>
+    <string name="title_public_key_warning">Personal key changed</string>
+    <string name="msg_public_key_warning">Personal key for this user has changed. Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
 
 </resources>
