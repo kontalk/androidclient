@@ -39,6 +39,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
@@ -363,65 +364,70 @@ public class UsersProvider extends ContentProvider {
 
             try {
                 // query for phone numbers
-                // FIXME this might return null on some devices
                 phones = cr.query(Phone.CONTENT_URI,
                     new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE },
+                    ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1 AND (" +
                     // this will filter out RawContacts from Kontalk
                     RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
-                    RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?)",
+                    RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?))",
                     new String[] {
                         Authenticator.ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE_LEGACY
                     }, null);
 
-                while (phones.moveToNext()) {
-                    String number = phones.getString(0);
-                    String name = phones.getString(1);
+                if (phones != null) {
+                    while (phones.moveToNext()) {
+                        String number = phones.getString(0);
+                        String name = phones.getString(1);
 
-                    // buggy provider - skip entry
-                    if (name == null || number == null)
-                        continue;
+                        // buggy provider - skip entry
+                        if (name == null || number == null)
+                            continue;
 
-                    // remove dial prefix first
-                    if (dialPrefix != null && number.startsWith(dialPrefix))
-                        number = number.substring(dialPrefixLen);
+                        // remove dial prefix first
+                        if (dialPrefix != null && number.startsWith(dialPrefix))
+                            number = number.substring(dialPrefixLen);
 
-                    // a phone number with less than 4 digits???
-                    if (number.length() < 4)
-                        continue;
+                        // a phone number with less than 4 digits???
+                        if (number.length() < 4)
+                            continue;
 
-                    // fix number
-                    try {
-                        number = NumberValidator.fixNumber(context, number,
+                        // fix number
+                        try {
+                            number = NumberValidator.fixNumber(context, number,
                                 Authenticator.getDefaultAccountName(context), 0);
-                    }
-                    catch (Exception e) {
-                        Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
-                        // skip number
-                        continue;
+                        }
+                        catch (Exception e) {
+                            Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
+                            // skip number
+                            continue;
+                        }
+
+                        try {
+                            String hash = MessageUtils.sha1(number);
+
+                            stm.clearBindings();
+                            stm.bindString(1, hash);
+                            stm.bindString(2, number);
+                            stm.bindString(3, XMPPUtils.createLocalJID(getContext(), hash));
+                            stm.bindString(4, name);
+                            stm.bindString(5, phones.getString(2));
+                            stm.bindLong(6, phones.getLong(3));
+                            stm.bindLong(7, 0);
+                            stm.bindNull(8);
+                            stm.bindNull(9);
+                            stm.executeInsert();
+                            count++;
+                        }
+                        catch (SQLiteConstraintException sqe) {
+                            // skip duplicate number
+                        }
                     }
 
-                    try {
-                        String hash = MessageUtils.sha1(number);
-
-                        stm.clearBindings();
-                        stm.bindString(1, hash);
-                        stm.bindString(2, number);
-                        stm.bindString(3, XMPPUtils.createLocalJID(getContext(), hash));
-                        stm.bindString(4, name);
-                        stm.bindString(5, phones.getString(2));
-                        stm.bindLong(6, phones.getLong(3));
-                        stm.bindLong(7, 0);
-                        stm.bindNull(8);
-                        stm.bindNull(9);
-                        stm.executeInsert();
-                        count++;
-                    }
-                    catch (SQLiteConstraintException sqe) {
-                        // skip duplicate number
-                    }
+                    phones.close();
                 }
-
-                phones.close();
+                else {
+                    Log.e(SyncAdapter.TAG, "query to contacts failed!");
+                }
 
                 if (Preferences.getSyncSIMContacts(getContext())) {
                     // query for SIM contacts
