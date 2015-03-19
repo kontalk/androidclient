@@ -54,7 +54,6 @@ import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
-import org.jivesoftware.smackx.ping.android.ServerPingWithAlarmManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.util.XmppStringUtils;
@@ -413,10 +412,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (msg.what == MSG_TEST) {
                 long now = System.currentTimeMillis();
-                if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT &&
-                        !service.fastReply()) {
-                    Log.v(TAG, "test ping failed");
-                    restart(service.getApplicationContext());
+                if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT) {
+                    if (!service.fastReply()) {
+                        Log.v(TAG, "test ping failed");
+                        AdaptiveServerPingManager.pingFailed();
+                        restart(service.getApplicationContext());
+                    }
+                    else {
+                        AdaptiveServerPingManager.pingSuccess();
+                    }
                 }
                 return true;
             }
@@ -506,7 +510,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         configure();
 
         // activate ping manager
-        ServerPingWithAlarmManager.onCreate(this);
+        AdaptiveServerPingManager.onCreate(this);
 
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
@@ -572,7 +576,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "destroying message center");
         quit(false);
         // deactivate ping manager
-        ServerPingWithAlarmManager.onDestroy();
+        AdaptiveServerPingManager.onDestroy();
         // destroy roster store
         mRosterStore.onDestroy();
     }
@@ -605,7 +609,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // disconnect from server (if any)
         if (mConnection != null) {
             // disable ping manager
-            ServerPingWithAlarmManager.getInstanceFor(mConnection).setEnabled(false);
+            AdaptiveServerPingManager.getInstanceFor(mConnection).setEnabled(false);
             // this is because of NetworkOnMainThreadException
             new DisconnectThread(mConnection).start();
             mConnection = null;
@@ -1033,7 +1037,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.setRosterStore(mRosterStore);
 
         // enable ping manager
-        ServerPingWithAlarmManager.getInstanceFor(connection).setEnabled(true);
+        AdaptiveServerPingManager.getInstanceFor(connection).setEnabled(true);
         PingManager.getInstanceFor(connection)
             .registerPingFailedListener(new PingFailedListener() {
                 @Override
