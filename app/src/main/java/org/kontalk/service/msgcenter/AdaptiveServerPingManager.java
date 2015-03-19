@@ -41,6 +41,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.SystemClock;
 
+import org.kontalk.util.Preferences;
+
 
 /**
  * An adaptive ping manager using {@link AlarmManager}.
@@ -162,7 +164,8 @@ public class AdaptiveServerPingManager extends Manager {
         context.registerReceiver(ALARM_BROADCAST_RECEIVER, new IntentFilter(PING_ALARM_ACTION));
         sAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         sPendingIntent = PendingIntent.getBroadcast(context, 0, new Intent(PING_ALARM_ACTION), 0);
-        setupAlarmManager(AlarmManager.INTERVAL_HALF_HOUR);
+        // setup first alarm using last value from preference
+        setupAlarmManager(Preferences.getPingAlarmInterval(sContext, AlarmManager.INTERVAL_HALF_HOUR));
     }
 
     private static boolean isLastPingFailed() {
@@ -180,20 +183,25 @@ public class AdaptiveServerPingManager extends Manager {
 
     public static void pingSuccess() {
         sLastPingFailed = false;
-        setupAlarmManager(sIntervalMillis * 2);
+        setupAlarmManager((long) (sIntervalMillis * 1.5));
     }
 
     private static void setupAlarmManager(long intervalMillis) {
-        if (sPendingIntent != null) {
+        if (sPendingIntent != null && sIntervalMillis != intervalMillis) {
             sAlarmManager.cancel(sPendingIntent);
             sIntervalMillis = intervalMillis;
-            // do not go beyond 30 minutes
+            // save value to preference for later retrieval
+            Preferences.setPingAlarmInterval(sIntervalMillis);
+
+            // do not go beyond 30 minutes...
             if (sIntervalMillis > AlarmManager.INTERVAL_HALF_HOUR) {
                 sIntervalMillis = AlarmManager.INTERVAL_HALF_HOUR;
             }
+            // ...or less than 5 minutes
             else if (sIntervalMillis < MIN_ALARM_INTERVAL) {
                 sIntervalMillis = MIN_ALARM_INTERVAL;
             }
+
             LOGGER.log(Level.WARNING, "Setting alarm for next ping to " + sIntervalMillis + " ms");
             sAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + sIntervalMillis,

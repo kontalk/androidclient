@@ -467,6 +467,16 @@ public final class Preferences {
             .commit();
     }
 
+    public static long getPingAlarmInterval(Context context, long defaultValue) {
+        return getLong(context, "ping_alarm_interval", defaultValue);
+    }
+
+    public static boolean setPingAlarmInterval(long intervalMillis) {
+        return sPreferences.edit()
+            .putLong("ping_alarm_interval", intervalMillis)
+            .commit();
+    }
+
     /**
      * Saves the current registration progress data. Used for recoverying a
      * registration after a restart or in very low memory situations.
