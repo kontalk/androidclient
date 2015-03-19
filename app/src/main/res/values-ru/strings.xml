@@ -20,8 +20,6 @@
   <string name="pref_title_network_uri">Данная опция заменит автоматическое управление списком серверов</string>
   <string name="number_validation_intro1">Пожалуйста, введите Ваше имя, выберите код страны и заполните поле номера Вашего сотового телефона. Вам будет отправлено SMS с проверочным кодом. Номер телефона будет использован один раз и затем удалён.</string>
   <string name="number_validation_intro2">Если это устройство не имеет возможности приема SMS-сообщений, укажите здесь работоспособный номер телефона и введите полученный по SMS код проверки вручную, используя кнопку выше.</string>
-  <string name="code_validation_intro">Вскоре должно прийти SMS-сообщение на введенный номер. Пожалуйста, введите полученный код в поле ниже.</string>
-  <string name="code_validation_intro2">Пожалуйста, введите ранее полученный проверочный код. Данный код может быть использован лишь однажды.</string>
   <string name="hint_validation_name">Ваше имя</string>
   <string name="hint_validation_number">Ваш номер</string>
   <string name="hint_validation_code">Проверочный код</string>
@@ -295,9 +293,6 @@
   <string name="title_auth_error">Ошибка аутентификации</string>
   <string name="msg_auth_error">&lt;b&gt;ПРЕДУПРЕЖДЕНИЕ!&lt;/b&gt;&lt;br&gt;Аутентификация на сервере Kontalk при последнем соединении не удалась. Это может быть временной ошибкой сервера или, что более вероятно, сервер не распознаёт Вашу ключевую пару. Рекомендуем удалить Вашу учётную запись Kontalk в настройках системы Андроид и зарегистрироваться снова (при этом, однако, Вы потеряете все Ваши сообщения Kontalk).</string>
   <string name="warn_invite_no_app">Нет приложений для приглашения пользователей.</string>
-  <string name="pref_text_enter">Показать ввод</string>
-  <string name="pref_title_on_text_enter">Показывать клавишу ввода при написании сообщений</string>
-  <string name="pref_title_off_text_enter">Показывать клавишу действия по умолчанию при написании сообщений</string>
   <string name="title_password1">Пароль</string>
   <string name="title_password2">Подтвердить пароль</string>
   <string name="err_password_too_short">Пароль должен содержать минимум %d знаков.</string>

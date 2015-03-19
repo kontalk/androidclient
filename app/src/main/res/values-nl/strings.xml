@@ -20,8 +20,9 @@
   <string name="pref_title_network_uri">Door het zelf opgeven van een Kontalk-server wordt het automatische serverlijstbeheer uitgeschakeld</string>
   <string name="number_validation_intro1">Voer je naam in, selecteer je landcode en voer je mobiele telefoonnummer in. Je zult een SMS met een verificatiecode ontvangen. Je telefoonnummer wordt eenmaal gebruikt en dan niet meer.</string>
   <string name="number_validation_intro2">Kan je op dit apparaat geen SMS ontvangen? Voer dan een telefoonnummer in van een apparaat waarop je wel een SMS op kan ontvangen.</string>
-  <string name="code_validation_intro">Je zult zo meteen een SMS ontvangen op het opgegeven telefoonnummer. Voer de code uit de SMS hier in.</string>
-  <string name="code_validation_intro2">Voer de verificatiecode in die je hebt ontvangen. Let op, een verificatiecode kan slechts een keer gebruikt worden.</string>
+  <string name="code_validation_intro">Binnen enkele ogenblikken zou je een SMS of oproep van dit nummer moeten ontvangen:</string>
+  <string name="code_validation_intro2">Voer hieronder de code in die je ontvangt of hoort.</string>
+  <string name="code_validation_intro_manual">Voer de verificatiecode die je hebt ontvangen in. Let op: een verificatiecode kan slechts eenmaal gebruikt worden.</string>
   <string name="hint_validation_name">Je naam</string>
   <string name="hint_validation_number">Je nummer</string>
   <string name="hint_validation_code">Verificatiecode</string>
@@ -56,7 +57,7 @@
   <string name="message_type_label">Type:\u0020</string>
   <string name="text_message">Tekstbericht</string>
   <string name="image_message">Afbeeldingsbericht</string>
-  <string name="audio_message">Geluidsbericht</string>
+  <string name="audio_message">Audiobericht</string>
   <string name="from_label">Van:\u0020</string>
   <string name="to_address_label">Aan:\u0020</string>
   <string name="sent_label">Verzonden:\u0020</string>
@@ -107,6 +108,7 @@
   <string name="pref_update_server_list">Kontalk-serverlijst bijwerken</string>
   <string name="server_list_last_update">Voor het laatst bijgewerkt: %s</string>
   <string name="pref_title_push_notifications">Gebruik push-notificaties als de server die ondersteunt. Dit verlengt de levensduur van de batterij.</string>
+  <string name="pref_title_disabled_push_notifications">Pushnotificaties worden niet ondersteund op dit apparaat.</string>
   <string name="pref_push_notifications">Push-notificaties</string>
   <string name="hint_search_full">Berichten zoeken</string>
   <string name="hint_search_quickbox">Tekst in je berichten</string>
@@ -158,7 +160,7 @@
   <string name="msg_sync_progress">Contacten vernieuwen…</string>
   <string name="err_sync_failed">Kan contacten niet vernieuwen. Probeer het later opnieuw.</string>
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
-  <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger in de Google Play Store, een app om gratis te chatten! https://play.google.com/store/apps/details?id=org.kontalk</string>
+  <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger in de Google Play Store, een app om gratis berichten te sturen! https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst. &lt;br/&gt;&lt;br/&gt;Gebruik &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Gebruikers uitnodigen&lt;/b&gt; om een SMS met een uitnodiging te sturen.</string>
   <string name="text_conversations_empty">Gebruik de &lt;b&gt;nieuw bericht&lt;/b&gt;-knop hierboven om te beginnen met berichten schrijven.</string>
   <string name="notify_ticker_external_storage">Externe opslag niet beschikbaar</string>
@@ -176,7 +178,7 @@
   <string name="menu_unblock_user">Deblokkeren</string>
   <string name="vcard_message">vCard-bericht</string>
   <string name="open_file">Bestand openen</string>
-  <string name="open_audio">Geluidsbestand afspelen</string>
+  <string name="open_audio">Audiobestand afspelen</string>
   <string name="msg_msgcenter_restarted">Herstarten berichtencentrum voltooid.</string>
   <string name="downloading_attachment">Bezig met downloaden van bijlage…</string>
   <string name="decrypting_attachment">Bezig met bijlage ontsleutelen…</string>
@@ -185,6 +187,7 @@
   <string name="seen_moment_ago_label">een moment geleden</string>
   <string name="seen_online_label">online</string>
   <string name="seen_typing_label">aan het typen…</string>
+  <string name="invitation_sent_label">lopende uitnodiging</string>
   <string name="pref_custom_background">Aangepaste achtergrond</string>
   <string name="pref_background_uri">Achtergrond</string>
   <string name="pref_title_background_uri">Aangepaste achtergrond voor gesprekken instellen</string>
@@ -217,7 +220,7 @@
   <string name="pref_title_balloons">Een thema voor de tekstballonnen kiezen</string>
   <string name="attachment_picture">Afbeelding</string>
   <string name="attachment_contact">Contact</string>
-  <string name="attachment_audio">Geluid</string>
+  <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Afbeelding verzenden</string>
   <string name="chooser_error_no_camera">Externe opslag niet beschikbaar. Kan geen foto opslaan.</string>
   <string name="status_activity_title">Statusbericht</string>
@@ -265,11 +268,13 @@
   <string name="security_error_decrypt_failed">\u0020(ontsleutelen mislukt)</string>
   <string name="security_error_integrity_check">\u0020(integriteitscontrole)</string>
   <string name="security_error_public_key_unavail">\u0020(publieke sleutel niet beschikbaar)</string>
+  <string name="invite_notification">nodigt je uit om te chatten</string>
   <string name="title_invitation">Uitnodiging voor chat</string>
   <string name="text_invitation_known">Verzoek van\n%1$s &lt;%2$s&gt;\n(%3$s)\nVingerafdruk: %4$s</string>
   <string name="text_invitation_unknown">Verzoek van\n%1$s\nVingerafdruk: %2$s</string>
   <string name="button_accept">Accepteren</string>
   <string name="button_block">Blokkeren</string>
+  <string name="button_identity">Identiteit</string>
   <string name="msg_connecting_iab">Verbinden met Google Play…</string>
   <string name="msg_iab_thankyou">Hartelijk bedankt!</string>
   <string name="iab_error_setup">Technische fout bij betalen: ‘Error during in-app billing setup (%d)’</string>
@@ -293,10 +298,9 @@
   <string name="notification_text_more">Tik hier voor meer informatie</string>
   <string name="title_auth_error">Authenticatiefout</string>
   <string name="msg_auth_error">&lt;b&gt;WAARSCHUWING!&lt;/b&gt;&lt;br&gt;De laatste keer dat je probeerde te verbinden met een Kontalk-server is de authenticatie mislukt. Mogelijk is de server tijdelijk uit de lucht, maar waarschijnlijk weigert de server je persoonlijk sleutelpaar. Als je sleutelpaar geweigerd wordt is de enige oplossing om je Kontalk-account te verwijderen in de Instellingen van Android en jezelf opnieuw te registreren. Helaas raak je hierbij wel al je Kontalk-berichten kwijt.</string>
-  <string name="warn_invite_no_app">Er is op dit apparaat geen applicatie beschikbaar waarmee uitnodigingen verstuurd kunnen worden.</string>
-  <string name="pref_text_enter">Toon Enter-toets</string>
-  <string name="pref_title_on_text_enter">De Enter-toets tonen bij het opstellen van berichten</string>
-  <string name="pref_title_off_text_enter">De standaardactie-toets tonen bij het opstellen van berichten</string>
+  <string name="warn_invite_no_app">Er is op dit apparaat geen app beschikbaar waarmee uitnodigingen verstuurd kunnen worden.</string>
+  <string name="pref_text_enter">Enter-toets</string>
+  <string name="pref_title_text_enter">Selecteer het gedrag van de Enter-toets in het toetsenbord</string>
   <string name="title_password1">Wachtwoord:</string>
   <string name="title_password2">Wachtwoord bevestigen:</string>
   <string name="err_password_too_short">Je wachtwoord moet minstens %d karakters zijn.</string>
@@ -304,12 +308,13 @@
   <string name="err_password_invalid">Verkeerde wachtwoord.</string>
   <string name="err_change_passphrase">Kan niet het wachtwoord van het persoonlijk sleutelpaar veranderen.</string>
   <string name="err_file_not_found">Bestand niet gevonden.</string>
-  <string name="err_audio_record">Fout tijdens beginnen met opnemen van geluid.</string>
+  <string name="err_audio_record">Fout opnemen van audio.</string>
   <string name="err_audio_record_writing">Fout tijdens schrijven op externe opslag.</string>
-  <string name="err_playing_audio">Fout bij afspelen geluid.</string>
+  <string name="err_playing_audio">Fout bij afspelen van audio.</string>
   <string name="err_playing_sdcard">Fout tijdens lezen van externe opslag.</string>
   <string name="pref_media_settings">Media</string>
   <string name="pref_image_resize">Afbeeldingen schalen</string>
   <string name="pref_title_image_resize">Afbeelding schalen voordat ze verzonden worden</string>
   <string name="err_server_invalid_format">Ongeldig adres.</string>
+  <string name="err_no_contacts_app">Er is op dit apparaat geen app beschikbaar waarmee contacten opgeslagen kunnen worden.</string>
 </resources>

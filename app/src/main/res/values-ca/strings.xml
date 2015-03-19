@@ -20,8 +20,9 @@
   <string name="pref_title_network_uri">Això desactivarà la gestió automàtica de la llista de servidors</string>
   <string name="number_validation_intro1">Per favor, introduïu el nom, trieu el codi del país i escriviu el número de mòbil. Vos enviarem un SMS amb el codi de verificació. El número de telèfon s\'usarà una sola vegada i serà descartat.</string>
   <string name="number_validation_intro2">Si no podeu rebre SMS en aquest dispositiu, introduïu el número d\'un telèfon vostre i escriviu el codi de verificació que rebreu via SMS.</string>
-  <string name="code_validation_intro">Hauríeu de rebre tot seguit un SMS al número que heu introduït. Per favor, escriviu aquí el codi que heu rebut.</string>
-  <string name="code_validation_intro2">Per favor, escriviu el codi de verificció que heu rebut. Tingueu en compte que el codi només es pot fer servir una vegada.</string>
+  <string name="code_validation_intro">Tot seguit hauríeu de rebre un SMS o una trucada des d\'aquest número:</string>
+  <string name="code_validation_intro2">Escriviu a sota el codi que heu rebut.</string>
+  <string name="code_validation_intro_manual">Per favor, escriviu el codi de verificació que heu rebut. Recordeu que cada codi només es pot fer servir una vegada.</string>
   <string name="hint_validation_name">El vostre nom</string>
   <string name="hint_validation_number">El vostre número</string>
   <string name="hint_validation_code">Codi de verificació</string>
@@ -107,6 +108,7 @@
   <string name="pref_update_server_list">Actualitza la llista de servidors</string>
   <string name="server_list_last_update">Darrera actualització: %s</string>
   <string name="pref_title_push_notifications">Usa notificacions \'push\' si el servidor les admet. Estalvia bateria</string>
+  <string name="pref_title_disabled_push_notifications">Aquest mòbil no admet notificacions push.</string>
   <string name="pref_push_notifications">Notificacions \'push\'</string>
   <string name="hint_search_full">Cerca als missatges</string>
   <string name="hint_search_quickbox">Text en els vostres missatges</string>
@@ -185,6 +187,7 @@
   <string name="seen_moment_ago_label">adés</string>
   <string name="seen_online_label">Treballa en línia</string>
   <string name="seen_typing_label">està escrivint...</string>
+  <string name="invitation_sent_label">invitació pendent</string>
   <string name="pref_custom_background">Fons personalitzat</string>
   <string name="pref_background_uri">Fons</string>
   <string name="pref_title_background_uri">Definiu la imatge de fons per a les converses</string>
@@ -265,6 +268,7 @@
   <string name="security_error_decrypt_failed">\u0020(el desxiframent ha fallat)</string>
   <string name="security_error_integrity_check">\u0020(verificació de la integritat)</string>
   <string name="security_error_public_key_unavail">\u0020(la clau pública no està disponible)</string>
+  <string name="invite_notification">us convida a un xat</string>
   <string name="title_invitation">Invitació a un xat</string>
   <string name="text_invitation_known">Sol·licitud de\n%1$s &lt;%2$s&gt;\n(%3$s)\nEmpremta: %4$s</string>
   <string name="text_invitation_unknown">Sol·licitud de\n%1$s\nEmpremta: %2$s</string>
@@ -294,9 +298,8 @@
   <string name="title_auth_error">Error d\'autenticació</string>
   <string name="msg_auth_error">&lt;b&gt;WARNING!&lt;/b&gt;&lt;br&gt;L\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
   <string name="warn_invite_no_app">No hi ha cap aplicació disponible per a convidar usuaris.</string>
-  <string name="pref_text_enter">Mostra la tecla ENTER</string>
-  <string name="pref_title_on_text_enter">Es mostra la tecla retorn mentre s\'escriu</string>
-  <string name="pref_title_off_text_enter">Es mostra la tecla per defecte mentre s\'escriu</string>
+  <string name="pref_text_enter">Botó retorn</string>
+  <string name="pref_title_text_enter">Trieu el comportament del botó retorn al teclat</string>
   <string name="title_password1">Contrasenya:</string>
   <string name="title_password2">Confirmació de la contrasenya:</string>
   <string name="err_password_too_short">La contrasenya ha de tenir, si més no, %d caràcters.</string>
@@ -312,4 +315,5 @@
   <string name="pref_image_resize">Redimensiona les imatges</string>
   <string name="pref_title_image_resize">Redimensiona les imatges abans d\'enviar-les</string>
   <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
+  <string name="err_no_contacts_app">No s\'ha trobat l\'app de gestió de contactes</string>
 </resources>

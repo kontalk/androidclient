@@ -20,8 +20,9 @@
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste.</string>
   <string name="number_validation_intro1">Bitte Ihren Namen und Ihre Mobilfunknummer eingeben sowie den Ländercode auswählen. Eine SMS mit einem Verfikationscode wird Ihnen zugesendet. Ihre Tel.Nr. wird nur einmalig benutzt und dann verworfen.</string>
   <string name="number_validation_intro2">Wenn Sie auf diesem Gerät keine SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an und geben Sie den Verifikationscode ein, den Sie per SMS erhalten.</string>
-  <string name="code_validation_intro">Sie sollten in Kürze eine SMS an die angegebene Tel.Nr. erhalten. Bitte geben Sie den darin enthaltenen Code unten ein.</string>
-  <string name="code_validation_intro2">Bitte geben Sie den Verifikationscode ein, den Sie empfangen haben. Bitte beachten Sie, dass ein Verifizierungscode nur einmalig genutzt werden kann.</string>
+  <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer bekommen:</string>
+  <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
+  <string name="code_validation_intro_manual">Bitte fügen Sie den Verifikationscode ein den Sie bekommen haben. Beachten Sie bitte, dass ein Verfikationscode nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
   <string name="hint_validation_number">Ihre Nummer</string>
   <string name="hint_validation_code">Verfikationscode</string>
@@ -186,6 +187,7 @@
   <string name="seen_moment_ago_label">vor Kurzem</string>
   <string name="seen_online_label">online</string>
   <string name="seen_typing_label">schreibt...</string>
+  <string name="invitation_sent_label">Unbestätigte Einladung</string>
   <string name="pref_custom_background">Eigener Hintergrund</string>
   <string name="pref_background_uri">Hintergrund</string>
   <string name="pref_title_background_uri">Ein eigenes Hintergrundbild für Gespräche auswählen.</string>
@@ -272,6 +274,7 @@
   <string name="text_invitation_unknown">Anfrage von\n%1$s\nFingerabdruck: %2$s</string>
   <string name="button_accept">Annehmen</string>
   <string name="button_block">Blockieren</string>
+  <string name="button_identity">Identität</string>
   <string name="msg_connecting_iab">Mit Google Play verbinden…</string>
   <string name="msg_iab_thankyou"> Vielen Dank! </string>
   <string name="iab_error_setup">Fehler während der Einrichtung der In-App Käufe (%d)</string>
@@ -296,9 +299,8 @@
   <string name="title_auth_error">Verifizierungsfehler</string>
   <string name="msg_auth_error">&lt;b&gt;WARNUNG!&lt;/b&gt;&lt;br&gt;Das letzte Mal als versucht wurde einen Kontalkserver zu kontaktieren ist die Authentifikation fehlgeschlagen. Es könnte ein vorrübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihr Kontalk-Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre geamten Kontalknachrichten verloren).</string>
   <string name="warn_invite_no_app">Keine App verfügbar um Nutzer einzuladen.</string>
-  <string name="pref_text_enter">Entertaste anzeigen</string>
-  <string name="pref_title_on_text_enter">Beim Verfassen von Nachrichten die Entertaste anzeigen</string>
-  <string name="pref_title_off_text_enter">Beim Verfassen von Nachrichten die Smileytaste anzeigen</string>
+  <string name="pref_text_enter">Entertaste</string>
+  <string name="pref_title_text_enter">Wählen Sie die Funktion der Entertaste.</string>
   <string name="title_password1">Passwort:</string>
   <string name="title_password2">Passwort bestätigen:</string>
   <string name="err_password_too_short">Passwort muss aus mindestens %d Zeichen bestehen.</string>

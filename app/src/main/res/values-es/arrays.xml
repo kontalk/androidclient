@@ -15,6 +15,11 @@
     <item>Clásico (antiguo)</item>
     <item>iPhone</item>
   </string-array>
+  <string-array name="text_enter_labels">
+    <item>Predeterminado</item>
+    <item>Intro</item>
+    <item>Enviar</item>
+  </string-array>
   <string-array name="image_resize_labels">
     <item>Original</item>
     <item>Pequeñas (0.3MP)</item>
