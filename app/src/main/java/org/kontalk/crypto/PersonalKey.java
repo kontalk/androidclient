@@ -286,6 +286,17 @@ public class PersonalKey implements Parcelable {
         return load(secRing, pubRing, passphrase, bridgeCert);
     }
 
+    /** Creates a {@link PersonalKey} from private and public key byte buffers. */
+    public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, X509Certificate bridgeCert)
+        throws PGPException, IOException, CertificateException, NoSuchProviderException {
+
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+
+        return load(secRing, pubRing, passphrase, bridgeCert);
+    }
+
     @SuppressWarnings("unchecked")
     public static PersonalKey load(PGPSecretKeyRing secRing, PGPPublicKeyRing pubRing, String passphrase, X509Certificate bridgeCert)
             throws PGPException, IOException, CertificateException, NoSuchProviderException {

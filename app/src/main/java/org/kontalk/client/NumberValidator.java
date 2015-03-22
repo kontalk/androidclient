@@ -414,7 +414,16 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         if (!mConnector.isConnected() || mConnector.isServerDirty()) {
             mConnector.setListener(this);
-            mConnector.connectOnce(mKey != null ? mKey.copy(mBridgeCert) : null);
+            PersonalKey key = null;
+            if (mImportedPrivateKey != null && mImportedPublicKey != null) {
+                PGPKeyPairRing ring = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                key = PersonalKey.load(ring.secretKey, ring.publicKey, mPassphrase, mBridgeCert);
+            }
+            else if (mKey != null) {
+                key = mKey.copy(mBridgeCert);
+            }
+
+            mConnector.connectOnce(key);
         }
     }
 
