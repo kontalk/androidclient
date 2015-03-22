@@ -382,7 +382,6 @@ public class MessagingNotification {
             builder.setContentTitle(title);
             builder.setContentText(text);
             builder.setStyle(style);
-            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
             builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
                 sNotificationOnDeleteIntent, 0));
 
@@ -438,7 +437,6 @@ public class MessagingNotification {
             builder.setContentTitle(accumulator.getTitle());
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
-            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
             builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
                 sNotificationOnDeleteIntent, 0));
         }
@@ -446,6 +444,9 @@ public class MessagingNotification {
         if (isNew) {
             setDefaults(context, builder);
         }
+
+        // features (priority, category)
+        setFeatures(builder);
 
         nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
 
@@ -479,6 +480,11 @@ public class MessagingNotification {
         builder.setDefaults(defaults);
     }
 
+    private static void setFeatures(NotificationCompat.Builder builder) {
+        builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+        builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+    }
+
     /** Triggers a notification for a chat invitation. */
     public static void chatInvitation(Context context, String jid) {
         // open conversation, do not send notification
@@ -507,8 +513,7 @@ public class MessagingNotification {
             .setTicker(context.getString(R.string.title_invitation))
             .setContentTitle(title)
             .setContentText(context.getString(R.string.invite_notification))
-            .setContentIntent(pi)
-            .setPriority(NotificationCompat.PRIORITY_HIGH);
+            .setContentIntent(pi);
 
         // include an avatar if any
         if (contact != null) {
@@ -519,6 +524,8 @@ public class MessagingNotification {
 
         // defaults (sound, vibration, lights)
         setDefaults(context, builder);
+        // features (priority, category)
+        setFeatures(builder);
 
         // fire it up!
         NotificationManager nm = (NotificationManager) context
