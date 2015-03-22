@@ -60,8 +60,8 @@ public class EndpointServer {
     @Override
     public boolean equals(Object o) {
         return o != null && o instanceof EndpointServer &&
-            (((EndpointServer) o).mHost == mHost ||
-                ((EndpointServer) o).mHost.equalsIgnoreCase(mHost)) &&
+            (mHost == ((EndpointServer) o).mHost ||
+                (mHost != null && mHost.equalsIgnoreCase(((EndpointServer) o).mHost))) &&
             (((EndpointServer) o).mNetwork == mNetwork ||
                 ((EndpointServer) o).mNetwork.equalsIgnoreCase(mNetwork)) &&
             ((EndpointServer) o).mPort == mPort;

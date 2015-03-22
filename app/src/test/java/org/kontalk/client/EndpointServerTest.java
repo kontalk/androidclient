@@ -75,9 +75,11 @@ public class EndpointServerTest {
         s1 = new EndpointServer("beta.kontalk.net");
         s2 = new EndpointServer("beta.kontalk.net|127.0.0.1");
         assertFalse(s1.equals(s2));
+        assertFalse(s2.equals(s1));
         s1 = new EndpointServer("beta.kontalk.net");
         s2 = new EndpointServer("beta.kontalk.net");
         assertTrue(s1.equals(s2));
+        assertTrue(s2.equals(s1));
     }
 
     @Test
