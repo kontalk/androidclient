@@ -274,6 +274,7 @@
   <string name="text_invitation_unknown">Sol·licitud de\n%1$s\nEmpremta: %2$s</string>
   <string name="button_accept">Accepta</string>
   <string name="button_block">Bloca</string>
+  <string name="button_identity">Identitat</string>
   <string name="msg_connecting_iab">S\'està connectant amb Google Play...</string>
   <string name="msg_iab_thankyou">Gràcies!</string>
   <string name="iab_error_setup">S\'ha produït un error durant la configuració del pagament (%d)</string>
@@ -316,4 +317,7 @@
   <string name="pref_title_image_resize">Redimensiona les imatges abans d\'enviar-les</string>
   <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
   <string name="err_no_contacts_app">No s\'ha trobat l\'app de gestió de contactes</string>
+  <string name="warning_public_key">ALERTA! La clau personal d\'aquest usuari ha canviat! Feu clic ací si en voleu més informació.</string>
+  <string name="title_public_key_warning">La clau personal ha canviat</string>
+  <string name="msg_public_key_warning">La clau personal d\'aquest usuari ha canviat. Per favor, esbrineu si l\'usuari ha reinstal·lat Kontalk o si ha regenerat la clau deliberadament; si no, la comunicació podria haver estat compromesa.</string>
 </resources>

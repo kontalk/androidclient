@@ -317,4 +317,7 @@
   <string name="pref_title_image_resize">Afbeelding schalen voordat ze verzonden worden</string>
   <string name="err_server_invalid_format">Ongeldig adres.</string>
   <string name="err_no_contacts_app">Er is op dit apparaat geen app beschikbaar waarmee contacten opgeslagen kunnen worden.</string>
+  <string name="warning_public_key">WAARSCHUWING! De persoonlijke sleutel voor deze gebruiker is onverwacht veranderd! Klik hier voor details.</string>
+  <string name="title_public_key_warning">Persoonlijke sleutel veranderd</string>
+  <string name="msg_public_key_warning">De persoonlijke sleutel voor deze gebruiker is veranderd. Ga na bij de gebruiker of hij/zij Kontalk opnieuw heeft geïnstalleerd of zijn/haar sleutel bewust opnieuw heeft aangemaakt, anders zou je communicatie aangetast kunnen zijn!</string>
 </resources>
