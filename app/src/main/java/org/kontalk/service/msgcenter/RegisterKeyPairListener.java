@@ -34,6 +34,7 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.SmackInitializer;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
@@ -68,9 +69,18 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
         return mKeyRing;
     }
 
+    protected void configure() {
+        SmackInitializer.initializeRegistration();
+    }
+
+    protected void unconfigure() {
+        SmackInitializer.deinitializeRegistration();
+    }
+
     public void run() throws CertificateException, SignatureException,
             PGPException, IOException, NoSuchProviderException {
         revokeCurrentKey();
+        configure();
         setupConnectedReceiver();
     }
 
@@ -79,6 +89,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
             unregisterReceiver(mConnReceiver);
             mConnReceiver = null;
         }
+        unconfigure();
     }
 
     private Stanza prepareKeyPacket() {
@@ -212,6 +223,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                         // invalidate cached personal key
                         getApplication().invalidatePersonalKey();
 
+                        unconfigure();
                         finish();
 
                         // restart message center

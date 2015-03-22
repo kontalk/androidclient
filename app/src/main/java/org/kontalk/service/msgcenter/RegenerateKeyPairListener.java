@@ -61,6 +61,7 @@ class RegenerateKeyPairListener extends RegisterKeyPairListener {
         // not calling super
         revokeCurrentKey();
 
+        configure();
         setupKeyPairReceiver();
 
         // begin key pair generation
