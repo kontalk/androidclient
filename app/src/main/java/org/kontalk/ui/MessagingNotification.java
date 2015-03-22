@@ -376,7 +376,7 @@ public class MessagingNotification {
             }
 
             builder.setNumber(unread);
-            builder.setSmallIcon(R.drawable.stat_notify);
+            builder.setSmallIcon(R.drawable.ic_stat_notify);
 
             builder.setTicker(ticker);
             builder.setContentTitle(title);
@@ -433,7 +433,7 @@ public class MessagingNotification {
                     builder.setLargeIcon(avatar.getBitmap());
             }
             builder.setNumber(accumulator.unreadCount);
-            builder.setSmallIcon(R.drawable.stat_notify);
+            builder.setSmallIcon(R.drawable.ic_stat_notify);
             builder.setContentTitle(accumulator.getTitle());
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
@@ -509,7 +509,7 @@ public class MessagingNotification {
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(context.getApplicationContext())
             .setAutoCancel(true)
-            .setSmallIcon(R.drawable.stat_notify)
+            .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_invitation))
             .setContentTitle(title)
             .setContentText(context.getString(R.string.invite_notification))
@@ -558,7 +558,7 @@ public class MessagingNotification {
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(context.getApplicationContext())
             .setAutoCancel(true)
-            .setSmallIcon(R.drawable.stat_notify)
+            .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_auth_error))
             .setContentTitle(context.getString(R.string.title_auth_error))
             .setContentText(context.getString(R.string.notification_text_more))

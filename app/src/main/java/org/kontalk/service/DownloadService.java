@@ -216,7 +216,7 @@ public class DownloadService extends IntentService implements DownloadListener {
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
                 R.layout.progress_notification,
                 getString(R.string.downloading_attachment),
-                R.drawable.stat_notify,
+                R.drawable.ic_stat_notify,
                 pi);
         }
 
@@ -336,7 +336,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
             // create notification
             NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
-                .setSmallIcon(R.drawable.stat_notify)
+                .setSmallIcon(R.drawable.ic_stat_notify)
                 .setContentTitle(getString(R.string.notify_title_download_completed))
                 .setContentText(getString(R.string.notify_text_download_completed))
                 .setTicker(getString(R.string.notify_ticker_download_completed))
@@ -366,7 +366,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
         // create notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
-            .setSmallIcon(R.drawable.stat_notify)
+            .setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle(getString(R.string.notify_title_download_error))
             .setContentText(text)
             .setTicker(ticker)
