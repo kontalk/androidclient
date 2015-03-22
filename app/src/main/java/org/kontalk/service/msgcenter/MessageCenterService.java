@@ -495,9 +495,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             getLooper().quit();
         }
 
+        public void queueInactiveIfNeeded() {
+            post(new Runnable() {
+                public void run() {
+                    if (mRefCount <= 0 && !hasMessages(MSG_INACTIVE)) {
+                        queueInactive();
+                    }
+                }
+            });
+        }
+
         private void queueInactive() {
-            // send inactive state message
-            sendMessageDelayed(obtainMessage(MSG_INACTIVE), INACTIVE_TIME);
+            // send inactive state message only if connected
+            MessageCenterService service = s.get();
+            if (service != null && service.isConnected()) {
+                sendMessageDelayed(obtainMessage(MSG_INACTIVE), INACTIVE_TIME);
+            }
         }
 
         public void test() {
@@ -1101,6 +1114,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // we can now release any pending push notification
         Preferences.setLastPushNotification(this, -1);
+
+        // queue inactive message if needed
+        mIdleHandler.queueInactiveIfNeeded();
 
         // release the wakelock
         mWakeLock.release();
