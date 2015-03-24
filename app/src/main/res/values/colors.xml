@@ -46,5 +46,7 @@
     <color name="date_stamp_text">#dddddd</color>
 
     <color name="warning_bar_background">#ffdd1812</color>
+    
+    <color name="notification_color">#ffffff</color>
 
 </resources>

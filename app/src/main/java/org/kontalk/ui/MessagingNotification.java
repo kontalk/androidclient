@@ -21,7 +21,6 @@ package org.kontalk.ui;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
@@ -42,7 +41,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
@@ -313,7 +311,7 @@ public class MessagingNotification {
                     if (count < 5) {
                         SpannableStringBuilder buf = new SpannableStringBuilder();
                         buf.append(name).append(' ');
-                        buf.setSpan(new ForegroundColorSpan(Color.WHITE), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        buf.setSpan(new ForegroundColorSpan(R.color.notification_color), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         // take just the last message
                         buf.append(convs.get(user)[1]);
 
