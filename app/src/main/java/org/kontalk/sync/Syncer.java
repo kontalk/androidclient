@@ -105,7 +105,7 @@ public class Syncer {
         private final WeakReference<Syncer> notifyTo;
 
         private final List<String> jidList;
-        private int rosterParts;
+        private int rosterParts = -1;
         private String[] iq;
 
         private int presenceCount;
@@ -174,7 +174,7 @@ public class Syncer {
                             }
                         }
 
-                        if (rosterParts == 0) {
+                        if (rosterParts <= 0) {
                             // all roster parts received
 
                             if (rosterCount == 0 && blocklistReceived) {
@@ -249,7 +249,7 @@ public class Syncer {
             }
 
             // connected! Retry...
-            else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+            else if (MessageCenterService.ACTION_CONNECTED.equals(action) && rosterParts <= 0) {
                 Syncer w = notifyTo.get();
                 if (w != null) {
                     // request a roster match
