@@ -18,6 +18,6 @@
 
 <resources>
 
-    <color name="notification_color">#000000</color>
+    <color name="notification_name_color">@android:color/black</color>
 
 </resources>

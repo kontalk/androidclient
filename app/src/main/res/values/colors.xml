@@ -47,6 +47,6 @@
 
     <color name="warning_bar_background">#ffdd1812</color>
     
-    <color name="notification_color">#ffffff</color>
+    <color name="notification_name_color">@android:color/white</color>
 
 </resources>
