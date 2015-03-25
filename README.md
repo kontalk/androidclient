@@ -13,6 +13,6 @@ Stable versions are also available through Google Play Store and F-Droid:
        src="https://developer.android.com/images/brand/en_generic_rgb_wo_45.png" />
 </a>
 <a href="https://f-droid.org/repository/browse/?fdid=org.kontalk">
-  <img alt="Get it on F-Droid" height="45"
-       src="https://f-droid.org/wp-content/uploads/2014/04/cropped-header_resp1.png" />
+  <img alt="Available on F-Droid" height="45"
+       src="http://www.kontalk.org/images/fdroid.png" />
 </a>
