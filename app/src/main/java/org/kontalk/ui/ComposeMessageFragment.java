@@ -1926,39 +1926,40 @@ public class ComposeMessageFragment extends ListFragment implements
                     String action = intent.getAction();
 
                     if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
+                        String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
+                        String bareFrom = from != null ? XmppStringUtils.parseBareJid(from) : null;
 
-                        // we handle only (un)available presence stanzas
-                        String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                        // we are receiving a presence from our peer
+                        if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
 
-                        if (type == null) {
-                            // no roster entry found, request subscription
+                            // we handle only (un)available presence stanzas
+                            String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
 
-                            // pre-approve our presence if we don't have contact's key
-                            Intent i = new Intent(context, MessageCenterService.class);
-                            i.setAction(MessageCenterService.ACTION_PRESENCE);
-                            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
-                            context.startService(i);
+                            if (type == null) {
+                                // no roster entry found, request subscription
 
-                            // request subscription
-                            i = new Intent(context, MessageCenterService.class);
-                            i.setAction(MessageCenterService.ACTION_PRESENCE);
-                            i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
-                            i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
-                            context.startService(i);
+                                // pre-approve our presence if we don't have contact's key
+                                Intent i = new Intent(context, MessageCenterService.class);
+                                i.setAction(MessageCenterService.ACTION_PRESENCE);
+                                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribed.name());
+                                context.startService(i);
 
-                            setStatusText(getString(R.string.invitation_sent_label));
-                        }
+                                // request subscription
+                                i = new Intent(context, MessageCenterService.class);
+                                i.setAction(MessageCenterService.ACTION_PRESENCE);
+                                i.putExtra(MessageCenterService.EXTRA_TO, mUserJID);
+                                i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
+                                context.startService(i);
 
-                        else if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
+                                setStatusText(getString(R.string.invitation_sent_label));
+                            }
 
-                            CharSequence statusText = null;
+                            // (un)available presence
+                            else if (Presence.Type.available.name().equals(type) || Presence.Type.unavailable.name().equals(type)) {
 
-                            String from = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
-                            String bareFrom = from != null ? XmppStringUtils.parseBareJid(from) : null;
+                                CharSequence statusText = null;
 
-                            // we are receiving a presence from our peer, upgrade available resources
-                            if (from != null && bareFrom.equalsIgnoreCase(mUserJID)) {
                                 // really not much sense in requesting the key for a non-existing contact
                                 Contact contact = mConversation != null ? mConversation.getContact() : null;
                                 if (contact != null) {
@@ -1983,8 +1984,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
                                     statusText = getString(R.string.seen_online_label);
-                                }
-                                else if (Presence.Type.unavailable.toString().equals(type)) {
+                                } else if (Presence.Type.unavailable.toString().equals(type)) {
                                     mAvailableResources.remove(from);
                                     /*
                                      * All available resources have gone. Mark
@@ -1999,24 +1999,23 @@ public class ComposeMessageFragment extends ListFragment implements
                                         long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
                                         if (stamp >= 0 && ((System.currentTimeMillis() - stamp) > PRESENCE_DELAY_THRESHOLD)) {
                                             statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
-                                        }
-                                        else {
+                                        } else {
                                             statusText = getString(R.string.seen_moment_ago_label);
                                         }
                                     }
                                 }
+
+                                if (statusText != null) {
+                                    mCurrentStatus = statusText;
+                                    if (!mIsTyping)
+                                        setStatusText(statusText);
+                                }
                             }
 
-                            if (statusText != null) {
-                                mCurrentStatus = statusText;
-                                if (!mIsTyping)
-                                    setStatusText(statusText);
+                            // subscription accepted, probe presence
+                            else if (Presence.Type.subscribed.name().equals(type)) {
+                                presenceSubscribe();
                             }
-                        }
-
-                        // subscription accepted, probe presence
-                        else if (Presence.Type.subscribed.name().equals(type)) {
-                            presenceSubscribe();
                         }
                     }
 
