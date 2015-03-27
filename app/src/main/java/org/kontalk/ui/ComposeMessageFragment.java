@@ -1963,8 +1963,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                 // really not much sense in requesting the key for a non-existing contact
                                 Contact contact = mConversation != null ? mConversation.getContact() : null;
                                 if (contact != null) {
-                                    boolean requestKey = true;
                                     PGPPublicKeyRing publicKey = contact.getPublicKeyRing();
+                                    boolean requestKey = (publicKey != null);
                                     // check if fingerprint changed
                                     if (publicKey != null) {
                                         String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
