@@ -120,10 +120,10 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     try {
                         Log.v("pubkey", "networkUser = " + networkUser + " (" + from + ")");
                         if (networkUser) {
-                            String fingerprint = PGP.getFingerprint(_publicKey);
-                            Log.v("pubkey", "Updating key for " + from + " fingerprint " + fingerprint);
-                            UsersProvider.setUserKey(getContext(), from,
-                                _publicKey, fingerprint);
+                            Log.v("pubkey", "Updating key for " + from);
+                            UsersProvider.setUserKey(getContext(), from, _publicKey);
+                            // maybe trust the key
+                            UsersProvider.maybeTrustUserKey(getContext(), from, _publicKey);
 
                             // invalidate cache for this user
                             Contact.invalidate(from);

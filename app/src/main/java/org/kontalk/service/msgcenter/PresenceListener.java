@@ -71,7 +71,7 @@ class PresenceListener extends MessageCenterPacketListener {
         super(instance);
     }
 
-    private Stanza createSubscribe(Presence p) {
+    private Stanza createSubscribed(Presence p) {
         PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
         try {
@@ -79,14 +79,15 @@ class PresenceListener extends MessageCenterPacketListener {
             if (_pkey instanceof PublicKeyPresence) {
                 PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
 
-                PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
-                PGPPublicKey publicKey = PGP.getMasterKey(pubRing);
-                String fingerprint = MessageUtils.bytesToHex(publicKey.getFingerprint());
+                byte[] keydata = pkey.getKey();
+                // just to ensure it's valid data
+                PGP.readPublicKeyring(keydata);
 
+                String jid = XmppStringUtils.parseBareJid(p.getFrom());
                 // store key to users table
-                UsersProvider.setUserKey(getContext(),
-                    XmppStringUtils.parseBareJid(p.getFrom()),
-                    pkey.getKey(), fingerprint);
+                UsersProvider.setUserKey(getContext(), jid, keydata);
+                // maybe trust the key
+                UsersProvider.maybeTrustUserKey(getContext(), jid, keydata);
             }
 
             Presence p2 = new Presence(Presence.Type.subscribed);
@@ -148,7 +149,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
             // TODO user database entry should be stored here too
 
-            Stanza r = createSubscribe(p);
+            Stanza r = createSubscribed(p);
             if (r != null)
                 getConnection().sendPacket(r);
 
@@ -168,7 +169,6 @@ class PresenceListener extends MessageCenterPacketListener {
 
             // extract public key
             String name = null, fingerprint = null;
-            byte[] publicKey = null;
             PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
             if (_pkey instanceof PublicKeyPresence) {
                 PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
@@ -181,7 +181,6 @@ class PresenceListener extends MessageCenterPacketListener {
                         // set all parameters
                         name = PGP.getUserId(pk, getServer().getNetwork());
                         fingerprint = PGP.getFingerprint(pk);
-                        publicKey = _publicKey;
                     }
                 }
             }
@@ -196,8 +195,7 @@ class PresenceListener extends MessageCenterPacketListener {
             values.put(Users.HASH, XmppStringUtils.parseLocalpart(from));
             values.put(Users.JID, from);
             values.put(Users.NUMBER, from);
-            if (publicKey != null && fingerprint != null) {
-                values.put(Users.PUBLIC_KEY, publicKey);
+            if (fingerprint != null) {
                 values.put(Users.FINGERPRINT, fingerprint);
             }
             values.put(Users.DISPLAY_NAME, name);
@@ -332,7 +330,7 @@ class PresenceListener extends MessageCenterPacketListener {
         }
 
         return getContext().getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + " = ?", new String[] { jid });
+            values, Users.JID + "=?", new String[] { jid });
     }
 
 }

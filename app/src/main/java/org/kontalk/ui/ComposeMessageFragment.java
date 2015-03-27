@@ -1894,6 +1894,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
                             switch (which) {
                                 case DialogInterface.BUTTON_POSITIVE:
+                                    // mark current key as trusted
+                                    UsersProvider.trustUserKey(getActivity(), mUserJID);
                                     // request the new key
                                     MessageCenterService.requestPublicKey(getActivity(), mUserJID);
                                     break;
@@ -1963,16 +1965,22 @@ public class ComposeMessageFragment extends ListFragment implements
                                 // really not much sense in requesting the key for a non-existing contact
                                 Contact contact = mConversation != null ? mConversation.getContact() : null;
                                 if (contact != null) {
-                                    PGPPublicKeyRing publicKey = contact.getPublicKeyRing();
-                                    boolean requestKey = (publicKey != null);
+                                    String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
+                                    // if this is null, we are accepting the key for the first time
+                                    PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
+
+                                    boolean requestKey = (trustedPublicKey == null);
                                     // check if fingerprint changed
-                                    if (publicKey != null) {
-                                        String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
-                                        String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(publicKey));
+                                    if (trustedPublicKey != null) {
+                                        String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
                                         if (newFingerprint == null || newFingerprint.equalsIgnoreCase(oldFingerprint)) {
                                             // no fingerprint available or fingerprint has not changed since last time
                                             requestKey = false;
                                         }
+                                    }
+                                    else {
+                                        // request key if we got one in the first place
+                                        requestKey = (contact.getFingerprint() != null);
                                     }
 
                                     if (requestKey) {
