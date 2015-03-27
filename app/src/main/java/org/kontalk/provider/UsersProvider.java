@@ -418,6 +418,9 @@ public class UsersProvider extends ContentProvider {
                             stm.executeInsert();
                             count++;
                         }
+                        catch (IllegalArgumentException iae) {
+                            Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                        }
                         catch (SQLiteConstraintException sqe) {
                             // skip duplicate number
                         }
@@ -495,6 +498,9 @@ public class UsersProvider extends ContentProvider {
                                 stm.executeInsert();
                                 count++;
                             }
+                            catch (IllegalArgumentException iae) {
+                                Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                            }
                             catch (SQLiteConstraintException sqe) {
                                 // skip duplicate number
                             }
@@ -539,6 +545,9 @@ public class UsersProvider extends ContentProvider {
                         stm.bindNull(9);
                     stm.executeInsert();
                     count++;
+                }
+                catch (IllegalArgumentException iae) {
+                    Log.w(SyncAdapter.TAG, "doing sync with no server?");
                 }
                 catch (SQLiteConstraintException sqe) {
                     // skip duplicate number

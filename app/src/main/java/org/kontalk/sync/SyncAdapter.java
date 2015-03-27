@@ -79,6 +79,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
 
+            // do not start if no server available (limbo state)
+            if (Preferences.getEndpointServer(mContext) == null) {
+                Log.d(TAG, "no server available - aborting");
+                return;
+            }
+
             if (!force) {
                 long lastSync = Preferences.getLastSyncTimestamp(mContext);
                 long diff = (System.currentTimeMillis() - lastSync) / 1000;

@@ -92,6 +92,8 @@ public class XMPPUtils {
 
     public static String createLocalJID(Context context, String name) {
         EndpointServer server = Preferences.getEndpointServer(context);
+        if (server == null)
+            throw new IllegalArgumentException("server is null");
         return XmppStringUtils.completeJidFrom(name, server.getNetwork());
     }
 
