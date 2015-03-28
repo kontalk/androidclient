@@ -117,6 +117,11 @@ public class UsersProvider extends ContentProvider {
         private static final String SCHEMA_KEYS =
             "CREATE TABLE " + TABLE_KEYS + " " + CREATE_TABLE_KEYS;
 
+        private static final String[] SCHEMA_UPGRADE_V7 = {
+            SCHEMA_KEYS,
+            "INSERT INTO " + TABLE_KEYS + " SELECT jid, public_key, fingerprint FROM " + TABLE_USERS,
+        };
+
         // any upgrade - just replace the table
         private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
@@ -147,13 +152,18 @@ public class UsersProvider extends ContentProvider {
             mNew = true;
         }
 
-        /** TODO simplify upgrade process based on org.kontalk database schema */
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (oldVersion != newVersion) {
-                for (String sql : SCHEMA_UPGRADE)
-                    db.execSQL(sql);
-                mNew = true;
+            switch (oldVersion) {
+                case 7:
+                    // create keys table and trust anyone
+                    for (String sql : SCHEMA_UPGRADE_V7)
+                        db.execSQL(sql);
+                    break;
+                default:
+                    for (String sql : SCHEMA_UPGRADE)
+                        db.execSQL(sql);
+                    mNew = true;
             }
         }
 
