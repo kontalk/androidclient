@@ -23,24 +23,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
-import android.text.style.DynamicDrawableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.GridView;
-import android.widget.ImageView;
 
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.util.StringUtils;
 
 import org.kontalk.Kontalk;
@@ -673,7 +665,7 @@ public final class MessageUtils {
             // TODO duplicated code (MessageListener#processPacket)
 
             // out of band data
-            PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+            ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
             if (_media != null && _media instanceof OutOfBandData) {
                 File previewFile = null;
 
@@ -684,7 +676,7 @@ public final class MessageUtils {
                 boolean encrypted = media.isEncrypted();
 
                 // bits-of-binary for preview
-                PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
                 if (_preview != null && _preview instanceof BitsOfBinary) {
                     BitsOfBinary preview = (BitsOfBinary) _preview;
                     String previewMime = preview.getType();

@@ -21,7 +21,7 @@ package org.kontalk.service.msgcenter;
 import java.io.IOException;
 
 import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
@@ -45,7 +45,6 @@ import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.MessagingNotification;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
@@ -72,7 +71,7 @@ class PresenceListener extends MessageCenterPacketListener {
     }
 
     private Stanza createSubscribed(Presence p) {
-        PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+        ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
         try {
 
@@ -169,7 +168,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
             // extract public key
             String name = null, fingerprint = null;
-            PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+            ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
             if (_pkey instanceof PublicKeyPresence) {
                 PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
                 byte[] _publicKey = pkey.getKey();
@@ -284,7 +283,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_STAMP, timestamp);
 
         // public key extension (for fingerprint)
-        PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+        ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
         if (_pkey instanceof PublicKeyPresence) {
             PublicKeyPresence pkey = (PublicKeyPresence) _pkey;

@@ -21,7 +21,7 @@ package org.kontalk.service.msgcenter;
 import java.util.List;
 
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
@@ -47,7 +47,7 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
         EndpointServer server = getServer();
 
         // we don't need this listener anymore
-        conn.removeAsyncPacketListener(this);
+        conn.removeAsyncStanzaListener(this);
 
         initUploadServices();
 
@@ -64,7 +64,7 @@ class UploadDiscoverItemsListener extends MessageCenterPacketListener {
                 iq.setType(IQ.Type.get);
                 iq.setTo("upload@" + server.getNetwork());
 
-                conn.addAsyncPacketListener(new UploadInfoListener(getInstance()), new PacketIDFilter(iq.getStanzaId()));
+                conn.addAsyncStanzaListener(new UploadInfoListener(getInstance()), new StanzaIdFilter(iq.getStanzaId()));
                 sendPacket(iq);
             }
         }

@@ -32,21 +32,18 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
-import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.XMPPError;
-import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
-import org.jivesoftware.smackx.iqregister.provider.RegistrationProvider;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
@@ -215,7 +212,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 Stanza form = createRegistrationForm();
 
                 // setup listener for form response
-                conn.addAsyncPacketListener(new PacketListener() {
+                conn.addAsyncStanzaListener(new StanzaListener() {
                     public void processPacket(Stanza packet) {
                         int reason = 0;
                         IQ iq = (IQ) packet;
@@ -308,7 +305,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 Stanza form = createValidationForm();
 
                 XMPPConnection conn = mConnector.getConnection();
-                conn.addAsyncPacketListener(new PacketListener() {
+                conn.addAsyncStanzaListener(new StanzaListener() {
                     public void processPacket(Stanza packet) {
                         IQ iq = (IQ) packet;
                         if (iq.getType() == IQ.Type.result) {

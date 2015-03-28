@@ -63,7 +63,7 @@ class MessageAckListener extends MessageCenterPacketListener {
 
             long now = System.currentTimeMillis();
 
-            DeliveryReceipt receipt = DeliveryReceipt.from(packet);
+            DeliveryReceipt receipt = DeliveryReceipt.from((Message) packet);
             if (receipt != null) {
                 // ack received for outgoing delivery receipt
                 // mark message as confirmed

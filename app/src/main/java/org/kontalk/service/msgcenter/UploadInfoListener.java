@@ -38,7 +38,7 @@ class UploadInfoListener extends MessageCenterPacketListener {
     @Override
     public void processPacket(Stanza packet) {
         // we don't need this listener anymore
-        getConnection().removeAsyncPacketListener(this);
+        getConnection().removeAsyncStanzaListener(this);
 
         UploadInfo info = (UploadInfo) packet;
         String node = info.getNode();

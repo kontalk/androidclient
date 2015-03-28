@@ -33,9 +33,10 @@ import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.filter.PacketFilter;
-import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
@@ -890,9 +891,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     ServerlistCommand p = new ServerlistCommand();
                     p.setTo(XmppStringUtils.completeJidFrom("network", mServer.getNetwork()));
 
-                    PacketFilter filter = new StanzaIdFilter(p.getStanzaId());
+                    StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
                     // TODO cache the listener (it shouldn't change)
-                    mConnection.addAsyncPacketListener(new PacketListener() {
+                    mConnection.addAsyncStanzaListener(new StanzaListener() {
                         public void processPacket(Stanza packet) throws NotConnectedException {
                             Intent i = new Intent(ACTION_SERVERLIST);
                             List<String> _items = ((ServerlistCommand.ServerlistCommandData) packet)
@@ -1061,22 +1062,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             });
 
-        PacketFilter filter;
+        StanzaFilter filter;
 
-        filter = new PacketTypeFilter(Presence.class);
-        connection.addAsyncPacketListener(new PresenceListener(this), filter);
+        filter = new StanzaTypeFilter(Presence.class);
+        connection.addAsyncStanzaListener(new PresenceListener(this), filter);
 
-        filter = new PacketTypeFilter(RosterMatch.class);
-        connection.addAsyncPacketListener(new RosterMatchListener(this), filter);
+        filter = new StanzaTypeFilter(RosterMatch.class);
+        connection.addAsyncStanzaListener(new RosterMatchListener(this), filter);
 
-        filter = new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        connection.addAsyncPacketListener(new MessageListener(this), filter);
+        filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
+        connection.addAsyncStanzaListener(new MessageListener(this), filter);
 
-        filter = new PacketTypeFilter(LastActivity.class);
-        connection.addAsyncPacketListener(new LastActivityListener(this), filter);
+        filter = new StanzaTypeFilter(LastActivity.class);
+        connection.addAsyncStanzaListener(new LastActivityListener(this), filter);
 
-        filter = new PacketTypeFilter(PublicKeyPublish.class);
-        connection.addAsyncPacketListener(new PublicKeyListener(this), filter);
+        filter = new StanzaTypeFilter(PublicKeyPublish.class);
+        connection.addAsyncStanzaListener(new PublicKeyListener(this), filter);
     }
 
     @Override
@@ -1139,8 +1140,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         DiscoverInfo info = new DiscoverInfo();
         info.setTo(mServer.getNetwork());
 
-        PacketFilter filter = new StanzaIdFilter(info.getStanzaId());
-        mConnection.addAsyncPacketListener(new DiscoverInfoListener(this), filter);
+        StanzaFilter filter = new StanzaIdFilter(info.getStanzaId());
+        mConnection.addAsyncStanzaListener(new DiscoverInfoListener(this), filter);
         sendPacket(info);
     }
 
@@ -1471,7 +1472,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // setup packet filter for response
-        PacketFilter filter = new StanzaIdFilter(p.getStanzaId());
+        StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
         PacketListener listener = new PacketListener() {
             public void processPacket(Stanza packet) {
 
@@ -1490,7 +1491,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             }
         };
-        mConnection.addAsyncPacketListener(listener, filter);
+        mConnection.addAsyncStanzaListener(listener, filter);
 
         // send IQ
         sendPacket(p);
@@ -1501,11 +1502,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         String packetId = p.getStanzaId();
 
         // listen for response (TODO cache the listener, it shouldn't change)
-        PacketFilter idFilter = new StanzaIdFilter(packetId);
-        mConnection.addAsyncPacketListener(new PacketListener() {
+        StanzaFilter idFilter = new StanzaIdFilter(packetId);
+        mConnection.addAsyncStanzaListener(new PacketListener() {
             public void processPacket(Stanza packet) {
                 // we don't need this listener anymore
-                mConnection.removeAsyncPacketListener(this);
+                mConnection.removeAsyncStanzaListener(this);
 
                 if (packet instanceof BlockingCommand) {
                     BlockingCommand blocklist = (BlockingCommand) packet;

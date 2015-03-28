@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
@@ -81,7 +81,7 @@ class MessageListener extends MessageCenterPacketListener {
             String from = m.getFrom();
 
             // check if there is a composing notification
-            PacketExtension _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
+            ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
             ChatStateExtension chatstate = null;
             if (_chatstate != null) {
                 chatstate = (ChatStateExtension) _chatstate;
@@ -98,7 +98,7 @@ class MessageListener extends MessageCenterPacketListener {
 
             // delayed deliver extension is the first the be processed
             // because it's used also in delivery receipts
-            PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
+            ExtensionElement _delay = m.getExtension("delay", "urn:xmpp:delay");
             if (_delay == null)
                 _delay = m.getExtension("x", "jabber:x:delay");
 
@@ -165,7 +165,7 @@ class MessageListener extends MessageCenterPacketListener {
                         Coder.SECURITY_CLEARTEXT
                     );
 
-                PacketExtension _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+                ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
                 if (_encrypted != null && _encrypted instanceof E2EEncryption) {
                     E2EEncryption mEnc = (E2EEncryption) _encrypted;
@@ -206,7 +206,7 @@ class MessageListener extends MessageCenterPacketListener {
                 // TODO duplicated code (MessageUtils#decryptMessage)
 
                 // out of band data
-                PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+                ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
                 if (_media != null && _media instanceof OutOfBandData) {
                     File previewFile = null;
 
@@ -217,7 +217,7 @@ class MessageListener extends MessageCenterPacketListener {
                     boolean encrypted = media.isEncrypted();
 
                     // bits-of-binary for preview
-                    PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                    ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
                     if (_preview != null && _preview instanceof BitsOfBinary) {
                         BitsOfBinary preview = (BitsOfBinary) _preview;
                         String previewMime = preview.getType();

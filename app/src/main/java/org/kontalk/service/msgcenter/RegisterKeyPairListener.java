@@ -27,6 +27,8 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
@@ -151,8 +153,8 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                     if (iq != null) {
 
                         // setup packet filter for response
-                        PacketIDFilter filter = new PacketIDFilter(iq.getStanzaId());
-                        getConnection().addAsyncPacketListener(RegisterKeyPairListener.this, filter);
+                        StanzaFilter filter = new StanzaIdFilter(iq.getStanzaId());
+                        getConnection().addAsyncStanzaListener(RegisterKeyPairListener.this, filter);
 
                         // send the key out
                         sendPacket(iq);

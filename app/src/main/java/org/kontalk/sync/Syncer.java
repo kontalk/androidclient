@@ -659,7 +659,7 @@ public class Syncer {
         }
 
         ContentProviderOperation.Builder builder;
-        final int NUM_OPS = 4;
+        final int opIndex = index * 4;
 
         // create our RawContact
         builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
@@ -673,14 +673,14 @@ public class Syncer {
 
         // create a Data record of common type 'StructuredName' for our RawContact
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-            .withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, index * NUM_OPS)
+            .withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, opIndex)
             .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
             .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, username);
         operations.add(builder.build());
 
         // create a Data record of common type 'Phone' for our RawContact
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-            .withValueBackReference(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID, index * NUM_OPS)
+            .withValueBackReference(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID, opIndex)
             .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
             // not including phone type will crash on HTC devices
             .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_OTHER)
@@ -689,7 +689,7 @@ public class Syncer {
 
         // create a Data record of custom type 'org.kontalk.user' to display a link to the conversation
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-            .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, index * NUM_OPS)
+            .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, opIndex)
             .withValue(ContactsContract.Data.MIMETYPE, Users.CONTENT_ITEM_TYPE)
             .withValue(DATA_COLUMN_DISPLAY_NAME, username)
             .withValue(DATA_COLUMN_ACCOUNT_NAME, mContext.getString(R.string.app_name))
