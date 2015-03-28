@@ -1785,8 +1785,13 @@ public class ComposeMessageFragment extends ListFragment implements
             values, CommonColumns.PEER + "=?",
                 new String[] { mUserJID });
 
+        // accept invitation
+        if (action == PRIVACY_ACCEPT) {
+            // trust the key
+            UsersProvider.trustUserKey(ctx, mUserJID);
+        }
         // setup broadcast receiver for block/unblock reply
-        if (action == PRIVACY_REJECT || action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
+        else if (action == PRIVACY_REJECT || action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
             if (mPrivacyListener == null) {
                 mPrivacyListener = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
@@ -1896,7 +1901,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                 case DialogInterface.BUTTON_POSITIVE:
                                     // mark current key as trusted
                                     UsersProvider.trustUserKey(getActivity(), mUserJID);
-                                    // request the new key
+                                    // request the new key (isn't this necessary?)
                                     MessageCenterService.requestPublicKey(getActivity(), mUserJID);
                                     break;
                                 case DialogInterface.BUTTON_NEGATIVE:
