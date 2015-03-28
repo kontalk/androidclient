@@ -18,6 +18,8 @@
 
 package org.kontalk.sync;
 
+import org.jivesoftware.smack.util.StringUtils;
+
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -174,6 +176,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public static boolean isActive(Context context) {
         Account acc = Authenticator.getDefaultAccount(context);
         return ContentResolver.isSyncActive(acc, ContactsContract.AUTHORITY);
+    }
+
+    public static boolean isError(SyncResult syncResult) {
+        return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
+    }
+
+    public static String getIQPacketId() {
+        return Syncer.IQ_PACKET_ID;
     }
 
 }

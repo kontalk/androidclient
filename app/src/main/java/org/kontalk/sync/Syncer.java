@@ -83,6 +83,9 @@ public class Syncer {
     /** {@link RawContacts} column for the JID. */
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
+    /** Random packet id used for requesting public keys. */
+    static final String IQ_PACKET_ID = StringUtils.randomString(10);
+
     private volatile boolean mCanceled;
     private final Context mContext;
     private LocalBroadcastManager mLocalBroadcastManager;
@@ -107,6 +110,7 @@ public class Syncer {
         private final List<String> jidList;
         private int rosterParts = -1;
         private String[] iq;
+        private String presenceId;
 
         private int presenceCount;
         private int pubkeyCount;
@@ -129,7 +133,8 @@ public class Syncer {
 
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                    if (type != null) {
+                    String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                    if (type != null && presenceId.equals(id)) {
                         // see if bare JID is present in roster response
                         String compare = XmppStringUtils.parseBareJid(jid);
                         for (PresenceItem item : response) {
@@ -185,7 +190,8 @@ public class Syncer {
                                 Syncer w = notifyTo.get();
                                 if (w != null) {
                                     // request presence data for the whole roster
-                                    w.requestPresenceData();
+                                    presenceId = StringUtils.randomString(6);
+                                    w.requestPresenceData(presenceId);
                                     // request public keys for the whole roster
                                     w.requestPublicKeys();
                                     // request block list
@@ -559,10 +565,6 @@ public class Syncer {
         }
     }
 
-    public static boolean isError(SyncResult syncResult) {
-        return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
-    }
-
     private void requestRosterMatch(String id, List<String> list) {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
@@ -571,16 +573,18 @@ public class Syncer {
         mContext.startService(i);
     }
 
-    private void requestPresenceData() {
+    private void requestPresenceData(String id) {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         mContext.startService(i);
     }
 
     private void requestPublicKeys() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_PACKET_ID);
         mContext.startService(i);
     }
 

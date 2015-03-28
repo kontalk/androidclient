@@ -815,11 +815,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                         if (to == null) {
                             for (RosterEntry entry : roster.getEntries()) {
-                                broadcastPresence(roster, entry);
+                                broadcastPresence(roster, entry, id);
                             }
                         }
                         else {
-                            broadcastPresence(roster, to);
+                            broadcastPresence(roster, to, id);
                         }
                     }
                     else {
@@ -876,6 +876,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         for (RosterEntry buddy : buddies) {
                             if (isRosterEntrySubscribed(buddy)) {
                                 PublicKeyPublish p = new PublicKeyPublish();
+                                p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
                                 p.setTo(buddy.getUser());
 
                                 sendPacket(p);
@@ -1391,15 +1392,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             entry.getStatus() != RosterPacket.ItemStatus.SUBSCRIPTION_PENDING);
     }
 
-    private void broadcastPresence(Roster roster, RosterEntry entry) {
-        broadcastPresence(roster, entry, entry.getUser());
+    private void broadcastPresence(Roster roster, RosterEntry entry, String id) {
+        broadcastPresence(roster, entry, entry.getUser(), id);
     }
 
-    private void broadcastPresence(Roster roster, String jid) {
-        broadcastPresence(roster, roster.getEntry(jid), jid);
+    private void broadcastPresence(Roster roster, String jid, String id) {
+        broadcastPresence(roster, roster.getEntry(jid), jid, id);
     }
 
-    private void broadcastPresence(Roster roster, RosterEntry entry, String jid) {
+    private void broadcastPresence(Roster roster, RosterEntry entry, String jid, String id) {
         Intent i;
         // entry present and not pending subscription
         if (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid)) {
@@ -1414,7 +1415,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // to keep track of request-reply
-        i.putExtra(EXTRA_PACKET_ID, jid);
+        i.putExtra(EXTRA_PACKET_ID, id);
         mLocalBroadcastManager.sendBroadcast(i);
     }
 

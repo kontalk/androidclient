@@ -103,7 +103,9 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     }
                 }
 
-                if (SyncAdapter.isActive(getContext())) {
+                String id = p.getStanzaId();
+                // we are syncing and this is a response for the Syncer
+                if (SyncAdapter.getIQPacketId().equals(id) && SyncAdapter.isActive(getContext())) {
                     // sync currently active, broadcast the key
                     Intent i = new Intent(ACTION_PUBLICKEY);
                     i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
