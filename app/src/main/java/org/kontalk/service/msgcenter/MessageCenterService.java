@@ -57,7 +57,6 @@ import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 import org.jxmpp.util.XmppStringUtils;
-import org.spongycastle.openpgp.PGPException;
 
 import android.accounts.Account;
 import android.app.AlarmManager;
@@ -1530,6 +1529,22 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendMessage(Bundle data) {
+        String to = data.getString("org.kontalk.message.to");
+
+        PersonalKey key;
+        try {
+            key = ((Kontalk) getApplicationContext()).getPersonalKey();
+        }
+        catch (Exception pgpe) {
+            Log.w(TAG, "no personal key available - not allowed to send messages");
+            // warn user: message will not be sent
+            if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                Toast.makeText(this, R.string.warn_no_personal_key,
+                    Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
+
         // check if message is already pending
         long msgId = data.getLong("org.kontalk.message.msgId");
         if (mWaitingReceipt.containsValue(msgId)) {
@@ -1541,7 +1556,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         boolean encrypt = data.getBoolean("org.kontalk.message.encrypt");
         String mime = data.getString("org.kontalk.message.mime");
-        String to = data.getString("org.kontalk.message.to");
         String _mediaUri = data.getString("org.kontalk.message.media.uri");
         if (_mediaUri != null) {
             // take the first available upload service :)
@@ -1631,7 +1645,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (encrypt) {
                 byte[] toMessage = null;
                 try {
-                    PersonalKey key = ((Kontalk)getApplicationContext()).getPersonalKey();
                     Coder coder = UsersProvider.getEncryptCoder(this, mServer, key, new String[] { to });
                     if (coder != null) {
 
@@ -1659,22 +1672,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 // FIXME there is some very ugly code here
                 // FIXME notify just once per session (store in Kontalk instance?)
-
-                catch (PGPException pgpe) {
-                    // warn user: message will not be sent
-                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                        Toast.makeText(this, R.string.warn_no_personal_key,
-                            Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                catch (IOException io) {
-                    // warn user: message will not be sent
-                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
-                        Toast.makeText(this, R.string.warn_no_personal_key,
-                            Toast.LENGTH_LONG).show();
-                    }
-                }
 
                 catch (IllegalArgumentException noPublicKey) {
                     // warn user: message will be not sent
