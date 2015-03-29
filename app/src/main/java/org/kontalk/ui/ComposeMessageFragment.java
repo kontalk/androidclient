@@ -1789,6 +1789,8 @@ public class ComposeMessageFragment extends ListFragment implements
         if (action == PRIVACY_ACCEPT) {
             // trust the key
             UsersProvider.trustUserKey(ctx, mUserJID);
+            // reload contact
+            invalidateContact();
         }
         // setup broadcast receiver for block/unblock reply
         else if (action == PRIVACY_REJECT || action == PRIVACY_BLOCK || action == PRIVACY_UNBLOCK) {
@@ -1831,6 +1833,12 @@ public class ComposeMessageFragment extends ListFragment implements
 
         // send command to message center
         MessageCenterService.replySubscription(ctx, mUserJID, action);
+    }
+
+    private void invalidateContact() {
+        Contact.invalidate(mUserJID);
+        // this will trigger contact reload
+        mConversation.setRecipient(mUserJID);
     }
 
     private void showIdentityDialog() {
@@ -1901,6 +1909,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                 case DialogInterface.BUTTON_POSITIVE:
                                     // mark current key as trusted
                                     UsersProvider.trustUserKey(getActivity(), mUserJID);
+                                    // reload contact
+                                    invalidateContact();
                                     // request the new key (isn't this necessary?)
                                     MessageCenterService.requestPublicKey(getActivity(), mUserJID);
                                     break;
