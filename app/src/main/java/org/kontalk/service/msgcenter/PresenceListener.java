@@ -168,6 +168,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
             // extract public key
             String name = null, fingerprint = null;
+            byte[] publicKey = null;
             ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
             if (_pkey instanceof PublicKeyPresence) {
                 PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
@@ -180,6 +181,7 @@ class PresenceListener extends MessageCenterPacketListener {
                         // set all parameters
                         name = PGP.getUserId(pk, getServer().getNetwork());
                         fingerprint = PGP.getFingerprint(pk);
+                        publicKey = _publicKey;
                     }
                 }
             }
@@ -194,8 +196,9 @@ class PresenceListener extends MessageCenterPacketListener {
             values.put(Users.HASH, XmppStringUtils.parseLocalpart(from));
             values.put(Users.JID, from);
             values.put(Users.NUMBER, from);
-            if (fingerprint != null) {
+            if (publicKey != null && fingerprint != null) {
                 values.put(Users.FINGERPRINT, fingerprint);
+                values.put(Users.PUBLIC_KEY, publicKey);
             }
             values.put(Users.DISPLAY_NAME, name);
             values.put(Users.REGISTERED, true);
