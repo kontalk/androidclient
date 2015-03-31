@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
-import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
@@ -558,7 +557,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         if (mConnection != null) {
             try {
-                mConnection.sendPacket(packet);
+                mConnection.sendStanza(packet);
             }
             catch (NotConnectedException e) {
                 // ignored
@@ -1473,7 +1472,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // setup packet filter for response
         StanzaFilter filter = new StanzaIdFilter(p.getStanzaId());
-        PacketListener listener = new PacketListener() {
+        StanzaListener listener = new StanzaListener() {
             public void processPacket(Stanza packet) {
 
                 if (packet instanceof IQ && ((IQ) packet).getType() == IQ.Type.result) {
@@ -1503,7 +1502,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // listen for response (TODO cache the listener, it shouldn't change)
         StanzaFilter idFilter = new StanzaIdFilter(packetId);
-        mConnection.addAsyncStanzaListener(new PacketListener() {
+        mConnection.addAsyncStanzaListener(new StanzaListener() {
             public void processPacket(Stanza packet) {
                 // we don't need this listener anymore
                 mConnection.removeAsyncStanzaListener(this);
@@ -2150,7 +2149,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         IQ iq = PushRegistration.register(DEFAULT_PUSH_PROVIDER, regId);
         iq.setTo("push@" + mServer.getNetwork());
         try {
-            mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
+            mConnection.sendIqWithResponseCallback(iq, new StanzaListener() {
                 @Override
                 public void processPacket(Stanza packet) throws NotConnectedException {
                     if (mPushService != null)
@@ -2167,7 +2166,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         IQ iq = PushRegistration.unregister(DEFAULT_PUSH_PROVIDER);
         iq.setTo("push@" + mServer.getNetwork());
         try {
-            mConnection.sendIqWithResponseCallback(iq, new PacketListener() {
+            mConnection.sendIqWithResponseCallback(iq, new StanzaListener() {
                 @Override
                 public void processPacket(Stanza packet) throws NotConnectedException {
                     if (mPushService != null)

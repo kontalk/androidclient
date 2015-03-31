@@ -150,7 +150,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
             Stanza r = createSubscribed(p);
             if (r != null)
-                getConnection().sendPacket(r);
+                getConnection().sendStanza(r);
 
         }
 

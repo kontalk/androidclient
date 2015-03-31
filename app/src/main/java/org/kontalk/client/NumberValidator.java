@@ -36,7 +36,7 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.XMPPError;
@@ -273,10 +273,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                         mStep = STEP_INIT;
                     }
-                }, new PacketIDFilter(form.getStanzaId()));
+                }, new StanzaIdFilter(form.getStanzaId()));
 
                 // send registration form
-                conn.sendPacket(form);
+                conn.sendStanza(form);
             }
 
             // sms received, request authentication token
@@ -348,10 +348,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         mListener.onAuthTokenFailed(NumberValidator.this, -1);
                         mStep = STEP_INIT;
                     }
-                }, new PacketIDFilter(form.getStanzaId()));
+                }, new StanzaIdFilter(form.getStanzaId()));
 
                 // send registration form
-                conn.sendPacket(form);
+                conn.sendStanza(form);
             }
         }
         catch (Throwable e) {
