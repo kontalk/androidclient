@@ -65,6 +65,7 @@ import android.util.Log;
 class MessageListener extends MessageCenterPacketListener {
 
     private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+    private static final String selectionIngoing = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageListener(MessageCenterService instance) {
         super(instance);
@@ -279,27 +280,11 @@ class MessageListener extends MessageCenterPacketListener {
 
                 }
 
-                if (msg != null) {
+                Uri msgUri = incoming(msg);
 
-                    Uri msgUri = incoming(msg);
-
-                    if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
-                        // send ack :)
-                        DeliveryReceipt receipt = new DeliveryReceipt(msgId);
-                        org.jivesoftware.smack.packet.Message ack =
-                            new org.jivesoftware.smack.packet.Message(from,
-                                org.jivesoftware.smack.packet.Message.Type.chat);
-                        ack.addExtension(receipt);
-
-                        if (msgUri != null) {
-                            // hold on to message center
-                            getIdleHandler().hold();
-                            // will mark this message as confirmed
-                            long storageId = ContentUris.parseId(msgUri);
-                            waitingReceipt.put(ack.getStanzaId(), storageId);
-                        }
-                        sendPacket(ack);
-                    }
+                if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
+                    // send ack :)
+                    sendReceipt(msgUri, msgId, from, waitingReceipt);
                 }
 
             }
@@ -307,6 +292,22 @@ class MessageListener extends MessageCenterPacketListener {
 
         // error message
         else if (m.getType() == org.jivesoftware.smack.packet.Message.Type.error) {
+            DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
+
+            // delivery receipt error
+            if (deliveryReceipt != null) {
+                // mark indicated message as incoming and try again
+                Uri msg = Messages.getUri(deliveryReceipt.getId());
+                ContentValues values = new ContentValues(2);
+                values.put(Messages.STATUS, Messages.STATUS_INCOMING);
+                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                getContext().getContentResolver()
+                    .update(msg, values, selectionIngoing, null);
+
+                // send receipt again
+                sendReceipt(null, deliveryReceipt.getId(), m.getFrom(), waitingReceipt);
+            }
+
             synchronized (waitingReceipt) {
                 String id = m.getStanzaId();
                 Long _msgId = waitingReceipt.get(id);
@@ -337,5 +338,22 @@ class MessageListener extends MessageCenterPacketListener {
                 }
             }
         }
+    }
+
+    private void sendReceipt(Uri msgUri, String msgId, String from, Map<String, Long> waitingReceipt) {
+        DeliveryReceipt receipt = new DeliveryReceipt(msgId);
+        org.jivesoftware.smack.packet.Message ack =
+            new org.jivesoftware.smack.packet.Message(from,
+                org.jivesoftware.smack.packet.Message.Type.chat);
+        ack.addExtension(receipt);
+
+        if (msgUri != null) {
+            // hold on to message center
+            getIdleHandler().hold();
+            // will mark this message as confirmed
+            long storageId = ContentUris.parseId(msgUri);
+            waitingReceipt.put(ack.getStanzaId(), storageId);
+        }
+        sendPacket(ack);
     }
 }
