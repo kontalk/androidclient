@@ -1384,8 +1384,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
-    private Roster getRoster() {
+    Roster getRoster() {
         return (mConnection != null) ? Roster.getInstanceFor(mConnection) : null;
+    }
+
+    RosterEntry getRosterEntry(String jid) {
+        Roster roster = getRoster();
+        return (roster != null) ? roster.getEntry(jid) : null;
     }
 
     private boolean isRosterEntrySubscribed(RosterEntry entry) {

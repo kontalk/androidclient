@@ -24,6 +24,8 @@ import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
@@ -144,7 +146,7 @@ class PresenceListener extends MessageCenterPacketListener {
         Context ctx = getContext();
 
         // auto-accept subscription
-        if (Preferences.getAutoAcceptSubscriptions(ctx)) {
+        if (Preferences.getAutoAcceptSubscriptions(ctx) || isAlreadyTrusted(p)) {
 
             // TODO user database entry should be stored here too
 
@@ -218,6 +220,12 @@ class PresenceListener extends MessageCenterPacketListener {
             // fire up a notification
             MessagingNotification.chatInvitation(ctx, from);
         }
+    }
+
+    private boolean isAlreadyTrusted(Presence p) {
+        RosterEntry entry = getRosterEntry(p.getFrom());
+        return (entry != null && (entry.getType() == RosterPacket.ItemType.to ||
+            entry.getType() == RosterPacket.ItemType.both));
     }
 
     private void handleSubscribed(Presence p) {
