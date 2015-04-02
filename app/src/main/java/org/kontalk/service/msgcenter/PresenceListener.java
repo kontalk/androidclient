@@ -215,10 +215,10 @@ class PresenceListener extends MessageCenterPacketListener {
             values.clear();
             values.put(CommonColumns.PEER, from);
             values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
-            cr.insert(Requests.CONTENT_URI, values);
-
-            // fire up a notification
-            MessagingNotification.chatInvitation(ctx, from);
+            if (cr.insert(Requests.CONTENT_URI, values) != null) {
+                // fire up a notification
+                MessagingNotification.chatInvitation(ctx, from);
+            }
         }
     }
 
