@@ -36,7 +36,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.MenuItemCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
@@ -111,7 +110,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
-    private Button mImportKeys;
     private Button mInsertCode;
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
@@ -193,7 +191,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
-        mImportKeys = (Button) findViewById(R.id.button_import_keys);
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
@@ -311,8 +308,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
-        MenuItem item = menu.findItem(R.id.menu_settings);
-        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 
@@ -322,6 +317,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             case R.id.menu_settings: {
                 Intent intent = new Intent(this, BootstrapPreferences.class);
                 startActivityIfNeeded(intent, -1);
+                break;
+            }
+            case R.id.menu_import_key: {
+                importKey();
                 break;
             }
             default:
@@ -458,7 +457,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
-        mImportKeys.setEnabled(enabled);
         mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
@@ -573,12 +571,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             startValidationCode(REQUEST_VALIDATION_CODE, null);
     }
 
-    /**
-     * Opens import keys from another device wizard.
-     * Used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void importKeys(View v) {
+    /** Opens import keys from another device wizard. */
+    private void importKey() {
         if (checkInput()) {
             // import keys -- number verification with server is still needed
             // though because of key rollback protection
