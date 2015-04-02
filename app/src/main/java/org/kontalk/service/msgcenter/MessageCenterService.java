@@ -252,6 +252,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PRIORITY = "org.kontalk.presence.priority";
     public static final String EXTRA_PRIVACY = "org.kontalk.presence.privacy";
     public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
+    public static final String EXTRA_SUBSCRIBED_FROM = "org.kontalk.presence.subscribed.from";
+    public static final String EXTRA_SUBSCRIBED_TO = "org.kontalk.presence.subscribed.to";
 
     // use with org.kontalk.action.ROSTER
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
@@ -1406,6 +1408,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // roster entry found, look for presence
             Presence presence = roster.getPresence(jid);
             i = PresenceListener.createIntent(this, presence);
+
+            RosterPacket.ItemType subscriptionType = entry.getType();
+            i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
+                subscriptionType == RosterPacket.ItemType.from);
+            i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
+                subscriptionType == RosterPacket.ItemType.to);
         }
         else {
             // null type indicates no roster entry found or not authorized

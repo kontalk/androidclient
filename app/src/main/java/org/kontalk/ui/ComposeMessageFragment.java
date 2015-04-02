@@ -1980,11 +1980,13 @@ public class ComposeMessageFragment extends ListFragment implements
                                 // really not much sense in requesting the key for a non-existing contact
                                 Contact contact = mConversation != null ? mConversation.getContact() : null;
                                 if (contact != null) {
+                                    boolean subscribedFrom = intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false);
                                     String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
                                     // if this is null, we are accepting the key for the first time
                                     PGPPublicKeyRing trustedPublicKey = contact.getTrustedPublicKeyRing();
 
-                                    boolean requestKey = (trustedPublicKey == null);
+                                    // request the key if we don't have a trusted one or we are subscribed from the contact
+                                    boolean requestKey = (trustedPublicKey == null || subscribedFrom);
                                     // check if fingerprint changed
                                     if (trustedPublicKey != null) {
                                         String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(trustedPublicKey));
