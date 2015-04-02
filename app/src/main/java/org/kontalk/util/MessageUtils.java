@@ -70,7 +70,7 @@ public final class MessageUtils {
     // TODO convert these to XML styles
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
-    private static final ForegroundColorSpan STYLE_GREEN = null; // new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
+    private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
 
