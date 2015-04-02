@@ -70,11 +70,9 @@ public final class MessageUtils {
     // TODO convert these to XML styles
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
-    private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
+    private static final ForegroundColorSpan STYLE_GREEN = null; // new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
-
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     private MessageUtils() {}
 
@@ -168,7 +166,7 @@ public final class MessageUtils {
         return (a / MILLISECONDS_IN_DAY) == (b / MILLISECONDS_IN_DAY);
     }
 
-    private static String convertToHex(byte[] data) {
+    public static String bytesToHex(byte[] data) {
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < data.length; i++) {
             int halfbyte = (data[i] >>> 4) & 0x0F;
@@ -188,11 +186,10 @@ public final class MessageUtils {
         try {
             MessageDigest md;
             md = MessageDigest.getInstance("SHA-1");
-            byte[] sha1hash = new byte[40];
             md.update(text.getBytes(), 0, text.length());
-            sha1hash = md.digest();
+            byte[] sha1hash = md.digest();
 
-            return convertToHex(sha1hash);
+            return bytesToHex(sha1hash);
         }
         catch (NoSuchAlgorithmException e) {
             // no SHA-1?? WWWHHHHAAAAAATTTT???!?!?!?!?!
@@ -519,17 +516,6 @@ public final class MessageUtils {
             // user id comparison
             return a.substring(0, CompositeMessage.USERID_LENGTH)
                 .equalsIgnoreCase(b.substring(0, CompositeMessage.USERID_LENGTH));
-    }
-
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        int v;
-        for ( int j = 0; j < bytes.length; j++ ) {
-            v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
     }
 
     public static String messageId() {

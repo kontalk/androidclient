@@ -64,6 +64,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
+import java.util.Locale;
 
 
 /** Personal asymmetric encryption key. */
@@ -125,7 +126,8 @@ public class PersonalKey implements Parcelable {
     }
 
     public String getFingerprint() {
-        return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint());
+        return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint())
+            .toUpperCase(Locale.US);
     }
 
     public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {
