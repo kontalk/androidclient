@@ -88,7 +88,6 @@ public class Syncer {
 
     private volatile boolean mCanceled;
     private final Context mContext;
-    private LocalBroadcastManager mLocalBroadcastManager;
 
     private final static class PresenceItem {
         public String from;
@@ -409,7 +408,8 @@ public class Syncer {
         }
 
         else {
-            mLocalBroadcastManager = LocalBroadcastManager.getInstance(mContext);
+            final LocalBroadcastManager lbm = LocalBroadcastManager
+                .getInstance(mContext);
 
             // register presence broadcast receiver
             PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(jidList, this);
@@ -419,7 +419,7 @@ public class Syncer {
             f.addAction(MessageCenterService.ACTION_PUBLICKEY);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
             f.addAction(MessageCenterService.ACTION_CONNECTED);
-            mLocalBroadcastManager.registerReceiver(receiver, f);
+            lbm.registerReceiver(receiver, f);
 
             // request current connection status
             MessageCenterService.requestConnectionStatus(mContext);
@@ -436,7 +436,7 @@ public class Syncer {
                 }
             }
 
-            mLocalBroadcastManager.unregisterReceiver(receiver);
+            lbm.unregisterReceiver(receiver);
 
             // last chance to quit
             if (mCanceled) throw new OperationCanceledException();
