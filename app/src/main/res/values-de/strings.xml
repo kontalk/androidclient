@@ -15,6 +15,7 @@
   <string name="menu_settings">Einstellungen</string>
   <string name="menu_offline">Offline gehen</string>
   <string name="menu_online">Online gehen</string>
+  <string name="menu_import_key">Schlüsselt importieren</string>
   <string name="pref_network_settings">Netzwerkeinstellungen</string>
   <string name="pref_network_uri">Manuelle Serveradresse</string>
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste.</string>
@@ -134,7 +135,6 @@
   <string name="send_mime_not_supported">Dieser Dateityp wird nicht unterstützt.</string>
   <string name="button_validate">Verifikationscode anfordern</string>
   <string name="button_validation_code">Verifikationscode bereits vorhanden</string>
-  <string name="button_import_keys">Schlüssel von einem anderen Gerät importieren</string>
   <string name="button_validation_register">Verifizieren</string>
   <string name="notify_ticker_download_completed">Herunterladen abgeschlossen</string>
   <string name="notify_title_download_completed">Herunterladen abgeschlossen</string>

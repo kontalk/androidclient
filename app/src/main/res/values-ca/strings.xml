@@ -134,7 +134,6 @@
   <string name="send_mime_not_supported">Aquest tipus de fitxer no està suportat</string>
   <string name="button_validate">Sol·licita el codi de verificació</string>
   <string name="button_validation_code">Ja tinc codi de verificació</string>
-  <string name="button_import_keys">Importa claus d\'un altre dispositiu</string>
   <string name="button_validation_register">Verifica</string>
   <string name="notify_ticker_download_completed">Descàrrega completa</string>
   <string name="notify_title_download_completed">Descàrrega completa</string>

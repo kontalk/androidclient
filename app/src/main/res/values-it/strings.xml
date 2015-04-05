@@ -15,6 +15,7 @@
   <string name="menu_settings">Impostazioni</string>
   <string name="menu_offline">Vai offline</string>
   <string name="menu_online">Vai online</string>
+  <string name="menu_import_key">Importa chiave</string>
   <string name="pref_network_settings">Impostazioni di rete</string>
   <string name="pref_network_uri">Indirizzo server manuale</string>
   <string name="pref_title_network_uri">In questo modo annullerai la gestione automatica dei server</string>
@@ -134,7 +135,6 @@
   <string name="send_mime_not_supported">Tipo di file non è supportato.</string>
   <string name="button_validate">Richiedi codice di verifica</string>
   <string name="button_validation_code">Ho già un codice di verifica</string>
-  <string name="button_import_keys">Importa chiave da altro dispositivo</string>
   <string name="button_validation_register">Verifica</string>
   <string name="notify_ticker_download_completed">Download completato</string>
   <string name="notify_title_download_completed">Download completato</string>

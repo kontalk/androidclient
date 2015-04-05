@@ -15,6 +15,7 @@
   <string name="menu_settings">Nastavení</string>
   <string name="menu_offline">Přejít do režimu Offline</string>
   <string name="menu_online">Přejít do režimu Online</string>
+  <string name="menu_import_key">Importovat klíč</string>
   <string name="pref_network_settings">Nastavení sítě</string>
   <string name="pref_network_uri">Zadat adresu serveru ručně</string>
   <string name="pref_title_network_uri">Toto nastavení má přednost před automatickou správou seznamu serverů</string>
@@ -134,7 +135,6 @@
   <string name="send_mime_not_supported">Tento typ souboru není podporován.</string>
   <string name="button_validate">Požádat o ověřovací kód</string>
   <string name="button_validation_code">Již mám ověřovací kód</string>
-  <string name="button_import_keys">Importovat klíče z jiného zařízení</string>
   <string name="button_validation_register">Ověřit</string>
   <string name="notify_ticker_download_completed">Stahování bylo dokončeno</string>
   <string name="notify_title_download_completed">Stahování bylo dokončeno</string>

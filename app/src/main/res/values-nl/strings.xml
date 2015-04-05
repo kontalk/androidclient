@@ -134,7 +134,6 @@
   <string name="send_mime_not_supported">Dit type bestand wordt niet ondersteund.</string>
   <string name="button_validate">Verificatiecode opvragen</string>
   <string name="button_validation_code">Ik heb al een verificatiecode</string>
-  <string name="button_import_keys">Persoonlijk sleutelpaar importeren van een ander apparaat</string>
   <string name="button_validation_register">Verifiëren</string>
   <string name="notify_ticker_download_completed">Downloaden voltooid</string>
   <string name="notify_title_download_completed">Downloaden voltooid</string>
@@ -300,7 +299,7 @@
   <string name="msg_auth_error">&lt;b&gt;WAARSCHUWING!&lt;/b&gt;&lt;br&gt;De laatste keer dat je probeerde te verbinden met een Kontalk-server is de authenticatie mislukt. Mogelijk is de server tijdelijk uit de lucht, maar waarschijnlijk weigert de server je persoonlijk sleutelpaar. Als je sleutelpaar geweigerd wordt is de enige oplossing om je Kontalk-account te verwijderen in de Instellingen van Android en jezelf opnieuw te registreren. Helaas raak je hierbij wel al je Kontalk-berichten kwijt.</string>
   <string name="warn_invite_no_app">Er is op dit apparaat geen app beschikbaar waarmee uitnodigingen verstuurd kunnen worden.</string>
   <string name="pref_text_enter">Enter-toets</string>
-  <string name="pref_title_text_enter">Selecteer het gedrag van de Enter-toets in het toetsenbord</string>
+  <string name="pref_title_text_enter">Selecteren van het gedrag van de Enter-toets in het toetsenbord</string>
   <string name="title_password1">Wachtwoord:</string>
   <string name="title_password2">Wachtwoord bevestigen:</string>
   <string name="err_password_too_short">Je wachtwoord moet minstens %d karakters zijn.</string>
