@@ -2339,8 +2339,8 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     public final boolean isFinishing() {
-        return (getActivity() == null || (getActivity() != null && getActivity()
-                .isFinishing())) || isRemoving();
+        Activity activity = getActivity();
+        return (activity == null || activity.isFinishing()) || isRemoving();
     }
 
     private void updateUI() {
@@ -2351,8 +2351,9 @@ public class ComposeMessageFragment extends ListFragment implements
         boolean threadEnabled = (threadId > 0);
 
         if (mCallMenu != null) {
+            Context context = getActivity();
             // FIXME what about VoIP?
-            if (!getActivity().getPackageManager().hasSystemFeature(
+            if (context != null && !context.getPackageManager().hasSystemFeature(
                     PackageManager.FEATURE_TELEPHONY)) {
                 mCallMenu.setVisible(false).setEnabled(false);
             }
@@ -2365,7 +2366,8 @@ public class ComposeMessageFragment extends ListFragment implements
         }
 
         if (mBlockMenu != null) {
-            if (Authenticator.isSelfJID(getActivity(), mUserJID)) {
+            Context context = getActivity();
+            if (context != null && Authenticator.isSelfJID(context, mUserJID)) {
                 mBlockMenu.setVisible(false).setEnabled(false);
                 mUnblockMenu.setVisible(false).setEnabled(false);
             }
