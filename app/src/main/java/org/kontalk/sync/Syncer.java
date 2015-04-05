@@ -659,7 +659,7 @@ public class Syncer {
         }
 
         ContentProviderOperation.Builder builder;
-        final int opIndex = index * 4;
+        final int opIndex = index * 3;
 
         // create our RawContact
         builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
@@ -676,15 +676,6 @@ public class Syncer {
             .withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, opIndex)
             .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
             .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, username);
-        operations.add(builder.build());
-
-        // create a Data record of common type 'Phone' for our RawContact
-        builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-            .withValueBackReference(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID, opIndex)
-            .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-            // not including phone type will crash on HTC devices
-            .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_OTHER)
-            .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phone);
         operations.add(builder.build());
 
         // create a Data record of custom type 'org.kontalk.user' to display a link to the conversation
