@@ -28,7 +28,6 @@ android {
     defaultConfig {
         applicationId "org.kontalk"
         resValue "string", "account_type", applicationId + '.account'
-        resValue "string", "user_itemtype", "vnd.android.cursor.item/org.kontalk.user"
         buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
     }
 
