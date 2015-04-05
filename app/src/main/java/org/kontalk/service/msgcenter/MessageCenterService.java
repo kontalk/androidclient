@@ -1414,11 +1414,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Presence presence = roster.getPresence(jid);
             i = PresenceListener.createIntent(this, presence);
 
-            RosterPacket.ItemType subscriptionType = entry.getType();
-            i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
-                subscriptionType == RosterPacket.ItemType.from);
-            i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
-                subscriptionType == RosterPacket.ItemType.to);
+            if (entry != null) {
+                RosterPacket.ItemType subscriptionType = entry.getType();
+                i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.from);
+                i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
+                    subscriptionType == RosterPacket.ItemType.to);
+            }
         }
         else {
             // null type indicates no roster entry found or not authorized
