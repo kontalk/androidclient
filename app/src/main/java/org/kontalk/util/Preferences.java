@@ -468,12 +468,16 @@ public final class Preferences {
     }
 
     public static long getPingAlarmInterval(Context context, long defaultValue) {
-        return getLong(context, "ping_alarm_interval", defaultValue);
+        String networkType = SystemUtils.getCurrentNetwork(context);
+        return (networkType != null) ?
+            getLong(context, "ping_alarm_interval_" + networkType, defaultValue) :
+            defaultValue;
     }
 
-    public static boolean setPingAlarmInterval(long intervalMillis) {
-        return sPreferences.edit()
-            .putLong("ping_alarm_interval", intervalMillis)
+    public static boolean setPingAlarmInterval(Context context, long intervalMillis) {
+        String networkType = SystemUtils.getCurrentNetwork(context);
+        return networkType != null && sPreferences.edit()
+            .putLong("ping_alarm_interval_" + networkType, intervalMillis)
             .commit();
     }
 

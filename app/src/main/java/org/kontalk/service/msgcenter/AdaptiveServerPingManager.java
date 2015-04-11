@@ -164,6 +164,10 @@ public class AdaptiveServerPingManager extends Manager {
         context.registerReceiver(ALARM_BROADCAST_RECEIVER, new IntentFilter(PING_ALARM_ACTION));
         sAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         sPendingIntent = PendingIntent.getBroadcast(context, 0, new Intent(PING_ALARM_ACTION), 0);
+        onConnected();
+    }
+
+    public static void onConnected() {
         // setup first alarm using last value from preference
         setupAlarmManager(Preferences.getPingAlarmInterval(sContext, AlarmManager.INTERVAL_HALF_HOUR));
     }
@@ -190,8 +194,6 @@ public class AdaptiveServerPingManager extends Manager {
         if (sPendingIntent != null && sIntervalMillis != intervalMillis) {
             sAlarmManager.cancel(sPendingIntent);
             sIntervalMillis = intervalMillis;
-            // save value to preference for later retrieval
-            Preferences.setPingAlarmInterval(sIntervalMillis);
 
             // do not go beyond 30 minutes...
             if (sIntervalMillis > AlarmManager.INTERVAL_HALF_HOUR) {
@@ -201,6 +203,9 @@ public class AdaptiveServerPingManager extends Manager {
             else if (sIntervalMillis < MIN_ALARM_INTERVAL) {
                 sIntervalMillis = MIN_ALARM_INTERVAL;
             }
+
+            // save value to preference for later retrieval
+            Preferences.setPingAlarmInterval(sContext, sIntervalMillis);
 
             LOGGER.log(Level.WARNING, "Setting alarm for next ping to " + sIntervalMillis + " ms");
             sAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,

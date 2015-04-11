@@ -19,6 +19,7 @@
 package org.kontalk.service;
 
 import org.kontalk.Kontalk;
+import org.kontalk.service.msgcenter.AdaptiveServerPingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
@@ -60,7 +61,10 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             }
             else {
                 Log.w(TAG, "background data enabled!");
+                // start message center
                 serviceAction = ACTION_START;
+                // notify ping manager that connection type has changed
+                AdaptiveServerPingManager.onConnected();
             }
         }
 
@@ -82,6 +86,8 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                     case CONNECTED:
                         // test connection or reconnect
                         serviceAction = ACTION_TEST;
+                        // notify ping manager that connection type has changed
+                        AdaptiveServerPingManager.onConnected();
                         break;
                     case SUSPENDED:
                         Log.v(TAG, "suspending network traffic");

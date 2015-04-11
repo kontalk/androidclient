@@ -23,6 +23,8 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -77,6 +79,15 @@ public final class SystemUtils {
         }
 
         return displaySize;
+    }
+
+    /** Returns the type name of the current network, or null. */
+    public static String getCurrentNetwork(Context context) {
+        ConnectivityManager connMgr = (ConnectivityManager) context
+            .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo info = connMgr.getActiveNetworkInfo();
+        return info != null ? info.getTypeName() : null;
     }
 
 }
