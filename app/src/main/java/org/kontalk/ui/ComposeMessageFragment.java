@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -1849,10 +1850,10 @@ public class ComposeMessageFragment extends ListFragment implements
         String fingerprint;
         String uid;
 
-        PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), mUserJID);
+        PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), mUserJID, false);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
-            fingerprint = PGP.getFingerprint(pk);
+            fingerprint = PGP.getFingerprint(pk).toUpperCase(Locale.US);
             uid = PGP.getUserId(pk, null);    // TODO server!!!
         }
         else {
