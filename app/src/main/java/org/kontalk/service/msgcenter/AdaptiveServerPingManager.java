@@ -168,8 +168,10 @@ public class AdaptiveServerPingManager extends Manager {
     }
 
     public static void onConnected() {
-        // setup first alarm using last value from preference
-        setupAlarmManager(Preferences.getPingAlarmInterval(sContext, AlarmManager.INTERVAL_HALF_HOUR));
+        if (sContext != null) {
+            // setup first alarm using last value from preference
+            setupAlarmManager(Preferences.getPingAlarmInterval(sContext, AlarmManager.INTERVAL_HALF_HOUR));
+        }
     }
 
     private static boolean isLastPingFailed() {
