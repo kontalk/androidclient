@@ -88,7 +88,7 @@ class PresenceListener extends MessageCenterPacketListener {
                 // store key to users table
                 UsersProvider.setUserKey(getContext(), jid, keydata);
                 // maybe trust the key
-                UsersProvider.maybeTrustUserKey(getContext(), jid, keydata);
+                UsersProvider.trustUserKey(getContext(), jid);
             }
 
             Presence p2 = new Presence(Presence.Type.subscribed);
@@ -237,7 +237,7 @@ class PresenceListener extends MessageCenterPacketListener {
             UsersProvider.setLastSeen(getContext(), from, delay.getStamp().getTime());
         }
 
-        if (UsersProvider.getPublicKey(getContext(), from) == null) {
+        if (UsersProvider.getPublicKey(getContext(), from, false) == null) {
             // public key not found
             // assuming the user has allowed us, request it
 

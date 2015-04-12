@@ -725,7 +725,7 @@ public class UsersProvider extends ContentProvider {
         // get recipients public keys from users database
         PGPPublicKeyRing keys[] = new PGPPublicKeyRing[recipients.length];
         for (int i = 0; i < recipients.length; i++) {
-            PGPPublicKeyRing ring = getPublicKey(context, recipients[i]);
+            PGPPublicKeyRing ring = getPublicKey(context, recipients[i], true);
             if (ring == null)
                 throw new IllegalArgumentException("public key not found for user " + recipients[i]);
 
@@ -737,16 +737,17 @@ public class UsersProvider extends ContentProvider {
 
     /** Returns a {@link Coder} instance for decrypting data. */
     public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender);
+        PGPPublicKeyRing senderKey = getPublicKey(context, sender, true);
         return new PGPCoder(server, key, senderKey);
     }
 
     /** Retrieves the trusted public key for a user. */
-    public static PGPPublicKeyRing getPublicKey(Context context, String jid) {
+    public static PGPPublicKeyRing getPublicKey(Context context, String jid, boolean trusted) {
         byte[] keydata = null;
         ContentResolver res = context.getContentResolver();
         Cursor c = res.query(Users.CONTENT_URI.buildUpon()
-            .appendPath(jid).build(), new String[] { Keys.TRUSTED_PUBLIC_KEY },
+            .appendPath(jid).build(), new String[] { trusted ?
+                Keys.TRUSTED_PUBLIC_KEY : Users.PUBLIC_KEY },
             null, null, null);
 
         if (c.moveToFirst())
@@ -868,6 +869,7 @@ public class UsersProvider extends ContentProvider {
         usersProjectionMap.put(Users.REGISTERED, Users.REGISTERED);
         usersProjectionMap.put(Users.STATUS, Users.STATUS);
         usersProjectionMap.put(Users.LAST_SEEN, Users.LAST_SEEN);
+        usersProjectionMap.put(Users.PUBLIC_KEY, TABLE_USERS + "." + Users.PUBLIC_KEY);
         usersProjectionMap.put(Users.FINGERPRINT, TABLE_USERS + "." + Users.FINGERPRINT);
         usersProjectionMap.put(Users.BLOCKED, Users.BLOCKED);
         usersProjectionMap.put(Keys.TRUSTED_PUBLIC_KEY, TABLE_KEYS + "." + Keys.PUBLIC_KEY);
