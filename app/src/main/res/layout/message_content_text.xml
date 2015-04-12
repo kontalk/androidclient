@@ -23,4 +23,5 @@
     app:emojiconSize="@dimen/emoji_textview_size"
     app:emojiconTextLength="@integer/emoji_overflow_length"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:layout_height="match_parent"
+    android:linksClickable="false"/>

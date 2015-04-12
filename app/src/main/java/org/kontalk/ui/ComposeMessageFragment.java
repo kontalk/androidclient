@@ -753,6 +753,10 @@ public class ComposeMessageFragment extends ListFragment implements
                 builder.show();
             }
         }
+
+        else {
+            item.onClick();
+        }
     }
 
     private void startDownload(CompositeMessage msg) {

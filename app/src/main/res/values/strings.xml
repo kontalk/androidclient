@@ -246,6 +246,8 @@
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
 
+    <string name="chooser_select_link">Choose action</string>
+
     <string name="status_activity_title">Status message</string>
     <string name="hint_status_entry">Type your status message here</string>
     <string name="header_recent_status">Recently used status messages</string>
