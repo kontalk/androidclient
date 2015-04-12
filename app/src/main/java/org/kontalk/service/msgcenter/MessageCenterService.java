@@ -1072,7 +1072,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         connection.addAsyncStanzaListener(new RosterMatchListener(this), filter);
 
         filter = new StanzaTypeFilter(org.jivesoftware.smack.packet.Message.class);
-        connection.addAsyncStanzaListener(new MessageListener(this), filter);
+        connection.addSyncStanzaListener(new MessageListener(this), filter);
 
         filter = new StanzaTypeFilter(LastActivity.class);
         connection.addAsyncStanzaListener(new LastActivityListener(this), filter);
