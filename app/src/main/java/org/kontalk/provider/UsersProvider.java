@@ -418,10 +418,14 @@ public class UsersProvider extends ContentProvider {
             int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
 
             try {
+                String where = !Preferences.getSyncInvisibleContacts(context) ?
+                    ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1 AND " :
+                    "";
+
                 // query for phone numbers
                 phones = cr.query(Phone.CONTENT_URI,
                     new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE },
-                    ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1 AND (" +
+                    where + " (" +
                     // this will filter out RawContacts from Kontalk
                     RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
                     RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?))",

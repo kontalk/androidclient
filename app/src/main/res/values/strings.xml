@@ -328,6 +328,10 @@
     <string name="pref_title_off_sync_sim_contacts">Do not include SIM contacts when checking for registered users</string>
     <string name="pref_title_on_sync_sim_contacts">SIM contacts are also included when checking for registered users</string>
 
+    <string name="pref_sync_invisible_contacts">Include invisible contacts</string>
+    <string name="pref_title_off_sync_invisible_contacts">Do not include contacts not displayed in Contacts app. Enable for DAVDroid workaround</string>
+    <string name="pref_title_on_sync_invisible_contacts">Contacts not displayed in Contacts app will be included in Kontalk</string>
+
     <string name="pref_accept_any_certificate">Accept any SSL certificate</string>
 
     <string name="pref_delete_account">Delete your account</string>
