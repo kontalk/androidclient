@@ -150,6 +150,7 @@ public class AdaptiveServerPingManager extends Manager {
     private static AlarmManager sAlarmManager;
     private static long sIntervalMillis;
     private static boolean sLastPingFailed;
+    private static long sLastSuccess;
 
     /**
      * Register a pending intent with the AlarmManager to be broadcasted every
@@ -187,9 +188,25 @@ public class AdaptiveServerPingManager extends Manager {
         setupAlarmManager(sIntervalMillis / 2);
     }
 
+    /**
+     * Called when a ping has succeeded.
+     * In order to avoid a too much optimistic approach, we wait for at least
+     * the supposed ping interval to pass before incrementing back the interval
+     * for the next ping.
+     */
     public static void pingSuccess() {
         sLastPingFailed = false;
-        setupAlarmManager((long) (sIntervalMillis * 1.5));
+        long now = System.currentTimeMillis();
+        long diff = now - sLastSuccess;
+        long nextAlarm;
+        if (diff >= sIntervalMillis) {
+            sLastSuccess = now;
+            nextAlarm = (long) (sIntervalMillis * 1.5);
+        }
+        else {
+            nextAlarm = sIntervalMillis;
+        }
+        setupAlarmManager(nextAlarm);
     }
 
     private static void setupAlarmManager(long intervalMillis) {
