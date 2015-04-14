@@ -34,6 +34,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -72,7 +73,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // broadcast sync start
             mBroadcastManager.sendBroadcast(new Intent(ACTION_SYNC_START));
 
-            final long startTime = System.currentTimeMillis();
+            final long startTime = SystemClock.elapsedRealtime();
             boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 
             // do not start if offline
@@ -121,7 +122,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 // release user provider
                 usersProvider.release();
                 // some stats :)
-                long endTime = System.currentTimeMillis();
+                long endTime = SystemClock.elapsedRealtime();
                 Preferences.setLastSyncTimestamp(mContext, endTime);
                 Log.d(TAG, String.format("sync took %.5f seconds", ((float)(endTime - startTime)) / 1000));
             }

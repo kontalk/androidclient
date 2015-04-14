@@ -196,7 +196,7 @@ public class AdaptiveServerPingManager extends Manager {
      */
     public static void pingSuccess() {
         sLastPingFailed = false;
-        long now = System.currentTimeMillis();
+        long now = SystemClock.elapsedRealtime();
         long diff = now - sLastSuccess;
         long nextAlarm;
         if (diff >= sIntervalMillis) {

@@ -444,6 +444,7 @@ public final class Preferences {
         return getLong(context, "pref_last_connection", -1);
     }
 
+    // TODO why isn't this used?
     public static boolean setLastConnection(Context context) {
         return sPreferences.edit()
             .putLong("pref_last_connection", System.currentTimeMillis())

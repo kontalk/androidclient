@@ -758,7 +758,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             else if (ACTION_TEST.equals(action)) {
                 if (isConnected()) {
                     if (canTest()) {
-                        mLastTest = System.currentTimeMillis();
+                        mLastTest = SystemClock.elapsedRealtime();
                         mIdleHandler.test();
                     }
                 }
@@ -1858,7 +1858,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private boolean canTest() {
-        long now = System.currentTimeMillis();
+        long now = SystemClock.elapsedRealtime();
         return ((now - mLastTest) > MIN_TEST_INTERVAL);
     }
 
