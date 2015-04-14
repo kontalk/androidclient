@@ -229,7 +229,7 @@ public class AdaptiveServerPingManager extends Manager {
             LOGGER.log(Level.WARNING, "Setting alarm for next ping to " + sIntervalMillis + " ms");
             sAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + sIntervalMillis,
-                intervalMillis, sPendingIntent);
+                sIntervalMillis, sPendingIntent);
         }
     }
 
