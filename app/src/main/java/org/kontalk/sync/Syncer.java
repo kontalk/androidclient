@@ -128,7 +128,7 @@ public class Syncer {
             if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
 
                 // consider only presences received *after* roster response
-                if (response != null) {
+                if (response != null && presenceId != null) {
 
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
