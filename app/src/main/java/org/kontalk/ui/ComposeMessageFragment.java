@@ -1941,7 +1941,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void subscribePresence() {
         // TODO this needs serious refactoring
-        // TODO remove the latest presence calculation stuff
         if (mPresenceReceiver == null) {
             mPresenceReceiver = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
@@ -1974,7 +1973,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                 i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.subscribe.name());
                                 context.startService(i);
 
-                                setStatusText(getString(R.string.invitation_sent_label));
+                                setStatusText(context.getString(R.string.invitation_sent_label));
                             }
 
                             // (un)available presence
@@ -2007,13 +2006,13 @@ public class ComposeMessageFragment extends ListFragment implements
 
                                     if (requestKey) {
                                         // warn user that public key is changed
-                                        showWarning(getString(R.string.warning_public_key));
+                                        showWarning(context.getString(R.string.warning_public_key));
                                     }
                                 }
 
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
-                                    statusText = getString(R.string.seen_online_label);
+                                    statusText = context.getString(R.string.seen_online_label);
                                 } else if (Presence.Type.unavailable.toString().equals(type)) {
                                     mAvailableResources.remove(from);
                                     /*
@@ -2030,7 +2029,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                         if (stamp >= 0 && ((System.currentTimeMillis() - stamp) > PRESENCE_DELAY_THRESHOLD)) {
                                             statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
                                         } else {
-                                            statusText = getString(R.string.seen_moment_ago_label);
+                                            statusText = context.getString(R.string.seen_moment_ago_label);
                                         }
                                     }
                                 }
@@ -2069,7 +2068,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         if (from != null && XMPPUtils.equalsBareJID(from, mUserJID)) {
                             if (chatState != null && ChatState.composing.toString().equals(chatState)) {
                                 mIsTyping = true;
-                                setStatusText(getString(R.string.seen_typing_label));
+                                setStatusText(context.getString(R.string.seen_typing_label));
                             }
                             else {
                                 mIsTyping = false;
