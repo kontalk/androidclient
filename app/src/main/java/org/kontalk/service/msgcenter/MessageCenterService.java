@@ -62,10 +62,12 @@ import android.accounts.Account;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.ConnectivityManager;
@@ -506,6 +508,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             });
         }
 
+        public void forceInactive() {
+            MessageCenterService service = s.get();
+            if (service != null && !service.isInactive()) {
+                removeMessages(MSG_INACTIVE);
+                service.inactive();
+            }
+        }
+
         private void queueInactive() {
             // send inactive state message only if connected
             MessageCenterService service = s.get();
@@ -518,6 +528,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             sendMessageDelayed(obtainMessage(MSG_TEST), FAST_PING_TIMEOUT);
         }
     }
+
+    private final BroadcastReceiver mInactivityReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                if (mIdleHandler != null) {
+                    mIdleHandler.forceInactive();
+                }
+            }
+        }
+    } ;
 
     @Override
     public void onCreate() {
@@ -543,6 +564,19 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         mIdleHandler = new IdleConnectionHandler(this, thread.getLooper());
         mHandler = new Handler();
+
+        // register screen off listener for manual inactivation
+        registerInactivity();
+    }
+
+    private void registerInactivity() {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mInactivityReceiver, filter);
+    }
+
+    private void unregisterInactivity() {
+        unregisterReceiver(mInactivityReceiver);
     }
 
     void sendPacket(Stanza packet) {
@@ -593,6 +627,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         AdaptiveServerPingManager.onDestroy();
         // destroy roster store
         mRosterStore.onDestroy();
+        // unregister screen off listener for manual inactivation
+        unregisterInactivity();
     }
 
     private synchronized void quit(boolean restarting) {
