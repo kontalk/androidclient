@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 
 import org.jivesoftware.smack.ConnectionCreationListener;
 import org.jivesoftware.smack.Manager;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPConnectionRegistry;
 import org.jivesoftware.smack.util.Async;
@@ -112,11 +113,12 @@ public class AdaptiveServerPingManager extends Manager {
             LOGGER.fine("Ping Alarm broadcast received");
             Iterator<XMPPConnection> it = INSTANCES.keySet().iterator();
             while (it.hasNext()) {
-                XMPPConnection connection = it.next();
+                final XMPPConnection connection = it.next();
                 if (getInstanceFor(connection).isEnabled()) {
                     LOGGER.fine("Calling pingServerIfNecessary for connection "
                         + connection.getConnectionCounter());
                     final PingManager pingManager = PingManager.getInstanceFor(connection);
+                    pingManager.setPingInterval(0);
                     // Android BroadcastReceivers have a timeout of 60 seconds.
                     // The connections reply timeout may be higher, which causes
                     // timeouts of the broadcast receiver and a subsequent ANR
@@ -128,9 +130,19 @@ public class AdaptiveServerPingManager extends Manager {
                     Async.go(new Runnable() {
                         @Override
                         public void run() {
-                            pingManager.pingServerIfNecessary();
-                            if (!isLastPingFailed()) {
-                                pingSuccess();
+                            long now = System.currentTimeMillis();
+                            if ((now - connection.getLastStanzaReceived()) >= sIntervalMillis) {
+                                try {
+                                    if (pingManager.pingMyServer(false)) {
+                                        pingSuccess();
+                                    }
+                                    else {
+                                        pingFailed();
+                                    }
+                                }
+                                catch (SmackException.NotConnectedException e) {
+                                    // ignored
+                                }
                             }
                         }
                     }, "PingServerIfNecessary (" + connection.getConnectionCounter() + ')');
@@ -143,13 +155,12 @@ public class AdaptiveServerPingManager extends Manager {
         }
     };
 
-    private static final int MIN_ALARM_INTERVAL = 5*60*1000;
+    private static final int MIN_ALARM_INTERVAL = 90*1000;
 
     private static Context sContext;
     private static PendingIntent sPendingIntent;
     private static AlarmManager sAlarmManager;
     private static long sIntervalMillis;
-    private static boolean sLastPingFailed;
     private static long sLastSuccess;
 
     /**
@@ -175,16 +186,11 @@ public class AdaptiveServerPingManager extends Manager {
         }
     }
 
-    private static boolean isLastPingFailed() {
-        return sLastPingFailed;
-    }
-
     /**
      * Called by the ping failed listener.
      * It will half the interval for the next alarm.
      */
     public static void pingFailed() {
-        sLastPingFailed = true;
         setupAlarmManager(sIntervalMillis / 2);
     }
 
@@ -195,7 +201,6 @@ public class AdaptiveServerPingManager extends Manager {
      * for the next ping.
      */
     public static void pingSuccess() {
-        sLastPingFailed = false;
         long now = SystemClock.elapsedRealtime();
         long diff = now - sLastSuccess;
         long nextAlarm;
@@ -218,7 +223,7 @@ public class AdaptiveServerPingManager extends Manager {
             if (sIntervalMillis > AlarmManager.INTERVAL_HALF_HOUR) {
                 sIntervalMillis = AlarmManager.INTERVAL_HALF_HOUR;
             }
-            // ...or less than 5 minutes
+            // ...or less than 90 seconds
             else if (sIntervalMillis < MIN_ALARM_INTERVAL) {
                 sIntervalMillis = MIN_ALARM_INTERVAL;
             }
