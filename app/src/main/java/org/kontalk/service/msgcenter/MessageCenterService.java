@@ -371,9 +371,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         /** Reference counter. */
         private int mRefCount;
 
-        public IdleConnectionHandler(MessageCenterService service, Looper looper) {
+        public IdleConnectionHandler(MessageCenterService service, int refCount, Looper looper) {
             super(looper);
             s = new WeakReference<MessageCenterService>(service);
+            mRefCount = refCount;
 
             // set idle handler for the first idle message
             Looper.myQueue().addIdleHandler(this);
@@ -448,7 +449,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             removeMessages(MSG_INACTIVE);
 
             if (mRefCount <= 0 && getLooper().getThread().isAlive()) {
-                MessageCenterService service = s.get();
                 // queue inactive message
                 queueInactive();
             }
@@ -572,7 +572,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mPushService = PushServiceManager.getInstance(this);
 
         // create idle handler
-        setupIdleHandler();
+        createIdleHandler();
 
         // create main thread handler
         mHandler = new Handler();
@@ -581,10 +581,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         registerInactivity();
     }
 
-    private void setupIdleHandler() {
+    private void createIdleHandler() {
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
-        mIdleHandler = new IdleConnectionHandler(this, thread.getLooper());
+        int refCount = Kontalk.get(this).getReferenceCounter();
+        mIdleHandler = new IdleConnectionHandler(this, refCount, thread.getLooper());
     }
 
     private void registerInactivity() {
