@@ -151,6 +151,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_START = "org.kontalk.push.START";
     public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
+    public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
 
     /** Request the roster. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
@@ -295,6 +296,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
 
+    /** How much time to wait to idle the message center (default 5 mins). */
+    private final static int DEFAULT_IDLE_TIME = 5*60*1000;
+
     /** Fast ping tester timeout. */
     private static final int FAST_PING_TIMEOUT = 3000;
     /** Minimal interval between connection tests (5 mins). */
@@ -313,8 +317,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Flag marking a currently ongoing push registration cycle (unregister/register) */
     boolean mPushRegistrationCycle;
 
-    private WakeLock mWakeLock; // created in onCreate
-    LocalBroadcastManager mLocalBroadcastManager;   // created in onCreate
+    // created in onCreate
+    private WakeLock mWakeLock;
+    LocalBroadcastManager mLocalBroadcastManager;
+    private AlarmManager mAlarmManager;
 
     /** Cached last used server. */
     EndpointServer mServer;
@@ -340,6 +346,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean mInactive;
     /** Timestamp of last use of {@link #ACTION_TEST}. */
     private long mLastTest;
+    /** Pending intent for idle signaling. */
+    private PendingIntent mIdleIntent;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
     Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
@@ -354,9 +362,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         private static final int MSG_INACTIVE = 2;
         /** Test signal. */
         private static final int MSG_TEST = 3;
-
-        /** How much time to wait to idle the message center. */
-        private final static int DEFAULT_IDLE_TIME = 60000;
 
         /** How much time to wait to enter inactive state. */
         private final static int INACTIVE_TIME = 30000;
@@ -399,7 +404,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             if (msg.what == MSG_IDLE) {
                 // push notifications unavailable: set up an alarm for next time
                 if (service.mPushRegistrationId == null) {
-                    setWakeupAlarm(service);
+                    service.setWakeupAlarm();
                 }
 
                 Log.d(TAG, "shutting down message center due to inactivity");
@@ -434,31 +439,23 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         /** Resets the idle timer. */
         public void reset(int refCount) {
             mRefCount = refCount;
-
-            removeMessages(MSG_INACTIVE);
-            // queue inactive message again
-            if (mRefCount <= 0)
-                queueInactive();
-
             reset();
         }
 
         /** Resets the idle timer. */
         public void reset() {
             removeMessages(MSG_IDLE);
+            removeMessages(MSG_INACTIVE);
 
             if (mRefCount <= 0 && getLooper().getThread().isAlive()) {
-                int time;
                 MessageCenterService service = s.get();
-                if (service != null)
-                    time = Preferences.getIdleTimeMillis(service, 0, DEFAULT_IDLE_TIME);
-                else
-                    time = DEFAULT_IDLE_TIME;
-
-                // zero means no idle (keep-alive forever)
-                if (time > 0)
-                    sendMessageDelayed(obtainMessage(MSG_IDLE), time);
+                // queue inactive message
+                queueInactive();
             }
+        }
+
+        public void idle() {
+            sendMessage(obtainMessage(MSG_IDLE));
         }
 
         public void hold() {
@@ -471,9 +468,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             post(new Runnable() {
                 public void run() {
-                    Looper.myQueue().removeIdleHandler(IdleConnectionHandler.this);
-                    removeMessages(MSG_IDLE);
-                    removeMessages(MSG_INACTIVE);
+                    abortIdle();
                 }
             });
         }
@@ -494,8 +489,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         public void quit() {
-            Looper.myQueue().removeIdleHandler(IdleConnectionHandler.this);
+            abortIdle();
             getLooper().quit();
+        }
+
+        /** Aborts any idle message because we are using the service or quitting. */
+        private void abortIdle() {
+            Looper.myQueue().removeIdleHandler(IdleConnectionHandler.this);
+            removeMessages(MSG_IDLE);
+            removeMessages(MSG_INACTIVE);
+            MessageCenterService service = s.get();
+            if (service != null)
+                service.cancelIdleAlarm();
         }
 
         public void queueInactiveIfNeeded() {
@@ -525,7 +530,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         public void test() {
-            sendMessageDelayed(obtainMessage(MSG_TEST), FAST_PING_TIMEOUT);
+            post(new Runnable() {
+                public void run() {
+                    if (!hasMessages(MSG_TEST)) {
+                        sendMessageDelayed(obtainMessage(MSG_TEST), FAST_PING_TIMEOUT);
+                    }
+                }
+            });
         }
     }
 
@@ -555,18 +566,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
         mWakeLock.setReferenceCounted(false);
 
+        mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
         mPushService = PushServiceManager.getInstance(this);
 
         // create idle handler
-        HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
+        setupIdleHandler();
 
-        mIdleHandler = new IdleConnectionHandler(this, thread.getLooper());
+        // create main thread handler
         mHandler = new Handler();
 
         // register screen off listener for manual inactivation
         registerInactivity();
+    }
+
+    private void setupIdleHandler() {
+        HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+        mIdleHandler = new IdleConnectionHandler(this, thread.getLooper());
     }
 
     private void registerInactivity() {
@@ -629,6 +647,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mRosterStore.onDestroy();
         // unregister screen off listener for manual inactivation
         unregisterInactivity();
+
+        // destroy references
+        mAlarmManager = null;
+        mLocalBroadcastManager = null;
+        mWakeLock = null;
     }
 
     private synchronized void quit(boolean restarting) {
@@ -746,6 +769,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_RELEASE.equals(action)) {
                 mIdleHandler.release();
+            }
+
+            else if (ACTION_IDLE.equals(action)) {
+                mIdleHandler.idle();
             }
 
             else if (ACTION_PUSH_START.equals(action)) {
@@ -1185,6 +1212,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private void active() {
         if (mConnection != null && ClientStateIndicationManager.isSupported(mConnection)) {
             Log.d(TAG, "entering active state");
+            cancelIdleAlarm();
             try {
                 ClientStateIndicationManager.active(mConnection);
                 mInactive = false;
@@ -1202,10 +1230,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             Log.d(TAG, "entering inactive state");
             try {
                 ClientStateIndicationManager.inactive(mConnection);
+                setIdleAlarm();
                 mInactive = true;
             }
             catch (NotConnectedException e) {
-                // ignored
+                cancelIdleAlarm();
             }
         }
     }
@@ -2234,20 +2263,37 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return sPushSenderId;
     }
 
-    public static void setWakeupAlarm(Context context) {
-        AlarmManager am = (AlarmManager) context
-                .getSystemService(Context.ALARM_SERVICE);
-
-        long delay = Preferences.getWakeupTimeMillis(context,
+    private void setWakeupAlarm() {
+        long delay = Preferences.getWakeupTimeMillis(this,
             MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
 
         // start message center pending intent
-        PendingIntent pi = PendingIntent.getService(context
-                .getApplicationContext(), 0, getStartIntent(context),
-                PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pi = PendingIntent.getService(
+            getApplicationContext(), 0, getStartIntent(this),
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
 
-        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + delay, pi);
+    }
+
+    private void cancelIdleAlarm() {
+        if (mIdleIntent != null) {
+            mAlarmManager.cancel(mIdleIntent);
+        }
+    }
+
+    private void setIdleAlarm() {
+        if (mIdleIntent == null) {
+            Intent i = getStartIntent(this);
+            i.setAction(ACTION_IDLE);
+            mIdleIntent = PendingIntent.getService(
+                getApplicationContext(), 0, i,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
+        long delay = Preferences.getIdleTimeMillis(this, 0, DEFAULT_IDLE_TIME);
+        mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + delay, mIdleIntent);
     }
 
 }
