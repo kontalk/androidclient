@@ -82,20 +82,18 @@
 
     <string-array name="idle_time_values" translate="false">
         <item>0</item>
-        <item>60000</item>
-        <item>120000</item>
-        <item>180000</item>
-        <item>240000</item>
         <item>300000</item>
+        <item>900000</item>
+        <item>1800000</item>
+        <item>3600000</item>
     </string-array>
 
     <string-array name="idle_time_labels">
         <item>Never</item>
-        <item>1 minute</item>
-        <item>2 minutes</item>
-        <item>3 minutes</item>
-        <item>4 minutes</item>
         <item>5 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
     </string-array>
 
     <string-array name="wakeup_time_values" translate="false">
