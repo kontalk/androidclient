@@ -82,12 +82,24 @@ public final class SystemUtils {
     }
 
     /** Returns the type name of the current network, or null. */
-    public static String getCurrentNetwork(Context context) {
+    public static String getCurrentNetworkName(Context context) {
         ConnectivityManager connMgr = (ConnectivityManager) context
             .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo info = connMgr.getActiveNetworkInfo();
         return info != null ? info.getTypeName() : null;
+    }
+
+    public static int getCurrentNetworkType(Context context) {
+        ConnectivityManager connMgr = (ConnectivityManager) context
+            .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo info = connMgr.getActiveNetworkInfo();
+        return info != null ? info.getType() : -1;
+    }
+
+    public static boolean isOnWifi(Context context) {
+        return getCurrentNetworkType(context) == ConnectivityManager.TYPE_WIFI;
     }
 
 }

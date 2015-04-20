@@ -43,6 +43,7 @@ import android.content.IntentFilter;
 import android.os.SystemClock;
 
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -144,6 +145,9 @@ public class AdaptiveServerPingManager extends Manager {
                                     // ignored
                                 }
                             }
+                            else {
+                                onConnected();
+                            }
                         }
                     }, "PingServerIfNecessary (" + connection.getConnectionCounter() + ')');
                 }
@@ -232,9 +236,25 @@ public class AdaptiveServerPingManager extends Manager {
             Preferences.setPingAlarmInterval(sContext, sIntervalMillis);
 
             LOGGER.log(Level.WARNING, "Setting alarm for next ping to " + sIntervalMillis + " ms");
-            sAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + sIntervalMillis,
-                sIntervalMillis, sPendingIntent);
+
+            if (SystemUtils.isOnWifi(sContext)) {
+                // when on WiFi we can afford an inexact ping (carrier will not destroy our connection)
+                sAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + sIntervalMillis,
+                    sIntervalMillis, sPendingIntent);
+            }
+            else {
+                // when on mobile network, we need exact ping timings
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    sAlarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        SystemClock.elapsedRealtime() + sIntervalMillis,
+                        sPendingIntent);
+                } else {
+                    sAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        SystemClock.elapsedRealtime() + sIntervalMillis,
+                        sPendingIntent);
+                }
+            }
         }
     }
 

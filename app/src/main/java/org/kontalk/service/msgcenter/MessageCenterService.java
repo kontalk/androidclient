@@ -349,6 +349,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Pending intent for idle signaling. */
     private PendingIntent mIdleIntent;
 
+    private boolean mFirstStart = true;
+
     /** Messages waiting for server receipt (packetId: internalStorageId). */
     Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
 
@@ -585,6 +587,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
         int refCount = Kontalk.get(this).getReferenceCounter();
+        Log.v(TAG, "creating idle handler with refcount " + (refCount));
         mIdleHandler = new IdleConnectionHandler(this, refCount, thread.getLooper());
     }
 
@@ -764,7 +767,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_HOLD.equals(action)) {
-                mIdleHandler.hold();
+                if (!mFirstStart)
+                    mIdleHandler.hold();
                 doConnect = true;
             }
 
@@ -1021,6 +1025,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // no reason to exist
             if (!canConnect && !doConnect && !isConnected && !isConnecting())
                 stopSelf();
+
+            mFirstStart = false;
         }
         else {
             Log.v(TAG, "restarting after service crash");
