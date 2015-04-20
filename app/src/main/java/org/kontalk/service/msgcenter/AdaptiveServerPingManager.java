@@ -133,7 +133,7 @@ public class AdaptiveServerPingManager extends Manager {
                             long now = System.currentTimeMillis();
                             if ((now - connection.getLastStanzaReceived()) >= sIntervalMillis) {
                                 try {
-                                    if (pingManager.pingMyServer(false)) {
+                                    if (pingManager.pingMyServer(true)) {
                                         pingSuccess();
                                     }
                                     else {
