@@ -2294,8 +2294,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     PendingIntent.FLAG_UPDATE_CURRENT);
             }
 
-            mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + delay, mIdleIntent);
+            mAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + delay, delay, mIdleIntent);
         }
     }
 
