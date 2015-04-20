@@ -61,6 +61,7 @@ public abstract class MediaStorage {
     public static final String THUMBNAIL_MIME_NETWORK = "image/jpeg";
     public static final int THUMBNAIL_MIME_COMPRESSION = 60;
 
+    public static final String COMPRESS_MIME = "image/jpeg";
     private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
 

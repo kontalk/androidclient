@@ -173,7 +173,9 @@ public class UploadService extends IntentService implements ProgressListener {
                         mCompressed = MediaStorage
                             .resizeImage(this, file, databaseId, compress);
                         mTotalBytes = length = mCompressed.length();
+                        // update mime and file with the new compressed image
                         file = Uri.fromFile(mCompressed);
+                        mime = MediaStorage.COMPRESS_MIME;
                     }
                     catch (Exception e) {
                         Log.w(TAG, "error compressing image", e);
