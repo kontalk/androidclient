@@ -317,6 +317,9 @@ public class DownloadService extends IntentService implements DownloadListener {
         getContentResolver().update(ContentUris
             .withAppendedId(Messages.CONTENT_URI, mMessageId), values, null, null);
 
+        // update media store
+        MediaStorage.scanFile(this, destination, mime);
+
         // stop foreground
         stopForeground();
 

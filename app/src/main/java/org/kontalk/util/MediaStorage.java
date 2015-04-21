@@ -36,6 +36,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -360,6 +361,12 @@ public abstract class MediaStorage {
                 & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
         final Uri uri = intent.getData();
         context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+    }
+
+    public static void scanFile(Context context, File file, String mime) {
+        MediaScannerConnection.scanFile(context.getApplicationContext(),
+            new String[] { file.getPath() },
+            new String[] { mime }, null);
     }
 
 }
