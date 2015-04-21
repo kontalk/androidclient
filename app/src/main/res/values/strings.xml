@@ -315,6 +315,7 @@
 
     <string name="msg_connecting_iab">Connecting to Google Play&#8230;</string>
     <string name="msg_iab_thankyou">Thank you!</string>
+    <string name="msg_iab_thankyou_warning">Something went wrong, but the donation went through. Thank you!</string>
 
     <string name="iab_error_setup">Error during in-app billing setup (%d)</string>
     <string name="iab_error_query">Failed to query in-app billing inventory (%d)</string>

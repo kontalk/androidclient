@@ -41,6 +41,6 @@ public class BillingResult {
     public String getMessage() { return mMessage; }
     public boolean isSuccess() { return mResponse == BillingServiceManager.BILLING_RESPONSE_RESULT_OK; }
     public boolean isFailure() { return !isSuccess(); }
-    public String toString() { return "IabResult: " + getMessage(); }
+    public String toString() { return "BillingResult: " + getMessage(); }
 }
 

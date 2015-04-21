@@ -589,6 +589,64 @@ public class GoogleBillingService implements IBillingService {
     }
 
     /**
+     * Consumes a given in-app product. Consuming can only be done on an item
+     * that's owned, and as a result of consumption, the user will no longer own it.
+     * This method may block or take long to return. Do not call from the UI thread.
+     * For that, see {@link #consumeAsync}.
+     *
+     * @param itemInfo The PurchaseInfo that represents the item to consume.
+     * @throws BillingException if there is a problem during consumption.
+     */
+    void consume(IPurchase itemInfo) throws BillingException {
+        checkNotDisposed();
+        checkSetupDone("consume");
+
+        if (!itemInfo.getItemType().equals(ITEM_TYPE_INAPP)) {
+            throw new BillingException(IABHELPER_INVALID_CONSUMPTION,
+                "Items of type '" + itemInfo.getItemType() + "' can't be consumed.");
+        }
+
+        try {
+            String token = itemInfo.getToken();
+            String sku = itemInfo.getProduct();
+            if (token == null || token.equals("")) {
+                logError("Can't consume "+ sku + ". No token.");
+                throw new BillingException(IABHELPER_MISSING_TOKEN, "PurchaseInfo is missing token for sku: "
+                    + sku + " " + itemInfo);
+            }
+
+            logDebug("Consuming sku: " + sku + ", token: " + token);
+            int response = mService.consumePurchase(3, mContext.getPackageName(), token);
+            if (response == BILLING_RESPONSE_RESULT_OK) {
+                logDebug("Successfully consumed sku: " + sku);
+            }
+            else {
+                logDebug("Error consuming consuming sku " + sku + ". " + getResponseDesc(response));
+                throw new BillingException(response, "Error consuming sku " + sku);
+            }
+        }
+        catch (RemoteException e) {
+            throw new BillingException(IABHELPER_REMOTE_EXCEPTION, "Remote exception while consuming. PurchaseInfo: " + itemInfo, e);
+        }
+    }
+
+    /**
+     * Asynchronous wrapper to item consumption. Works like {@link #consume}, but
+     * performs the consumption in the background and notifies completion through
+     * the provided listener. This method is safe to call from a UI thread.
+     *
+     * @param purchase The purchase to be consumed.
+     * @param listener The listener to notify when the consumption operation finishes.
+     */
+    public void consumeAsync(IPurchase purchase, OnConsumeFinishedListener listener) {
+        checkNotDisposed();
+        checkSetupDone("consume");
+        List<IPurchase> purchases = new ArrayList<IPurchase>();
+        purchases.add(purchase);
+        consumeAsyncInternal(purchases, listener);
+    }
+
+    /**
      * Returns a human-readable description for the given response code.
      *
      * @param code The response code
@@ -781,6 +839,34 @@ public class GoogleBillingService implements IBillingService {
         return BILLING_RESPONSE_RESULT_OK;
     }
 
+    void consumeAsyncInternal(final List<IPurchase> purchases,
+        final OnConsumeFinishedListener listener) {
+        final Handler handler = new Handler();
+        startAsyncOperation("consume");
+        (new Thread(new Runnable() {
+            public void run() {
+                final List<BillingResult> results = new ArrayList<BillingResult>();
+                for (IPurchase purchase : purchases) {
+                    try {
+                        consume(purchase);
+                        results.add(new BillingResult(BILLING_RESPONSE_RESULT_OK, "Successful consume of sku " + purchase.getProduct()));
+                    }
+                    catch (BillingException ex) {
+                        results.add(ex.getResult());
+                    }
+                }
+
+                endAsyncOperation();
+                if (!mDisposed && listener != null) {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            listener.onConsumeFinished(purchases.get(0), results.get(0));
+                        }
+                    });
+                }
+            }
+        })).start();
+    }
 
     void logDebug(String msg) {
         if (mDebugLog) Log.d(mDebugTag, msg);

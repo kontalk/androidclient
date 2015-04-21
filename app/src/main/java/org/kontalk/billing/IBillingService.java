@@ -127,6 +127,8 @@ public interface IBillingService {
 
     public void queryInventoryAsync(boolean querySkuDetails, QueryInventoryFinishedListener listener);
 
+    public void consumeAsync(IPurchase purchase, OnConsumeFinishedListener listener);
+
     public void endAsyncOperation();
 
     /**
