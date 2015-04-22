@@ -18,7 +18,6 @@
 
 package org.kontalk.service.msgcenter;
 
-import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -31,7 +30,6 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPConnectionRegistry;
 import org.jivesoftware.smack.util.Async;
-import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
 
 import android.app.AlarmManager;
@@ -67,29 +65,11 @@ public class AdaptiveServerPingManager extends Manager {
         });
     }
 
-    private static final class PingFailedNotifier implements PingFailedListener {
-
-        private final WeakReference<AdaptiveServerPingManager> mManager;
-
-        public PingFailedNotifier(AdaptiveServerPingManager manager) {
-            mManager = new WeakReference<AdaptiveServerPingManager>(manager);
-        }
-
-        @Override
-        public void pingFailed() {
-            AdaptiveServerPingManager.pingFailed();
-        }
-    }
-
     public static synchronized AdaptiveServerPingManager getInstanceFor(XMPPConnection connection) {
         AdaptiveServerPingManager serverPingWithAlarmManager = INSTANCES.get(connection);
         if (serverPingWithAlarmManager == null) {
             serverPingWithAlarmManager = new AdaptiveServerPingManager(connection);
             INSTANCES.put(connection, serverPingWithAlarmManager);
-
-            // register ping failed listener for automatic retry management
-            PingManager.getInstanceFor(connection)
-                .registerPingFailedListener(new PingFailedNotifier(serverPingWithAlarmManager));
         }
         return serverPingWithAlarmManager;
     }
@@ -131,22 +111,16 @@ public class AdaptiveServerPingManager extends Manager {
                     Async.go(new Runnable() {
                         @Override
                         public void run() {
-                            long now = System.currentTimeMillis();
-                            if ((now - connection.getLastStanzaReceived()) >= sIntervalMillis) {
-                                try {
-                                    if (pingManager.pingMyServer(true)) {
-                                        pingSuccess();
-                                    }
-                                    else {
-                                        pingFailed();
-                                    }
+                            try {
+                                if (pingManager.pingMyServer(true)) {
+                                    pingSuccess(connection);
                                 }
-                                catch (SmackException.NotConnectedException e) {
-                                    // ignored
+                                else {
+                                    pingFailed(connection);
                                 }
                             }
-                            else {
-                                onConnected();
+                            catch (SmackException.NotConnectedException e) {
+                                // ignored
                             }
                         }
                     }, "PingServerIfNecessary (" + connection.getConnectionCounter() + ')');
@@ -159,13 +133,30 @@ public class AdaptiveServerPingManager extends Manager {
         }
     };
 
-    private static final int MIN_ALARM_INTERVAL = 90*1000;
+    private static final int MIN_ALARM_INTERVAL = 90 * 1000;
 
     private static Context sContext;
     private static PendingIntent sPendingIntent;
     private static AlarmManager sAlarmManager;
-    private static long sIntervalMillis;
+
+    // All values are in milliseconds.
+
+    /**
+     * Current ping interval.
+     */
+    private static long sInterval;
+    /**
+     * Timestamp of last ping success.
+     */
     private static long sLastSuccess;
+    /**
+     * Last successful ping interval.
+     */
+    private static long sLastSuccessInterval;
+    /**
+     * Interval for the next increase.
+     */
+    private static long sNextIncrease;
 
     /**
      * Register a pending intent with the AlarmManager to be broadcasted every
@@ -184,9 +175,18 @@ public class AdaptiveServerPingManager extends Manager {
     }
 
     public static void onConnected() {
+        onConnected(null);
+    }
+
+    public static void onConnected(XMPPConnection connection) {
         if (sContext != null) {
             // setup first alarm using last value from preference
-            setupAlarmManager(Preferences.getPingAlarmInterval(sContext, AlarmManager.INTERVAL_HALF_HOUR));
+            setupAlarmManager(connection, Preferences.getPingAlarmInterval(sContext, AlarmManager.INTERVAL_HALF_HOUR));
+            // next increase can happen at least at next interval
+            sNextIncrease = Preferences.getPingAlarmBackoff(sContext, sInterval);
+            // reset internal variables
+            sLastSuccess = 0;
+            sLastSuccessInterval = 0;
         }
     }
 
@@ -194,8 +194,20 @@ public class AdaptiveServerPingManager extends Manager {
      * Called by the ping failed listener.
      * It will half the interval for the next alarm.
      */
-    public static void pingFailed() {
-        setupAlarmManager(sIntervalMillis / 2);
+    public static void pingFailed(XMPPConnection connection) {
+        long interval;
+
+        if (sLastSuccessInterval > 0) {
+            // we were trying an increase, go back to previous value
+            interval = sLastSuccessInterval;
+            // better use the previous value for a longer time :)
+            setNextIncreaseInterval((long) (sNextIncrease * 1.5));
+        }
+        else {
+            // half interval
+            interval = sInterval / 2;
+        }
+        setupAlarmManager(connection, interval);
     }
 
     /**
@@ -204,58 +216,90 @@ public class AdaptiveServerPingManager extends Manager {
      * the supposed ping interval to pass before incrementing back the interval
      * for the next ping.
      */
-    public static void pingSuccess() {
+    public static void pingSuccess(XMPPConnection connection) {
+        long nextAlarm = sInterval;
         long now = SystemClock.elapsedRealtime();
-        long diff = now - sLastSuccess;
-        long nextAlarm;
-        if (diff >= sIntervalMillis) {
-            sLastSuccess = now;
-            nextAlarm = (long) (sIntervalMillis * 1.5);
+
+        if (sLastSuccessInterval > 0) {
+            // interval increase was successful, reset backoff
+            setNextIncreaseInterval(sInterval);
+
+            // interval increase was successful
         }
-        else {
-            nextAlarm = sIntervalMillis;
+        // try an increase only if we previously had a successful ping
+        else if (sLastSuccess > 0) {
+            long diff = now - sLastSuccess;
+            if (diff >= sNextIncrease) {
+                // we are trying an increase, store the last successful interval
+                sLastSuccessInterval = sInterval;
+
+                nextAlarm = (long) (sInterval * 1.5);
+            }
+
+            // do not increase interval for now
         }
-        setupAlarmManager(nextAlarm);
+
+        // remember last success
+        sLastSuccess = now;
+
+        setupAlarmManager(connection, nextAlarm);
     }
 
-    private static void setupAlarmManager(long intervalMillis) {
-        if (sPendingIntent != null && sIntervalMillis != intervalMillis) {
+    private static void setupAlarmManager(XMPPConnection connection, long intervalMillis) {
+        if (sPendingIntent != null) {
             sAlarmManager.cancel(sPendingIntent);
-            sIntervalMillis = intervalMillis;
+            sInterval = intervalMillis;
 
             // do not go beyond 30 minutes...
-            if (sIntervalMillis > AlarmManager.INTERVAL_HALF_HOUR) {
-                sIntervalMillis = AlarmManager.INTERVAL_HALF_HOUR;
+            if (sInterval > AlarmManager.INTERVAL_HALF_HOUR) {
+                sInterval = AlarmManager.INTERVAL_HALF_HOUR;
             }
             // ...or less than 90 seconds
-            else if (sIntervalMillis < MIN_ALARM_INTERVAL) {
-                sIntervalMillis = MIN_ALARM_INTERVAL;
+            else if (sInterval < MIN_ALARM_INTERVAL) {
+                sInterval = MIN_ALARM_INTERVAL;
             }
 
             // save value to preference for later retrieval
-            Preferences.setPingAlarmInterval(sContext, sIntervalMillis);
+            Preferences.setPingAlarmInterval(sContext, sInterval);
 
-            LOGGER.log(Level.WARNING, "Setting alarm for next ping to " + sIntervalMillis + " ms");
+            // remove difference from last received stanza
+            long interval = sInterval;
+            if (connection != null) {
+                long now = System.currentTimeMillis();
+                long lastStanza = connection.getLastStanzaReceived();
+                if (lastStanza > 0)
+                    interval -= (now - lastStanza);
+            }
+
+            LOGGER.log(Level.WARNING, "Setting alarm for next ping to " + sInterval + " ms (real " + interval + " ms)");
 
             if (SystemUtils.isOnWifi(sContext)) {
                 // when on WiFi we can afford an inexact ping (carrier will not destroy our connection)
                 sAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + sIntervalMillis,
-                    sIntervalMillis, sPendingIntent);
+                    SystemClock.elapsedRealtime() + interval,
+                    interval, sPendingIntent);
             }
             else {
                 // when on mobile network, we need exact ping timings
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
                     sAlarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        SystemClock.elapsedRealtime() + sIntervalMillis,
+                        SystemClock.elapsedRealtime() + interval,
                         sPendingIntent);
                 } else {
                     sAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        SystemClock.elapsedRealtime() + sIntervalMillis,
+                        SystemClock.elapsedRealtime() + interval,
                         sPendingIntent);
                 }
             }
         }
+    }
+
+    private static void setNextIncreaseInterval(long interval) {
+        // reset last successful interval
+        sLastSuccessInterval = 0;
+        // set and save next increase
+        sNextIncrease = interval;
+        Preferences.setPingAlarmBackoff(sContext, sNextIncrease);
     }
 
     /**

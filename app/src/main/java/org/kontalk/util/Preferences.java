@@ -486,6 +486,20 @@ public final class Preferences {
             .commit();
     }
 
+    public static long getPingAlarmBackoff(Context context, long defaultValue) {
+        String networkType = SystemUtils.getCurrentNetworkName(context);
+        return (networkType != null) ?
+            getLong(context, "ping_alarm_backoff_" + networkType, defaultValue) :
+            defaultValue;
+    }
+
+    public static boolean setPingAlarmBackoff(Context context, long intervalMillis) {
+        String networkType = SystemUtils.getCurrentNetworkName(context);
+        return networkType != null && sPreferences.edit()
+            .putLong("ping_alarm_backoff_" + networkType, intervalMillis)
+            .commit();
+    }
+
     /**
      * Saves the current registration progress data. Used for recoverying a
      * registration after a restart or in very low memory situations.

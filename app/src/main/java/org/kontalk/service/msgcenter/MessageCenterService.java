@@ -426,11 +426,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT) {
                     if (!service.fastReply()) {
                         Log.v(TAG, "test ping failed");
-                        AdaptiveServerPingManager.pingFailed();
+                        AdaptiveServerPingManager.pingFailed(service.mConnection);
                         restart(service.getApplicationContext());
                     }
                     else {
-                        AdaptiveServerPingManager.pingSuccess();
+                        AdaptiveServerPingManager.pingSuccess(service.mConnection);
                     }
                 }
                 return true;
@@ -656,6 +656,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mAlarmManager = null;
         mLocalBroadcastManager = null;
         mWakeLock = null;
+    }
+
+    public boolean isStarted() {
+        return mLocalBroadcastManager != null;
     }
 
     private synchronized void quit(boolean restarting) {
@@ -1127,9 +1131,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .registerPingFailedListener(new PingFailedListener() {
                 @Override
                 public void pingFailed() {
-                    Log.v(TAG, "ping failed, restarting message center");
-                    // restart message center
-                    restart(getApplicationContext());
+                    if (isStarted()) {
+                        Log.v(TAG, "ping failed, restarting message center");
+                        // restart message center
+                        restart(getApplicationContext());
+                    }
                 }
             });
 
@@ -1189,6 +1195,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // queue inactive message if needed
         mIdleHandler.queueInactiveIfNeeded();
+
+        // update alarm manager
+        AdaptiveServerPingManager.onConnected(mConnection);
 
         // release the wakelock
         mWakeLock.release();
