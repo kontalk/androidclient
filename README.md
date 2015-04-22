@@ -13,3 +13,6 @@ Stable versions are also available through Google Play Store and F-Droid:
   src="https://developer.android.com/images/brand/en_generic_rgb_wo_45.png" /></a>
 <a href="https://f-droid.org/repository/browse/?fdid=org.kontalk"><img
   alt="Available on F-Droid" height="45" src="http://www.kontalk.org/images/fdroid.png" /></a>
+
+Help us translate Kontalk! Sign up for a free account on Transifex:  
+https://www.transifex.com/projects/p/kontalk-android-client/
