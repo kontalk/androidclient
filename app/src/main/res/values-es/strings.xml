@@ -204,7 +204,7 @@
   <string name="pref_export_keypair">Exportar clave personal</string>
   <string name="pref_title_export_keypair">Exportar clave personal y certificado de inicio de sesión a almacenamiento externo</string>
   <string name="pref_import_keypair">Importar clave personal</string>
-  <string name="pref_title_import_keypair">Importar clave personal y certificado de inicio de sesión a almacenamiento externo</string>
+  <string name="pref_title_import_keypair">Importar clave personal y certificado de inicio de sesión desde almacenamiento externo</string>
   <string name="msg_import_keypair">Kontalk importará sus claves desde %s en su almacenamiento externo. Asegúrese de que el fichero existe y es un archivo válido de claves exportadas</string>
   <string name="msg_import_keypair_complete">Importado de la clave personal completado.</string>
   <string name="err_import_keypair_failed">Fallo al importar la clave personal</string>
