@@ -1107,7 +1107,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     @Override
-    public synchronized void created(XMPPConnection connection) {
+    public synchronized void created(final XMPPConnection connection) {
         Log.v(TAG, "connection created.");
         mConnection = (KontalkConnection) connection;
 
@@ -1131,7 +1131,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .registerPingFailedListener(new PingFailedListener() {
                 @Override
                 public void pingFailed() {
-                    if (isStarted()) {
+                    if (isStarted() && mConnection == connection) {
                         Log.v(TAG, "ping failed, restarting message center");
                         // restart message center
                         restart(getApplicationContext());
