@@ -589,7 +589,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
         int refCount = Kontalk.get(this).getReferenceCounter();
-        Log.v(TAG, "creating idle handler with refcount " + (refCount));
         mIdleHandler = new IdleConnectionHandler(this, refCount, thread.getLooper());
     }
 
