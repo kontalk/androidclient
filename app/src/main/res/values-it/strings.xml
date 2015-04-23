@@ -223,6 +223,7 @@
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Invia immagine</string>
   <string name="chooser_error_no_camera">Memoria esterna non disponibile. Non sarà possibile scattare una nuovo foto da spedire.</string>
+  <string name="chooser_select_link">Scegli azione</string>
   <string name="status_activity_title">Messaggio di stato</string>
   <string name="hint_status_entry">Inserisci il tuo messaggio di stato</string>
   <string name="header_recent_status">Messaggi di status recenti</string>
@@ -277,6 +278,7 @@
   <string name="button_identity">Identità</string>
   <string name="msg_connecting_iab">Connessione a Google Play…</string>
   <string name="msg_iab_thankyou">Grazie!</string>
+  <string name="msg_iab_thankyou_warning">Qualcosa è andato storto, ma la donazione è passata. Grazie!</string>
   <string name="iab_error_setup">Errore durante la preparazione dell\'acquisto in-app (%d)</string>
   <string name="iab_error_query">Impossibile richiedere l\'inventario degli acquisti in-app (%d)</string>
   <string name="copy_clipboard">Copia negli appunti</string>
@@ -287,6 +289,9 @@
   <string name="pref_sync_sim_contacts">Leggi contatti su SIM</string>
   <string name="pref_title_off_sync_sim_contacts">Non includere i contatti dalla SIM durante il controllo degli utenti registrati</string>
   <string name="pref_title_on_sync_sim_contacts">I contatti dalla SIM saranno inclusi nel controllo degli utenti registrati</string>
+  <string name="pref_sync_invisible_contacts">Includi contatti non visibili</string>
+  <string name="pref_title_off_sync_invisible_contacts">Non includere contatti non visualizzati in rubrica. Usare come workaround per DAVDroid</string>
+  <string name="pref_title_on_sync_invisible_contacts">Contatto non visualizzati in rubrica non saranno inclusi in Kontalk</string>
   <string name="pref_accept_any_certificate">Accetta qualsiasi certificato SSL</string>
   <string name="pref_delete_account">Cancella account</string>
   <string name="msg_delete_account">La cancellazione dell\'account cancellerà anche tutti i tuoi messaggi. Il tuo account sul server sarà cancellato automaticamente dopo qualche settimana.</string>
