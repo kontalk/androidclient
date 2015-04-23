@@ -322,6 +322,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     LocalBroadcastManager mLocalBroadcastManager;
     private AlarmManager mAlarmManager;
 
+    private PingFailedListener mPingFailedListener;
+
     /** Cached last used server. */
     EndpointServer mServer;
     /** The connection helper instance. */
@@ -691,6 +693,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (mConnection != null) {
             // disable ping manager
             AdaptiveServerPingManager.getInstanceFor(mConnection).setEnabled(false);
+            PingManager.getInstanceFor(mConnection)
+                .unregisterPingFailedListener(mPingFailedListener);
             // this is because of NetworkOnMainThreadException
             new DisconnectThread(mConnection).start();
             mConnection = null;
@@ -1127,17 +1131,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // enable ping manager
         AdaptiveServerPingManager.getInstanceFor(connection).setEnabled(true);
-        PingManager.getInstanceFor(connection)
-            .registerPingFailedListener(new PingFailedListener() {
-                @Override
-                public void pingFailed() {
-                    if (isStarted() && mConnection == connection) {
-                        Log.v(TAG, "ping failed, restarting message center");
-                        // restart message center
-                        restart(getApplicationContext());
-                    }
+        mPingFailedListener = new PingFailedListener() {
+            @Override
+            public void pingFailed() {
+                if (isStarted() && mConnection == connection) {
+                    Log.v(TAG, "ping failed, restarting message center");
+                    // restart message center
+                    restart(getApplicationContext());
                 }
-            });
+            }
+        };
+        PingManager.getInstanceFor(connection)
+            .registerPingFailedListener(mPingFailedListener);
 
         StanzaFilter filter;
 
