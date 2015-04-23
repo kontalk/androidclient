@@ -26,14 +26,6 @@
     <item>中 (0.5MP)</item>
     <item>大 (0.8MP)</item>
   </string-array>
-  <string-array name="idle_time_labels">
-    <item>なし</item>
-    <item>1 分</item>
-    <item>2 分</item>
-    <item>3 分</item>
-    <item>4 分</item>
-    <item>5 分</item>
-  </string-array>
   <string-array name="wakeup_time_labels">
     <item>5 分</item>
     <item>15 分</item>

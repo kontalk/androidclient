@@ -223,6 +223,7 @@
   <string name="attachment_audio">Zvuk</string>
   <string name="chooser_send_picture">Odeslat obrázek</string>
   <string name="chooser_error_no_camera">Externí úložiště není dostupné. Snímání fotek fotoaparátem nebude povoleno.</string>
+  <string name="chooser_select_link">Zvolte akci</string>
   <string name="status_activity_title">Stavová zpráva</string>
   <string name="hint_status_entry">Sem napište svoji stavovou zprávu</string>
   <string name="header_recent_status">Dříve použité stavové zprávy</string>
@@ -277,6 +278,7 @@
   <string name="button_identity">Identita</string>
   <string name="msg_connecting_iab">Připojuji se ke Google Play…</string>
   <string name="msg_iab_thankyou">Díky!</string>
+  <string name="msg_iab_thankyou_warning">Došlo k chybě, ale peníze přisly. Díky!</string>
   <string name="iab_error_setup">Nastala chyba při nastavení placení uvnitř aplikace (%d)</string>
   <string name="iab_error_query">Došlo k chybě při práci se systémem placení uvnitř aplikace (%d)</string>
   <string name="copy_clipboard">Zkopírovat do schránky</string>
@@ -287,6 +289,9 @@
   <string name="pref_sync_sim_contacts">Synchronizovat SIM kontakty</string>
   <string name="pref_title_off_sync_sim_contacts">Při zjišťování registrovaných uživatelů se nepoužijí kontakty na kartě SIM</string>
   <string name="pref_title_on_sync_sim_contacts">Při zjišťování registrovaných uživatelů se použijí i kontakty na kartě SIM</string>
+  <string name="pref_sync_invisible_contacts">Zahrnout neviditelné kontakty</string>
+  <string name="pref_title_off_sync_invisible_contacts">Nezahrnovat kontakty, které nejsou zobrazené v aplikaci Kontakty. Zapněte pro DAVDroid</string>
+  <string name="pref_title_on_sync_invisible_contacts">Kontakty, které nejsou zobrazené v aplikaci Kontakty, budou zahrnuty do Kontalku</string>
   <string name="pref_accept_any_certificate">Akceptovat jakýkoliv SSL certifikát</string>
   <string name="pref_delete_account">Smazat váš účet</string>
   <string name="msg_delete_account">Při smazání vašeho účtu dojde také ke smazání všech vašich zpráv. Váš účet na serveru bude smazán automaticky po několika týdnech.</string>

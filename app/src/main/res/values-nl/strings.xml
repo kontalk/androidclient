@@ -15,6 +15,7 @@
   <string name="menu_settings">Instellingen</string>
   <string name="menu_offline">Offline gaan</string>
   <string name="menu_online">Online gaan</string>
+  <string name="menu_import_key"> Sleutel importeren</string>
   <string name="pref_network_settings">Netwerk</string>
   <string name="pref_network_uri">Zelf serveradres invoeren</string>
   <string name="pref_title_network_uri">Door het zelf opgeven van een Kontalk-server wordt het automatische serverlijstbeheer uitgeschakeld</string>
@@ -222,6 +223,7 @@
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Afbeelding verzenden</string>
   <string name="chooser_error_no_camera">Externe opslag niet beschikbaar. Kan geen foto opslaan.</string>
+  <string name="chooser_select_link">Actie kiezen</string>
   <string name="status_activity_title">Statusbericht</string>
   <string name="hint_status_entry">Typ je statusbericht hier</string>
   <string name="header_recent_status">Recent gebruikte statusberichten</string>
@@ -276,6 +278,7 @@
   <string name="button_identity">Identiteit</string>
   <string name="msg_connecting_iab">Verbinden met Google Play…</string>
   <string name="msg_iab_thankyou">Hartelijk bedankt!</string>
+  <string name="msg_iab_thankyou_warning">Er ging iets mis, maar de donatie kwam toch aan. Dank u!</string>
   <string name="iab_error_setup">Technische fout bij betalen: ‘Error during in-app billing setup (%d)’</string>
   <string name="iab_error_query">Technische fout bij betalen: ‘Failed to query in-app billing inventory (%d)’</string>
   <string name="copy_clipboard">Kopiëren naar klembord</string>
@@ -286,6 +289,9 @@
   <string name="pref_sync_sim_contacts">Synchroniseren met SIM-contacten</string>
   <string name="pref_title_off_sync_sim_contacts">Niet zoeken in SIM-contacten naar gebruikers van Kontalk</string>
   <string name="pref_title_on_sync_sim_contacts">Wel zoeken in SIM-contacten naar gebruikers van Kontalk</string>
+  <string name="pref_sync_invisible_contacts">Onzichtbare contacten tonen</string>
+  <string name="pref_title_off_sync_invisible_contacts">Toon geen contacten die niet in de Personen app getoond worden. Schakel dit in om DAVDroid contacten weer te geven</string>
+  <string name="pref_title_on_sync_invisible_contacts">Contacten die niet in Personen weergegeven worden zullen in Kontalk getoond worden</string>
   <string name="pref_accept_any_certificate">Accepteer elk SSL-certificaat</string>
   <string name="pref_delete_account">Je account verwijderen</string>
   <string name="msg_delete_account">Als je je account verwijderd worden ook al je berichten verwijderd. Je account zal na een paar weken ook van de Kontalk server verwijderd zijn.</string>

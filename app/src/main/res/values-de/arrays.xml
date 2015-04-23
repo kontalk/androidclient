@@ -28,11 +28,10 @@
   </string-array>
   <string-array name="idle_time_labels">
     <item>Nie</item>
-    <item>1 Minute</item>
-    <item>2 Minuten</item>
-    <item>3 Minuten</item>
-    <item>4 Minuten</item>
     <item>5 Minuten</item>
+    <item>15 Minuten</item>
+    <item>30 Minuten</item>
+    <item>1 Stunde</item>
   </string-array>
   <string-array name="wakeup_time_labels">
     <item>5 Minuten</item>

@@ -26,14 +26,6 @@
     <item>Medianas (0.5MP)</item>
     <item>Grandes (0.8MP)</item>
   </string-array>
-  <string-array name="idle_time_labels">
-    <item>Nunca</item>
-    <item>1 minuto</item>
-    <item>2 minutos</item>
-    <item>3 minutos</item>
-    <item>4 minutos</item>
-    <item>5 minutos</item>
-  </string-array>
   <string-array name="wakeup_time_labels">
     <item>5 minutos</item>
     <item>15 minutos</item>

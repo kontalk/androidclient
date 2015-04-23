@@ -15,7 +15,7 @@
   <string name="menu_settings">Einstellungen</string>
   <string name="menu_offline">Offline gehen</string>
   <string name="menu_online">Online gehen</string>
-  <string name="menu_import_key">Schlüsselt importieren</string>
+  <string name="menu_import_key">Schlüssel importieren</string>
   <string name="pref_network_settings">Netzwerkeinstellungen</string>
   <string name="pref_network_uri">Manuelle Serveradresse</string>
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste.</string>
@@ -223,6 +223,7 @@
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture">Bild senden</string>
   <string name="chooser_error_no_camera">Externer Speicher nicht verfügbar. Es ist nicht möglich, ein Bild von der Kamera aufzunehmen.</string>
+  <string name="chooser_select_link">Aktion wählen</string>
   <string name="status_activity_title">Statusnachricht</string>
   <string name="hint_status_entry">Geben Sie Ihre Statusnachricht hier ein.</string>
   <string name="header_recent_status">Kürzlich benutzte Statusnachrichten</string>
@@ -277,6 +278,7 @@
   <string name="button_identity">Identität</string>
   <string name="msg_connecting_iab">Mit Google Play verbinden…</string>
   <string name="msg_iab_thankyou"> Vielen Dank! </string>
+  <string name="msg_iab_thankyou_warning">Irgendetwas ging schief, aber die Spende ist eingegangen. Danke!</string>
   <string name="iab_error_setup">Fehler während der Einrichtung der In-App Käufe (%d)</string>
   <string name="iab_error_query">Bestandsabfrage für die In-App Käufe fehlgeschlagen (%d)</string>
   <string name="copy_clipboard">In die Zwischenablage kopieren</string>
@@ -287,6 +289,9 @@
   <string name="pref_sync_sim_contacts">Kontakte von SIM-Karte synchronisieren</string>
   <string name="pref_title_off_sync_sim_contacts">SIM-Kartenkontakte bei der Suche nach registrierten Nutzern nicht mit einbeziehen.</string>
   <string name="pref_title_on_sync_sim_contacts">Auch SIM-Kartenkontakte bei der Suche nach registrierten Nutzern mit einbeziehen.</string>
+  <string name="pref_sync_invisible_contacts">Unsichtbare Kontakte einbeziehen.</string>
+  <string name="pref_title_off_sync_invisible_contacts">Kontakte mit einbeziehen die nicht in der Kontakte App angezeigt werden. Möglichkeit für einen DAVDroid Workaround.</string>
+  <string name="pref_title_on_sync_invisible_contacts">Kontakte die nicht in der Kontakte App angezeigt werden, werden in Kontalk eingeschlossen.</string>
   <string name="pref_accept_any_certificate">Jedes SSL-Zertifikat akzeptieren </string>
   <string name="pref_delete_account">Ihren Account löschen</string>
   <string name="msg_delete_account">Mit Ihrem Account werden auch alle Ihre Nachrichten gelöscht. Ihr Account auf dem Server wird nach ein paar Wochen automatisch gelöscht.</string>
