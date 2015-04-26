@@ -326,6 +326,7 @@
     <string name="warn_no_personal_key">Unable to load personal key. Disable encryption from settings to send message anyway.</string>
     <string name="warn_no_public_key">Unable to find a public key for this user. Try refreshing your contact list or disable encryption from settings to send message anyway.</string>
     <string name="warn_encryption_failed">Unable to encrypt message. Disable encryption from settings to send message anyway.</string>
+    <string name="warn_not_subscribed">Unable to send message. User has not accepted your invitation yet.</string>
 
     <string name="pref_sync_sim_contacts">Sync from SIM contacts</string>
     <string name="pref_title_off_sync_sim_contacts">Do not include SIM contacts when checking for registered users</string>

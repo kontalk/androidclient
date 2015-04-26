@@ -1368,6 +1368,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             Bundle b = new Bundle();
+            // mark as retrying
+            b.putBoolean("org.kontalk.message.retrying", true);
 
             b.putLong("org.kontalk.message.msgId", id);
             b.putString("org.kontalk.message.packetId", msgId);
@@ -1478,6 +1480,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     RosterEntry getRosterEntry(String jid) {
         Roster roster = getRoster();
         return (roster != null) ? roster.getEntry(jid) : null;
+    }
+
+    private boolean isAuthorized(String jid) {
+        RosterEntry entry = getRosterEntry(jid);
+        return (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid));
     }
 
     private boolean isRosterEntrySubscribed(RosterEntry entry) {
@@ -1631,7 +1638,18 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendMessage(Bundle data) {
+        boolean retrying = data.getBoolean("org.kontalk.message.retrying");
         String to = data.getString("org.kontalk.message.to");
+
+        if (!isAuthorized(to)) {
+            Log.i(TAG, "not subscribed to " + to + ", not sending message");
+            // warn user: message will not be sent
+            if (!retrying && to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                Toast.makeText(this, R.string.warn_not_subscribed,
+                    Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
 
         PersonalKey key;
         try {
