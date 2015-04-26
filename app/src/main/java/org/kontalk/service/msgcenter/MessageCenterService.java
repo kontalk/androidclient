@@ -571,6 +571,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mWakeLock.setReferenceCounted(false);
 
         mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        // cancel any pending alarm intent
+        cancelIdleAlarm();
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
         mPushService = PushServiceManager.getInstance(this);
@@ -2296,23 +2298,25 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 SystemClock.elapsedRealtime() + delay, pi);
     }
 
-    private void cancelIdleAlarm() {
-        if (mIdleIntent != null) {
-            mAlarmManager.cancel(mIdleIntent);
+    private void ensureIdleAlarm() {
+        if (mIdleIntent == null) {
+            Intent i = getStartIntent(this);
+            i.setAction(ACTION_IDLE);
+            mIdleIntent = PendingIntent.getService(
+                getApplicationContext(), 0, i,
+                PendingIntent.FLAG_UPDATE_CURRENT);
         }
+    }
+
+    private void cancelIdleAlarm() {
+        ensureIdleAlarm();
+        mAlarmManager.cancel(mIdleIntent);
     }
 
     private void setIdleAlarm() {
         long delay = Preferences.getIdleTimeMillis(this, 0, DEFAULT_IDLE_TIME);
         if (delay > 0) {
-            if (mIdleIntent == null) {
-                Intent i = getStartIntent(this);
-                i.setAction(ACTION_IDLE);
-                mIdleIntent = PendingIntent.getService(
-                    getApplicationContext(), 0, i,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-            }
-
+            ensureIdleAlarm();
             mAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + delay, delay, mIdleIntent);
         }
