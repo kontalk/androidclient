@@ -327,6 +327,10 @@ public class XMPPConnectionHelper extends Thread {
         return mConnecting;
     }
 
+    public boolean isStruggling() {
+        return mConnecting && mRetryCount > 5;
+    }
+
     public boolean isServerDirty() {
         return mServerDirty;
     }

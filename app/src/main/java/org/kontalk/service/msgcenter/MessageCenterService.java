@@ -551,6 +551,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (mIdleHandler != null) {
                     mIdleHandler.forceInactive();
                 }
+                if (mHelper != null && mHelper.isStruggling()) {
+                    Log.d(TAG, "connection is not going well, shutting down message center");
+                    stopSelf();
+                }
             }
         }
     } ;
@@ -1092,12 +1096,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     @Override
     public void reconnectingIn(int seconds) {
-        Log.v(TAG, "reconnecting in " + seconds + " seconds");
+        // not used
     }
 
     @Override
     public void reconnectionFailed(Exception error) {
-        Log.w(TAG, "reconnection failed", error);
+        // not used
     }
 
     @Override
