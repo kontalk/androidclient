@@ -266,7 +266,7 @@ public class GoogleBillingService implements IBillingService {
      * used by it such as service connections. Naturally, once the object is
      * disposed of, it can't be used again.
      */
-    public void dispose() {
+    public synchronized void dispose() {
         logDebug("Disposing.");
         mSetupDone = false;
         if (mServiceConn != null) {
@@ -280,8 +280,13 @@ public class GoogleBillingService implements IBillingService {
         mPurchaseListener = null;
     }
 
-    private void checkNotDisposed() {
+    private synchronized void checkNotDisposed() {
         if (mDisposed) throw new IllegalStateException("IabHelper was disposed of, so it cannot be used.");
+    }
+
+    @Override
+    public synchronized boolean isDisposed() {
+        return mDisposed;
     }
 
     /** Returns whether subscriptions are supported. */
@@ -477,7 +482,7 @@ public class GoogleBillingService implements IBillingService {
         return true;
     }
 
-    public IInventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws BillingException {
+    public synchronized IInventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws BillingException {
         return queryInventory(querySkuDetails, moreSkus, null);
     }
 
@@ -494,7 +499,7 @@ public class GoogleBillingService implements IBillingService {
      *     Ignored if null or if querySkuDetails is false.
      * @throws BillingException if a problem occurs while refreshing the inventory.
      */
-    public IInventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
+    public synchronized IInventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
                                         List<String> moreSubsSkus) throws BillingException {
         checkNotDisposed();
         checkSetupDone("queryInventory");
@@ -563,6 +568,9 @@ public class GoogleBillingService implements IBillingService {
                 }
                 catch (BillingException ex) {
                     result = ex.getResult();
+                }
+                catch (IllegalStateException ex) {
+                    // disposed :(
                 }
 
                 endAsyncOperation();

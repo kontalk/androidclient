@@ -139,4 +139,6 @@ public interface IBillingService {
      */
     public void dispose();
 
+    public boolean isDisposed();
+
 }
