@@ -27,6 +27,9 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
+        versionCode 49
+        versionName "3.0-rc4-preview"
+        targetSdkVersion 22
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
     }
@@ -64,8 +67,10 @@ android {
 
     productFlavors {
         basic {
+            minSdkVersion 8
         }
         googleplay {
+            minSdkVersion 9
         }
     }
 
