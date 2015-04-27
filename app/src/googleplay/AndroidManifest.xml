@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!-- Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="org.kontalk">
-    <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="21"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
     <uses-permission android:name="com.android.vending.BILLING" />
 

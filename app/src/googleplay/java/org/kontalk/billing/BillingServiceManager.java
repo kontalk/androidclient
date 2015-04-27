@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ public class BillingServiceManager {
     }
 
     public static IBillingService getInstance(Context context) {
-        if (sInstance == null)
+        if (sInstance == null || sInstance.isDisposed())
             sInstance = new GoogleBillingService(context);
 
         return sInstance;

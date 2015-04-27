@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
-import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
@@ -34,6 +35,7 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.kontalk.authenticator.Authenticator;
+import org.kontalk.client.SmackInitializer;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
@@ -68,9 +70,18 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
         return mKeyRing;
     }
 
+    protected void configure() {
+        SmackInitializer.initializeRegistration();
+    }
+
+    protected void unconfigure() {
+        SmackInitializer.deinitializeRegistration();
+    }
+
     public void run() throws CertificateException, SignatureException,
             PGPException, IOException, NoSuchProviderException {
         revokeCurrentKey();
+        configure();
         setupConnectedReceiver();
     }
 
@@ -79,6 +90,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
             unregisterReceiver(mConnReceiver);
             mConnReceiver = null;
         }
+        unconfigure();
     }
 
     private Stanza prepareKeyPacket() {
@@ -140,8 +152,8 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                     if (iq != null) {
 
                         // setup packet filter for response
-                        PacketIDFilter filter = new PacketIDFilter(iq.getStanzaId());
-                        getConnection().addAsyncPacketListener(RegisterKeyPairListener.this, filter);
+                        StanzaFilter filter = new StanzaIdFilter(iq.getStanzaId());
+                        getConnection().addAsyncStanzaListener(RegisterKeyPairListener.this, filter);
 
                         // send the key out
                         sendPacket(iq);
@@ -212,6 +224,7 @@ abstract class RegisterKeyPairListener extends MessageCenterPacketListener imple
                         // invalidate cached personal key
                         getApplication().invalidatePersonalKey();
 
+                        unconfigure();
                         finish();
 
                         // restart message center

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.sync.SyncAdapter;
 import org.kontalk.sync.Syncer;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.util.MessageUtils;
@@ -38,7 +39,6 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -52,7 +52,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.InputType;
-import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.Toast;
 
@@ -77,8 +76,6 @@ public class ConversationList extends ActionBarActivity
 
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
 
-    private ProgressDialog mTigaseUpgradeWait;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,14 +86,6 @@ public class ConversationList extends ActionBarActivity
 
         if (!xmppUpgrade())
             handleIntent(getIntent());
-    }
-
-    public void titleComposeMessage(View view) {
-        getListFragment().chooseContact();
-    }
-
-    public void titleSearch(View view) {
-        onSearchRequested();
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */
@@ -182,6 +171,9 @@ public class ConversationList extends ActionBarActivity
                     .getInstance(getApplicationContext());
                 lbm.unregisterReceiver(mUpgradeReceiver);
                 mUpgradeReceiver = null;
+
+                // force contact list update
+                SyncAdapter.requestSync(ConversationList.this, true);
 
                 if (mUpgradeProgress != null) {
                     mUpgradeProgress.dismiss();

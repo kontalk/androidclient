@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -78,6 +78,11 @@
             android:summaryOn="@string/pref_title_on_sync_sim_contacts"
             android:title="@string/pref_sync_sim_contacts"
             android:defaultValue="@bool/pref_default_sync_sim_contacts"/>
+        <CheckBoxPreference android:key="pref_sync_invisible_contacts"
+            android:summaryOff="@string/pref_title_off_sync_invisible_contacts"
+            android:summaryOn="@string/pref_title_on_sync_invisible_contacts"
+            android:title="@string/pref_sync_invisible_contacts"
+            android:defaultValue="@bool/pref_default_sync_invisible_contacts"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_appearance_settings"
@@ -101,11 +106,12 @@
             android:entries="@array/balloons_labels"
             android:entryValues="@array/balloons_values"
             android:defaultValue="@string/pref_default_balloons"/>
-        <CheckBoxPreference android:key="pref_text_enter"
+        <ListPreference android:key="pref_text_enter"
             android:title="@string/pref_text_enter"
-            android:summaryOff="@string/pref_title_off_text_enter"
-            android:summaryOn="@string/pref_title_on_text_enter"
-            android:defaultValue="@bool/pref_default_text_enter"/>
+            android:summary="@string/pref_title_text_enter"
+            android:entries="@array/text_enter_labels"
+            android:entryValues="@array/text_enter_values"
+            android:defaultValue="@string/pref_default_text_enter"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_media_settings"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -37,6 +37,29 @@
             android:paddingBottom="10dip"
             android:id="@+id/code_validation_intro"
             android:text="@string/code_validation_intro" />
+
+        <TextView
+            android:id="@+id/code_validation_sender"
+            style="?android:attr/textAppearanceLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
+            android:paddingBottom="10dip"
+            android:layout_marginLeft="-20dp"
+            android:layout_marginStart="-20dp"
+            android:gravity="center"
+            android:drawableLeft="@drawable/ic_menu_call"
+            android:drawableStart="@drawable/ic_menu_call" />
+
+        <TextView
+            android:id="@+id/code_validation_intro2"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
+            android:paddingBottom="10dip"
+            android:text="@string/code_validation_intro2" />
 
         <EditText
             android:id="@+id/validation_code"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -30,11 +30,12 @@
 
     <!-- messaging settings defaults -->
     <bool name="pref_default_sync_sim_contacts">false</bool>
+    <bool name="pref_default_sync_invisible_contacts">false</bool>
 
     <!-- appearance settings defaults -->
     <string name="pref_default_font_size">medium</string>
     <string name="pref_default_balloons">classic</string>
-    <bool name="pref_default_text_enter">false</bool>
+    <string name="pref_default_text_enter">default</string>
 
     <!-- media settings defaults -->
     <integer name="pref_default_image_resize">1024</integer>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <org.kontalk.ui.view.AudioContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:descendantFocusability="blocksDescendants">
@@ -43,6 +44,7 @@
         android:layout_marginTop="8dp"
         android:layout_alignLeft="@id/balloon_audio_player"
         android:textSize="11sp"
-        android:gravity="center_horizontal" />
+        android:gravity="center_horizontal"
+        tools:ignore="HardcodedText"/>
 
 </org.kontalk.ui.view.AudioContentView>

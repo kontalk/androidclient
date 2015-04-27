@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
     @Override
     public void processPacket(Stanza packet) {
         // we don't need this listener anymore
-        getConnection().removeAsyncPacketListener(this);
+        getConnection().removeAsyncStanzaListener(this);
 
         DiscoverItems query = (DiscoverItems) packet;
         List<DiscoverItems.Item> items = query.getItems();

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,21 +32,18 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
-import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.XMPPError;
-import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smackx.iqregister.packet.Registration;
-import org.jivesoftware.smackx.iqregister.provider.RegistrationProvider;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
 import org.spongycastle.openpgp.PGPException;
 
 import android.content.Context;
@@ -123,8 +120,11 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     }
 
     private void configure() {
-        ProviderManager.addIQProvider("query", "jabber:iq:register", new RegistrationProvider());
-        ProviderManager.addExtensionProvider("x", "jabber:x:data", new DataFormProvider());
+        SmackInitializer.initializeRegistration();
+    }
+
+    private void unconfigure() {
+        SmackInitializer.deinitializeRegistration();
     }
 
     public void setKey(PersonalKey key) {
@@ -212,7 +212,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 Stanza form = createRegistrationForm();
 
                 // setup listener for form response
-                conn.addAsyncPacketListener(new PacketListener() {
+                conn.addAsyncStanzaListener(new StanzaListener() {
                     public void processPacket(Stanza packet) {
                         int reason = 0;
                         IQ iq = (IQ) packet;
@@ -226,7 +226,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                     if (field.getVariable().equals("from")) {
                                         String smsFrom = field.getValues().get(0);
                                         Log.d(TAG, "using sms sender id: " + smsFrom);
-                                        mListener.onValidationRequested(NumberValidator.this);
+                                        mListener.onValidationRequested(NumberValidator.this, smsFrom);
 
                                         // prevent error handling
                                         return;
@@ -273,10 +273,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
                         mStep = STEP_INIT;
                     }
-                }, new PacketIDFilter(form.getStanzaId()));
+                }, new StanzaIdFilter(form.getStanzaId()));
 
                 // send registration form
-                conn.sendPacket(form);
+                conn.sendStanza(form);
             }
 
             // sms received, request authentication token
@@ -305,7 +305,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 Stanza form = createValidationForm();
 
                 XMPPConnection conn = mConnector.getConnection();
-                conn.addAsyncPacketListener(new PacketListener() {
+                conn.addAsyncStanzaListener(new StanzaListener() {
                     public void processPacket(Stanza packet) {
                         IQ iq = (IQ) packet;
                         if (iq.getType() == IQ.Type.result) {
@@ -348,10 +348,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         mListener.onAuthTokenFailed(NumberValidator.this, -1);
                         mStep = STEP_INIT;
                     }
-                }, new PacketIDFilter(form.getStanzaId()));
+                }, new StanzaIdFilter(form.getStanzaId()));
 
                 // send registration form
-                conn.sendPacket(form);
+                conn.sendStanza(form);
             }
         }
         catch (Throwable e) {
@@ -387,6 +387,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 mThread.join();
                 mThread = null;
             }
+
+            unconfigure();
         }
         catch (Exception e) {
             // ignored
@@ -409,7 +411,16 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
 
         if (!mConnector.isConnected() || mConnector.isServerDirty()) {
             mConnector.setListener(this);
-            mConnector.connectOnce(mKey != null ? mKey.copy(mBridgeCert) : null);
+            PersonalKey key = null;
+            if (mImportedPrivateKey != null && mImportedPublicKey != null) {
+                PGPKeyPairRing ring = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+                key = PersonalKey.load(ring.secretKey, ring.publicKey, mPassphrase, mBridgeCert);
+            }
+            else if (mKey != null) {
+                key = mKey.copy(mBridgeCert);
+            }
+
+            mConnector.connectOnce(key);
         }
     }
 
@@ -467,7 +478,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         public void onServerCheckFailed(NumberValidator v);
 
         /** Called on confirmation that the validation SMS is being sent. */
-        public void onValidationRequested(NumberValidator v);
+        public void onValidationRequested(NumberValidator v, String sender);
 
         /** Called if phone number validation failed. */
         public void onValidationFailed(NumberValidator v, int reason);

@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package org.kontalk.ui;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -68,10 +69,12 @@ public class PasswordInputDialog {
             return this;
         }
 
+        @NonNull
         public Builder setTitle(CharSequence title) {
             return (Builder) super.setTitle(title);
         }
 
+        @NonNull
         public Builder setTitle(int titleId) {
             return (Builder) super.setTitle(titleId);
         }
@@ -85,9 +88,11 @@ public class PasswordInputDialog {
             return (Builder) super.setPositiveButton(text, null);
         }
 
+        @NonNull
         @Override
         public AlertDialog create() {
             final AlertDialog dialog = super.create();
+            InputDialog.requestInputMethod(dialog);
 
             if (mListener != null) {
                 dialog.setOnShowListener(new DialogInterface.OnShowListener() {

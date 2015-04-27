@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,8 +133,6 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setRetainInstance(true);
         setHasOptionsMenu(true);
     }
 
@@ -386,8 +384,9 @@ public class ConversationListFragment extends ListFragment {
 
     /** Updates offline mode menu. */
     private void updateOffline() {
-        if (mOfflineMenu != null) {
-            boolean offlineMode = Preferences.getOfflineMode(getActivity());
+        Context context = getActivity();
+        if (mOfflineMenu != null && context != null) {
+            boolean offlineMode = Preferences.getOfflineMode(context);
             int icon = (offlineMode) ? R.drawable.ic_menu_start_conversation :
                 android.R.drawable.ic_menu_close_clear_cancel;
             int title = (offlineMode) ? R.string.menu_online : R.string.menu_offline;

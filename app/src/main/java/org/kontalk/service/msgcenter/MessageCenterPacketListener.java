@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.roster.RosterEntry;
 
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
@@ -75,6 +76,11 @@ abstract class MessageCenterPacketListener implements PacketListener {
     protected String getMyUsername() {
         MessageCenterService instance = mInstance.get();
         return (instance != null) ? instance.mMyUsername : null;
+    }
+
+    protected RosterEntry getRosterEntry(String jid) {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.getRosterEntry(jid) : null;
     }
 
     protected void sendBroadcast(Intent intent) {

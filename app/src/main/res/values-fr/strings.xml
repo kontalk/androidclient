@@ -20,8 +20,6 @@
   <string name="pref_title_network_uri">Ceci annulera la gestion automatique des serveurs</string>
   <string name="number_validation_intro1">Veuillez entrer votre nom, sélectionner votre code de pays et entrez votre numéro de téléphone portable. Un SMS avec un code de vérification vous sera envoyé. Votre numéro de téléphone ne sera utilisé qu\'une seule fois et sera ensuite ignoré.</string>
   <string name="number_validation_intro2">Si vous ne pouvez pas recevoir des SMS sur cet appareil, entrez un numéro de téléphone que vous possédez et entrez le code de vérification reçus par SMS.</string>
-  <string name="code_validation_intro">Vous aller recevoir un SMS sur votre numéro d\'ici peu. Introduisez le code reçus ci-dessous, merci.</string>
-  <string name="code_validation_intro2">Veuillez entrer le code de vérification que vous avez reçu. Veuillez noter qu\'un code de vérification ne peut être utilisé qu\'une seule fois.</string>
   <string name="hint_validation_name">Votre nom</string>
   <string name="hint_validation_number">Votre numéro</string>
   <string name="hint_validation_code">Code de vérification</string>
@@ -43,7 +41,7 @@
   <string name="delete_thread">Suprimmer la conversation</string>
   <string name="confirm_delete_thread">Supprimer la conversation</string>
   <string name="confirm_will_delete_thread">Toute la conversation sera effacée.</string>
-  <string name="new_messages">Nouveau messages</string>
+  <string name="new_messages">Nouveaux messages</string>
   <string name="unread_messages">%d message non lus</string>
   <string name="only_one_account_supported">Uniquement un compte Kontalk est supporté</string>
   <string name="hint_enter_text">Écrire ici</string>

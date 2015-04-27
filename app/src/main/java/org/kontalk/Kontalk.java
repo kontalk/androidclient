@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,7 @@ import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import org.apache.http.impl.conn.IdleConnectionHandler;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.client.KontalkConnection;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PRNGFixes;
 import org.kontalk.crypto.PersonalKey;
@@ -41,6 +39,7 @@ import org.kontalk.service.NetworkStateReceiver;
 import org.kontalk.service.ServerListUpdater;
 import org.kontalk.service.SystemBootStartup;
 import org.kontalk.service.UploadService;
+import org.kontalk.service.msgcenter.IPushService;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.service.msgcenter.PushServiceManager;
 import org.kontalk.sync.SyncAdapter;
@@ -65,6 +64,8 @@ import java.security.cert.CertificateException;
 public class Kontalk extends Application {
     public static final String TAG = Kontalk.class.getSimpleName();
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
+
     private PersonalKey mDefaultKey;
 
     /**
@@ -81,9 +82,9 @@ public class Kontalk extends Application {
      * Keep-alive reference counter.
      * This is used throughout the activities to keep track of application
      * usage. Please note that this is not to be confused with
-     * {@link IdleConnectionHandler} reference counter, since this counter here
-     * is used only by {@link NetworkStateReceiver} and a few others to check
-     * if the Message Center should be started or not.<br>
+     * {@link MessageCenterService#IdleConnectionHandler} reference counter,
+     * since this counter here is used only by {@link NetworkStateReceiver} and
+     * a few others to check if the Message Center should be started or not.<br>
      * Call {@link #hold} to increment the counter, {@link #release} to
      * decrement it.
      */
@@ -102,12 +103,11 @@ public class Kontalk extends Application {
         // init preferences
         Preferences.init(this);
 
-        // init Smack stuff
-        KontalkConnection.init();
+        // init notification system
+        MessagingNotification.init(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.OnSharedPreferenceChangeListener prefListener =
-            new SharedPreferences.OnSharedPreferenceChangeListener() {
+        mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 // no account - abort
@@ -136,7 +136,7 @@ public class Kontalk extends Application {
                 }
             }
         };
-        prefs.registerOnSharedPreferenceChangeListener(prefListener);
+        prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
 
         // TODO listen for changes to phone numbers
 
@@ -169,8 +169,9 @@ public class Kontalk extends Application {
                         // disable components
                         setServicesEnabled(Kontalk.this, false);
                         // unregister from push notifications
-                        PushServiceManager.getInstance(Kontalk.this)
-                            .unregister(PushServiceManager.getDefaultListener());
+                        IPushService pushMgr = PushServiceManager.getInstance(Kontalk.this);
+                        if (pushMgr.isServiceAvailable())
+                            pushMgr.unregister(PushServiceManager.getDefaultListener());
                         // delete all messages
                         MessagesProvider.deleteDatabase(Kontalk.this);
                         // invalidate cached personal key

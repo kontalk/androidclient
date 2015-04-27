@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"/>
 
-    <LinearLayout
+    <LinearLayout android:id="@+id/container"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical">

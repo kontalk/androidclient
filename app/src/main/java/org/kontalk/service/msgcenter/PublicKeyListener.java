@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,7 +103,9 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     }
                 }
 
-                if (SyncAdapter.isActive(getContext())) {
+                String id = p.getStanzaId();
+                // we are syncing and this is a response for the Syncer
+                if (SyncAdapter.getIQPacketId().equals(id) && SyncAdapter.isActive(getContext())) {
                     // sync currently active, broadcast the key
                     Intent i = new Intent(ACTION_PUBLICKEY);
                     i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
@@ -120,10 +122,10 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     try {
                         Log.v("pubkey", "networkUser = " + networkUser + " (" + from + ")");
                         if (networkUser) {
-                            String fingerprint = PGP.getFingerprint(_publicKey);
-                            Log.v("pubkey", "Updating key for " + from + " fingerprint " + fingerprint);
-                            UsersProvider.setUserKey(getContext(), from,
-                                _publicKey, fingerprint);
+                            Log.v("pubkey", "Updating key for " + from);
+                            UsersProvider.setUserKey(getContext(), from, _publicKey);
+                            // maybe trust the key
+                            UsersProvider.maybeTrustUserKey(getContext(), from, _publicKey);
 
                             // invalidate cache for this user
                             Contact.invalidate(from);

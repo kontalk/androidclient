@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.MenuItemCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
@@ -111,7 +110,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
-    private Button mImportKeys;
     private Button mInsertCode;
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
@@ -193,7 +191,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
-        mImportKeys = (Button) findViewById(R.id.button_import_keys);
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
@@ -311,8 +308,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
-        MenuItem item = menu.findItem(R.id.menu_settings);
-        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 
@@ -322,6 +317,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             case R.id.menu_settings: {
                 Intent intent = new Intent(this, BootstrapPreferences.class);
                 startActivityIfNeeded(intent, -1);
+                break;
+            }
+            case R.id.menu_import_key: {
+                importKey();
                 break;
             }
             default:
@@ -348,7 +347,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPhone.setText(mPhoneNumber);
             syncCountryCodeSelector();
 
-            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.server, false);
+            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender, saved.server, false);
         }
 
         if (mKey == null) {
@@ -458,7 +457,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
-        mImportKeys.setEnabled(enabled);
         mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
@@ -570,15 +568,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validateCode(View v) {
         if (checkInput())
-            startValidationCode(REQUEST_VALIDATION_CODE);
+            startValidationCode(REQUEST_VALIDATION_CODE, null);
     }
 
-    /**
-     * Opens import keys from another device wizard.
-     * Used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void importKeys(View v) {
+    /** Opens import keys from another device wizard. */
+    private void importKey() {
         if (checkInput()) {
             // import keys -- number verification with server is still needed
             // though because of key rollback protection
@@ -915,27 +909,27 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v) {
+    public void onValidationRequested(NumberValidator v, String sender) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual();
+        proceedManual(sender);
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual() {
+    private void proceedManual(final String sender) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abortProgress(true);
-                startValidationCode(REQUEST_MANUAL_VALIDATION);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, sender);
             }
         });
     }
 
-    private void startValidationCode(int requestCode) {
-        startValidationCode(requestCode, null, true);
+    private void startValidationCode(int requestCode, String sender) {
+        startValidationCode(requestCode, sender, null, true);
     }
 
-    private void startValidationCode(int requestCode, EndpointServer server, boolean saveProgress) {
+    private void startValidationCode(int requestCode, String sender, EndpointServer server, boolean saveProgress) {
         // validator might be null if we are skipping verification code request
         String serverUri = null;
         if (server != null)
@@ -948,7 +942,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(this,
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri);
+                serverUri, sender);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -959,6 +953,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
         i.putExtra("server", serverUri);
+        i.putExtra("sender", sender);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
 
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);

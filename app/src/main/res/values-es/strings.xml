@@ -15,13 +15,15 @@
   <string name="menu_settings">Configuración</string>
   <string name="menu_offline">Desconectarse</string>
   <string name="menu_online">Conectarse</string>
+  <string name="menu_import_key">Importar clave</string>
   <string name="pref_network_settings">Configuración de red</string>
   <string name="pref_network_uri">Dirección del servidor manual</string>
   <string name="pref_title_network_uri">Esto anulará la gestión automática de la lista de servidores</string>
   <string name="number_validation_intro1">Por favor, introduzca su nombre, elija su código de país y escriba su número de teléfono móvil. Se le enviará un código de verificación en un mensaje SMS. Su número de teléfono será utilizado una sola vez y eliminado del sistema posteriormente.</string>
   <string name="number_validation_intro2">Si no puede recibir SMS en este dispositivo, inserte un número que posea e introduzca el código de verificación que recibirá por SMS.</string>
-  <string name="code_validation_intro">Pronto recibirá un SMS en el número que ha introducido. Introduzca abajo el código recibido en el mensaje.</string>
-  <string name="code_validation_intro2">Por favor, inserte el código de verificación que ha recibido. Por favor, tenga en cuenta que el código de verificación solo puede usarse una vez.</string>
+  <string name="code_validation_intro">Debería recibir un SMS o llamada desde este número en breve:</string>
+  <string name="code_validation_intro2">Por favor introduzca abajo el código que reciba o escuche.</string>
+  <string name="code_validation_intro_manual">Por favor inserte el código de verificación que ha recibido. Por favor, tenga en cuenta que el código de verificación sólo puede usarse una vez.</string>
   <string name="hint_validation_name">Su nombre</string>
   <string name="hint_validation_number">Su número</string>
   <string name="hint_validation_code">Código de verificación</string>
@@ -107,6 +109,7 @@
   <string name="pref_update_server_list">Actualizar la lista de servidores</string>
   <string name="server_list_last_update">Última actualización: %s</string>
   <string name="pref_title_push_notifications">Usar notificaciones push si el servidor lo soporta, ahorra batería</string>
+  <string name="pref_title_disabled_push_notifications">Las notificaciones push no en están soportadas en este dispositivo</string>
   <string name="pref_push_notifications">Notificaciones push</string>
   <string name="hint_search_full">Buscar mensajes</string>
   <string name="hint_search_quickbox">Texto en sus mensajes</string>
@@ -132,7 +135,6 @@
   <string name="send_mime_not_supported">Tipo de archivo no soportado.</string>
   <string name="button_validate">Solicitar código de verificación</string>
   <string name="button_validation_code">Ya tengo un código de verificación</string>
-  <string name="button_import_keys">Importar claves de otro dispositivo</string>
   <string name="button_validation_register">Verificar</string>
   <string name="notify_ticker_download_completed">Descarga completada</string>
   <string name="notify_title_download_completed">Descarga completada</string>
@@ -185,6 +187,7 @@
   <string name="seen_moment_ago_label">hace un momento</string>
   <string name="seen_online_label">conectado</string>
   <string name="seen_typing_label">escribiendo...</string>
+  <string name="invitation_sent_label">invitación pendiente</string>
   <string name="pref_custom_background">Fondo personalizado</string>
   <string name="pref_background_uri">Fondo</string>
   <string name="pref_title_background_uri">Usar una imagen de fondo personalizada en las conversaciones</string>
@@ -202,7 +205,7 @@
   <string name="pref_export_keypair">Exportar clave personal</string>
   <string name="pref_title_export_keypair">Exportar clave personal y certificado de inicio de sesión a almacenamiento externo</string>
   <string name="pref_import_keypair">Importar clave personal</string>
-  <string name="pref_title_import_keypair">Importar clave personal y certificado de inicio de sesión a almacenamiento externo</string>
+  <string name="pref_title_import_keypair">Importar clave personal y certificado de inicio de sesión desde almacenamiento externo</string>
   <string name="msg_import_keypair">Kontalk importará sus claves desde %s en su almacenamiento externo. Asegúrese de que el fichero existe y es un archivo válido de claves exportadas</string>
   <string name="msg_import_keypair_complete">Importado de la clave personal completado.</string>
   <string name="err_import_keypair_failed">Fallo al importar la clave personal</string>
@@ -265,11 +268,13 @@
   <string name="security_error_decrypt_failed">\u0020(fallo al descifrar)</string>
   <string name="security_error_integrity_check">\u0020(comprobación de integridad)</string>
   <string name="security_error_public_key_unavail">\u0020(clave pública no disponible)</string>
+  <string name="invite_notification">le invita a conversar</string>
   <string name="title_invitation">Invitación a un chat</string>
   <string name="text_invitation_known">Solicitado por\n%1$s &lt;%2$s&gt;\n(%3$s)\nHuella digital: %4$s</string>
   <string name="text_invitation_unknown">Solicitado por\n%1$s\nHuella digital: %2$s</string>
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
+  <string name="button_identity">Identidad</string>
   <string name="msg_connecting_iab">Conectándose a Google Play ...</string>
   <string name="msg_iab_thankyou">¡Gracias!</string>
   <string name="iab_error_setup">Error al configurar la facturación desde la app (%d)</string>
@@ -294,9 +299,8 @@
   <string name="title_auth_error">Error de autenticación</string>
   <string name="msg_auth_error">&lt;b&gt;¡ATENCIÓN!&lt;/b&gt;&lt;br&gt; La autenticación con un servidor de Kontalk falló la última vez que intentamos conectar. Podría ser un fallo temporal del servidor o, más probablemente, que el servidor esté rechazando tu clave personal. Te recomendamos borrar tu cuenta de Kontalk desde las preferencias del sistema Android y que te registres de nuevo (lamentablemente, haciendo esto perderás todos tus mensajes de Kontalk).</string>
   <string name="warn_invite_no_app">No hay ninguna aplicación para invitar usuarios</string>
-  <string name="pref_text_enter">Mostrar la tecla Intro</string>
-  <string name="pref_title_on_text_enter">Se está mostrando la tecla Intro mientras escribes los mensajes</string>
-  <string name="pref_title_off_text_enter">Se está mostrando la tecla por defecto mientras escribes los mensajes</string>
+  <string name="pref_text_enter">Botón intro</string>
+  <string name="pref_title_text_enter">Seleccionar comportamiento del botón intro en el teclado</string>
   <string name="title_password1">Contraseña:</string>
   <string name="title_password2">Confirmar contraseña:</string>
   <string name="err_password_too_short">La contraseña debe tener al menos %d caracteres.</string>
@@ -312,4 +316,8 @@
   <string name="pref_image_resize">Redimensionar imágenes</string>
   <string name="pref_title_image_resize">Redimensionar las imágenes antes de enviarlas</string>
   <string name="err_server_invalid_format">Formato de dirección inválido</string>
+  <string name="err_no_contacts_app">No se encontró la aplicación de contactos.</string>
+  <string name="warning_public_key">¡AVISO! ¡La clave personal de este usuario cambió inesperadamente! Clic aquí para detalles.</string>
+  <string name="title_public_key_warning">Cambió la clave personal</string>
+  <string name="msg_public_key_warning">La clave personal de este usuario ha cambiado. Por favor verifique con esa persona que reinstaló Kontalk o que regeneró su clave de manera intencionada, en otro caso, ¡la comunicación puede estar comprometida!</string>
 </resources>

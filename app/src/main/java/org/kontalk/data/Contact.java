@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ import android.support.v4.util.LruCache;
 import android.util.Log;
 
 import org.kontalk.crypto.PGP;
+import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 
 
@@ -60,8 +61,9 @@ public class Contact {
         Users.JID,
         Users.REGISTERED,
         Users.STATUS,
-        Users.PUBLIC_KEY,
+        Users.FINGERPRINT,
         Users.BLOCKED,
+        Keys.TRUSTED_PUBLIC_KEY,
     };
 
     public static final int COLUMN_ID = 0;
@@ -72,8 +74,9 @@ public class Contact {
     public static final int COLUMN_JID = 5;
     public static final int COLUMN_REGISTERED = 6;
     public static final int COLUMN_STATUS = 7;
-    public static final int COLUMN_PUBLICKEY = 8;
+    public static final int COLUMN_FINGERPRINT = 8;
     public static final int COLUMN_BLOCKED = 9;
+    public static final int COLUMN_TRUSTED_PUBLIC_KEY = 10;
 
     /** The aggregated Contact id identified by this object. */
     private final long mContactId;
@@ -92,7 +95,8 @@ public class Contact {
     private BitmapDrawable mAvatar;
     private byte [] mAvatarData;
 
-    private PGPPublicKeyRing mKeyRing;
+    private String mFingerprint;
+    private PGPPublicKeyRing mTrustedKeyRing;
 
     public interface ContactCallback {
         public void avatarLoaded(Contact contact, Drawable avatar);
@@ -136,7 +140,7 @@ public class Contact {
                         put(userId, c);
 
                         // insert result into users database immediately
-                        ContentValues values = new ContentValues(5);
+                        ContentValues values = new ContentValues(6);
                         values.put(Users.HASH, XmppStringUtils.parseLocalpart(userId));
                         values.put(Users.NUMBER, numberHint);
                         values.put(Users.DISPLAY_NAME, name);
@@ -203,8 +207,12 @@ public class Contact {
         return mBlocked;
     }
 
-    public PGPPublicKeyRing getPublicKeyRing() {
-        return mKeyRing;
+    public PGPPublicKeyRing getTrustedPublicKeyRing() {
+        return mTrustedKeyRing;
+    }
+
+    public String getFingerprint() {
+        return mFingerprint;
     }
 
     public void getAvatarAsync(final Context context, final ContactCallback callback) {
@@ -262,15 +270,17 @@ public class Contact {
             final String number = cursor.getString(COLUMN_NUMBER);
             final boolean registered = (cursor.getInt(COLUMN_REGISTERED) != 0);
             final String status = cursor.getString(COLUMN_STATUS);
-            final byte[] keyring = cursor.getBlob(COLUMN_PUBLICKEY);
+            final String fingerprint = cursor.getString(COLUMN_FINGERPRINT);
             final boolean blocked = (cursor.getInt(COLUMN_BLOCKED) != 0);
+            final byte[] trustedKeyring = cursor.getBlob(COLUMN_TRUSTED_PUBLIC_KEY);
 
             c = new Contact(contactId, key, name, number, jid, blocked);
             c.mRegistered = registered;
             c.mStatus = status;
+            c.mFingerprint = fingerprint;
             try {
-                if (keyring != null)
-                    c.mKeyRing = PGP.readPublicKeyring(keyring);
+                if (trustedKeyring != null)
+                    c.mTrustedKeyRing = PGP.readPublicKeyring(trustedKeyring);
             }
             catch (Exception e) {
                 // ignored for now
@@ -319,8 +329,9 @@ public class Contact {
                 Users.CONTACT_ID,
                 Users.REGISTERED,
                 Users.STATUS,
-                Users.PUBLIC_KEY,
+                Users.FINGERPRINT,
                 Users.BLOCKED,
+                Keys.TRUSTED_PUBLIC_KEY,
             }, null, null, null);
 
         if (c.moveToFirst()) {
@@ -330,16 +341,18 @@ public class Contact {
             final long cid = c.getLong(3);
             final boolean registered = (c.getInt(4) != 0);
             final String status = c.getString(5);
-            final byte[] keyring = c.getBlob(6);
+            final String fingerprint = c.getString(6);
             final boolean blocked = (c.getInt(7) != 0);
+            final byte[] trustedKeyring = c.getBlob(8);
             c.close();
 
             Contact contact = new Contact(cid, key, name, number, userId, blocked);
             contact.mRegistered = registered;
             contact.mStatus = status;
+            contact.mFingerprint = fingerprint;
             try {
-                if (keyring != null)
-                    contact.mKeyRing = PGP.readPublicKeyring(keyring);
+                if (trustedKeyring != null)
+                    contact.mTrustedKeyRing = PGP.readPublicKeyring(trustedKeyring);
             }
             catch (Exception e) {
                 // ignored for now

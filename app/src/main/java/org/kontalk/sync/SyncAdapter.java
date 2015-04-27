@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,11 @@
 
 package org.kontalk.sync;
 
+import org.jivesoftware.smack.util.StringUtils;
+
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.UsersProvider;
+import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
@@ -31,6 +34,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -69,12 +73,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // broadcast sync start
             mBroadcastManager.sendBroadcast(new Intent(ACTION_SYNC_START));
 
-            final long startTime = System.currentTimeMillis();
+            final long startTime = SystemClock.elapsedRealtime();
             boolean force = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, false);
 
             // do not start if offline
             if (Preferences.getOfflineMode(mContext)) {
                 Log.d(TAG, "not requesting sync - offline mode");
+                return;
+            }
+
+            // do not start if no server available (limbo state)
+            if (Preferences.getEndpointServer(mContext) == null) {
+                Log.d(TAG, "no server available - aborting");
                 return;
             }
 
@@ -96,6 +106,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 .acquireContentProviderClient(UsersProvider.AUTHORITY);
 
             try {
+                // hold a reference to the message center while syncing
+                MessageCenterService.hold(mContext);
+                // start sync
                 mSyncer = new Syncer(mContext);
                 mSyncer.performSync(mContext, account, authority,
                     provider, usersProvider, syncResult);
@@ -104,8 +117,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Log.w(TAG, "sync canceled!", e);
             }
             finally {
+                // release the message center
+                MessageCenterService.release(mContext);
+                // release user provider
                 usersProvider.release();
-                long endTime = System.currentTimeMillis();
+                // some stats :)
+                long endTime = SystemClock.elapsedRealtime();
                 Preferences.setLastSyncTimestamp(mContext, endTime);
                 Log.d(TAG, String.format("sync took %.5f seconds", ((float)(endTime - startTime)) / 1000));
             }
@@ -160,6 +177,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public static boolean isActive(Context context) {
         Account acc = Authenticator.getDefaultAccount(context);
         return ContentResolver.isSyncActive(acc, ContactsContract.AUTHORITY);
+    }
+
+    public static boolean isError(SyncResult syncResult) {
+        return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
+    }
+
+    public static String getIQPacketId() {
+        return Syncer.IQ_PACKET_ID;
     }
 
 }

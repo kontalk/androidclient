@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
      */
     public ProgressNotificationBuilder progress(int progress, int contentTitle, int contentText) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            this.setSmallIcon(R.drawable.stat_notify)
+            this.setSmallIcon(R.drawable.ic_stat_notify)
                 .setProgress(100, progress, false)
                 .setContentTitle(mContext.getString(contentTitle))
                 .setContentText(mContext.getString(contentText));

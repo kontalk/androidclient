@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
@@ -65,6 +65,7 @@ import android.util.Log;
 class MessageListener extends MessageCenterPacketListener {
 
     private static final String selectionOutgoing = Messages.DIRECTION + "=" + Messages.DIRECTION_OUT;
+    private static final String selectionIngoing = Messages.DIRECTION + "=" + Messages.DIRECTION_IN;
 
     public MessageListener(MessageCenterService instance) {
         super(instance);
@@ -81,7 +82,7 @@ class MessageListener extends MessageCenterPacketListener {
             String from = m.getFrom();
 
             // check if there is a composing notification
-            PacketExtension _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
+            ExtensionElement _chatstate = m.getExtension("http://jabber.org/protocol/chatstates");
             ChatStateExtension chatstate = null;
             if (_chatstate != null) {
                 chatstate = (ChatStateExtension) _chatstate;
@@ -98,7 +99,7 @@ class MessageListener extends MessageCenterPacketListener {
 
             // delayed deliver extension is the first the be processed
             // because it's used also in delivery receipts
-            PacketExtension _delay = m.getExtension("delay", "urn:xmpp:delay");
+            ExtensionElement _delay = m.getExtension("delay", "urn:xmpp:delay");
             if (_delay == null)
                 _delay = m.getExtension("x", "jabber:x:delay");
 
@@ -165,7 +166,7 @@ class MessageListener extends MessageCenterPacketListener {
                         Coder.SECURITY_CLEARTEXT
                     );
 
-                PacketExtension _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
+                ExtensionElement _encrypted = m.getExtension(E2EEncryption.ELEMENT_NAME, E2EEncryption.NAMESPACE);
 
                 if (_encrypted != null && _encrypted instanceof E2EEncryption) {
                     E2EEncryption mEnc = (E2EEncryption) _encrypted;
@@ -206,7 +207,7 @@ class MessageListener extends MessageCenterPacketListener {
                 // TODO duplicated code (MessageUtils#decryptMessage)
 
                 // out of band data
-                PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+                ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
                 if (_media != null && _media instanceof OutOfBandData) {
                     File previewFile = null;
 
@@ -217,12 +218,12 @@ class MessageListener extends MessageCenterPacketListener {
                     boolean encrypted = media.isEncrypted();
 
                     // bits-of-binary for preview
-                    PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                    ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
                     if (_preview != null && _preview instanceof BitsOfBinary) {
                         BitsOfBinary preview = (BitsOfBinary) _preview;
                         String previewMime = preview.getType();
                         if (previewMime == null)
-                            previewMime = MediaStorage.THUMBNAIL_MIME;
+                            previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
 
                         String filename = null;
 
@@ -279,27 +280,11 @@ class MessageListener extends MessageCenterPacketListener {
 
                 }
 
-                if (msg != null) {
+                Uri msgUri = incoming(msg);
 
-                    Uri msgUri = incoming(msg);
-
-                    if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
-                        // send ack :)
-                        DeliveryReceipt receipt = new DeliveryReceipt(msgId);
-                        org.jivesoftware.smack.packet.Message ack =
-                            new org.jivesoftware.smack.packet.Message(from,
-                                org.jivesoftware.smack.packet.Message.Type.chat);
-                        ack.addExtension(receipt);
-
-                        if (msgUri != null) {
-                            // hold on to message center
-                            getIdleHandler().hold();
-                            // will mark this message as confirmed
-                            long storageId = ContentUris.parseId(msgUri);
-                            waitingReceipt.put(ack.getStanzaId(), storageId);
-                        }
-                        sendPacket(ack);
-                    }
+                if (m.hasExtension(DeliveryReceiptRequest.ELEMENT, DeliveryReceipt.NAMESPACE)) {
+                    // send ack :)
+                    sendReceipt(msgUri, msgId, from, waitingReceipt);
                 }
 
             }
@@ -307,6 +292,22 @@ class MessageListener extends MessageCenterPacketListener {
 
         // error message
         else if (m.getType() == org.jivesoftware.smack.packet.Message.Type.error) {
+            DeliveryReceipt deliveryReceipt = DeliveryReceipt.from(m);
+
+            // delivery receipt error
+            if (deliveryReceipt != null) {
+                // mark indicated message as incoming and try again
+                Uri msg = Messages.getUri(deliveryReceipt.getId());
+                ContentValues values = new ContentValues(2);
+                values.put(Messages.STATUS, Messages.STATUS_INCOMING);
+                values.put(Messages.STATUS_CHANGED, System.currentTimeMillis());
+                getContext().getContentResolver()
+                    .update(msg, values, selectionIngoing, null);
+
+                // send receipt again
+                sendReceipt(null, deliveryReceipt.getId(), m.getFrom(), waitingReceipt);
+            }
+
             synchronized (waitingReceipt) {
                 String id = m.getStanzaId();
                 Long _msgId = waitingReceipt.get(id);
@@ -337,5 +338,22 @@ class MessageListener extends MessageCenterPacketListener {
                 }
             }
         }
+    }
+
+    private void sendReceipt(Uri msgUri, String msgId, String from, Map<String, Long> waitingReceipt) {
+        DeliveryReceipt receipt = new DeliveryReceipt(msgId);
+        org.jivesoftware.smack.packet.Message ack =
+            new org.jivesoftware.smack.packet.Message(from,
+                org.jivesoftware.smack.packet.Message.Type.chat);
+        ack.addExtension(receipt);
+
+        if (msgUri != null) {
+            // hold on to message center
+            getIdleHandler().hold();
+            // will mark this message as confirmed
+            long storageId = ContentUris.parseId(msgUri);
+            waitingReceipt.put(ack.getStanzaId(), storageId);
+        }
+        sendPacket(ack);
     }
 }

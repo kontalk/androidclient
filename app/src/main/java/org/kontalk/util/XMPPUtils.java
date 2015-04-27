@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,6 +92,8 @@ public class XMPPUtils {
 
     public static String createLocalJID(Context context, String name) {
         EndpointServer server = Preferences.getEndpointServer(context);
+        if (server == null)
+            throw new IllegalArgumentException("server is null");
         return XmppStringUtils.completeJidFrom(name, server.getNetwork());
     }
 

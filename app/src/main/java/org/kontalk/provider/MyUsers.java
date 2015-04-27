@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,11 +27,17 @@ import org.kontalk.BuildConfig;
 public class MyUsers {
     private MyUsers() {}
 
-    public static final class Users implements BaseColumns {
+    public interface CommonColumns extends BaseColumns {
+        public static final String JID = "jid";
+        public static final String PUBLIC_KEY = "public_key";
+        public static final String FINGERPRINT = "fingerprint";
+    }
+
+    public static final class Users implements CommonColumns {
         private Users() {}
 
         public static final Uri CONTENT_URI = Uri.parse("content://"
-                + UsersProvider.AUTHORITY + "/users");
+            + UsersProvider.AUTHORITY + "/users");
         public static final Uri CONTENT_URI_OFFLINE =  Users.CONTENT_URI.buildUpon()
             .appendQueryParameter(Users.OFFLINE, "true").build();
 
@@ -42,14 +48,11 @@ public class MyUsers {
         public static final String HASH = "hash";
         public static final String NUMBER = "number";
         public static final String DISPLAY_NAME = "display_name";
-        public static final String JID = "jid";
         public static final String LOOKUP_KEY = "lookup_key";
         public static final String CONTACT_ID = "contact_id";
         public static final String REGISTERED = "registered";
         public static final String STATUS = "status";
         public static final String LAST_SEEN = "last_seen";
-        public static final String PUBLIC_KEY = "public_key";
-        public static final String FINGERPRINT = "fingerprint";
         public static final String BLOCKED = "blocked";
 
         // uri parameter for update: triggers a complete resync
@@ -65,5 +68,20 @@ public class MyUsers {
         // uri parameter for insert: discard name and number when updating
         // (e.g. update a subscription entry from an existing contact)
         public static final String DISCARD_NAME = "discardName";
+    }
+
+    public static final class Keys implements CommonColumns {
+        private Keys() {}
+
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+            + UsersProvider.AUTHORITY + "/keys");
+
+        /** Trusted fingerprint of the user. */
+        public static final String TRUSTED_FINGERPRINT = "trusted_fingerprint";
+        /** Trusted public key of the user. */
+        public static final String TRUSTED_PUBLIC_KEY = "trusted_public_key";
+
+        // uri parameter for insert: trust current key
+        public static final String TRUST = "trust";
     }
 }

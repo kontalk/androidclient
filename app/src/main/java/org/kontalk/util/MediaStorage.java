@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -58,7 +59,10 @@ public abstract class MediaStorage {
     private static final int THUMBNAIL_WIDTH = 256;
     private static final int THUMBNAIL_HEIGHT = 256;
     public static final String THUMBNAIL_MIME = "image/png";
+    public static final String THUMBNAIL_MIME_NETWORK = "image/jpeg";
+    public static final int THUMBNAIL_MIME_COMPRESSION = 60;
 
+    public static final String COMPRESS_MIME = "image/jpeg";
     private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
 
@@ -103,20 +107,20 @@ public abstract class MediaStorage {
     }
 
     /** Writes a thumbnail of a media to the internal cache. */
-    public static File cacheThumbnail(Context context, Uri media, String filename) throws IOException {
+    public static File cacheThumbnail(Context context, Uri media, String filename, boolean forNetwork) throws IOException {
         File file = new File(context.getCacheDir(), filename);
-        cacheThumbnail(context, media, file);
+        cacheThumbnail(context, media, file, forNetwork);
         return file;
     }
 
     /** Writes a thumbnail of a media to a {@link File}. */
-    public static void cacheThumbnail(Context context, Uri media, File destination) throws IOException {
+    public static void cacheThumbnail(Context context, Uri media, File destination, boolean forNetwork) throws IOException {
         FileOutputStream fout = new FileOutputStream(destination);
-        cacheThumbnail(context, media, fout);
+        cacheThumbnail(context, media, fout, forNetwork);
         fout.close();
     }
 
-    private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout) throws IOException {
+    private static void cacheThumbnail(Context context, Uri media, FileOutputStream fout, boolean forNetwork) throws IOException {
         ContentResolver cr = context.getContentResolver();
         InputStream in = cr.openInputStream(media);
         BitmapFactory.Options options = preloadBitmap(in, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
@@ -134,7 +138,9 @@ public abstract class MediaStorage {
         thumbnail = bitmapOrientation(context, media, thumbnail);
 
         // write down to file
-        thumbnail.compress(Bitmap.CompressFormat.PNG, 90, fout);
+        thumbnail.compress(forNetwork ? Bitmap.CompressFormat.JPEG :
+            Bitmap.CompressFormat.PNG,
+            forNetwork ? THUMBNAIL_MIME_COMPRESSION : 0, fout);
         thumbnail.recycle();
     }
 
@@ -355,6 +361,12 @@ public abstract class MediaStorage {
                 & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
         final Uri uri = intent.getData();
         context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+    }
+
+    public static void scanFile(Context context, File file, String mime) {
+        MediaScannerConnection.scanFile(context.getApplicationContext(),
+            new String[] { file.getPath() },
+            new String[] { mime }, null);
     }
 
 }

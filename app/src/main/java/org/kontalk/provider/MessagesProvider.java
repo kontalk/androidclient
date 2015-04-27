@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -415,6 +415,13 @@ public class MessagesProvider extends ContentProvider {
         try {
             beginTransaction(db);
 
+            // we need to know if there previously was a pending request
+            // so we can decide if we have to fire a notification or not
+            boolean requestExists = false;
+            if (match == REQUESTS) {
+                requestExists = isRequestPending(db, initialValues.getAsString(CommonColumns.PEER));
+            }
+
             // create the thread first
             long threadId = updateThreads(db, values, notifications, match == REQUESTS);
 
@@ -427,7 +434,7 @@ public class MessagesProvider extends ContentProvider {
                 success = setTransactionSuccessful(db);
 
                 // request only - return conversation
-                if (match == REQUESTS)
+                if (match == REQUESTS && !requestExists)
                     return ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId);
 
                 // draft only - no uri
@@ -505,6 +512,23 @@ public class MessagesProvider extends ContentProvider {
             for (Uri nuri : notifications)
                 cr.notifyChange(nuri, null);
         }
+    }
+
+    private boolean isRequestPending(SQLiteDatabase db, String peer) {
+        Cursor c = null;
+        try {
+            c = db.query(TABLE_THREADS, new String[] { Threads.REQUEST_STATUS },
+                Threads.PEER + "=?", new String[] { peer }, null, null, null);
+            return c.moveToFirst() && c.getInt(0) == Threads.REQUEST_WAITING;
+        }
+        catch (Exception e) {
+            // ignored
+        }
+        finally {
+            if (c != null)
+                c.close();
+        }
+        return false;
     }
 
     /** Used to determine content and mime type for a thread. */

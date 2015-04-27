@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -44,4 +44,9 @@
 
     <color name="date_stamp_background">#ff33B5E5</color>
     <color name="date_stamp_text">#dddddd</color>
+
+    <color name="warning_bar_background">#ffdd1812</color>
+    
+    <color name="notification_name_color">@android:color/white</color>
+
 </resources>

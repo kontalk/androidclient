@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -327,6 +327,10 @@ public class XMPPConnectionHelper extends Thread {
         return mConnecting;
     }
 
+    public boolean isStruggling() {
+        return mConnecting && mRetryCount > 5;
+    }
+
     public boolean isServerDirty() {
         return mServerDirty;
     }
@@ -357,8 +361,10 @@ public class XMPPConnectionHelper extends Thread {
 
 
     public interface ConnectionHelperListener extends ConnectionListener {
+        /** Connection has been created. */
         public void created(XMPPConnection connection);
 
+        /** Connection was aborted and will never be tried again. */
         public void aborted(Exception e);
 
         public void authenticationFailed();

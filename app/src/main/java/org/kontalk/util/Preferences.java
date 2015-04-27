@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,6 +169,10 @@ public final class Preferences {
 
     public static boolean getSyncSIMContacts(Context context) {
         return getBoolean(context, "pref_sync_sim_contacts", false);
+    }
+
+    public static boolean getSyncInvisibleContacts(Context context) {
+        return getBoolean(context, "pref_sync_invisible_contacts", false);
     }
 
     public static boolean getAutoAcceptSubscriptions(Context context) {
@@ -440,14 +444,60 @@ public final class Preferences {
         return getLong(context, "pref_last_connection", -1);
     }
 
+    // TODO why isn't this used?
     public static boolean setLastConnection(Context context) {
         return sPreferences.edit()
             .putLong("pref_last_connection", System.currentTimeMillis())
             .commit();
     }
 
-    public static boolean getEnterKeyEnabled(Context context) {
-        return getBoolean(context, "pref_text_enter", false);
+    public static String getEnterKeyMode(Context context) {
+        try {
+            return getString(context, "pref_text_enter", "default");
+        }
+        catch (ClassCastException e) {
+            // legacy mode
+            return getBoolean(context, "pref_text_enter", false) ?
+                "newline" : "default";
+        }
+    }
+
+    public static String getRosterVersion(Context context) {
+        return getString(context, "roster_version", "");
+    }
+
+    public static boolean setRosterVersion(String version) {
+        return sPreferences.edit()
+            .putString("roster_version", version)
+            .commit();
+    }
+
+    public static long getPingAlarmInterval(Context context, long defaultValue) {
+        String networkType = SystemUtils.getCurrentNetworkName(context);
+        return (networkType != null) ?
+            getLong(context, "ping_alarm_interval_" + networkType, defaultValue) :
+            defaultValue;
+    }
+
+    public static boolean setPingAlarmInterval(Context context, long intervalMillis) {
+        String networkType = SystemUtils.getCurrentNetworkName(context);
+        return networkType != null && sPreferences.edit()
+            .putLong("ping_alarm_interval_" + networkType, intervalMillis)
+            .commit();
+    }
+
+    public static long getPingAlarmBackoff(Context context, long defaultValue) {
+        String networkType = SystemUtils.getCurrentNetworkName(context);
+        return (networkType != null) ?
+            getLong(context, "ping_alarm_backoff_" + networkType, defaultValue) :
+            defaultValue;
+    }
+
+    public static boolean setPingAlarmBackoff(Context context, long intervalMillis) {
+        String networkType = SystemUtils.getCurrentNetworkName(context);
+        return networkType != null && sPreferences.edit()
+            .putLong("ping_alarm_backoff_" + networkType, intervalMillis)
+            .commit();
     }
 
     /**
@@ -456,7 +506,8 @@ public final class Preferences {
      */
     public static boolean saveRegistrationProgress(Context context, String name,
         String phoneNumber, PersonalKey key, String passphrase,
-        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri) {
+        byte[] importedPublicKey, byte[] importedPrivateKey, String serverUri,
+        String sender) {
         return sPreferences.edit()
             .putString("registration_name", name)
             .putString("registration_phone", phoneNumber)
@@ -467,6 +518,7 @@ public final class Preferences {
                 Base64.encodeToString(importedPrivateKey, Base64.NO_WRAP) : null)
             .putString("registration_passphrase", passphrase)
             .putString("registration_server", serverUri)
+            .putString("registration_sender", sender)
             .commit();
     }
 
@@ -487,6 +539,8 @@ public final class Preferences {
             String importedPrivateKey = getString(context, "registration_importedprivatekey", null);
             if (importedPrivateKey != null)
                 p.importedPrivateKey = Base64.decode(importedPrivateKey, Base64.NO_WRAP);
+
+            p.sender = getString(context, "registration_sender", null);
 
             return p;
         }
@@ -513,6 +567,7 @@ public final class Preferences {
         public byte[] importedPublicKey;
         public byte[] importedPrivateKey;
         public EndpointServer server;
+        public String sender;
     }
 
     /** Recent statuses database helper. */

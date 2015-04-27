@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package org.kontalk.service.msgcenter;
 import java.util.List;
 
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.filter.PacketFilter;
-import org.jivesoftware.smack.filter.PacketIDFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
@@ -47,7 +47,7 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
         EndpointServer server = getServer();
 
         // we don't need this listener anymore
-        conn.removeAsyncPacketListener(this);
+        conn.removeAsyncStanzaListener(this);
 
         DiscoverInfo query = (DiscoverInfo) packet;
         List<DiscoverInfo.Feature> features = query.getFeatures();
@@ -65,8 +65,8 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
                 items.setNode(PushRegistration.NAMESPACE);
                 items.setTo(server.getNetwork());
 
-                PacketFilter filter = new PacketIDFilter(items.getStanzaId());
-                conn.addAsyncPacketListener(new PushDiscoverItemsListener(getInstance()), filter);
+                StanzaFilter filter = new StanzaIdFilter(items.getStanzaId());
+                conn.addAsyncStanzaListener(new PushDiscoverItemsListener(getInstance()), filter);
 
                 sendPacket(items);
             }
@@ -85,8 +85,8 @@ class DiscoverInfoListener extends MessageCenterPacketListener {
                 items.setNode(UploadExtension.NAMESPACE);
                 items.setTo(server.getNetwork());
 
-                PacketFilter filter = new PacketIDFilter(items.getStanzaId());
-                conn.addAsyncPacketListener(new UploadDiscoverItemsListener(getInstance()), filter);
+                StanzaFilter filter = new StanzaIdFilter(items.getStanzaId());
+                conn.addAsyncStanzaListener(new UploadDiscoverItemsListener(getInstance()), filter);
 
                 sendPacket(items);
             }

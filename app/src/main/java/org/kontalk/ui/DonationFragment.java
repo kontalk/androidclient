@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import org.kontalk.billing.IInventory;
 import org.kontalk.billing.IProductDetails;
 import org.kontalk.billing.IPurchase;
 import org.kontalk.billing.OnBillingSetupFinishedListener;
+import org.kontalk.billing.OnConsumeFinishedListener;
 import org.kontalk.billing.OnPurchaseFinishedListener;
 import org.kontalk.billing.QueryInventoryFinishedListener;
 
@@ -69,8 +70,20 @@ public class DonationFragment extends Fragment implements OnClickListener {
             // end async operation
             mBillingService.endAsyncOperation();
 
+            if (result.isSuccess()) {
+                // consume purchase in the background
+                mBillingService.consumeAsync(purchase, mConsumeFinishedListener);
+            }
+        }
+    };
+
+    OnConsumeFinishedListener mConsumeFinishedListener = new OnConsumeFinishedListener() {
+
+        public void onConsumeFinished(IPurchase purchase, BillingResult result) {
             if (result.isSuccess())
                 Toast.makeText(getActivity(), R.string.msg_iab_thankyou, Toast.LENGTH_LONG).show();
+            else
+                Toast.makeText(getActivity(), R.string.msg_iab_thankyou_warning, Toast.LENGTH_LONG).show();
         }
     };
 

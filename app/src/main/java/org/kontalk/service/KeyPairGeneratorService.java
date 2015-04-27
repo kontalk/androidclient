@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ public class KeyPairGeneratorService extends Service {
         Notification no = new NotificationCompat.Builder(this)
             .setOngoing(true)
             .setTicker(getString(R.string.notify_gen_keypair_ticker))
-            .setSmallIcon(R.drawable.stat_notify)
+            .setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle(getString(R.string.notify_gen_keypair_title))
             .setContentText(getString(R.string.notify_gen_keypair_text))
             .setContentIntent(pi)

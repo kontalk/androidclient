@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources>
+  <string-array name="vibrate_labels">
+    <item>常に</item>
+    <item>サイレント時のみ</item>
+    <item>なし</item>
+  </string-array>
+  <string-array name="fontsize_labels">
+    <item>小</item>
+    <item>中</item>
+    <item>大</item>
+  </string-array>
+  <string-array name="balloons_labels">
+    <item>クラッシック</item>
+    <item>クラッシック (旧)</item>
+    <item>iPhone</item>
+  </string-array>
+  <string-array name="text_enter_labels">
+    <item>デフォルト</item>
+    <item>Enter</item>
+    <item>送信</item>
+  </string-array>
+  <string-array name="image_resize_labels">
+    <item>オリジナル</item>
+    <item>小 (0.3MP)</item>
+    <item>中 (0.5MP)</item>
+    <item>大 (0.8MP)</item>
+  </string-array>
+  <string-array name="wakeup_time_labels">
+    <item>5 分</item>
+    <item>15 分</item>
+    <item>30 分</item>
+    <item>1 時間</item>
+    <item>3 時間</item>
+  </string-array>
+</resources>

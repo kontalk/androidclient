@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,11 @@ package org.kontalk.service.msgcenter;
 import java.io.IOException;
 
 import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPException;
@@ -45,7 +47,6 @@ import org.kontalk.provider.MyMessages.Threads.Requests;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.ui.MessagingNotification;
-import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PRESENCE;
@@ -71,22 +72,23 @@ class PresenceListener extends MessageCenterPacketListener {
         super(instance);
     }
 
-    private Stanza createSubscribe(Presence p) {
-        PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+    private Stanza createSubscribed(Presence p) {
+        ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
         try {
 
             if (_pkey instanceof PublicKeyPresence) {
                 PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
 
-                PGPPublicKeyRing pubRing = PGP.readPublicKeyring(pkey.getKey());
-                PGPPublicKey publicKey = PGP.getMasterKey(pubRing);
-                String fingerprint = MessageUtils.bytesToHex(publicKey.getFingerprint());
+                byte[] keydata = pkey.getKey();
+                // just to ensure it's valid data
+                PGP.readPublicKeyring(keydata);
 
+                String jid = XmppStringUtils.parseBareJid(p.getFrom());
                 // store key to users table
-                UsersProvider.setUserKey(getContext(),
-                    XmppStringUtils.parseBareJid(p.getFrom()),
-                    pkey.getKey(), fingerprint);
+                UsersProvider.setUserKey(getContext(), jid, keydata);
+                // maybe trust the key
+                UsersProvider.trustUserKey(getContext(), jid);
             }
 
             Presence p2 = new Presence(Presence.Type.subscribed);
@@ -144,13 +146,13 @@ class PresenceListener extends MessageCenterPacketListener {
         Context ctx = getContext();
 
         // auto-accept subscription
-        if (Preferences.getAutoAcceptSubscriptions(ctx)) {
+        if (Preferences.getAutoAcceptSubscriptions(ctx) || isAlreadyTrusted(p)) {
 
             // TODO user database entry should be stored here too
 
-            Stanza r = createSubscribe(p);
+            Stanza r = createSubscribed(p);
             if (r != null)
-                getConnection().sendPacket(r);
+                getConnection().sendStanza(r);
 
         }
 
@@ -169,7 +171,7 @@ class PresenceListener extends MessageCenterPacketListener {
             // extract public key
             String name = null, fingerprint = null;
             byte[] publicKey = null;
-            PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+            ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
             if (_pkey instanceof PublicKeyPresence) {
                 PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
                 byte[] _publicKey = pkey.getKey();
@@ -197,8 +199,8 @@ class PresenceListener extends MessageCenterPacketListener {
             values.put(Users.JID, from);
             values.put(Users.NUMBER, from);
             if (publicKey != null && fingerprint != null) {
-                values.put(Users.PUBLIC_KEY, publicKey);
                 values.put(Users.FINGERPRINT, fingerprint);
+                values.put(Users.PUBLIC_KEY, publicKey);
             }
             values.put(Users.DISPLAY_NAME, name);
             values.put(Users.REGISTERED, true);
@@ -213,22 +215,34 @@ class PresenceListener extends MessageCenterPacketListener {
             values.clear();
             values.put(CommonColumns.PEER, from);
             values.put(CommonColumns.TIMESTAMP, System.currentTimeMillis());
-            cr.insert(Requests.CONTENT_URI, values);
-
-            // fire up a notification
-            MessagingNotification.chatInvitation(ctx, from);
+            if (cr.insert(Requests.CONTENT_URI, values) != null) {
+                // fire up a notification
+                MessagingNotification.chatInvitation(ctx, from);
+            }
         }
+    }
+
+    private boolean isAlreadyTrusted(Presence p) {
+        RosterEntry entry = getRosterEntry(p.getFrom());
+        return (entry != null && (entry.getType() == RosterPacket.ItemType.to ||
+            entry.getType() == RosterPacket.ItemType.both));
     }
 
     private void handleSubscribed(Presence p) {
         String from = XmppStringUtils.parseBareJid(p.getFrom());
 
-        if (UsersProvider.getPublicKey(getContext(), from) == null) {
+        // save last seen (if any)
+        DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
+        if (delay != null) {
+            UsersProvider.setLastSeen(getContext(), from, delay.getStamp().getTime());
+        }
+
+        if (UsersProvider.getPublicKey(getContext(), from, false) == null) {
             // public key not found
             // assuming the user has allowed us, request it
 
             PublicKeyPublish pkey = new PublicKeyPublish();
-            pkey.setTo(XmppStringUtils.parseBareJid(p.getFrom()));
+            pkey.setTo(from);
 
             sendPacket(pkey);
         }
@@ -280,7 +294,7 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_STAMP, timestamp);
 
         // public key extension (for fingerprint)
-        PacketExtension _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+        ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
 
         if (_pkey instanceof PublicKeyPresence) {
             PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
@@ -326,7 +340,7 @@ class PresenceListener extends MessageCenterPacketListener {
         }
 
         return getContext().getContentResolver().update(Users.CONTENT_URI,
-            values, Users.JID + " = ?", new String[] { jid });
+            values, Users.JID + "=?", new String[] { jid });
     }
 
 }

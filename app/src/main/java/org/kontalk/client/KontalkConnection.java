@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 package org.kontalk.client;
 
-import java.io.Reader;
-import java.io.Writer;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -35,19 +33,13 @@ import javax.net.ssl.X509TrustManager;
 
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
-import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.debugger.SmackDebugger;
-import org.jivesoftware.smack.debugger.SmackDebuggerFactory;
-import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
-import org.jivesoftware.smackx.debugger.android.AndroidDebugger;
-import org.jivesoftware.smackx.iqversion.VersionManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
@@ -195,18 +187,6 @@ public class KontalkConnection extends XMPPTCPConnection {
         }
     }
 
-    public static void init() {
-        // use Android debugger
-        SmackConfiguration.setDebuggerFactory(new SmackDebuggerFactory() {
-            @Override
-            public SmackDebugger create(XMPPConnection connection, Writer writer, Reader reader) throws IllegalArgumentException {
-                return new AndroidDebugger(connection, writer, reader);
-            }
-        });
-        // do not append Smack version
-        VersionManager.setAutoAppendSmackVersion(false);
-    }
-
     /**
      * A custom ack predicate that allows ack after a message with a delivery
      * receipt, a receipt request or a body, or after 5 stanzas.
@@ -216,12 +196,12 @@ public class KontalkConnection extends XMPPTCPConnection {
         public static final AckPredicate INSTANCE = new AckPredicate();
 
         private AckPredicate() {
-            super(new PacketFilter() {
+            super(new StanzaFilter() {
                 @Override
                 public boolean accept(Stanza packet) {
                     return (packet instanceof Message &&
                         (((Message) packet).getBody() != null ||
-                          DeliveryReceipt.from(packet) != null ||
+                          DeliveryReceipt.from((Message) packet) != null ||
                            DeliveryReceiptRequest.from(packet) != null));
                 }
             }, 5);

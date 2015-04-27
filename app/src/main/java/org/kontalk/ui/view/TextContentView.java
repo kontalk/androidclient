@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -136,9 +136,8 @@ public class TextContentView extends EmojiconTextView
         //setEmojiconSize((int) getTextSize());
 
         // linkify!
-        boolean linksFound = false;
         if (formattedMessage.length() < MAX_AFFORDABLE_SIZE)
-            linksFound = Linkify.addLinks(formattedMessage, Linkify.ALL);
+            Linkify.addLinks(formattedMessage, Linkify.ALL);
 
         /*
          * workaround for bugs:
@@ -150,11 +149,6 @@ public class TextContentView extends EmojiconTextView
                 android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
             // from http://stackoverflow.com/a/12303155/1045199
             formattedMessage.append("\u200b"); // was: \u2060
-
-        if (linksFound)
-            setMovementMethod(LinkMovementMethod.getInstance());
-        else
-            setMovementMethod(null);
 
         setText(formattedMessage);
     }

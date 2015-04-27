@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,6 +80,20 @@ public final class PreferencesActivity extends PreferenceActivity {
             startActivity(new Intent(this, BootstrapPreferences.class));
             finish();
             return;
+        }
+
+        // upgrade from old version: pref_text_enter becomes string
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        try {
+            prefs.getString("pref_text_enter", null);
+        }
+        catch (ClassCastException e) {
+            // legacy mode
+            prefs.edit()
+                .putString("pref_text_enter",
+                    prefs.getBoolean("pref_text_enter", false) ?
+                    "newline" : "default")
+            .commit();
         }
 
         addPreferencesFromResource(R.xml.preferences);

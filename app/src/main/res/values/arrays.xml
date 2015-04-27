@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -54,6 +54,18 @@
         <item>iPhone</item>
     </string-array>
 
+    <string-array name="text_enter_values" translate="false">
+        <item>default</item>
+        <item>newline</item>
+        <item>newline_send</item>
+    </string-array>
+
+    <string-array name="text_enter_labels">
+        <item>Default</item>
+        <item>Enter</item>
+        <item>Send</item>
+    </string-array>
+
     <string-array name="image_resize_values" translate="false">
         <item>0</item>
         <item>640</item>
@@ -70,20 +82,18 @@
 
     <string-array name="idle_time_values" translate="false">
         <item>0</item>
-        <item>60000</item>
-        <item>120000</item>
-        <item>180000</item>
-        <item>240000</item>
         <item>300000</item>
+        <item>900000</item>
+        <item>1800000</item>
+        <item>3600000</item>
     </string-array>
 
     <string-array name="idle_time_labels">
         <item>Never</item>
-        <item>1 minute</item>
-        <item>2 minutes</item>
-        <item>3 minutes</item>
-        <item>4 minutes</item>
         <item>5 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
     </string-array>
 
     <string-array name="wakeup_time_values" translate="false">

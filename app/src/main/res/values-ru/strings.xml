@@ -20,8 +20,9 @@
   <string name="pref_title_network_uri">Данная опция заменит автоматическое управление списком серверов</string>
   <string name="number_validation_intro1">Пожалуйста, введите Ваше имя, выберите код страны и заполните поле номера Вашего сотового телефона. Вам будет отправлено SMS с проверочным кодом. Номер телефона будет использован один раз и затем удалён.</string>
   <string name="number_validation_intro2">Если это устройство не имеет возможности приема SMS-сообщений, укажите здесь работоспособный номер телефона и введите полученный по SMS код проверки вручную, используя кнопку выше.</string>
-  <string name="code_validation_intro">Вскоре должно прийти SMS-сообщение на введенный номер. Пожалуйста, введите полученный код в поле ниже.</string>
-  <string name="code_validation_intro2">Пожалуйста, введите ранее полученный проверочный код. Данный код может быть использован лишь однажды.</string>
+  <string name="code_validation_intro">Вы вскоре должны получить СМС или вызов с данного номера:</string>
+  <string name="code_validation_intro2">Пожалуйста, введите ниже код, который Вы получили или услышали.</string>
+  <string name="code_validation_intro_manual">Пожалуйста, введите полученный проверочный код. Имейте в виду, что код может быть использован только один раз.</string>
   <string name="hint_validation_name">Ваше имя</string>
   <string name="hint_validation_number">Ваш номер</string>
   <string name="hint_validation_code">Проверочный код</string>
@@ -133,7 +134,6 @@
   <string name="send_mime_not_supported">Тип файла не поддерживается.</string>
   <string name="button_validate">Запрос проверочного кода</string>
   <string name="button_validation_code">У меня уже есть проверочный код</string>
-  <string name="button_import_keys">Импортировать ключи с другого устройства</string>
   <string name="button_validation_register">Проверка</string>
   <string name="notify_ticker_download_completed">Загрузка завершена</string>
   <string name="notify_title_download_completed">Загрузка завершена</string>
@@ -186,6 +186,7 @@
   <string name="seen_moment_ago_label">только что</string>
   <string name="seen_online_label">онлайн</string>
   <string name="seen_typing_label">набирает...</string>
+  <string name="invitation_sent_label">ожидающее приглашение</string>
   <string name="pref_custom_background">Другой фон</string>
   <string name="pref_background_uri">Фон</string>
   <string name="pref_title_background_uri">Задать другое фоновое изображение для бесед</string>
@@ -266,11 +267,13 @@
   <string name="security_error_decrypt_failed">\u0020(дешифрование не удалось)</string>
   <string name="security_error_integrity_check">\u0020(проверка целостности)</string>
   <string name="security_error_public_key_unavail">\u0020(публичный ключ недоступен)</string>
+  <string name="invite_notification">приглашает Вас в чат</string>
   <string name="title_invitation">Приглашение в чат</string>
   <string name="text_invitation_known">Запрос от\n%1$s &lt;%2$s&gt;\n(%3$s)\nОтпечаток: %4$s</string>
   <string name="text_invitation_unknown">Запрос от\n%1$s\nОтпечаток: %2$s</string>
   <string name="button_accept">Принять</string>
   <string name="button_block">Блокировать</string>
+  <string name="button_identity">Идентификация</string>
   <string name="msg_connecting_iab">соединение с Google Play…</string>
   <string name="msg_iab_thankyou">Спасибо!</string>
   <string name="iab_error_setup">Ошибка при установке покупок в приложении (%d)</string>
@@ -295,9 +298,8 @@
   <string name="title_auth_error">Ошибка аутентификации</string>
   <string name="msg_auth_error">&lt;b&gt;ПРЕДУПРЕЖДЕНИЕ!&lt;/b&gt;&lt;br&gt;Аутентификация на сервере Kontalk при последнем соединении не удалась. Это может быть временной ошибкой сервера или, что более вероятно, сервер не распознаёт Вашу ключевую пару. Рекомендуем удалить Вашу учётную запись Kontalk в настройках системы Андроид и зарегистрироваться снова (при этом, однако, Вы потеряете все Ваши сообщения Kontalk).</string>
   <string name="warn_invite_no_app">Нет приложений для приглашения пользователей.</string>
-  <string name="pref_text_enter">Показать ввод</string>
-  <string name="pref_title_on_text_enter">Показывать клавишу ввода при написании сообщений</string>
-  <string name="pref_title_off_text_enter">Показывать клавишу действия по умолчанию при написании сообщений</string>
+  <string name="pref_text_enter">Кнопка ввода</string>
+  <string name="pref_title_text_enter">Выберите поведение для кнопки ввода на клавиатуре</string>
   <string name="title_password1">Пароль</string>
   <string name="title_password2">Подтвердить пароль</string>
   <string name="err_password_too_short">Пароль должен содержать минимум %d знаков.</string>
@@ -314,4 +316,7 @@
   <string name="pref_title_image_resize">Изменение размера изображений перед отправкой</string>
   <string name="err_server_invalid_format">Неверный формат адреса.</string>
   <string name="err_no_contacts_app">Приложение контактов не найдено.</string>
+  <string name="warning_public_key">ВНИМАНИЕ! Ключевая пара для данного пользователя неожиданно изменилась! Нажмите здесь для подробностей.</string>
+  <string name="title_public_key_warning">Ключевая пара изменилась</string>
+  <string name="msg_public_key_warning">Ключевая пара для данного пользователя изменилась. Пожалуйста, проверьте, возможно он/она переустанавливали  Kontalk или непреднамеренно повторно сгенерировали ключевую пару, в противном случае общение может быть небезопасным.</string>
 </resources>

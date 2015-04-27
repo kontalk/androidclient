@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!-- Kontalk Android client
-     Copyright (C) 2014 Kontalk Devteam <devteam@kontalk.org>
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -18,10 +18,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.kontalk"
-      android:versionCode="41"
-      android:versionName="3.0-beta8"
       android:installLocation="internalOnly">
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="21"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -126,6 +123,7 @@
         </activity>
 
         <activity android:name=".ui.ComposeMessage"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Light.Subtitle"
             android:configChanges="keyboardHidden"
             android:windowSoftInputMode="stateHidden">
