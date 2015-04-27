@@ -1129,6 +1129,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(new RosterLoadedListener() {
             @Override
             public void onRosterLoaded(Roster roster) {
+                // resend failed and pending messages
+                resendPendingMessages(false);
+                // resend failed and pending received receipts
+                resendPendingReceipts();
+                // roster has been loaded
                 broadcast(ACTION_ROSTER_LOADED);
             }
         });
@@ -1188,10 +1193,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPresence();
         // discovery
         discovery();
-        // resend failed and pending messages
-        resendPendingMessages(false);
-        // resend failed and pending received receipts
-        resendPendingReceipts();
+        // pending messages and receipts will be sent when roster will be loaded
         // send pending subscription replies
         sendPendingSubscriptionReplies();
 
