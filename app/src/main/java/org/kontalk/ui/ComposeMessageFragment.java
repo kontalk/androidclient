@@ -471,14 +471,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
             msgId = MessageCenterService.messageId();
 
-			// generate thumbnail
-			// FIXME this is blocking!!!!
-			if (media && klass == ImageComponent.class) {
-				// FIXME hard-coded to ImageComponent
-				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
-				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
-						filename, true);
-			}
+            // generate thumbnail
+            // FIXME this is blocking!!!!
+            if (media && klass == ImageComponent.class) {
+                // FIXME hard-coded to ImageComponent
+                String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
+                previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
+                        filename, true);
+            }
 
             length = MediaStorage.getLength(getActivity(), uri);
 
@@ -837,18 +837,18 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-	/** Starts dialog for attachment selection. */
-	public void selectAttachment() {
-	    if (attachmentMenu == null) {
-	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
+    /** Starts dialog for attachment selection. */
+    public void selectAttachment() {
+        if (attachmentMenu == null) {
+            attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
+            attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
+            attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
             if (AudioDialog.isSupported(getActivity()))
-	            attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
-	        attachmentMenu.setOnClickListener(this);
-	    }
-	    attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
-	}
+                attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
+            attachmentMenu.setOnClickListener(this);
+        }
+        attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
+    }
 
     /** Starts activity for an image attachment. */
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -898,7 +898,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void selectContactAttachment() {
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
-	}
+    }
 
     private void selectAudioAttachment() {
         // create audio fragment if needed
