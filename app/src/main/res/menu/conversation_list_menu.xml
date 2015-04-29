@@ -27,6 +27,7 @@
     <item android:id="@+id/menu_offline" android:title="@string/menu_offline" android:icon="@android:drawable/ic_menu_close_clear_cancel"/>
     <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
     <item android:id="@+id/menu_delete_all" android:title="@string/menu_delete_all" android:icon="@android:drawable/ic_menu_delete"/>
+    <item android:id="@+id/menu_mykey" android:title="@string/mykey_activity_title" android:icon="@android:drawable/ic_menu_info_details"/>
     <item android:id="@+id/menu_donate" android:title="@string/pref_donate" android:icon="@android:drawable/ic_menu_info_details"/>
     <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@android:drawable/ic_menu_preferences"/>
 </menu>

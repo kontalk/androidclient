@@ -29,6 +29,7 @@
     <string name="menu_compose">Compose</string>
     <string name="menu_delete_all">Delete threads</string>
     <string name="menu_search">Search</string>
+    <string name="mykey_activity_title">My personal key</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_offline">Go offline</string>
     <string name="menu_online">Go online</string>

@@ -191,6 +191,10 @@
         <activity android:name=".ui.AboutActivity"
             android:theme="@style/Theme.Light"/>
 
+        <activity android:name=".ui.MyKeyActivity"
+            android:label="@string/mykey_activity_title"
+            android:theme="@style/Theme.Light"/>
+
         <!--
         <activity android:name=".ui.QuickReplyActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
