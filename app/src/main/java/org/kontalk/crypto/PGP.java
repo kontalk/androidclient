@@ -34,6 +34,7 @@ import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.kontalk.util.MessageUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
@@ -229,14 +230,14 @@ public class PGP {
         sGen.init(certification, pgpPrivKey);
 
         return PGPPublicKey.addCertification(keyToBeSigned, attributes,
-                sGen.generateCertification(attributes, keyToBeSigned));
+            sGen.generateCertification(attributes, keyToBeSigned));
     }
 
     public static PGPPublicKey revokeUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
             throws SignatureException, PGPException {
 
         return PGP.signUserAttributes(secret, keyToBeSigned, attributes,
-                PGPSignature.CERTIFICATION_REVOCATION);
+            PGPSignature.CERTIFICATION_REVOCATION);
     }
 
     /** Revokes the given key. */
@@ -356,12 +357,27 @@ public class PGP {
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {
-        return MessageUtils.bytesToHex(publicKey.getFingerprint());
+        return MessageUtils.bytesToHex(publicKey.getFingerprint()).toUpperCase(Locale.US);
     }
 
     public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {
         PGPPublicKey pk = getMasterKey(publicKeyring);
-        return MessageUtils.bytesToHex(pk.getFingerprint());
+        return MessageUtils.bytesToHex(pk.getFingerprint()).toUpperCase(Locale.US);
+    }
+
+    // FIXME very ugly method
+    public static String formatFingerprint(String fingerprint) {
+        StringBuilder fpr = new StringBuilder();
+        int length = fingerprint.length();
+        for (int i = 0; i < length; i += 4) {
+            fpr.append(fingerprint.substring(i, i + 4));
+            if (i < (length - 4)) {
+                fpr.append(' ');
+                if (i == (length / 2 - 4))
+                    fpr.append(' ');
+            }
+        }
+        return fpr.toString();
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */

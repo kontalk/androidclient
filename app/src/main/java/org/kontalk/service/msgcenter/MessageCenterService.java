@@ -903,6 +903,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         else {
                             broadcastPresence(roster, to, id);
                         }
+
+                        // broadcast our own presence
+                        broadcastMyPresence(id);
                     }
                     else {
                         String show = intent.getStringExtra(EXTRA_SHOW);
@@ -964,6 +967,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 sendPacket(p);
                             }
                         }
+
+                        // request our own public key (odd eh?)
+                        PublicKeyPublish p = new PublicKeyPublish();
+                        p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                        p.setTo(XmppStringUtils.parseBareJid(mConnection.getUser()));
+                        sendPacket(p);
                     }
                 }
             }
@@ -1289,6 +1298,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Sends our initial presence. */
     private void sendPresence() {
+        sendPacket(createPresence());
+    }
+
+    private Presence createPresence() {
         String status = Preferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
@@ -1297,7 +1310,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // TODO find a place for this
         p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
 
-        sendPacket(p);
+        return p;
     }
 
     /**
@@ -1531,6 +1544,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // to keep track of request-reply
         i.putExtra(EXTRA_PACKET_ID, id);
         mLocalBroadcastManager.sendBroadcast(i);
+    }
+
+    /** A special method to broadcast our own presence. */
+    private void broadcastMyPresence(String id) {
+        Presence presence = createPresence();
+        presence.setFrom(mConnection.getUser());
+
+        Intent i = PresenceListener.createIntent(this, presence);
+        i.putExtra(EXTRA_FINGERPRINT, getMyFingerprint());
+        i.putExtra(EXTRA_SUBSCRIBED_FROM, true);
+        i.putExtra(EXTRA_SUBSCRIBED_TO, true);
+
+        // to keep track of request-reply
+        i.putExtra(EXTRA_PACKET_ID, id);
+        mLocalBroadcastManager.sendBroadcast(i);
+    }
+
+    private String getMyFingerprint() {
+        try {
+            PersonalKey key = Kontalk.get(this).getPersonalKey();
+            return key.getFingerprint();
+        }
+        catch (Exception e) {
+            // something bad happened
+            Log.w(TAG, "unable to load personal key");
+            return null;
+        }
     }
 
     private void sendSubscriptionReply(String to, String packetId, int action) {
