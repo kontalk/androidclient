@@ -29,6 +29,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -41,6 +42,7 @@ import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -116,7 +118,8 @@ public class MyKeyActivity extends ActionBarActivity {
         QRCodeWriter writer = new QRCodeWriter();
         Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.MARGIN, 2);
-        BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, 600, 600, hints);
+        Point size = SystemUtils.getDisplaySize(this);
+        BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, size.x, size.x, hints);
         return toBitmap(matrix);
     }
 
