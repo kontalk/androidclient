@@ -148,10 +148,6 @@ public class Syncer {
                                 break;
                             }
                         }
-
-                        // done with presence data and blocklist
-                        if (pubkeyCount == presenceCount && blocklistReceived)
-                            finish();
                     }
                 }
             }

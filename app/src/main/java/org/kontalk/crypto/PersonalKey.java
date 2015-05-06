@@ -126,8 +126,7 @@ public class PersonalKey implements Parcelable {
     }
 
     public String getFingerprint() {
-        return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint())
-            .toUpperCase(Locale.US);
+        return PGP.getFingerprint(mPair.signKey.getPublicKey());
     }
 
     public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {

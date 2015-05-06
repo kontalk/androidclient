@@ -34,6 +34,7 @@ import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.kontalk.util.MessageUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
@@ -356,12 +357,12 @@ public class PGP {
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {
-        return MessageUtils.bytesToHex(publicKey.getFingerprint());
+        return MessageUtils.bytesToHex(publicKey.getFingerprint()).toUpperCase(Locale.US);
     }
 
     public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {
         PGPPublicKey pk = getMasterKey(publicKeyring);
-        return MessageUtils.bytesToHex(pk.getFingerprint());
+        return MessageUtils.bytesToHex(pk.getFingerprint()).toUpperCase(Locale.US);
     }
 
     // FIXME very ugly method
