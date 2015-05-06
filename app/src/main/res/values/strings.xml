@@ -308,8 +308,8 @@
 
     <string name="invite_notification">is inviting you to chat</string>
     <string name="title_invitation">Chat invitation</string>
-    <string name="text_invitation_known">Request by\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %4$s</string>
-    <string name="text_invitation_unknown">Request by\n%1$s\nFingerprint: %2$s</string>
+    <string name="text_invitation1">Request by:</string>
+    <string name="text_invitation2">Fingerprint:</string>
     <string name="button_accept">Accept</string>
     <string name="button_block">Block</string>
     <string name="button_identity">Identity</string>
