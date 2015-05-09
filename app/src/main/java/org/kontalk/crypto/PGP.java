@@ -44,6 +44,7 @@ import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPKeyFlags;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPKeyRingGenerator;
 import org.spongycastle.openpgp.PGPObjectFactory;
@@ -54,6 +55,7 @@ import org.spongycastle.openpgp.PGPSecretKey;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
+import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.spongycastle.openpgp.PGPUserAttributeSubpacketVector;
 import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
@@ -178,14 +180,24 @@ public class PGP {
             String passphrase)
                 throws PGPException {
 
+        PGPSignatureSubpacketGenerator sbpktGen;
+
+        // some hashed subpackets for the key
+        sbpktGen = new PGPSignatureSubpacketGenerator();
+        sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_SIGN | PGPKeyFlags.CAN_CERTIFY);
+
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.signKey,
-            id, sha1Calc, null, null,
+            id, sha1Calc, sbpktGen.generate(), null,
             new JcaPGPContentSignerBuilder(pair.signKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
             new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
                 .setProvider(PROVIDER).build(passphrase.toCharArray()));
 
-        keyRingGen.addSubKey(pair.encryptKey);
+        // some hashed subpackets for the subkey
+        sbpktGen = new PGPSignatureSubpacketGenerator();
+        sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_ENCRYPT_COMMS);
+
+        keyRingGen.addSubKey(pair.encryptKey, sbpktGen.generate(), null);
 
         PGPSecretKeyRing secRing = keyRingGen.generateSecretKeyRing();
         PGPPublicKeyRing pubRing = keyRingGen.generatePublicKeyRing();
