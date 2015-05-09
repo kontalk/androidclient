@@ -182,6 +182,7 @@ public final class MessageUtils {
         return buf.toString();
     }
 
+    /** TODO move somewhere else */
     public static String sha1(String text) {
         try {
             MessageDigest md;

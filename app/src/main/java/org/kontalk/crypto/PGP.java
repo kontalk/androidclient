@@ -35,6 +35,8 @@ import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.kontalk.util.MessageUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
@@ -88,6 +90,9 @@ public class PGP {
 
     /** Singleton for converting a PGP key to a JCA key. */
     private static JcaPGPKeyConverter sKeyConverter;
+
+    private static final Pattern PATTERN_UID_FULL = Pattern.compile("^(.*) \\((.*)\\) <(.*)>$");
+    private static final Pattern PATTERN_UID_NO_COMMENT = Pattern.compile("^(.*) <(.*)>$");
 
     private PGP() {
     }
@@ -502,5 +507,35 @@ public class PGP {
         return PGPSecretKeyRing.copyWithNewPassword(secRing, decryptor, encryptor);
     }
 
+    public static PGPUserID parseUserID(PGPPublicKey key) {
+        return parseUserID((String) key.getUserIDs().next());
+    }
+
+    public static PGPUserID parseUserID(String uid) {
+        Matcher match;
+
+        match = PATTERN_UID_FULL.matcher(uid);
+        while (match.find()) {
+            if (match.groupCount() >= 3) {
+                String name = match.group(1);
+                String comment = match.group(2);
+                String email = match.group(3);
+                return new PGPUserID(name, comment, email);
+            }
+        }
+
+        // try again without comment
+        match = PATTERN_UID_NO_COMMENT.matcher(uid);
+        while (match.find()) {
+            if (match.groupCount() >= 2) {
+                String name = match.group(1);
+                String email = match.group(2);
+                return new PGPUserID(name, null, email);
+            }
+        }
+
+        // no match found
+        return null;
+    }
 
 }

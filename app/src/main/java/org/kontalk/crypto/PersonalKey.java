@@ -228,7 +228,8 @@ public class PersonalKey implements Parcelable {
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         // X.509 bridge certificate
-        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+        X509Certificate bridgeCert = (bridgeCertData != null) ?
+            X509Bridge.load(bridgeCertData) : null;
 
         return test(secRing, pubRing, passphrase, bridgeCert);
     }
