@@ -31,6 +31,7 @@ import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
@@ -44,6 +45,7 @@ import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
+import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
@@ -152,6 +154,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
+    public static final String ACTION_PING = "org.kontalk.action.PING";
 
     /** Request the roster. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
@@ -299,6 +302,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** How much time to wait to idle the message center (default 5 mins). */
     private final static int DEFAULT_IDLE_TIME = 5*60*1000;
 
+    /** Normal ping tester timeout. */
+    private static final int SLOW_PING_TIMEOUT = 10000;
     /** Fast ping tester timeout. */
     private static final int FAST_PING_TIMEOUT = 3000;
     /** Minimal interval between connection tests (5 mins). */
@@ -319,6 +324,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // created in onCreate
     private WakeLock mWakeLock;
+    private WakeLock mPingLock;
     LocalBroadcastManager mLocalBroadcastManager;
     private AlarmManager mAlarmManager;
 
@@ -573,6 +579,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
         mWakeLock.setReferenceCounted(false);
+        mPingLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG + "-Ping");
+        mPingLock.setReferenceCounted(false);
 
         mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         // cancel any pending alarm intent
@@ -662,7 +670,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // destroy references
         mAlarmManager = null;
         mLocalBroadcastManager = null;
-        mWakeLock = null;
+        // also release wakelocks just to be sure
+        if (mWakeLock != null) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
+        if (mPingLock != null) {
+            mPingLock.release();
+            mPingLock = null;
+        }
     }
 
     public boolean isStarted() {
@@ -842,6 +858,39 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         mLastTest = SystemClock.elapsedRealtime();
                         mIdleHandler.test();
                     }
+                }
+                else {
+                    doConnect = canConnect;
+                }
+            }
+
+            else if (ACTION_PING.equals(action)) {
+                if (isConnected()) {
+                    // acquire a wake lock
+                    mPingLock.acquire();
+                    final XMPPConnection connection = mConnection;
+                    final PingManager pingManager = PingManager.getInstanceFor(connection);
+                    Async.go(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (pingManager.pingMyServer(true, SLOW_PING_TIMEOUT)) {
+                                    AdaptiveServerPingManager.pingSuccess(connection);
+                                }
+                                else {
+                                    AdaptiveServerPingManager.pingFailed(connection);
+                                }
+                            }
+                            catch (SmackException.NotConnectedException e) {
+                                // ignored
+                            }
+                            finally {
+                                // release the wake lock
+                                if (mPingLock != null)
+                                    mPingLock.release();
+                            }
+                        }
+                    }, "PingServerIfNecessary (" + mConnection.getConnectionCounter() + ')');
                 }
                 else {
                     doConnect = canConnect;
@@ -1160,8 +1209,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
         };
-        PingManager.getInstanceFor(connection)
-            .registerPingFailedListener(mPingFailedListener);
+        PingManager pingManager = PingManager.getInstanceFor(connection);
+        pingManager.registerPingFailedListener(mPingFailedListener);
+        pingManager.setPingInterval(0);
 
         StanzaFilter filter;
 
@@ -2080,6 +2130,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "testing message center connection");
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_TEST);
+        context.startService(i);
+    }
+
+    public static void ping(Context context) {
+        Log.d(TAG, "ping message center connection");
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_PING);
         context.startService(i);
     }
 

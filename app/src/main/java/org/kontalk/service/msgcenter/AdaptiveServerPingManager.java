@@ -26,11 +26,8 @@ import java.util.logging.Logger;
 
 import org.jivesoftware.smack.ConnectionCreationListener;
 import org.jivesoftware.smack.Manager;
-import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPConnectionRegistry;
-import org.jivesoftware.smack.util.Async;
-import org.jivesoftware.smackx.ping.PingManager;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -45,7 +42,9 @@ import org.kontalk.util.SystemUtils;
 
 
 /**
- * An adaptive ping manager using {@link AlarmManager}.
+ * An adaptive ping manager using {@link AlarmManager}.<br>
+ * FIXME this class still uses the Manager approach, but doesn't seem to fit in
+ * any more.
  * @author Daniele Ricci
  */
 public class AdaptiveServerPingManager extends Manager {
@@ -99,38 +98,9 @@ public class AdaptiveServerPingManager extends Manager {
                 while (it.hasNext()) {
                     final XMPPConnection connection = it.next();
                     if (getInstanceFor(connection).isEnabled()) {
-                        LOGGER.fine("Calling pingServerIfNecessary for connection "
-                            + connection.getConnectionCounter());
-                        final PingManager pingManager = PingManager.getInstanceFor(connection);
-                        pingManager.setPingInterval(0);
-                        // Android BroadcastReceivers have a timeout of 60 seconds.
-                        // The connections reply timeout may be higher, which causes
-                        // timeouts of the broadcast receiver and a subsequent ANR
-                        // of the App of the broadcast receiver. We therefore need
-                        // to call pingServerIfNecessary() in a new thread to avoid
-                        // this. It could happen that the device gets back to sleep
-                        // until the Thread runs, but that's a risk we are willing
-                        // to take into account as it's unlikely.
-                        Async.go(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    if (pingManager.pingMyServer(true)) {
-                                        pingSuccess(connection);
-                                    }
-                                    else {
-                                        pingFailed(connection);
-                                    }
-                                }
-                                catch (SmackException.NotConnectedException e) {
-                                    // ignored
-                                }
-                            }
-                        }, "PingServerIfNecessary (" + connection.getConnectionCounter() + ')');
-                    }
-                    else {
-                        LOGGER.fine("NOT calling pingServerIfNecessary (disabled) on connection "
-                            + connection.getConnectionCounter());
+                        MessageCenterService.ping(context);
+                        // just ping once
+                        break;
                     }
                 }
             }
