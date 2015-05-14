@@ -259,6 +259,9 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TO, p.getTo());
 
         sendBroadcast(i);
+
+        // send any pending messages now
+        resendPending(false);
     }
 
     private void handlePresence(Presence p) {

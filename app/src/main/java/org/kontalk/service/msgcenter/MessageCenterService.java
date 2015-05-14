@@ -1472,7 +1472,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
-    private void resendPendingReceipts() {
+    void resendPendingReceipts() {
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,

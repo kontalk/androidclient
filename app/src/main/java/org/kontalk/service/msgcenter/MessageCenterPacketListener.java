@@ -135,6 +135,14 @@ abstract class MessageCenterPacketListener implements PacketListener {
             instance.resendPendingMessages(retrying);
     }
 
+    protected void resendPending(boolean retrying) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null) {
+            instance.resendPendingMessages(retrying);
+            instance.resendPendingReceipts();
+        }
+    }
+
     protected boolean isPushNotificationsEnabled() {
         MessageCenterService instance = mInstance.get();
         return instance != null && instance.mPushNotifications;
