@@ -928,7 +928,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_ROSTER_LOADED.equals(action)) {
                 if (isConnected) {
-                    if (getRoster().isLoaded()) {
+                    if (isRosterLoaded()) {
                         broadcast(ACTION_ROSTER_LOADED);
                     }
                 }
@@ -1546,6 +1546,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return (mConnection != null) ? Roster.getInstanceFor(mConnection) : null;
     }
 
+    private boolean isRosterLoaded() {
+        Roster roster = getRoster();
+        return roster != null && roster.isLoaded();
+    }
+
     RosterEntry getRosterEntry(String jid) {
         Roster roster = getRoster();
         return (roster != null) ? roster.getEntry(jid) : null;
@@ -1734,6 +1739,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendMessage(Bundle data) {
+        if (!isRosterLoaded()) {
+            Log.d(TAG, "roster not loaded yet, not sending message");
+            return;
+        }
+
         boolean retrying = data.getBoolean("org.kontalk.message.retrying");
         String to = data.getString("org.kontalk.message.to");
 
