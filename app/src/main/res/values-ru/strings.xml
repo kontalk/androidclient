@@ -269,8 +269,6 @@
   <string name="security_error_public_key_unavail">\u0020(публичный ключ недоступен)</string>
   <string name="invite_notification">приглашает Вас в чат</string>
   <string name="title_invitation">Приглашение в чат</string>
-  <string name="text_invitation_known">Запрос от\n%1$s &lt;%2$s&gt;\n(%3$s)\nОтпечаток: %4$s</string>
-  <string name="text_invitation_unknown">Запрос от\n%1$s\nОтпечаток: %2$s</string>
   <string name="button_accept">Принять</string>
   <string name="button_block">Блокировать</string>
   <string name="button_identity">Идентификация</string>

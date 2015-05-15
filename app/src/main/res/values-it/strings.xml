@@ -12,6 +12,7 @@
   <string name="menu_compose">Nuovo messaggio</string>
   <string name="menu_delete_all">Elimina conversazioni</string>
   <string name="menu_search">Cerca</string>
+  <string name="mykey_activity_title">Chiave personale</string>
   <string name="menu_settings">Impostazioni</string>
   <string name="menu_offline">Vai offline</string>
   <string name="menu_online">Vai online</string>
@@ -271,8 +272,8 @@
   <string name="security_error_public_key_unavail">\u0020(chiave pubblica non disponibile)</string>
   <string name="invite_notification">ti invita a chattare</string>
   <string name="title_invitation">Invito in chat</string>
-  <string name="text_invitation_known">Richiesta da\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %4$s</string>
-  <string name="text_invitation_unknown">Richiesta da\n%1$s\nFingerprint: %2$s</string>
+  <string name="text_invitation1">Richiesta da:</string>
+  <string name="text_invitation2">Fingerprint:</string>
   <string name="button_accept">Accetta</string>
   <string name="button_block">Blocca</string>
   <string name="button_identity">Identità</string>
@@ -286,6 +287,7 @@
   <string name="warn_no_personal_key">Impossibile caricare la chiave personale. Disabilita la cifratura dalle impostazioni per inviare comunque il messaggio.</string>
   <string name="warn_no_public_key">Impossibile trovare una chiave pubblica per questo utente. Prova ad aggiornare la lista contatti o disabilita la cifratura dalle impostazioni per inviare comunque il messaggio.</string>
   <string name="warn_encryption_failed">Impossibile cifrare il messaggio. Disabilita la cifratura dalle impostazioni per inviare comunque il messaggio.</string>
+  <string name="warn_not_subscribed">Impossibile inviare il messaggio. L\'utente non ha ancora accettato il tuo invito.</string>
   <string name="pref_sync_sim_contacts">Leggi contatti su SIM</string>
   <string name="pref_title_off_sync_sim_contacts">Non includere i contatti dalla SIM durante il controllo degli utenti registrati</string>
   <string name="pref_title_on_sync_sim_contacts">I contatti dalla SIM saranno inclusi nel controllo degli utenti registrati</string>
