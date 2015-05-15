@@ -12,6 +12,7 @@
   <string name="menu_compose">Napsat</string>
   <string name="menu_delete_all">Smazat konverzace</string>
   <string name="menu_search">Hledat</string>
+  <string name="mykey_activity_title">Můj osobní klíč</string>
   <string name="menu_settings">Nastavení</string>
   <string name="menu_offline">Přejít do režimu Offline</string>
   <string name="menu_online">Přejít do režimu Online</string>
@@ -271,8 +272,8 @@
   <string name="security_error_public_key_unavail">\u0020(veřejný klíč nedostupný)</string>
   <string name="invite_notification">vás zve na chat</string>
   <string name="title_invitation">Pozvánka ke konverzaci</string>
-  <string name="text_invitation_known">Požadavek od\n%1$s &lt;%2$s&gt;\n(%3$s)\nOtisk: %4$s</string>
-  <string name="text_invitation_unknown">Požadavek od\n%1$s\nOtisk: %2$s</string>
+  <string name="text_invitation1">Požadavek od:</string>
+  <string name="text_invitation2">Otisk:</string>
   <string name="button_accept">Přijmout</string>
   <string name="button_block">Blokovat</string>
   <string name="button_identity">Identita</string>
@@ -286,6 +287,7 @@
   <string name="warn_no_personal_key">Nepodařilo se načíst osobní klíč. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
   <string name="warn_no_public_key">Nepodařilo se najít veřejný klíč pro tohoto uživatele. Zkuste aktualizovat váš seznam kontaktů nebo vypněte šifrování v nastavení.</string>
   <string name="warn_encryption_failed">Nepodařilo se zašifrovat zprávu. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
+  <string name="warn_not_subscribed">Zprávu se nepodařilo odeslat. Uživatel dosud neakceptoval vaši pozvánku.</string>
   <string name="pref_sync_sim_contacts">Synchronizovat SIM kontakty</string>
   <string name="pref_title_off_sync_sim_contacts">Při zjišťování registrovaných uživatelů se nepoužijí kontakty na kartě SIM</string>
   <string name="pref_title_on_sync_sim_contacts">Při zjišťování registrovaných uživatelů se použijí i kontakty na kartě SIM</string>

@@ -29,6 +29,7 @@
     <string name="menu_compose">Compose</string>
     <string name="menu_delete_all">Delete threads</string>
     <string name="menu_search">Search</string>
+    <string name="mykey_activity_title">My personal key</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_offline">Go offline</string>
     <string name="menu_online">Go online</string>
@@ -307,8 +308,8 @@
 
     <string name="invite_notification">is inviting you to chat</string>
     <string name="title_invitation">Chat invitation</string>
-    <string name="text_invitation_known">Request by\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %4$s</string>
-    <string name="text_invitation_unknown">Request by\n%1$s\nFingerprint: %2$s</string>
+    <string name="text_invitation1">Request by:</string>
+    <string name="text_invitation2">Fingerprint:</string>
     <string name="button_accept">Accept</string>
     <string name="button_block">Block</string>
     <string name="button_identity">Identity</string>
@@ -326,6 +327,7 @@
     <string name="warn_no_personal_key">Unable to load personal key. Disable encryption from settings to send message anyway.</string>
     <string name="warn_no_public_key">Unable to find a public key for this user. Try refreshing your contact list or disable encryption from settings to send message anyway.</string>
     <string name="warn_encryption_failed">Unable to encrypt message. Disable encryption from settings to send message anyway.</string>
+    <string name="warn_not_subscribed">Unable to send message. User has not accepted your invitation yet.</string>
 
     <string name="pref_sync_sim_contacts">Sync from SIM contacts</string>
     <string name="pref_title_off_sync_sim_contacts">Do not include SIM contacts when checking for registered users</string>

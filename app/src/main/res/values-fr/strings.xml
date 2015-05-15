@@ -15,11 +15,15 @@
   <string name="menu_settings">Paramètres</string>
   <string name="menu_offline">Hors-ligne</string>
   <string name="menu_online">En ligne</string>
+  <string name="menu_import_key">Clé de l\'importation</string>
   <string name="pref_network_settings">Paramètres réseaux</string>
   <string name="pref_network_uri">Éditer l\'adresse du serveur </string>
   <string name="pref_title_network_uri">Ceci annulera la gestion automatique des serveurs</string>
   <string name="number_validation_intro1">Veuillez entrer votre nom, sélectionner votre code de pays et entrez votre numéro de téléphone portable. Un SMS avec un code de vérification vous sera envoyé. Votre numéro de téléphone ne sera utilisé qu\'une seule fois et sera ensuite ignoré.</string>
   <string name="number_validation_intro2">Si vous ne pouvez pas recevoir des SMS sur cet appareil, entrez un numéro de téléphone que vous possédez et entrez le code de vérification reçus par SMS.</string>
+  <string name="code_validation_intro">Vous devriez recevoir un SMS ou un appel de ce numéro brièvement:</string>
+  <string name="code_validation_intro2">S\'il vous plaît insérez le code que vous recevez ou entendez ci-dessous.</string>
+  <string name="code_validation_intro_manual">S\'il vous plaît insérez le code de vérification que vous avez reçu. S\'il vous plaît noter que le code de vérification ne peut être utilisé qu\'une seule fois.</string>
   <string name="hint_validation_name">Votre nom</string>
   <string name="hint_validation_number">Votre numéro</string>
   <string name="hint_validation_code">Code de vérification</string>
@@ -54,6 +58,7 @@
   <string name="message_type_label">Ecrire:\u0020</string>
   <string name="text_message">Message</string>
   <string name="image_message">Photo</string>
+  <string name="audio_message">Message audio</string>
   <string name="from_label">Depuis:\u0020</string>
   <string name="to_address_label">A:\u0020</string>
   <string name="sent_label">Envoyé:\u0020</string>
@@ -77,6 +82,7 @@
   <string name="pref_maintenance">Maintenance</string>
   <string name="pref_regenerate_keypair">Régénérer la clé personnelle</string>
   <string name="pref_title_regenerate_keypair">Utilisez ceci si votre clé personnelle a été compromis</string>
+  <string name="pref_regenerate_keypair_confirm">Une nouvelle clé de jointure sera généré et assigné à votre compte. Votre ancienne clé ne sera plus valable.</string>
   <string name="contacts_list_title">Choisissez un contact</string>
   <string name="pref_messaging_settings">Paramètres des discussions</string>
   <string name="pref_privacy_settings">Paramètres de confidentialité</string>
@@ -178,6 +184,7 @@
   <string name="seen_moment_ago_label">il y a un instant</string>
   <string name="seen_online_label">en ligne</string>
   <string name="seen_typing_label">écrit...</string>
+  <string name="invitation_sent_label">invitation en attente</string>
   <string name="pref_custom_background">Fond d\'écran personnalisé</string>
   <string name="pref_background_uri">Fond d\'écran</string>
   <string name="pref_title_background_uri">Utiliser un fond d\'écran personnalisé pour les conversations</string>
@@ -187,10 +194,13 @@
   <string name="serverlist_updating">Mise a jour de la liste listes des tracteurs...</string>
   <string name="serverlist_update_error">Impossible de télécharger la liste de serveurs. Veuillez réessayer plus tard.</string>
   <string name="serverlist_update_nodata">Aucune liste des serveurs trouvé.</string>
+  <string name="serverlist_update_nonetwork">Réseau non disponible. Veuillez essayer ultérieurement.</string>
+  <string name="serverlist_update_offline">Mode hors ligne est activé.</string>
   <string name="pref_remove_prefix">Préfixe du numéro</string>
   <string name="pref_title_remove_prefix">Enlevez le préfixe du numéro dans Kontalk pour faire correspondre les numéros de téléphone correctement</string>
   <string name="pref_export_keypair">Exporter la clé personnelle</string>
   <string name="pref_title_export_keypair">Exporter la clé personnelle et le certificat d\'identification sur un stockage externe</string>
+  <string name="pref_import_keypair">Importer clé personnelle</string>
   <string name="msg_status_sending">Envoi</string>
   <string name="msg_status_sent">Envoyé</string>
   <string name="msg_status_notaccepted">Refusé</string>
@@ -257,4 +267,5 @@
   <string name="bitcoin_clipboard_copied">Adresse Bitcoin copiée dans le presse-papiers.</string>
   <string name="warn_no_personal_key">Impossible de chargé clé personnelle. Désactivez le chifrement dans le menu Paramètres pour quand même envoyer le message. FIXME RÉPAREZMOI Est-ce que c\'est du français correcte?</string>
   <string name="msg_user_blocked">L\'utilisateur est bloqué.</string>
+  <string name="pref_image_resize">Redimensionner les images</string>
 </resources>

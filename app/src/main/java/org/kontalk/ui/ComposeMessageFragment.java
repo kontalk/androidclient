@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -72,6 +71,8 @@ import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.Html;
 import android.text.InputType;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -471,14 +472,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
             msgId = MessageCenterService.messageId();
 
-			// generate thumbnail
-			// FIXME this is blocking!!!!
-			if (media && klass == ImageComponent.class) {
-				// FIXME hard-coded to ImageComponent
-				String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
-				previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
-						filename, true);
-			}
+            // generate thumbnail
+            // FIXME this is blocking!!!!
+            if (media && klass == ImageComponent.class) {
+                // FIXME hard-coded to ImageComponent
+                String filename = ImageComponent.buildMediaFilename(msgId, MediaStorage.THUMBNAIL_MIME_NETWORK);
+                previewFile = MediaStorage.cacheThumbnail(getActivity(), uri,
+                        filename, true);
+            }
 
             length = MediaStorage.getLength(getActivity(), uri);
 
@@ -837,18 +838,18 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-	/** Starts dialog for attachment selection. */
-	public void selectAttachment() {
-	    if (attachmentMenu == null) {
-	        attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
-	        attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
+    /** Starts dialog for attachment selection. */
+    public void selectAttachment() {
+        if (attachmentMenu == null) {
+            attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
+            attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
+            attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
             if (AudioDialog.isSupported(getActivity()))
-	            attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
-	        attachmentMenu.setOnClickListener(this);
-	    }
-	    attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
-	}
+                attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
+            attachmentMenu.setOnClickListener(this);
+        }
+        attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
+    }
 
     /** Starts activity for an image attachment. */
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -898,7 +899,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void selectContactAttachment() {
         Intent i = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
         startActivityForResult(i, SELECT_ATTACHMENT_CONTACT);
-	}
+    }
 
     private void selectAudioAttachment() {
         // create audio fragment if needed
@@ -1853,7 +1854,7 @@ public class ComposeMessageFragment extends ListFragment implements
         PGPPublicKeyRing publicKey = UsersProvider.getPublicKey(getActivity(), mUserJID, false);
         if (publicKey != null) {
             PGPPublicKey pk = PGP.getMasterKey(publicKey);
-            fingerprint = PGP.getFingerprint(pk).toUpperCase(Locale.US);
+            fingerprint = PGP.formatFingerprint(PGP.getFingerprint(pk));
             uid = PGP.getUserId(pk, null);    // TODO server!!!
         }
         else {
@@ -1861,28 +1862,36 @@ public class ComposeMessageFragment extends ListFragment implements
             fingerprint = uid = getString(R.string.peer_unknown);
         }
 
-        String text;
+        SpannableStringBuilder text = new SpannableStringBuilder();
+        text.append(getString(R.string.text_invitation1))
+            .append('\n');
 
         Contact c = mConversation.getContact();
-        if (c != null)
-            text = getString(R.string.text_invitation_known,
-                c.getName(),
-                c.getNumber(),
-                uid, fingerprint);
-        else
-            text = getString(R.string.text_invitation_unknown,
-                uid, fingerprint);
+        if (c != null) {
+            text.append(c.getName())
+                .append(" <")
+                .append(c.getNumber())
+                .append('>');
+        }
+        else {
+            int start = text.length() - 1;
+            text.append(uid);
+            text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
 
-        /*
-         * TODO include an "Open" button on the dialog to ignore the request
-         * and go on with the compose window.
-         */
+        text.append('\n')
+            .append(getString(R.string.text_invitation2))
+            .append('\n');
+
+        int start = text.length() - 1;
+        text.append(fingerprint);
+        text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
         new AlertDialog.Builder(getActivity())
             .setPositiveButton(android.R.string.ok, null)
             .setTitle(R.string.title_invitation)
             .setMessage(text)
             .show();
-
     }
 
     private void hideWarning() {

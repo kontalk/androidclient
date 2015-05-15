@@ -201,6 +201,10 @@ public class ConversationListFragment extends ListFragment {
                 deleteAll();
                 return true;
 
+            case R.id.menu_mykey:
+                launchMyKey();
+                return true;
+
             case R.id.menu_donate:
                 launchDonate();
                 return true;
@@ -273,6 +277,11 @@ public class ConversationListFragment extends ListFragment {
     private void launchDonate() {
         Intent i = new Intent(getActivity(), AboutActivity.class);
         i.setAction(AboutActivity.ACTION_DONATION);
+        startActivity(i);
+    }
+
+    private void launchMyKey() {
+        Intent i = new Intent(getActivity(), MyKeyActivity.class);
         startActivity(i);
     }
 

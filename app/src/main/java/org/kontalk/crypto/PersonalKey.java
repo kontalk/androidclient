@@ -126,8 +126,7 @@ public class PersonalKey implements Parcelable {
     }
 
     public String getFingerprint() {
-        return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint())
-            .toUpperCase(Locale.US);
+        return PGP.getFingerprint(mPair.signKey.getPublicKey());
     }
 
     public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {
@@ -229,7 +228,8 @@ public class PersonalKey implements Parcelable {
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         // X.509 bridge certificate
-        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+        X509Certificate bridgeCert = (bridgeCertData != null) ?
+            X509Bridge.load(bridgeCertData) : null;
 
         return test(secRing, pubRing, passphrase, bridgeCert);
     }

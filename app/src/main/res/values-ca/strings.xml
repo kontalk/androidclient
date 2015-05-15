@@ -15,6 +15,7 @@
   <string name="menu_settings">Configuració</string>
   <string name="menu_offline">Activa el mode fora de línia</string>
   <string name="menu_online">Activa el mode en línia</string>
+  <string name="menu_import_key">Importa la clau</string>
   <string name="pref_network_settings">Parámetres de la xarxa</string>
   <string name="pref_network_uri">Adreça del servidor (manual)</string>
   <string name="pref_title_network_uri">Això desactivarà la gestió automàtica de la llista de servidors</string>
@@ -222,6 +223,7 @@
   <string name="attachment_audio">Àudio</string>
   <string name="chooser_send_picture">Envia imatge</string>
   <string name="chooser_error_no_camera">No hi ha emmatzemament extern disponible. No es podran fer fotos amb la càmera.</string>
+  <string name="chooser_select_link">Tria una acció</string>
   <string name="status_activity_title">Missatge d\'estat</string>
   <string name="hint_status_entry">Escriviu el missatge d\'estat ací</string>
   <string name="header_recent_status">Missatges d\'estat usats recentment</string>
@@ -269,13 +271,12 @@
   <string name="security_error_public_key_unavail">\u0020(la clau pública no està disponible)</string>
   <string name="invite_notification">us convida a un xat</string>
   <string name="title_invitation">Invitació a un xat</string>
-  <string name="text_invitation_known">Sol·licitud de\n%1$s &lt;%2$s&gt;\n(%3$s)\nEmpremta: %4$s</string>
-  <string name="text_invitation_unknown">Sol·licitud de\n%1$s\nEmpremta: %2$s</string>
   <string name="button_accept">Accepta</string>
   <string name="button_block">Bloca</string>
   <string name="button_identity">Identitat</string>
   <string name="msg_connecting_iab">S\'està connectant amb Google Play...</string>
   <string name="msg_iab_thankyou">Gràcies!</string>
+  <string name="msg_iab_thankyou_warning">Encara que alguna cosa no ha funcionat bé, la donació s\'ha dut a terme. Gràcies!</string>
   <string name="iab_error_setup">S\'ha produït un error durant la configuració del pagament (%d)</string>
   <string name="iab_error_query">La consulta a la llista de pagaments ha fallat (%d)</string>
   <string name="copy_clipboard">Copia al porta-retalls</string>
@@ -283,9 +284,12 @@
   <string name="warn_no_personal_key">No ha estat possible carregar la clau personal. Desactiveu l\'encriptació si voleu enviar el missatge de tota manera.</string>
   <string name="warn_no_public_key">No ha estat possible trobar cap clau pública d\'aquest usuari. Proveu a refrescar la llista de contactes o desactiveu l\'encriptació a les preferències si voleu enviar el missatge de tota manera.</string>
   <string name="warn_encryption_failed">No ha estat possible encriptar el missatge. Desactiveu l\'encriptació si voleu enviar el missatge de tota manera.</string>
+  <string name="warn_not_subscribed">No ha estat possible enviar el missatge. L\'usuari no ha acceptat la invitació encara.</string>
   <string name="pref_sync_sim_contacts">Sincronitza amb els contactes de la SIM</string>
   <string name="pref_title_off_sync_sim_contacts">Exclou els contactes de la SIM en la recerca d\'usuaris registrats</string>
   <string name="pref_title_on_sync_sim_contacts">Els contactes de la SIM s\'inclouen en la recerca d\'usuaris registrats</string>
+  <string name="pref_sync_invisible_contacts">Inclou els contactes no visibles</string>
+  <string name="pref_title_on_sync_invisible_contacts">Els contactes que no es mostren en l\'app Contacts seran inclosos a Kontalk</string>
   <string name="pref_accept_any_certificate">Accepta qualsevol certificat SSL</string>
   <string name="pref_delete_account">Esborra el compte</string>
   <string name="msg_delete_account">Esborrar el vostre compte suposa també que se\'n suprimeixin els vostres missatges. El vostre compte serà eliminat del servidor automàticament d\'ací a unes setmanes.</string>
