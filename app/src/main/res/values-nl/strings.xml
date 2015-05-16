@@ -1,17 +1,18 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
-  <string name="app_description">Het vrije &amp; open-source chatprogramma gemaakt door vrijwilligers</string>
+  <string name="app_description">Instant messaging-netwerk gedreven door vrijwilligers</string>
   <string name="service_name">Berichtencentrum</string>
-  <string name="authenticator_name">Authenticatieservice</string>
+  <string name="authenticator_name">Authenticatiedienst</string>
   <string name="sync_service_name">Contacten synchroniseren</string>
-  <string name="download_service">Downloadservice</string>
+  <string name="download_service">Downloaddienst</string>
   <string name="yes">Ja</string>
   <string name="no">Nee</string>
   <string name="send">Verzenden</string>
   <string name="menu_compose">Nieuw bericht</string>
   <string name="menu_delete_all">Gesprekken verwijderen</string>
   <string name="menu_search">Zoeken</string>
+  <string name="mykey_activity_title">Mijn persoonlijke sleutel</string>
   <string name="menu_settings">Instellingen</string>
   <string name="menu_offline">Offline gaan</string>
   <string name="menu_online">Online gaan</string>
@@ -29,7 +30,7 @@
   <string name="hint_validation_code">Verificatiecode</string>
   <string name="warn_invalid_number">Voer een geldig telefoonnummer in.</string>
   <string name="msg_validating_phone">Bezig met aanvragen van SMS met verificatiecode…</string>
-  <string name="msg_initializing">Bezig met registreren bij het Kontalk-netwerk...</string>
+  <string name="msg_initializing">Bezig met registreren bij het Kontalk-netwerk…</string>
   <string name="msg_authenticated">Je bent aangemeld bij het netwerk!</string>
   <string name="share">Delen</string>
   <string name="resend">Opnieuw verzenden</string>
@@ -37,7 +38,7 @@
   <string name="delete_message">Berichttekst verwijderen</string>
   <string name="confirm_delete_all">Alle gesprekken verwijderen</string>
   <string name="confirm_will_delete_all">Alle gesprekken zullen verwijderd worden.</string>
-  <string name="sending_message">Bezig met bericht sturen...</string>
+  <string name="sending_message">Bezig met bericht sturen…</string>
   <string name="message_text_copied">Tekst gekopieerd.</string>
   <string name="call">Bellen</string>
   <string name="view_contact">Contact weergeven</string>
@@ -65,7 +66,7 @@
   <string name="received_label">Ontvangen:\u0020</string>
   <string name="error_label">Fout:\u0020</string>
   <string name="sending_label">Bezig met verzenden:\u0020</string>
-  <string name="refused_label">Niet geaccepteerd:\u0020</string>
+  <string name="refused_label">Niet aanvaard:\u0020</string>
   <string name="notdelivered_label">Niet afgeleverd:\u0020</string>
   <string name="delivered_label">Afgeleverd:\u0020</string>
   <string name="encrypted_label">Versleuteld:\u0020</string>
@@ -92,8 +93,8 @@
   <string name="pref_encrypt_userdata">Persoonlijke data versleutelen</string>
   <string name="pref_title_on_encrypt_userdata">Je statusbericht zal alleen zichtbaar zijn voor gebruikers die je telefoonnummer hebben</string>
   <string name="pref_title_off_encrypt_userdata">Je statusbericht zal voor iedereen zichtbaar zijn</string>
-  <string name="pref_auto_accept_subscriptions">Uitnodigingen automatisch accepteren</string>
-  <string name="pref_title_auto_accept_subscriptions">Chatuitnodigingen van andere gebruikers automatisch accepteren</string>
+  <string name="pref_auto_accept_subscriptions">Uitnodigingen automatisch aanvaarden.</string>
+  <string name="pref_title_auto_accept_subscriptions">Gespreksuitnodigingen van andere gebruikers automatisch aanvaarden</string>
   <string name="pref_send_typing">Anderen zien “aan het typen…”</string>
   <string name="pref_hide_presence">Offline weergeven</string>
   <string name="pref_title_on_hide_presence">Gebruikers zullen je niet online zien</string>
@@ -166,7 +167,7 @@
   <string name="notify_ticker_external_storage">Externe opslag niet beschikbaar</string>
   <string name="notify_text_external_storage">Kan niet schrijven naar externe opslag.</string>
   <string name="title_user_not_found">Gebruiker niet gevonden</string>
-  <string name="message_user_not_found">Dit contact lijkt niet geregistreerd te zijn bij Kontalk. Je kan proberen degene toch met Kontalk een bericht te sturen, of je kan degene een uitnodiging sturen voor Kontalk.</string>
+  <string name="message_user_not_found">Dit contact lijkt niet geregistreerd te zijn bij Kontalk. Je kan proberen hem/haar toch met Kontalk een bericht te sturen, of je kan hem/haar een uitnodiging sturen voor Kontalk.</string>
   <string name="yes_user_not_found">Toch een bericht sturen</string>
   <string name="no_user_not_found">Uitnodiging sturen</string>
   <string name="pref_appearance_settings">Weergave</string>
@@ -181,7 +182,7 @@
   <string name="open_audio">Audiobestand afspelen</string>
   <string name="msg_msgcenter_restarted">Herstarten berichtencentrum voltooid.</string>
   <string name="downloading_attachment">Bezig met downloaden van bijlage…</string>
-  <string name="decrypting_attachment">Bezig met bijlage ontsleutelen…</string>
+  <string name="decrypting_attachment">Bezig met ontsleutelen van bijlage…</string>
   <string name="attachment_download">Bijlage downloaden</string>
   <string name="attachment_upload">Bijlage uploaden</string>
   <string name="seen_moment_ago_label">een moment geleden</string>
@@ -194,7 +195,7 @@
   <string name="pref_title_off_custom_background">Standaardachtergrond gebruiken</string>
   <string name="pref_title_on_custom_background">Kies een achtergrond uit met de optie hieronder</string>
   <string name="err_attachment_corrupted">Kan bijlage niet downloaden. Mogelijk is het bericht corrupt.</string>
-  <string name="serverlist_updating">Bezig met bijwerken serverlijst…</string>
+  <string name="serverlist_updating">Bezig met bijwerken van serverlijst…</string>
   <string name="serverlist_update_error">Kan serverlijst niet downloaden. Probeer het later opnieuw.</string>
   <string name="serverlist_update_nodata">Geen serverlijst gevonden.</string>
   <string name="serverlist_update_nonetwork">Er is geen netwerkverbinding. Probeer het later opnieuw.</string>
@@ -216,8 +217,8 @@
   <string name="msg_status_notdelivered">Niet afgeleverd</string>
   <string name="msg_status_delivered">Afgeleverd</string>
   <string name="msg_status_encrypted">Versleuteld</string>
-  <string name="pref_balloons">Tekstballonnen</string>
-  <string name="pref_title_balloons">Een thema voor de tekstballonnen kiezen</string>
+  <string name="pref_balloons">Thema voor tekstballonnen</string>
+  <string name="pref_title_balloons">Kies een thema voor de tekstballonnen</string>
   <string name="attachment_picture">Afbeelding</string>
   <string name="attachment_contact">Contact</string>
   <string name="attachment_audio">Audio</string>
@@ -269,16 +270,16 @@
   <string name="security_error_decrypt_failed">\u0020(ontsleutelen mislukt)</string>
   <string name="security_error_integrity_check">\u0020(integriteitscontrole)</string>
   <string name="security_error_public_key_unavail">\u0020(publieke sleutel niet beschikbaar)</string>
-  <string name="invite_notification">nodigt je uit om te chatten</string>
-  <string name="title_invitation">Uitnodiging voor chat</string>
-  <string name="text_invitation_known">Verzoek van\n%1$s &lt;%2$s&gt;\n(%3$s)\nVingerafdruk: %4$s</string>
-  <string name="text_invitation_unknown">Verzoek van\n%1$s\nVingerafdruk: %2$s</string>
-  <string name="button_accept">Accepteren</string>
+  <string name="invite_notification">nodigt je uit voor een gesprek</string>
+  <string name="title_invitation">Uitnodiging voor gesprek</string>
+  <string name="text_invitation1">Verzoek van:</string>
+  <string name="text_invitation2">Vingerafdruk:</string>
+  <string name="button_accept">Aanvaarden</string>
   <string name="button_block">Blokkeren</string>
   <string name="button_identity">Identiteit</string>
   <string name="msg_connecting_iab">Verbinden met Google Play…</string>
   <string name="msg_iab_thankyou">Hartelijk bedankt!</string>
-  <string name="msg_iab_thankyou_warning">Er ging iets mis, maar de donatie kwam toch aan. Dank u!</string>
+  <string name="msg_iab_thankyou_warning">Er ging iets mis, maar de donatie kwam toch aan. Dankjewel!</string>
   <string name="iab_error_setup">Technische fout bij betalen: ‘Error during in-app billing setup (%d)’</string>
   <string name="iab_error_query">Technische fout bij betalen: ‘Failed to query in-app billing inventory (%d)’</string>
   <string name="copy_clipboard">Kopiëren naar klembord</string>
@@ -286,13 +287,14 @@
   <string name="warn_no_personal_key">Kan persoonlijk sleutelpaar niet inladen. Schakel versleuteling uit bij Instellingen om het bericht toch te verzenden.</string>
   <string name="warn_no_public_key">Kan geen publieke sleutel vinden voor deze gebruiker. Probeer je contactenlijst te vernieuwen of schakel versleuteling uit bij Instellingen om het bericht te kunnen verzenden.</string>
   <string name="warn_encryption_failed">Kan bericht niet versleutelen. Schakel versleuteling uit bij Instellingen om het bericht toch te versturen.</string>
+  <string name="warn_not_subscribed">Kon bericht niet verzenden. De gebruiker heeft je uitnodiging nog niet aanvaard.</string>
   <string name="pref_sync_sim_contacts">Synchroniseren met SIM-contacten</string>
   <string name="pref_title_off_sync_sim_contacts">Niet zoeken in SIM-contacten naar gebruikers van Kontalk</string>
   <string name="pref_title_on_sync_sim_contacts">Wel zoeken in SIM-contacten naar gebruikers van Kontalk</string>
   <string name="pref_sync_invisible_contacts">Onzichtbare contacten tonen</string>
   <string name="pref_title_off_sync_invisible_contacts">Toon geen contacten die niet in de Personen app getoond worden. Schakel dit in om DAVDroid contacten weer te geven</string>
   <string name="pref_title_on_sync_invisible_contacts">Contacten die niet in Personen weergegeven worden zullen in Kontalk getoond worden</string>
-  <string name="pref_accept_any_certificate">Accepteer elk SSL-certificaat</string>
+  <string name="pref_accept_any_certificate">Aanvaard elk SSL-certificaat</string>
   <string name="pref_delete_account">Je account verwijderen</string>
   <string name="msg_delete_account">Als je je account verwijderd worden ook al je berichten verwijderd. Je account zal na een paar weken ook van de Kontalk server verwijderd zijn.</string>
   <string name="msg_delete_account_progress">Je account wordt verwijderd…</string>

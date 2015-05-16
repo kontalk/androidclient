@@ -12,6 +12,7 @@
   <string name="menu_compose">Састави</string>
   <string name="menu_delete_all">Обриши разговоре</string>
   <string name="menu_search">Тражи</string>
+  <string name="mykey_activity_title">Мој лични кључ</string>
   <string name="menu_settings">Поставке</string>
   <string name="menu_offline">Иди ван везе</string>
   <string name="menu_online">Повежи се</string>
@@ -162,7 +163,7 @@
   <string name="err_sync_nonetwork">Мрежа није доступна. Покушајте касније.</string>
   <string name="text_invite_message">Хеј! Погледај Kontalk на Гугл Плеј радњи, бесплатну и слободну апликацију за дописивање! https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="text_contacts_empty">Нови корисници биће аутоматски додати на ову листу .&lt;br/&gt;&lt;br/&gt;Користите &lt;b&gt;Мени&lt;/b&gt; &gt; &lt;b&gt;Позови кориснике&lt;/b&gt; да пошаљете некоме позивницу.</string>
-  <string name="text_conversations_empty">Да почнете дописивање користите икону &lt;b&gt;нова порука&lt;/b&gt; (оловка) изнад.</string>
+  <string name="text_conversations_empty">Да почнете дописивање користите икону &lt;b&gt;нова порука&lt;/b&gt; изнад.</string>
   <string name="notify_ticker_external_storage">Спољашње складиште није доступно</string>
   <string name="notify_text_external_storage">Не могу да пишем у спољашње складиште.</string>
   <string name="title_user_not_found">Корисник није нађен</string>
@@ -223,6 +224,7 @@
   <string name="attachment_audio">Аудио</string>
   <string name="chooser_send_picture">Пошаљи слику</string>
   <string name="chooser_error_no_camera">Спољашње складиште није доступно. Сликање камером неће бити омогућено.</string>
+  <string name="chooser_select_link">Изаберите радњу</string>
   <string name="status_activity_title">Порука стања</string>
   <string name="hint_status_entry">Овде унесите вашу поруку стања</string>
   <string name="header_recent_status">Недавно коришћене поруке</string>
@@ -270,13 +272,14 @@
   <string name="security_error_public_key_unavail">\u0020(јавни кључ недоступан)</string>
   <string name="invite_notification">вас позва у ћаскање</string>
   <string name="title_invitation">Позивница за ћаскање</string>
-  <string name="text_invitation_known">Захтев од\n%1$s &lt;%2$s&gt;\n(%3$s)\nОтисак: %4$s</string>
-  <string name="text_invitation_unknown">Захтев од\n%1$s\nОтисак: %2$s</string>
+  <string name="text_invitation1">Захтев од:</string>
+  <string name="text_invitation2">Отисак:</string>
   <string name="button_accept">Прихвати</string>
   <string name="button_block">Блокирај</string>
   <string name="button_identity">Идентитет</string>
   <string name="msg_connecting_iab">Повезујем се на Гугл плеј...</string>
   <string name="msg_iab_thankyou">Хвала вам!</string>
+  <string name="msg_iab_thankyou_warning">Дошло је до грешке али донација је прошла. Хвала вам!</string>
   <string name="iab_error_setup">Грешка током подешавања наплате (%d)</string>
   <string name="iab_error_query">Неуспео упит инвентара наплате (%d)</string>
   <string name="copy_clipboard">Копирај у клипборд</string>
@@ -284,9 +287,13 @@
   <string name="warn_no_personal_key">Не могу да учитам лични кључ. Искључите шифровање у поставкама да свеједно пошаљете поруку.</string>
   <string name="warn_no_public_key">Не могу да нађем јавни кључ овог корисника. Освежите листу контаката или искључите шифровање у поставкама да свеједно пошаљете поруку.</string>
   <string name="warn_encryption_failed">Не могу да шифрујем поруку. Искључите шифровање у поставкама да свеједно пошаљете поруку.</string>
+  <string name="warn_not_subscribed">Не могу да пошаљем поруку. Корисник још није прихватио позивницу.</string>
   <string name="pref_sync_sim_contacts">Синхронизуј са СИМ контактима</string>
   <string name="pref_title_off_sync_sim_contacts">Не укључуј СИМ контакте кад провераваш регистроване кориснике</string>
   <string name="pref_title_on_sync_sim_contacts">СИМ контакти су такође укључени у проверу регистрованих корисника</string>
+  <string name="pref_sync_invisible_contacts">Укључи и невидљиве контакте</string>
+  <string name="pref_title_off_sync_invisible_contacts">Не укључуј особе које се не приказују у апликацији Контакти. Укључи за заобилажење ДАВДроида</string>
+  <string name="pref_title_on_sync_invisible_contacts">Особе које се не приказују у Контактима биће укључене у Kontalk-у</string>
   <string name="pref_accept_any_certificate">Прихвати сваки ССЛ сертификат</string>
   <string name="pref_delete_account">Обришите свој налог</string>
   <string name="msg_delete_account">Брисањем налога такође бришете све ваше поруке. Ваш налог на серверу биће обрисан аутоматски након пар недеља.</string>

@@ -270,8 +270,6 @@
   <string name="security_error_public_key_unavail">\u0020(clave pública no disponible)</string>
   <string name="invite_notification">le invita a conversar</string>
   <string name="title_invitation">Invitación a un chat</string>
-  <string name="text_invitation_known">Solicitado por\n%1$s &lt;%2$s&gt;\n(%3$s)\nHuella digital: %4$s</string>
-  <string name="text_invitation_unknown">Solicitado por\n%1$s\nHuella digital: %2$s</string>
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
   <string name="button_identity">Identidad</string>

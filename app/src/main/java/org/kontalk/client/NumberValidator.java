@@ -32,6 +32,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
+import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
@@ -172,7 +173,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             // begin!
             if (mStep == STEP_INIT) {
                 synchronized (mKeyLock) {
-                    if (mKey == null) {
+                    if (mKey == null && (mImportedPrivateKey == null || mImportedPublicKey == null)) {
                         Log.v(TAG, "waiting for key generator");
                         try {
                             // wait endlessly?
@@ -207,7 +208,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                     }
                 }
 
-                XMPPConnection conn = mConnector.getConnection();
+                final AbstractXMPPConnection conn = mConnector.getConnection();
 
                 Stanza form = createRegistrationForm();
 
@@ -216,6 +217,9 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                     public void processPacket(Stanza packet) {
                         int reason = 0;
                         IQ iq = (IQ) packet;
+
+                        // whatever we received, close the connection now
+                        conn.disconnect();
 
                         if (iq.getType() == IQ.Type.result) {
                             DataForm response = iq.getExtension("x", "jabber:x:data");

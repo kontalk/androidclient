@@ -31,6 +31,7 @@ import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
@@ -44,6 +45,7 @@ import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
+import org.jivesoftware.smack.util.Async;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.caps.packet.CapsExtension;
 import org.jivesoftware.smackx.chatstates.ChatState;
@@ -152,6 +154,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String ACTION_PUSH_STOP = "org.kontalk.push.STOP";
     public static final String ACTION_PUSH_REGISTERED = "org.kontalk.push.REGISTERED";
     public static final String ACTION_IDLE = "org.kontalk.action.IDLE";
+    public static final String ACTION_PING = "org.kontalk.action.PING";
 
     /** Request the roster. */
     public static final String ACTION_ROSTER = "org.kontalk.action.ROSTER";
@@ -299,6 +302,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** How much time to wait to idle the message center (default 5 mins). */
     private final static int DEFAULT_IDLE_TIME = 5*60*1000;
 
+    /** Normal ping tester timeout. */
+    private static final int SLOW_PING_TIMEOUT = 10000;
     /** Fast ping tester timeout. */
     private static final int FAST_PING_TIMEOUT = 3000;
     /** Minimal interval between connection tests (5 mins). */
@@ -319,6 +324,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     // created in onCreate
     private WakeLock mWakeLock;
+    private WakeLock mPingLock;
     LocalBroadcastManager mLocalBroadcastManager;
     private AlarmManager mAlarmManager;
 
@@ -573,6 +579,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         PowerManager pwr = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG);
         mWakeLock.setReferenceCounted(false);
+        mPingLock = pwr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Kontalk.TAG + "-Ping");
+        mPingLock.setReferenceCounted(false);
 
         mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         // cancel any pending alarm intent
@@ -662,7 +670,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // destroy references
         mAlarmManager = null;
         mLocalBroadcastManager = null;
-        mWakeLock = null;
+        // also release wakelocks just to be sure
+        if (mWakeLock != null) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
+        if (mPingLock != null) {
+            mPingLock.release();
+            mPingLock = null;
+        }
     }
 
     public boolean isStarted() {
@@ -848,6 +864,39 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
 
+            else if (ACTION_PING.equals(action)) {
+                if (isConnected()) {
+                    // acquire a wake lock
+                    mPingLock.acquire();
+                    final XMPPConnection connection = mConnection;
+                    final PingManager pingManager = PingManager.getInstanceFor(connection);
+                    Async.go(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (pingManager.pingMyServer(true, SLOW_PING_TIMEOUT)) {
+                                    AdaptiveServerPingManager.pingSuccess(connection);
+                                }
+                                else {
+                                    AdaptiveServerPingManager.pingFailed(connection);
+                                }
+                            }
+                            catch (SmackException.NotConnectedException e) {
+                                // ignored
+                            }
+                            finally {
+                                // release the wake lock
+                                if (mPingLock != null)
+                                    mPingLock.release();
+                            }
+                        }
+                    }, "PingServerIfNecessary (" + mConnection.getConnectionCounter() + ')');
+                }
+                else {
+                    doConnect = canConnect;
+                }
+            }
+
             else if (ACTION_MESSAGE.equals(action)) {
                 if (canConnect && isConnected)
                     sendMessage(intent.getExtras());
@@ -879,7 +928,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             else if (ACTION_ROSTER_LOADED.equals(action)) {
                 if (isConnected) {
-                    if (getRoster().isLoaded()) {
+                    if (isRosterLoaded()) {
                         broadcast(ACTION_ROSTER_LOADED);
                     }
                 }
@@ -903,6 +952,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         else {
                             broadcastPresence(roster, to, id);
                         }
+
+                        // broadcast our own presence
+                        broadcastMyPresence(id);
                     }
                     else {
                         String show = intent.getStringExtra(EXTRA_SHOW);
@@ -964,6 +1016,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                                 sendPacket(p);
                             }
                         }
+
+                        // request our own public key (odd eh?)
+                        PublicKeyPublish p = new PublicKeyPublish();
+                        p.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                        p.setTo(XmppStringUtils.parseBareJid(mConnection.getUser()));
+                        sendPacket(p);
                     }
                 }
             }
@@ -1129,6 +1187,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.addRosterLoadedListener(new RosterLoadedListener() {
             @Override
             public void onRosterLoaded(Roster roster) {
+                // resend failed and pending messages
+                resendPendingMessages(false);
+                // resend failed and pending received receipts
+                resendPendingReceipts();
+                // roster has been loaded
                 broadcast(ACTION_ROSTER_LOADED);
             }
         });
@@ -1146,8 +1209,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
         };
-        PingManager.getInstanceFor(connection)
-            .registerPingFailedListener(mPingFailedListener);
+        PingManager pingManager = PingManager.getInstanceFor(connection);
+        pingManager.registerPingFailedListener(mPingFailedListener);
+        pingManager.setPingInterval(0);
 
         StanzaFilter filter;
 
@@ -1188,10 +1252,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         sendPresence();
         // discovery
         discovery();
-        // resend failed and pending messages
-        resendPendingMessages(false);
-        // resend failed and pending received receipts
-        resendPendingReceipts();
+        // pending messages and receipts will be sent when roster will be loaded
         // send pending subscription replies
         sendPendingSubscriptionReplies();
 
@@ -1287,6 +1348,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Sends our initial presence. */
     private void sendPresence() {
+        sendPacket(createPresence());
+    }
+
+    private Presence createPresence() {
         String status = Preferences.getStatusMessage(this);
         Presence p = new Presence(Presence.Type.available);
         if (status != null)
@@ -1295,7 +1360,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // TODO find a place for this
         p.addExtension(new CapsExtension("http://www.kontalk.org/", "none", "sha-1"));
 
-        sendPacket(p);
+        return p;
     }
 
     /**
@@ -1407,7 +1472,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         c.close();
     }
 
-    private void resendPendingReceipts() {
+    void resendPendingReceipts() {
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
             new String[] {
                 Messages._ID,
@@ -1481,6 +1546,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return (mConnection != null) ? Roster.getInstanceFor(mConnection) : null;
     }
 
+    private boolean isRosterLoaded() {
+        Roster roster = getRoster();
+        return roster != null && roster.isLoaded();
+    }
+
     RosterEntry getRosterEntry(String jid) {
         Roster roster = getRoster();
         return (roster != null) ? roster.getEntry(jid) : null;
@@ -1529,6 +1599,33 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // to keep track of request-reply
         i.putExtra(EXTRA_PACKET_ID, id);
         mLocalBroadcastManager.sendBroadcast(i);
+    }
+
+    /** A special method to broadcast our own presence. */
+    private void broadcastMyPresence(String id) {
+        Presence presence = createPresence();
+        presence.setFrom(mConnection.getUser());
+
+        Intent i = PresenceListener.createIntent(this, presence);
+        i.putExtra(EXTRA_FINGERPRINT, getMyFingerprint());
+        i.putExtra(EXTRA_SUBSCRIBED_FROM, true);
+        i.putExtra(EXTRA_SUBSCRIBED_TO, true);
+
+        // to keep track of request-reply
+        i.putExtra(EXTRA_PACKET_ID, id);
+        mLocalBroadcastManager.sendBroadcast(i);
+    }
+
+    private String getMyFingerprint() {
+        try {
+            PersonalKey key = Kontalk.get(this).getPersonalKey();
+            return key.getFingerprint();
+        }
+        catch (Exception e) {
+            // something bad happened
+            Log.w(TAG, "unable to load personal key");
+            return null;
+        }
     }
 
     private void sendSubscriptionReply(String to, String packetId, int action) {
@@ -1642,6 +1739,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void sendMessage(Bundle data) {
+        if (!isRosterLoaded()) {
+            Log.d(TAG, "roster not loaded yet, not sending message");
+            return;
+        }
+
         boolean retrying = data.getBoolean("org.kontalk.message.retrying");
         String to = data.getString("org.kontalk.message.to");
 
@@ -2038,6 +2140,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "testing message center connection");
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(ACTION_TEST);
+        context.startService(i);
+    }
+
+    public static void ping(Context context) {
+        Log.d(TAG, "ping message center connection");
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(ACTION_PING);
         context.startService(i);
     }
 

@@ -101,4 +101,8 @@ public class XMPPUtils {
         return XmppStringUtils.parseBareJid(full).equalsIgnoreCase(bare);
     }
 
+    public static String createLocalpart(String uid) {
+        return MessageUtils.sha1(uid);
+    }
+
 }

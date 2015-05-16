@@ -41,6 +41,7 @@ import android.util.Log;
 import org.kontalk.client.PublicKeyPresence;
 import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Threads.Requests;
@@ -181,7 +182,9 @@ class PresenceListener extends MessageCenterPacketListener {
                     PGPPublicKey pk = PGP.getMasterKey(ring);
                     if (pk != null) {
                         // set all parameters
-                        name = PGP.getUserId(pk, getServer().getNetwork());
+                        PGPUserID uid = PGP.parseUserID(PGP.getUserId(pk, getServer().getNetwork()));
+                        if (uid != null)
+                            name = uid.getName();
                         fingerprint = PGP.getFingerprint(pk);
                         publicKey = _publicKey;
                     }
@@ -256,6 +259,9 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_TO, p.getTo());
 
         sendBroadcast(i);
+
+        // send any pending messages now
+        resendPending(false);
     }
 
     private void handlePresence(Presence p) {
