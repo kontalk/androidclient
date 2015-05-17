@@ -64,6 +64,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
+import java.util.Locale;
 
 
 /** Personal asymmetric encryption key. */
@@ -125,7 +126,7 @@ public class PersonalKey implements Parcelable {
     }
 
     public String getFingerprint() {
-        return MessageUtils.bytesToHex(mPair.signKey.getPublicKey().getFingerprint());
+        return PGP.getFingerprint(mPair.signKey.getPublicKey());
     }
 
     public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {
@@ -227,7 +228,8 @@ public class PersonalKey implements Parcelable {
         PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         // X.509 bridge certificate
-        X509Certificate bridgeCert = X509Bridge.load(bridgeCertData);
+        X509Certificate bridgeCert = (bridgeCertData != null) ?
+            X509Bridge.load(bridgeCertData) : null;
 
         return test(secRing, pubRing, passphrase, bridgeCert);
     }
@@ -282,6 +284,17 @@ public class PersonalKey implements Parcelable {
         // X.509 bridge certificate
         X509Certificate bridgeCert = (bridgeCertData != null) ?
             X509Bridge.load(bridgeCertData) : null;
+
+        return load(secRing, pubRing, passphrase, bridgeCert);
+    }
+
+    /** Creates a {@link PersonalKey} from private and public key byte buffers. */
+    public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, X509Certificate bridgeCert)
+        throws PGPException, IOException, CertificateException, NoSuchProviderException {
+
+        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
 
         return load(secRing, pubRing, passphrase, bridgeCert);
     }

@@ -49,6 +49,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
@@ -82,9 +83,11 @@ public class Syncer {
     /** {@link RawContacts} column for the JID. */
     public static final String RAW_COLUMN_USERID = RawContacts.SYNC3;
 
+    /** Random packet id used for requesting public keys. */
+    static final String IQ_PACKET_ID = StringUtils.randomString(10);
+
     private volatile boolean mCanceled;
     private final Context mContext;
-    private LocalBroadcastManager mLocalBroadcastManager;
 
     private final static class PresenceItem {
         public String from;
@@ -97,18 +100,24 @@ public class Syncer {
 
     // FIXME this class should handle most recent/available presence stanzas
     private static final class PresenceBroadcastReceiver extends BroadcastReceiver {
+        /** Max number of items in a roster match request. */
+        private static final int MAX_ROSTER_MATCH_SIZE = 500;
+
         private List<PresenceItem> response;
         private final WeakReference<Syncer> notifyTo;
-        private final String iq;
+
         private final List<String> jidList;
+        private int rosterParts = -1;
+        private String[] iq;
+        private String presenceId;
+
         private int presenceCount;
         private int pubkeyCount;
-        private int rosterCount = -1;
+        private int rosterCount;
         private boolean blocklistReceived;
 
-        public PresenceBroadcastReceiver(String iq, List<String> jidList, Syncer notifyTo) {
+        public PresenceBroadcastReceiver(List<String> jidList, Syncer notifyTo) {
             this.notifyTo = new WeakReference<Syncer>(notifyTo);
-            this.iq = iq;
             this.jidList = jidList;
         }
 
@@ -119,11 +128,12 @@ public class Syncer {
             if (MessageCenterService.ACTION_PRESENCE.equals(action)) {
 
                 // consider only presences received *after* roster response
-                if (response != null) {
+                if (response != null && presenceId != null) {
 
                     String jid = intent.getStringExtra(MessageCenterService.EXTRA_FROM);
                     String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
-                    if (type != null) {
+                    String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                    if (type != null && presenceId.equals(id)) {
                         // see if bare JID is present in roster response
                         String compare = XmppStringUtils.parseBareJid(jid);
                         for (PresenceItem item : response) {
@@ -138,10 +148,6 @@ public class Syncer {
                                 break;
                             }
                         }
-
-                        // done with presence data and blocklist
-                        if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
-                            finish();
                     }
                 }
             }
@@ -149,36 +155,48 @@ public class Syncer {
             // roster match result received
             else if (MessageCenterService.ACTION_ROSTER_MATCH.equals(action)) {
                 String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                if (iq.equals(id)) {
-                    String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
-                    if (list != null) {
-                        rosterCount = list.length;
-                        // prepare list to be filled in with presence data
-                        response = new ArrayList<PresenceItem>(rosterCount);
-                        for (String jid : list) {
-                            PresenceItem p = new PresenceItem();
-                            p.from = jid;
-                            response.add(p);
-                        }
-                    }
-                    else {
-                        rosterCount = 0;
-                    }
+                for (String iqId : iq) {
+                    if (iqId.equals(id)) {
+                        // decrease roster parts counter
+                        rosterParts--;
 
-                    // no roster elements
-                    if (rosterCount == 0 && blocklistReceived) {
-                        finish();
-                    }
-                    else {
-                        Syncer w = notifyTo.get();
-                        if (w != null) {
-                            // request presence data for the whole roster
-                            w.requestPresenceData();
-                            // request public keys for the whole roster
-                            w.requestPublicKeys();
-                            // request block list
-                            w.requestBlocklist();
+                        String[] list = intent.getStringArrayExtra(MessageCenterService.EXTRA_JIDLIST);
+                        if (list != null) {
+                            rosterCount += list.length;
+                            if (response == null) {
+                                // prepare list to be filled in with presence data
+                                response = new ArrayList<PresenceItem>(rosterCount);
+                            }
+                            for (String jid : list) {
+                                PresenceItem p = new PresenceItem();
+                                p.from = jid;
+                                response.add(p);
+                            }
                         }
+
+                        if (rosterParts <= 0) {
+                            // all roster parts received
+
+                            if (rosterCount == 0 && blocklistReceived) {
+                                // no roster elements
+                                finish();
+                            }
+                            else {
+                                Syncer w = notifyTo.get();
+                                if (w != null) {
+                                    // request presence data for the whole roster
+                                    presenceId = StringUtils.randomString(6);
+                                    w.requestPresenceData(presenceId);
+                                    // request public keys for the whole roster
+                                    w.requestPublicKeys();
+                                    // request block list
+                                    w.requestBlocklist();
+                                }
+                            }
+                        }
+
+                        // no need to continue
+                        break;
                     }
                 }
             }
@@ -199,7 +217,7 @@ public class Syncer {
                     }
 
                     // done with presence data and blocklist
-                    if (rosterCount >= 0 && pubkeyCount == presenceCount && blocklistReceived)
+                    if (pubkeyCount == presenceCount && blocklistReceived)
                         finish();
 
                 }
@@ -227,18 +245,32 @@ public class Syncer {
                 }
 
                 // done with presence data and blocklist
-                if (rosterCount >= 0 && pubkeyCount >= presenceCount)
+                if (pubkeyCount >= presenceCount)
                     finish();
             }
 
             // connected! Retry...
-            else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
+            else if (MessageCenterService.ACTION_CONNECTED.equals(action) && rosterParts <= 0) {
                 Syncer w = notifyTo.get();
                 if (w != null) {
                     // request a roster match
-                    w.requestRosterMatch(iq, jidList);
+                    rosterParts = getRosterParts(jidList);
+                    iq = new String[rosterParts];
+                    for (int i = 0; i < rosterParts; i++) {
+                        int end = (i+1)*MAX_ROSTER_MATCH_SIZE;
+                        if (end >= jidList.size())
+                            end = jidList.size();
+                        List<String> slice = jidList.subList(i*MAX_ROSTER_MATCH_SIZE, end);
+
+                        iq[i] = StringUtils.randomString(6);
+                        w.requestRosterMatch(iq[i], slice);
+                    }
                 }
             }
+        }
+
+        private int getRosterParts(List<String> jidList) {
+            return (int) Math.ceil((double) jidList.size() / MAX_ROSTER_MATCH_SIZE);
         }
 
         public List<PresenceItem> getResponse() {
@@ -372,18 +404,18 @@ public class Syncer {
         }
 
         else {
-            mLocalBroadcastManager = LocalBroadcastManager.getInstance(mContext);
+            final LocalBroadcastManager lbm = LocalBroadcastManager
+                .getInstance(mContext);
 
             // register presence broadcast receiver
-            String iq = StringUtils.randomString(6);
-            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(iq, jidList, this);
+            PresenceBroadcastReceiver receiver = new PresenceBroadcastReceiver(jidList, this);
             IntentFilter f = new IntentFilter();
             f.addAction(MessageCenterService.ACTION_PRESENCE);
             f.addAction(MessageCenterService.ACTION_ROSTER_MATCH);
             f.addAction(MessageCenterService.ACTION_PUBLICKEY);
             f.addAction(MessageCenterService.ACTION_BLOCKLIST);
             f.addAction(MessageCenterService.ACTION_CONNECTED);
-            mLocalBroadcastManager.registerReceiver(receiver, f);
+            lbm.registerReceiver(receiver, f);
 
             // request current connection status
             MessageCenterService.requestConnectionStatus(mContext);
@@ -400,7 +432,7 @@ public class Syncer {
                 }
             }
 
-            mLocalBroadcastManager.unregisterReceiver(receiver);
+            lbm.unregisterReceiver(receiver);
 
             // last chance to quit
             if (mCanceled) throw new OperationCanceledException();
@@ -529,10 +561,6 @@ public class Syncer {
         }
     }
 
-    public static boolean isError(SyncResult syncResult) {
-        return syncResult.databaseError || syncResult.stats.numIoExceptions > 0;
-    }
-
     private void requestRosterMatch(String id, List<String> list) {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_ROSTER_MATCH);
@@ -541,16 +569,18 @@ public class Syncer {
         mContext.startService(i);
     }
 
-    private void requestPresenceData() {
+    private void requestPresenceData(String id) {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PRESENCE);
         i.putExtra(MessageCenterService.EXTRA_TYPE, Presence.Type.probe.toString());
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, id);
         mContext.startService(i);
     }
 
     private void requestPublicKeys() {
         Intent i = new Intent(mContext, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_PUBLICKEY);
+        i.putExtra(MessageCenterService.EXTRA_PACKET_ID, IQ_PACKET_ID);
         mContext.startService(i);
     }
 
@@ -620,9 +650,12 @@ public class Syncer {
 
     private void addContact(Account account, String username, String phone, String jid,
             List<ContentProviderOperation> operations, int index) {
-        Log.d(TAG, "adding contact username = \"" + username + "\", phone: " + phone);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "adding contact \"" + username + "\" <" + phone + ">");
+        }
+
         ContentProviderOperation.Builder builder;
-        final int NUM_OPS = 4;
+        final int opIndex = index * 3;
 
         // create our RawContact
         builder = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
@@ -636,23 +669,14 @@ public class Syncer {
 
         // create a Data record of common type 'StructuredName' for our RawContact
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-            .withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, index * NUM_OPS)
+            .withValueBackReference(ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID, opIndex)
             .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
             .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, username);
         operations.add(builder.build());
 
-        // create a Data record of common type 'Phone' for our RawContact
-        builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-            .withValueBackReference(ContactsContract.CommonDataKinds.Phone.RAW_CONTACT_ID, index * NUM_OPS)
-            .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-            // not including phone type will crash on HTC devices
-            .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_OTHER)
-            .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phone);
-        operations.add(builder.build());
-
         // create a Data record of custom type 'org.kontalk.user' to display a link to the conversation
         builder = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-            .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, index * NUM_OPS)
+            .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, opIndex)
             .withValue(ContactsContract.Data.MIMETYPE, Users.CONTENT_ITEM_TYPE)
             .withValue(DATA_COLUMN_DISPLAY_NAME, username)
             .withValue(DATA_COLUMN_ACCOUNT_NAME, mContext.getString(R.string.app_name))

@@ -29,16 +29,19 @@
     <string name="menu_compose">Compose</string>
     <string name="menu_delete_all">Delete threads</string>
     <string name="menu_search">Search</string>
+    <string name="mykey_activity_title">My personal key</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_offline">Go offline</string>
     <string name="menu_online">Go online</string>
+    <string name="menu_import_key">Import key</string>
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
     <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. A SMS with a verification code will be sent to you. Your phone number will be used once and then discarded.</string>
     <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the verification code you will receive via SMS.</string>
-    <string name="code_validation_intro">You shall receive a SMS to the number you input briefly. Please insert the code you receive below.</string>
-    <string name="code_validation_intro2">Please insert a verification code you received. Please note that a verification code can be used only once.</string>
+    <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
+    <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
+    <string name="code_validation_intro_manual">Please insert the verification code you received. Please note that a verification code can be used only once.</string>
     <string name="hint_validation_name">Your name</string>
     <string name="hint_validation_number">Your number</string>
     <string name="hint_validation_code">Verification code</string>
@@ -150,7 +153,6 @@
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Request verification code</string>
     <string name="button_validation_code">I already have a verification code</string>
-    <string name="button_import_keys">Import keys from another device</string>
     <string name="button_validation_register">Verify</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>
@@ -203,6 +205,7 @@
     <string name="seen_moment_ago_label">a moment ago</string>
     <string name="seen_online_label">online</string>
     <string name="seen_typing_label">typing&#8230;</string>
+    <string name="invitation_sent_label">pending invitation</string>
     <string name="pref_custom_background">Custom background</string>
     <string name="pref_background_uri">Background</string>
     <string name="pref_title_background_uri">Set custom conversations background image</string>
@@ -243,6 +246,8 @@
     
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
+
+    <string name="chooser_select_link">Choose action</string>
 
     <string name="status_activity_title">Status message</string>
     <string name="hint_status_entry">Type your status message here</string>
@@ -303,13 +308,15 @@
 
     <string name="invite_notification">is inviting you to chat</string>
     <string name="title_invitation">Chat invitation</string>
-    <string name="text_invitation_known">Request by\n%1$s &lt;%2$s&gt;\n(%3$s)\nFingerprint: %4$s</string>
-    <string name="text_invitation_unknown">Request by\n%1$s\nFingerprint: %2$s</string>
+    <string name="text_invitation1">Request by:</string>
+    <string name="text_invitation2">Fingerprint:</string>
     <string name="button_accept">Accept</string>
     <string name="button_block">Block</string>
+    <string name="button_identity">Identity</string>
 
     <string name="msg_connecting_iab">Connecting to Google Play&#8230;</string>
     <string name="msg_iab_thankyou">Thank you!</string>
+    <string name="msg_iab_thankyou_warning">Something went wrong, but the donation went through. Thank you!</string>
 
     <string name="iab_error_setup">Error during in-app billing setup (%d)</string>
     <string name="iab_error_query">Failed to query in-app billing inventory (%d)</string>
@@ -320,10 +327,15 @@
     <string name="warn_no_personal_key">Unable to load personal key. Disable encryption from settings to send message anyway.</string>
     <string name="warn_no_public_key">Unable to find a public key for this user. Try refreshing your contact list or disable encryption from settings to send message anyway.</string>
     <string name="warn_encryption_failed">Unable to encrypt message. Disable encryption from settings to send message anyway.</string>
+    <string name="warn_not_subscribed">Unable to send message. User has not accepted your invitation yet.</string>
 
     <string name="pref_sync_sim_contacts">Sync from SIM contacts</string>
     <string name="pref_title_off_sync_sim_contacts">Do not include SIM contacts when checking for registered users</string>
     <string name="pref_title_on_sync_sim_contacts">SIM contacts are also included when checking for registered users</string>
+
+    <string name="pref_sync_invisible_contacts">Include invisible contacts</string>
+    <string name="pref_title_off_sync_invisible_contacts">Do not include contacts not displayed in Contacts app. Enable for DAVDroid workaround</string>
+    <string name="pref_title_on_sync_invisible_contacts">Contacts not displayed in Contacts app will be included in Kontalk</string>
 
     <string name="pref_accept_any_certificate">Accept any SSL certificate</string>
 
@@ -343,9 +355,8 @@
 
     <string name="warn_invite_no_app">No application available to invite users.</string>
 
-    <string name="pref_text_enter">Show enter key</string>
-    <string name="pref_title_on_text_enter">Showing the enter key while composing messages</string>
-    <string name="pref_title_off_text_enter">Showing the default action key while composing messages</string>
+    <string name="pref_text_enter">Enter button</string>
+    <string name="pref_title_text_enter">Select behavior of enter button in keyboard</string>
 
     <string name="title_password1">Password:</string>
     <string name="title_password2">Confirm password:</string>
@@ -368,5 +379,9 @@
     <string name="err_server_invalid_format">Invalid address format.</string>
 
     <string name="err_no_contacts_app">No contacts app found.</string>
+
+    <string name="warning_public_key">WARNING! The personal key for this user changed unexpectedly! Click here for details.</string>
+    <string name="title_public_key_warning">Personal key changed</string>
+    <string name="msg_public_key_warning">Personal key for this user has changed. Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
 
 </resources>

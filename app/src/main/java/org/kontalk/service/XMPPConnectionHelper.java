@@ -250,10 +250,12 @@ public class XMPPConnectionHelper extends Thread {
                 // uncontrolled interrupt - handle errors
                 if (mConnecting) {
                     Log.e(TAG, "connection error", ie);
-                    // forcibly close connection, no matter what
-                    mConn.instantShutdown();
-                    // EXTERMINATE!!
-                    mConn = null;
+                    if (mConn != null) {
+                        // forcibly close connection, no matter what
+                        mConn.instantShutdown();
+                        // EXTERMINATE!!
+                        mConn = null;
+                    }
 
                     // SASL: not authorized
                     if (ie instanceof SASLErrorException) {
@@ -327,6 +329,10 @@ public class XMPPConnectionHelper extends Thread {
         return mConnecting;
     }
 
+    public boolean isStruggling() {
+        return mConnecting && mRetryCount > 5;
+    }
+
     public boolean isServerDirty() {
         return mServerDirty;
     }
@@ -357,8 +363,10 @@ public class XMPPConnectionHelper extends Thread {
 
 
     public interface ConnectionHelperListener extends ConnectionListener {
+        /** Connection has been created. */
         public void created(XMPPConnection connection);
 
+        /** Connection was aborted and will never be tried again. */
         public void aborted(Exception e);
 
         public void authenticationFailed();

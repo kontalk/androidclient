@@ -21,11 +21,11 @@ package org.kontalk.ui;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jivesoftware.smack.util.StringUtils;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
@@ -35,11 +35,12 @@ import android.accounts.Account;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
@@ -105,8 +106,29 @@ public class MessagingNotification {
     /** Peer of last notified chat invitation. */
     private static volatile String sLastInvitation;
 
+    /** On delete intent stuff. */
+    private static final String ACTION_NOTIFICATION_DELETED = "org.kontalk.ACTION_NOTIFICATION_DELETED";
+    private static final OnDeletedReceiver sNotificationDeletedReceiver = new OnDeletedReceiver();
+    private static Intent sNotificationOnDeleteIntent;
+    private static class OnDeletedReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            // mark all messages as old
+            MessagesProvider.markAllThreadsAsOld(context);
+        }
+    };
+
     /** This class is not instanciable. */
     private MessagingNotification() {}
+
+    public static void init(Context context) {
+        // set up the intent filter for notification deleted action
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ACTION_NOTIFICATION_DELETED);
+        context.registerReceiver(sNotificationDeletedReceiver, intentFilter);
+
+        // initialize the notification deleted action
+        sNotificationOnDeleteIntent = new Intent(ACTION_NOTIFICATION_DELETED);
+    }
 
     public static void setPaused(String jid) {
         sPaused = jid;
@@ -289,7 +311,9 @@ public class MessagingNotification {
                     if (count < 5) {
                         SpannableStringBuilder buf = new SpannableStringBuilder();
                         buf.append(name).append(' ');
-                        buf.setSpan(new ForegroundColorSpan(Color.WHITE), 0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        buf.setSpan(new ForegroundColorSpan(context.getResources()
+                                .getColor(R.color.notification_name_color)),
+                            0, buf.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         // take just the last message
                         buf.append(convs.get(user)[1]);
 
@@ -352,13 +376,14 @@ public class MessagingNotification {
             }
 
             builder.setNumber(unread);
-            builder.setSmallIcon(R.drawable.stat_notify);
+            builder.setSmallIcon(R.drawable.ic_stat_notify);
 
             builder.setTicker(ticker);
             builder.setContentTitle(title);
             builder.setContentText(text);
             builder.setStyle(style);
-            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+            builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
+                sNotificationOnDeleteIntent, 0));
 
             Intent ni;
             // more than one unread conversation - open ConversationList
@@ -408,16 +433,20 @@ public class MessagingNotification {
                     builder.setLargeIcon(avatar.getBitmap());
             }
             builder.setNumber(accumulator.unreadCount);
-            builder.setSmallIcon(R.drawable.stat_notify);
+            builder.setSmallIcon(R.drawable.ic_stat_notify);
             builder.setContentTitle(accumulator.getTitle());
             builder.setContentText(accumulator.getText());
             builder.setContentIntent(accumulator.getPendingIntent());
-            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+            builder.setDeleteIntent(PendingIntent.getBroadcast(context, 0,
+                sNotificationOnDeleteIntent, 0));
         }
 
         if (isNew) {
             setDefaults(context, builder);
         }
+
+        // features (priority, category)
+        setFeatures(builder);
 
         nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
 
@@ -451,6 +480,12 @@ public class MessagingNotification {
         builder.setDefaults(defaults);
     }
 
+    private static void setFeatures(NotificationCompat.Builder builder) {
+        builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+        // FIXME this can't be used with appcompat v21
+        //builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+    }
+
     /** Triggers a notification for a chat invitation. */
     public static void chatInvitation(Context context, String jid) {
         // open conversation, do not send notification
@@ -475,12 +510,11 @@ public class MessagingNotification {
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(context.getApplicationContext())
             .setAutoCancel(true)
-            .setSmallIcon(R.drawable.stat_notify)
+            .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_invitation))
             .setContentTitle(title)
             .setContentText(context.getString(R.string.invite_notification))
-            .setContentIntent(pi)
-            .setPriority(NotificationCompat.PRIORITY_HIGH);
+            .setContentIntent(pi);
 
         // include an avatar if any
         if (contact != null) {
@@ -491,6 +525,8 @@ public class MessagingNotification {
 
         // defaults (sound, vibration, lights)
         setDefaults(context, builder);
+        // features (priority, category)
+        setFeatures(builder);
 
         // fire it up!
         NotificationManager nm = (NotificationManager) context
@@ -523,7 +559,7 @@ public class MessagingNotification {
         NotificationCompat.Builder builder = new NotificationCompat
             .Builder(context.getApplicationContext())
             .setAutoCancel(true)
-            .setSmallIcon(R.drawable.stat_notify)
+            .setSmallIcon(R.drawable.ic_stat_notify)
             .setTicker(context.getString(R.string.title_auth_error))
             .setContentTitle(context.getString(R.string.title_auth_error))
             .setContentText(context.getString(R.string.notification_text_more))

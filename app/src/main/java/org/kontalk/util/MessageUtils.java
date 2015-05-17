@@ -23,24 +23,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
-import android.text.style.DynamicDrawableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.GridView;
-import android.widget.ImageView;
 
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.util.StringUtils;
 
 import org.kontalk.Kontalk;
@@ -76,13 +68,11 @@ import java.util.TimeZone;
 
 public final class MessageUtils {
     // TODO convert these to XML styles
-    private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
+    public static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private static final ForegroundColorSpan STYLE_RED = new ForegroundColorSpan(Color.RED);
     private static final ForegroundColorSpan STYLE_GREEN = new ForegroundColorSpan(Color.rgb(0, 0xAA, 0));
 
     public static final int MILLISECONDS_IN_DAY = 86400000;
-
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     private MessageUtils() {}
 
@@ -176,7 +166,7 @@ public final class MessageUtils {
         return (a / MILLISECONDS_IN_DAY) == (b / MILLISECONDS_IN_DAY);
     }
 
-    private static String convertToHex(byte[] data) {
+    public static String bytesToHex(byte[] data) {
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < data.length; i++) {
             int halfbyte = (data[i] >>> 4) & 0x0F;
@@ -192,15 +182,15 @@ public final class MessageUtils {
         return buf.toString();
     }
 
+    /** TODO move somewhere else */
     public static String sha1(String text) {
         try {
             MessageDigest md;
             md = MessageDigest.getInstance("SHA-1");
-            byte[] sha1hash = new byte[40];
             md.update(text.getBytes(), 0, text.length());
-            sha1hash = md.digest();
+            byte[] sha1hash = md.digest();
 
-            return convertToHex(sha1hash);
+            return bytesToHex(sha1hash);
         }
         catch (NoSuchAlgorithmException e) {
             // no SHA-1?? WWWHHHHAAAAAATTTT???!?!?!?!?!
@@ -529,17 +519,6 @@ public final class MessageUtils {
                 .equalsIgnoreCase(b.substring(0, CompositeMessage.USERID_LENGTH));
     }
 
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        int v;
-        for ( int j = 0; j < bytes.length; j++ ) {
-            v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-
     public static String messageId() {
         return StringUtils.randomString(30);
     }
@@ -673,7 +652,7 @@ public final class MessageUtils {
             // TODO duplicated code (MessageListener#processPacket)
 
             // out of band data
-            PacketExtension _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
+            ExtensionElement _media = m.getExtension(OutOfBandData.ELEMENT_NAME, OutOfBandData.NAMESPACE);
             if (_media != null && _media instanceof OutOfBandData) {
                 File previewFile = null;
 
@@ -684,12 +663,12 @@ public final class MessageUtils {
                 boolean encrypted = media.isEncrypted();
 
                 // bits-of-binary for preview
-                PacketExtension _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
+                ExtensionElement _preview = m.getExtension(BitsOfBinary.ELEMENT_NAME, BitsOfBinary.NAMESPACE);
                 if (_preview != null && _preview instanceof BitsOfBinary) {
                     BitsOfBinary preview = (BitsOfBinary) _preview;
                     String previewMime = preview.getType();
                     if (previewMime == null)
-                        previewMime = MediaStorage.THUMBNAIL_MIME;
+                        previewMime = MediaStorage.THUMBNAIL_MIME_NETWORK;
 
                     String filename = null;
 

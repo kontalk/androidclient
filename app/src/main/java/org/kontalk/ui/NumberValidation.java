@@ -36,7 +36,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.MenuItemCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
@@ -63,6 +62,9 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import org.jivesoftware.smack.util.StringUtils;
+import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPException;
+
 import org.kontalk.BuildConfig;
 import org.kontalk.Kontalk;
 import org.kontalk.R;
@@ -70,6 +72,8 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
 import org.kontalk.crypto.X509Bridge;
@@ -79,6 +83,7 @@ import org.kontalk.service.KeyPairGeneratorService.PersonalKeyRunnable;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 import java.io.FileInputStream;
@@ -111,7 +116,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
-    private Button mImportKeys;
     private Button mInsertCode;
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
@@ -193,7 +197,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
-        mImportKeys = (Button) findViewById(R.id.button_import_keys);
         mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
@@ -311,8 +314,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.number_validation_menu, menu);
-        MenuItem item = menu.findItem(R.id.menu_settings);
-        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 
@@ -322,6 +323,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             case R.id.menu_settings: {
                 Intent intent = new Intent(this, BootstrapPreferences.class);
                 startActivityIfNeeded(intent, -1);
+                break;
+            }
+            case R.id.menu_import_key: {
+                importKey();
                 break;
             }
             default:
@@ -348,7 +353,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPhone.setText(mPhoneNumber);
             syncCountryCodeSelector();
 
-            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.server, false);
+            startValidationCode(REQUEST_MANUAL_VALIDATION, saved.sender, saved.server, false);
         }
 
         if (mKey == null) {
@@ -458,7 +463,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
-        mImportKeys.setEnabled(enabled);
         mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
@@ -472,15 +476,21 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .show();
     }
 
-    private boolean checkInput() {
+    private boolean checkInput(boolean importing) {
         mPhoneNumber = null;
         String phoneStr = null;
 
         // check name first
-        mName = mNameText.getText().toString().trim();
-        if (mName.length() == 0) {
-            error(R.string.title_no_name, R.string.msg_no_name);
-            return false;
+        if (!importing) {
+            mName = mNameText.getText().toString().trim();
+            if (mName.length() == 0) {
+                error(R.string.title_no_name, R.string.msg_no_name);
+                return false;
+            }
+        }
+        else {
+            // we will use the one in the imported key
+            mName = null;
         }
 
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
@@ -536,21 +546,36 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private void startValidation() {
         enableControls(false);
 
-        if (!checkInput()) {
+        if (!checkInput(false)) {
             enableControls(true);
         }
         else {
-            // start async request
-            Log.d(TAG, "phone number checked, sending validation request");
-            startProgress();
-
-            // key generation finished, start immediately
-            EndpointServer.EndpointServerProvider provider =
-                Preferences.getEndpointServerProvider(this);
-            mValidator = new NumberValidator(this, provider, mName, mPhoneNumber, mKey, mPassphrase);
-            mValidator.setListener(this);
-            mValidator.start();
+            startValidationNormal(null);
         }
+    }
+
+    private void startValidationNormal(String manualServer) {
+        // start async request
+        Log.d(TAG, "phone number checked, sending validation request");
+        startProgress();
+
+        EndpointServer.EndpointServerProvider provider;
+        if (manualServer != null) {
+            provider = new EndpointServer.SingleServerProvider(manualServer);
+        }
+        else {
+            provider = Preferences.getEndpointServerProvider(this);
+        }
+
+        boolean imported = (mImportedPrivateKey != null && mImportedPublicKey != null);
+
+        mValidator = new NumberValidator(this, provider, mName, mPhoneNumber,
+            imported ? null : mKey, mPassphrase);
+        mValidator.setListener(this);
+        if (imported)
+            mValidator.importKey(mImportedPrivateKey, mImportedPublicKey);
+
+        mValidator.start();
     }
 
     /**
@@ -569,17 +594,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      * @param v not used
      */
     public void validateCode(View v) {
-        if (checkInput())
-            startValidationCode(REQUEST_VALIDATION_CODE);
+        if (checkInput(false))
+            startValidationCode(REQUEST_VALIDATION_CODE, null);
     }
 
-    /**
-     * Opens import keys from another device wizard.
-     * Used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void importKeys(View v) {
-        if (checkInput()) {
+    /** Opens import keys from another device wizard. */
+    private void importKey() {
+        if (checkInput(true)) {
             // import keys -- number verification with server is still needed
             // though because of key rollback protection
             // TODO allow for manual validation too
@@ -649,6 +670,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void startImport(ZipInputStream zip, String passphrase) {
         PersonalKeyImporter importer = null;
+        String manualServer = null;
 
         try {
             importer = new PersonalKeyImporter(zip, passphrase);
@@ -657,12 +679,25 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // we do not save this test key into the mKey field
             // we need it to be clear so the validator will use the imported data
             // createPersonalKey is called only to make sure data is valid
-            if (importer.createPersonalKey() != null) {
-                mImportedPublicKey = importer.getPublicKeyData();
-                mImportedPrivateKey = importer.getPrivateKeyData();
-            }
-            else
-                throw new Exception("unable to load imported personal key.");
+            PersonalKey key = importer.createPersonalKey();
+            if (key == null)
+                throw new PGPException("unable to load imported personal key.");
+
+            String uidStr = key.getUserId(null);
+            PGPUserID uid = PGPUserID.parse(uidStr);
+            if (uid == null)
+                throw new PGPException("malformed user ID: " + uidStr);
+
+            // check that uid matches phone number
+            String email = uid.getEmail();
+            String numberHash = MessageUtils.sha1(mPhoneNumber);
+            String localpart = XmppStringUtils.parseLocalpart(email);
+            if (!numberHash.equalsIgnoreCase(localpart))
+                throw new PGPException("email does not match phone number: " + email);
+
+            manualServer = XmppStringUtils.parseDomain(email);
+            mImportedPublicKey = importer.getPublicKeyData();
+            mImportedPrivateKey = importer.getPrivateKeyData();
         }
 
         catch (Exception e) {
@@ -676,7 +711,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         finally {
             try {
-                importer.close();
+                if (importer != null)
+                    importer.close();
             }
             catch (Exception e) {
                 // ignored
@@ -688,7 +724,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = passphrase;
 
             // begin usual validation
-            startValidation();
+            startValidationNormal(manualServer);
         }
     }
 
@@ -915,27 +951,27 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v) {
+    public void onValidationRequested(NumberValidator v, String sender) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
-        proceedManual();
+        proceedManual(sender);
     }
 
     /** Proceeds to the next step in manual validation. */
-    private void proceedManual() {
+    private void proceedManual(final String sender) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 abortProgress(true);
-                startValidationCode(REQUEST_MANUAL_VALIDATION);
+                startValidationCode(REQUEST_MANUAL_VALIDATION, sender);
             }
         });
     }
 
-    private void startValidationCode(int requestCode) {
-        startValidationCode(requestCode, null, true);
+    private void startValidationCode(int requestCode, String sender) {
+        startValidationCode(requestCode, sender, null, true);
     }
 
-    private void startValidationCode(int requestCode, EndpointServer server, boolean saveProgress) {
+    private void startValidationCode(int requestCode, String sender, EndpointServer server, boolean saveProgress) {
         // validator might be null if we are skipping verification code request
         String serverUri = null;
         if (server != null)
@@ -948,7 +984,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(this,
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri);
+                serverUri, sender);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
@@ -959,6 +995,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);
         i.putExtra("server", serverUri);
+        i.putExtra("sender", sender);
         i.putExtra(KeyPairGeneratorService.EXTRA_KEY, mKey);
 
         startActivityForResult(i, REQUEST_MANUAL_VALIDATION);

@@ -29,7 +29,6 @@ import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import org.apache.http.impl.conn.IdleConnectionHandler;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PRNGFixes;
@@ -65,6 +64,8 @@ import java.security.cert.CertificateException;
 public class Kontalk extends Application {
     public static final String TAG = Kontalk.class.getSimpleName();
 
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
+
     private PersonalKey mDefaultKey;
 
     /**
@@ -81,9 +82,9 @@ public class Kontalk extends Application {
      * Keep-alive reference counter.
      * This is used throughout the activities to keep track of application
      * usage. Please note that this is not to be confused with
-     * {@link IdleConnectionHandler} reference counter, since this counter here
-     * is used only by {@link NetworkStateReceiver} and a few others to check
-     * if the Message Center should be started or not.<br>
+     * {@link MessageCenterService#IdleConnectionHandler} reference counter,
+     * since this counter here is used only by {@link NetworkStateReceiver} and
+     * a few others to check if the Message Center should be started or not.<br>
      * Call {@link #hold} to increment the counter, {@link #release} to
      * decrement it.
      */
@@ -102,9 +103,11 @@ public class Kontalk extends Application {
         // init preferences
         Preferences.init(this);
 
+        // init notification system
+        MessagingNotification.init(this);
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.OnSharedPreferenceChangeListener prefListener =
-            new SharedPreferences.OnSharedPreferenceChangeListener() {
+        mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 // no account - abort
@@ -133,7 +136,7 @@ public class Kontalk extends Application {
                 }
             }
         };
-        prefs.registerOnSharedPreferenceChangeListener(prefListener);
+        prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
 
         // TODO listen for changes to phone numbers
 

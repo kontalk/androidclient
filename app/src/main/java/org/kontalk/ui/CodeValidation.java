@@ -89,9 +89,19 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
         }
 
         int requestCode = getIntent().getIntExtra("requestCode", -1);
-        if (requestCode == NumberValidation.REQUEST_VALIDATION_CODE) {
+        if (requestCode == NumberValidation.REQUEST_VALIDATION_CODE ||
+                getIntent().getStringExtra("sender") == null) {
+            findViewById(R.id.code_validation_sender)
+                .setVisibility(View.GONE);
+            findViewById(R.id.code_validation_intro2)
+                .setVisibility(View.GONE);
             ((TextView) findViewById(R.id.code_validation_intro))
-                .setText(R.string.code_validation_intro2);
+                .setText(R.string.code_validation_intro_manual);
+        }
+        else {
+            String sender = getIntent().getStringExtra("sender");
+            ((TextView) findViewById(R.id.code_validation_sender))
+                .setText(sender);
         }
 
         Intent i = getIntent();
@@ -245,7 +255,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     @Override
-    public void onValidationRequested(NumberValidator v) {
+    public void onValidationRequested(NumberValidator v, String sender) {
         // not used.
     }
 

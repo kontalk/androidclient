@@ -127,6 +127,8 @@ public interface IBillingService {
 
     public void queryInventoryAsync(boolean querySkuDetails, QueryInventoryFinishedListener listener);
 
+    public void consumeAsync(IPurchase purchase, OnConsumeFinishedListener listener);
+
     public void endAsyncOperation();
 
     /**
@@ -136,5 +138,7 @@ public interface IBillingService {
      * disposed of, it can't be used again.
      */
     public void dispose();
+
+    public boolean isDisposed();
 
 }

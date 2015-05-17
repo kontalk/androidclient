@@ -1,26 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
 <resources>
 
     <declare-styleable name="CircularSeekBar">
-        <attr name="progress" format="integer"></attr>
-        <attr name="max" format="integer"></attr>
-        <attr name="move_outside_circle" format="boolean"></attr>
-        <attr name="maintain_equal_circle" format="boolean"></attr>
-        <attr name="use_custom_radii" format="boolean"></attr>
+        <attr name="progress" format="integer"/>
+        <attr name="max" format="integer"/>
+        <attr name="move_outside_circle" format="boolean"/>
+        <attr name="maintain_equal_circle" format="boolean"/>
+        <attr name="use_custom_radii" format="boolean"/>
         <attr name="circle_x_radius" format="float" />
         <attr name="circle_y_radius" format="float" />
         <attr name="circle_stroke_width" format="float" />
         <attr name="pointer_radius" format="float" />
         <attr name="pointer_halo_width" format="float" />
-        <attr name="pointer_halo_border_width" format="float"></attr>
-        <attr name="circle_color" format="string"></attr>
-        <attr name="circle_progress_color" format="string"></attr>
-        <attr name="pointer_color" format="string"></attr>
-        <attr name="pointer_halo_color" format="string"></attr>
-        <attr name="pointer_alpha_ontouch" format="integer"></attr>
-        <attr name="start_angle" format="float"></attr>
-        <attr name="end_angle" format="float"></attr>
-        <attr name="circle_fill" format="string"></attr>
+        <attr name="pointer_halo_border_width" format="float"/>
+        <attr name="circle_color" format="color"/>
+        <attr name="circle_progress_color" format="color"/>
+        <attr name="pointer_color" format="color"/>
+        <attr name="pointer_halo_color" format="color"/>
+        <attr name="pointer_alpha_ontouch" format="integer"/>
+        <attr name="start_angle" format="float"/>
+        <attr name="end_angle" format="float"/>
+        <attr name="circle_fill" format="color"/>
     </declare-styleable>
 
 </resources>

@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.roster.RosterEntry;
 
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
@@ -77,6 +78,11 @@ abstract class MessageCenterPacketListener implements PacketListener {
         return (instance != null) ? instance.mMyUsername : null;
     }
 
+    protected RosterEntry getRosterEntry(String jid) {
+        MessageCenterService instance = mInstance.get();
+        return (instance != null) ? instance.getRosterEntry(jid) : null;
+    }
+
     protected void sendBroadcast(Intent intent) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
@@ -127,6 +133,14 @@ abstract class MessageCenterPacketListener implements PacketListener {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.resendPendingMessages(retrying);
+    }
+
+    protected void resendPending(boolean retrying) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null) {
+            instance.resendPendingMessages(retrying);
+            instance.resendPendingReceipts();
+        }
     }
 
     protected boolean isPushNotificationsEnabled() {

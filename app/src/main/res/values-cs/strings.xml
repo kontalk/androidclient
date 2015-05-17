@@ -12,16 +12,19 @@
   <string name="menu_compose">Napsat</string>
   <string name="menu_delete_all">Smazat konverzace</string>
   <string name="menu_search">Hledat</string>
+  <string name="mykey_activity_title">Můj osobní klíč</string>
   <string name="menu_settings">Nastavení</string>
   <string name="menu_offline">Přejít do režimu Offline</string>
   <string name="menu_online">Přejít do režimu Online</string>
+  <string name="menu_import_key">Importovat klíč</string>
   <string name="pref_network_settings">Nastavení sítě</string>
   <string name="pref_network_uri">Zadat adresu serveru ručně</string>
   <string name="pref_title_network_uri">Toto nastavení má přednost před automatickou správou seznamu serverů</string>
   <string name="number_validation_intro1">Zadejte prosím své jméno, zvolte svou národní předvolbu a zadejte své mobilní telefonní číslo. Bude vám zaslána SMS zpráva s ověřovacím kódem. Vaše telefonní číslo bude použito pouze v tomto jednom případě a následně bude zapomenuto.</string>
   <string name="number_validation_intro2">Pokud nemůžete přijmout SMS na tomto zařízení, zadejte telefonní číslo, které vám patří, a zadejte ověřovací kód, který vám přijde v SMS.</string>
-  <string name="code_validation_intro">Za chvilku by vám měla přijít SMS na číslo, které jste zadali. Zadejte přijatý kód níže.</string>
-  <string name="code_validation_intro2">Zadejte prosím ověřovací kód, který jste obdrželi. Ověřovací kód může být použit pouze jednou.</string>
+  <string name="code_validation_intro">Zanedlouho by vám měla z tohoto čísla přijít SMS nebo hovor:</string>
+  <string name="code_validation_intro2">Níže prosím zadejte kód, který vám přišel nebo byl přečten.</string>
+  <string name="code_validation_intro_manual">Zadejte prosím ověřovací kód, který jste obdrželi. Ověřovací kód může být použit pouze jednou.</string>
   <string name="hint_validation_name">Vaše jméno</string>
   <string name="hint_validation_number">Vaše číslo</string>
   <string name="hint_validation_code">Ověřovací kód</string>
@@ -107,6 +110,7 @@
   <string name="pref_update_server_list">Aktualizovat seznam serverů</string>
   <string name="server_list_last_update">Poslední aktualizace: %s</string>
   <string name="pref_title_push_notifications">Používat push notifikace, pokud je server podporuje, šetří baterii</string>
+  <string name="pref_title_disabled_push_notifications">Push notifikace nejsou na tomto zařízení podporovány</string>
   <string name="pref_push_notifications">Push notifikace</string>
   <string name="hint_search_full">Prohledat zprávy</string>
   <string name="hint_search_quickbox">Text ve vašich zprávách</string>
@@ -132,7 +136,6 @@
   <string name="send_mime_not_supported">Tento typ souboru není podporován.</string>
   <string name="button_validate">Požádat o ověřovací kód</string>
   <string name="button_validation_code">Již mám ověřovací kód</string>
-  <string name="button_import_keys">Importovat klíče z jiného zařízení</string>
   <string name="button_validation_register">Ověřit</string>
   <string name="notify_ticker_download_completed">Stahování bylo dokončeno</string>
   <string name="notify_title_download_completed">Stahování bylo dokončeno</string>
@@ -185,6 +188,7 @@
   <string name="seen_moment_ago_label">před chvilkou</string>
   <string name="seen_online_label">online</string>
   <string name="seen_typing_label">píše...</string>
+  <string name="invitation_sent_label">pozvánka odeslána</string>
   <string name="pref_custom_background">Vlastní pozadí</string>
   <string name="pref_background_uri">Pozadí</string>
   <string name="pref_title_background_uri">Nastavit vlastní obrázek pozadí konverzace</string>
@@ -220,6 +224,7 @@
   <string name="attachment_audio">Zvuk</string>
   <string name="chooser_send_picture">Odeslat obrázek</string>
   <string name="chooser_error_no_camera">Externí úložiště není dostupné. Snímání fotek fotoaparátem nebude povoleno.</string>
+  <string name="chooser_select_link">Zvolte akci</string>
   <string name="status_activity_title">Stavová zpráva</string>
   <string name="hint_status_entry">Sem napište svoji stavovou zprávu</string>
   <string name="header_recent_status">Dříve použité stavové zprávy</string>
@@ -265,13 +270,16 @@
   <string name="security_error_decrypt_failed">\u0020(dešifrování se nezdařilo)</string>
   <string name="security_error_integrity_check">\u0020(test integrity)</string>
   <string name="security_error_public_key_unavail">\u0020(veřejný klíč nedostupný)</string>
+  <string name="invite_notification">vás zve na chat</string>
   <string name="title_invitation">Pozvánka ke konverzaci</string>
-  <string name="text_invitation_known">Požadavek od\n%1$s &lt;%2$s&gt;\n(%3$s)\nOtisk: %4$s</string>
-  <string name="text_invitation_unknown">Požadavek od\n%1$s\nOtisk: %2$s</string>
+  <string name="text_invitation1">Požadavek od:</string>
+  <string name="text_invitation2">Otisk:</string>
   <string name="button_accept">Přijmout</string>
   <string name="button_block">Blokovat</string>
+  <string name="button_identity">Identita</string>
   <string name="msg_connecting_iab">Připojuji se ke Google Play…</string>
   <string name="msg_iab_thankyou">Díky!</string>
+  <string name="msg_iab_thankyou_warning">Došlo k chybě, ale peníze přisly. Díky!</string>
   <string name="iab_error_setup">Nastala chyba při nastavení placení uvnitř aplikace (%d)</string>
   <string name="iab_error_query">Došlo k chybě při práci se systémem placení uvnitř aplikace (%d)</string>
   <string name="copy_clipboard">Zkopírovat do schránky</string>
@@ -279,9 +287,13 @@
   <string name="warn_no_personal_key">Nepodařilo se načíst osobní klíč. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
   <string name="warn_no_public_key">Nepodařilo se najít veřejný klíč pro tohoto uživatele. Zkuste aktualizovat váš seznam kontaktů nebo vypněte šifrování v nastavení.</string>
   <string name="warn_encryption_failed">Nepodařilo se zašifrovat zprávu. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
+  <string name="warn_not_subscribed">Zprávu se nepodařilo odeslat. Uživatel dosud neakceptoval vaši pozvánku.</string>
   <string name="pref_sync_sim_contacts">Synchronizovat SIM kontakty</string>
   <string name="pref_title_off_sync_sim_contacts">Při zjišťování registrovaných uživatelů se nepoužijí kontakty na kartě SIM</string>
   <string name="pref_title_on_sync_sim_contacts">Při zjišťování registrovaných uživatelů se použijí i kontakty na kartě SIM</string>
+  <string name="pref_sync_invisible_contacts">Zahrnout neviditelné kontakty</string>
+  <string name="pref_title_off_sync_invisible_contacts">Nezahrnovat kontakty, které nejsou zobrazené v aplikaci Kontakty. Zapněte pro DAVDroid</string>
+  <string name="pref_title_on_sync_invisible_contacts">Kontakty, které nejsou zobrazené v aplikaci Kontakty, budou zahrnuty do Kontalku</string>
   <string name="pref_accept_any_certificate">Akceptovat jakýkoliv SSL certifikát</string>
   <string name="pref_delete_account">Smazat váš účet</string>
   <string name="msg_delete_account">Při smazání vašeho účtu dojde také ke smazání všech vašich zpráv. Váš účet na serveru bude smazán automaticky po několika týdnech.</string>
@@ -294,9 +306,8 @@
   <string name="title_auth_error">Chyba při autentizaci</string>
   <string name="msg_auth_error">&lt;b&gt;UPOZORNĚNÍ!&lt;/b&gt;&lt;br&gt;Při posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
   <string name="warn_invite_no_app">Není dostupná žádná aplikace na pozvání uživatelů</string>
-  <string name="pref_text_enter">Zobrazit klávesu Enter</string>
-  <string name="pref_title_on_text_enter">Zobrazuji klávesu Enter při psaní zprávy</string>
-  <string name="pref_title_off_text_enter">Zobrazuji výchozí akční klávesu při psaní zprávy</string>
+  <string name="pref_text_enter">klávesa Enter</string>
+  <string name="pref_title_text_enter">Zvolte chování klávesy Enter na klávesnici</string>
   <string name="title_password1">Heslo:</string>
   <string name="title_password2">Potvrďte heslo:</string>
   <string name="err_password_too_short">Heslo musí mít nejméně %d znaků.</string>
@@ -313,4 +324,7 @@
   <string name="pref_title_image_resize">Před odesláním měnit velikost obrázků</string>
   <string name="err_server_invalid_format">Neplatný formát adresy.</string>
   <string name="err_no_contacts_app">Nebyla nalezena žádná aplikace pro výběr kontaktů.</string>
+  <string name="warning_public_key">POZOR! Osobní klíč tohoto uživatele se neočekávaně změnil! Klikněte sem pro podrobnosti.</string>
+  <string name="title_public_key_warning">Došlo ke změně osobního klíče</string>
+  <string name="msg_public_key_warning">Osobní klíč tohoto uživatele se změnil. Ověřte prosím s tímto uživatelem, jestli reinstaloval Kontalk nebo si záměrně vygeneroval nový klíč, v opačném případě může být ohrožena bezpečnost komunikace!</string>
 </resources>

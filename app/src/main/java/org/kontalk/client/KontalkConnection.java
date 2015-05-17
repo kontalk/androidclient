@@ -34,7 +34,7 @@ import javax.net.ssl.X509TrustManager;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sm.predicates.ForMatchingPredicateOrAfterXStanzas;
@@ -196,12 +196,12 @@ public class KontalkConnection extends XMPPTCPConnection {
         public static final AckPredicate INSTANCE = new AckPredicate();
 
         private AckPredicate() {
-            super(new PacketFilter() {
+            super(new StanzaFilter() {
                 @Override
                 public boolean accept(Stanza packet) {
                     return (packet instanceof Message &&
                         (((Message) packet).getBody() != null ||
-                          DeliveryReceipt.from(packet) != null ||
+                          DeliveryReceipt.from((Message) packet) != null ||
                            DeliveryReceiptRequest.from(packet) != null));
                 }
             }, 5);

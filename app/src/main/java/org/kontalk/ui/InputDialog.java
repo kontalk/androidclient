@@ -23,10 +23,13 @@ import org.kontalk.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 
 
@@ -67,6 +70,19 @@ public class InputDialog {
 
             setView(view);
         }
+
+        @NonNull
+        @Override
+        public AlertDialog create() {
+            AlertDialog dialog = super.create();
+            requestInputMethod(dialog);
+            return dialog;
+        }
+    }
+
+    static void requestInputMethod(Dialog dialog) {
+        Window window = dialog.getWindow();
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
 }

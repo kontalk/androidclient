@@ -82,6 +82,20 @@ public final class PreferencesActivity extends PreferenceActivity {
             return;
         }
 
+        // upgrade from old version: pref_text_enter becomes string
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        try {
+            prefs.getString("pref_text_enter", null);
+        }
+        catch (ClassCastException e) {
+            // legacy mode
+            prefs.edit()
+                .putString("pref_text_enter",
+                    prefs.getBoolean("pref_text_enter", false) ?
+                    "newline" : "default")
+            .commit();
+        }
+
         addPreferencesFromResource(R.xml.preferences);
 
         setupActivity();

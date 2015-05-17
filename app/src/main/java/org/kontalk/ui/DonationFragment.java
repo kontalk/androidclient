@@ -29,6 +29,7 @@ import org.kontalk.billing.IInventory;
 import org.kontalk.billing.IProductDetails;
 import org.kontalk.billing.IPurchase;
 import org.kontalk.billing.OnBillingSetupFinishedListener;
+import org.kontalk.billing.OnConsumeFinishedListener;
 import org.kontalk.billing.OnPurchaseFinishedListener;
 import org.kontalk.billing.QueryInventoryFinishedListener;
 
@@ -66,13 +67,43 @@ public class DonationFragment extends Fragment implements OnClickListener {
         public void onPurchaseFinished(BillingResult result, IPurchase purchase) {
             if (mBillingService == null) return;
 
-            // end async operation
-            mBillingService.endAsyncOperation();
-
-            if (result.isSuccess())
-                Toast.makeText(getActivity(), R.string.msg_iab_thankyou, Toast.LENGTH_LONG).show();
+            if (result.isSuccess()) {
+                // consume purchase in the background
+                mBillingService.consumeAsync(purchase, mConsumeFinishedListener);
+            }
         }
     };
+
+    OnConsumeFinishedListener mConsumeFinishedListener = new OnConsumeFinishedListener() {
+        public void onConsumeFinished(IPurchase purchase, BillingResult result) {
+            int msg;
+            if (result.isSuccess())
+                msg = R.string.msg_iab_thankyou;
+            else
+                msg = R.string.msg_iab_thankyou_warning;
+            Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
+        }
+    };
+
+    private final class OnPreConsumeFinishedListener implements OnConsumeFinishedListener {
+        private int mConsumedItems;
+        private String[] mItems;
+
+        public void onConsumeFinished(IPurchase purchase, BillingResult result) {
+            mConsumedItems++;
+            if (mConsumedItems >= mItems.length) {
+                mConsumedItems = 0;
+                showDonationSelector(mItems);
+            }
+        }
+
+        public void setDonationItems(String[] items) {
+            mItems = items;
+            mConsumedItems = 0;
+        }
+    }
+
+    OnPreConsumeFinishedListener mPreConsumeFinishedListener = new OnPreConsumeFinishedListener();
 
     public IBillingService getBillingService() {
         return mBillingService;
@@ -159,7 +190,6 @@ public class DonationFragment extends Fragment implements OnClickListener {
 
             mBillingService.startSetup(new OnBillingSetupFinishedListener() {
                 public void onSetupFinished(BillingResult result) {
-
                     if (!result.isSuccess()) {
                         alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
                         mBillingService = null;
@@ -192,34 +222,35 @@ public class DonationFragment extends Fragment implements OnClickListener {
                 }
 
                 else {
-
-                    // end async operation
-                    mBillingService.endAsyncOperation();
-
                     // prepare items for the dialog
                     String[] dialogItems = new String[iabItems.length];
 
                     for (int i = 0; i < iabItems.length; i++) {
                         IProductDetails sku = inventory.getSkuDetails(iabItems[i]);
-                        if (sku != null)
+                        if (sku != null) {
                             dialogItems[i] = sku.getDescription();
-                        else
+                        }
+                        else {
                             dialogItems[i] = iabItems[i];
+                        }
                     }
 
-                    // show dialog with choices
-                    new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.title_donation)
-                        .setItems(dialogItems, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // start the purchase
-                                String itemId = iabItems[which];
-                                mBillingService.launchPurchaseFlow(getActivity(), itemId,
-                                        IAB_REQUEST_CODE, mPurchaseFinishedListener);
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .show();
+                    // setup pre-consume listener
+                    mPreConsumeFinishedListener.setDonationItems(dialogItems);
+                    int purchases = 0;
+                    // consume purchases just to be sure
+                    for (String item : iabItems) {
+                        IPurchase purchase = inventory.getPurchase(item);
+                        if (purchase != null) {
+                            purchases++;
+                            mBillingService.consumeAsync(purchase,
+                                mPreConsumeFinishedListener);
+                        }
+                    }
+
+                    // no purchases to be consumed, show donation now
+                    if (purchases == 0)
+                        showDonationSelector(dialogItems);
                 }
             }
         };
@@ -228,6 +259,24 @@ public class DonationFragment extends Fragment implements OnClickListener {
         if (mBillingService != null)
             mBillingService.queryInventoryAsync(true, Arrays
                 .asList(iabItems), gotInventoryListener);
+    }
+
+    private void showDonationSelector(CharSequence[] dialogItems) {
+        final String[] iabItems = getResources().getStringArray(R.array.iab_items);
+
+        // show dialog with choices
+        new AlertDialog.Builder(getActivity())
+            .setTitle(R.string.title_donation)
+            .setItems(dialogItems, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    // start the purchase
+                    String itemId = iabItems[which];
+                    mBillingService.launchPurchaseFlow(getActivity(), itemId,
+                        IAB_REQUEST_CODE, mPurchaseFinishedListener);
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void donateGoogle() {

@@ -77,6 +77,11 @@
             android:summaryOn="@string/pref_title_on_sync_sim_contacts"
             android:title="@string/pref_sync_sim_contacts"
             android:defaultValue="@bool/pref_default_sync_sim_contacts"/>
+        <CheckBoxPreference android:key="pref_sync_nonvisible_contacts"
+            android:summaryOff="@string/pref_title_off_sync_invisible_contacts"
+            android:summaryOn="@string/pref_title_on_sync_invisible_contacts"
+            android:title="@string/pref_sync_invisible_contacts"
+            android:defaultValue="@bool/pref_default_sync_invisible_contacts"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:key="pref_maintenance"

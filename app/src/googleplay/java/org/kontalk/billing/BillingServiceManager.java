@@ -35,7 +35,7 @@ public class BillingServiceManager {
     }
 
     public static IBillingService getInstance(Context context) {
-        if (sInstance == null)
+        if (sInstance == null || sInstance.isDisposed())
             sInstance = new GoogleBillingService(context);
 
         return sInstance;

@@ -38,7 +38,7 @@ class PushDiscoverItemsListener extends MessageCenterPacketListener {
     @Override
     public void processPacket(Stanza packet) {
         // we don't need this listener anymore
-        getConnection().removeAsyncPacketListener(this);
+        getConnection().removeAsyncStanzaListener(this);
 
         DiscoverItems query = (DiscoverItems) packet;
         List<DiscoverItems.Item> items = query.getItems();

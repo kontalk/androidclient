@@ -20,8 +20,6 @@
   <string name="pref_title_network_uri">Iso vai sobrescribir a xestión automática da lista de servidores</string>
   <string name="number_validation_intro1">Por favor, escribe o teu nome, selecciona o código do teu país e introduce o teu número de teléfono móbil. Un SMS cun código de verificación será enviado. O teu número de teléfono será usado unha vez e despois descartado.</string>
   <string name="number_validation_intro2">Se non podes recibir SMS neste dispositivo, insire outro número de teu e usa o código de verificación que recibirás por SMS.</string>
-  <string name="code_validation_intro">Deberás recibir unha mensaxe SMS no número inserido en breves instantes. Por favor, insire aquí abaixo o código recibido.</string>
-  <string name="code_validation_intro2">Por favor, insire o código de verificación que recibiches. O código de verificación só pode ser usado unha única vez.</string>
   <string name="hint_validation_name">O teu nome</string>
   <string name="hint_validation_number">O teu número</string>
   <string name="hint_validation_code">Código de verificación</string>

@@ -33,13 +33,17 @@ import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.kontalk.util.MessageUtils;
+
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
+import org.spongycastle.openpgp.PGPKeyFlags;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPKeyRingGenerator;
 import org.spongycastle.openpgp.PGPObjectFactory;
@@ -50,6 +54,7 @@ import org.spongycastle.openpgp.PGPSecretKey;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
+import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.spongycastle.openpgp.PGPUserAttributeSubpacketVector;
 import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
@@ -168,14 +173,24 @@ public class PGP {
             String passphrase)
                 throws PGPException {
 
+        PGPSignatureSubpacketGenerator sbpktGen;
+
+        // some hashed subpackets for the key
+        sbpktGen = new PGPSignatureSubpacketGenerator();
+        sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_SIGN | PGPKeyFlags.CAN_CERTIFY);
+
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.signKey,
-            id, sha1Calc, null, null,
+            id, sha1Calc, sbpktGen.generate(), null,
             new JcaPGPContentSignerBuilder(pair.signKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
             new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
                 .setProvider(PROVIDER).build(passphrase.toCharArray()));
 
-        keyRingGen.addSubKey(pair.encryptKey);
+        // some hashed subpackets for the subkey
+        sbpktGen = new PGPSignatureSubpacketGenerator();
+        sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_ENCRYPT_COMMS);
+
+        keyRingGen.addSubKey(pair.encryptKey, sbpktGen.generate(), null);
 
         PGPSecretKeyRing secRing = keyRingGen.generateSecretKeyRing();
         PGPPublicKeyRing pubRing = keyRingGen.generatePublicKeyRing();
@@ -225,14 +240,14 @@ public class PGP {
         sGen.init(certification, pgpPrivKey);
 
         return PGPPublicKey.addCertification(keyToBeSigned, attributes,
-                sGen.generateCertification(attributes, keyToBeSigned));
+            sGen.generateCertification(attributes, keyToBeSigned));
     }
 
     public static PGPPublicKey revokeUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
             throws SignatureException, PGPException {
 
         return PGP.signUserAttributes(secret, keyToBeSigned, attributes,
-                PGPSignature.CERTIFICATION_REVOCATION);
+            PGPSignature.CERTIFICATION_REVOCATION);
     }
 
     /** Revokes the given key. */
@@ -352,21 +367,66 @@ public class PGP {
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {
-        return MessageUtils.bytesToHex(publicKey.getFingerprint());
+        return MessageUtils.bytesToHex(publicKey.getFingerprint()).toUpperCase(Locale.US);
     }
 
     public static String getFingerprint(byte[] publicKeyring) throws IOException, PGPException {
         PGPPublicKey pk = getMasterKey(publicKeyring);
-        return MessageUtils.bytesToHex(pk.getFingerprint());
+        return MessageUtils.bytesToHex(pk.getFingerprint()).toUpperCase(Locale.US);
+    }
+
+    // FIXME very ugly method
+    public static String formatFingerprint(String fingerprint) {
+        StringBuilder fpr = new StringBuilder();
+        int length = fingerprint.length();
+        for (int i = 0; i < length; i += 4) {
+            fpr.append(fingerprint.substring(i, i + 4));
+            if (i < (length - 4)) {
+                fpr.append(' ');
+                if (i == (length / 2 - 4))
+                    fpr.append(' ');
+            }
+        }
+        return fpr.toString();
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
+    // TODO return type should be PGPUserID
     public static String getUserId(PGPPublicKey key, String host) {
-        // TODO ehm :)
-        return (String) key.getUserIDs().next();
+        String first = null;
+
+        @SuppressWarnings("unchecked")
+        Iterator<String> uids = key.getUserIDs();
+        while (uids.hasNext()) {
+            String uid = uids.next();
+            // save the first if everything else fails
+            if (first == null) {
+                first = uid;
+                // no host to verify, exit now
+                if (host == null)
+                    break;
+            }
+
+            if (uid != null) {
+                // parse uid
+                PGPUserID parsed = PGPUserID.parse(uid);
+                if (parsed != null) {
+                    String email = parsed.getEmail();
+                    if (email != null) {
+                        // check if email host name matches
+                        if (host.equalsIgnoreCase(XmppStringUtils.parseDomain(email))) {
+                            return uid;
+                        }
+                    }
+                }
+            }
+        }
+
+        return first;
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
+    // TODO return type should be PGPUserID
     public static String getUserId(byte[] publicKeyring, String host) throws IOException, PGPException {
         PGPPublicKey pk = getMasterKey(publicKeyring);
         return getUserId(pk, host);
@@ -481,6 +541,5 @@ public class PGP {
 
         return PGPSecretKeyRing.copyWithNewPassword(secRing, decryptor, encryptor);
     }
-
 
 }

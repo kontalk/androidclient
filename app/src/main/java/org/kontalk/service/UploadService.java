@@ -173,7 +173,9 @@ public class UploadService extends IntentService implements ProgressListener {
                         mCompressed = MediaStorage
                             .resizeImage(this, file, databaseId, compress);
                         mTotalBytes = length = mCompressed.length();
+                        // update mime and file with the new compressed image
                         file = Uri.fromFile(mCompressed);
+                        mime = MediaStorage.COMPRESS_MIME;
                     }
                     catch (Exception e) {
                         Log.w(TAG, "error compressing image", e);
@@ -237,7 +239,7 @@ public class UploadService extends IntentService implements ProgressListener {
             mNotificationBuilder = new ProgressNotificationBuilder(getApplicationContext(),
                 R.layout.progress_notification,
                 getString(R.string.sending_message),
-                R.drawable.stat_notify,
+                R.drawable.ic_stat_notify,
                 pi);
         }
 
@@ -291,7 +293,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
         // create notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext())
-            .setSmallIcon(R.drawable.stat_notify)
+            .setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle(getString(R.string.notify_title_upload_error))
             .setContentText(text)
             .setTicker(ticker)

@@ -18,9 +18,11 @@
 
 package org.kontalk.provider;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
@@ -39,6 +41,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
@@ -54,6 +57,7 @@ import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPCoder;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.data.Contact;
+import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.util.MessageUtils;
@@ -64,13 +68,16 @@ import org.kontalk.util.XMPPUtils;
 public class UsersProvider extends ContentProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".users";
 
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     private static final String DATABASE_NAME = "users.db";
     private static final String TABLE_USERS = "users";
     private static final String TABLE_USERS_OFFLINE = "users_offline";
+    private static final String TABLE_KEYS = "keys";
 
     private static final int USERS = 1;
     private static final int USERS_JID = 2;
+    private static final int KEYS = 3;
+    private static final int KEYS_JID = 4;
 
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
@@ -100,12 +107,29 @@ public class UsersProvider extends ContentProvider {
         private static final String SCHEMA_USERS_OFFLINE =
             "CREATE TABLE " + TABLE_USERS_OFFLINE + CREATE_TABLE_USERS;
 
+        private static final String CREATE_TABLE_KEYS = "(" +
+            "jid TEXT PRIMARY KEY," +
+            "public_key BLOB," +
+            "fingerprint TEXT" +
+            ")";
+
+        /** This table will contain keys verified (and trusted) by the user. */
+        private static final String SCHEMA_KEYS =
+            "CREATE TABLE " + TABLE_KEYS + " " + CREATE_TABLE_KEYS;
+
+        private static final String[] SCHEMA_UPGRADE_V7 = {
+            SCHEMA_KEYS,
+            "INSERT INTO " + TABLE_KEYS + " SELECT jid, public_key, fingerprint FROM " + TABLE_USERS,
+        };
+
         // any upgrade - just replace the table
         private static final String[] SCHEMA_UPGRADE = {
             "DROP TABLE IF EXISTS " + TABLE_USERS,
             SCHEMA_USERS,
             "DROP TABLE IF EXISTS " + TABLE_USERS_OFFLINE,
             SCHEMA_USERS_OFFLINE,
+            "DROP TABLE IF EXISTS " + TABLE_KEYS,
+            SCHEMA_KEYS,
         };
 
         private Context mContext;
@@ -124,16 +148,22 @@ public class UsersProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SCHEMA_USERS);
             db.execSQL(SCHEMA_USERS_OFFLINE);
+            db.execSQL(SCHEMA_KEYS);
             mNew = true;
         }
 
-        /** TODO simplify upgrade process based on org.kontalk database schema */
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (oldVersion != newVersion) {
-                for (String sql : SCHEMA_UPGRADE)
-                    db.execSQL(sql);
-                mNew = true;
+            switch (oldVersion) {
+                case 7:
+                    // create keys table and trust anyone
+                    for (String sql : SCHEMA_UPGRADE_V7)
+                        db.execSQL(sql);
+                    break;
+                default:
+                    for (String sql : SCHEMA_UPGRADE)
+                        db.execSQL(sql);
+                    mNew = true;
             }
         }
 
@@ -191,19 +221,25 @@ public class UsersProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
 
+        // use the same table name as an alias
+        String table = offline ? (TABLE_USERS_OFFLINE + " " + TABLE_USERS) :
+            TABLE_USERS;
+        qb.setTables(table +
+            " LEFT OUTER JOIN " + TABLE_KEYS + " ON " +
+            TABLE_USERS + "." + Users.JID + "=" +
+            TABLE_KEYS + "." + Keys.JID);
+        qb.setProjectionMap(usersProjectionMap);
+
         int match = sUriMatcher.match(uri);
         switch (match) {
             case USERS:
-                qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
-                qb.setProjectionMap(usersProjectionMap);
+                // nothing to do
                 break;
 
             case USERS_JID:
-                qb.setTables(offline ? TABLE_USERS_OFFLINE : TABLE_USERS);
-                qb.setProjectionMap(usersProjectionMap);
                 // TODO append to selection
                 String userId = uri.getPathSegments().get(1);
-                selection = Users.JID + " = ?";
+                selection = TABLE_USERS + "." + Users.JID + " = ?";
                 selectionArgs = new String[] { userId };
                 break;
 
@@ -286,14 +322,29 @@ public class UsersProvider extends ContentProvider {
         boolean commit = Boolean.parseBoolean(uri.getQueryParameter(Users.COMMIT));
 
         if (isResync) {
-            if (bootstrap ? dbHelper.isNew() : true)
+            if (!bootstrap || dbHelper.isNew())
                 return resync(commit);
             return 0;
         }
 
         // simple update
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case USERS:
+            case USERS_JID:
+                return updateUser(values, Boolean.parseBoolean(uri
+                    .getQueryParameter(Users.OFFLINE)), selection, selectionArgs);
+
+            case KEYS:
+                return updateKey(values, selection, selectionArgs);
+
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
+    }
+
+    private int updateUser(ContentValues values, boolean offline, String selection, String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
 
         int rc = db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
         if (rc == 0) {
@@ -309,6 +360,11 @@ public class UsersProvider extends ContentProvider {
         }
 
         return rc;
+    }
+
+    private int updateKey(ContentValues values, String selection, String[] selectionArgs) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        return db.update(TABLE_KEYS, values, selection, selectionArgs);
     }
 
     /** Triggers a complete resync of the users database. */
@@ -362,66 +418,78 @@ public class UsersProvider extends ContentProvider {
             int dialPrefixLen = dialPrefix != null ? dialPrefix.length() : 0;
 
             try {
+                String where = !Preferences.getSyncInvisibleContacts(context) ?
+                    ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1 AND " :
+                    "";
+
                 // query for phone numbers
-                // FIXME this might return null on some devices
                 phones = cr.query(Phone.CONTENT_URI,
                     new String[] { Phone.NUMBER, Phone.DISPLAY_NAME, Phone.LOOKUP_KEY, Phone.CONTACT_ID, RawContacts.ACCOUNT_TYPE },
+                    where + " (" +
                     // this will filter out RawContacts from Kontalk
                     RawContacts.ACCOUNT_TYPE + " IS NULL OR " +
-                    RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?)",
+                    RawContacts.ACCOUNT_TYPE + " NOT IN (?, ?))",
                     new String[] {
                         Authenticator.ACCOUNT_TYPE, Authenticator.ACCOUNT_TYPE_LEGACY
                     }, null);
 
-                while (phones.moveToNext()) {
-                    String number = phones.getString(0);
-                    String name = phones.getString(1);
+                if (phones != null) {
+                    while (phones.moveToNext()) {
+                        String number = phones.getString(0);
+                        String name = phones.getString(1);
 
-                    // buggy provider - skip entry
-                    if (name == null || number == null)
-                        continue;
+                        // buggy provider - skip entry
+                        if (name == null || number == null)
+                            continue;
 
-                    // remove dial prefix first
-                    if (dialPrefix != null && number.startsWith(dialPrefix))
-                        number = number.substring(dialPrefixLen);
+                        // remove dial prefix first
+                        if (dialPrefix != null && number.startsWith(dialPrefix))
+                            number = number.substring(dialPrefixLen);
 
-                    // a phone number with less than 4 digits???
-                    if (number.length() < 4)
-                        continue;
+                        // a phone number with less than 4 digits???
+                        if (number.length() < 4)
+                            continue;
 
-                    // fix number
-                    try {
-                        number = NumberValidator.fixNumber(context, number,
+                        // fix number
+                        try {
+                            number = NumberValidator.fixNumber(context, number,
                                 Authenticator.getDefaultAccountName(context), 0);
-                    }
-                    catch (Exception e) {
-                        Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
-                        // skip number
-                        continue;
+                        }
+                        catch (Exception e) {
+                            Log.e(SyncAdapter.TAG, "unable to normalize number: " + number + " - skipping", e);
+                            // skip number
+                            continue;
+                        }
+
+                        try {
+                            String hash = MessageUtils.sha1(number);
+
+                            stm.clearBindings();
+                            stm.bindString(1, hash);
+                            stm.bindString(2, number);
+                            stm.bindString(3, XMPPUtils.createLocalJID(getContext(), hash));
+                            stm.bindString(4, name);
+                            stm.bindString(5, phones.getString(2));
+                            stm.bindLong(6, phones.getLong(3));
+                            stm.bindLong(7, 0);
+                            stm.bindNull(8);
+                            stm.bindNull(9);
+                            stm.executeInsert();
+                            count++;
+                        }
+                        catch (IllegalArgumentException iae) {
+                            Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                        }
+                        catch (SQLiteConstraintException sqe) {
+                            // skip duplicate number
+                        }
                     }
 
-                    try {
-                        String hash = MessageUtils.sha1(number);
-
-                        stm.clearBindings();
-                        stm.bindString(1, hash);
-                        stm.bindString(2, number);
-                        stm.bindString(3, XMPPUtils.createLocalJID(getContext(), hash));
-                        stm.bindString(4, name);
-                        stm.bindString(5, phones.getString(2));
-                        stm.bindLong(6, phones.getLong(3));
-                        stm.bindLong(7, 0);
-                        stm.bindNull(8);
-                        stm.bindNull(9);
-                        stm.executeInsert();
-                        count++;
-                    }
-                    catch (SQLiteConstraintException sqe) {
-                        // skip duplicate number
-                    }
+                    phones.close();
                 }
-
-                phones.close();
+                else {
+                    Log.e(SyncAdapter.TAG, "query to contacts failed!");
+                }
 
                 if (Preferences.getSyncSIMContacts(getContext())) {
                     // query for SIM contacts
@@ -489,6 +557,9 @@ public class UsersProvider extends ContentProvider {
                                 stm.executeInsert();
                                 count++;
                             }
+                            catch (IllegalArgumentException iae) {
+                                Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                            }
                             catch (SQLiteConstraintException sqe) {
                                 // skip duplicate number
                             }
@@ -534,6 +605,9 @@ public class UsersProvider extends ContentProvider {
                     stm.executeInsert();
                     count++;
                 }
+                catch (IllegalArgumentException iae) {
+                    Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                }
                 catch (SQLiteConstraintException sqe) {
                     // skip duplicate number
                 }
@@ -552,8 +626,26 @@ public class UsersProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
+        int match = sUriMatcher.match(uri);
+        switch (match) {
+            case USERS:
+            case USERS_JID:
+                return insertUser(values, Boolean.parseBoolean(uri
+                    .getQueryParameter(Users.OFFLINE)), Boolean.parseBoolean(uri
+                    .getQueryParameter(Users.DISCARD_NAME)));
+
+            case KEYS:
+            case KEYS_JID:
+                return insertKey(values, Boolean.parseBoolean(uri
+                    .getQueryParameter(Keys.TRUST)));
+
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
+    }
+
+    private Uri insertUser(ContentValues values, boolean offline, boolean discardName) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        boolean offline = Boolean.parseBoolean(uri.getQueryParameter(Users.OFFLINE));
 
         String table = offline ? TABLE_USERS_OFFLINE : TABLE_USERS;
         long id = 0;
@@ -565,8 +657,6 @@ public class UsersProvider extends ContentProvider {
             String hash = values.getAsString(Users.HASH);
             if (hash != null) {
                 // discard display_name if requested
-                boolean discardName = Boolean.parseBoolean(uri
-                        .getQueryParameter(Users.DISCARD_NAME));
                 if (discardName) {
                     values.remove(Users.DISPLAY_NAME);
                     values.remove(Users.NUMBER);
@@ -578,6 +668,36 @@ public class UsersProvider extends ContentProvider {
 
         if (id >= 0)
             return ContentUris.withAppendedId(Users.CONTENT_URI, id);
+        return null;
+    }
+
+    private Uri insertKey(ContentValues values, boolean trust) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String jid = values.getAsString(Keys.JID);
+        if (jid == null)
+            throw new IllegalArgumentException("no JID provided");
+
+        int rows;
+
+        if (trust) {
+            SQLiteStatement stm = db.compileStatement("INSERT OR REPLACE INTO " + TABLE_KEYS +
+                " SELECT jid, public_key, fingerprint FROM " + TABLE_USERS + " WHERE jid = ?");
+            stm.bindString(1, jid);
+            stm.executeInsert();
+            rows = 1;
+        }
+        else {
+            try {
+                db.insertOrThrow(TABLE_KEYS, null, values);
+                rows = 1;
+            }
+            catch (SQLException e) {
+                rows = db.update(TABLE_KEYS, values, Keys.JID + "=?", new String[]{jid});
+            }
+        }
+
+        if (rows >= 0)
+            return Keys.CONTENT_URI.buildUpon().appendPath(jid).build();
         return null;
     }
 
@@ -596,8 +716,8 @@ public class UsersProvider extends ContentProvider {
             registeredValues.put(Users.REGISTERED, 1);
         }
         // TODO Uri.withAppendedPath(Users.CONTENT_URI, msg.getSender(true))
-        context.getContentResolver().update(Users.CONTENT_URI, registeredValues,
-            Users.JID + "=?", new String[] { jid });
+        context.getContentResolver().update(Users.CONTENT_URI,
+            registeredValues, Users.JID+"=?", new String[] { jid });
     }
 
     /** Returns a {@link Coder} instance for encrypting data. */
@@ -605,7 +725,7 @@ public class UsersProvider extends ContentProvider {
         // get recipients public keys from users database
         PGPPublicKeyRing keys[] = new PGPPublicKeyRing[recipients.length];
         for (int i = 0; i < recipients.length; i++) {
-            PGPPublicKeyRing ring = getPublicKey(context, recipients[i]);
+            PGPPublicKeyRing ring = getPublicKey(context, recipients[i], true);
             if (ring == null)
                 throw new IllegalArgumentException("public key not found for user " + recipients[i]);
 
@@ -617,19 +737,18 @@ public class UsersProvider extends ContentProvider {
 
     /** Returns a {@link Coder} instance for decrypting data. */
     public static Coder getDecryptCoder(Context context, EndpointServer server, PersonalKey key, String sender) {
-        PGPPublicKeyRing senderKey = getPublicKey(context, sender);
+        PGPPublicKeyRing senderKey = getPublicKey(context, sender, true);
         return new PGPCoder(server, key, senderKey);
     }
 
-    /** Retrieves the public key for a user. */
-    public static PGPPublicKeyRing getPublicKey(Context context, String jid) {
+    /** Retrieves the trusted public key for a user. */
+    public static PGPPublicKeyRing getPublicKey(Context context, String jid, boolean trusted) {
         byte[] keydata = null;
         ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(Users.CONTENT_URI,
-                new String[] { Users.PUBLIC_KEY },
-                Users.JID + "=?",
-                new String[] { jid },
-                null);
+        Cursor c = res.query(Users.CONTENT_URI.buildUpon()
+            .appendPath(jid).build(), new String[] { trusted ?
+                Keys.TRUSTED_PUBLIC_KEY : Users.PUBLIC_KEY },
+            null, null, null);
 
         if (c.moveToFirst())
             keydata = c.getBlob(0);
@@ -650,11 +769,9 @@ public class UsersProvider extends ContentProvider {
     public static long getLastSeen(Context context, String jid) {
         long timestamp = -1;
         ContentResolver res = context.getContentResolver();
-        Cursor c = res.query(Users.CONTENT_URI,
-            new String[] { Users.LAST_SEEN },
-            Users.JID + "=?",
-            new String[] { jid },
-            null);
+        Cursor c = res.query(Users.CONTENT_URI.buildUpon()
+            .appendPath(jid).build(), new String[] { Users.LAST_SEEN },
+            null, null, null);
 
         if (c.moveToFirst())
             timestamp = c.getLong(0);
@@ -664,20 +781,50 @@ public class UsersProvider extends ContentProvider {
         return timestamp;
     }
 
+    /** Sets the last seen timestamp for a user. */
+    public static void setLastSeen(Context context, String jid, long time) {
+        ContentValues values = new ContentValues(1);
+        values.put(Users.LAST_SEEN, time);
+        context.getContentResolver().update(Users.CONTENT_URI,
+            values, Users.JID + "=?", new String[] { jid });
+    }
+
     /** Updates a user public key. */
-    public static void setUserKey(Context context, String jid, byte[] keydata, String fingerprint) {
+    public static void setUserKey(Context context, String jid, byte[] keydata)
+            throws IOException, PGPException {
+        String fingerprint = PGP.getFingerprint(keydata);
         ContentValues values = new ContentValues(2);
-        values.put(Users.PUBLIC_KEY, keydata);
         values.put(Users.FINGERPRINT, fingerprint);
-        context.getContentResolver().update(Users.CONTENT_URI, values,
-            Users.JID + "=?", new String[] { jid });
+        values.put(Users.PUBLIC_KEY, keydata);
+        context.getContentResolver().update(Users.CONTENT_URI,
+            values, Users.JID + "=?", new String[]{jid});
+    }
+
+    /** Marks the given user fingerprint as trusted. */
+    public static void trustUserKey(Context context, String jid) {
+        ContentValues values = new ContentValues(1);
+        values.put(Keys.JID, jid);
+        context.getContentResolver().insert(Keys.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Keys.TRUST, "true")
+            .build(), values);
+    }
+
+    /** Trusts a user public key if trusted fingerprint matches the given key. */
+    public static void maybeTrustUserKey(Context context, String jid, byte[] keydata)
+            throws IOException, PGPException {
+        String fingerprint = PGP.getFingerprint(keydata);
+        ContentValues values = new ContentValues(1);
+        values.put(Keys.PUBLIC_KEY, keydata);
+        context.getContentResolver().update(Keys.CONTENT_URI,
+            values, Keys.JID + "=? AND " + Keys.FINGERPRINT + "=?",
+            new String[] { jid, fingerprint });
     }
 
     public static void setBlockStatus(Context context, String jid, boolean blocked) {
         ContentValues values = new ContentValues(1);
         values.put(Users.BLOCKED, blocked);
-        context.getContentResolver().update(Users.CONTENT_URI, values,
-            Users.JID + "=?", new String[] { jid });
+        context.getContentResolver().update(Users.CONTENT_URI.buildUpon()
+            .appendPath(jid).build(), values, null, null);
     }
 
     /* Transactions compatibility layer */
@@ -708,21 +855,25 @@ public class UsersProvider extends ContentProvider {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_USERS, USERS);
         sUriMatcher.addURI(AUTHORITY, TABLE_USERS + "/*", USERS_JID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_KEYS, KEYS);
+        sUriMatcher.addURI(AUTHORITY, TABLE_KEYS + "/*", KEYS_JID);
 
         usersProjectionMap = new HashMap<String, String>();
         usersProjectionMap.put(Users._ID, Users._ID);
         usersProjectionMap.put(Users.HASH, Users.HASH);
         usersProjectionMap.put(Users.NUMBER, Users.NUMBER);
         usersProjectionMap.put(Users.DISPLAY_NAME, Users.DISPLAY_NAME);
-        usersProjectionMap.put(Users.JID, Users.JID);
+        usersProjectionMap.put(Users.JID, TABLE_USERS + "." + Users.JID);
         usersProjectionMap.put(Users.LOOKUP_KEY, Users.LOOKUP_KEY);
         usersProjectionMap.put(Users.CONTACT_ID, Users.CONTACT_ID);
         usersProjectionMap.put(Users.REGISTERED, Users.REGISTERED);
         usersProjectionMap.put(Users.STATUS, Users.STATUS);
         usersProjectionMap.put(Users.LAST_SEEN, Users.LAST_SEEN);
-        usersProjectionMap.put(Users.PUBLIC_KEY, Users.PUBLIC_KEY);
-        usersProjectionMap.put(Users.FINGERPRINT, Users.FINGERPRINT);
+        usersProjectionMap.put(Users.PUBLIC_KEY, TABLE_USERS + "." + Users.PUBLIC_KEY);
+        usersProjectionMap.put(Users.FINGERPRINT, TABLE_USERS + "." + Users.FINGERPRINT);
         usersProjectionMap.put(Users.BLOCKED, Users.BLOCKED);
+        usersProjectionMap.put(Keys.TRUSTED_PUBLIC_KEY, TABLE_KEYS + "." + Keys.PUBLIC_KEY);
+        usersProjectionMap.put(Keys.TRUSTED_FINGERPRINT, TABLE_KEYS + "." + Keys.FINGERPRINT);
     }
 
 }

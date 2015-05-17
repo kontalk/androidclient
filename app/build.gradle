@@ -22,13 +22,15 @@ task checkstyle(type: Checkstyle){
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
         applicationId "org.kontalk"
+        versionCode 50
+        versionName "3.0-rc4"
+        targetSdkVersion 22
         resValue "string", "account_type", applicationId + '.account'
-        resValue "string", "user_itemtype", "vnd.android.cursor.item/org.kontalk.user"
         buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
     }
 
@@ -59,10 +61,16 @@ android {
         abortOnError false
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     productFlavors {
         basic {
+            minSdkVersion 8
         }
         googleplay {
+            minSdkVersion 9
         }
     }
 
@@ -79,16 +87,15 @@ dependencies {
     compile 'com.madgag.spongycastle:prov:1.51.0.0'
     compile 'com.madgag.spongycastle:pkix:1.51.0.0'
     compile 'com.madgag.spongycastle:pg:1.51.0.0'
-    compile 'com.googlecode.libphonenumber:libphonenumber:7.0.2'
-    compile 'dnsjava:dnsjava:2.1.6'
-    compile 'com.jcraft:jzlib:1.1.3'
+    compile 'com.googlecode.libphonenumber:libphonenumber:7.0.4'
     compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.jcraft:jzlib:1.1.3'
-    compile 'org.igniterealtime.smack:smack-android:4.1.0-rc2'
-    compile 'org.igniterealtime.smack:smack-core:4.1.0-rc2'
-    compile 'org.igniterealtime.smack:smack-tcp:4.1.0-rc2'
-    compile 'org.igniterealtime.smack:smack-extensions:4.1.0-rc2'
-    compile 'org.igniterealtime.smack:smack-experimental:4.1.0-rc2'
+    compile 'com.google.zxing:core:3.2.0'
+    compile "org.igniterealtime.smack:smack-android:$smackVersion"
+    compile "org.igniterealtime.smack:smack-core:$smackVersion"
+    compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
+    compile "org.igniterealtime.smack:smack-extensions:$smackVersion"
+    compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
+    compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
 
     googleplayCompile 'com.google.android.gms:play-services-base:6.5.87'
 

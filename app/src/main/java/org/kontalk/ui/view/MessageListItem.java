@@ -18,12 +18,20 @@
 
 package org.kontalk.ui.view;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.telephony.PhoneNumberUtils;
+import android.text.style.URLSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -360,6 +368,90 @@ public class MessageListItem extends RelativeLayout {
             MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
             mContent.removeView((View) view);
             view.unbind();
+        }
+    }
+
+    // Thanks to Google Mms app :)
+    public void onClick() {
+        TextContentView textContent = null;
+        int c = mContent.getChildCount();
+        for (int i = 0; i < c; i++) {
+            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
+            if (view instanceof TextContentView) {
+                textContent = (TextContentView) view;
+            }
+        }
+
+        if (textContent == null)
+            return;
+
+        // Check for links. If none, do nothing; if 1, open it; if >1, ask user to pick one
+        final URLSpan[] spans = textContent.getUrls();
+
+        if (spans.length == 0) {
+            // TODO show the message details dialog
+        }
+        else if (spans.length == 1) {
+            spans[0].onClick(textContent);
+        }
+        else {
+            ArrayAdapter<URLSpan> adapter =
+                new ArrayAdapter<URLSpan>(mInflater.getContext(), android.R.layout.select_dialog_item, spans) {
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        View v = super.getView(position, convertView, parent);
+                        Context context = mInflater.getContext();
+                        try {
+                            URLSpan span = getItem(position);
+                            String url = span.getURL();
+                            Uri uri = Uri.parse(url);
+                            TextView tv = (TextView) v;
+                            Drawable d = context.getPackageManager().getActivityIcon(
+                                new Intent(Intent.ACTION_VIEW, uri));
+                            if (d != null) {
+                                d.setBounds(0, 0, d.getIntrinsicHeight(), d.getIntrinsicHeight());
+                                tv.setCompoundDrawablePadding(10);
+                                tv.setCompoundDrawables(d, null, null, null);
+                            }
+                            final String telPrefix = "tel:";
+                            if (url.startsWith(telPrefix)) {
+                                // TODO handle country code
+                                url = url.substring(telPrefix.length());
+                            }
+                            tv.setText(url);
+                        } catch (android.content.pm.PackageManager.NameNotFoundException ex) {
+                            // it's ok if we're unable to set the drawable for this view - the user
+                            // can still use it
+                        }
+                        return v;
+                    }
+                };
+
+            AlertDialog.Builder b = new AlertDialog.Builder(mInflater.getContext());
+
+            final TextContentView textView = textContent;
+            DialogInterface.OnClickListener click = new DialogInterface.OnClickListener() {
+                @Override
+                public final void onClick(DialogInterface dialog, int which) {
+                    if (which >= 0) {
+                        spans[which].onClick(textView);
+                    }
+                    dialog.dismiss();
+                }
+            };
+
+            b.setTitle(R.string.chooser_select_link);
+            b.setCancelable(true);
+            b.setAdapter(adapter, click);
+
+            b.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public final void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            b.show();
         }
     }
 

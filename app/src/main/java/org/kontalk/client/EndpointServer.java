@@ -18,35 +18,33 @@
 
 package org.kontalk.client;
 
-
 import java.util.regex.Pattern;
 
+
 /**
- * Defines a server address and features.
+ * Defines a server address.
  * @author Daniele Ricci
- * @version 1.0
- * TODO http port is deprecated
  */
 public class EndpointServer {
-    /** Default Kontalk client port. */
+    /** Default client port. */
     public static final int DEFAULT_PORT = 5222;
 
     /** Validation pattern. Very basic. */
-    // TODO use this for parsing
-    private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-\\.]+\\|[A-Za-z0-9\\-\\.]+(:\\d+)?$");
+    // TODO use this also for parsing
+    private static final Pattern sPattern = Pattern.compile("^[A-Za-z0-9\\-\\.]+(\\|[A-Za-z0-9\\-\\.]+(:\\d+)?)?$");
 
     private String mHost;
     private int mPort;
     private String mNetwork;
 
-    public EndpointServer(String host) {
-        this(null, host, DEFAULT_PORT);
-        if (host.contains("|")) {
-            String[] parsed = host.split("\\|");
+    public EndpointServer(String url) {
+        this(url, null, DEFAULT_PORT);
+        if (url.contains("|")) {
+            String[] parsed = url.split("\\|");
             mNetwork = parsed[0];
             mHost = parsed[1];
         }
-        if (mHost.contains(":")) {
+        if (mHost != null && mHost.contains(":")) {
             String[] parsed = mHost.split(":");
             mHost = parsed[0];
             mPort = Integer.parseInt(parsed[1]);
@@ -61,9 +59,11 @@ public class EndpointServer {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof EndpointServer &&
-            ((EndpointServer) o).mHost.equalsIgnoreCase(mHost) &&
-            ((EndpointServer) o).mNetwork.equalsIgnoreCase(mNetwork) &&
+        return o != null && o instanceof EndpointServer &&
+            (mHost == ((EndpointServer) o).mHost ||
+                (mHost != null && mHost.equalsIgnoreCase(((EndpointServer) o).mHost))) &&
+            (((EndpointServer) o).mNetwork == mNetwork ||
+                ((EndpointServer) o).mNetwork.equalsIgnoreCase(mNetwork)) &&
             ((EndpointServer) o).mPort == mPort;
     }
 
@@ -74,7 +74,12 @@ public class EndpointServer {
 
     @Override
     public String toString() {
-        return mNetwork + "|" + mHost + ":" + mPort;
+        if (mHost != null) {
+            return mNetwork + "|" + mHost + ":" + mPort;
+        }
+        else {
+            return mNetwork;
+        }
     }
 
     public String getHost() {
