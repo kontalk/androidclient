@@ -19,7 +19,6 @@
 package org.kontalk.crypto;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -38,10 +37,8 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.misc.MiscObjectIdentifiers;
 import org.spongycastle.asn1.misc.NetscapeCertType;
-import org.spongycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.spongycastle.asn1.x500.X500Name;
 import org.spongycastle.asn1.x500.X500NameBuilder;
 import org.spongycastle.asn1.x500.style.BCStyle;
@@ -54,7 +51,6 @@ import org.spongycastle.asn1.x509.GeneralNames;
 import org.spongycastle.asn1.x509.KeyUsage;
 import org.spongycastle.asn1.x509.SubjectKeyIdentifier;
 import org.spongycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.spongycastle.asn1.x9.X9ObjectIdentifiers;
 import org.spongycastle.cert.X509CertificateHolder;
 import org.spongycastle.cert.X509v3CertificateBuilder;
 import org.spongycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -82,7 +78,6 @@ import org.spongycastle.operator.bc.BcDSAContentSignerBuilder;
 import org.spongycastle.operator.bc.BcRSAContentSignerBuilder;
 
 import android.os.Parcel;
-import android.util.Log;
 
 
 /**
@@ -246,9 +241,6 @@ public class X509Bridge {
         NoSuchAlgorithmException, SignatureException, CertificateException,
         NoSuchProviderException, IOException, OperatorCreationException {
 
-        Log.v("CRYPTO", "public key = " + pubKey.getAlgorithm());
-        Log.v("CRYPTO", "private key = " + privKey.getAlgorithm());
-
         /*
          * Sets the signature algorithm.
          */
@@ -267,13 +259,6 @@ public class X509Bridge {
             AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder()
                 .find(sigAlgId);
             signerBuilder = new BcRSAContentSignerBuilder(sigAlgId, digAlgId);
-        }
-        else if (pubKeyAlgorithm.equals("ECDSA")) {
-            AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder()
-                .find("SHA256WithECDSA");
-            AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder()
-                .find(sigAlgId);
-            signerBuilder = new BcECDSAContentSignerBuilder(sigAlgId, digAlgId);
         }
         else {
             throw new RuntimeException(
@@ -314,10 +299,6 @@ public class X509Bridge {
              */
             SubjectPublicKeyInfo.getInstance(pubKey.getEncoded())
         );
-
-        SubjectPublicKeyInfo pubinfo = SubjectPublicKeyInfo.getInstance(pubKey.getEncoded());
-        Log.v("CRYPTO", "pubinfo = " + pubinfo.getAlgorithm().getAlgorithm());
-        Log.v("CRYPTO", "privinfo = " + privKey);
 
         /*
          * Adds the Basic Constraint (CA: true) extension.
@@ -385,14 +366,6 @@ public class X509Bridge {
          */
         X509Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
         cert.verify(pubKey);
-
-        // TEST write cert to file
-        FileOutputStream file = new FileOutputStream("/sdcard/bridge.crt");
-        file.write(cert.getEncoded());
-        file.close();
-        file = new FileOutputStream("/sdcard/bridge.key");
-        file.write(privKey.getEncoded());
-        file.close();
 
         return cert;
     }

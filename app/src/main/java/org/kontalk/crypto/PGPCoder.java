@@ -177,9 +177,9 @@ public class PGPCoder extends Coder {
 
         // setup signature generator
         PGPSignatureGenerator sigGen = new PGPSignatureGenerator
-                (new BcPGPContentSignerBuilder(mKey.getEncryptKeyPair()
+                (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
                     .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
-        sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getEncryptKeyPair().getPrivateKey());
+        sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
 
         PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
         spGen.setSignerUserID(false, mKey.getUserId(mServer.getNetwork()));
@@ -277,7 +277,7 @@ public class PGPCoder extends Coder {
                 if (message instanceof PGPOnePassSignatureList) {
                     if (verify && mSender != null) {
                         ops = ((PGPOnePassSignatureList) message).get(0);
-                        ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getEncryptionKey(mSender));
+                        ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
                     }
 
                     message = pgpFact.nextObject();
@@ -477,9 +477,9 @@ public class PGPCoder extends Coder {
 
             // setup signature generator
             PGPSignatureGenerator sigGen = new PGPSignatureGenerator
-                (new BcPGPContentSignerBuilder(mKey.getEncryptKeyPair()
+                (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
                     .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
-            sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getEncryptKeyPair().getPrivateKey());
+            sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
 
             PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
             spGen.setSignerUserID(false, mKey.getUserId(mServer.getNetwork()));
@@ -577,7 +577,7 @@ public class PGPCoder extends Coder {
                 if (message instanceof PGPOnePassSignatureList) {
                     if (verify) {
                         ops = ((PGPOnePassSignatureList) message).get(0);
-                        ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getEncryptionKey(mSender));
+                        ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
                     }
 
                     message = pgpFact.nextObject();

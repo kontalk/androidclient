@@ -18,11 +18,9 @@
 
 package org.kontalk.crypto;
 
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.spongycastle.openpgp.PGPPublicKey;
 
 /**
  * A PGP user id.

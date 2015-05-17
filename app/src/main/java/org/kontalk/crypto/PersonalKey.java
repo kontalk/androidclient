@@ -32,11 +32,9 @@ import org.kontalk.Kontalk;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.crypto.PGP.PGPDecryptedKeyPairRing;
 import org.kontalk.crypto.PGP.PGPKeyPairRing;
-import org.kontalk.util.MessageUtils;
 
 import org.spongycastle.openpgp.PGPException;
 import org.spongycastle.openpgp.PGPKeyPair;
-import org.spongycastle.openpgp.PGPObjectFactory;
 import org.spongycastle.openpgp.PGPPrivateKey;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -64,7 +62,6 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
-import java.util.Locale;
 
 
 /** Personal asymmetric encryption key. */
@@ -83,8 +80,8 @@ public class PersonalKey implements Parcelable {
         mBridgeCert = bridgeCert;
     }
 
-    private PersonalKey(PGPKeyPair signKp, PGPKeyPair encryptKp, X509Certificate bridgeCert) {
-        this(new PGPDecryptedKeyPairRing(signKp, encryptKp), bridgeCert);
+    private PersonalKey(PGPKeyPair authKp, PGPKeyPair signKp, PGPKeyPair encryptKp, X509Certificate bridgeCert) {
+        this(new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp), bridgeCert);
     }
 
     private PersonalKey(Parcel in) throws PGPException, IOException {
@@ -101,12 +98,16 @@ public class PersonalKey implements Parcelable {
         return mPair.signKey;
     }
 
+    public PGPKeyPair getAuthKeyPair() {
+        return mPair.authKey;
+    }
+
     public X509Certificate getBridgeCertificate() {
         return mBridgeCert;
     }
 
     public PrivateKey getBridgePrivateKey() throws PGPException {
-        return PGP.convertPrivateKey(mPair.signKey.getPrivateKey());
+        return PGP.convertPrivateKey(mPair.authKey.getPrivateKey());
     }
 
     public PGPPublicKeyRing getPublicKeyRing() throws IOException {
@@ -115,6 +116,7 @@ public class PersonalKey implements Parcelable {
 
     public byte[] getEncodedPublicKeyRing() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        mPair.authKey.getPublicKey().encode(out);
         mPair.signKey.getPublicKey().encode(out);
         mPair.encryptKey.getPublicKey().encode(out);
         return out.toByteArray();
@@ -122,11 +124,11 @@ public class PersonalKey implements Parcelable {
 
     /** Returns the first user ID on the key that matches the given network. */
     public String getUserId(String network) {
-        return PGP.getUserId(mPair.signKey.getPublicKey(), network);
+        return PGP.getUserId(mPair.authKey.getPublicKey(), network);
     }
 
     public String getFingerprint() {
-        return PGP.getFingerprint(mPair.signKey.getPublicKey());
+        return PGP.getFingerprint(mPair.authKey.getPublicKey());
     }
 
     public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {
@@ -147,9 +149,7 @@ public class PersonalKey implements Parcelable {
             userid.append(email);
         userid.append('>');
 
-        PGPKeyPairRing kp = PGP.store(mPair, userid.toString(), passphrase);
-
-        return kp;
+        return PGP.store(mPair, userid.toString(), passphrase);
     }
 
     /**
@@ -159,7 +159,7 @@ public class PersonalKey implements Parcelable {
     public PGPPublicKeyRing update(byte[] keyData) throws IOException {
         PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, new BcKeyFingerprintCalculator());
         // FIXME should loop through the ring and check for master/subkey
-        mPair.signKey = new PGPKeyPair(ring.getPublicKey(), mPair.signKey.getPrivateKey());
+        mPair.authKey = new PGPKeyPair(ring.getPublicKey(), mPair.authKey.getPrivateKey());
         return ring;
     }
 
@@ -308,8 +308,10 @@ public class PersonalKey implements Parcelable {
             .setProvider(PGP.PROVIDER)
             .build(passphrase.toCharArray());
 
-        PGPKeyPair signKp, encryptKp;
+        PGPKeyPair authKp, signKp, encryptKp;
 
+        PGPPublicKey  authPub = null;
+        PGPPrivateKey authPriv = null;
         PGPPublicKey  signPub = null;
         PGPPrivateKey signPriv = null;
         PGPPublicKey   encPub = null;
@@ -319,13 +321,31 @@ public class PersonalKey implements Parcelable {
         Iterator<PGPPublicKey> pkeys = pubRing.getPublicKeys();
         while (pkeys.hasNext()) {
             PGPPublicKey key = pkeys.next();
+            int keyFlags = PGP.getKeyFlags(key);
+
             if (key.isMasterKey()) {
-                // master (signing) key
-                signPub = key;
+                // legacy support
+                // if key flags has CAN_AUTHENTICATE, use the new key format
+                if ((keyFlags & PGPKeyFlags.CAN_AUTHENTICATE) == PGPKeyFlags.CAN_AUTHENTICATE) {
+                    authPub = key;
+                }
+                else {
+                    // no authentication key flags, presuming old key format
+                    // use the master key for both authentication and signing
+                    authPub = signPub = key;
+                }
             }
             else {
-                // sub (encryption) key
-                encPub = key;
+                // legacy support
+                // if key flags has CAN_SIGN, use the new key format
+                if ((keyFlags & PGPKeyFlags.CAN_SIGN) == PGPKeyFlags.CAN_SIGN) {
+                    signPub = key;
+                }
+                else {
+                    // no encryption key flags, presuming old key format
+                    // use the subkey for encryption
+                    encPub = key;
+                }
             }
         }
 
@@ -333,20 +353,39 @@ public class PersonalKey implements Parcelable {
         Iterator<PGPSecretKey> skeys = secRing.getSecretKeys();
         while (skeys.hasNext()) {
             PGPSecretKey key = skeys.next();
+            int keyFlags = PGP.getKeyFlags(key.getPublicKey());
+
             if (key.isMasterKey()) {
-                // master (signing) key
-                signPriv = key.extractPrivateKey(decryptor);
+                // legacy support
+                // if key flags has CAN_AUTHENTICATE, use the new key format
+                if ((keyFlags & PGPKeyFlags.CAN_AUTHENTICATE) == PGPKeyFlags.CAN_AUTHENTICATE) {
+                    authPriv = key.extractPrivateKey(decryptor);
+                }
+                else {
+                    // no authentication key flags, presuming old key format
+                    // use the master key for both authentication and signing
+                    authPriv = signPriv = key.extractPrivateKey(decryptor);
+                }
             }
             else {
-                // sub (encryption) key
-                encPriv = key.extractPrivateKey(decryptor);
+                // legacy support
+                // if key flags has CAN_SIGN, use the new key format
+                if ((keyFlags & PGPKeyFlags.CAN_SIGN) == PGPKeyFlags.CAN_SIGN) {
+                    signPriv = key.extractPrivateKey(decryptor);
+                }
+                else {
+                    // no encryption key flags, presuming old key format
+                    // use the subkey for encryption
+                    encPriv = key.extractPrivateKey(decryptor);
+                }
             }
         }
 
         if (encPriv != null && encPub != null && signPriv != null && signPub != null) {
+            authKp = new PGPKeyPair(authPub, authPriv);
             signKp = new PGPKeyPair(signPub, signPriv);
             encryptKp = new PGPKeyPair(encPub, encPriv);
-            return new PersonalKey(signKp, encryptKp, bridgeCert);
+            return new PersonalKey(authKp, signKp, encryptKp, bridgeCert);
         }
 
         throw new PGPException("invalid key data");
@@ -365,50 +404,6 @@ public class PersonalKey implements Parcelable {
     }
 
     /**
-     * Searches for the master (signing) key in the given public keyring and
-     * signs it with our master key.
-     * @return the same public keyring with the signed key. This is suitable to
-     * be imported directly into GnuPG.
-     * @see #signPublicKey(PGPPublicKey, String)
-     */
-    @SuppressWarnings("unchecked")
-    public PGPPublicKeyRing signPublicKey(byte[] publicKeyring, String id)
-            throws PGPException, IOException, SignatureException {
-
-        PGPObjectFactory reader = new PGPObjectFactory(publicKeyring);
-        Object o = reader.nextObject();
-        while (o != null) {
-            if (o instanceof PGPPublicKeyRing) {
-                PGPPublicKeyRing pubRing = (PGPPublicKeyRing) o;
-                Iterator<PGPPublicKey> iter = pubRing.getPublicKeys();
-                while (iter.hasNext()) {
-                    PGPPublicKey pk = iter.next();
-                    if (pk.isMasterKey()) {
-                        PGPPublicKey signed = signPublicKey(pk, id);
-                        return PGPPublicKeyRing.insertPublicKey(pubRing, signed);
-                    }
-                }
-            }
-            o = reader.nextObject();
-        }
-
-        throw new PGPException("invalid keyring data.");
-    }
-
-    /**
-     * Signs the given public key uid using our master (signing) key.<br>
-     * WARNING use this method along with {@link PGPPublicKeyRing#insertPublicKey}
-     * to make this effective, otherwise GnuPG will not accept the new signature.
-     * @see PGPPublicKeyRing#insertPublicKey(PGPPublicKeyRing, PGPPublicKey)
-     * @see #signPublicKey(byte[], String)
-     */
-    public PGPPublicKey signPublicKey(PGPPublicKey keyToBeSigned, String id)
-            throws PGPException, IOException, SignatureException {
-
-        return PGP.signPublicKey(mPair.signKey, keyToBeSigned, id);
-    }
-
-    /**
      * Revokes the whole key pair using the master (signing) key.
      * @param store true to store the key in this object
      * @return the revoked master public key
@@ -416,10 +411,10 @@ public class PersonalKey implements Parcelable {
     public PGPPublicKey revoke(boolean store)
             throws PGPException, IOException, SignatureException {
 
-        PGPPublicKey revoked = PGP.revokeKey(mPair.signKey);
+        PGPPublicKey revoked = PGP.revokeKey(mPair.authKey);
 
         if (store)
-            mPair.signKey = new PGPKeyPair(revoked, mPair.signKey.getPrivateKey());
+            mPair.authKey = new PGPKeyPair(revoked, mPair.authKey.getPrivateKey());
 
         return revoked;
     }
@@ -438,7 +433,7 @@ public class PersonalKey implements Parcelable {
 
             // regenerate bridge certificate
             byte[] bridgeCertData = X509Bridge.createCertificate(pubRing,
-                    mPair.signKey.getPrivateKey(), null).getEncoded();
+                    mPair.authKey.getPrivateKey(), null).getEncoded();
             byte[] publicKeyData = pubRing.getEncoded();
 
             am.setUserData(account, Authenticator.DATA_PUBLICKEY,
