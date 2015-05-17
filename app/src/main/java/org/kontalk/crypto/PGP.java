@@ -35,10 +35,10 @@ import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.kontalk.util.MessageUtils;
+
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
@@ -92,9 +92,6 @@ public class PGP {
 
     /** Singleton for converting a PGP key to a JCA key. */
     private static JcaPGPKeyConverter sKeyConverter;
-
-    private static final Pattern PATTERN_UID_FULL = Pattern.compile("^(.*) \\((.*)\\) <(.*)>$");
-    private static final Pattern PATTERN_UID_NO_COMMENT = Pattern.compile("^(.*) <(.*)>$");
 
     private PGP() {
     }
@@ -398,12 +395,42 @@ public class PGP {
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
+    // TODO return type should be PGPUserID
     public static String getUserId(PGPPublicKey key, String host) {
-        // TODO ehm :)
-        return (String) key.getUserIDs().next();
+        String first = null;
+
+        @SuppressWarnings("unchecked")
+        Iterator<String> uids = key.getUserIDs();
+        while (uids.hasNext()) {
+            String uid = uids.next();
+            // save the first if everything else fails
+            if (first == null) {
+                first = uid;
+                // no host to verify, exit now
+                if (host == null)
+                    break;
+            }
+
+            if (uid != null) {
+                // parse uid
+                PGPUserID parsed = PGPUserID.parse(uid);
+                if (parsed != null) {
+                    String email = parsed.getEmail();
+                    if (email != null) {
+                        // check if email host name matches
+                        if (host.equalsIgnoreCase(XmppStringUtils.parseDomain(email))) {
+                            return uid;
+                        }
+                    }
+                }
+            }
+        }
+
+        return first;
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
+    // TODO return type should be PGPUserID
     public static String getUserId(byte[] publicKeyring, String host) throws IOException, PGPException {
         PGPPublicKey pk = getMasterKey(publicKeyring);
         return getUserId(pk, host);
@@ -517,37 +544,6 @@ public class PGP {
             .setProvider(PROVIDER).build(newPassphrase.toCharArray());
 
         return PGPSecretKeyRing.copyWithNewPassword(secRing, decryptor, encryptor);
-    }
-
-    public static PGPUserID parseUserID(PGPPublicKey key) {
-        return parseUserID((String) key.getUserIDs().next());
-    }
-
-    public static PGPUserID parseUserID(String uid) {
-        Matcher match;
-
-        match = PATTERN_UID_FULL.matcher(uid);
-        while (match.find()) {
-            if (match.groupCount() >= 3) {
-                String name = match.group(1);
-                String comment = match.group(2);
-                String email = match.group(3);
-                return new PGPUserID(name, comment, email);
-            }
-        }
-
-        // try again without comment
-        match = PATTERN_UID_NO_COMMENT.matcher(uid);
-        while (match.find()) {
-            if (match.groupCount() >= 2) {
-                String name = match.group(1);
-                String email = match.group(2);
-                return new PGPUserID(name, null, email);
-            }
-        }
-
-        // no match found
-        return null;
     }
 
 }

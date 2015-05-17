@@ -19,11 +19,18 @@
 package org.kontalk.crypto;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.spongycastle.openpgp.PGPPublicKey;
+
 /**
  * A PGP user id.
  * @author Daniele Ricci
  */
 public class PGPUserID {
+    private static final Pattern PATTERN_UID_FULL = Pattern.compile("^(.*) \\((.*)\\) <(.*)>$");
+    private static final Pattern PATTERN_UID_NO_COMMENT = Pattern.compile("^(.*) <(.*)>$");
 
     private final String name;
     private final String comment;
@@ -66,6 +73,33 @@ public class PGPUserID {
             out.append(" <").append(email).append('>');
 
         return out.toString();
+    }
+
+    public static PGPUserID parse(String uid) {
+        Matcher match;
+
+        match = PATTERN_UID_FULL.matcher(uid);
+        while (match.find()) {
+            if (match.groupCount() >= 3) {
+                String name = match.group(1);
+                String comment = match.group(2);
+                String email = match.group(3);
+                return new PGPUserID(name, comment, email);
+            }
+        }
+
+        // try again without comment
+        match = PATTERN_UID_NO_COMMENT.matcher(uid);
+        while (match.find()) {
+            if (match.groupCount() >= 2) {
+                String name = match.group(1);
+                String email = match.group(2);
+                return new PGPUserID(name, null, email);
+            }
+        }
+
+        // no match found
+        return null;
     }
 
 }

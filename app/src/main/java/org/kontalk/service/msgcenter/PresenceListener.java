@@ -182,7 +182,7 @@ class PresenceListener extends MessageCenterPacketListener {
                     PGPPublicKey pk = PGP.getMasterKey(ring);
                     if (pk != null) {
                         // set all parameters
-                        PGPUserID uid = PGP.parseUserID(PGP.getUserId(pk, getServer().getNetwork()));
+                        PGPUserID uid = PGPUserID.parse(PGP.getUserId(pk, getServer().getNetwork()));
                         if (uid != null)
                             name = uid.getName();
                         fingerprint = PGP.getFingerprint(pk);
