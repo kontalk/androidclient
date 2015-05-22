@@ -321,7 +321,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void startRecord() throws IOException {
-        mFile = MediaStorage.getTempAudio(getContext());
+        mFile = MediaStorage.getOutgoingAudioFile();
         setupViewForRecording(0);
 
         MediaRecorder recorder = mData.getRecorder();

@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.PrivateKey;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -175,8 +176,13 @@ public class DownloadService extends IntentService implements DownloadListener {
             mEncrypted = args.getBoolean(CompositeMessage.MSG_ENCRYPTED, false);
             sQueue.put(url, mMessageId);
 
+            Date date = null;
+            long timestamp = args.getLong(CompositeMessage.MSG_TIMESTAMP);
+            if (timestamp > 0)
+                date = new Date(timestamp);
+
             // download content
-            mDownloadClient.downloadAutofilename(url, MediaStorage.MEDIA_ROOT, this);
+            mDownloadClient.downloadAutofilename(url, MediaStorage.MEDIA_ROOT, date, this);
         }
         catch (Exception e) {
             error(url, null, e);

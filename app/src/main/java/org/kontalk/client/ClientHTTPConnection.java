@@ -33,6 +33,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,8 +61,11 @@ import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+
+import org.kontalk.message.CompositeMessage;
 import org.kontalk.service.DownloadListener;
 import org.kontalk.util.InternalTrustStore;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressOutputStreamEntity;
 
@@ -103,7 +107,6 @@ public class ClientHTTPConnection {
      * A generic download request.
      * @param url URL to download
      * @return the request object
-     * @throws IOException
      */
     private HttpRequestBase prepareURLDownload(String url) throws IOException {
         HttpGet req = new HttpGet(url);
@@ -177,35 +180,48 @@ public class ClientHTTPConnection {
 
     }
 
-    /** Downloads to a directory represented by a {@link File} object,
-     * determining the file name from the Content-Disposition header. */
-    public void downloadAutofilename(String url, File base, DownloadListener listener) throws IOException {
-        _download(url, base, listener);
+    /**
+     * Downloads to a directory represented by a {@link File} object,
+     * determining the file name from the Content-Disposition header.
+     */
+    public void downloadAutofilename(String url, File defaultBase, Date timestamp, DownloadListener listener) throws IOException {
+        _download(url, defaultBase, timestamp, listener);
     }
 
-    private void _download(String url, File base, DownloadListener listener) throws IOException {
+    private void _download(String url, File defaultBase, Date timestamp, DownloadListener listener) throws IOException {
         currentRequest = prepareURLDownload(url);
         HttpResponse response = execute(currentRequest);
 
         int code = response.getStatusLine().getStatusCode();
         // HTTP/1.1 200 OK -- other codes should throw Exceptions
         if (code == 200) {
-            Header disp = response.getFirstHeader("Content-Disposition");
-            if (disp != null) {
-                String name = parseContentDisposition(disp.getValue());
-                // TODO should check for content-disposition parsing here
-                // and choose another filename if necessary
-
-                HttpEntity _entity = response.getEntity();
-                if (name != null && _entity != null) {
-                    // we need to wrap the entity to monitor the download progress
-                    File destination = new File(base, name);
-                    ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(_entity, url, destination, listener);
-                    FileOutputStream out = new FileOutputStream(destination);
-                    entity.writeTo(out);
-                    out.close();
-                    return;
+            HttpEntity _entity = response.getEntity();
+            if (_entity != null) {
+                // use a more suitable filename, taking only the extension
+                Header contentType = _entity.getContentType();
+                File destination = null;
+                if (contentType != null) {
+                    destination = CompositeMessage.getIncomingFile(contentType.getValue(),
+                        timestamp != null ? timestamp : new Date());
                 }
+
+                // still having problems?
+                if (destination == null) {
+                    Header disp = response.getFirstHeader("Content-Disposition");
+                    String name = parseContentDisposition(disp.getValue());
+                    if (name == null)
+                        // very bad hack to overcome server bad behaviour
+                        name = MediaStorage.UNKNOWN_FILENAME;
+
+                    destination = new File(defaultBase, name);
+                }
+
+                // we need to wrap the entity to monitor the download progress
+                ProgressOutputStreamEntity entity = new ProgressOutputStreamEntity(_entity, url, destination, listener);
+                FileOutputStream out = new FileOutputStream(destination);
+                entity.writeTo(out);
+                out.close();
+                return;
             }
         }
 
@@ -218,7 +234,7 @@ public class ClientHTTPConnection {
         listener.error(url, null, new IOException("invalid response: " + code));
     }
 
-    /*
+    /**
      * Parse the Content-Disposition HTTP Header. The format of the header
      * is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
      * This header provides a filename for content that is going to be

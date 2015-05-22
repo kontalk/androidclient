@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -56,6 +57,21 @@ public abstract class MediaStorage {
     private static final String TAG = Kontalk.TAG;
 
     public static final File MEDIA_ROOT = new File(Environment.getExternalStorageDirectory(), "Kontalk");
+
+    public static final String UNKNOWN_FILENAME = "unknown_file.bin";
+
+    private static final File DCIM_ROOT = new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+        "Kontalk");
+    private static final File PICTURES_ROOT = new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+        "Kontalk");
+    private static final File AUDIO_ROOT = new File(Environment
+        .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+        "Kontalk");
+
+    private static final DateFormat sDateFormat =
+        new SimpleDateFormat("yyyyMMdd_HHmmssSSS", Locale.US);
 
     private static final int THUMBNAIL_WIDTH = 256;
     private static final int THUMBNAIL_HEIGHT = 256;
@@ -212,27 +228,62 @@ public abstract class MediaStorage {
     }
 
     /** Creates a temporary JPEG file. */
-    public static File getTempImage(Context context) throws IOException {
-        File path = new File(Environment
-            .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "Kontalk");
-        path.mkdirs();
-        String timeStamp =
-            new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String filename = "image" + timeStamp + "_";
-        return File.createTempFile(filename, ".jpg", path);
+    public static File getOutgoingImageFile() throws IOException {
+        return getOutgoingImageFile(new Date());
+    }
+
+    private static File getOutgoingImageFile(Date date) throws IOException {
+        createMedia(DCIM_ROOT);
+        String timeStamp = sDateFormat.format(date);
+        File f = new File(DCIM_ROOT, "IMG_" + timeStamp + ".jpg");
+        f.createNewFile();
+        return f;
+    }
+
+    /** Creates a file object for an incoming image file. */
+    public static File getIncomingImageFile(Date date, String extension) {
+        createNoMedia(PICTURES_ROOT);
+        String timeStamp = sDateFormat.format(date);
+        return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
     }
 
     /** Creates a temporary 3gp file. */
-    public static File getTempAudio(Context context) throws IOException {
-        File path = new File(Environment
-            .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                "Kontalk");
-        path.mkdirs();
-        String timeStamp =
-            new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String filename = "record" + timeStamp + "_";
-        return File.createTempFile(filename, ".3gp", path);
+    public static File getOutgoingAudioFile() throws IOException {
+        return getOutgoingAudioFile(new Date());
+    }
+
+    private static File getOutgoingAudioFile(Date date) throws IOException {
+        createNoMedia(AUDIO_ROOT);
+        String timeStamp = sDateFormat.format(date);
+        File f = new File(AUDIO_ROOT, "record_" + timeStamp + ".3gp");
+        f.createNewFile();
+        return f;
+    }
+
+    /** Creates a file object for an incoming audio file. */
+    public static File getIncomingAudioFile(Date date, String extension) {
+        createNoMedia(AUDIO_ROOT);
+        String timeStamp = sDateFormat.format(date);
+        return new File(AUDIO_ROOT, "audio_" + timeStamp + "." + extension);
+    }
+
+    /** Ensures that the given path exists. */
+    private static boolean createMedia(File path) {
+        return path.isDirectory() || path.mkdirs();
+    }
+
+    /** Ensures that the given path exists and a .nomedia file exists. */
+    private static boolean createNoMedia(File path) {
+        try {
+            if (path.isDirectory() || path.mkdirs()) {
+                File nomedia = new File(path, ".nomedia");
+                return nomedia.isFile() || nomedia.createNewFile();
+            }
+            return false;
+        }
+        catch (Exception e) {
+            return false;
+        }
     }
 
     /** Guesses the MIME type of an {@link Uri}. */
