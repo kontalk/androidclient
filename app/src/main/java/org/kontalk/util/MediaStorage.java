@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -236,10 +237,22 @@ public abstract class MediaStorage {
 
     /** Guesses the MIME type of an {@link Uri}. */
     public static String getType(Context context, Uri uri) {
+        // try Android detection
         String mime = context.getContentResolver().getType(uri);
+
+        // the following methods actually use the same underlying implementation
+        // (libcore.net.MimeUtils), but that could change in the future so no
+        // hurt in trying them all just in case.
+        // Lowercasing the filename seems to help in detecting the correct MIME.
+
         if (mime == null)
+            // try WebKit detection
             mime = MimeTypeMap.getSingleton()
-                .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()));
+                .getMimeTypeFromExtension(MimeTypeMap
+                    .getFileExtensionFromUrl(uri.toString()).toLowerCase());
+        if (mime == null)
+            // try Java detection
+            mime = URLConnection.guessContentTypeFromName(uri.toString().toLowerCase());
         return mime;
     }
 
