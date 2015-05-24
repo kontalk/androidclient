@@ -58,6 +58,11 @@
             <!-- Preview: listitem=@layout/message_list_item -->
         </ListView>
 
+        <!-- Divider. (Yes, the .9dp is on purpose.) -->
+        <View android:background="?attr/dividerHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height=".9dp" />
+
         <include layout="@layout/composer_bar"/>
 
     </LinearLayout>

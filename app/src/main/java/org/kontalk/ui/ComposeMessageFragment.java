@@ -37,6 +37,7 @@ import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.animation.Animator;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -52,6 +53,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
@@ -81,6 +83,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
@@ -154,6 +157,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
 /**
  * The composer fragment.
  * @author Daniele Ricci
+ * @author Andrea Cappelli
  */
 public class ComposeMessageFragment extends ListFragment implements
         View.OnLongClickListener, IconContextMenuOnClickListener,
@@ -168,8 +172,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
 
-
-    private static final int MAX_DURATION = 60000;
     private static final int PRESENCE_DELAY_THRESHOLD = 5000;
 
     /** Context menu group ID for this fragment. */
@@ -221,7 +223,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** PTT Message */
     private float mDraggingX = -1;
-    private float mDistMove = KontalkUtilities.getDensityPixel(80);
+    private float mDistMove;
     private boolean mCheckRecordingAudio = false;
     private TextView mRecordText;
     private File mRecordFile;
@@ -231,6 +233,10 @@ public class ComposeMessageFragment extends ListFragment implements
     private boolean mCheckMove;
     private int mOrientation;
     private Vibrator mVibrator;
+    // initialized in onCreate
+    private int mMoveThreshold;
+    private int mMoveOffset;
+    private int mMoveOffset2;
 
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
@@ -403,6 +409,12 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mTextEntry.length() <= 0)
             mSendButton.setVisibility(View.INVISIBLE);
 
+        Resources r = getResources();
+        mMoveThreshold = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, r.getDisplayMetrics());
+        mMoveOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, r.getDisplayMetrics());
+        mDistMove = mMoveOffset;
+        mMoveOffset2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, r.getDisplayMetrics());
+
         mAudioButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -437,7 +449,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
                         if (mDraggingX != -1) {
                             float dist = (x - mDraggingX);
-                            params.leftMargin = KontalkUtilities.getDensityPixel(30) + (int) dist;
+                            params.leftMargin = mMoveThreshold + (int) dist;
                             mSlideText.setLayoutParams(params);
                             float alpha = 1.0f + dist / mDistMove;
                             if (alpha > 1) {
@@ -447,19 +459,19 @@ public class ComposeMessageFragment extends ListFragment implements
                             }
                             mSlideText.setAlpha(alpha);
                         }
-                        if (x <= mSlideText.getX() + mSlideText.getWidth() + KontalkUtilities.getDensityPixel(30)) {
+                        if (x <= mSlideText.getX() + mSlideText.getWidth() + mMoveThreshold) {
                             if (mDraggingX == -1) {
                                 mDraggingX = x;
-                                mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - KontalkUtilities.getDensityPixel(48)) / 2.0f;
+                                mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - mMoveOffset2) / 2.0f;
                                 if (mDistMove <= 0) {
-                                    mDistMove = KontalkUtilities.getDensityPixel(80);
-                                } else if (mDistMove > KontalkUtilities.getDensityPixel(80)) {
-                                    mDistMove = KontalkUtilities.getDensityPixel(80);
+                                    mDistMove = mMoveOffset;
+                                } else if (mDistMove > mMoveOffset) {
+                                    mDistMove = mMoveOffset;
                                 }
                             }
                         }
-                        if (params.leftMargin > KontalkUtilities.getDensityPixel(30)) {
-                            params.leftMargin = KontalkUtilities.getDensityPixel(30);
+                        if (params.leftMargin > mMoveThreshold) {
+                            params.leftMargin = mMoveThreshold;
                             mSlideText.setLayoutParams(params);
                             mSlideText.setAlpha(1);
                             mDraggingX = -1;
@@ -1202,15 +1214,15 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void unblockUser() {
         new AlertDialog.Builder(getActivity())
-        .setTitle(R.string.menu_unblock_user)
-        .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
-        .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                setPrivacy(PRIVACY_UNBLOCK);
-            }
-        })
-        .setNegativeButton(android.R.string.cancel, null)
-        .show();
+            .setTitle(R.string.menu_unblock_user)
+            .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
+            .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    setPrivacy(PRIVACY_UNBLOCK);
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void decryptMessage(CompositeMessage msg) {
@@ -2846,60 +2858,80 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
+    @SuppressLint("NewApi")
     private void animateRecordFrame() {
+        int screenWidth = SystemUtils.getDisplaySize(getActivity()).x;
+        boolean supportsAnimation = (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB_MR2);
+
         if (mCheckRecordingAudio) {
             mRecordLayout.setVisibility(View.VISIBLE);
             mRecordText.setText("00:00");
-            if(Build.VERSION.SDK_INT > 13) {
+
+            if (supportsAnimation) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
-                params.leftMargin = KontalkUtilities.getDensityPixel(30);
+                params.leftMargin = mMoveThreshold;
                 mSlideText.setLayoutParams(params);
                 mSlideText.setAlpha(1);
-                mRecordLayout.setX(KontalkUtilities.displaySize.x);
-                mRecordLayout.animate().setInterpolator(new AccelerateDecelerateInterpolator()).setListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                    }
+                mRecordLayout.setX(screenWidth);
+                mRecordLayout.animate()
+                    .setInterpolator(new AccelerateDecelerateInterpolator())
+                    .setListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                        }
 
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        mRecordLayout.setX(0);
-                    }
+                        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            mRecordLayout.setX(0);
+                        }
 
-                    @Override
-                    public void onAnimationCancel(Animator animator) {
-                    }
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+                        }
 
-                    @Override
-                    public void onAnimationRepeat(Animator animator) {
-                    }
-                }).setDuration(300).translationX(0).start();
+                        @Override
+                        public void onAnimationRepeat(Animator animator) {
+                        }
+                    })
+                    .setDuration(300)
+                    .translationX(0)
+                    .start();
             }
-        } else {
-            if(Build.VERSION.SDK_INT > 13) {
-                mRecordLayout.animate().setInterpolator(new AccelerateDecelerateInterpolator()).setListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                    }
+        }
+        else {
+            if (supportsAnimation) {
+                mRecordLayout.animate()
+                    .setInterpolator(new AccelerateDecelerateInterpolator())
+                    .setListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                        }
 
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
-                        params.leftMargin = KontalkUtilities.getDensityPixel(30);
-                        mSlideText.setLayoutParams(params);
-                        mSlideText.setAlpha(1);
-                        mRecordLayout.setVisibility(View.GONE);
-                    }
+                        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            FrameLayout.LayoutParams params =
+                                (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
+                            params.leftMargin = mMoveThreshold;
+                            mSlideText.setLayoutParams(params);
+                            mSlideText.setAlpha(1);
+                            mRecordLayout.setVisibility(View.GONE);
+                        }
 
-                    @Override
-                    public void onAnimationCancel(Animator animator) {
-                    }
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+                        }
 
-                    @Override
-                    public void onAnimationRepeat(Animator animator) {
-                    }
-                }).setDuration(300).translationX(KontalkUtilities.displaySize.x).start();
-            } else {
+                        @Override
+                        public void onAnimationRepeat(Animator animator) {
+                        }
+                    })
+                    .setDuration(300)
+                    .translationX(screenWidth)
+                    .start();
+            }
+            else {
                 mRecordLayout.setVisibility(View.GONE);
             }
         }
@@ -2909,7 +2941,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mPlayer != null)
             resetAudio(mAudioControl);
         try {
-            mRecordFile = MediaStorage.getTempAudio(getActivity());
+            mRecordFile = MediaStorage.getOutgoingAudioFile();
         }
         catch (IOException e) {
             Log.e(TAG, "file error: ", e);
