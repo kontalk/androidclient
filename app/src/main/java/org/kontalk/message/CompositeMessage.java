@@ -21,6 +21,7 @@ package org.kontalk.message;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.jxmpp.util.XmppStringUtils;
@@ -34,6 +35,7 @@ import android.os.Parcelable;
 
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.util.MediaStorage;
 
 
 /**
@@ -386,27 +388,57 @@ public class CompositeMessage {
 
     /** A sample text content from class name and mime type. */
     public static String getSampleTextContent(String mime) {
-    	// TODO i18n
-    	// FIXME using reflection BAD BAD BAD !!!
-    	for (Class<AttachmentComponent> klass : TRY_COMPONENTS) {
-    		Boolean supported = null;
-    		try {
-				Method m = klass.getMethod("supportsMimeType", new Class[] { String.class });
-				supported = (Boolean) m.invoke(klass, mime);
-			}
-    		catch (Exception e) {
-    			// ignored
-			}
-
-    		if (supported != null && supported.booleanValue()) {
-		        String cname = klass.getSimpleName();
-		        return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
-		            ": " + mime;
-    		}
+        Class<AttachmentComponent> klass = getSupportingComponent(mime);
+        if (klass != null) {
+            String cname = klass.getSimpleName();
+            return cname.substring(0, cname.length() - SUFFIX_LENGTH) +
+                ": " + mime;
     	}
 
     	// no supporting component - return mime
+        // TODO i18n
     	return "Unknown: " + mime;
+    }
+
+    private static Class<AttachmentComponent> getSupportingComponent(String mime) {
+        // FIXME using reflection BAD BAD BAD !!!
+        for (Class<AttachmentComponent> klass : TRY_COMPONENTS) {
+            Boolean supported = null;
+            try {
+                Method m = klass.getMethod("supportsMimeType", String.class);
+                supported = (Boolean) m.invoke(klass, mime);
+            }
+            catch (Exception e) {
+                // ignored
+            }
+
+            if (supported != null && supported) {
+                return klass;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns a correct file object for an incoming message.
+     * @param mime MIME type of the incoming attachment
+     * @param timestamp timestamp of the message
+     */
+    public static File getIncomingFile(String mime, Date timestamp) {
+        Class<AttachmentComponent> klass = getSupportingComponent(mime);
+        if (klass != null) {
+            if (klass.isAssignableFrom(ImageComponent.class)) {
+                String ext = ImageComponent.getFileExtension(mime);
+                return MediaStorage.getIncomingImageFile(timestamp, ext);
+            }
+            else if (klass.isAssignableFrom(AudioComponent.class)) {
+                String ext = AudioComponent.getFileExtension(mime);
+                return MediaStorage.getIncomingAudioFile(timestamp, ext);
+            }
+        }
+
+        return null;
     }
 
     /** Still unused.

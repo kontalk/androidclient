@@ -2425,7 +2425,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             getApplicationContext(), 0, getStartIntent(this),
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
 
-        mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        // we don't use the shared alarm manager instance here
+        // since this can happen after the service has begun to stop
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + delay, pi);
     }
 

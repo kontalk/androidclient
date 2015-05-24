@@ -891,6 +891,7 @@ public class ComposeMessageFragment extends ListFragment implements
             i.setAction(DownloadService.ACTION_DOWNLOAD_URL);
             i.putExtra(CompositeMessage.MSG_ID, msg.getDatabaseId());
             i.putExtra(CompositeMessage.MSG_SENDER, msg.getSender());
+            i.putExtra(CompositeMessage.MSG_TIMESTAMP, msg.getTimestamp());
             i.putExtra(CompositeMessage.MSG_ENCRYPTED, attachment.getSecurityFlags() != Coder.SECURITY_CLEARTEXT);
             i.setData(Uri.parse(attachment.getFetchUrl()));
             getActivity().startService(i);
@@ -997,7 +998,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
             if (list.size() <= 0) throw new UnsupportedOperationException();
 
-            mCurrentPhoto = MediaStorage.getTempImage(getActivity());
+            mCurrentPhoto = MediaStorage.getOutgoingImageFile();
             Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
             chooser = Intent.createChooser(pictureIntent, getString(R.string.chooser_send_picture));

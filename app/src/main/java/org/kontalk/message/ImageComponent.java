@@ -140,7 +140,7 @@ public class ImageComponent extends AttachmentComponent {
     }
 
     /** Returns the file extension from the mime type. */
-    private static String getFileExtension(String mime) {
+    public static String getFileExtension(String mime) {
         for (int i = 0; i < MIME_TYPES.length; i++)
             if (MIME_TYPES[i][0].equalsIgnoreCase(mime))
                 return MIME_TYPES[i][1];
