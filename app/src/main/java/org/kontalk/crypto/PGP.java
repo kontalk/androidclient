@@ -28,23 +28,21 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.kontalk.util.MessageUtils;
+
+import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.bcpg.ArmoredInputStream;
 import org.spongycastle.bcpg.HashAlgorithmTags;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openpgp.PGPEncryptedData;
 import org.spongycastle.openpgp.PGPException;
-import org.spongycastle.openpgp.PGPKeyFlags;
 import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPKeyRingGenerator;
 import org.spongycastle.openpgp.PGPObjectFactory;
@@ -56,7 +54,7 @@ import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
 import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
-import org.spongycastle.openpgp.PGPUserAttributeSubpacketVector;
+import org.spongycastle.openpgp.PGPSignatureSubpacketVector;
 import org.spongycastle.openpgp.PGPUtil;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
@@ -72,7 +70,6 @@ import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import android.os.Parcel;
-import android.util.Log;
 
 
 /** Some PGP utility method, mainly for use by {@link PersonalKey}. */
@@ -87,25 +84,22 @@ public class PGP {
     /** Default RSA key length used. */
     private static final int RSA_KEY_LENGTH = 2048;
 
-    // temporary flag for ECC experimentation
-    private static final boolean EXPERIMENTAL_ECC = false;
-
     /** Singleton for converting a PGP key to a JCA key. */
     private static JcaPGPKeyConverter sKeyConverter;
-
-    private static final Pattern PATTERN_UID_FULL = Pattern.compile("^(.*) \\((.*)\\) <(.*)>$");
-    private static final Pattern PATTERN_UID_NO_COMMENT = Pattern.compile("^(.*) <(.*)>$");
 
     private PGP() {
     }
 
     public static final class PGPDecryptedKeyPairRing {
-        /* Master (signing) key. */
+        /* Authentication key. */
+        PGPKeyPair authKey;
+        /* Signing key. */
         PGPKeyPair signKey;
-        /* Sub (encryption) key. */
+        /* Encryption key. */
         PGPKeyPair encryptKey;
 
-        public PGPDecryptedKeyPairRing(PGPKeyPair sign, PGPKeyPair encrypt) {
+        public PGPDecryptedKeyPairRing(PGPKeyPair auth, PGPKeyPair sign, PGPKeyPair encrypt) {
+            this.authKey = auth;
             this.signKey = sign;
             this.encryptKey = encrypt;
         }
@@ -141,37 +135,24 @@ public class PGP {
             throws NoSuchAlgorithmException, NoSuchProviderException, PGPException, InvalidAlgorithmParameterException {
 
         KeyPairGenerator gen;
-        PGPKeyPair encryptKp, signKp;
+        PGPKeyPair authKp, encryptKp, signKp;
 
-        if (EXPERIMENTAL_ECC) {
+        gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
+        gen.initialize(RSA_KEY_LENGTH);
 
-            gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
-            gen.initialize(new ECGenParameterSpec(EC_CURVE));
+        authKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
 
-            encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
+        gen = KeyPairGenerator.getInstance("ECDH", PROVIDER);
+        gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-            gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
-            gen.initialize(new ECGenParameterSpec(EC_CURVE));
+        encryptKp = new JcaPGPKeyPair(PGPPublicKey.ECDH, gen.generateKeyPair(), new Date());
 
-            signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
-        }
+        gen = KeyPairGenerator.getInstance("ECDSA", PROVIDER);
+        gen.initialize(new ECGenParameterSpec(EC_CURVE));
 
-        else {
+        signKp = new JcaPGPKeyPair(PGPPublicKey.ECDSA, gen.generateKeyPair(), new Date());
 
-            gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
-            Log.v("CRYPTO", "Generator: " + gen.getClass().getName());
-            Log.v("CRYPTO", "SecureRandom: " + new SecureRandom().getAlgorithm());
-            gen.initialize(RSA_KEY_LENGTH);
-
-            encryptKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
-
-            gen = KeyPairGenerator.getInstance("RSA", PROVIDER);
-            gen.initialize(RSA_KEY_LENGTH);
-
-            signKp = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, gen.generateKeyPair(), new Date());
-        }
-
-        return new PGPDecryptedKeyPairRing(signKp, encryptKp);
+        return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
     }
 
     /** Creates public and secret keyring for a given keypair. */
@@ -184,77 +165,30 @@ public class PGP {
 
         // some hashed subpackets for the key
         sbpktGen = new PGPSignatureSubpacketGenerator();
-        sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_SIGN | PGPKeyFlags.CAN_CERTIFY);
+        // the master key is used for authentication and certification
+        sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_AUTHENTICATE | PGPKeyFlags.CAN_CERTIFY);
 
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
-        PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.signKey,
+        PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.authKey,
             id, sha1Calc, sbpktGen.generate(), null,
-            new JcaPGPContentSignerBuilder(pair.signKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
+            new JcaPGPContentSignerBuilder(pair.authKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
             new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
                 .setProvider(PROVIDER).build(passphrase.toCharArray()));
 
-        // some hashed subpackets for the subkey
+        // add signing subkey
+        sbpktGen = new PGPSignatureSubpacketGenerator();
+        sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_SIGN);
+        keyRingGen.addSubKey(pair.signKey, sbpktGen.generate(), null);
+
+        // add encryption subkey
         sbpktGen = new PGPSignatureSubpacketGenerator();
         sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_ENCRYPT_COMMS);
-
         keyRingGen.addSubKey(pair.encryptKey, sbpktGen.generate(), null);
 
         PGPSecretKeyRing secRing = keyRingGen.generateSecretKeyRing();
         PGPPublicKeyRing pubRing = keyRingGen.generatePublicKeyRing();
 
         return new PGPKeyPairRing(pubRing, secRing);
-    }
-
-    /** Signs a public key with the given secret key. */
-    public static PGPPublicKey signPublicKey(PGPKeyPair secret, PGPPublicKey keyToBeSigned, String id)
-            throws PGPException, IOException, SignatureException {
-
-        return signPublicKey(secret, keyToBeSigned, id, PGPSignature.CASUAL_CERTIFICATION);
-    }
-
-    /** Signs a public key with the given secret key. */
-    public static PGPPublicKey signPublicKey(PGPKeyPair secret, PGPPublicKey keyToBeSigned, String id, int certification)
-            throws PGPException, IOException, SignatureException {
-
-        PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
-
-        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
-            new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
-                PGPUtil.SHA1).setProvider(PROVIDER));
-
-        sGen.init(certification, pgpPrivKey);
-
-        return PGPPublicKey.addCertification(keyToBeSigned, id, sGen.generateCertification(id, keyToBeSigned));
-    }
-
-    /** Signs and add the given user attributes to the given public key. */
-    public static PGPPublicKey signUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
-            throws PGPException, SignatureException {
-
-        return signUserAttributes(secret, keyToBeSigned, attributes, PGPSignature.POSITIVE_CERTIFICATION);
-    }
-
-    /** Signs and add the given user attributes to the given public key. */
-    public static PGPPublicKey signUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes, int certification)
-            throws PGPException, SignatureException {
-
-        PGPPrivateKey pgpPrivKey = secret.getPrivateKey();
-
-        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
-            new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
-                PGPUtil.SHA1).setProvider(PROVIDER));
-
-        sGen.init(certification, pgpPrivKey);
-
-        return PGPPublicKey.addCertification(keyToBeSigned, attributes,
-            sGen.generateCertification(attributes, keyToBeSigned));
-    }
-
-    public static PGPPublicKey revokeUserAttributes(PGPKeyPair secret, PGPPublicKey keyToBeSigned, PGPUserAttributeSubpacketVector attributes)
-            throws SignatureException, PGPException {
-
-        return PGP.signUserAttributes(secret, keyToBeSigned, attributes,
-            PGPSignature.CERTIFICATION_REVOCATION);
     }
 
     /** Revokes the given key. */
@@ -277,6 +211,16 @@ public class PGP {
         ensureKeyConverter();
 
         // TODO read byte data
+
+        PrivateKey privAuth = (PrivateKey) in.readSerializable();
+        PublicKey pubAuth = (PublicKey) in.readSerializable();
+        int algoAuth = in.readInt();
+        Date dateAuth = new Date(in.readLong());
+
+        PGPPublicKey pubKeyAuth = sKeyConverter.getPGPPublicKey(algoAuth, pubAuth, dateAuth);
+        PGPPrivateKey privKeyAuth = sKeyConverter.getPGPPrivateKey(pubKeyAuth, privAuth);
+        PGPKeyPair authKp = new PGPKeyPair(pubKeyAuth, privKeyAuth);
+
         PrivateKey privSign = (PrivateKey) in.readSerializable();
         PublicKey pubSign = (PublicKey) in.readSerializable();
         int algoSign = in.readInt();
@@ -295,11 +239,16 @@ public class PGP {
         PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
         PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
 
-        return new PGPDecryptedKeyPairRing(signKp, encryptKp);
+        return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
     }
 
     public static void toParcel(PGPDecryptedKeyPairRing pair, Parcel dest)
             throws NoSuchProviderException, PGPException {
+
+        PrivateKey privAuth = convertPrivateKey(pair.authKey.getPrivateKey());
+        PublicKey pubAuth = convertPublicKey(pair.authKey.getPublicKey());
+        int algoAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
+        Date dateAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getTime();
 
         PrivateKey privSign = convertPrivateKey(pair.signKey.getPrivateKey());
         PublicKey pubSign = convertPublicKey(pair.signKey.getPublicKey());
@@ -310,6 +259,11 @@ public class PGP {
         PublicKey pubEnc = convertPublicKey(pair.encryptKey.getPublicKey());
         int algoEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
         Date dateEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getTime();
+
+        dest.writeSerializable(privAuth);
+        dest.writeSerializable(pubAuth);
+        dest.writeInt(algoAuth);
+        dest.writeLong(dateAuth.getTime());
 
         dest.writeSerializable(privSign);
         dest.writeSerializable(pubSign);
@@ -320,11 +274,15 @@ public class PGP {
         dest.writeSerializable(pubEnc);
         dest.writeInt(algoEnc);
         dest.writeLong(dateEnc.getTime());
-
     }
 
     public static void serialize(PGPDecryptedKeyPairRing pair, ObjectOutputStream dest)
             throws PGPException, IOException {
+
+        PrivateKey privAuth = convertPrivateKey(pair.authKey.getPrivateKey());
+        PublicKey pubAuth = convertPublicKey(pair.authKey.getPublicKey());
+        int algoAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
+        Date dateAuth = pair.authKey.getPrivateKey().getPublicKeyPacket().getTime();
 
         PrivateKey privSign = convertPrivateKey(pair.signKey.getPrivateKey());
         PublicKey pubSign = convertPublicKey(pair.signKey.getPublicKey());
@@ -335,6 +293,11 @@ public class PGP {
         PublicKey pubEnc = convertPublicKey(pair.encryptKey.getPublicKey());
         int algoEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getAlgorithm();
         Date dateEnc = pair.encryptKey.getPrivateKey().getPublicKeyPacket().getTime();
+
+        dest.writeObject(privAuth);
+        dest.writeObject(pubAuth);
+        dest.writeInt(algoAuth);
+        dest.writeLong(dateAuth.getTime());
 
         dest.writeObject(privSign);
         dest.writeObject(pubSign);
@@ -352,6 +315,16 @@ public class PGP {
         ensureKeyConverter();
 
         // TODO read byte data
+
+        PrivateKey privAuth = (PrivateKey) in.readObject();
+        PublicKey pubAuth = (PublicKey) in.readObject();
+        int algoAuth = in.readInt();
+        Date dateAuth = new Date(in.readLong());
+
+        PGPPublicKey pubKeyAuth = sKeyConverter.getPGPPublicKey(algoAuth, pubAuth, dateAuth);
+        PGPPrivateKey privKeyAuth = sKeyConverter.getPGPPrivateKey(pubKeyAuth, privAuth);
+        PGPKeyPair authKp = new PGPKeyPair(pubKeyAuth, privKeyAuth);
+
         PrivateKey privSign = (PrivateKey) in.readObject();
         PublicKey pubSign = (PublicKey) in.readObject();
         int algoSign = in.readInt();
@@ -370,7 +343,7 @@ public class PGP {
         PGPPrivateKey privKeyEnc = sKeyConverter.getPGPPrivateKey(pubKeyEnc, privEnc);
         PGPKeyPair encryptKp = new PGPKeyPair(pubKeyEnc, privKeyEnc);
 
-        return new PGPDecryptedKeyPairRing(signKp, encryptKp);
+        return new PGPDecryptedKeyPairRing(authKp, signKp, encryptKp);
     }
 
     public static String getFingerprint(PGPPublicKey publicKey) {
@@ -398,15 +371,60 @@ public class PGP {
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
+    // TODO return type should be PGPUserID
     public static String getUserId(PGPPublicKey key, String host) {
-        // TODO ehm :)
-        return (String) key.getUserIDs().next();
+        String first = null;
+
+        @SuppressWarnings("unchecked")
+        Iterator<String> uids = key.getUserIDs();
+        while (uids.hasNext()) {
+            String uid = uids.next();
+            // save the first if everything else fails
+            if (first == null) {
+                first = uid;
+                // no host to verify, exit now
+                if (host == null)
+                    break;
+            }
+
+            if (uid != null) {
+                // parse uid
+                PGPUserID parsed = PGPUserID.parse(uid);
+                if (parsed != null) {
+                    String email = parsed.getEmail();
+                    if (email != null) {
+                        // check if email host name matches
+                        if (host.equalsIgnoreCase(XmppStringUtils.parseDomain(email))) {
+                            return uid;
+                        }
+                    }
+                }
+            }
+        }
+
+        return first;
     }
 
     /** Returns the first user ID on the key that matches the given hostname. */
+    // TODO return type should be PGPUserID
     public static String getUserId(byte[] publicKeyring, String host) throws IOException, PGPException {
         PGPPublicKey pk = getMasterKey(publicKeyring);
         return getUserId(pk, host);
+    }
+
+    public static int getKeyFlags(PGPPublicKey key) {
+        @SuppressWarnings("unchecked")
+        Iterator<PGPSignature> sigs = key.getSignatures();
+        while (sigs.hasNext()) {
+            PGPSignature sig = sigs.next();
+            if (sig != null) {
+                PGPSignatureSubpacketVector subpackets = sig.getHashedSubPackets();
+                if (subpackets != null && subpackets.isPrimaryUserID()) {
+                    return subpackets.getKeyFlags();
+                }
+            }
+        }
+        return 0;
     }
 
     /** Returns the first master key found in the given public keyring. */
@@ -427,12 +445,57 @@ public class PGP {
         return getMasterKey(readPublicKeyring(publicKeyring));
     }
 
+    public static PGPPublicKey getSigningKey(PGPPublicKeyRing publicKeyring) {
+        @SuppressWarnings("unchecked")
+        Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
+            if (!pk.isMasterKey()) {
+                int keyFlags = getKeyFlags(pk);
+                if ((keyFlags & PGPKeyFlags.CAN_SIGN) == PGPKeyFlags.CAN_SIGN)
+                    return pk;
+            }
+        }
+
+        // legacy key format support
+        return getLegacySigningKey(publicKeyring);
+    }
+
     public static PGPPublicKey getEncryptionKey(PGPPublicKeyRing publicKeyring) {
         @SuppressWarnings("unchecked")
         Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
+            if (!pk.isMasterKey()) {
+                int keyFlags = getKeyFlags(pk);
+                if ((keyFlags & PGPKeyFlags.CAN_ENCRYPT_COMMS) == PGPKeyFlags.CAN_ENCRYPT_COMMS)
+                    return pk;
+
+            }
+        }
+
+        // legacy key format support
+        return getLegacyEncryptionKey(publicKeyring);
+    }
+
+    private static PGPPublicKey getLegacyEncryptionKey(PGPPublicKeyRing publicKeyring) {
+        @SuppressWarnings("unchecked")
+        Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
             if (!pk.isMasterKey() && pk.isEncryptionKey())
+                return pk;
+        }
+
+        return null;
+    }
+
+    private static PGPPublicKey getLegacySigningKey(PGPPublicKeyRing publicKeyring) {
+        @SuppressWarnings("unchecked")
+        Iterator<PGPPublicKey> iter = publicKeyring.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
+            if (pk.isMasterKey())
                 return pk;
         }
 
@@ -517,37 +580,6 @@ public class PGP {
             .setProvider(PROVIDER).build(newPassphrase.toCharArray());
 
         return PGPSecretKeyRing.copyWithNewPassword(secRing, decryptor, encryptor);
-    }
-
-    public static PGPUserID parseUserID(PGPPublicKey key) {
-        return parseUserID((String) key.getUserIDs().next());
-    }
-
-    public static PGPUserID parseUserID(String uid) {
-        Matcher match;
-
-        match = PATTERN_UID_FULL.matcher(uid);
-        while (match.find()) {
-            if (match.groupCount() >= 3) {
-                String name = match.group(1);
-                String comment = match.group(2);
-                String email = match.group(3);
-                return new PGPUserID(name, comment, email);
-            }
-        }
-
-        // try again without comment
-        match = PATTERN_UID_NO_COMMENT.matcher(uid);
-        while (match.find()) {
-            if (match.groupCount() >= 2) {
-                String name = match.group(1);
-                String email = match.group(2);
-                return new PGPUserID(name, null, email);
-            }
-        }
-
-        // no match found
-        return null;
     }
 
 }

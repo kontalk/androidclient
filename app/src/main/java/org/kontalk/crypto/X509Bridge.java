@@ -37,7 +37,6 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.misc.MiscObjectIdentifiers;
 import org.spongycastle.asn1.misc.NetscapeCertType;
 import org.spongycastle.asn1.x500.X500Name;
@@ -167,7 +166,18 @@ public class X509Bridge {
 
         x500NameBuilder.addRDN(BCStyle.O, DN_COMMON_PART_O);
 
-        PGPPublicKey publicKey = publicKeyRing.getPublicKey();
+        PGPPublicKey publicKey = null;
+
+        @SuppressWarnings("unchecked")
+        Iterator<PGPPublicKey> iter = publicKeyRing.getPublicKeys();
+        while (iter.hasNext()) {
+            PGPPublicKey pk = iter.next();
+            if (pk.isMasterKey())
+                publicKey = pk;
+        }
+
+        if (publicKey == null)
+            throw new IllegalArgumentException("no master key found");
 
         for (@SuppressWarnings("unchecked") Iterator<Object> it = publicKey.getUserIDs(); it.hasNext();) {
             Object attrib = it.next();
@@ -250,12 +260,6 @@ public class X509Bridge {
                 .find(sigAlgId);
             signerBuilder = new BcRSAContentSignerBuilder(sigAlgId, digAlgId);
         }
-        /*
-        else if (pubKeyAlgorithm.equals("ECDSA")) {
-            // TODO is this even legal?
-            certGenerator.setSignatureAlgorithm("SHA1WithECDSA");
-        }
-        */
         else {
             throw new RuntimeException(
                     "Algorithm not recognised: " + pubKeyAlgorithm);
@@ -293,7 +297,7 @@ public class X509Bridge {
             /*
              * Sets the public-key to embed in this certificate.
              */
-            SubjectPublicKeyInfo.getInstance(new ASN1InputStream(pubKey.getEncoded()).readObject())
+            SubjectPublicKeyInfo.getInstance(pubKey.getEncoded())
         );
 
         /*

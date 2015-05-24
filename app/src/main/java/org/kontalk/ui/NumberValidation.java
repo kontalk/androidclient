@@ -684,7 +684,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 throw new PGPException("unable to load imported personal key.");
 
             String uidStr = key.getUserId(null);
-            PGPUserID uid = PGP.parseUserID(uidStr);
+            PGPUserID uid = PGPUserID.parse(uidStr);
             if (uid == null)
                 throw new PGPException("malformed user ID: " + uidStr);
 
