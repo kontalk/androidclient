@@ -137,6 +137,8 @@ import org.kontalk.ui.adapter.MessageListAdapter;
 import org.kontalk.ui.view.AudioContentView;
 import org.kontalk.ui.view.AudioContentViewControl;
 import org.kontalk.ui.view.AudioPlayerControl;
+import org.kontalk.ui.view.ComposerBar;
+import org.kontalk.ui.view.ComposerListener;
 import org.kontalk.ui.view.IconContextMenu;
 import org.kontalk.ui.view.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.ui.view.KeyboardAwareRelativeLayout;
@@ -160,7 +162,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  * @author Andrea Cappelli
  */
 public class ComposeMessageFragment extends ListFragment implements
-        View.OnLongClickListener, IconContextMenuOnClickListener,
+        ComposerListener, View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
         AudioDialog.AudioDialogListener, AudioPlayerControl,
         EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
@@ -184,15 +186,12 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int ATTACHMENT_ACTION_AUDIO = 3;
     private IconContextMenu attachmentMenu;
 
+    private ComposerBar mComposer;
+
     private MessageListQueryHandler mQueryHandler;
     private MessageListAdapter mListAdapter;
-    private EditText mTextEntry;
-    private View mSendButton;
-    private View mAudioButton;
-    private View mSlideText;
     private TextView mStatusText;
     private ViewGroup mInvitationBar;
-    private View mRecordLayout;
     private MenuItem mDeleteThreadMenu;
     private MenuItem mViewContactMenu;
     private MenuItem mCallMenu;
@@ -221,23 +220,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private AudioContentViewControl mAudioControl;
     private AudioDialog mAudioDialog;
 
-    /** PTT Message */
-    private float mDraggingX = -1;
-    private float mDistMove;
-    private boolean mCheckRecordingAudio = false;
-    private TextView mRecordText;
-    private File mRecordFile;
-    private MediaRecorder mRecord;
-    private long startTime = 0L;
-    private long elapsedTime = 0L;
-    private boolean mCheckMove;
-    private int mOrientation;
-    private Vibrator mVibrator;
-    // initialized in onCreate
-    private int mMoveThreshold;
-    private int mMoveOffset;
-    private int mMoveOffset2;
-
     private PeerObserver mPeerObserver;
     private File mCurrentPhoto;
 
@@ -249,8 +231,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private boolean mComposeSent;
     private boolean mIsTyping;
     private CharSequence mCurrentStatus;
-    private TextWatcher mChatStateListener;
-    private ImageButton mEmojiButton;
     private EmojiconsView mEmojiView;
     private boolean mEmojiVisible;
     private KeyboardAwareRelativeLayout mRootView;
@@ -299,11 +279,11 @@ public class ComposeMessageFragment extends ListFragment implements
         list.setFastScrollEnabled(true);
         registerForContextMenu(list);
 
+        mComposer = (ComposerBar) getView().findViewById(R.id.composer_bar);
+        mComposer.setComposerListener(this);
+
         // footer (for tablet presence status)
         mStatusText = (TextView) getView().findViewById(R.id.status_text);
-
-        mSlideText = getView().findViewById(R.id.slide_text);
-        mRecordText = (TextView) getView().findViewById(R.id.recording_time);
 
         // set custom background (if any)
         Drawable bg = Preferences.getConversationBackground(getActivity());
@@ -314,191 +294,6 @@ public class ComposeMessageFragment extends ListFragment implements
             background.setImageDrawable(bg);
         }
 
-        mTextEntry = (EditText) getView().findViewById(R.id.text_editor);
-
-        // enter key flag
-        int inputTypeFlags;
-        String enterKeyMode = Preferences.getEnterKeyMode(getActivity());
-        if ("newline".equals(enterKeyMode)) {
-            inputTypeFlags = mTextEntry.getInputType() | InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE;
-        }
-        else if ("newline_send".equals(enterKeyMode)) {
-            inputTypeFlags = (mTextEntry.getInputType() & ~InputType.TYPE_TEXT_FLAG_MULTI_LINE) |
-                InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE;
-            mTextEntry.setImeOptions(EditorInfo.IME_ACTION_SEND);
-            mTextEntry.setInputType(inputTypeFlags);
-        }
-        else {
-            inputTypeFlags = mTextEntry.getInputType() | InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
-        }
-
-        mTextEntry.setInputType(inputTypeFlags);
-
-        mTextEntry.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                // enable the send button if there is something to send
-                if (s.length() > 0) {
-                    mAudioButton.setVisibility(View.INVISIBLE);
-                    mSendButton.setVisibility(View.VISIBLE);
-                }
-                else if (s.length() <= 0) {
-                    mSendButton.setVisibility(View.INVISIBLE);
-                    mAudioButton.setVisibility(View.VISIBLE);
-                }
-                mSendButton.setEnabled(s.length() > 0);
-            }
-        });
-        mTextEntry.setOnEditorActionListener(new OnEditorActionListener() {
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    InputMethodManager imm = (InputMethodManager) getActivity()
-                        .getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
-                    submitSend();
-                    return true;
-                }
-                return false;
-            }
-        });
-        mChatStateListener = new TextWatcher() {
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (Preferences.getSendTyping(getActivity())) {
-                    // send typing notification if necessary
-                    if (!mComposeSent && mAvailableResources.size() > 0) {
-                        MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.composing);
-                        mComposeSent = true;
-                    }
-                }
-            }
-
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        };
-
-        mRecordLayout = getView().findViewById(R.id.record_layout);
-
-        mTextEntry.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (isEmojiVisible())
-                    hideEmojiDrawer(false);
-            }
-        });
-        mTextEntry.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus && isEmojiVisible())
-                    hideEmojiDrawer(false);
-            }
-        });
-
-        mSendButton = getView().findViewById(R.id.send_button);
-        mAudioButton = getView().findViewById(R.id.audio_send_button);
-
-        if (mTextEntry.length() <= 0)
-            mSendButton.setVisibility(View.INVISIBLE);
-
-        Resources r = getResources();
-        mMoveThreshold = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, r.getDisplayMetrics());
-        mMoveOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, r.getDisplayMetrics());
-        mDistMove = mMoveOffset;
-        mMoveOffset2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, r.getDisplayMetrics());
-
-        mAudioButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    mOrientation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-                    Log.e(TAG, "Start Record");
-                    mCheckMove = false;
-                    mDraggingX = -1;
-                    mCheckRecordingAudio = true;
-                    startRecording();
-                    animateRecordFrame();
-                    mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
-                } else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
-                    if (mOrientation == getActivity().getWindowManager().getDefaultDisplay().getRotation()) {
-                        Log.e(TAG, "Send File");
-                        mDraggingX = -1;
-                        stopRecording(true);
-                        mCheckRecordingAudio = false;
-                        animateRecordFrame();
-                    }
-                } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mCheckRecordingAudio) {
-                    float x = motionEvent.getX();
-                    if (x < -mDistMove) {
-                        Log.e(TAG, "Delete File");
-                        mCheckMove = true;
-                        mCheckRecordingAudio = false;
-                        stopRecording(false);
-                        animateRecordFrame();
-                    }
-                    if (android.os.Build.VERSION.SDK_INT > 13) {
-                        x = x + mAudioButton.getX();
-                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
-                        if (mDraggingX != -1) {
-                            float dist = (x - mDraggingX);
-                            params.leftMargin = mMoveThreshold + (int) dist;
-                            mSlideText.setLayoutParams(params);
-                            float alpha = 1.0f + dist / mDistMove;
-                            if (alpha > 1) {
-                                alpha = 1;
-                            } else if (alpha < 0) {
-                                alpha = 0;
-                            }
-                            mSlideText.setAlpha(alpha);
-                        }
-                        if (x <= mSlideText.getX() + mSlideText.getWidth() + mMoveThreshold) {
-                            if (mDraggingX == -1) {
-                                mDraggingX = x;
-                                mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - mMoveOffset2) / 2.0f;
-                                if (mDistMove <= 0) {
-                                    mDistMove = mMoveOffset;
-                                } else if (mDistMove > mMoveOffset) {
-                                    mDistMove = mMoveOffset;
-                                }
-                            }
-                        }
-                        if (params.leftMargin > mMoveThreshold) {
-                            params.leftMargin = mMoveThreshold;
-                            mSlideText.setLayoutParams(params);
-                            mSlideText.setAlpha(1);
-                            mDraggingX = -1;
-                        }
-                    }
-                }
-                view.onTouchEvent(motionEvent);
-                return true;
-            }
-        });
-        mVibrator = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
-
-        mSendButton.setEnabled(mTextEntry.length() > 0);
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                submitSend();
-            }
-        });
-
-        mEmojiButton = (ImageButton) getView().findViewById(R.id.emoji_button);
-        mEmojiButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleEmojiDrawer();
-            }
-        });
         mRootView = (KeyboardAwareRelativeLayout) getView().findViewById(R.id.root_view);
         // this will handle closing of keyboard while emoji drawer is open
         mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
@@ -511,7 +306,7 @@ public class ComposeMessageFragment extends ListFragment implements
         });
 
         Configuration config = getResources().getConfiguration();
-        onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
+        mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
 
         processArguments(savedInstanceState);
     }
@@ -532,7 +327,7 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        onKeyboardStateChanged(newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
+        mComposer.onKeyboardStateChanged(newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
 
         if(mCheckRecordingAudio && mOrientation != newConfig.orientation) {
             mCheckRecordingAudio = false;
@@ -766,7 +561,7 @@ public class ComposeMessageFragment extends ListFragment implements
     /** Sends out the text message in the composing entry. */
     public void sendTextMessage(String text, boolean fromTextEntry) {
         if (fromTextEntry)
-            text = mTextEntry.getText().toString();
+            text = mComposer.getText().toString();
 
         if (!TextUtils.isEmpty(text)) {
             /*
@@ -781,13 +576,10 @@ public class ComposeMessageFragment extends ListFragment implements
 
             if (fromTextEntry) {
                 // empty text
-                mTextEntry.setText("");
+                mComposer.setText("");
 
                 // hide softkeyboard
-                InputMethodManager imm = (InputMethodManager) getActivity()
-                        .getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(),
-                        InputMethodManager.HIDE_IMPLICIT_ONLY);
+                mComposer.hideSoftKeyboard();
             }
         }
     }
@@ -1578,17 +1370,6 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    private void onKeyboardStateChanged(boolean isKeyboardOpen) {
-        if (isKeyboardOpen) {
-            mTextEntry.setFocusableInTouchMode(true);
-            mTextEntry.setHint(R.string.hint_type_to_compose);
-        }
-        else {
-            mTextEntry.setFocusableInTouchMode(false);
-            mTextEntry.setHint(R.string.hint_open_kbd_to_compose);
-        }
-    }
-
     @Override
     public void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
@@ -1815,20 +1596,8 @@ public class ComposeMessageFragment extends ListFragment implements
         // subscribe to presence notifications
         subscribePresence();
 
-        mTextEntry.removeTextChangedListener(mChatStateListener);
-
-        // restore draft (if any and only if user hasn't inserted text)
-        if (mTextEntry.getText().length() == 0) {
-            String draft = mConversation.getDraft();
-            if (draft != null) {
-                mTextEntry.setText(draft);
-
-                // move cursor to end
-                mTextEntry.setSelection(mTextEntry.getText().length());
-            }
-        }
-
-        mTextEntry.addTextChangedListener(mChatStateListener);
+        // restore any draft
+        mComposer.restoreText(mConversation.getDraft());
 
         if (mConversation.getThreadId() > 0 && mConversation.getUnreadCount() > 0) {
             /*
@@ -2375,7 +2144,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (parent != null)
             parent.fragmentLostFocus();
 
-        CharSequence text = mTextEntry.getText();
+        CharSequence text = mComposer.getText();
         int len = text.length();
 
         // resume notifications
@@ -2465,9 +2234,8 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mTextEntry != null) {
-            mTextEntry.removeTextChangedListener(mChatStateListener);
-            mTextEntry.setText("");
+        if (mComposer != null) {
+            mComposer.onDestroy();
         }
         if (mAudioDialog != null) {
             mAudioDialog.dismiss();
@@ -2564,7 +2332,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                 // no subscription request
                                 mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
                                 // no text in compose entry
-                                mTextEntry.getText().length() == 0))) {
+                                mComposer.getText().length() == 0))) {
 
                         Log.i(TAG, "no data to view - exit");
 
@@ -2637,7 +2405,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     public void setTextEntry(CharSequence text) {
-        mTextEntry.setText(text);
+        mComposer.setText(text);
     }
 
     @Override
@@ -2858,163 +2626,4 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    @SuppressLint("NewApi")
-    private void animateRecordFrame() {
-        int screenWidth = SystemUtils.getDisplaySize(getActivity()).x;
-        boolean supportsAnimation = (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB_MR2);
-
-        if (mCheckRecordingAudio) {
-            mRecordLayout.setVisibility(View.VISIBLE);
-            mRecordText.setText("00:00");
-
-            if (supportsAnimation) {
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
-                params.leftMargin = mMoveThreshold;
-                mSlideText.setLayoutParams(params);
-                mSlideText.setAlpha(1);
-                mRecordLayout.setX(screenWidth);
-                mRecordLayout.animate()
-                    .setInterpolator(new AccelerateDecelerateInterpolator())
-                    .setListener(new Animator.AnimatorListener() {
-                        @Override
-                        public void onAnimationStart(Animator animator) {
-                        }
-
-                        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-                        @Override
-                        public void onAnimationEnd(Animator animator) {
-                            mRecordLayout.setX(0);
-                        }
-
-                        @Override
-                        public void onAnimationCancel(Animator animator) {
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animator animator) {
-                        }
-                    })
-                    .setDuration(300)
-                    .translationX(0)
-                    .start();
-            }
-        }
-        else {
-            if (supportsAnimation) {
-                mRecordLayout.animate()
-                    .setInterpolator(new AccelerateDecelerateInterpolator())
-                    .setListener(new Animator.AnimatorListener() {
-                        @Override
-                        public void onAnimationStart(Animator animator) {
-                        }
-
-                        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-                        @Override
-                        public void onAnimationEnd(Animator animator) {
-                            FrameLayout.LayoutParams params =
-                                (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
-                            params.leftMargin = mMoveThreshold;
-                            mSlideText.setLayoutParams(params);
-                            mSlideText.setAlpha(1);
-                            mRecordLayout.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onAnimationCancel(Animator animator) {
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animator animator) {
-                        }
-                    })
-                    .setDuration(300)
-                    .translationX(screenWidth)
-                    .start();
-            }
-            else {
-                mRecordLayout.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    private void startRecording() {
-        if (mPlayer != null)
-            resetAudio(mAudioControl);
-        try {
-            mRecordFile = MediaStorage.getOutgoingAudioFile();
-        }
-        catch (IOException e) {
-            Log.e(TAG, "file error: ", e);
-        }
-        mRecord = new MediaRecorder();
-        mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecord.setOutputFile(mRecordFile.getAbsolutePath());
-        mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        try {
-            mVibrator.vibrate(20);
-            startTimer();
-            mRecord.prepare();
-            // Start recording
-            mRecord.start();
-        }
-        catch (IllegalStateException e) {
-            Log.e (TAG, "error starting audio recording:", e);
-        }
-        catch (IOException e) {
-            Log.e(TAG, "error writing on external storage:", e);
-            new AlertDialog.Builder(getActivity())
-                    .setMessage(R.string.err_audio_record_writing)
-                    .setNegativeButton(getActivity().getString(android.R.string.ok), (DialogInterface.OnClickListener) null)
-                    .show();
-        }
-        catch (RuntimeException e) {
-            Log.e(TAG, "error starting audio recording:", e);
-            new AlertDialog.Builder(getActivity().getApplicationContext())
-                    .setMessage(R.string.err_audio_record)
-                    .setNegativeButton(getActivity().getString(android.R.string.ok), (DialogInterface.OnClickListener) null)
-                    .show();
-        }
-    }
-
-    private void stopRecording(boolean send) {
-        mVibrator.vibrate(20);
-        mHandler.removeCallbacks(mMediaPlayerUpdater);
-        try {
-            mRecord.stop();
-            mRecord.reset();
-            mRecord.release();
-            if (send && (elapsedTime > 900)) {
-                sendBinaryMessage(Uri.fromFile(mRecordFile), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
-            } else {
-                Log.e(TAG,"File Cancellato");
-                mRecordFile.delete();
-            }
-        }
-        catch (IllegalStateException e) {
-            //ignore
-        }
-        catch (RuntimeException e) {
-            //ignore
-        }
-    }
-
-    private void startTimer() {
-        startTime = SystemClock.uptimeMillis();
-        mMediaPlayerUpdater = new Runnable() {
-            @Override
-            public void run() {
-                elapsedTime = SystemClock.uptimeMillis() - startTime;
-                mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
-                mHandler.postDelayed(this, 100);
-                if (elapsedTime >= 60000) {
-                    mCheckRecordingAudio = false;
-                    animateRecordFrame();
-                    mAudioButton.setPressed(false);
-                    stopRecording(true);
-                }
-            }
-        };
-        mHandler.postDelayed(mMediaPlayerUpdater, 100);
-    }
 }

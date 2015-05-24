@@ -81,6 +81,11 @@ public final class SystemUtils {
         return displaySize;
     }
 
+    public static int getDisplayRotation(Context context) {
+        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        return manager.getDefaultDisplay().getRotation();
+    }
+
     /** Returns the type name of the current network, or null. */
     public static String getCurrentNetworkName(Context context) {
         ConnectivityManager connMgr = (ConnectivityManager) context
