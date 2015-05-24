@@ -268,13 +268,13 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Returns a new fragment instance from a {@link Conversation} instance. */
     public static ComposeMessageFragment fromConversation(Context context,
-                                                          Conversation conv) {
+            Conversation conv) {
         return fromConversation(context, conv.getThreadId());
     }
 
     /** Returns a new fragment instance from a thread ID. */
     public static ComposeMessageFragment fromConversation(Context context,
-                                                          long threadId) {
+            long threadId) {
         ComposeMessageFragment f = new ComposeMessageFragment();
         Bundle args = new Bundle();
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
@@ -355,7 +355,7 @@ public class ComposeMessageFragment extends ListFragment implements
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
                     InputMethodManager imm = (InputMethodManager) getActivity()
-                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
                     submitSend();
                     return true;
@@ -536,7 +536,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         return inflater.inflate(R.layout.compose_message, container, false);
     }
 
@@ -573,7 +573,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Sends out a binary message. */
     public void sendBinaryMessage(Uri uri, String mime, boolean media,
-                                  Class<? extends MessageComponent<?>> klass) {
+            Class<? extends MessageComponent<?>> klass) {
         Log.v(TAG, "sending binary content: " + uri);
         Uri newMsg = null;
         String msgId = null;
@@ -845,14 +845,14 @@ public class ComposeMessageFragment extends ListFragment implements
             else {
                 // info & download dialog
                 CharSequence message = MessageUtils
-                        .getFileInfoMessage(getActivity(), msg,
-                                mUserPhone != null ? mUserPhone : mUserJID);
+                    .getFileInfoMessage(getActivity(), msg,
+                        mUserPhone != null ? mUserPhone : mUserJID);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.title_file_info)
-                        .setMessage(message)
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .setCancelable(true);
+                    .setTitle(R.string.title_file_info)
+                    .setMessage(message)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setCancelable(true);
 
                 if (!DownloadService.isQueued(attachment.getFetchUrl())) {
                     DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
@@ -899,7 +899,7 @@ public class ComposeMessageFragment extends ListFragment implements
         else {
             // corrupted message :(
             Toast.makeText(getActivity(), R.string.err_attachment_corrupted,
-                    Toast.LENGTH_LONG).show();
+                Toast.LENGTH_LONG).show();
         }
     }
 
@@ -986,8 +986,8 @@ public class ComposeMessageFragment extends ListFragment implements
         }
 
         pictureIntent
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .setType("image/*");
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("image/*");
 
         Intent chooser = null;
         try {
@@ -1010,7 +1010,7 @@ public class ComposeMessageFragment extends ListFragment implements
         catch (IOException e) {
             Log.e(TAG, "error creating temp file", e);
             Toast.makeText(getActivity(), R.string.chooser_error_no_camera,
-                    Toast.LENGTH_LONG).show();
+                Toast.LENGTH_LONG).show();
         }
 
         if (chooser == null) chooser = pictureIntent;
@@ -1129,7 +1129,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void hideEmojiDrawer(boolean showKeyboard) {
         if (showKeyboard) {
             InputMethodManager input = (InputMethodManager) getActivity()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
             input.showSoftInput(mTextEntry, 0);
         }
 
@@ -1189,28 +1189,28 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void blockUser() {
         new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.menu_block_user)
-                .setMessage(Html.fromHtml(getString(R.string.msg_block_user_warning)))
-                .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        setPrivacy(PRIVACY_BLOCK);
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+            .setTitle(R.string.menu_block_user)
+            .setMessage(Html.fromHtml(getString(R.string.msg_block_user_warning)))
+            .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    setPrivacy(PRIVACY_BLOCK);
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void unblockUser() {
         new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.menu_unblock_user)
-                .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
-                .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        setPrivacy(PRIVACY_UNBLOCK);
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+            .setTitle(R.string.menu_unblock_user)
+            .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
+            .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    setPrivacy(PRIVACY_UNBLOCK);
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void decryptMessage(CompositeMessage msg) {
@@ -1255,7 +1255,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenuInfo menuInfo) {
+            ContextMenuInfo menuInfo) {
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
         MessageListItem vitem = (MessageListItem) info.targetView;
         CompositeMessage msg = vitem.getMessage();
@@ -1549,7 +1549,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 if (uri != null) {
                     // get lookup key
                     final Cursor c = getActivity().getContentResolver()
-                            .query(uri, new String[] { Contacts.LOOKUP_KEY }, null, null, null);
+                        .query(uri, new String[] { Contacts.LOOKUP_KEY }, null, null, null);
                     if (c != null) {
                         try {
                             c.moveToFirst();
@@ -1668,7 +1668,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 Uri uri = args.getParcelable("data");
                 mUserJID = uri.getPathSegments().get(1);
                 mConversation = Conversation.loadFromUserId(getActivity(),
-                        mUserJID);
+                    mUserJID);
 
                 if (mConversation == null) {
                     mConversation = Conversation.createNew(getActivity());
@@ -1726,12 +1726,12 @@ public class ComposeMessageFragment extends ListFragment implements
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.
-                        setTitle(R.string.title_user_not_found)
-                        .setMessage(R.string.message_user_not_found)
-                                // nothing happens if user chooses to contact the user anyway
-                        .setPositiveButton(R.string.yes_user_not_found, null)
-                        .setNegativeButton(R.string.no_user_not_found, noListener)
-                        .show();
+                    setTitle(R.string.title_user_not_found)
+                    .setMessage(R.string.message_user_not_found)
+                    // nothing happens if user chooses to contact the user anyway
+                    .setPositiveButton(R.string.yes_user_not_found, null)
+                    .setNegativeButton(R.string.no_user_not_found, noListener)
+                    .show();
 
             }
         }
@@ -1858,18 +1858,18 @@ public class ComposeMessageFragment extends ListFragment implements
                 };
 
                 mInvitationBar.findViewById(R.id.button_accept)
-                        .setOnClickListener(listener);
+                    .setOnClickListener(listener);
                 mInvitationBar.findViewById(R.id.button_block)
-                        .setOnClickListener(listener);
+                    .setOnClickListener(listener);
 
                 // identity button has its own listener
                 mInvitationBar.findViewById(R.id.button_identity)
-                        .setOnClickListener(new View.OnClickListener() {
-                                                public void onClick(View v) {
-                                                    showIdentityDialog();
-                                                }
-                                            }
-                        );
+                    .setOnClickListener(new View.OnClickListener() {
+                            public void onClick(View v) {
+                                showIdentityDialog();
+                            }
+                        }
+                    );
 
             }
         }
@@ -1910,8 +1910,8 @@ public class ComposeMessageFragment extends ListFragment implements
         // FIXME this won't work on new threads
 
         ctx.getContentResolver().update(Requests.CONTENT_URI,
-                values, CommonColumns.PEER + "=?",
-                new String[] { mUserJID });
+            values, CommonColumns.PEER + "=?",
+            new String[] { mUserJID });
 
         // accept invitation
         if (action == PRIVACY_ACCEPT) {
@@ -2529,7 +2529,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
         @Override
         protected synchronized void onQueryComplete(int token, Object cookie,
-                                                    Cursor cursor) {
+                Cursor cursor) {
             if (cursor == null || isFinishing()) {
                 // close cursor - if any
                 if (cursor != null)
@@ -2549,10 +2549,10 @@ public class ComposeMessageFragment extends ListFragment implements
                             && (mConversation == null ||
                             // no draft
                             (mConversation.getDraft() == null &&
-                                    // no subscription request
-                                    mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
-                                    // no text in compose entry
-                                    mTextEntry.getText().length() == 0))) {
+                                // no subscription request
+                                mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
+                                // no text in compose entry
+                                mTextEntry.getText().length() == 0))) {
 
                         Log.i(TAG, "no data to view - exit");
 
@@ -2650,7 +2650,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (Preferences.getOfflineMode(getActivity()) && !mOfflineModeWarned) {
             mOfflineModeWarned = true;
             Toast.makeText(getActivity(), R.string.warning_offline_mode,
-                    Toast.LENGTH_LONG).show();
+                Toast.LENGTH_LONG).show();
         }
     }
 
