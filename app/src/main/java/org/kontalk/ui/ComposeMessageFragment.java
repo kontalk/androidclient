@@ -665,8 +665,8 @@ public class ComposeMessageFragment extends ListFragment implements
             getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(getActivity(),
-                            R.string.err_store_message_failed,
-                            Toast.LENGTH_LONG).show();
+                        R.string.err_store_message_failed,
+                        Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -1202,15 +1202,15 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void unblockUser() {
         new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.menu_unblock_user)
-            .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
-            .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    setPrivacy(PRIVACY_UNBLOCK);
-                }
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+        .setTitle(R.string.menu_unblock_user)
+        .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
+        .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                setPrivacy(PRIVACY_UNBLOCK);
+            }
+        })
+        .setNegativeButton(android.R.string.cancel, null)
+        .show();
     }
 
     private void decryptMessage(CompositeMessage msg) {
@@ -1531,7 +1531,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         sendBinaryMessage(uri, VCardComponent.MIME_TYPE, false, VCardComponent.class);
                     else
                         Toast.makeText(getActivity(), R.string.send_mime_not_supported, Toast.LENGTH_LONG)
-                                .show();
+                            .show();
                 }
             }
             // operation aborted
@@ -1865,11 +1865,11 @@ public class ComposeMessageFragment extends ListFragment implements
                 // identity button has its own listener
                 mInvitationBar.findViewById(R.id.button_identity)
                     .setOnClickListener(new View.OnClickListener() {
-                            public void onClick(View v) {
-                                showIdentityDialog();
-                            }
+                        public void onClick(View v) {
+                            showIdentityDialog();
                         }
-                    );
+                    }
+                );
 
             }
         }
@@ -1911,7 +1911,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
         ctx.getContentResolver().update(Requests.CONTENT_URI,
             values, CommonColumns.PEER + "=?",
-            new String[] { mUserJID });
+                new String[] { mUserJID });
 
         // accept invitation
         if (action == PRIVACY_ACCEPT) {
@@ -1943,8 +1943,8 @@ public class ComposeMessageFragment extends ListFragment implements
                             }
                             else {
                                 Toast.makeText(getActivity(),
-                                        R.string.msg_user_blocked,
-                                        Toast.LENGTH_LONG).show();
+                                    R.string.msg_user_blocked,
+                                    Toast.LENGTH_LONG).show();
                             }
 
                             // we don't need this receiver anymore
@@ -2547,8 +2547,8 @@ public class ComposeMessageFragment extends ListFragment implements
                     // no messages to show - exit
                     if (cursor.getCount() == 0
                             && (mConversation == null ||
-                            // no draft
-                            (mConversation.getDraft() == null &&
+                                // no draft
+                                (mConversation.getDraft() == null &&
                                 // no subscription request
                                 mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
                                 // no text in compose entry
