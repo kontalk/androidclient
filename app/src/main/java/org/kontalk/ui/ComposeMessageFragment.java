@@ -26,18 +26,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.rockerhieu.emojicon.EmojiconsView;
-import com.rockerhieu.emojicon.OnEmojiconClickedListener;
-import com.rockerhieu.emojicon.emoji.Emojicon;
-
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
-import android.animation.Animator;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -53,7 +47,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
@@ -61,53 +54,34 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
-import android.os.Vibrator;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
-import android.text.Editable;
 import android.text.Html;
-import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.text.format.DateUtils;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.WindowManager;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import org.kontalk.R;
@@ -141,12 +115,10 @@ import org.kontalk.ui.view.ComposerBar;
 import org.kontalk.ui.view.ComposerListener;
 import org.kontalk.ui.view.IconContextMenu;
 import org.kontalk.ui.view.IconContextMenu.IconContextMenuOnClickListener;
-import org.kontalk.ui.view.KeyboardAwareRelativeLayout;
 import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
@@ -164,8 +136,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
 public class ComposeMessageFragment extends ListFragment implements
         ComposerListener, View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
-        AudioDialog.AudioDialogListener, AudioPlayerControl,
-        EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
+        AudioDialog.AudioDialogListener, AudioPlayerControl {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -228,13 +199,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private BroadcastReceiver mPrivacyListener;
 
     private boolean mOfflineModeWarned;
-    private boolean mComposeSent;
-    private boolean mIsTyping;
     private CharSequence mCurrentStatus;
-    private EmojiconsView mEmojiView;
-    private boolean mEmojiVisible;
-    private KeyboardAwareRelativeLayout mRootView;
-    private WindowManager.LayoutParams mWindowLayoutParams;
+    private boolean mIsTyping;
 
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromUserId(Context context, String userId) {
@@ -294,16 +260,7 @@ public class ComposeMessageFragment extends ListFragment implements
             background.setImageDrawable(bg);
         }
 
-        mRootView = (KeyboardAwareRelativeLayout) getView().findViewById(R.id.root_view);
-        // this will handle closing of keyboard while emoji drawer is open
-        mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
-            @Override
-            public void onKeyboardShown(boolean visible) {
-                if (!visible && mRootView.getPaddingBottom() == 0 && isEmojiVisible()) {
-                    hideEmojiDrawer(false);
-                }
-            }
-        });
+        mComposer.onActivityCreated(savedInstanceState, getView().findViewById(R.id.root_view));
 
         Configuration config = getResources().getConfiguration();
         mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
@@ -329,12 +286,15 @@ public class ComposeMessageFragment extends ListFragment implements
 
         mComposer.onKeyboardStateChanged(newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
 
-        if(mCheckRecordingAudio && mOrientation != newConfig.orientation) {
+        // FIXME this can't work because there is no configChanges in manifest
+        /*
+        if (mCheckRecordingAudio && mOrientation != newConfig.orientation) {
             mCheckRecordingAudio = false;
             animateRecordFrame();
             stopRecording(false);
             mAudioButton.setPressed(false);
         }
+        */
     }
 
     public void reload() {
@@ -365,20 +325,8 @@ public class ComposeMessageFragment extends ListFragment implements
         // list adapter creation is post-poned
     }
 
-    private void submitSend() {
-        mTextEntry.removeTextChangedListener(mChatStateListener);
-        // send message
-        sendTextMessage(null, true);
-        // reset compose sent flag
-        mComposeSent = false;
-        mTextEntry.addTextChangedListener(mChatStateListener);
-        // revert to keyboard if emoji panel was open
-        if (isEmojiVisible()) {
-            hideEmojiDrawer();
-        }
-    }
-
     /** Sends out a binary message. */
+    @Override
     public void sendBinaryMessage(Uri uri, String mime, boolean media,
             Class<? extends MessageComponent<?>> klass) {
         Log.v(TAG, "sending binary content: " + uri);
@@ -559,11 +507,9 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     /** Sends out the text message in the composing entry. */
-    public void sendTextMessage(String text, boolean fromTextEntry) {
-        if (fromTextEntry)
-            text = mComposer.getText().toString();
-
-        if (!TextUtils.isEmpty(text)) {
+    @Override
+    public void sendTextMessage(String message) {
+        if (!TextUtils.isEmpty(message)) {
             /*
              * TODO show an animation to warn the user that the message
              * is being sent (actually stored).
@@ -572,16 +518,17 @@ public class ComposeMessageFragment extends ListFragment implements
             offlineModeWarning();
 
             // start thread
-            new TextMessageThread(text).start();
-
-            if (fromTextEntry) {
-                // empty text
-                mComposer.setText("");
-
-                // hide softkeyboard
-                mComposer.hideSoftKeyboard();
-            }
+            new TextMessageThread(message).start();
         }
+    }
+
+    @Override
+    public boolean sendTyping() {
+        if (mAvailableResources.size() > 0) {
+            MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.composing);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -806,7 +753,7 @@ public class ComposeMessageFragment extends ListFragment implements
             Intent take = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             take.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPhoto));
             chooser = Intent.createChooser(pictureIntent, getString(R.string.chooser_send_picture));
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { take });
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{take});
         }
         catch (UnsupportedOperationException ue) {
             Log.d(TAG, "no camera app or no camera present", ue);
@@ -848,114 +795,6 @@ public class ComposeMessageFragment extends ListFragment implements
         return fragment;
     }
 
-    @Override
-    public void onEmojiconBackspaceClicked(View v) {
-        EmojiconsView.backspace(mTextEntry);
-    }
-
-    @Override
-    public void onEmojiconClicked(Emojicon emojicon) {
-        EmojiconsView.input(mTextEntry, emojicon);
-    }
-
-    private boolean isEmojiVisible() {
-        return mEmojiVisible;
-    }
-
-    private void toggleEmojiDrawer() {
-        // TODO animate drawer enter & exit
-
-        if (isEmojiVisible()) {
-            hideEmojiDrawer();
-        }
-        else {
-            showEmojiDrawer();
-        }
-    }
-
-    private void showEmojiDrawer() {
-        Activity activity = getActivity();
-        if (activity == null)
-            return;
-
-        int keyboardHeight = mRootView.getKeyboardHeight();
-
-        mEmojiVisible = true;
-
-        if (mEmojiView == null) {
-            mEmojiView = (EmojiconsView) LayoutInflater
-                .from(activity).inflate(R.layout.emojicons, mRootView, false);
-            mEmojiView.setId(R.id.emoji_drawer);
-            mEmojiView.setOnEmojiconBackspaceClickedListener(this);
-            mEmojiView.setOnEmojiconClickedListener(this);
-
-            mWindowLayoutParams = new WindowManager.LayoutParams();
-            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
-            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-            mWindowLayoutParams.token = activity.getWindow().getDecorView().getWindowToken();
-            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-        }
-
-        mWindowLayoutParams.height = keyboardHeight;
-        mWindowLayoutParams.width = SystemUtils.getDisplaySize(activity).x;
-
-        WindowManager wm = (WindowManager) activity.getSystemService(Activity.WINDOW_SERVICE);
-
-        try {
-            if (mEmojiView.getParent() != null) {
-                wm.removeViewImmediate(mEmojiView);
-            }
-        }
-        catch (Exception e) {
-            Log.e(TAG, "error removing emoji view", e);
-        }
-
-        try {
-            wm.addView(mEmojiView, mWindowLayoutParams);
-        } catch (Exception e) {
-            Log.e(TAG, "error adding emoji view", e);
-            return;
-        }
-
-        if (!mRootView.isKeyboardVisible()) {
-            mRootView.setPadding(0, 0, 0, keyboardHeight);
-            // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
-        }
-
-        mEmojiButton.setImageResource(R.drawable.ic_keyboard_dark);
-    }
-
-    private void hideEmojiDrawer() {
-        hideEmojiDrawer(true);
-    }
-
-    private void hideEmojiDrawer(boolean showKeyboard) {
-        if (showKeyboard) {
-            InputMethodManager input = (InputMethodManager) getActivity()
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-            input.showSoftInput(mTextEntry, 0);
-        }
-
-        if (mEmojiView != null && mEmojiView.getParent() != null) {
-            WindowManager wm = (WindowManager) getActivity()
-                .getSystemService(Context.WINDOW_SERVICE);
-            wm.removeViewImmediate(mEmojiView);
-        }
-
-        mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
-        mRootView.setPadding(0, 0, 0, 0);
-        mEmojiVisible = false;
-    }
-
-    boolean tryHideEmojiDrawer() {
-        if (isEmojiVisible()) {
-            hideEmojiDrawer(false);
-            return true;
-        }
-        return false;
-    }
-
     private void deleteThread() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.confirm_delete_thread);
@@ -965,7 +804,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mTextEntry.setText("");
+                        mComposer.setText("");
                         MessagesProvider.deleteThread(getActivity(), threadId);
                     }
                 });
@@ -1962,7 +1801,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
                         // reset compose sent flag
-                        mComposeSent = false;
+                        mComposer.resetCompose();
                         // reset available resources list
                         mAvailableResources.clear();
                     }
@@ -2201,7 +2040,7 @@ public class ComposeMessageFragment extends ListFragment implements
             // send inactive state notification
             if (mAvailableResources.size() > 0)
                 MessageCenterService.sendChatState(getActivity(), mUserJID, ChatState.inactive);
-            mComposeSent = false;
+            mComposer.resetCompose();
         }
 
         // unsubcribe presence notifications
@@ -2298,6 +2137,14 @@ public class ComposeMessageFragment extends ListFragment implements
                 mUnblockMenu.setVisible(true).setEnabled(true);
             }
         }
+    }
+
+    boolean tryHideEmojiDrawer() {
+        if (mComposer.isEmojiVisible()) {
+            mComposer.hideEmojiDrawer(false);
+            return true;
+        }
+        return false;
     }
 
     /** The conversation list query handler. */

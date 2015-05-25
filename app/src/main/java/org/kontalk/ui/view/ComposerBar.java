@@ -3,11 +3,14 @@ package org.kontalk.ui.view;
 import java.io.File;
 import java.io.IOException;
 
-import org.jivesoftware.smackx.chatstates.ChatState;
+import com.rockerhieu.emojicon.EmojiconsView;
+import com.rockerhieu.emojicon.OnEmojiconClickedListener;
+import com.rockerhieu.emojicon.emoji.Emojicon;
 
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,6 +18,7 @@ import android.content.res.Resources;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.text.Editable;
@@ -24,9 +28,12 @@ import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -38,7 +45,6 @@ import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.message.AudioComponent;
-import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.ui.AudioDialog;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.util.MediaStorage;
@@ -51,7 +57,8 @@ import org.kontalk.util.SystemUtils;
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class ComposerBar extends RelativeLayout {
+public class ComposerBar extends RelativeLayout implements
+        EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private Context mContext;
@@ -59,9 +66,15 @@ public class ComposerBar extends RelativeLayout {
     private EditText mTextEntry;
     private View mSendButton;
 
+    private boolean mComposeSent;
+
     private ComposerListener mListener;
     private TextWatcher mChatStateListener;
     private ImageButton mEmojiButton;
+    private EmojiconsView mEmojiView;
+    private boolean mEmojiVisible;
+    private KeyboardAwareRelativeLayout mRootView;
+    private WindowManager.LayoutParams mWindowLayoutParams;
 
     // for PTT message
     private View mAudioButton;
@@ -69,7 +82,7 @@ public class ComposerBar extends RelativeLayout {
     private View mSlideText;
     private float mDraggingX = -1;
     private float mDistMove;
-    private boolean mCheckRecordingAudio = false;
+    private boolean mIsRecordingAudio;
     private TextView mRecordText;
     private File mRecordFile;
     private MediaRecorder mRecord;
@@ -173,8 +186,7 @@ public class ComposerBar extends RelativeLayout {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (Preferences.getSendTyping(mContext)) {
                     // send typing notification if necessary
-                    if (!mComposeSent && mAvailableResources.size() > 0) {
-                        MessageCenterService.sendChatState(mContext, mUserJID, ChatState.composing);
+                    if (!mComposeSent && mListener.sendTyping()) {
                         mComposeSent = true;
                     }
                 }
@@ -223,7 +235,7 @@ public class ComposerBar extends RelativeLayout {
                     Log.e(TAG, "Start Record");
                     mCheckMove = false;
                     mDraggingX = -1;
-                    mCheckRecordingAudio = true;
+                    mIsRecordingAudio = true;
                     startRecording();
                     animateRecordFrame();
                     mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
@@ -233,16 +245,16 @@ public class ComposerBar extends RelativeLayout {
                         Log.e(TAG, "Send File");
                         mDraggingX = -1;
                         stopRecording(true);
-                        mCheckRecordingAudio = false;
+                        mIsRecordingAudio = false;
                         animateRecordFrame();
                     }
                 }
-                else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mCheckRecordingAudio) {
+                else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mIsRecordingAudio) {
                     float x = motionEvent.getX();
                     if (x < -mDistMove) {
                         Log.e(TAG, "Delete File");
                         mCheckMove = true;
-                        mCheckRecordingAudio = false;
+                        mIsRecordingAudio = false;
                         stopRecording(false);
                         animateRecordFrame();
                     }
@@ -302,7 +314,19 @@ public class ComposerBar extends RelativeLayout {
                 toggleEmojiDrawer();
             }
         });
+    }
 
+    public void onActivityCreated(Bundle savedInstanceState, View rootView) {
+        mRootView = (KeyboardAwareRelativeLayout) rootView;
+        // this will handle closing of keyboard while emoji drawer is open
+        mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
+            @Override
+            public void onKeyboardShown(boolean visible) {
+                if (!visible && mRootView.getPaddingBottom() == 0 && isEmojiVisible()) {
+                    hideEmojiDrawer(false);
+                }
+            }
+        });
     }
 
     @SuppressLint("NewApi")
@@ -310,7 +334,7 @@ public class ComposerBar extends RelativeLayout {
         int screenWidth = SystemUtils.getDisplaySize(mContext).x;
         boolean supportsAnimation = (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB_MR2);
 
-        if (mCheckRecordingAudio) {
+        if (mIsRecordingAudio) {
             mRecordLayout.setVisibility(View.VISIBLE);
             mRecordText.setText("00:00");
 
@@ -432,7 +456,8 @@ public class ComposerBar extends RelativeLayout {
             mRecord.reset();
             mRecord.release();
             if (send && (elapsedTime > 900)) {
-                sendBinaryMessage(Uri.fromFile(mRecordFile), AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+                mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
+                    AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
             } else {
                 Log.e(TAG,"File Cancellato");
                 mRecordFile.delete();
@@ -455,7 +480,7 @@ public class ComposerBar extends RelativeLayout {
                 mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
                 mHandler.postDelayed(this, 100);
                 if (elapsedTime >= 60000) {
-                    mCheckRecordingAudio = false;
+                    mIsRecordingAudio = false;
                     animateRecordFrame();
                     mAudioButton.setPressed(false);
                     stopRecording(true);
@@ -463,6 +488,119 @@ public class ComposerBar extends RelativeLayout {
             }
         };
         mHandler.postDelayed(mMediaPlayerUpdater, 100);
+    }
+
+    private void submitSend() {
+        mTextEntry.removeTextChangedListener(mChatStateListener);
+        // send message
+        mListener.sendTextMessage(mTextEntry.getText().toString());
+        // empty text
+        mTextEntry.setText("");
+        // hide softkeyboard
+        hideSoftKeyboard();
+        // reset compose sent flag
+        mComposeSent = false;
+        mTextEntry.addTextChangedListener(mChatStateListener);
+        // revert to keyboard if emoji panel was open
+        if (isEmojiVisible()) {
+            hideEmojiDrawer();
+        }
+    }
+
+    @Override
+    public void onEmojiconBackspaceClicked(View v) {
+        EmojiconsView.backspace(mTextEntry);
+    }
+
+    @Override
+    public void onEmojiconClicked(Emojicon emojicon) {
+        EmojiconsView.input(mTextEntry, emojicon);
+    }
+
+    public boolean isEmojiVisible() {
+        return mEmojiVisible;
+    }
+
+    private void toggleEmojiDrawer() {
+        // TODO animate drawer enter & exit
+
+        if (isEmojiVisible()) {
+            hideEmojiDrawer();
+        }
+        else {
+            showEmojiDrawer();
+        }
+    }
+
+    private void showEmojiDrawer() {
+        int keyboardHeight = mRootView.getKeyboardHeight();
+
+        mEmojiVisible = true;
+
+        if (mEmojiView == null) {
+            mEmojiView = (EmojiconsView) LayoutInflater
+                .from(mContext).inflate(R.layout.emojicons, mRootView, false);
+            mEmojiView.setId(R.id.emoji_drawer);
+            mEmojiView.setOnEmojiconBackspaceClickedListener(this);
+            mEmojiView.setOnEmojiconClickedListener(this);
+
+            mWindowLayoutParams = new WindowManager.LayoutParams();
+            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+            mWindowLayoutParams.token = ((Activity)mContext).getWindow().getDecorView().getWindowToken();
+            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        }
+
+        mWindowLayoutParams.height = keyboardHeight;
+        mWindowLayoutParams.width = SystemUtils.getDisplaySize(mContext).x;
+
+        WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
+
+        try {
+            if (mEmojiView.getParent() != null) {
+                wm.removeViewImmediate(mEmojiView);
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error removing emoji view", e);
+        }
+
+        try {
+            wm.addView(mEmojiView, mWindowLayoutParams);
+        } catch (Exception e) {
+            Log.e(TAG, "error adding emoji view", e);
+            return;
+        }
+
+        if (!mRootView.isKeyboardVisible()) {
+            mRootView.setPadding(0, 0, 0, keyboardHeight);
+            // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
+        }
+
+        mEmojiButton.setImageResource(R.drawable.ic_keyboard_dark);
+    }
+
+    private void hideEmojiDrawer() {
+        hideEmojiDrawer(true);
+    }
+
+    public void hideEmojiDrawer(boolean showKeyboard) {
+        if (showKeyboard) {
+            InputMethodManager input = (InputMethodManager) mContext
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+            input.showSoftInput(mTextEntry, 0);
+        }
+
+        if (mEmojiView != null && mEmojiView.getParent() != null) {
+            WindowManager wm = (WindowManager) mContext
+                .getSystemService(Context.WINDOW_SERVICE);
+            wm.removeViewImmediate(mEmojiView);
+        }
+
+        mEmojiButton.setImageResource(R.drawable.ic_emoji_dark);
+        mRootView.setPadding(0, 0, 0, 0);
+        mEmojiVisible = false;
     }
 
     public void setComposerListener(ComposerListener listener) {
@@ -504,11 +642,15 @@ public class ComposerBar extends RelativeLayout {
         return mTextEntry.getText();
     }
 
-    public void hideSoftKeyboard() {
+    private void hideSoftKeyboard() {
         InputMethodManager imm = (InputMethodManager) mContext
             .getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(mTextEntry.getWindowToken(),
             InputMethodManager.HIDE_IMPLICIT_ONLY);
+    }
+
+    public void resetCompose() {
+        mComposeSent = false;
     }
 
     public void onDestroy() {
