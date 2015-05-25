@@ -13,12 +13,12 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.text.Editable;
@@ -42,6 +42,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.kontalk.R;
 import org.kontalk.message.AudioComponent;
@@ -61,6 +62,11 @@ public class ComposerBar extends RelativeLayout implements
         EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     private static final String TAG = ComposeMessage.TAG;
 
+    private static final int MIN_RECORDING_TIME = 900;
+    private static final int MAX_RECORDING_TIME = 60000;
+    private static final int AUDIO_RECORD_VIBRATION = 20;
+    private static final int AUDIO_RECORD_ANIMATION = 300;
+
     private Context mContext;
 
     private EditText mTextEntry;
@@ -77,6 +83,8 @@ public class ComposerBar extends RelativeLayout implements
     private WindowManager.LayoutParams mWindowLayoutParams;
 
     // for PTT message
+    private Handler mHandler;
+    private Runnable mMediaPlayerUpdater;
     private View mAudioButton;
     private View mRecordLayout;
     private View mSlideText;
@@ -119,14 +127,12 @@ public class ComposerBar extends RelativeLayout implements
 
     private void init(Context context) {
         mContext = context;
+        mHandler = new Handler();
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mSlideText = findViewById(R.id.slide_text);
-        mRecordText = (TextView) findViewById(R.id.recording_time);
-
         mTextEntry = (EditText) findViewById(R.id.text_editor);
 
         // enter key flag
@@ -219,6 +225,10 @@ public class ComposerBar extends RelativeLayout implements
         if (mTextEntry.length() <= 0)
             mSendButton.setVisibility(View.INVISIBLE);
 
+        mSlideText = findViewById(R.id.slide_text);
+        mRecordText = (TextView) findViewById(R.id.recording_time);
+
+        // FIXME remove these hard-coded values before merging
         Resources r = getResources();
         mMoveThreshold = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, r.getDisplayMetrics());
         mMoveOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, r.getDisplayMetrics());
@@ -232,7 +242,6 @@ public class ComposerBar extends RelativeLayout implements
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                     mOrientation = SystemUtils.getDisplayRotation(mContext);
-                    Log.e(TAG, "Start Record");
                     mCheckMove = false;
                     mDraggingX = -1;
                     mIsRecordingAudio = true;
@@ -242,7 +251,6 @@ public class ComposerBar extends RelativeLayout implements
                 }
                 else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
                     if (mOrientation == SystemUtils.getDisplayRotation(mContext)) {
-                        Log.e(TAG, "Send File");
                         mDraggingX = -1;
                         stopRecording(true);
                         mIsRecordingAudio = false;
@@ -252,7 +260,6 @@ public class ComposerBar extends RelativeLayout implements
                 else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mIsRecordingAudio) {
                     float x = motionEvent.getX();
                     if (x < -mDistMove) {
-                        Log.e(TAG, "Delete File");
                         mCheckMove = true;
                         mIsRecordingAudio = false;
                         stopRecording(false);
@@ -268,7 +275,8 @@ public class ComposerBar extends RelativeLayout implements
                             float alpha = 1.0f + dist / mDistMove;
                             if (alpha > 1) {
                                 alpha = 1;
-                            } else if (alpha < 0) {
+                            }
+                            else if (alpha < 0) {
                                 alpha = 0;
                             }
                             mSlideText.setAlpha(alpha);
@@ -316,7 +324,7 @@ public class ComposerBar extends RelativeLayout implements
         });
     }
 
-    public void onActivityCreated(Bundle savedInstanceState, View rootView) {
+    public void setRootView(View rootView) {
         mRootView = (KeyboardAwareRelativeLayout) rootView;
         // this will handle closing of keyboard while emoji drawer is open
         mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {
@@ -329,6 +337,10 @@ public class ComposerBar extends RelativeLayout implements
         });
     }
 
+    public void onSaveInstanceState(Bundle out) {
+        // TODO
+    }
+
     @SuppressLint("NewApi")
     private void animateRecordFrame() {
         int screenWidth = SystemUtils.getDisplaySize(mContext).x;
@@ -336,10 +348,11 @@ public class ComposerBar extends RelativeLayout implements
 
         if (mIsRecordingAudio) {
             mRecordLayout.setVisibility(View.VISIBLE);
-            mRecordText.setText("00:00");
+            mRecordText.setText(DateUtils.formatElapsedTime(0));
 
             if (supportsAnimation) {
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mSlideText.getLayoutParams();
+                FrameLayout.LayoutParams params =
+                    (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
                 params.leftMargin = mMoveThreshold;
                 mSlideText.setLayoutParams(params);
                 mSlideText.setAlpha(1);
@@ -365,7 +378,7 @@ public class ComposerBar extends RelativeLayout implements
                         public void onAnimationRepeat(Animator animator) {
                         }
                     })
-                    .setDuration(300)
+                    .setDuration(AUDIO_RECORD_ANIMATION)
                     .translationX(0)
                     .start();
             }
@@ -398,7 +411,7 @@ public class ComposerBar extends RelativeLayout implements
                         public void onAnimationRepeat(Animator animator) {
                         }
                     })
-                    .setDuration(300)
+                    .setDuration(AUDIO_RECORD_ANIMATION)
                     .translationX(screenWidth)
                     .start();
             }
@@ -409,65 +422,81 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     private void startRecording() {
-        if (mPlayer != null)
-            resetAudio(mAudioControl);
+        // ask parent to stop all sounds
+        mListener.stopAllSounds();
+
         try {
             mRecordFile = MediaStorage.getOutgoingAudioFile();
         }
         catch (IOException e) {
-            Log.e(TAG, "file error: ", e);
+            Log.e(TAG, "error creating audio file", e);
+            Toast.makeText(mContext, R.string.err_audio_record_writing,
+                Toast.LENGTH_LONG).show();
+            return;
         }
+
         mRecord = new MediaRecorder();
         mRecord.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecord.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mRecord.setOutputFile(mRecordFile.getAbsolutePath());
         mRecord.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
-            mVibrator.vibrate(20);
+            mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
             startTimer();
             mRecord.prepare();
             // Start recording
             mRecord.start();
         }
         catch (IllegalStateException e) {
-            Log.e (TAG, "error starting audio recording:", e);
+            Log.e(TAG, "error starting audio recording:", e);
         }
         catch (IOException e) {
             Log.e(TAG, "error writing on external storage:", e);
             new AlertDialog.Builder(mContext)
                 .setMessage(R.string.err_audio_record_writing)
-                .setNegativeButton(mContext.getString(android.R.string.ok), (DialogInterface.OnClickListener) null)
+                .setPositiveButton(mContext.getString(android.R.string.ok), null)
                 .show();
         }
+        // TODO this catch should be in stopRecording
         catch (RuntimeException e) {
             Log.e(TAG, "error starting audio recording:", e);
             new AlertDialog.Builder(mContext.getApplicationContext())
                 .setMessage(R.string.err_audio_record)
-                .setNegativeButton(mContext.getString(android.R.string.ok), (DialogInterface.OnClickListener) null)
+                .setPositiveButton(mContext.getString(android.R.string.ok), null)
                 .show();
         }
     }
 
     private void stopRecording(boolean send) {
-        mVibrator.vibrate(20);
-        mHandler.removeCallbacks(mMediaPlayerUpdater);
+        mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
+        if (mMediaPlayerUpdater != null)
+            mHandler.removeCallbacks(mMediaPlayerUpdater);
+
+        boolean canSend = send && (elapsedTime > MIN_RECORDING_TIME);
+
         try {
-            mRecord.stop();
-            mRecord.reset();
-            mRecord.release();
-            if (send && (elapsedTime > 900)) {
-                mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
-                    AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
-            } else {
-                Log.e(TAG,"File Cancellato");
-                mRecordFile.delete();
+            if (mRecord != null) {
+                mRecord.stop();
+                mRecord.reset();
+                mRecord.release();
+                if (canSend) {
+                    mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
+                        AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
+                }
             }
         }
         catch (IllegalStateException e) {
-            //ignore
+            Log.w(TAG, "error stopping recording", e);
+            canSend = false;
         }
         catch (RuntimeException e) {
-            //ignore
+            Log.w(TAG, "no audio data received", e);
+            canSend = false;
+            // TODO notify user
+        }
+        finally {
+            if (!canSend)
+                mRecordFile.delete();
         }
     }
 
@@ -479,7 +508,7 @@ public class ComposerBar extends RelativeLayout implements
                 elapsedTime = SystemClock.uptimeMillis() - startTime;
                 mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
                 mHandler.postDelayed(this, 100);
-                if (elapsedTime >= 60000) {
+                if (elapsedTime >= MAX_RECORDING_TIME) {
                     mIsRecordingAudio = false;
                     animateRecordFrame();
                     mAudioButton.setPressed(false);
@@ -568,7 +597,8 @@ public class ComposerBar extends RelativeLayout implements
 
         try {
             wm.addView(mEmojiView, mWindowLayoutParams);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Log.e(TAG, "error adding emoji view", e);
             return;
         }

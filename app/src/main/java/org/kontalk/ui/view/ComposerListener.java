@@ -24,4 +24,7 @@ public interface ComposerListener {
      */
     boolean sendTyping();
 
+    /** Asks the parent to stop all sounds. */
+    void stopAllSounds();
+
 }

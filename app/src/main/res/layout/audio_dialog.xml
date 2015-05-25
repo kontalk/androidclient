@@ -33,8 +33,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:textAppearance="@android:style/TextAppearance.Large"
-        android:layout_marginBottom="10dp"
-        android:text="00:00"
-        tools:ignore="HardcodedText"/>
+        android:layout_marginBottom="10dp"/>
 
 </LinearLayout>

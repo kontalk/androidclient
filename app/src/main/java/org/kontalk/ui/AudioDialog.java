@@ -110,6 +110,7 @@ public class AudioDialog extends AlertDialog {
         super.onCreate(savedInstanceState);
         mTimeTxt=(TextView) findViewById(R.id.time);
         mTimeTxt.setVisibility(View.INVISIBLE);
+        mTimeTxt.setText(DateUtils.formatElapsedTime(0));
         mImageButton=(ImageView) findViewById(R.id.image_audio);
         mProgressBar = (CircularSeekBar) findViewById(R.id.circularSeekBar);
         mProgressBar.getProgress();

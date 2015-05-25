@@ -260,7 +260,7 @@ public class ComposeMessageFragment extends ListFragment implements
             background.setImageDrawable(bg);
         }
 
-        mComposer.onActivityCreated(savedInstanceState, getView().findViewById(R.id.root_view));
+        mComposer.setRootView(getView().findViewById(R.id.root_view));
 
         Configuration config = getResources().getConfiguration();
         mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
@@ -1213,6 +1213,9 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putParcelable(Uri.class.getName(), Threads.getUri(mUserJID));
+        // save composer status
+        if (mComposer != null)
+            mComposer.onSaveInstanceState(out);
         // current photo being shot
         if (mCurrentPhoto != null) {
             out.putString("currentPhoto", mCurrentPhoto.toString());
@@ -2389,6 +2392,11 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void setAudioStatus(int audioStatus) {
         mStatus = audioStatus;
+    }
+
+    @Override
+    public void stopAllSounds() {
+        resetAudio(mAudioControl);
     }
 
     @Override
