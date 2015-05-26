@@ -164,15 +164,12 @@ public class ComposerBar extends RelativeLayout implements
             @Override
             public void afterTextChanged(Editable s) {
                 // enable the send button if there is something to send
-                if (s.length() > 0) {
-                    mAudioButton.setVisibility(View.INVISIBLE);
-                    mSendButton.setVisibility(View.VISIBLE);
+                boolean textPresent = s.length() > 0;
+                if (mAudioButton != null) {
+                    mAudioButton.setVisibility(textPresent ? View.INVISIBLE : View.VISIBLE);
+                    mSendButton.setVisibility(textPresent ? View.VISIBLE : View.INVISIBLE);
                 }
-                else if (s.length() <= 0) {
-                    mSendButton.setVisibility(View.INVISIBLE);
-                    mAudioButton.setVisibility(View.VISIBLE);
-                }
-                mSendButton.setEnabled(s.length() > 0);
+                mSendButton.setEnabled(textPresent);
             }
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -219,93 +216,6 @@ public class ComposerBar extends RelativeLayout implements
         });
 
         mSendButton = findViewById(R.id.send_button);
-        mAudioButton = findViewById(R.id.audio_send_button);
-
-        if (mTextEntry.length() <= 0)
-            mSendButton.setVisibility(View.INVISIBLE);
-
-        mSlideText = findViewById(R.id.slide_text);
-        mRecordText = (TextView) findViewById(R.id.recording_time);
-
-        // FIXME remove these hard-coded values before merging
-        Resources r = getResources();
-        mMoveThreshold = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, r.getDisplayMetrics());
-        mMoveOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, r.getDisplayMetrics());
-        mDistMove = mMoveOffset;
-        mMoveOffset2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, r.getDisplayMetrics());
-
-        mRecordLayout = findViewById(R.id.record_layout);
-
-        mAudioButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    mOrientation = SystemUtils.getDisplayRotation(mContext);
-                    mCheckMove = false;
-                    mDraggingX = -1;
-                    mIsRecordingAudio = true;
-                    startRecording();
-                    animateRecordFrame();
-                    mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
-                }
-                else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
-                    if (mOrientation == SystemUtils.getDisplayRotation(mContext)) {
-                        mDraggingX = -1;
-                        stopRecording(true);
-                        mIsRecordingAudio = false;
-                        animateRecordFrame();
-                    }
-                }
-                else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mIsRecordingAudio) {
-                    float x = motionEvent.getX();
-                    if (x < -mDistMove) {
-                        mCheckMove = true;
-                        mIsRecordingAudio = false;
-                        stopRecording(false);
-                        animateRecordFrame();
-                    }
-                    if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
-                        x = x + mAudioButton.getX();
-                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
-                        if (mDraggingX != -1) {
-                            float dist = (x - mDraggingX);
-                            params.leftMargin = mMoveThreshold + (int) dist;
-                            mSlideText.setLayoutParams(params);
-                            float alpha = 1.0f + dist / mDistMove;
-                            if (alpha > 1) {
-                                alpha = 1;
-                            }
-                            else if (alpha < 0) {
-                                alpha = 0;
-                            }
-                            mSlideText.setAlpha(alpha);
-                        }
-                        if (x <= mSlideText.getX() + mSlideText.getWidth() + mMoveThreshold) {
-                            if (mDraggingX == -1) {
-                                mDraggingX = x;
-                                mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - mMoveOffset2) / 2.0f;
-                                if (mDistMove <= 0) {
-                                    mDistMove = mMoveOffset;
-                                }
-                                else if (mDistMove > mMoveOffset) {
-                                    mDistMove = mMoveOffset;
-                                }
-                            }
-                        }
-                        if (params.leftMargin > mMoveThreshold) {
-                            params.leftMargin = mMoveThreshold;
-                            mSlideText.setLayoutParams(params);
-                            mSlideText.setAlpha(1);
-                            mDraggingX = -1;
-                        }
-                    }
-                }
-                view.onTouchEvent(motionEvent);
-                return true;
-            }
-        });
-        mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-
         mSendButton.setEnabled(mTextEntry.length() > 0);
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -313,6 +223,98 @@ public class ComposerBar extends RelativeLayout implements
                 submitSend();
             }
         });
+
+        if (AudioDialog.isSupported(mContext))
+            mAudioButton = findViewById(R.id.audio_send_button);
+
+        if (mAudioButton != null) {
+            if (mTextEntry.length() <= 0) {
+                mSendButton.setVisibility(View.INVISIBLE);
+                mAudioButton.setVisibility(View.VISIBLE);
+            }
+
+            mSlideText = findViewById(R.id.slide_text);
+            mRecordText = (TextView) findViewById(R.id.recording_time);
+
+            // FIXME remove these hard-coded values before merging
+            Resources r = getResources();
+            mMoveThreshold = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, r.getDisplayMetrics());
+            mMoveOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, r.getDisplayMetrics());
+            mDistMove = mMoveOffset;
+            mMoveOffset2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, r.getDisplayMetrics());
+
+            mRecordLayout = findViewById(R.id.record_layout);
+
+            mAudioButton.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                        mOrientation = SystemUtils.getDisplayRotation(mContext);
+                        mCheckMove = false;
+                        mDraggingX = -1;
+                        mIsRecordingAudio = true;
+                        startRecording();
+                        animateRecordFrame();
+                        mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
+                    }
+                    else if ((motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) && !mCheckMove) {
+                        if (mOrientation == SystemUtils.getDisplayRotation(mContext)) {
+                            mDraggingX = -1;
+                            stopRecording(true);
+                            mIsRecordingAudio = false;
+                            animateRecordFrame();
+                        }
+                    }
+                    else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE && mIsRecordingAudio) {
+                        float x = motionEvent.getX();
+                        if (x < -mDistMove) {
+                            mCheckMove = true;
+                            mIsRecordingAudio = false;
+                            stopRecording(false);
+                            animateRecordFrame();
+                        }
+                        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
+                            x = x + mAudioButton.getX();
+                            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
+                            if (mDraggingX != -1) {
+                                float dist = (x - mDraggingX);
+                                params.leftMargin = mMoveThreshold + (int) dist;
+                                mSlideText.setLayoutParams(params);
+                                float alpha = 1.0f + dist / mDistMove;
+                                if (alpha > 1) {
+                                    alpha = 1;
+                                }
+                                else if (alpha < 0) {
+                                    alpha = 0;
+                                }
+                                mSlideText.setAlpha(alpha);
+                            }
+                            if (x <= mSlideText.getX() + mSlideText.getWidth() + mMoveThreshold) {
+                                if (mDraggingX == -1) {
+                                    mDraggingX = x;
+                                    mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - mMoveOffset2) / 2.0f;
+                                    if (mDistMove <= 0) {
+                                        mDistMove = mMoveOffset;
+                                    }
+                                    else if (mDistMove > mMoveOffset) {
+                                        mDistMove = mMoveOffset;
+                                    }
+                                }
+                            }
+                            if (params.leftMargin > mMoveThreshold) {
+                                params.leftMargin = mMoveThreshold;
+                                mSlideText.setLayoutParams(params);
+                                mSlideText.setAlpha(1);
+                                mDraggingX = -1;
+                            }
+                        }
+                    }
+                    view.onTouchEvent(motionEvent);
+                    return true;
+                }
+            });
+            mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        }
 
         mEmojiButton = (ImageButton) findViewById(R.id.emoji_button);
         mEmojiButton.setOnClickListener(new View.OnClickListener() {
@@ -682,6 +684,9 @@ public class ComposerBar extends RelativeLayout implements
         if (mTextEntry != null) {
             mTextEntry.removeTextChangedListener(mChatStateListener);
             mTextEntry.setText("");
+        }
+        if (mIsRecordingAudio) {
+            stopRecording(false);
         }
     }
 
