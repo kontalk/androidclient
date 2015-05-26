@@ -3,7 +3,7 @@
     "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
 <module name="Checker">
   <module name="Header">
-    <property name="headerFile" value="app/config/header.txt"/>
+    <property name="headerFile" value="${project.moduleDir}/config/header.txt"/>
     <property name="ignoreLines" value="3"/>
     <property name="fileExtensions" value="java"/>
   </module>
@@ -12,9 +12,14 @@
   </module>
   <module name="FileTabCharacter"/>
   <module name="TreeWalker">
+    <module name="OuterTypeFilename"/>
+    <module name="EmptyLineSeparator">
+      <property name="allowNoEmptyLineBetweenFields" value="true"/>
+    </module>
     <module name="AvoidStarImport">
       <property name="allowStaticMemberImports" value="true"/>
     </module>
+    <module name="GenericWhitespace"/>
     <module name="WhitespaceAfter">
       <property name="tokens" value="COMMA, SEMI, TYPECAST"/>
     </module>

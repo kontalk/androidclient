@@ -731,6 +731,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static final class AbortThread extends Thread {
         private final XMPPConnectionHelper mHelper;
+
         public AbortThread(XMPPConnectionHelper helper) {
             mHelper = helper;
         }
@@ -748,6 +749,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private static final class DisconnectThread extends Thread {
         private final AbstractXMPPConnection mConn;
+
         public DisconnectThread(AbstractXMPPConnection conn) {
             mConn = conn;
         }

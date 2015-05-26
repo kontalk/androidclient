@@ -24,11 +24,17 @@ package org.kontalk.ui.view;
  * @author Andrea Cappelli
  */
 public interface AudioContentViewControl {
-    public void setProgressChangeListener(boolean enabled);
-    public void prepare(int duration);
-    public void play();
-    public void pause();
-    public void updatePosition(int position);
-    public void end();
-    public int getPosition();
+    void setProgressChangeListener(boolean enabled);
+
+    void prepare(int duration);
+
+    void play();
+
+    void pause();
+
+    void updatePosition(int position);
+
+    void end();
+
+    int getPosition();
 }

@@ -216,6 +216,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 ccList.setSelected(position);
             }
+
             public void onNothingSelected(AdapterView<?> parent) {
                 // TODO Auto-generated method stub
             }

@@ -160,7 +160,7 @@ public class AudioDialog extends AlertDialog {
 
     private void init() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        View v=inflater.inflate(R.layout.audio_dialog, null);
+        View v = inflater.inflate(R.layout.audio_dialog, null);
         setView(v);
         mData.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -218,6 +218,7 @@ public class AudioDialog extends AlertDialog {
 
     public interface AudioDialogListener {
         void onRecordingSuccessful(File file);
+
         void onRecordingCancel();
     }
 
@@ -407,7 +408,7 @@ public class AudioDialog extends AlertDialog {
         mHintTxt.setVisibility(View.GONE);
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
-        mTimeCircle = MAX_PROGRESS/(float)mData.getPlayer().getDuration();
+        mTimeCircle = MAX_PROGRESS / (float) mData.getPlayer().getDuration();
     }
 
     private void pauseAudio() {

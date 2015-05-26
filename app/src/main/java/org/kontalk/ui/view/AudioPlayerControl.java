@@ -28,12 +28,17 @@ import org.kontalk.ui.view.AudioContentViewControl;
  * @author Andrea Cappelli
  */
 public interface AudioPlayerControl {
-    public void buttonClick (File audioFile, AudioContentViewControl view, long messageId);
-    public void playAudio(AudioContentViewControl view, long messageId);
-    public void pauseAudio(AudioContentViewControl view);
-    public void onBind (long messageId, AudioContentViewControl view);
-    public void onUnbind(long messageId, AudioContentViewControl view);
-    public void seekTo(int position);
-    public boolean isPlaying();
+    void buttonClick (File audioFile, AudioContentViewControl view, long messageId);
 
+    void playAudio(AudioContentViewControl view, long messageId);
+
+    void pauseAudio(AudioContentViewControl view);
+
+    void onBind (long messageId, AudioContentViewControl view);
+
+    void onUnbind(long messageId, AudioContentViewControl view);
+
+    void seekTo(int position);
+
+    boolean isPlaying();
 }

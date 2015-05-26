@@ -110,12 +110,13 @@ public class MessagingNotification {
     private static final String ACTION_NOTIFICATION_DELETED = "org.kontalk.ACTION_NOTIFICATION_DELETED";
     private static final OnDeletedReceiver sNotificationDeletedReceiver = new OnDeletedReceiver();
     private static Intent sNotificationOnDeleteIntent;
+
     private static class OnDeletedReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             // mark all messages as old
             MessagesProvider.markAllThreadsAsOld(context);
         }
-    };
+    }
 
     /** This class is not instanciable. */
     private MessagingNotification() {}

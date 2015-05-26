@@ -1,3 +1,21 @@
+/*
+ * Kontalk Android client
+ * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.kontalk.ui.view;
 
 import java.io.File;
@@ -587,7 +605,7 @@ public class ComposerBar extends RelativeLayout implements
             mWindowLayoutParams = new WindowManager.LayoutParams();
             mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
             mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-            mWindowLayoutParams.token = ((Activity)mContext).getWindow().getDecorView().getWindowToken();
+            mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
             mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
         }

@@ -48,6 +48,7 @@ public class CountryCodesAdapter extends BaseAdapter {
      * Don't you really think this was written manually? NAAAAHH!!! :P
      */
     private static final SparseIntArray sFlags = new SparseIntArray(233);
+
     static {
         sFlags.put(0x4146 /* AF */, R.drawable.flag_af);
         sFlags.put(0x414c /* AL */, R.drawable.flag_al);
