@@ -11,7 +11,6 @@ import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.media.MediaRecorder;
@@ -452,18 +451,13 @@ public class ComposerBar extends RelativeLayout implements
         }
         catch (IOException e) {
             Log.e(TAG, "error writing on external storage:", e);
-            new AlertDialog.Builder(mContext)
-                .setMessage(R.string.err_audio_record_writing)
-                .setPositiveButton(mContext.getString(android.R.string.ok), null)
-                .show();
+            Toast.makeText(mContext, R.string.err_audio_record_writing,
+                Toast.LENGTH_LONG).show();
         }
-        // TODO this catch should be in stopRecording
         catch (RuntimeException e) {
             Log.e(TAG, "error starting audio recording:", e);
-            new AlertDialog.Builder(mContext.getApplicationContext())
-                .setMessage(R.string.err_audio_record)
-                .setPositiveButton(mContext.getString(android.R.string.ok), null)
-                .show();
+            Toast.makeText(mContext, R.string.err_audio_record,
+                Toast.LENGTH_LONG).show();
         }
     }
 
@@ -492,7 +486,8 @@ public class ComposerBar extends RelativeLayout implements
         catch (RuntimeException e) {
             Log.w(TAG, "no audio data received", e);
             canSend = false;
-            // TODO notify user
+            Toast.makeText(mContext, R.string.err_audio_record,
+                Toast.LENGTH_LONG).show();
         }
         finally {
             if (!canSend)
