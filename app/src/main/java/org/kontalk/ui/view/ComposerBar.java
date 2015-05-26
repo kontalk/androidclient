@@ -13,7 +13,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.content.res.Resources;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
@@ -27,7 +26,6 @@ import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -225,10 +223,9 @@ public class ComposerBar extends RelativeLayout implements
             }
         });
 
-        if (AudioDialog.isSupported(mContext))
+        if (AudioDialog.isSupported(mContext)) {
             mAudioButton = findViewById(R.id.audio_send_button);
 
-        if (mAudioButton != null) {
             if (mTextEntry.length() <= 0) {
                 mSendButton.setVisibility(View.INVISIBLE);
                 mAudioButton.setVisibility(View.VISIBLE);
@@ -237,12 +234,14 @@ public class ComposerBar extends RelativeLayout implements
             mSlideText = findViewById(R.id.slide_text);
             mRecordText = (TextView) findViewById(R.id.recording_time);
 
-            // FIXME remove these hard-coded values before merging
-            Resources r = getResources();
-            mMoveThreshold = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, r.getDisplayMetrics());
-            mMoveOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, r.getDisplayMetrics());
+            int screenWidth = SystemUtils.getDisplaySize(mContext).x;
+            // position of "slide to cancel" label (actually left margin; screen dependent)
+            mMoveThreshold = screenWidth/8;
+            // these two are used to determine how much to drag in order to cancel recording
+            mMoveOffset = (int) (screenWidth/4.5);
+            mMoveOffset2 = (int) (screenWidth/7.5);
+
             mDistMove = mMoveOffset;
-            mMoveOffset2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, r.getDisplayMetrics());
 
             mRecordLayout = findViewById(R.id.record_layout);
 
@@ -271,6 +270,7 @@ public class ComposerBar extends RelativeLayout implements
                             stopRecording(false);
                             animateRecordFrame();
                         }
+                        // TODO try NineOldAndroids
                         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
                             x = x + mAudioButton.getX();
                             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
@@ -340,6 +340,7 @@ public class ComposerBar extends RelativeLayout implements
         // TODO
     }
 
+    // TODO try NineOldAndroids
     @SuppressLint("NewApi")
     private void animateRecordFrame() {
         int screenWidth = SystemUtils.getDisplaySize(mContext).x;
