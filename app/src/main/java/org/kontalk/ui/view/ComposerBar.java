@@ -12,6 +12,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -252,7 +253,6 @@ public class ComposerBar extends RelativeLayout implements
                         mOrientation = SystemUtils.getDisplayRotation(mContext);
                         mCheckMove = false;
                         mDraggingX = -1;
-                        mIsRecordingAudio = true;
                         startRecording();
                         animateRecordFrame();
                         mAudioButton.getParent().requestDisallowInterceptTouchEvent(true);
@@ -261,7 +261,6 @@ public class ComposerBar extends RelativeLayout implements
                         if (mOrientation == SystemUtils.getDisplayRotation(mContext)) {
                             mDraggingX = -1;
                             stopRecording(true);
-                            mIsRecordingAudio = false;
                             animateRecordFrame();
                         }
                     }
@@ -269,7 +268,6 @@ public class ComposerBar extends RelativeLayout implements
                         float x = motionEvent.getX();
                         if (x < -mDistMove) {
                             mCheckMove = true;
-                            mIsRecordingAudio = false;
                             stopRecording(false);
                             animateRecordFrame();
                         }
@@ -447,6 +445,8 @@ public class ComposerBar extends RelativeLayout implements
             mRecord.prepare();
             // Start recording
             mRecord.start();
+            mIsRecordingAudio = true;
+            lockOrientation();
         }
         catch (IllegalStateException e) {
             Log.e(TAG, "error starting audio recording:", e);
@@ -464,6 +464,9 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     private void stopRecording(boolean send) {
+        mIsRecordingAudio = false;
+        unlockOrientation();
+
         mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
         if (mMediaPlayerUpdater != null)
             mHandler.removeCallbacks(mMediaPlayerUpdater);
@@ -497,6 +500,17 @@ public class ComposerBar extends RelativeLayout implements
         }
     }
 
+    private void lockOrientation() {
+        int orientation = SystemUtils.getScreenOrientation((Activity) mContext);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2)
+            orientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
+        ((Activity) mContext).setRequestedOrientation(orientation);
+    }
+
+    private void unlockOrientation() {
+        ((Activity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+    }
+
     private void startTimer() {
         startTime = SystemClock.uptimeMillis();
         mMediaPlayerUpdater = new Runnable() {
@@ -506,10 +520,9 @@ public class ComposerBar extends RelativeLayout implements
                 mRecordText.setText(DateUtils.formatElapsedTime(elapsedTime / 1000));
                 mHandler.postDelayed(this, 100);
                 if (elapsedTime >= MAX_RECORDING_TIME) {
-                    mIsRecordingAudio = false;
-                    animateRecordFrame();
                     mAudioButton.setPressed(false);
                     stopRecording(true);
+                    animateRecordFrame();
                 }
             }
         };
