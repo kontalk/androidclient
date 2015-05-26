@@ -197,9 +197,9 @@ public class X509Bridge {
          * receiving this certificate.
          */
         Date creationTime = publicKey.getCreationTime();
-        Date validTo=null;
+        Date validTo = null;
         if (publicKey.getValidSeconds()>0)
-           validTo=new Date(creationTime.getTime() + 1000L * publicKey.getValidSeconds());
+           validTo = new Date(creationTime.getTime() + 1000L * publicKey.getValidSeconds());
 
         return createCertificate(
                 PGP.convertPublicKey(publicKey),

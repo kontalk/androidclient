@@ -193,8 +193,7 @@ public final class PreferencesActivity extends PreferenceActivity {
                 final OnPassphraseChangedListener action = new OnPassphraseChangedListener() {
                     public void onPassphraseChanged(String passphrase) {
                         try {
-
-                            ((Kontalk)getApplicationContext()).exportPersonalKey(passphrase);
+                            Kontalk.get(PreferencesActivity.this).exportPersonalKey(passphrase);
 
                             Toast.makeText(PreferencesActivity.this,
                                 R.string.msg_keypair_exported,
