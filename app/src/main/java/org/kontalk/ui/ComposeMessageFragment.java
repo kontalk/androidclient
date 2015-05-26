@@ -988,7 +988,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
         try {
             wm.addView(mEmojiView, mWindowLayoutParams);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Log.e(TAG, "error adding emoji view", e);
             return;
         }
@@ -1326,7 +1327,8 @@ public class ComposeMessageFragment extends ListFragment implements
                 Conversation.startQuery(mQueryHandler,
                         CONVERSATION_QUERY_TOKEN, threadId);
 
-        } catch (SQLiteException e) {
+        }
+        catch (SQLiteException e) {
             Log.e(TAG, "query error", e);
         }
     }
@@ -2023,7 +2025,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
                                     statusText = context.getString(R.string.seen_online_label);
-                                } else if (Presence.Type.unavailable.toString().equals(type)) {
+                                }
+                                else if (Presence.Type.unavailable.toString().equals(type)) {
                                     mAvailableResources.remove(from);
                                     /*
                                      * All available resources have gone. Mark
@@ -2038,7 +2041,8 @@ public class ComposeMessageFragment extends ListFragment implements
                                         long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
                                         if (stamp >= 0 && ((System.currentTimeMillis() - stamp) > PRESENCE_DELAY_THRESHOLD)) {
                                             statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
-                                        } else {
+                                        }
+                                        else {
                                             statusText = context.getString(R.string.seen_moment_ago_label);
                                         }
                                     }
