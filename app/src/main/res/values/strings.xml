@@ -365,6 +365,7 @@
     <string name="err_passwords_mismatch">Passwords does not match!</string>
     <string name="err_password_invalid">Wrong password.</string>
 
+    <string name="hint_record">Tap the mic to begin recording.</string>
     <string name="err_change_passphrase">Unable to change the personal key password.</string>
     <string name="err_file_not_found">File not found.</string>
     <string name="err_audio_record">Error starting audio recording.</string>

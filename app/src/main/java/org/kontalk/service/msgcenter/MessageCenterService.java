@@ -948,13 +948,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             for (RosterEntry entry : roster.getEntries()) {
                                 broadcastPresence(roster, entry, id);
                             }
+
+                            // broadcast our own presence
+                            broadcastMyPresence(id);
                         }
                         else {
                             broadcastPresence(roster, to, id);
                         }
-
-                        // broadcast our own presence
-                        broadcastMyPresence(id);
                     }
                     else {
                         String show = intent.getStringExtra(EXTRA_SHOW);

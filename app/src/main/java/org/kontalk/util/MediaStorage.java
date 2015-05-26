@@ -379,8 +379,8 @@ public abstract class MediaStorage {
             return null;
         }
         float scaleFactor = Math.max(photoW / maxWidth, photoH / maxHeight);
-        int w = (int)(photoW / scaleFactor);
-        int h = (int)(photoH / scaleFactor);
+        int w = (int) (photoW / scaleFactor);
+        int h = (int) (photoH / scaleFactor);
         if (h == 0 || w == 0) {
             return null;
         }

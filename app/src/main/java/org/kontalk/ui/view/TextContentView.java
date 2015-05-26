@@ -101,7 +101,7 @@ public class TextContentView extends EmojiconTextView
 
         Layout layout = getLayout();
         if (layout != null) {
-            int width = (int)Math.ceil(getMaxLineWidth(layout))
+            int width = (int) Math.ceil(getMaxLineWidth(layout))
                     + getCompoundPaddingLeft() + getCompoundPaddingRight();
             int height = getMeasuredHeight();
             setMeasuredDimension(width, height);

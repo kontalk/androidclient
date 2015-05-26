@@ -541,8 +541,7 @@ public final class MessageUtils {
         Message m = null;
 
         try {
-            PersonalKey key = ((Kontalk)context.getApplicationContext())
-                .getPersonalKey();
+            PersonalKey key = Kontalk.get(context).getPersonalKey();
 
             if (server == null)
                 server = Preferences.getEndpointServer(context);

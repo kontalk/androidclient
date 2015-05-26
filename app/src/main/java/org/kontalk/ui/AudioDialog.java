@@ -81,6 +81,7 @@ public class AudioDialog extends AlertDialog {
     private ObjectAnimator mProgressBarAnimator;
     private ImageView mImageButton;
     private TextView mTimeTxt;
+    private TextView mHintTxt;
 
     /** Flag indicating that we are stopping due to activity lifecycle. */
     private boolean mSaved;
@@ -108,10 +109,10 @@ public class AudioDialog extends AlertDialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mTimeTxt=(TextView) findViewById(R.id.time);
-        mTimeTxt.setVisibility(View.INVISIBLE);
+        mTimeTxt = (TextView) findViewById(R.id.time);
         mTimeTxt.setText(DateUtils.formatElapsedTime(0));
-        mImageButton=(ImageView) findViewById(R.id.image_audio);
+        mHintTxt = (TextView) findViewById(R.id.hint);
+        mImageButton = (ImageView) findViewById(R.id.image_audio);
         mProgressBar = (CircularSeekBar) findViewById(R.id.circularSeekBar);
         mProgressBar.getProgress();
         mProgressBar.setMax(MAX_PROGRESS);
@@ -288,6 +289,7 @@ public class AudioDialog extends AlertDialog {
         mProgressBar.setVisibility(View.VISIBLE);
         animate(mProgressBar, null, progress, MAX_PROGRESS, MAX_AUDIO_DURATION);
         mTimeTxt.setVisibility(View.VISIBLE);
+        mHintTxt.setVisibility(View.GONE);
     }
 
     private void setupViewForPlaying(float progress) {
@@ -308,6 +310,7 @@ public class AudioDialog extends AlertDialog {
             mProgressBarAnimator.end();
         }
         mTimeTxt.setVisibility(View.INVISIBLE);
+        mHintTxt.setVisibility(View.GONE);
         // set UI colors
         setViewsColor(R.color.audio_pbar_play);
     }
@@ -401,6 +404,7 @@ public class AudioDialog extends AlertDialog {
     }
 
     private void setupForPlaying() {
+        mHintTxt.setVisibility(View.GONE);
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
         mTimeCircle = MAX_PROGRESS/(float)mData.getPlayer().getDuration();

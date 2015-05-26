@@ -314,7 +314,7 @@ public class UploadService extends IntentService implements ProgressListener {
         }
 
         if (mCurrentNotification != null && (bytes >= mTotalBytes || mUpdateTimer.isStep())) {
-            int progress = (int)((100 * bytes) / mTotalBytes);
+            int progress = (int) ((100 * bytes) / mTotalBytes);
             foregroundNotification(progress);
             // send the updates to the notification manager
             mNotificationManager.notify(NOTIFICATION_ID_UPLOADING, mCurrentNotification);

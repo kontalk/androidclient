@@ -323,8 +323,8 @@ public class Syncer {
         SyncResult syncResult)
             throws OperationCanceledException {
 
-        final Map<String,RawPhoneNumberEntry> lookupNumbers = new HashMap<String,RawPhoneNumberEntry>();
-        final List<String> jidList = new ArrayList<String>();
+        final Map<String, RawPhoneNumberEntry> lookupNumbers = new HashMap<>();
+        final List<String> jidList = new ArrayList<>();
 
         // resync users database
         Log.v(TAG, "resyncing users database");

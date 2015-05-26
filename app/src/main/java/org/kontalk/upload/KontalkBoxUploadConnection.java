@@ -120,7 +120,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             boolean encrypted = false;
             // check if we have to encrypt the message
             if (encrypt) {
-                PersonalKey key = ((Kontalk)mContext.getApplicationContext()).getPersonalKey();
+                PersonalKey key = Kontalk.get(mContext).getPersonalKey();
                 EndpointServer server = Preferences.getEndpointServer(mContext);
                 Coder coder = UsersProvider.getEncryptCoder(mContext, server, key, new String[] { to });
                 if (coder != null) {

@@ -10,9 +10,16 @@
   <module name="NewlineAtEndOfFile">
     <property name="lineSeparator" value="lf"/>
   </module>
+  <module name="FileTabCharacter"/>
   <module name="TreeWalker">
     <module name="AvoidStarImport">
       <property name="allowStaticMemberImports" value="true"/>
+    </module>
+    <module name="WhitespaceAfter">
+      <property name="tokens" value="COMMA, SEMI, TYPECAST"/>
+    </module>
+    <module name="WhitespaceAround">
+      <property name="tokens" value="ASSIGN"/>
     </module>
   </module>
 </module>
