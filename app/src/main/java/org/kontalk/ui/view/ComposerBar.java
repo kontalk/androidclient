@@ -21,12 +21,13 @@ package org.kontalk.ui.view;
 import java.io.File;
 import java.io.IOException;
 
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.view.ViewHelper;
+import com.nineoldandroids.view.ViewPropertyAnimator;
 import com.rockerhieu.emojicon.EmojiconsView;
 import com.rockerhieu.emojicon.OnEmojiconClickedListener;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
-import android.animation.Animator;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -288,41 +289,39 @@ public class ComposerBar extends RelativeLayout implements
                             stopRecording(false);
                             animateRecordFrame();
                         }
-                        // TODO try NineOldAndroids
-                        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
-                            x = x + mAudioButton.getX();
-                            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
-                            if (mDraggingX != -1) {
-                                float dist = (x - mDraggingX);
-                                params.leftMargin = mMoveThreshold + (int) dist;
-                                mSlideText.setLayoutParams(params);
-                                float alpha = 1.0f + dist / mDistMove;
-                                if (alpha > 1) {
-                                    alpha = 1;
-                                }
-                                else if (alpha < 0) {
-                                    alpha = 0;
-                                }
-                                mSlideText.setAlpha(alpha);
+                        float currentX = ViewHelper.getX(mAudioButton);
+                        x = x + currentX;
+                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
+                        if (mDraggingX != -1) {
+                            float dist = (x - mDraggingX);
+                            params.leftMargin = mMoveThreshold + (int) dist;
+                            mSlideText.setLayoutParams(params);
+                            float alpha = 1.0f + dist / mDistMove;
+                            if (alpha > 1) {
+                                alpha = 1;
                             }
-                            if (x <= mSlideText.getX() + mSlideText.getWidth() + mMoveThreshold) {
-                                if (mDraggingX == -1) {
-                                    mDraggingX = x;
-                                    mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - mMoveOffset2) / 2.0f;
-                                    if (mDistMove <= 0) {
-                                        mDistMove = mMoveOffset;
-                                    }
-                                    else if (mDistMove > mMoveOffset) {
-                                        mDistMove = mMoveOffset;
-                                    }
+                            else if (alpha < 0) {
+                                alpha = 0;
+                            }
+                            ViewHelper.setAlpha(mSlideText, alpha);
+                        }
+                        if (x <= currentX + mSlideText.getWidth() + mMoveThreshold) {
+                            if (mDraggingX == -1) {
+                                mDraggingX = x;
+                                mDistMove = (mRecordLayout.getMeasuredWidth() - mSlideText.getMeasuredWidth() - mMoveOffset2) / 2.0f;
+                                if (mDistMove <= 0) {
+                                    mDistMove = mMoveOffset;
+                                }
+                                else if (mDistMove > mMoveOffset) {
+                                    mDistMove = mMoveOffset;
                                 }
                             }
-                            if (params.leftMargin > mMoveThreshold) {
-                                params.leftMargin = mMoveThreshold;
-                                mSlideText.setLayoutParams(params);
-                                mSlideText.setAlpha(1);
-                                mDraggingX = -1;
-                            }
+                        }
+                        if (params.leftMargin > mMoveThreshold) {
+                            params.leftMargin = mMoveThreshold;
+                            mSlideText.setLayoutParams(params);
+                            ViewHelper.setAlpha(mSlideText, 1);
+                            mDraggingX = -1;
                         }
                     }
                     view.onTouchEvent(motionEvent);
@@ -358,84 +357,72 @@ public class ComposerBar extends RelativeLayout implements
         // TODO
     }
 
-    // TODO try NineOldAndroids
-    @SuppressLint("NewApi")
     private void animateRecordFrame() {
         int screenWidth = SystemUtils.getDisplaySize(mContext).x;
-        boolean supportsAnimation = (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB_MR2);
 
         if (mIsRecordingAudio) {
             mRecordLayout.setVisibility(View.VISIBLE);
             mRecordText.setText(DateUtils.formatElapsedTime(0));
 
-            if (supportsAnimation) {
-                FrameLayout.LayoutParams params =
-                    (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
-                params.leftMargin = mMoveThreshold;
-                mSlideText.setLayoutParams(params);
-                mSlideText.setAlpha(1);
-                mRecordLayout.setX(screenWidth);
-                mRecordLayout.animate()
-                    .setInterpolator(new AccelerateDecelerateInterpolator())
-                    .setListener(new Animator.AnimatorListener() {
-                        @Override
-                        public void onAnimationStart(Animator animator) {
-                        }
+            FrameLayout.LayoutParams params =
+                (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
+            params.leftMargin = mMoveThreshold;
+            mSlideText.setLayoutParams(params);
+            ViewHelper.setAlpha(mSlideText, 1);
+            ViewHelper.setX(mRecordLayout, screenWidth);
+            ViewPropertyAnimator.animate(mRecordLayout)
+                .setInterpolator(new AccelerateDecelerateInterpolator())
+                .setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                    }
 
-                        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-                        @Override
-                        public void onAnimationEnd(Animator animator) {
-                            mRecordLayout.setX(0);
-                        }
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        ViewHelper.setX(mRecordLayout, 0);
+                    }
 
-                        @Override
-                        public void onAnimationCancel(Animator animator) {
-                        }
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
+                    }
 
-                        @Override
-                        public void onAnimationRepeat(Animator animator) {
-                        }
-                    })
-                    .setDuration(AUDIO_RECORD_ANIMATION)
-                    .translationX(0)
-                    .start();
-            }
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
+                    }
+                })
+                .setDuration(AUDIO_RECORD_ANIMATION)
+                .translationX(0)
+                .start();
         }
         else {
-            if (supportsAnimation) {
-                mRecordLayout.animate()
-                    .setInterpolator(new AccelerateDecelerateInterpolator())
-                    .setListener(new Animator.AnimatorListener() {
-                        @Override
-                        public void onAnimationStart(Animator animator) {
-                        }
+            ViewPropertyAnimator.animate(mRecordLayout)
+                .setInterpolator(new AccelerateDecelerateInterpolator())
+                .setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                    }
 
-                        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-                        @Override
-                        public void onAnimationEnd(Animator animator) {
-                            FrameLayout.LayoutParams params =
-                                (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
-                            params.leftMargin = mMoveThreshold;
-                            mSlideText.setLayoutParams(params);
-                            mSlideText.setAlpha(1);
-                            mRecordLayout.setVisibility(View.GONE);
-                        }
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        FrameLayout.LayoutParams params =
+                            (FrameLayout.LayoutParams) mSlideText.getLayoutParams();
+                        params.leftMargin = mMoveThreshold;
+                        mSlideText.setLayoutParams(params);
+                        ViewHelper.setAlpha(mSlideText, 1);
+                        mRecordLayout.setVisibility(View.GONE);
+                    }
 
-                        @Override
-                        public void onAnimationCancel(Animator animator) {
-                        }
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
+                    }
 
-                        @Override
-                        public void onAnimationRepeat(Animator animator) {
-                        }
-                    })
-                    .setDuration(AUDIO_RECORD_ANIMATION)
-                    .translationX(screenWidth)
-                    .start();
-            }
-            else {
-                mRecordLayout.setVisibility(View.GONE);
-            }
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
+                    }
+                })
+                .setDuration(AUDIO_RECORD_ANIMATION)
+                .translationX(screenWidth)
+                .start();
         }
     }
 
