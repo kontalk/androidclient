@@ -28,7 +28,6 @@ import org.kontalk.R;
 import org.kontalk.client.NumberValidator;
 
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;

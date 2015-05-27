@@ -285,16 +285,6 @@ public class ComposeMessageFragment extends ListFragment implements
         super.onConfigurationChanged(newConfig);
 
         mComposer.onKeyboardStateChanged(newConfig.keyboardHidden == KEYBOARDHIDDEN_NO);
-
-        // FIXME this can't work because there is no configChanges in manifest
-        /*
-        if (mCheckRecordingAudio && mOrientation != newConfig.orientation) {
-            mCheckRecordingAudio = false;
-            animateRecordFrame();
-            stopRecording(false);
-            mAudioButton.setPressed(false);
-        }
-        */
     }
 
     public void reload() {

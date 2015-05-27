@@ -21,7 +21,6 @@ package org.kontalk.ui.view;
 import android.content.Context;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.util.Linkify;
 import android.util.AttributeSet;

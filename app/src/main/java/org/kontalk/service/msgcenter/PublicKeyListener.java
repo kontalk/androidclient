@@ -27,7 +27,6 @@ import android.util.Log;
 
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.PublicKeyPublish;
-import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;

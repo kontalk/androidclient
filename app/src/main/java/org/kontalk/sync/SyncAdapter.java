@@ -18,8 +18,6 @@
 
 package org.kontalk.sync;
 
-import org.jivesoftware.smack.util.StringUtils;
-
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
