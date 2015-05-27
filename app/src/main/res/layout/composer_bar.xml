@@ -37,6 +37,7 @@
         android:layout_width="48dp"
         android:layout_height="wrap_content"
         android:minHeight="48dip"
+        android:layout_gravity="bottom"
         android:layout_alignBottom="@+id/text_editor"
         android:contentDescription="@string/menu_smileys" />
 
@@ -145,6 +146,7 @@
         android:src="@drawable/ptt_button_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="invisible"
         android:minHeight="48dip"
         android:drawablePadding="0dip"
         android:layout_alignLeft="@id/send_button"
