@@ -110,6 +110,7 @@ public class AudioDialog extends AlertDialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTimeTxt = (TextView) findViewById(R.id.time);
+        mTimeTxt.setText(DateUtils.formatElapsedTime(0));
         mHintTxt = (TextView) findViewById(R.id.hint);
         mImageButton = (ImageView) findViewById(R.id.image_audio);
         mProgressBar = (CircularSeekBar) findViewById(R.id.circularSeekBar);
@@ -159,7 +160,7 @@ public class AudioDialog extends AlertDialog {
 
     private void init() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        View v=inflater.inflate(R.layout.audio_dialog, null);
+        View v = inflater.inflate(R.layout.audio_dialog, null);
         setView(v);
         mData.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -177,9 +178,8 @@ public class AudioDialog extends AlertDialog {
                         startRecord();
                     }
                     catch (IOException e) {
-                        Log.e (TAG, "error starting audio recording: ", e);
-                        // TODO i18n
-                        Toast.makeText(getContext(), "Unable to start recording.", Toast.LENGTH_SHORT).show();
+                        Log.e (TAG, "error writing audio recording", e);
+                        Toast.makeText(getContext(), R.string.err_audio_record_writing, Toast.LENGTH_SHORT).show();
                     }
                 }
                 else if (mStatus == STATUS_RECORDING) {
@@ -218,6 +218,7 @@ public class AudioDialog extends AlertDialog {
 
     public interface AudioDialogListener {
         void onRecordingSuccessful(File file);
+
         void onRecordingCancel();
     }
 
@@ -323,6 +324,10 @@ public class AudioDialog extends AlertDialog {
         mTimeTxt.setTextColor(color);
     }
 
+    /**
+     * Begins recording audio.
+     * @throws IOException if writing to storage failed
+     */
     private void startRecord() throws IOException {
         mFile = MediaStorage.getOutgoingAudioFile();
         setupViewForRecording(0);
@@ -338,10 +343,10 @@ public class AudioDialog extends AlertDialog {
             mStatus = STATUS_RECORDING;
         }
         catch (IllegalStateException e) {
-            Log.e(TAG, "error starting audio recording:", e);
+            Log.e(TAG, "error starting audio recording", e);
         }
         catch (IOException e) {
-            Log.e(TAG, "error writing on external storage:", e);
+            Log.e(TAG, "error writing on external storage", e);
             cancel();
             new Builder(getContext())
                 .setMessage(R.string.err_audio_record_writing)
@@ -349,7 +354,7 @@ public class AudioDialog extends AlertDialog {
                 .show();
         }
         catch (RuntimeException e) {
-            Log.e(TAG, "error starting audio recording:", e);
+            Log.e(TAG, "error starting audio recording", e);
             cancel();
             new AlertDialog.Builder(getContext())
                 .setMessage(R.string.err_audio_record)
@@ -358,10 +363,19 @@ public class AudioDialog extends AlertDialog {
         }
     }
 
-    @SuppressLint("ResourceAsColor")
     private void stopRecord() {
-        // stop recorder
-        mData.stopRecording();
+        try {
+            // stop recorder
+            mData.stopRecording();
+        }
+        catch (RuntimeException e) {
+            Log.e(TAG, "error recording audio", e);
+            cancel();
+            new AlertDialog.Builder(getContext())
+                .setMessage(R.string.err_audio_record)
+                .setNegativeButton(android.R.string.ok, null)
+                .show();
+        }
         setupViewForPlaying(0);
         // stopped!
         mStatus = STATUS_STOPPED;
@@ -383,7 +397,7 @@ public class AudioDialog extends AlertDialog {
                 .show();
         }
         catch (Exception e) {
-            Log.e(TAG, "error playing audio:", e);
+            Log.e(TAG, "error playing audio", e);
         }
         setupForPlaying();
         animate(mProgressBar, null, 0, MAX_PROGRESS, mData.getPlayer().getDuration());
@@ -394,7 +408,7 @@ public class AudioDialog extends AlertDialog {
         mHintTxt.setVisibility(View.GONE);
         mTimeTxt.setVisibility(View.VISIBLE);
         mTimeTxt.setTextColor(getContext().getResources().getColor(R.color.audio_pbar_play));
-        mTimeCircle = MAX_PROGRESS/(float)mData.getPlayer().getDuration();
+        mTimeCircle = MAX_PROGRESS / (float) mData.getPlayer().getDuration();
     }
 
     private void pauseAudio() {

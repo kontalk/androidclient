@@ -1,6 +1,6 @@
 /*
  * Kontalk Android client
- * Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+ * Copyright (C) 2011 Kontalk Devteam <devteam@kontalk.org>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,31 @@
 
 package org.kontalk.ui.view;
 
+import android.net.Uri;
+
+import org.kontalk.message.MessageComponent;
+
 
 /**
- * This interface gives access to the currently playing audio content view by the composer.
- * @author Andrea Cappelli
+ * Listeners for the composer bar.
+ * @author Daniele Ricci
  */
-public interface AudioContentViewControl {
-    void setProgressChangeListener(boolean enabled);
+public interface ComposerListener {
 
-    void prepare(int duration);
+    /** Sends a text message. */
+    void sendTextMessage(String message);
 
-    void play();
+    /** Sends a binary message. */
+    void sendBinaryMessage(Uri uri, String mime, boolean media,
+        Class<? extends MessageComponent<?>> klass);
 
-    void pause();
+    /**
+     * Sends a typing notification.
+     * @return true if the notification was sent
+     */
+    boolean sendTyping();
 
-    void updatePosition(int position);
+    /** Asks the parent to stop all sounds. */
+    void stopAllSounds();
 
-    void end();
-
-    int getPosition();
 }

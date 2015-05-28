@@ -72,7 +72,6 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
-import org.kontalk.crypto.PGP;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
@@ -216,6 +215,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 ccList.setSelected(position);
             }
+
             public void onNothingSelected(AdapterView<?> parent) {
                 // TODO Auto-generated method stub
             }

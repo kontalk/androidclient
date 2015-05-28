@@ -46,6 +46,7 @@ public class StatusActivity extends ActionBarActivity {
         Intent intent = new Intent(context, StatusActivity.class);
         context.startActivityIfNeeded(intent, -1);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

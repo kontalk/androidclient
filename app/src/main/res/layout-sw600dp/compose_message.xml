@@ -18,6 +18,7 @@
 
 <org.kontalk.ui.view.KeyboardAwareRelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
@@ -25,7 +26,8 @@
     <ImageView android:id="@+id/background"
         android:scaleType="centerCrop"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"/>
+        android:layout_height="fill_parent"
+        tools:ignore="ContentDescription"/>
 
     <LinearLayout android:id="@+id/container"
         android:layout_width="fill_parent"
@@ -60,7 +62,7 @@
 
         <TextView android:id="@+id/status_text"
               style="?android:attr/textAppearanceSmall"
-              android:gravity="left"
+              android:gravity="start"
               android:background="@color/compose_message_list_background"
               android:paddingLeft="6dp"
               android:paddingRight="6dp"

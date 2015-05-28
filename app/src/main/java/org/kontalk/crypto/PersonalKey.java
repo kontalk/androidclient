@@ -474,7 +474,7 @@ public class PersonalKey implements Parcelable {
         @Override
         public PersonalKey[] newArray(int size) {
             return new PersonalKey[size];
-        };
+        }
     };
 
 }

@@ -52,7 +52,6 @@ import org.apache.http.util.EntityUtils;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
-import android.os.Environment;
 
 import org.kontalk.Kontalk;
 import org.kontalk.client.ClientHTTPConnection;

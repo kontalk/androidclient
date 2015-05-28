@@ -24,7 +24,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.telephony.PhoneNumberUtils;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;

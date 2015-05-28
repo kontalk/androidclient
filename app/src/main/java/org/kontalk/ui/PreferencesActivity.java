@@ -418,12 +418,13 @@ public final class PreferencesActivity extends PreferenceActivity {
     }
 
     private interface OnPassphraseChangedListener {
-        public void onPassphraseChanged(String passphrase);
+        void onPassphraseChanged(String passphrase);
     }
 
     private interface OnPassphraseRequestListener {
-        public void onValidPassphrase(String passphrase);
-        public void onInvalidPassphrase();
+        void onValidPassphrase(String passphrase);
+
+        void onInvalidPassphrase();
     }
 
     private void askCurrentPassphrase(final OnPassphraseRequestListener action) {
