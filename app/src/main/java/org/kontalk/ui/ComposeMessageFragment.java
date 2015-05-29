@@ -1480,7 +1480,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 mInvitationBar.findViewById(R.id.button_identity)
                     .setOnClickListener(new View.OnClickListener() {
                         public void onClick(View v) {
-                            showIdentityDialog();
+                            showIdentityDialog(true);
                         }
                     }
                 );
@@ -1583,7 +1583,7 @@ public class ComposeMessageFragment extends ListFragment implements
         mConversation.setRecipient(mUserJID);
     }
 
-    private void showIdentityDialog() {
+    private void showIdentityDialog(boolean informationOnly) {
         String fingerprint;
         String uid;
 
@@ -1623,11 +1623,40 @@ public class ComposeMessageFragment extends ListFragment implements
         text.append(fingerprint);
         text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        new AlertDialog.Builder(getActivity())
-            .setPositiveButton(android.R.string.ok, null)
-            .setTitle(R.string.title_invitation)
-            .setMessage(text)
-            .show();
+        AlertDialog.Builder builder = new AlertDialog
+            .Builder(getActivity())
+            .setIcon(android.R.drawable.ic_dialog_info)
+            .setMessage(text);
+
+        if (informationOnly) {
+            builder.setPositiveButton(android.R.string.ok, null)
+                .setTitle(R.string.title_invitation);
+        }
+        else {
+            DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // hide warning bar
+                    hideWarning();
+
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            // trust new key
+                            trustKeyChange();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            // block user immediately
+                            setPrivacy(PRIVACY_BLOCK);
+                            break;
+                    }
+                }
+            };
+            builder.setTitle(R.string.title_public_key_warning)
+                .setPositiveButton(R.string.button_accept, listener)
+                .setNegativeButton(R.string.button_block, listener);
+        }
+
+        builder.show();
     }
 
     private void hideWarning() {
@@ -1638,48 +1667,61 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    private void showWarning(String text) {
+    private void trustKeyChange() {
+        // mark current key as trusted
+        UsersProvider.trustUserKey(getActivity(), mUserJID);
+        // reload contact
+        invalidateContact();
+        // request the new key (isn't this necessary?)
+        MessageCenterService.requestPublicKey(getActivity(), mUserJID);
+    }
+
+    private void showKeyChangedWarning() {
+        showWarning(getText(R.string.warning_public_key), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                // hide warning bar
+                                hideWarning();
+                                // trust new key
+                                trustKeyChange();
+                                break;
+                            case DialogInterface.BUTTON_NEUTRAL:
+                                showIdentityDialog(false);
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                // hide warning bar
+                                hideWarning();
+                                // block user immediately
+                                setPrivacy(PRIVACY_BLOCK);
+                                break;
+                        }
+                    }
+                };
+                new AlertDialog.Builder(getActivity())
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle(R.string.title_public_key_warning)
+                    .setMessage(R.string.msg_public_key_warning)
+                    .setPositiveButton(R.string.button_accept, listener)
+                    .setNeutralButton(R.string.button_identity, listener)
+                    .setNegativeButton(R.string.button_block, listener)
+                    .show();
+            }
+        });
+    }
+
+    private void showWarning(CharSequence text, View.OnClickListener listener) {
         LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
         TextView warning = (TextView) root.findViewById(R.id.warning_bar);
         if (warning == null) {
             warning = (TextView) LayoutInflater.from(getActivity())
                 .inflate(R.layout.warning_bar, root, false);
             warning.setText(text);
-            warning.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO
-                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // hide warning bar
-                            hideWarning();
-
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    // mark current key as trusted
-                                    UsersProvider.trustUserKey(getActivity(), mUserJID);
-                                    // reload contact
-                                    invalidateContact();
-                                    // request the new key (isn't this necessary?)
-                                    MessageCenterService.requestPublicKey(getActivity(), mUserJID);
-                                    break;
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    // block user immediately
-                                    setPrivacy(PRIVACY_BLOCK);
-                                    break;
-                            }
-                        }
-                    };
-                    new AlertDialog.Builder(getActivity())
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.title_public_key_warning)
-                        .setMessage(R.string.msg_public_key_warning)
-                        .setPositiveButton(R.string.button_accept, listener)
-                        .setNegativeButton(R.string.button_block, listener)
-                        .show();
-                }
-            });
+            warning.setOnClickListener(listener);
             root.addView(warning, 0);
         }
     }
@@ -1751,7 +1793,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
                                     if (requestKey) {
                                         // warn user that public key is changed
-                                        showWarning(context.getString(R.string.warning_public_key));
+                                        showKeyChangedWarning();
                                     }
                                 }
 
