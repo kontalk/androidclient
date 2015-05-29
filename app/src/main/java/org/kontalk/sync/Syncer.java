@@ -51,10 +51,12 @@ import android.util.Log;
 
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
+import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
 
 
@@ -443,6 +445,7 @@ public class Syncer {
                     new ArrayList<ContentProviderOperation>();
                 // TODO operations.size() could be used instead (?)
                 int op = 0;
+                String ownContactJid = null;
 
                 // this is the time - delete all Kontalk raw contacts
                 try {
@@ -505,6 +508,10 @@ public class Syncer {
 
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { entry.from });
+
+                        // if this is our own contact, trust our own key later
+                        if (Authenticator.isSelfJID(mContext, data.jid))
+                            ownContactJid = data.jid;
                     }
                     catch (RemoteException e) {
                         Log.e(TAG, "error updating users database", e);
@@ -526,18 +533,15 @@ public class Syncer {
                 }
 
                 commit(usersProvider, syncResult);
+
+                if (ownContactJid != null)
+                    // we found our own contact, trust our own key now
+                    UsersProvider.trustUserKey(mContext, ownContactJid);
             }
 
             // timeout or error
             else {
-                /* TODO
-                Throwable exc = conn.getLastError();
-                if (exc != null) {
-                    Log.e(TAG, "network error - aborting sync", exc);
-                }
-                else {*/
-                    Log.w(TAG, "connection timeout - aborting sync");
-                //}
+                Log.w(TAG, "connection timeout - aborting sync");
 
                 syncResult.stats.numIoExceptions++;
             }
