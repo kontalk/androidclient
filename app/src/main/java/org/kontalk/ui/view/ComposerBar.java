@@ -86,13 +86,17 @@ public class ComposerBar extends RelativeLayout implements
 
     private Context mContext;
 
+    // for the text entry
     private EditText mTextEntry;
     private View mSendButton;
-
-    private boolean mComposeSent;
-
     private ComposerListener mListener;
     private TextWatcher mChatStateListener;
+
+    /** Used during audio recording to restore focus status of the text entry. */
+    private boolean mTextEntryFocus;
+    private boolean mComposeSent;
+
+    // for Emoji drawer
     private ImageButton mEmojiButton;
     private EmojiconsView mEmojiView;
     private boolean mEmojiVisible;
@@ -111,8 +115,8 @@ public class ComposerBar extends RelativeLayout implements
     private TextView mRecordText;
     private File mRecordFile;
     private MediaRecorder mRecord;
-    private long startTime = 0L;
-    private long elapsedTime = 0L;
+    private long startTime;
+    private long elapsedTime;
     private boolean mCheckMove;
     private int mOrientation;
     private Vibrator mVibrator;
@@ -357,6 +361,19 @@ public class ComposerBar extends RelativeLayout implements
         // TODO
     }
 
+    private void disableTextEntry() {
+        mTextEntryFocus = mTextEntry.hasFocus();
+        mTextEntry.setFocusable(false);
+        mTextEntry.setFocusableInTouchMode(false);
+    }
+
+    private void enableTextEntry() {
+        mTextEntry.setFocusable(true);
+        mTextEntry.setFocusableInTouchMode(true);
+        if (mTextEntryFocus)
+            mTextEntry.requestFocus();
+    }
+
     private void animateRecordFrame() {
         int screenWidth = SystemUtils.getDisplaySize(mContext).x;
 
@@ -453,6 +470,7 @@ public class ComposerBar extends RelativeLayout implements
             mRecord.start();
             mIsRecordingAudio = true;
             lockOrientation();
+            disableTextEntry();
         }
         catch (IllegalStateException e) {
             Log.e(TAG, "error starting audio recording:", e);
@@ -472,6 +490,7 @@ public class ComposerBar extends RelativeLayout implements
     private void stopRecording(boolean send) {
         mIsRecordingAudio = false;
         unlockOrientation();
+        enableTextEntry();
 
         mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
         if (mMediaPlayerUpdater != null)
@@ -510,6 +529,7 @@ public class ComposerBar extends RelativeLayout implements
         int orientation = SystemUtils.getScreenOrientation((Activity) mContext);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2)
             orientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
+        //noinspection ResourceType
         ((Activity) mContext).setRequestedOrientation(orientation);
     }
 

@@ -66,6 +66,7 @@
         android:layout_toLeftOf="@+id/audio_send_button"
         android:background="@android:color/white"
         android:id="@+id/record_layout"
+        android:clickable="true"
         android:visibility="gone">
 
         <LinearLayout
