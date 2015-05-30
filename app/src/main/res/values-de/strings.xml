@@ -81,7 +81,7 @@
   <string name="pref_wakeup_time">Serververbindung wiederherstellen</string>
   <string name="pref_title_wakeup_time">Wie lange soll nach Inaktivität gewartet werden bevor die Serververbindung wieder hergestellt wird? Arbeitet nur wenn Pushbenachrichtigungen nicht verfügbar sind.</string>
   <string name="pref_maintenance">Wartung</string>
-  <string name="pref_regenerate_keypair">Persönlicher Schlüssel neu erzeugen</string>
+  <string name="pref_regenerate_keypair">Persönlichen Schlüssel neu erzeugen</string>
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde.</string>
   <string name="pref_regenerate_keypair_confirm">Ein neues Schlüsselpaar wird erzeugt und Ihrem Account zugeordnet. Ihr alter Schlüssel ist danach ungültig.</string>
   <string name="contacts_list_title">Wählen Sie einen Kontakt.</string>
@@ -313,12 +313,14 @@
   <string name="err_password_too_short">Passwort muss aus mindestens %d Zeichen bestehen.</string>
   <string name="err_passwords_mismatch">Passworte stimmen nicht überein!</string>
   <string name="err_password_invalid">Falsches Passwort.</string>
+  <string name="hint_record">Mikrofon antippen um die Aufnahme zu starten.</string>
   <string name="err_change_passphrase">Ändern den Passwortes für den persönlichen Schlüssel nicht möglich.</string>
   <string name="err_file_not_found">Datei nicht gefunden</string>
   <string name="err_audio_record">Fehler beim Start der Audioaufnahme</string>
   <string name="err_audio_record_writing">Fehler beim Schreiben auf den externen Speicher</string>
   <string name="err_playing_audio">Fehler beim Audio abspielen</string>
   <string name="err_playing_sdcard">Fehler beim Lesen vom externen Speicher</string>
+  <string name="slide_to_cancel">WISCHEN UM ABZUBRECHEN</string>
   <string name="pref_media_settings">Medieneinstellungen</string>
   <string name="pref_image_resize">Bildgröße anpassen</string>
   <string name="pref_title_image_resize">Bildgröße vorm Senden anpassen</string>

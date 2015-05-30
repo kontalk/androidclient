@@ -314,6 +314,7 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="err_password_too_short">パスワードは少なくとも %d 文字で入力してください。</string>
   <string name="err_passwords_mismatch">パスワードが一致しません!</string>
   <string name="err_password_invalid">パスワードが間違っています。</string>
+  <string name="hint_record">マイクをタップすると録音を開始します。</string>
   <string name="err_change_passphrase">パーソナルキーのパスワードを変更できません。</string>
   <string name="err_file_not_found">ファイルが見つかりません。</string>
   <string name="err_audio_record">音声の録音開始時にエラー。</string>

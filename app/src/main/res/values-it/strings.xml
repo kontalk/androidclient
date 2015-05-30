@@ -313,12 +313,14 @@
   <string name="err_password_too_short">La password deve essere di almeno %d caratteri.</string>
   <string name="err_passwords_mismatch">Le password non corrispondono!</string>
   <string name="err_password_invalid">Password errata.</string>
+  <string name="hint_record">Tocca il microfono per registrare.</string>
   <string name="err_change_passphrase">Impossibile modificare la password della chiave personale.</string>
   <string name="err_file_not_found">File non trovato.</string>
   <string name="err_audio_record">Errore durante la registrazione.</string>
   <string name="err_audio_record_writing">Errore durante la scrittura sulla memoria esterna.</string>
   <string name="err_playing_audio">Impossibile riprodurre il file.</string>
   <string name="err_playing_sdcard">Errore durante la lettura dalla memoria esterna.</string>
+  <string name="slide_to_cancel">SCORRI PER ANNULLARE</string>
   <string name="pref_media_settings">Impostazioni messaggi multimediali</string>
   <string name="pref_image_resize">Comprimi immagini</string>
   <string name="pref_title_image_resize">Comprimi le immagini prima di inviarle</string>

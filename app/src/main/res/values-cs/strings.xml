@@ -313,6 +313,7 @@
   <string name="err_password_too_short">Heslo musí mít nejméně %d znaků.</string>
   <string name="err_passwords_mismatch">Heslo nesouhlasí!</string>
   <string name="err_password_invalid">Špatné heslo.</string>
+  <string name="hint_record">Klik na mikrofon zahájí nahrávání.</string>
   <string name="err_change_passphrase">Nepodařilo se změnit heslo k osobnímu klíči.</string>
   <string name="err_file_not_found">Soubor nebyl nalezen.</string>
   <string name="err_audio_record">Chyba při spuštění nahrávání zvuku</string>

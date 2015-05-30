@@ -313,6 +313,7 @@
   <string name="err_password_too_short">Je wachtwoord moet minstens %d karakters zijn.</string>
   <string name="err_passwords_mismatch">De wachtwoorden zijn niet hetzelfde!</string>
   <string name="err_password_invalid">Verkeerde wachtwoord.</string>
+  <string name="hint_record">Druk op de microfoon om een opname te starten.</string>
   <string name="err_change_passphrase">Kan niet het wachtwoord van het persoonlijk sleutelpaar veranderen.</string>
   <string name="err_file_not_found">Bestand niet gevonden.</string>
   <string name="err_audio_record">Fout opnemen van audio.</string>

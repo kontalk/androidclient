@@ -12,6 +12,7 @@
   <string name="menu_compose">Escribir</string>
   <string name="menu_delete_all">Eliminar conversaciones</string>
   <string name="menu_search">Búsqueda</string>
+  <string name="mykey_activity_title">Mi clave personal</string>
   <string name="menu_settings">Configuración</string>
   <string name="menu_offline">Desconectarse</string>
   <string name="menu_online">Conectarse</string>
@@ -223,6 +224,7 @@
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture"> Enviar imagen</string>
   <string name="chooser_error_no_camera">El almacenamiento externo no está disponible. No se pueden hacer fotografías con la cámara</string>
+  <string name="chooser_select_link">Elegir acción</string>
   <string name="status_activity_title">Mensaje de estado</string>
   <string name="hint_status_entry">Introduzca su mensaje de estado aquí</string>
   <string name="header_recent_status">Mensajes de estado usados recientemente</string>
@@ -270,11 +272,14 @@
   <string name="security_error_public_key_unavail">\u0020(clave pública no disponible)</string>
   <string name="invite_notification">le invita a conversar</string>
   <string name="title_invitation">Invitación a un chat</string>
+  <string name="text_invitation1">Solicitud de:</string>
+  <string name="text_invitation2">Huella digital:</string>
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
   <string name="button_identity">Identidad</string>
   <string name="msg_connecting_iab">Conectándose a Google Play ...</string>
   <string name="msg_iab_thankyou">¡Gracias!</string>
+  <string name="msg_iab_thankyou_warning">Algo fue mal, pero se efectuó la donación. ¡Gracias!</string>
   <string name="iab_error_setup">Error al configurar la facturación desde la app (%d)</string>
   <string name="iab_error_query">Falló la consulta del inventario de facturación desde la app (%d)</string>
   <string name="copy_clipboard">Copiar al portapapeles</string>
@@ -282,9 +287,13 @@
   <string name="warn_no_personal_key">No se ha podido cargar la clave personal. Desactiva el cifrado en las preferencias para enviar el mensaje de todos modos.</string>
   <string name="warn_no_public_key">No se ha podido encontrar una clave pública para este usuario. Prueba a recargar tu lista de contactos o desactiva el cifrado en las preferencias para enviar el mensaje de todos modos.</string>
   <string name="warn_encryption_failed">No se ha podido cifrar el mensaje. Desactiva el cifrado en las preferencias para enviar el mensaje de todos modos.</string>
+  <string name="warn_not_subscribed">No ha sido posible enviar el mensaje. El usuario aún no ha aceptado la invitación.</string>
   <string name="pref_sync_sim_contacts">Sincronizar contactos de la SIM</string>
   <string name="pref_title_off_sync_sim_contacts">No incluir los contactos de la SIM al comprobar los usuarios registrados</string>
   <string name="pref_title_on_sync_sim_contacts">Los contactos de la SIM se incluyen al comprobar usuarios registrados</string>
+  <string name="pref_sync_invisible_contacts">Incluir contactos invisibles</string>
+  <string name="pref_title_off_sync_invisible_contacts">No incluir contactos que no se muestran en la aplicación de Contactos. Habilitar para arreglar DAVDroid</string>
+  <string name="pref_title_on_sync_invisible_contacts">Los contactos que no se muestran en Contactos se incluirán en Kontalk</string>
   <string name="pref_accept_any_certificate">Aceptar cualquier certificado SSL</string>
   <string name="pref_delete_account">Borrar su cuenta</string>
   <string name="msg_delete_account">El borrado de su cuenta también borrará todos sus mensajes. Su cuenta en el servidor será borrada automáticamente pasadas unas semanas.</string>
@@ -304,6 +313,7 @@
   <string name="err_password_too_short">La contraseña debe tener al menos %d caracteres.</string>
   <string name="err_passwords_mismatch">¡Las contraseñas no coinciden!</string>
   <string name="err_password_invalid">Contraseña errónea.</string>
+  <string name="hint_record">Toque el micro para empezar a grabar.</string>
   <string name="err_change_passphrase">Imposible cambiar la contraseña de la clave personal</string>
   <string name="err_file_not_found">Archivo no encontrado.</string>
   <string name="err_audio_record">Error intentando grabar audio.</string>
