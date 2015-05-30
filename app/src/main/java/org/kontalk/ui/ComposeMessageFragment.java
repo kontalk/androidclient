@@ -2010,6 +2010,9 @@ public class ComposeMessageFragment extends ListFragment implements
     public void onPause() {
         super.onPause();
 
+        // notify composer bar
+        mComposer.onPause();
+
         // hide emoji drawer
         tryHideEmojiDrawer();
 

@@ -344,6 +344,12 @@ public class ComposerBar extends RelativeLayout implements
         });
     }
 
+    public void onPause() {
+        if (mIsRecordingAudio) {
+            abortRecording();
+        }
+    }
+
     public void setRootView(View rootView) {
         mRootView = (KeyboardAwareRelativeLayout) rootView;
         // this will handle closing of keyboard while emoji drawer is open
@@ -523,6 +529,16 @@ public class ComposerBar extends RelativeLayout implements
             if (!canSend)
                 mRecordFile.delete();
         }
+    }
+
+    /** Stops push-to-talk recording immediately. */
+    private void abortRecording() {
+        // this will prevent the touch event to be processed
+        mCheckMove = true;
+        // stop the actual recording without sending
+        stopRecording(false);
+        // hide the recording layout immediately
+        mRecordLayout.setVisibility(View.GONE);
     }
 
     private void lockOrientation() {
