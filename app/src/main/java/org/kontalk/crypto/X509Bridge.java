@@ -172,8 +172,10 @@ public class X509Bridge {
         Iterator<PGPPublicKey> iter = publicKeyRing.getPublicKeys();
         while (iter.hasNext()) {
             PGPPublicKey pk = iter.next();
-            if (pk.isMasterKey())
+            if (pk.isMasterKey()) {
                 publicKey = pk;
+                break;
+            }
         }
 
         if (publicKey == null)
