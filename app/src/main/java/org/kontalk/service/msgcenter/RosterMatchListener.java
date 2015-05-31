@@ -46,19 +46,21 @@ class RosterMatchListener extends MessageCenterPacketListener {
 
     @Override
     public void processPacket(Stanza packet) {
-        RosterMatch p = (RosterMatch) packet;
-        Intent i = new Intent(ACTION_ROSTER_MATCH);
-        i.putExtra(EXTRA_FROM, p.getFrom());
-        i.putExtra(EXTRA_TO, p.getTo());
-        i.putExtra(EXTRA_TYPE, p.getType().toString());
-        i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
+        if (packet.getError() == null) {
+            RosterMatch p = (RosterMatch) packet;
+            Intent i = new Intent(ACTION_ROSTER_MATCH);
+            i.putExtra(EXTRA_FROM, p.getFrom());
+            i.putExtra(EXTRA_TO, p.getTo());
+            i.putExtra(EXTRA_TYPE, p.getType().toString());
+            i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
-        List<String> items = p.getItems();
-        if (items != null) {
-            String[] list = new String[items.size()];
-            i.putExtra(EXTRA_JIDLIST, items.toArray(list));
+            List<String> items = p.getItems();
+            if (items != null) {
+                String[] list = new String[items.size()];
+                i.putExtra(EXTRA_JIDLIST, items.toArray(list));
+            }
+
+            sendBroadcast(i);
         }
-
-        sendBroadcast(i);
     }
 }

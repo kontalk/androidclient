@@ -58,6 +58,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.util.XMPPUtils;
 
 
 /**
@@ -384,7 +385,8 @@ public class Syncer {
             }
 
             // avoid to send duplicates to server
-            if (lookupNumbers.put(jid, new RawPhoneNumberEntry(lookupKey, number, jid)) == null)
+            if (lookupNumbers.put(XmppStringUtils.parseLocalpart(jid),
+                    new RawPhoneNumberEntry(lookupKey, number, jid)) == null)
                 jidList.add(jid);
         }
         cursor.close();
@@ -462,7 +464,8 @@ public class Syncer {
                 for (int i = 0; i < res.size(); i++) {
                     PresenceItem entry = res.get(i);
 
-                    final RawPhoneNumberEntry data = lookupNumbers.get(entry.from);
+                    final RawPhoneNumberEntry data = lookupNumbers
+                        .get(XmppStringUtils.parseLocalpart(entry.from));
                     if (data != null) {
                         // add contact
                         addContact(account,
@@ -505,13 +508,24 @@ public class Syncer {
 
                         // blocked status
                         registeredValues.put(Users.BLOCKED, entry.blocked);
+                        // user JID as reported by the server
+                        registeredValues.put(Users.JID, entry.from);
 
+                        /*
+                         * Since UsersProvider.resync inserted the user row
+                         * using our server name, it might have changed because
+                         * of what the server reported. We already put into the
+                         * values the new JID, but we need to use the old one
+                         * in the where condition so we will have a match.
+                         */
+                        String origJid = XMPPUtils.createLocalJID(mContext,
+                            XmppStringUtils.parseLocalpart(entry.from));
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
-                            Users.JID + " = ?", new String[] { entry.from });
+                            Users.JID + " = ?", new String[] { origJid });
 
                         // if this is our own contact, trust our own key later
-                        if (Authenticator.isSelfJID(mContext, data.jid))
-                            ownContactJid = data.jid;
+                        if (Authenticator.isSelfJID(mContext, entry.from))
+                            ownContactJid = entry.from;
                     }
                     catch (RemoteException e) {
                         Log.e(TAG, "error updating users database", e);

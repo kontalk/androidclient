@@ -915,6 +915,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         for (String item : list) {
                             ((RosterMatch) iq).addItem(item);
                         }
+
+                        // directed to the probe component
+                        iq.setTo(XmppStringUtils.completeJidFrom("probe", mServer.getNetwork()));
                     }
                     else {
                         iq = new RosterPacket();
