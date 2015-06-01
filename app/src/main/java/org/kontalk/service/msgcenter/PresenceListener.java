@@ -61,6 +61,8 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FINGERPRINT;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SUBSCRIBED_FROM;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SUBSCRIBED_TO;
 
 
 /**
@@ -267,12 +269,26 @@ class PresenceListener extends MessageCenterPacketListener {
     private void handlePresence(Presence p) {
         updateUsersDatabase(p);
 
-        Intent i = createIntent(getContext(), p);
+        // request the new key if fingerprint changed
+        String newFingerprint = PublicKeyPresence.getFingerprint(p);
+        if (newFingerprint != null) {
+            String jid = XmppStringUtils.parseBareJid(p.getFrom());
+            PGPPublicKeyRing pubRing = UsersProvider.getPublicKey(getContext(),
+                jid, false);
+            if (pubRing != null) {
+                String oldFingerprint = PGP.getFingerprint(PGP.getMasterKey(pubRing));
+                if (!newFingerprint.equalsIgnoreCase(oldFingerprint)) {
+                    MessageCenterService.requestPublicKey(getContext(), jid);
+                }
+            }
+        }
+
+        Intent i = createIntent(getContext(), p, getRosterEntry(p.getFrom()));
         Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
         sendBroadcast(i);
     }
 
-    public static Intent createIntent(Context ctx, Presence p) {
+    public static Intent createIntent(Context ctx, Presence p, RosterEntry entry) {
         Intent i = new Intent(ACTION_PRESENCE);
         Presence.Type type = p.getType();
         i.putExtra(EXTRA_TYPE, type != null ? type.name() : Presence.Type.available.name());
@@ -299,16 +315,16 @@ class PresenceListener extends MessageCenterPacketListener {
 
         i.putExtra(EXTRA_STAMP, timestamp);
 
-        // public key extension (for fingerprint)
-        ExtensionElement _pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
+        // public key fingerprint
+        i.putExtra(EXTRA_FINGERPRINT, PublicKeyPresence.getFingerprint(p));
 
-        if (_pkey instanceof PublicKeyPresence) {
-            PublicKeyPresence pkey = (PublicKeyPresence) _pkey;
-
-            String fingerprint = pkey.getFingerprint();
-            if (fingerprint != null) {
-                i.putExtra(EXTRA_FINGERPRINT, fingerprint);
-            }
+        // subscription information
+        if (entry != null) {
+            RosterPacket.ItemType subscriptionType = entry.getType();
+            i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
+                subscriptionType == RosterPacket.ItemType.from);
+            i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
+                subscriptionType == RosterPacket.ItemType.to);
         }
 
         return i;

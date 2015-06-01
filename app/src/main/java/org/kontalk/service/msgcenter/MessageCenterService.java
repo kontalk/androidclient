@@ -1585,15 +1585,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (isRosterEntrySubscribed(entry) || Authenticator.isSelfJID(this, jid)) {
             // roster entry found, look for presence
             Presence presence = roster.getPresence(jid);
-            i = PresenceListener.createIntent(this, presence);
-
-            if (entry != null) {
-                RosterPacket.ItemType subscriptionType = entry.getType();
-                i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
-                    subscriptionType == RosterPacket.ItemType.from);
-                i.putExtra(EXTRA_SUBSCRIBED_TO, subscriptionType == RosterPacket.ItemType.both ||
-                    subscriptionType == RosterPacket.ItemType.to);
-            }
+            i = PresenceListener.createIntent(this, presence, entry);
         }
         else {
             // null type indicates no roster entry found or not authorized
@@ -1611,7 +1603,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Presence presence = createPresence();
         presence.setFrom(mConnection.getUser());
 
-        Intent i = PresenceListener.createIntent(this, presence);
+        Intent i = PresenceListener.createIntent(this, presence, null);
         i.putExtra(EXTRA_FINGERPRINT, getMyFingerprint());
         i.putExtra(EXTRA_SUBSCRIBED_FROM, true);
         i.putExtra(EXTRA_SUBSCRIBED_TO, true);

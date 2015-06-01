@@ -1672,8 +1672,6 @@ public class ComposeMessageFragment extends ListFragment implements
         UsersProvider.trustUserKey(getActivity(), mUserJID);
         // reload contact
         invalidateContact();
-        // request the new key (isn't this necessary?)
-        MessageCenterService.requestPublicKey(getActivity(), mUserJID);
     }
 
     private void showKeyChangedWarning() {
