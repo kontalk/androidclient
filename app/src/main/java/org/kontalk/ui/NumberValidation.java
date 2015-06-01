@@ -814,6 +814,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 // start has been requested
                 mSyncStart = null;
 
+                // enable services
+                Kontalk.setServicesEnabled(NumberValidation.this, true);
+
                 // start sync
                 SyncAdapter.requestSync(NumberValidation.this, true);
 
@@ -1060,9 +1063,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                 ctx.setAccountAuthenticatorResult(intent.getExtras());
                 ctx.setResult(RESULT_OK, intent);
-
-                // ok enable services
-                Kontalk.setServicesEnabled(ctx, true);
 
                 // manual sync starter
                 ctx.delayedSync();
