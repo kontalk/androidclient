@@ -284,7 +284,6 @@ class PresenceListener extends MessageCenterPacketListener {
         }
 
         Intent i = createIntent(getContext(), p, getRosterEntry(p.getFrom()));
-        Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
         sendBroadcast(i);
     }
 
