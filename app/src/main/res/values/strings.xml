@@ -228,8 +228,8 @@
     <string name="pref_balloon_label_classic_old">Classic (old)</string>
     <string name="pref_balloon_label_iphone">iPhone</string>
     <string name="pref_text_enter_label_default">Default</string>
-    <string name="pref_text_enter_label_enter">Enter</string>
-    <string name="pref_text_enter_label_send">Send</string>
+    <string name="pref_text_enter_label_newline">Enter</string>
+    <string name="pref_text_enter_label_newline_send">Send</string>
     <string name="pref_image_resize_label_original">Original</string>
     <string name="pref_image_resize_label_small">Small (0.3MP)</string>
     <string name="pref_image_resize_label_medium">Medium (0.5MP)</string>
