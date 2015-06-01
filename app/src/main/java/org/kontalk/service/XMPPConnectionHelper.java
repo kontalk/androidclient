@@ -25,6 +25,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
+
+import com.segment.backo.Backo;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionListener;
@@ -74,6 +77,8 @@ public class XMPPConnectionHelper extends Thread {
 
     /** Connection retry count for exponential backoff. */
     private int mRetryCount;
+    /** Exponential backoff calculator. */
+    private final Backo mRetryBackoff;
 
     /** Connection is re-created on demand if necessary. */
     protected KontalkConnection mConn;
@@ -103,6 +108,12 @@ public class XMPPConnectionHelper extends Thread {
         mContext = context;
         mServer = server;
         mLimited = limited;
+        mRetryBackoff = Backo.builder()
+            .base(TimeUnit.MILLISECONDS, 1500)
+            .cap(TimeUnit.MINUTES, 5)
+            .factor(2)
+            .jitter(1)
+            .build();
     }
 
     public void setListener(ConnectionHelperListener listener) {
@@ -283,13 +294,13 @@ public class XMPPConnectionHelper extends Thread {
                             }
 
                             // exponential backoff :)
-                            float time = (float) ((Math.pow(2, ++mRetryCount)) - 1) / 2;
-                            Log.d(TAG, "retrying in " + time + " seconds (retry="+mRetryCount+")");
+                            long time = mRetryBackoff.backoff(++mRetryCount);
+                            Log.d(TAG, "retrying in " + (time/1000) + " seconds (retry="+mRetryCount+")");
                             // notify listener we are reconnecting
                             if (mListener != null)
                                 mListener.reconnectingIn((int) time);
 
-                            Thread.sleep((long) (time * 1000));
+                            Thread.sleep(time);
                             // this is to avoid the exponential backoff counter to be reset
                             continue;
                         }
