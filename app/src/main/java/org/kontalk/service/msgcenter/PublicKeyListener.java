@@ -113,13 +113,11 @@ class PublicKeyListener extends MessageCenterPacketListener {
                     i.putExtra(EXTRA_TO, p.getTo());
                     i.putExtra(EXTRA_PUBLIC_KEY, _publicKey);
 
-                    Log.v(MessageCenterService.TAG, "broadcasting public key: " + i);
                     sendBroadcast(i);
                 }
 
                 else {
                     try {
-                        Log.v("pubkey", "networkUser = " + networkUser + " (" + from + ")");
                         if (networkUser) {
                             Log.v("pubkey", "Updating key for " + from);
                             UsersProvider.setUserKey(getContext(), from, _publicKey);
