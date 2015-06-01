@@ -218,6 +218,33 @@
     <string name="serverlist_update_nonetwork">Network not available. Please retry later.</string>
     <string name="serverlist_update_offline">Offline mode is enabled.</string>
 
+    <string name="pref_vibrate_label_always">Always</string>
+    <string name="pref_vibrate_label_silent">Only when silent</string>
+    <string name="pref_vibrate_label_never">Never</string>
+    <string name="pref_fontsize_label_small">Small</string>
+    <string name="pref_fontsize_label_medium">Medium</string>
+    <string name="pref_fontsize_label_large">Large</string>
+    <string name="pref_balloon_label_classic">Classic</string>
+    <string name="pref_balloon_label_classic_old">Classic (old)</string>
+    <string name="pref_balloon_label_iphone">iPhone</string>
+    <string name="pref_text_enter_label_default">Default</string>
+    <string name="pref_text_enter_label_enter">Enter</string>
+    <string name="pref_text_enter_label_send">Send</string>
+    <string name="pref_image_resize_label_original">Original</string>
+    <string name="pref_image_resize_label_small">Small (0.3MP)</string>
+    <string name="pref_image_resize_label_medium">Medium (0.5MP)</string>
+    <string name="pref_image_resize_label_large">Large (0.8MP)</string>
+    <string name="pref_idle_time_label_never">Never</string>
+    <string name="pref_idle_time_label_5m">5 minutes</string>
+    <string name="pref_idle_time_label_15m">15 minutes</string>
+    <string name="pref_idle_time_label_30m">30 minutes</string>
+    <string name="pref_idle_time_label_1h">1 hour</string>
+    <string name="pref_wakeup_time_label_5m">5 minutes</string>
+    <string name="pref_wakeup_time_label_15m">15 minutes</string>
+    <string name="pref_wakeup_time_label_30m">30 minutes</string>
+    <string name="pref_wakeup_time_label_1h">1 hour</string>
+    <string name="pref_wakeup_time_label_3h">3 hours</string>
+
     <string name="pref_remove_prefix">Dial prefix</string>
     <string name="pref_change_passphrase">Change personal key password</string>
     <string name="pref_title_remove_prefix">Remove some dial prefix in Kontalk to match phone numbers correctly</string>
@@ -243,7 +270,7 @@
     <string name="attachment_picture">Picture</string>
     <string name="attachment_contact">Contact</string>
     <string name="attachment_audio">Audio</string>
-    
+
     <string name="chooser_send_picture">Send picture</string>
     <string name="chooser_error_no_camera">External storage not available. Taking picture from camera will not be enabled.</string>
 
