@@ -85,11 +85,12 @@ public class MyKeyActivity extends ActionBarActivity {
         // TODO network
         mTextName.setText(key.getUserId(null));
 
-        String fingerprint = PGP.formatFingerprint(key.getFingerprint());
-        mTextFingerprint.setText(fingerprint.replaceFirst("  ", "\n"));
+        String fingerprint = key.getFingerprint();
+        mTextFingerprint.setText(PGP.formatFingerprint(fingerprint)
+            .replaceFirst("  ", "\n"));
 
         try {
-            Bitmap qrCode = getQRCodeBitmap(fingerprint);
+            Bitmap qrCode = getQRCodeBitmap(PGP.createFingerprintURI(fingerprint));
             mQRCode.setImageBitmap(qrCode);
         }
         catch (WriterException e) {

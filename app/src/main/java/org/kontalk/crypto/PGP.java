@@ -370,6 +370,10 @@ public class PGP {
         return fpr.toString();
     }
 
+    public static String createFingerprintURI(String fingerprint) {
+        return "openpgp4fpr:" + fingerprint;
+    }
+
     /** Returns the first user ID on the key that matches the given hostname. */
     // TODO return type should be PGPUserID
     public static String getUserId(PGPPublicKey key, String host) {
