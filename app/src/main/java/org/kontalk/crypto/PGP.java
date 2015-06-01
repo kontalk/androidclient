@@ -416,6 +416,15 @@ public class PGP {
         return getUserId(pk, host);
     }
 
+    public static PGPUserID parseUserId(byte[] publicKeyring, String host) throws IOException, PGPException {
+        return parseUserId(getMasterKey(publicKeyring), host);
+    }
+
+    public static PGPUserID parseUserId(PGPPublicKey key, String host) throws IOException, PGPException {
+        String uid = getUserId(key, host);
+        return PGPUserID.parse(uid);
+    }
+
     public static int getKeyFlags(PGPPublicKey key) {
         @SuppressWarnings("unchecked")
         Iterator<PGPSignature> sigs = key.getSignatures();

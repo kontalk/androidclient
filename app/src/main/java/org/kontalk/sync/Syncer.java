@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jxmpp.util.XmppStringUtils;
+import org.spongycastle.openpgp.PGPPublicKey;
 
 import android.accounts.Account;
 import android.accounts.OperationCanceledException;
@@ -54,6 +55,7 @@ import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGPUserID;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.MyUsers.Users;
 import org.kontalk.provider.UsersProvider;
@@ -137,19 +139,15 @@ public class Syncer {
                     String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
                     String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
                     if (type != null && presenceId.equals(id)) {
-                        // see if bare JID is present in roster response
-                        String compare = XmppStringUtils.parseBareJid(jid);
-                        for (PresenceItem item : response) {
-                            if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(compare)) {
-                                item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
-                                item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                if (!item.presence) {
-                                    item.presence = true;
-                                    // increment presence count
-                                    presenceCount++;
-                                }
-                                break;
-                            }
+                        // update presence item data
+                        String bareJid = XmppStringUtils.parseBareJid(jid);
+                        PresenceItem item = getPresenceItem(bareJid);
+                        item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
+                        item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                        if (!item.presence) {
+                            item.presence = true;
+                            // increment presence count
+                            presenceCount++;
                         }
                     }
                 }
@@ -270,6 +268,19 @@ public class Syncer {
                     }
                 }
             }
+        }
+
+        private PresenceItem getPresenceItem(String jid) {
+            for (PresenceItem item : response) {
+                if (XmppStringUtils.parseBareJid(item.from).equalsIgnoreCase(jid))
+                    return item;
+            }
+
+            // add item if not found
+            PresenceItem item = new PresenceItem();
+            item.from = jid;
+            response.add(item);
+            return item;
         }
 
         private int getRosterParts(List<String> jidList) {
@@ -459,7 +470,7 @@ public class Syncer {
                     return;
                 }
 
-                ContentValues registeredValues = new ContentValues(3);
+                ContentValues registeredValues = new ContentValues();
                 registeredValues.put(Users.REGISTERED, 1);
                 for (int i = 0; i < res.size(); i++) {
                     PresenceItem entry = res.get(i);
@@ -493,9 +504,20 @@ public class Syncer {
 
                         if (entry.publicKey != null) {
                             try {
-                                String fp = PGP.getFingerprint(entry.publicKey);
+                                PGPPublicKey pubKey = PGP.getMasterKey(entry.publicKey);
+
+                                String fp = PGP.getFingerprint(pubKey);
                                 registeredValues.put(Users.FINGERPRINT, fp);
                                 registeredValues.put(Users.PUBLIC_KEY, entry.publicKey);
+
+                                // no data from system contacts, use name from public key
+                                if (data == null) {
+                                    // TODO server
+                                    PGPUserID uid = PGP.parseUserId(pubKey, null);
+                                    if (uid != null) {
+                                        registeredValues.put(Users.DISPLAY_NAME, uid.getName());
+                                    }
+                                }
                             }
                             catch (Exception e) {
                                 Log.w(TAG, "unable to parse public key", e);
@@ -522,6 +544,9 @@ public class Syncer {
                             XmppStringUtils.parseLocalpart(entry.from));
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { origJid });
+
+                        // clear data
+                        registeredValues.remove(Users.DISPLAY_NAME);
 
                         // if this is our own contact, trust our own key later
                         if (Authenticator.isSelfJID(mContext, entry.from))
