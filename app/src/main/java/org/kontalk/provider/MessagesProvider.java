@@ -618,8 +618,10 @@ public class MessagesProvider extends ContentProvider {
             notifications.add(Threads.getUri(peer));
         }
         catch (SQLException e) {
-            // clear draft (since we are inserting a new message here)
-            values.putNull(Threads.DRAFT);
+            // clear draft if outgoing message
+            Integer direction = values.getAsInteger(Threads.DIRECTION);
+            if (direction != null && direction == Messages.DIRECTION_OUT)
+                values.putNull(Threads.DRAFT);
             // remove other stuff coming from subscription request entry
             if (requestOnly) {
                 values.remove(Threads.MESSAGE_ID);
