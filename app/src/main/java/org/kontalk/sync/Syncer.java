@@ -540,8 +540,12 @@ public class Syncer {
                          * values the new JID, but we need to use the old one
                          * in the where condition so we will have a match.
                          */
-                        String origJid = XMPPUtils.createLocalJID(mContext,
-                            XmppStringUtils.parseLocalpart(entry.from));
+                        String origJid;
+                        if (data != null)
+                            origJid = XMPPUtils.createLocalJID(mContext,
+                                XmppStringUtils.parseLocalpart(entry.from));
+                        else
+                            origJid = entry.from;
                         usersProvider.update(Users.CONTENT_URI_OFFLINE, registeredValues,
                             Users.JID + " = ?", new String[] { origJid });
 
