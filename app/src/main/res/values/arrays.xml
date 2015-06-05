@@ -25,9 +25,9 @@
     </string-array>
 
     <string-array name="vibrate_labels">
-        <item>Always</item>
-        <item>Only when silent</item>
-        <item>Never</item>
+        <item>@string/pref_vibrate_label_always</item>
+        <item>@string/pref_vibrate_label_silent</item>
+        <item>@string/pref_vibrate_label_never</item>
     </string-array>
 
     <string-array name="fontsize_values" translate="false">
@@ -37,9 +37,9 @@
     </string-array>
 
     <string-array name="fontsize_labels">
-        <item>Small</item>
-        <item>Medium</item>
-        <item>Large</item>
+        <item>@string/pref_fontsize_label_small</item>
+        <item>@string/pref_fontsize_label_medium</item>
+        <item>@string/pref_fontsize_label_large</item>
     </string-array>
 
     <string-array name="balloons_values" translate="false">
@@ -49,9 +49,9 @@
     </string-array>
 
     <string-array name="balloons_labels">
-        <item>Classic</item>
-        <item>Classic (old)</item>
-        <item>iPhone</item>
+        <item>@string/pref_balloon_label_classic</item>
+        <item>@string/pref_balloon_label_classic_old</item>
+        <item>@string/pref_balloon_label_iphone</item>
     </string-array>
 
     <string-array name="text_enter_values" translate="false">
@@ -61,9 +61,9 @@
     </string-array>
 
     <string-array name="text_enter_labels">
-        <item>Default</item>
-        <item>Enter</item>
-        <item>Send</item>
+        <item>@string/pref_text_enter_label_default</item>
+        <item>@string/pref_text_enter_label_newline</item>
+        <item>@string/pref_text_enter_label_newline_send</item>
     </string-array>
 
     <string-array name="image_resize_values" translate="false">
@@ -74,10 +74,10 @@
     </string-array>
 
     <string-array name="image_resize_labels">
-        <item>Original</item>
-        <item>Small (0.3MP)</item>
-        <item>Medium (0.5MP)</item>
-        <item>Large (0.8MP)</item>
+        <item>@string/pref_image_resize_label_original</item>
+        <item>@string/pref_image_resize_label_small</item>
+        <item>@string/pref_image_resize_label_medium</item>
+        <item>@string/pref_image_resize_label_large</item>
     </string-array>
 
     <string-array name="idle_time_values" translate="false">
@@ -89,11 +89,11 @@
     </string-array>
 
     <string-array name="idle_time_labels">
-        <item>Never</item>
-        <item>5 minutes</item>
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
+        <item>@string/pref_idle_time_label_never</item>
+        <item>@string/pref_idle_time_label_5m</item>
+        <item>@string/pref_idle_time_label_15m</item>
+        <item>@string/pref_idle_time_label_30m</item>
+        <item>@string/pref_idle_time_label_1h</item>
     </string-array>
 
     <string-array name="wakeup_time_values" translate="false">
@@ -105,11 +105,11 @@
     </string-array>
 
     <string-array name="wakeup_time_labels">
-        <item>5 minutes</item>
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
+        <item>@string/pref_wakeup_time_label_5m</item>
+        <item>@string/pref_wakeup_time_label_15m</item>
+        <item>@string/pref_wakeup_time_label_30m</item>
+        <item>@string/pref_wakeup_time_label_1h</item>
+        <item>@string/pref_wakeup_time_label_3h</item>
     </string-array>
 
     <string-array name="iab_items" translate="false">
