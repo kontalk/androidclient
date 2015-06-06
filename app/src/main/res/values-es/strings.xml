@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Red de mensajería instantánea gestionada por la comunidad</string>
@@ -29,8 +29,8 @@
   <string name="hint_validation_number">Su número</string>
   <string name="hint_validation_code">Código de verificación</string>
   <string name="warn_invalid_number">Por favor, introduzca un número de teléfono válido.</string>
-  <string name="msg_validating_phone">Solicitando SMS con código de verificación...</string>
-  <string name="msg_initializing">Registrándose en la red de Kontalk...</string>
+  <string name="msg_validating_phone">Solicitando SMS con código de verificación…</string>
+  <string name="msg_initializing">Registrándose en la red de Kontalk…</string>
   <string name="msg_authenticated">¡Registrado en la red!</string>
   <string name="share">Compartir</string>
   <string name="resend">Reenviar</string>
@@ -83,7 +83,7 @@
   <string name="pref_maintenance">Mantenimiento</string>
   <string name="pref_regenerate_keypair">Volver a generar clave personal</string>
   <string name="pref_title_regenerate_keypair">Use esto en caso de que su clave personal haya sido comprometida</string>
-  <string name="pref_regenerate_keypair_confirm">Un nuevo par de claves se generarán y serán asignadas a su cuenta. La antigua clave pasar a a ser inválida</string>
+  <string name="pref_regenerate_keypair_confirm">Se generará un nuevo par de claves y se asignarán a su cuenta. La clave antigua pasará a ser inválida.</string>
   <string name="contacts_list_title">Elija un contacto</string>
   <string name="pref_messaging_settings">Ajustes de mensajes</string>
   <string name="pref_privacy_settings">Ajustes de privacidad</string>
@@ -162,7 +162,7 @@
   <string name="err_sync_failed">No se pudo actualizar la lista de contactos. Por favor, inténtelo más tarde.</string>
   <string name="err_sync_nonetwork">Red no disponible. Por favor, inténtelo más tarde.</string>
   <string name="text_invite_message">¡Hola! Eche un vistazo a Kontalk en la Tienda de Google Play, ¡es una aplicación gratuita de mensajería! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Los usuarios nuevos se agregarán automáticamente a esta lista. &lt;br/&gt; Use &lt;b&gt;Menú&lt;/b&gt; &gt; &lt;b&gt;Invitar usuarios&lt;/b&gt; para enviar un mensaje de invitación a alguien.</string>
+  <string name="text_contacts_empty">Los usuarios nuevos se agregarán automáticamente a esta lista.<br/><br/>Use <b>Menú</b> &gt; <b>Invitar usuarios</b> para enviar un mensaje de invitación a alguien.</string>
   <string name="text_conversations_empty">Para comenzar a escribir mensajes use &lt;b&gt;el icono de nuevo mensaje&lt;/b&gt; arriba.</string>
   <string name="notify_ticker_external_storage">Dispositivo de almacenamiento externo no disponible</string>
   <string name="notify_text_external_storage">No se pudo escribir en el dispositivo de almacenamiento externo.</string>
@@ -174,7 +174,7 @@
   <string name="pref_font_size">Tamaño de la letra</string>
   <string name="menu_status">Estado</string>
   <string name="menu_attachment">Adjuntar</string>
-  <string name="menu_smileys">Smileys</string>
+  <string name="menu_smileys">Emoticonos</string>
   <string name="menu_block_user">Bloquear</string>
   <string name="menu_unblock_user">Desbloquear</string>
   <string name="vcard_message">Mensaje con vCard</string>
@@ -182,12 +182,12 @@
   <string name="open_audio">Reproducir archivo de audio</string>
   <string name="msg_msgcenter_restarted">Centro de mensajería reiniciado.</string>
   <string name="downloading_attachment">Descargando el archivo adjunto…</string>
-  <string name="decrypting_attachment">Descrifrando el archivo adjunto...</string>
+  <string name="decrypting_attachment">Descifrando el archivo adjunto…</string>
   <string name="attachment_download">Descargar adjunto</string>
   <string name="attachment_upload">Enviar adjunto</string>
   <string name="seen_moment_ago_label">hace un momento</string>
   <string name="seen_online_label">conectado</string>
-  <string name="seen_typing_label">escribiendo...</string>
+  <string name="seen_typing_label">escribiendo…</string>
   <string name="invitation_sent_label">invitación pendiente</string>
   <string name="pref_custom_background">Fondo personalizado</string>
   <string name="pref_background_uri">Fondo</string>
@@ -233,9 +233,9 @@
   <string name="pref_title_export_keypair">Exportar clave personal y certificado de inicio de sesión a almacenamiento externo</string>
   <string name="pref_import_keypair">Importar clave personal</string>
   <string name="pref_title_import_keypair">Importar clave personal y certificado de inicio de sesión desde almacenamiento externo</string>
-  <string name="msg_import_keypair">Kontalk importará sus claves desde %s en su almacenamiento externo. Asegúrese de que el fichero existe y es un archivo válido de claves exportadas</string>
+  <string name="msg_import_keypair">Kontalk importará sus claves desde %s en su almacenamiento externo. Asegúrese de que el fichero existe y es un archivo válido de claves exportadas.</string>
   <string name="msg_import_keypair_complete">Importado de la clave personal completado.</string>
-  <string name="err_import_keypair_failed">Fallo al importar la clave personal</string>
+  <string name="err_import_keypair_failed">Fallo al importar la clave personal.</string>
   <string name="title_passphrase">Contraseña</string>
   <string name="msg_status_sending">Enviando</string>
   <string name="msg_status_sent">Enviado</string>
@@ -249,7 +249,7 @@
   <string name="attachment_contact">Contacto</string>
   <string name="attachment_audio">Audio</string>
   <string name="chooser_send_picture"> Enviar imagen</string>
-  <string name="chooser_error_no_camera">El almacenamiento externo no está disponible. No se pueden hacer fotografías con la cámara</string>
+  <string name="chooser_error_no_camera">El almacenamiento externo no está disponible. No se pueden hacer fotografías con la cámara.</string>
   <string name="chooser_select_link">Elegir acción</string>
   <string name="status_activity_title">Mensaje de estado</string>
   <string name="hint_status_entry">Introduzca su mensaje de estado aquí</string>
@@ -261,8 +261,8 @@
   <string name="going_online">Conectando.</string>
   <string name="pref_other">Otro</string>
   <string name="pref_donate">Donar</string>
-  <string name="pref_about">Acerca de...</string>
-  <string name="title_about">Acerca de...</string>
+  <string name="pref_about">Acerca de</string>
+  <string name="title_about">Acerca de</string>
   <string name="title_donation">Donar</string>
   <string name="title_credits">Créditos</string>
   <string name="about_version">%1$s (%2$d)</string>
@@ -279,10 +279,10 @@
   <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Generando la clave personal en segundo plano.</string>
   <string name="msg_gen_keypair_complete">Regeneración de la clave personal completada.</string>
-  <string name="notify_gen_keypair_ticker">Generando la clave personal...</string>
+  <string name="notify_gen_keypair_ticker">Generando la clave personal…</string>
   <string name="notify_gen_keypair_title">Generando la clave personal</string>
   <string name="notify_gen_keypair_text">Puede continuar trabajando normalmente.</string>
-  <string name="msg_xmpp_upgrading">Actualizando...</string>
+  <string name="msg_xmpp_upgrading">Actualizando…</string>
   <string name="title_no_personal_key">Sin clave personal</string>
   <string name="msg_no_personal_key">No se encuentra disponible en estos momentos una clave personal (probablemente porque actualizó recientemente). No podrá iniciar sesión en la red Kontalk si no genera una clave personal. Por favor introduzca su nombre cerrando Kontalk y abriéndolo de nuevo.</string>
   <string name="msg_keypair_exported">Clave personal y certificado de inicio de sesión exportados a almacenamiento externo.</string>
@@ -303,7 +303,7 @@
   <string name="button_accept">Aceptar</string>
   <string name="button_block">Bloquear</string>
   <string name="button_identity">Identidad</string>
-  <string name="msg_connecting_iab">Conectándose a Google Play ...</string>
+  <string name="msg_connecting_iab">Conectándose a Google Play…</string>
   <string name="msg_iab_thankyou">¡Gracias!</string>
   <string name="msg_iab_thankyou_warning">Algo fue mal, pero se efectuó la donación. ¡Gracias!</string>
   <string name="iab_error_setup">Error al configurar la facturación desde la app (%d)</string>
@@ -323,15 +323,15 @@
   <string name="pref_accept_any_certificate">Aceptar cualquier certificado SSL</string>
   <string name="pref_delete_account">Borrar su cuenta</string>
   <string name="msg_delete_account">El borrado de su cuenta también borrará todos sus mensajes. Su cuenta en el servidor será borrada automáticamente pasadas unas semanas.</string>
-  <string name="msg_delete_account_progress">Borrando su cuenta...</string>
-  <string name="msg_user_blocked">El usuario ha sido bloqueado</string>
+  <string name="msg_delete_account_progress">Borrando su cuenta…</string>
+  <string name="msg_user_blocked">El usuario ha sido bloqueado.</string>
   <string name="msg_user_unblocked">El usuario ha sido desbloqueado.</string>
   <string name="msg_block_user_warning">&lt;b&gt;¡POR FAVOR LEE ESTO ATENTAMENTE!&lt;/b&gt;&lt;br&gt;Estás a punto de bloquear a este usuario. Si haces eso, este usuario no podrá mandarte ningún mensaje o archivo multimedia hasta que le desbloquees. Este usuario tampoco podrá ver tu estado o la última vez que te conectaste y tu tampoco serás capaz de ver su estado. Como efecto secundario, tampoco podrás mandarle mensajes o archivos multimedia.</string>
   <string name="msg_unblock_user_warning">&lt;b&gt;¡POR FAVOR LEE ESTO ATENTAMENTE!&lt;/b&gt;&lt;br&gt;Estás a punto de desbloquear a este usuario. Desbloquearlo le permitirá mandarte mensajes y ver tu último estado y la última vez que te conectaste.</string>
   <string name="notification_text_more">Pulsa aquí para saber más</string>
   <string name="title_auth_error">Error de autenticación</string>
   <string name="msg_auth_error">&lt;b&gt;¡ATENCIÓN!&lt;/b&gt;&lt;br&gt; La autenticación con un servidor de Kontalk falló la última vez que intentamos conectar. Podría ser un fallo temporal del servidor o, más probablemente, que el servidor esté rechazando tu clave personal. Te recomendamos borrar tu cuenta de Kontalk desde las preferencias del sistema Android y que te registres de nuevo (lamentablemente, haciendo esto perderás todos tus mensajes de Kontalk).</string>
-  <string name="warn_invite_no_app">No hay ninguna aplicación para invitar usuarios</string>
+  <string name="warn_invite_no_app">No hay ninguna aplicación para invitar usuarios.</string>
   <string name="pref_text_enter">Botón intro</string>
   <string name="pref_title_text_enter">Seleccionar comportamiento del botón intro en el teclado</string>
   <string name="title_password1">Contraseña:</string>
@@ -340,7 +340,7 @@
   <string name="err_passwords_mismatch">¡Las contraseñas no coinciden!</string>
   <string name="err_password_invalid">Contraseña errónea.</string>
   <string name="hint_record">Toque el micro para empezar a grabar.</string>
-  <string name="err_change_passphrase">Imposible cambiar la contraseña de la clave personal</string>
+  <string name="err_change_passphrase">Imposible cambiar la contraseña de la clave personal.</string>
   <string name="err_file_not_found">Archivo no encontrado.</string>
   <string name="err_audio_record">Error intentando grabar audio.</string>
   <string name="err_audio_record_writing">Error escribiendo en el almacenamiento externo.</string>
@@ -350,7 +350,7 @@
   <string name="pref_media_settings">Archivos multimedia</string>
   <string name="pref_image_resize">Redimensionar imágenes</string>
   <string name="pref_title_image_resize">Redimensionar las imágenes antes de enviarlas</string>
-  <string name="err_server_invalid_format">Formato de dirección inválido</string>
+  <string name="err_server_invalid_format">Formato de dirección inválido.</string>
   <string name="err_no_contacts_app">No se encontró la aplicación de contactos.</string>
   <string name="warning_public_key">¡AVISO! ¡La clave personal de este usuario cambió inesperadamente! Clic aquí para detalles.</string>
   <string name="title_public_key_warning">Cambió la clave personal</string>
