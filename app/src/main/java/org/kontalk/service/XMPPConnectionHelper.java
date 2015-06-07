@@ -110,7 +110,7 @@ public class XMPPConnectionHelper extends Thread {
         mLimited = limited;
         mRetryBackoff = Backo.builder()
             .base(TimeUnit.MILLISECONDS, 1500)
-            .cap(TimeUnit.MINUTES, 5)
+            .cap(TimeUnit.SECONDS, 300)
             .factor(2)
             .jitter(1)
             .build();
