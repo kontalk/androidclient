@@ -83,10 +83,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static final int STEP_AUTH_TOKEN = 2;
 
     public static final int ERROR_THROTTLING = 1;
+    public static final int ERROR_USER_EXISTS = 2;
 
     private final EndpointServer.EndpointServerProvider mServerProvider;
     private final String mName;
     private final String mPhone;
+    private boolean mForce;
     private PersonalKey mKey;
     private PGPKeyPairRing mKeyRing;
     private X509Certificate mBridgeCert;
@@ -133,6 +135,10 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
             mKey = key;
             mKeyLock.notifyAll();
         }
+    }
+
+    public void setForce(boolean mForce) {
+        this.mForce = mForce;
     }
 
     @Override
@@ -242,7 +248,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                         else if (iq.getType() == IQ.Type.error) {
                             XMPPError error = iq.getError();
 
-                            if (error.getCondition() == XMPPError.Condition.service_unavailable) {
+                            if (error.getCondition() == XMPPError.Condition.conflict) {
+                                reason = ERROR_USER_EXISTS;
+
+                            }
+
+                            else if (error.getCondition() == XMPPError.Condition.service_unavailable) {
 
                                 if (error.getType() == XMPPError.Type.WAIT) {
                                     reason = ERROR_THROTTLING;
@@ -444,6 +455,14 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         phone.setType(FormField.Type.text_single);
         phone.addValue(mPhone);
         form.addField(phone);
+
+        if (mForce) {
+            FormField force = new FormField("force");
+            force.setLabel("Phone number");
+            force.setType(FormField.Type.bool);
+            force.addValue(String.valueOf(mForce));
+            form.addField(force);
+        }
 
         iq.addExtension(form.getDataFormToSend());
         return iq;

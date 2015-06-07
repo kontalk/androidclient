@@ -140,6 +140,7 @@
     <string name="pref_title_vibrate">Also vibrate when notified</string>
     <string name="confirm_delete_message">Delete message</string>
     <string name="confirm_will_delete_message">The message will be deleted.</string>
+    <string name="title_user_exists">User exists</string>
     <string name="err_authentication_failed">Verification code refused. Authentication failed.</string>
     <string name="err_validation_failed">Phone number verification failed.</string>
     <string name="err_validation_retry_later">Too many attempts. Please wait a few minutes and try again.</string>
@@ -147,6 +148,7 @@
     <string name="err_validation_error">An error occurred during verification. Please try again later.</string>
     <string name="err_validation_network_error">Unable to connect to server. Please try again later.</string>
     <string name="err_validation_server_not_supported">Selected server does not support registration. Please configure another one in Settings screen.</string>
+    <string name="err_validation_user_exists"><b>The number you are using is already registered to Kontalk.</b> If you have registered another device, proceeding in this manner will cut it off from Kontalk. Please refer to our documentation on how to copy your account between devices. Choose OK to continue anyway.</string>
     <string name="text_encrypted">(encrypted)</string>
     <string name="peer_unknown">(unknown)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>

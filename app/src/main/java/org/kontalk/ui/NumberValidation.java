@@ -543,18 +543,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         return true;
     }
 
-    private void startValidation() {
+    private void startValidation(boolean force) {
         enableControls(false);
 
         if (!checkInput(false)) {
             enableControls(true);
         }
         else {
-            startValidationNormal(null);
+            startValidationNormal(null, force);
         }
     }
 
-    private void startValidationNormal(String manualServer) {
+    private void startValidationNormal(String manualServer, boolean force) {
         // start async request
         Log.d(TAG, "phone number checked, sending validation request");
         startProgress();
@@ -572,6 +572,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mValidator = new NumberValidator(this, provider, mName, mPhoneNumber,
             imported ? null : mKey, mPassphrase);
         mValidator.setListener(this);
+        mValidator.setForce(force);
         if (imported)
             mValidator.importKey(mImportedPrivateKey, mImportedPublicKey);
 
@@ -585,7 +586,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validatePhone(View v) {
         keepScreenOn(true);
-        startValidation();
+        startValidation(false);
     }
 
     /**
@@ -724,7 +725,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = passphrase;
 
             // begin usual validation
-            startValidationNormal(manualServer);
+            startValidationNormal(manualServer, true);
         }
     }
 
@@ -941,13 +942,18 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                int msg;
-                if (reason == NumberValidator.ERROR_THROTTLING)
-                    msg = R.string.err_validation_retry_later;
-                else
-                    msg = R.string.err_validation_failed;
+                if (reason == NumberValidator.ERROR_USER_EXISTS) {
+                    userExistsWarning();
+                }
+                else {
+                    int msg;
+                    if (reason == NumberValidator.ERROR_THROTTLING)
+                        msg = R.string.err_validation_retry_later;
+                    else
+                        msg = R.string.err_validation_failed;
 
-                Toast.makeText(NumberValidation.this, msg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(NumberValidation.this, msg, Toast.LENGTH_LONG).show();
+                }
                 abort();
             }
         });
@@ -957,6 +963,21 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onValidationRequested(NumberValidator v, String sender) {
         Log.d(TAG, "validation has been requested, requesting validation code to user");
         proceedManual(sender);
+    }
+
+    private void userExistsWarning() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.title_user_exists)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setMessage(R.string.err_validation_user_exists)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    startValidation(true);
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     /** Proceeds to the next step in manual validation. */
