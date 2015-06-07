@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Gemeinschaftlich betriebenes Instant Messaging Netzwerk</string>
@@ -29,8 +29,8 @@
   <string name="hint_validation_number">Ihre Nummer</string>
   <string name="hint_validation_code">Verfikationscode</string>
   <string name="warn_invalid_number">Bitte eine gültige Tel.Nr. eingeben.</string>
-  <string name="msg_validating_phone">SMS mit Verifizierungscode anfordern...</string>
-  <string name="msg_initializing">Anmeldung am Kontalk Netzwerk...</string>
+  <string name="msg_validating_phone">SMS mit Verifizierungscode anfordern…</string>
+  <string name="msg_initializing">Anmeldung am Kontalk Netzwerk…</string>
   <string name="msg_authenticated">Am Netzwerk angemeldet!</string>
   <string name="share">Teilen</string>
   <string name="resend">Erneut senden</string>
