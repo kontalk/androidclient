@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Заједницом потпомогнута брзогласничка мрежа</string>
@@ -353,4 +353,7 @@
   <string name="warning_public_key">УПОЗОРЕЊЕ! Лични кључ овог корисника је неочекивано промењен! Кликните овде за детаље.</string>
   <string name="title_public_key_warning">Лични кључ промењен</string>
   <string name="msg_public_key_warning">Лични кључ овог корисника је промењен. Проверите са њим да није поново инсталирао Kontalk или генерисао свој кључ. Ако није, сигурност комуникације може бити угрожена.</string>
-</resources>
+<string name="hint_record">Тапните иконицу микрофона за почетак снимања.</string>
+    <string name="slide_to_cancel">ПРЕВУЦИТЕ ЗА ОТКАЗИВАЊЕ</string>
+
+    </resources>
