@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Instant messaging-netwerk gedreven door vrijwilligers</string>
@@ -93,7 +93,7 @@
   <string name="pref_encrypt_userdata">Persoonlijke data versleutelen</string>
   <string name="pref_title_on_encrypt_userdata">Je statusbericht zal alleen zichtbaar zijn voor gebruikers die je telefoonnummer hebben</string>
   <string name="pref_title_off_encrypt_userdata">Je statusbericht zal voor iedereen zichtbaar zijn</string>
-  <string name="pref_auto_accept_subscriptions">Uitnodigingen automatisch aanvaarden.</string>
+  <string name="pref_auto_accept_subscriptions">Uitnodigingen automatisch aanvaarden</string>
   <string name="pref_title_auto_accept_subscriptions">Gespreksuitnodigingen van andere gebruikers automatisch aanvaarden</string>
   <string name="pref_send_typing">Anderen zien “aan het typen…”</string>
   <string name="pref_hide_presence">Offline weergeven</string>
@@ -109,8 +109,8 @@
   <string name="has_draft">Concept</string>
   <string name="pref_update_server_list">Kontalk-serverlijst bijwerken</string>
   <string name="server_list_last_update">Voor het laatst bijgewerkt: %s</string>
-  <string name="pref_title_push_notifications">Gebruik push-notificaties als de server die ondersteunt. Dit verlengt de levensduur van de batterij.</string>
-  <string name="pref_title_disabled_push_notifications">Pushnotificaties worden niet ondersteund op dit apparaat.</string>
+  <string name="pref_title_push_notifications">Gebruik push-notificaties als de server die ondersteunt. Dit verlengt de levensduur van de batterij</string>
+  <string name="pref_title_disabled_push_notifications">Pushnotificaties worden niet ondersteund op dit apparaat</string>
   <string name="pref_push_notifications">Push-notificaties</string>
   <string name="hint_search_full">Berichten zoeken</string>
   <string name="hint_search_quickbox">Tekst in je berichten</string>
