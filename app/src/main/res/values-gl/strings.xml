@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Rede de mensaxería instantanea dirixida pola comunidade</string>
@@ -24,8 +24,8 @@
   <string name="hint_validation_number">O teu número</string>
   <string name="hint_validation_code">Código de verificación</string>
   <string name="warn_invalid_number">Por favor, insire un número de teléfono válido.</string>
-  <string name="msg_validating_phone">Solicitando un SMS cun código de verificación...</string>
-  <string name="msg_initializing">Rexistrándose na rede Kontalk...</string>
+  <string name="msg_validating_phone">Solicitando un SMS cun código de verificación…</string>
+  <string name="msg_initializing">Rexistrándose na rede Kontalk…</string>
   <string name="msg_authenticated">Rexistrado na rede!</string>
   <string name="share">Compartir</string>
   <string name="resend">Enviar outra vez</string>
@@ -33,7 +33,7 @@
   <string name="delete_message">Eliminar a mensaxe</string>
   <string name="confirm_delete_all">Eliminar todas as conversas</string>
   <string name="confirm_will_delete_all">Todas as conversas serán eliminadas.</string>
-  <string name="sending_message">Enviando a mensaxe...</string>
+  <string name="sending_message">Enviando a mensaxe…</string>
   <string name="message_text_copied">Texto da mensaxe copiado.</string>
   <string name="call">Chamar</string>
   <string name="view_contact">Ver o contacto</string>
@@ -150,7 +150,7 @@
   <string name="menu_invite">Convidar usuarios</string>
   <string name="title_error">Erro</string>
   <string name="msg_do_refresh">Usa o botón actualizar para actualizar a lista de contactos.</string>
-  <string name="msg_sync_progress">Recargando a lista de contactos...</string>
+  <string name="msg_sync_progress">Recargando a lista de contactos…</string>
   <string name="err_sync_failed">Non foi posible recargar a lista de contactos. Por favor, téntao máis tarde.</string>
   <string name="err_sync_nonetwork">Rede non dispoñible. Por favor, téntao máis tarde.</string>
   <string name="text_invite_message">Ola! Bótalle unha olhada ao Kontalk na Google Play Store, unha app de mensaxería libre! https://play.google.com/store/apps/details?id=org.kontalk</string>
@@ -170,23 +170,23 @@
   <string name="vcard_message">Mensaxe vCard</string>
   <string name="open_file">Abrir ficheiro</string>
   <string name="msg_msgcenter_restarted">Área de mensaxes reiniciada.</string>
-  <string name="downloading_attachment">Descargando o anexo...</string>
+  <string name="downloading_attachment">Descargando o anexo…</string>
   <string name="attachment_download">Descarga de anexos</string>
   <string name="attachment_upload">Envío de anexos</string>
   <string name="seen_moment_ago_label">hai un intre</string>
   <string name="seen_online_label">conectado/a</string>
-  <string name="seen_typing_label">escribindo...</string>
+  <string name="seen_typing_label">escribindo…</string>
   <string name="pref_custom_background">Fondo personalizado</string>
   <string name="pref_background_uri">Fondo</string>
   <string name="pref_title_background_uri">Define unha imaxe personalizada para as conversas</string>
   <string name="pref_title_off_custom_background">Usando o fondo predefinido</string>
   <string name="pref_title_on_custom_background">Escolle un fondo usando a seguinte opción</string>
   <string name="err_attachment_corrupted">Non foi posible descargar o anexo. A mensaxe debe estar corrompida.</string>
-  <string name="serverlist_updating">Actualizando a lista de servidores...</string>
+  <string name="serverlist_updating">Actualizando a lista de servidores…</string>
   <string name="serverlist_update_error">Non foi posible baixar a lista de servidores. Por favor, téntao máis tarde.</string>
   <string name="serverlist_update_nodata">Non hai unha lista de servidores dispoñible.</string>
   <string name="pref_remove_prefix">Prefixo de marcación</string>
-  <string name="pref_title_remove_prefix">Retira algúns prefixos de marcación no Kontalk para que os números de teléfono coincidan correctamente.</string>
+  <string name="pref_title_remove_prefix">Retira algúns prefixos de marcación no Kontalk para que os números de teléfono coincidan correctamente</string>
   <string name="pref_export_keypair">Exportar a clave persoal</string>
   <string name="pref_title_export_keypair">Exportar a clave persoal e o certificado de sesión para un almacenamento externo</string>
   <string name="msg_status_sending">Enviando</string>
@@ -227,7 +227,7 @@
   <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Xerando a clave persoal en segundo plano.</string>
   <string name="msg_gen_keypair_complete">Rexeneración de clave persoal rematada.</string>
-  <string name="notify_gen_keypair_ticker">Xerando a clave persoal...</string>
+  <string name="notify_gen_keypair_ticker">Xerando a clave persoal…</string>
   <string name="notify_gen_keypair_title">Xerando a clave persoal</string>
   <string name="notify_gen_keypair_text">Podes continuar traballando normalmente.</string>
   <string name="title_no_personal_key">Ningunha clave persoal</string>
