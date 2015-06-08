@@ -355,4 +355,6 @@
   <string name="warning_public_key">ATTENZIONE! La chiave personale per questo utente è cambiata! Clicca qui per maggiori dettagli.</string>
   <string name="title_public_key_warning">Chiave personale</string>
   <string name="msg_public_key_warning">La chiave personale per questo utente è cambiata. Verifica che l\'utente abbia reinstallato Kontalk o che abbia rigenerato la sua chiave intenzionalmente, altrimenti la comunicazione potrebbe essere compromessa!</string>
-</resources>
+<string name="title_user_exists">Account esistente</string>
+    <string name="err_validation_user_exists"><b>Il numero che stai usando risulta essere già registrato su Kontalk.</b> Se hai registrato un altro dispositivo, procedendo in questo modo non gli sarà più permesso l\'accesso a Kontalk. Fai riferimento alla nostra documentazione per sapere come copiare un account da un dispositivo ad un altro. Scegli OK per proseguire comunque.</string>
+    </resources>
