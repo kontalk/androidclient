@@ -391,7 +391,7 @@
     <string name="title_password2">Confirm password:</string>
 
     <string name="err_password_too_short">Password must be at least %d characters.</string>
-    <string name="err_passwords_mismatch">Passwords does not match!</string>
+    <string name="err_passwords_mismatch">Passwords do not match!</string>
     <string name="err_password_invalid">Wrong password.</string>
 
     <string name="hint_record">Tap the mic to begin recording.</string>
