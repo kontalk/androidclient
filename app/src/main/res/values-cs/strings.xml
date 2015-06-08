@@ -355,4 +355,6 @@
   <string name="warning_public_key">POZOR! Osobní klíč tohoto uživatele se neočekávaně změnil! Klikněte sem pro podrobnosti.</string>
   <string name="title_public_key_warning">Došlo ke změně osobního klíče</string>
   <string name="msg_public_key_warning">Osobní klíč tohoto uživatele se změnil. Ověřte prosím s tímto uživatelem, jestli reinstaloval Kontalk nebo si záměrně vygeneroval nový klíč, v opačném případě může být ohrožena bezpečnost komunikace!</string>
-</resources>
+<string name="title_user_exists">Uživatel existuje</string>
+    <string name="err_validation_user_exists"><b>Číslo, které používáte, je již do Kontalku registrováno.</b> Pokud jste registrovali jiné zařízení, pokračování tímto způsobem ho odpojí od Kontalku. Podívejte se prosím do naší dokumentace, jak překopírovat účet mezi dvěma zařízeními. Pokud chcete přesto pokračovat, zvolte OK.</string>
+    </resources>
