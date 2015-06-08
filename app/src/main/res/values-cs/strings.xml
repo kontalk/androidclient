@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Chatovací program vytvořený dobrovolníky - opensource a zdarma</string>
@@ -29,8 +29,8 @@
   <string name="hint_validation_number">Vaše číslo</string>
   <string name="hint_validation_code">Ověřovací kód</string>
   <string name="warn_invalid_number">Zadejte prosím platné telefonní číslo.</string>
-  <string name="msg_validating_phone">Odesílám požadavek na SMS s ověřovacím kódem...</string>
-  <string name="msg_initializing">Probíhá registrace do Kontalk sítě...</string>
+  <string name="msg_validating_phone">Odesílám požadavek na SMS s ověřovacím kódem…</string>
+  <string name="msg_initializing">Probíhá registrace do Kontalk sítě…</string>
   <string name="msg_authenticated">Byli jste zaregistrováni do sítě!</string>
   <string name="share">Sdílet</string>
   <string name="resend">Odeslat znovu</string>
@@ -38,7 +38,7 @@
   <string name="delete_message">Smazat zprávu</string>
   <string name="confirm_delete_all">Smazat všechny konverzace</string>
   <string name="confirm_will_delete_all">Všechny konverzace budou smazány.</string>
-  <string name="sending_message">Odesílám zprávu...</string>
+  <string name="sending_message">Odesílám zprávu…</string>
   <string name="message_text_copied">Text zprávy byl zkopírován.</string>
   <string name="call">Zavolat</string>
   <string name="view_contact">Zobrazit kontakt</string>
@@ -79,7 +79,7 @@
   <string name="pref_idle_time">Odpojit při nečinnosti</string>
   <string name="pref_title_idle_time">Jak dlouho čekat před odpojením pro nečinnost</string>
   <string name="pref_wakeup_time">Znovu se připojit k serveru</string>
-  <string name="pref_title_wakeup_time">Jak dlouho čekat před opětovným připojením k serveru po období nečinnosti. Použije se pouze v případě, kdy nejsou k dispozici push notifikace.</string>
+  <string name="pref_title_wakeup_time">Jak dlouho čekat před opětovným připojením k serveru po období nečinnosti. Použije se pouze v případě, kdy nejsou k dispozici push notifikace</string>
   <string name="pref_maintenance">Údržba</string>
   <string name="pref_regenerate_keypair">Vygenerovat nový osobní klíč</string>
   <string name="pref_title_regenerate_keypair">Použijte tuto volbu, pokud byl váš osobní klíč kompromitován</string>
@@ -158,7 +158,7 @@
   <string name="menu_invite">Pozvat uživatele</string>
   <string name="title_error">Chyba</string>
   <string name="msg_do_refresh">Pro aktualizaci seznamu kontaktů použijte aktualizační tlačítko.</string>
-  <string name="msg_sync_progress">Aktualizuji seznam kontaktů...</string>
+  <string name="msg_sync_progress">Aktualizuji seznam kontaktů…</string>
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
   <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk na Google Play, aplikaci pro posílání zpráv zdarma! https://play.google.com/store/apps/details?id=org.kontalk</string>
@@ -181,13 +181,13 @@
   <string name="open_file">Otevřít soubor</string>
   <string name="open_audio">Přehrát zvukový soubor</string>
   <string name="msg_msgcenter_restarted">Centrum zpráv bylo restartováno.</string>
-  <string name="downloading_attachment">Stahuji přílohu...</string>
-  <string name="decrypting_attachment">Probíhá dešifrování přílohy...</string>
+  <string name="downloading_attachment">Stahuji přílohu…</string>
+  <string name="decrypting_attachment">Probíhá dešifrování přílohy…</string>
   <string name="attachment_download">Stáhnout přílohu</string>
   <string name="attachment_upload">Nahrát přílohu</string>
   <string name="seen_moment_ago_label">před chvilkou</string>
   <string name="seen_online_label">online</string>
-  <string name="seen_typing_label">píše...</string>
+  <string name="seen_typing_label">píše…</string>
   <string name="invitation_sent_label">pozvánka odeslána</string>
   <string name="pref_custom_background">Vlastní pozadí</string>
   <string name="pref_background_uri">Pozadí</string>
@@ -195,7 +195,7 @@
   <string name="pref_title_off_custom_background">Je použito výchozí pozadí</string>
   <string name="pref_title_on_custom_background">Vyberte pozadí pomocí volby níže</string>
   <string name="err_attachment_corrupted">Nepodařilo se stáhnout přílohu. Zpráva může být narušená.</string>
-  <string name="serverlist_updating">Aktualizuji seznam serverů...</string>
+  <string name="serverlist_updating">Aktualizuji seznam serverů…</string>
   <string name="serverlist_update_error">Nepodařilo se stáhnout seznam serverů. Zkuste to prosím později.</string>
   <string name="serverlist_update_nodata">Není k dispozici žádný seznam serverů.</string>
   <string name="serverlist_update_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
@@ -279,10 +279,10 @@
   <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Generuji osobní klíč na pozadí.</string>
   <string name="msg_gen_keypair_complete">Generování nového osobního klíče bylo dokončeno.</string>
-  <string name="notify_gen_keypair_ticker">Generuji osobní klíč...</string>
+  <string name="notify_gen_keypair_ticker">Generuji osobní klíč…</string>
   <string name="notify_gen_keypair_title">Generuji osobní klíč</string>
   <string name="notify_gen_keypair_text">Můžete pokračovat v práci běžným způsobem.</string>
-  <string name="msg_xmpp_upgrading">Probíhá aktualizace...</string>
+  <string name="msg_xmpp_upgrading">Probíhá aktualizace…</string>
   <string name="title_no_personal_key">Žádný osobní klíč</string>
   <string name="msg_no_personal_key">Osobní klíč není aktuálně dostupný (pravděpodobně proto, že jste právě aktualizovali aplikaci). Do sítě Kontalk se nebudete moct přihlásit, pokud si nevygenerujete osobní klíč. Zadejte prosím svoje jméno tak, že zavřete Kontalk a poté ho znovu otevřete.</string>
   <string name="msg_keypair_exported">Osobní klíč a přihlašovací certifikát byly vyexportovány na externí úložiště.</string>
@@ -309,7 +309,7 @@
   <string name="iab_error_setup">Nastala chyba při nastavení placení uvnitř aplikace (%d)</string>
   <string name="iab_error_query">Došlo k chybě při práci se systémem placení uvnitř aplikace (%d)</string>
   <string name="copy_clipboard">Zkopírovat do schránky</string>
-  <string name="bitcoin_clipboard_copied">Bitcoin adresa byla zkopírována do schránky</string>
+  <string name="bitcoin_clipboard_copied">Bitcoin adresa byla zkopírována do schránky.</string>
   <string name="warn_no_personal_key">Nepodařilo se načíst osobní klíč. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
   <string name="warn_no_public_key">Nepodařilo se najít veřejný klíč pro tohoto uživatele. Zkuste aktualizovat váš seznam kontaktů nebo vypněte šifrování v nastavení.</string>
   <string name="warn_encryption_failed">Nepodařilo se zašifrovat zprávu. Pokud chcete zprávu přesto odeslat, vypněte šifrování v nastavení.</string>
@@ -323,7 +323,7 @@
   <string name="pref_accept_any_certificate">Akceptovat jakýkoliv SSL certifikát</string>
   <string name="pref_delete_account">Smazat váš účet</string>
   <string name="msg_delete_account">Při smazání vašeho účtu dojde také ke smazání všech vašich zpráv. Váš účet na serveru bude smazán automaticky po několika týdnech.</string>
-  <string name="msg_delete_account_progress">Probíhá mazání vašeho účtu...</string>
+  <string name="msg_delete_account_progress">Probíhá mazání vašeho účtu…</string>
   <string name="msg_user_blocked">Uživatel byl zablokován.</string>
   <string name="msg_user_unblocked">Uživatel byl odblokován.</string>
   <string name="msg_block_user_warning">&lt;b&gt;ČTĚTE PROSÍM POZORNĚ!&lt;/b&gt;&lt;br&gt;Chystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
@@ -331,7 +331,7 @@
   <string name="notification_text_more">Klepněte zde, pokud chcete vědět víc</string>
   <string name="title_auth_error">Chyba při autentizaci</string>
   <string name="msg_auth_error">&lt;b&gt;UPOZORNĚNÍ!&lt;/b&gt;&lt;br&gt;Při posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
-  <string name="warn_invite_no_app">Není dostupná žádná aplikace na pozvání uživatelů</string>
+  <string name="warn_invite_no_app">Není dostupná žádná aplikace na pozvání uživatelů.</string>
   <string name="pref_text_enter">klávesa Enter</string>
   <string name="pref_title_text_enter">Zvolte chování klávesy Enter na klávesnici</string>
   <string name="title_password1">Heslo:</string>
@@ -342,7 +342,7 @@
   <string name="hint_record">Klik na mikrofon zahájí nahrávání.</string>
   <string name="err_change_passphrase">Nepodařilo se změnit heslo k osobnímu klíči.</string>
   <string name="err_file_not_found">Soubor nebyl nalezen.</string>
-  <string name="err_audio_record">Chyba při spuštění nahrávání zvuku</string>
+  <string name="err_audio_record">Chyba při spuštění nahrávání zvuku.</string>
   <string name="err_audio_record_writing">Chyba při zápisu na externí úložiště.</string>
   <string name="err_playing_audio">Chyba při přehrávání zvuku.</string>
   <string name="err_playing_sdcard">Chyba při čtení z externího úložiště.</string>
