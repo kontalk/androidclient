@@ -337,7 +337,7 @@
   <string name="title_password1">Heslo:</string>
   <string name="title_password2">Potvrďte heslo:</string>
   <string name="err_password_too_short">Heslo musí mít nejméně %d znaků.</string>
-  <string name="err_passwords_mismatch">Heslo nesouhlasí!</string>
+  <string name="err_passwords_mismatch">Hesla nesouhlasí!</string>
   <string name="err_password_invalid">Špatné heslo.</string>
   <string name="hint_record">Klik na mikrofon zahájí nahrávání.</string>
   <string name="err_change_passphrase">Nepodařilo se změnit heslo k osobnímu klíči.</string>
