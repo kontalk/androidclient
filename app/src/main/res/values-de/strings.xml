@@ -356,5 +356,5 @@
   <string name="title_public_key_warning">Persönlicher Schlüssel geändert</string>
   <string name="msg_public_key_warning">Der persönliche Schlüssel dieses Nutzers hat sich geändert. Klären Sie bitte mit dem Nutzer ab, ob er/sie Kontalk neu installiert hat oder seinen/ihren Schlüssel absichtlich neu erzeugt hat. Andernfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
 <string name="title_user_exists">Nutzer existiert bereits</string>
-    <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie ein anderes Gerät registriert haben, wird es durch dieses Vorgehen von Kontalk getrennt. Bitte lesen Sie in unserer Dokumentation wie ihr Account auf verschiedene Geräte kopiert werden kann. Wählen Sie OK um dennoch fortzufahren.</string>
+    <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es vom Kontalknetzwerk getrennt wenn sie fortfahren. Bitte lesen Sie in unserer Dokumentation nach wie ihr Account auf verschiedene Geräte kopiert werden kann. Wählen Sie OK um dennoch fortzufahren.</string>
     </resources>
