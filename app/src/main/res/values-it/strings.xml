@@ -162,7 +162,9 @@
   <string name="err_sync_failed">Impossibile aggiornare la lista contatti. Riprova più tardi.</string>
   <string name="err_sync_nonetwork">Rete non disponibile. Riprova più tardi.</string>
   <string name="text_invite_message">Ciao! Prova il nuovo messenger gratuito Kontalk! Lo trovi su Google Play Store https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.&lt;br/&gt;&lt;br/&gt;Usa &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invita utenti&lt;/b&gt; per inviare un messaggio di invito a qualcuno.</string>
+  <string name="text_contacts_empty">I nuovi utenti saranno automaticamente aggiunti a questa lista.
+
+Usa <b>Menu</b> &amp;gt; <b>Invita utenti</b> per inviare un messaggio di invito a qualcuno.</string>
   <string name="text_conversations_empty">Per iniziare a scrivere messaggi usa l\'icona &lt;b&gt;nuovo messaggio&lt;/b&gt; in alto.</string>
   <string name="notify_ticker_external_storage">Memoria esterna non disponibile</string>
   <string name="notify_text_external_storage">Impossibile scrivere sulla memoria esterna.</string>
@@ -326,11 +328,11 @@
   <string name="msg_delete_account_progress">Cancellazione account…</string>
   <string name="msg_user_blocked">L\'utente è stato bloccato.</string>
   <string name="msg_user_unblocked">L\'utente è stato sbloccato.</string>
-  <string name="msg_block_user_warning">&lt;b&gt;LEGGERE ATTENTAMENTE!&lt;/b&gt;&lt;br&gt;Stai per bloccare questo utente. Se deciderai di farlo, questo utente non potrà più inviarti messaggi finché non lo sbloccherai. Inoltre, entrambi non sarete più in grado di conoscere l\'orario dell\'ultimo accesso dell\'altro. Il blocco impedirà anche l\'invio di messaggi da parte tua all\'utente che stai per bloccare.</string>
-  <string name="msg_unblock_user_warning">&lt;b&gt;LEGGERE ATTENTAMENTE!&lt;/b&gt;&lt;br&gt;Stai per sbloccare questo utente. L\'utente potrà inviarti messaggi e conoscere l\'orario del tuo ultimo accesso.</string>
+  <string name="msg_block_user_warning"><b>LEGGERE ATTENTAMENTE!</b>\\nStai per bloccare questo utente. Se deciderai di farlo, questo utente non potrà più inviarti messaggi finché non lo sbloccherai. Inoltre, entrambi non sarete più in grado di conoscere l\'orario dell\'ultimo accesso dell\'altro. Il blocco impedirà anche l\'invio di messaggi da parte tua all\'utente che stai per bloccare.</string>
+  <string name="msg_unblock_user_warning"><b>LEGGERE ATTENTAMENTE!</b>\\nStai per sbloccare questo utente. L\'utente potrà inviarti messaggi e conoscere l\'orario del tuo ultimo accesso.</string>
   <string name="notification_text_more">Clicca qui per saperne di più</string>
   <string name="title_auth_error">Errore di autenticazione</string>
-  <string name="msg_auth_error">&lt;b&gt;ATTENZIONE!&lt;/b&gt;&lt;br&gt;L\'autenticazione ad un server di Kontalk è fallita durante l\'ultimo tentativo di connessione. Potrebbe essere un problema temporeaneo del server oppure, più probabilmente, il server sta rifiutando la tua chiave personale. Ti raccomandiamo di cancellare il tuo account e di registrarti nuovamente (tuttavia perderai tutti i tuoi messaggi).</string>
+  <string name="msg_auth_error"><b>ATTENZIONE!</b>\\nL\'autenticazione ad un server di Kontalk è fallita durante l\'ultimo tentativo di connessione. Potrebbe essere un problema temporeaneo del server oppure, più probabilmente, il server sta rifiutando la tua chiave personale. Ti raccomandiamo di cancellare il tuo account e di registrarti nuovamente (tuttavia perderai tutti i tuoi messaggi).</string>
   <string name="warn_invite_no_app">Nessuna applicazione trovata per invitare altri utenti.</string>
   <string name="pref_text_enter">Tasto invio</string>
   <string name="pref_title_text_enter">Definisce il comportamento del tasto invio</string>
