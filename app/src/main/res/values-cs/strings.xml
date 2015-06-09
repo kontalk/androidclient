@@ -162,7 +162,9 @@
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
   <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk na Google Play, aplikaci pro posílání zpráv zdarma! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.&lt;br/&gt;&lt;br/&gt;Použijte &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Pozvat uživatele&lt;/b&gt; a pošlete někomu pozvánku.</string>
+  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.
+
+Použijte <b>Menu</b> &amp;gt; <b>Pozvat uživatele</b> a pošlete někomu pozvánku.</string>
   <string name="text_conversations_empty">Pokud chcete začít psát zprávu, použijte ikonu &lt;b&gt;nová zpráva&lt;/b&gt; výše.</string>
   <string name="notify_ticker_external_storage">Externí úložiště není dostupné</string>
   <string name="notify_text_external_storage">Nepodařilo se zapsat do externího úložiště.</string>
@@ -326,11 +328,11 @@
   <string name="msg_delete_account_progress">Probíhá mazání vašeho účtu…</string>
   <string name="msg_user_blocked">Uživatel byl zablokován.</string>
   <string name="msg_user_unblocked">Uživatel byl odblokován.</string>
-  <string name="msg_block_user_warning">&lt;b&gt;ČTĚTE PROSÍM POZORNĚ!&lt;/b&gt;&lt;br&gt;Chystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
-  <string name="msg_unblock_user_warning">&lt;b&gt;ČTĚTE PROSÍM POZORNĚ!&lt;/b&gt;&lt;br&gt;Chystáte se odblokovat tohoto uživatele. Odblokování tomuto uživateli umožní posílat vám zprávy a vidět váš status a čas, kdy jste byl/a naposledy online.</string>
+  <string name="msg_block_user_warning"><b>ČTĚTE PROSÍM POZORNĚ!</b>\\nChystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
+  <string name="msg_unblock_user_warning"><b>ČTĚTE PROSÍM POZORNĚ!</b>\\nChystáte se odblokovat tohoto uživatele. Odblokování tomuto uživateli umožní posílat vám zprávy a vidět váš status a čas, kdy jste byl/a naposledy online.</string>
   <string name="notification_text_more">Klepněte zde, pokud chcete vědět víc</string>
   <string name="title_auth_error">Chyba při autentizaci</string>
-  <string name="msg_auth_error">&lt;b&gt;UPOZORNĚNÍ!&lt;/b&gt;&lt;br&gt;Při posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
+  <string name="msg_auth_error"><b>UPOZORNĚNÍ!</b>\\nPři posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
   <string name="warn_invite_no_app">Není dostupná žádná aplikace na pozvání uživatelů.</string>
   <string name="pref_text_enter">klávesa Enter</string>
   <string name="pref_title_text_enter">Zvolte chování klávesy Enter na klávesnici</string>
