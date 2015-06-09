@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Сеть обмена мгновенными сообщениями, управляемая сообществом</string>
@@ -29,7 +29,7 @@
   <string name="hint_validation_number">Ваш номер</string>
   <string name="hint_validation_code">Проверочный код</string>
   <string name="warn_invalid_number">Пожалуйста, введите действующий номер телефона.</string>
-  <string name="msg_validating_phone">Запрос SMS с проверочным кодом...</string>
+  <string name="msg_validating_phone">Запрос SMS с проверочным кодом…</string>
   <string name="msg_initializing">Регистрация в сети Kontalk…</string>
   <string name="msg_authenticated">Зарегистрирован в сети!</string>
   <string name="share">Поделиться</string>
@@ -182,12 +182,12 @@
   <string name="open_audio">Воспроизведение аудиофайла</string>
   <string name="msg_msgcenter_restarted">Центр сообщений перезапущен.</string>
   <string name="downloading_attachment">Загрузка вложения…</string>
-  <string name="decrypting_attachment">Дешифровка приложения...</string>
+  <string name="decrypting_attachment">Дешифровка приложения…</string>
   <string name="attachment_download">Загрузка вложения</string>
   <string name="attachment_upload">Отправка вложения</string>
   <string name="seen_moment_ago_label">только что</string>
   <string name="seen_online_label">онлайн</string>
-  <string name="seen_typing_label">набирает...</string>
+  <string name="seen_typing_label">набирает…</string>
   <string name="invitation_sent_label">ожидающее приглашение</string>
   <string name="pref_custom_background">Другой фон</string>
   <string name="pref_background_uri">Фон</string>
@@ -279,10 +279,10 @@
   <string name="donate_flattr">Flattr</string>
   <string name="msg_generating_keypair">Генерация персонального ключа в фоне.</string>
   <string name="msg_gen_keypair_complete">Повторная генерация персонального ключа выполнена.</string>
-  <string name="notify_gen_keypair_ticker">Генерация персонального ключа...</string>
+  <string name="notify_gen_keypair_ticker">Генерация персонального ключа…</string>
   <string name="notify_gen_keypair_title">Генерация персонального ключа</string>
   <string name="notify_gen_keypair_text">Можете продолжать работу в обычном режиме.</string>
-  <string name="msg_xmpp_upgrading">Обновление...</string>
+  <string name="msg_xmpp_upgrading">Обновление…</string>
   <string name="title_no_personal_key">Персональный ключ отсутствует</string>
   <string name="msg_no_personal_key">Персональный ключ в настоящее время недоступен (возможно из-за обновления). Вы не сможете войти в сеть Kontalk без генерации персонального ключа. Пожалуйста, введите Ваше имя, закрыв и повторно открыв Kontalk.</string>
   <string name="msg_keypair_exported">Персональный ключ и сертификат входа экспортированы во внешнее хранилище.</string>
@@ -323,7 +323,7 @@
   <string name="pref_accept_any_certificate">Принимать любой сертификат SSL</string>
   <string name="pref_delete_account">Удалить Вашу учётную запись</string>
   <string name="msg_delete_account">Удаление учётной записи повлечёт также удаление всех Ваших сообщений. Аккаунт на сервере будет удалён автоматически через несколько недель.</string>
-  <string name="msg_delete_account_progress">Удаление учётной записи...</string>
+  <string name="msg_delete_account_progress">Удаление учётной записи…</string>
   <string name="msg_user_blocked">Пользователь заблокирован.</string>
   <string name="msg_user_unblocked">Пользователь разблокирован.</string>
   <string name="msg_block_user_warning">&lt;b&gt;ПОЖАЛУЙСТА, ПРОЧИТАЙТЕ ЭТО ВНИМАТЕЛЬНО!&lt;/b&gt;&lt;br&gt;Вы собираетесь заблокировать пользователя. Если Вы это сделаете, он не сможет посылать вам никакие сообщения или медиафайлы до тех пор, пока Вы его/её не разблокируете. Этот пользователь также не сможет увидеть Ваш статус или последнее известное присутствие, как и Вы не сможете видеть его/её статус. В качестве побочного эффекта, Вы также не сможете посылать ему/ей сообщения и медиафайлы.</string>
@@ -334,12 +334,12 @@
   <string name="warn_invite_no_app">Нет приложений для приглашения пользователей.</string>
   <string name="pref_text_enter">Кнопка ввода</string>
   <string name="pref_title_text_enter">Выберите поведение для кнопки ввода на клавиатуре</string>
-  <string name="title_password1">Пароль</string>
-  <string name="title_password2">Подтвердить пароль</string>
+  <string name="title_password1">Пароль:</string>
+  <string name="title_password2">Подтвердить пароль:</string>
   <string name="err_password_too_short">Пароль должен содержать минимум %d знаков.</string>
   <string name="err_passwords_mismatch">Пароли не совпадают!</string>
   <string name="err_password_invalid">Неправильный пароль.</string>
-  <string name="hint_record">Нажмите на микрофон для начала записи</string>
+  <string name="hint_record">Нажмите на микрофон для начала записи.</string>
   <string name="err_change_passphrase">Невозможно изменить пароль ключевой пары.</string>
   <string name="err_file_not_found">Файл не найден.</string>
   <string name="err_audio_record">Ошибка запуска записи аудио.</string>
@@ -354,5 +354,5 @@
   <string name="err_no_contacts_app">Приложение контактов не найдено.</string>
   <string name="warning_public_key">ВНИМАНИЕ! Ключевая пара для данного пользователя неожиданно изменилась! Нажмите здесь для подробностей.</string>
   <string name="title_public_key_warning">Ключевая пара изменилась</string>
-  <string name="msg_public_key_warning">Ключевая пара для данного пользователя изменилась. Пожалуйста, проверьте, возможно он/она переустанавливали  Kontalk или непреднамеренно повторно сгенерировали ключевую пару, в противном случае общение может быть небезопасным.</string>
+  <string name="msg_public_key_warning">Ключевая пара для данного пользователя изменилась. Пожалуйста, проверьте, возможно он/она переустанавливали Kontalk или непреднамеренно повторно сгенерировали ключевую пару, в противном случае общение может быть небезопасным!</string>
 </resources>
