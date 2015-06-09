@@ -97,18 +97,7 @@ public class ConversationListFragment extends ListFragment {
         mDualPane = detailsFrame != null
                 && detailsFrame.getVisibility() == View.VISIBLE;
 
-        // add Compose message entry only if are in dual pane mode
-        if (!mDualPane) {
-            /*
-            LayoutInflater inflater = getLayoutInflater(savedInstanceState);
-            ConversationListItem headerView = (ConversationListItem)
-                    inflater.inflate(R.layout.conversation_list_item, list, false);
-            headerView.bind(getString(R.string.new_message),
-                    getString(R.string.create_new_message));
-            list.addHeaderView(headerView, null, true);
-            */
-        }
-        else {
+        if (mDualPane) {
             // TODO restore state
             list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             list.setItemsCanFocus(true);
