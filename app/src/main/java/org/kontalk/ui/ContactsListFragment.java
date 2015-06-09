@@ -33,12 +33,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
 
 
 /** Contacts list selection fragment. */
@@ -67,14 +65,8 @@ public class ContactsListFragment extends ListFragment
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.contacts_list, container, false);
-
-        TextView text = (TextView) view.findViewById(android.R.id.empty);
-        text.setText(Html.fromHtml(getString(R.string.text_contacts_empty)));
-
-        return view;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.contacts_list, container, false);
     }
 
     @Override

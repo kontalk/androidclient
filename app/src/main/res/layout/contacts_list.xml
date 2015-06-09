@@ -44,6 +44,7 @@
         android:layout_gravity="center"
         android:padding="10dip"
         android:maxLines="20"
+        android:text="@string/text_contacts_empty"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </LinearLayout>
