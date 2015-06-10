@@ -181,8 +181,8 @@
     <string name="err_sync_failed">Unable to refresh contacts list. Please retry later.</string>
     <string name="err_sync_nonetwork">Network not available. Please retry later.</string>
     <string name="text_invite_message">Hey! Check out Kontalk on Google Play Store, a free messaging app! https://play.google.com/store/apps/details?id=org.kontalk</string>
-    <string name="text_contacts_empty">New users will be automatically added to this list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; to send an invitation message to someone.</string>
-    <string name="text_conversations_empty">To start writing messages use the &lt;b&gt;new message&lt;/b&gt; icon above.</string>
+    <string name="text_contacts_empty">New users will be automatically added to this list.\n\nUse <b>Menu</b> > <b>Invite users</b> to send an invitation message to someone.</string>
+    <string name="text_conversations_empty">To start writing messages use the <b>new message</b> icon above.</string>
     <string name="notify_ticker_external_storage">External storage not available</string>
     <string name="notify_text_external_storage">Unable to write to external storage.</string>
     <string name="title_user_not_found">User not found</string>
@@ -374,13 +374,13 @@
 
     <string name="msg_user_blocked">User has been blocked.</string>
     <string name="msg_user_unblocked">User has been unblocked.</string>
-    <string name="msg_block_user_warning">&lt;b&gt;PLEASE READ THIS CAREFULLY!&lt;/b&gt;&lt;br&gt;You\'re about to block this user. If you do so, this user won\'t be able to send you any message or media until you unblock him/her. This user also won\'t be able to see your status or last known presence and you won\'t be able to see his/her status too. As a side effect, you won\'t be able to send any message or media to him/her either.</string>
-    <string name="msg_unblock_user_warning">&lt;b&gt;PLEASE READ THIS CAREFULLY!&lt;/b&gt;&lt;br&gt;You\'re about to unblock this user. Unblocking will allow him/her to send messages to you and see your status and last known presence.</string>
+    <string name="msg_block_user_warning"><b>PLEASE READ THIS CAREFULLY!</b>\nYou\'re about to block this user. If you do so, this user won\'t be able to send you any message or media until you unblock him/her. This user also won\'t be able to see your status or last known presence and you won\'t be able to see his/her status too. As a side effect, you won\'t be able to send any message or media to him/her either.</string>
+    <string name="msg_unblock_user_warning"><b>PLEASE READ THIS CAREFULLY!</b>\nYou\'re about to unblock this user. Unblocking will allow him/her to send messages to you and see your status and last known presence.</string>
 
     <string name="notification_text_more">Tap here to know more</string>
 
     <string name="title_auth_error">Authentication error</string>
-    <string name="msg_auth_error">&lt;b&gt;WARNING!&lt;/b&gt;&lt;br&gt;Authentication to a Kontalk server failed the last time we tried to connect. It could be a temporary server failure or, most probably, the server is refusing your personal key. We recommend deleting your Kontalk account from Android system settings and register again (you will lose all of your Kontalk messages though).</string>
+    <string name="msg_auth_error"><b>WARNING!</b>\nAuthentication to a Kontalk server failed the last time we tried to connect. It could be a temporary server failure or, most probably, the server is refusing your personal key. We recommend deleting your Kontalk account from Android system settings and register again (you will lose all of your Kontalk messages though).</string>
 
     <string name="warn_invite_no_app">No application available to invite users.</string>
 

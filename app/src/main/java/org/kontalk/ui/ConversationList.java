@@ -50,7 +50,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
-import android.text.Html;
 import android.text.InputType;
 import android.widget.ListAdapter;
 import android.widget.Toast;
@@ -203,7 +202,7 @@ public class ConversationList extends ActionBarActivity
 
             return new AlertDialog.Builder(this)
                 .setTitle(R.string.title_auth_error)
-                .setMessage(Html.fromHtml(getString(R.string.msg_auth_error)))
+                .setMessage(R.string.msg_auth_error)
                 .setPositiveButton(android.R.string.ok, null)
                 .create();
 

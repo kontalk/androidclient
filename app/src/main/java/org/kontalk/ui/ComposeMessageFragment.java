@@ -64,7 +64,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.ClipboardManager;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -823,7 +822,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void blockUser() {
         new AlertDialog.Builder(getActivity())
             .setTitle(R.string.menu_block_user)
-            .setMessage(Html.fromHtml(getString(R.string.msg_block_user_warning)))
+            .setMessage(R.string.msg_block_user_warning)
             .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     setPrivacy(PRIVACY_BLOCK);
@@ -836,7 +835,7 @@ public class ComposeMessageFragment extends ListFragment implements
     private void unblockUser() {
         new AlertDialog.Builder(getActivity())
             .setTitle(R.string.menu_unblock_user)
-            .setMessage(Html.fromHtml(getString(R.string.msg_unblock_user_warning)))
+            .setMessage(R.string.msg_unblock_user_warning)
             .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     setPrivacy(PRIVACY_UNBLOCK);

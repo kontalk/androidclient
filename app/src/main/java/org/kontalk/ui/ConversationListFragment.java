@@ -37,7 +37,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.text.Html;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -49,7 +48,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -99,26 +97,11 @@ public class ConversationListFragment extends ListFragment {
         mDualPane = detailsFrame != null
                 && detailsFrame.getVisibility() == View.VISIBLE;
 
-        // add Compose message entry only if are in dual pane mode
-        if (!mDualPane) {
-            /*
-            LayoutInflater inflater = getLayoutInflater(savedInstanceState);
-            ConversationListItem headerView = (ConversationListItem)
-                    inflater.inflate(R.layout.conversation_list_item, list, false);
-            headerView.bind(getString(R.string.new_message),
-                    getString(R.string.create_new_message));
-            list.addHeaderView(headerView, null, true);
-            */
-        }
-        else {
+        if (mDualPane) {
             // TODO restore state
             list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             list.setItemsCanFocus(true);
         }
-
-        // text for empty conversation list
-        TextView text = (TextView) getActivity().findViewById(android.R.id.empty);
-        text.setText(Html.fromHtml(getString(R.string.text_conversations_empty)));
 
         setListAdapter(mListAdapter);
         registerForContextMenu(list);
