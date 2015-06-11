@@ -29,7 +29,6 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 
 import android.content.Intent;
-import android.util.Log;
 
 
 /**
