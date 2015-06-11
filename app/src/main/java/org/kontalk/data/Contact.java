@@ -260,12 +260,25 @@ public class Contact {
         return mAvatar != null ? mAvatar : defaultValue;
     }
 
+    private void clear() {
+        mLastSeen = 0;
+    }
+
     public static void invalidate(String userId) {
         cache.remove(userId);
     }
 
     public static void invalidate() {
         cache.evictAll();
+    }
+
+    /** Invalidates cached data for all contacts. Does not delete contact information. */
+    public static void invalidateData() {
+        synchronized (cache) {
+            for (Contact c : cache.snapshot().values()) {
+                c.clear();
+            }
+        }
     }
 
     /** Builds a contact from a UsersProvider cursor. */

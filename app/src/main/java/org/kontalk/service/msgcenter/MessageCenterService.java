@@ -721,6 +721,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mConnection = null;
         }
 
+        // clear cached data from contacts
+        Contact.invalidateData();
+
         // stop any key pair regeneration service
         if (!LegacyAuthentication.isUpgrading())
             endKeyPairRegeneration();
