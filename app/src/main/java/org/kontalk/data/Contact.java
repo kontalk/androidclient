@@ -98,6 +98,9 @@ public class Contact {
     private String mFingerprint;
     private PGPPublicKeyRing mTrustedKeyRing;
 
+    /** Timestamp the user was last seen. Not coming from the database. */
+    private long mLastSeen;
+
     public interface ContactCallback {
         public void avatarLoaded(Contact contact, Drawable avatar);
     }
@@ -213,6 +216,14 @@ public class Contact {
 
     public String getFingerprint() {
         return mFingerprint;
+    }
+
+    public long getLastSeen() {
+        return mLastSeen;
+    }
+
+    public void setLastSeen(long lastSeen) {
+        mLastSeen = lastSeen;
     }
 
     public void getAvatarAsync(final Context context, final ContactCallback callback) {

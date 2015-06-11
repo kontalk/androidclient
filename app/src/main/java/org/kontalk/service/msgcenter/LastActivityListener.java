@@ -23,6 +23,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SECONDS;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
@@ -47,11 +48,11 @@ class LastActivityListener extends MessageCenterPacketListener {
         Intent i = new Intent(ACTION_LAST_ACTIVITY);
         i.putExtra(EXTRA_PACKET_ID, p.getStanzaId());
 
+        i.putExtra(EXTRA_TYPE, p.getType().toString());
         i.putExtra(EXTRA_FROM, p.getFrom());
         i.putExtra(EXTRA_TO, p.getTo());
-        i.putExtra(EXTRA_SECONDS, p.lastActivity);
+        i.putExtra(EXTRA_SECONDS, p.getIdleTime());
 
-        Log.v(MessageCenterService.TAG, "broadcasting presence: " + i);
         sendBroadcast(i);
     }
 }

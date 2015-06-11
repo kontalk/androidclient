@@ -26,7 +26,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKey;
@@ -180,6 +182,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Available resources. */
     private Set<String> mAvailableResources = new HashSet<String>();
+    private String mLastActivityId;
 
     /** MediaPlayer */
     private MediaPlayer mPlayer;
@@ -1766,7 +1769,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                 CharSequence statusText = null;
 
                                 // really not much sense in requesting the key for a non-existing contact
-                                Contact contact = mConversation != null ? mConversation.getContact() : null;
+                                Contact contact = getContact();
                                 if (contact != null) {
                                     boolean subscribedFrom = intent.getBooleanExtra(MessageCenterService.EXTRA_SUBSCRIBED_FROM, false);
                                     String newFingerprint = intent.getStringExtra(MessageCenterService.EXTRA_FINGERPRINT);
@@ -1799,7 +1802,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                     statusText = context.getString(R.string.seen_online_label);
                                 }
                                 else if (Presence.Type.unavailable.toString().equals(type)) {
-                                    mAvailableResources.remove(from);
+                                    boolean removed = mAvailableResources.remove(from);
                                     /*
                                      * All available resources have gone. Mark
                                      * the user as offline immediately and use the
@@ -1809,7 +1812,22 @@ public class ComposeMessageFragment extends ListFragment implements
                                         // an offline user can't be typing
                                         mIsTyping = false;
 
-                                        // user offline
+                                        if (removed) {
+                                            // resource was removed now, mark as just offline
+                                            statusText = context.getText(R.string.seen_moment_ago_label);
+                                        }
+                                        else {
+                                            // resource is offline, request last activity
+                                            if (contact != null && contact.getLastSeen() > 0) {
+                                                setLastSeenTimestamp(context, contact.getLastSeen());
+                                            }
+                                            else if (mLastActivityId == null) {
+                                                mLastActivityId = StringUtils.randomString(6);
+                                                MessageCenterService.requestLastActivity(context, bareFrom, mLastActivityId);
+                                            }
+                                        }
+
+                                        /* user offline
                                         long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
                                         if (stamp >= 0 && ((System.currentTimeMillis() - stamp) > PRESENCE_DELAY_THRESHOLD)) {
                                             statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
@@ -1817,6 +1835,7 @@ public class ComposeMessageFragment extends ListFragment implements
                                         else {
                                             statusText = context.getString(R.string.seen_moment_ago_label);
                                         }
+                                        */
                                     }
                                 }
 
@@ -1834,11 +1853,28 @@ public class ComposeMessageFragment extends ListFragment implements
                         }
                     }
 
+                    else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
+                        // ignore last activity if we had an available presence in the meantime
+                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        if (id != null && id.equals(mLastActivityId)) {
+                            mLastActivityId = null;
+                            if (mAvailableResources.size() == 0) {
+                                String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
+                                if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
+                                    long seconds = intent.getLongExtra(MessageCenterService.EXTRA_SECONDS, -1);
+                                    setLastSeenSeconds(context, seconds);
+                                }
+                            }
+                        }
+                    }
+
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
                         // reset compose sent flag
                         mComposer.resetCompose();
                         // reset available resources list
                         mAvailableResources.clear();
+                        // reset any pending last activity request
+                        mLastActivityId = null;
                     }
 
                     else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
@@ -1871,6 +1907,7 @@ public class ComposeMessageFragment extends ListFragment implements
             filter.addAction(MessageCenterService.ACTION_PRESENCE);
             filter.addAction(MessageCenterService.ACTION_CONNECTED);
             filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
+            filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             filter.addAction(MessageCenterService.ACTION_MESSAGE);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
@@ -1882,6 +1919,39 @@ public class ComposeMessageFragment extends ListFragment implements
                 MessageCenterService.requestRosterStatus(ctx);
             }
         }
+    }
+
+    private void setLastSeenTimestamp(Context context, long stamp) {
+        setCurrentStatusText(MessageUtils.formatRelativeTimeSpan(context, stamp));
+    }
+
+    private void setLastSeenSeconds(Context context, long seconds) {
+        CharSequence statusText = null;
+        if (seconds == 0) {
+            // it's improbable, but whatever...
+            statusText = context.getText(R.string.seen_moment_ago_label);
+        }
+        else if (seconds > 0) {
+            long stamp = System.currentTimeMillis() - (seconds * 1000);
+
+            Contact contact = getContact();
+            if (contact != null) {
+                contact.setLastSeen(stamp);
+            }
+
+            // seconds ago relative to our time
+            statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
+        }
+
+        if (statusText != null) {
+            setCurrentStatusText(statusText);
+        }
+    }
+
+    private void setCurrentStatusText(CharSequence statusText) {
+        mCurrentStatus = statusText;
+        if (!mIsTyping)
+            setStatusText(statusText);
     }
 
     /** Sends a subscription request for the current peer. */
