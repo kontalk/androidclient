@@ -31,7 +31,7 @@
   <string name="warn_invalid_number">Veuillez inséré un numéro de téléphone valide.</string>
   <string name="msg_validating_phone">Demande de code de vérification par SMS…</string>
   <string name="msg_initializing">Enregistrement au réseau Kontalk…</string>
-  <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau. Bienvenue!</string>
+  <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau!</string>
   <string name="share">Partager</string>
   <string name="resend">Envoyer à nouveau</string>
   <string name="copy_message_text">Copier le message</string>
@@ -310,7 +310,7 @@
   <string name="iab_error_query">N\'a pas pu demander l\'inventaire de la facturation in-app (%d)</string>
   <string name="copy_clipboard">Copier dans le presse-papiers</string>
   <string name="bitcoin_clipboard_copied">Adresse Bitcoin copiée dans le presse-papiers.</string>
-  <string name="warn_no_personal_key">Impossible de chargé clé personnelle. Désactivez le chifrement dans le menu Paramètres pour quand même envoyer le message. FIXME RÉPAREZMOI Est-ce que c\'est du français correcte?</string>
+  <string name="warn_no_personal_key">Impossible de chargé la clé personnelle. Désactivez le chiffrement dans le menu Paramètres pour envoyer le message tout de même.</string>
   <string name="warn_no_public_key">Impossible de trouver une clé publique pour cet utilisateur. Essayez d\'actualiser votre liste de contacts ou de désactiver le chiffrement dans les menu Paramètres pour envoyer le message quand même.</string>
   <string name="warn_encryption_failed">Impossible de chiffrer un message. Désactiver le chiffrement dans le menu Paramètres pour envoyer un message quand même.</string>
   <string name="warn_not_subscribed">Impossible d\'envoyer un message. L\'utilisateur n\'a pas encore accepté votre invitation.</string>
