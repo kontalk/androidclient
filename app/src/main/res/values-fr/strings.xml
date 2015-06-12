@@ -16,7 +16,7 @@
   <string name="menu_settings">Paramètres</string>
   <string name="menu_offline">Hors-ligne</string>
   <string name="menu_online">En ligne</string>
-  <string name="menu_import_key">Clé de l\'importation</string>
+  <string name="menu_import_key">Importation de la clé</string>
   <string name="pref_network_settings">Paramètres réseaux</string>
   <string name="pref_network_uri">Éditer l\'adresse du serveur </string>
   <string name="pref_title_network_uri">Ceci annulera la gestion automatique des serveurs</string>
