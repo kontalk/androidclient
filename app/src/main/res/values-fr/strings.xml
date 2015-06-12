@@ -162,7 +162,7 @@
   <string name="err_sync_failed">Impossible de rafraichir l\'annuaire des contact. Veuillez réessayer plus tard.</string>
   <string name="err_sync_nonetwork">Réseau indisponible. Veuillez réessayer plus tard.</string>
   <string name="text_invite_message">Hey! Tu devrais essayer Kontalk une application de messagerie gratuite. Disponible sur F-droid la plateforme d\'application open-source ou Google Play Store https://play.google.com/store/apps/details?id=org.kontalk </string>
-  <string name="text_contacts_empty">Les nouveau utilisateur seront ajouté a cette liste. list.&lt;br/&gt;&lt;br/&gt;Use &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Invite users&lt;/b&gt; pour envoyer une invitation a rejoindre Kontalk.</string>
+  <string name="text_contacts_empty">Les nouveaux utilisateurs seront ajouté a cette liste list automatiquement.<br/><br/>Utiliser <b>Menu</b> &amp;gt; <b>Inviter des utilisateurs</b> pour envoyer une invitation à rejoindre Kontalk.</string>
   <string name="text_conversations_empty">Pour écrire une nouveau message utilise l\' &lt;b&gt;new message&lt;/b&gt; icône ci-dessous.</string>
   <string name="notify_ticker_external_storage">Mémoire externe non disponible</string>
   <string name="notify_text_external_storage">Impossible d\'écrire sur la mémoire externe.</string>
@@ -326,11 +326,11 @@
   <string name="msg_delete_account_progress">Suppression de votre compte…</string>
   <string name="msg_user_blocked">L\'utilisateur est bloqué.</string>
   <string name="msg_user_unblocked">L\'utilisateur a été bloqué.</string>
-  <string name="msg_block_user_warning">&lt;b&gt;S\'IL VOUS PLAIT LISEZ ATTENTIVEMENT !&lt;/b&gt;&lt;br&gt;Vous êtes sur le point de bloquer cet utilisateur. Si vous le faites, cet utilisateur ne pourra pas vous envoyer des messages ou des médias jusqu\'à ce que vous le débloquer. Cet utilisateur ne pourra également pas voir votre statut ou la dernière présence connue et vous ne pourrez pas voir son statut aussi. Comme effet secondaire, vous ne pourrez pas lui envoyer des messages ou des médias.</string>
-  <string name="msg_unblock_user_warning">&lt;b&gt;S\'IL VOUS PLAIT LISEZ ATTENTIVEMENT !&lt;/b&gt;&lt;br&gt;Vous êtes sur le point de débloquer cet utilisateur. Le déblocage lui permettra de vous envoyer messages et voir votre statut et dernière présence connue.</string>
+  <string name="msg_block_user_warning"><b>S\\\'IL VOUS PLAIT LISEZ ATTENTIVEMENT !</b>\\nVous êtes sur le point de bloquer cet utilisateur. Si vous le faites, cet utilisateur ne pourra pas vous envoyer des messages ou des médias jusqu\\\'à ce que vous le débloquer. Cet utilisateur ne pourra également pas voir votre statut ou la dernière présence connue et vous ne pourrez pas voir son statut aussi. Comme effet secondaire, vous ne pourrez pas lui envoyer des messages ou des médias.</string>
+  <string name="msg_unblock_user_warning"><b>S\\\'IL VOUS PLAIT LISEZ ATTENTIVEMENT !</b>\\nVous êtes sur le point de débloquer cet utilisateur. Le déblocage lui permettra de vous envoyer des messages et voir votre statut et dernière présence connue.</string>
   <string name="notification_text_more">Taper ici pour en savoir plus</string>
   <string name="title_auth_error">Erreur d\'authentification</string>
-  <string name="msg_auth_error">&lt;b&gt;ATTENTION!&lt;/b&gt;&lt;br&gt;L\'authentification à un serveur Kontalk a échoué la dernière fois que nous avons essayé de se connecter. Ce pourrait être une panne temporaire du serveur, ou, plus probablement, le serveur refuse votre clé personnelle. Nous recommandons de supprimer votre compte Kontalk des paramètres du système Android et de vous enregistrer à nouveau (cependant vous perdrez tous vos messages Kontalk).</string>
+  <string name="msg_auth_error"><b>ATTENTION!</b>\\nL\\\'authentification à un serveur Kontalk a échoué la dernière fois que nous avons essayé de se connecter. Ce pourrait être une panne temporaire du serveur, ou, plus probablement, le serveur refuse votre clé personnelle. Nous recommandons de supprimer votre compte Kontalk des paramètres du système Android et de vous enregistrer à nouveau (cependant vous perdrez tous vos messages Kontalk).</string>
   <string name="warn_invite_no_app">Aucune application disponible pour inviter les utilisateurs.</string>
   <string name="pref_text_enter">Bouton retour à la ligne</string>
   <string name="pref_title_text_enter">Sélectionnez le comportement du bouton retour à la ligne du clavier</string>
@@ -355,4 +355,6 @@
   <string name="warning_public_key">ATTENTION ! La clé personnelle pour cet utilisateur a changé de manière inattendue. Cliquez ici pour plus de détails.</string>
   <string name="title_public_key_warning">Changement de clé personnelle</string>
   <string name="msg_public_key_warning">La clé personnelle pour cet utilisateur a changé. S\'il vous plaît vérifier avec l\'utilisateur qu\'il/elle à réinstallé Kontalk ou régénéré sa clé intentionnellement, sinon la communication pourrait être compromise !</string>
-</resources>
+<string name="title_user_exists">L\'utilisateur existe</string>
+    <string name="err_validation_user_exists"><b>Le numéro que vous utilisez est déjà inscrit sur Kontalk.</b> Si vous avez enregistré un autre appareil, cela va vous couper de Kontalk. S\'il vous plaît référer vous à notre documentation sur la façon d\'importer votre compte entre différents appareils. Choisissez OK pour continuer tout de même.</string>
+    </resources>
