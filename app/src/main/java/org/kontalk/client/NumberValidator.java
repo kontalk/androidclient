@@ -81,6 +81,8 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
     public static final int STEP_VALIDATION = 1;
     /** Requesting authentication token */
     public static final int STEP_AUTH_TOKEN = 2;
+    /** Login test for imported key */
+    public static final int STEP_LOGIN_TEST = 3;
 
     public static final int ERROR_THROTTLING = 1;
     public static final int ERROR_USER_EXISTS = 2;
@@ -368,6 +370,38 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 // send registration form
                 conn.sendStanza(form);
             }
+
+            // try imported key by performing a login test
+            else if (mStep == STEP_LOGIN_TEST) {
+                if (mImportedPrivateKey == null || mImportedPublicKey == null)
+                    throw new AssertionError("requesting a login test with no imported key!");
+
+                // generate keyring immediately
+                // needed for connection
+                mKeyRing = PGPKeyPairRing.load(mImportedPrivateKey, mImportedPublicKey);
+
+                // bridge certificate for connection
+                mBridgeCert = X509Bridge.createCertificate(mKeyRing.publicKey,
+                    mKeyRing.secretKey.getSecretKey(), mPassphrase, null);
+
+                try {
+                    // connect to server
+                    initConnection();
+                }
+                catch (Exception e) {
+                    // login test failed, run again normally
+                    mStep = STEP_INIT;
+                    // mark server as dirty
+                    mConnector.setServer(mConnector.getServer());
+                    run();
+                    return;
+                }
+
+                // login successful!!!
+                if (mListener != null)
+                    mListener.onAuthTokenReceived(this,
+                        mKeyRing.secretKey.getEncoded(), mKeyRing.publicKey.getEncoded());
+            }
         }
         catch (Throwable e) {
             if (mListener != null)
@@ -419,6 +453,12 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
         mThread = null;
     }
 
+    public void testImport() {
+        mStep = STEP_LOGIN_TEST;
+        // next start call will trigger the next condition
+        mThread = null;
+    }
+
     private void initConnection() throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException,
@@ -435,7 +475,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                 key = mKey.copy(mBridgeCert);
             }
 
-            mConnector.connectOnce(key);
+            mConnector.connectOnce(key, mStep == STEP_LOGIN_TEST);
         }
     }
 

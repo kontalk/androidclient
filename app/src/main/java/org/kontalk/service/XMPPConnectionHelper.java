@@ -134,14 +134,14 @@ public class XMPPConnectionHelper extends Thread {
         connect();
     }
 
-    public void connectOnce(PersonalKey key) throws XMPPException, SmackException,
+    public void connectOnce(PersonalKey key, boolean forceLogin) throws XMPPException, SmackException,
             PGPException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException, IOException {
 
-        connectOnce(key, null);
+        connectOnce(key, null, forceLogin);
     }
 
-    private void connectOnce(PersonalKey key, String token) throws XMPPException,
+    private void connectOnce(PersonalKey key, String token, boolean forceLogin) throws XMPPException,
             SmackException, PGPException, IOException, KeyStoreException,
             NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 
@@ -197,7 +197,7 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // login
-        if (!mLimited && (key != null || token != null))
+        if ((!mLimited || forceLogin) && (key != null || token != null))
             mConn.login();
 
     }
@@ -248,7 +248,7 @@ public class XMPPConnectionHelper extends Thread {
 
         while (mConnecting) {
             try {
-                connectOnce(key, token);
+                connectOnce(key, token, false);
 
                 // this should be the right moment
                 mRetryCount = 0;

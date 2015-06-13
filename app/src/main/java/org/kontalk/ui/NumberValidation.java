@@ -40,6 +40,7 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
@@ -421,7 +422,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
             finishLogin(data.getStringExtra(PARAM_SERVER_URI),
-                data.getByteArrayExtra(PARAM_PRIVATEKEY), data.getByteArrayExtra(PARAM_PUBLICKEY));
+                data.getByteArrayExtra(PARAM_PRIVATEKEY),
+                data.getByteArrayExtra(PARAM_PUBLICKEY),
+                true);
         }
     }
 
@@ -550,11 +553,11 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             enableControls(true);
         }
         else {
-            startValidationNormal(null, force);
+            startValidationNormal(null, force, false);
         }
     }
 
-    private void startValidationNormal(String manualServer, boolean force) {
+    private void startValidationNormal(String manualServer, boolean force, boolean testImport) {
         // start async request
         Log.d(TAG, "phone number checked, sending validation request");
         startProgress();
@@ -575,6 +578,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mValidator.setForce(force);
         if (imported)
             mValidator.importKey(mImportedPrivateKey, mImportedPublicKey);
+
+        if (testImport)
+            mValidator.testImport();
 
         mValidator.start();
     }
@@ -671,7 +677,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void startImport(ZipInputStream zip, String passphrase) {
         PersonalKeyImporter importer = null;
-        String manualServer = null;
+        String manualServer = Preferences.getServerURI(this);
 
         try {
             importer = new PersonalKeyImporter(zip, passphrase);
@@ -696,7 +702,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             if (!numberHash.equalsIgnoreCase(localpart))
                 throw new PGPException("email does not match phone number: " + email);
 
-            manualServer = XmppStringUtils.parseDomain(email);
+            // use server from the key only if we didn't set our own
+            if (TextUtils.isEmpty(manualServer))
+                manualServer = XmppStringUtils.parseDomain(email);
+
             mImportedPublicKey = importer.getPublicKeyData();
             mImportedPrivateKey = importer.getPrivateKeyData();
         }
@@ -725,7 +734,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = passphrase;
 
             // begin usual validation
-            startValidationNormal(manualServer, true);
+            startValidationNormal(manualServer, true, true);
         }
     }
 
@@ -841,10 +850,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mHandler.postDelayed(mSyncStart, 2000);
     }
 
-    /** @deprecated {@link CodeValidation} handles this now. */
+    /** Used only if imported key was tested successfully. */
     @Override
-    @Deprecated
-    public void onAuthTokenReceived(NumberValidator v, byte[] privateKey, byte[] publicKey) {
+    public void onAuthTokenReceived(final NumberValidator v, final byte[] privateKey, final byte[] publicKey) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                abort(true);
+                finishLogin(v.getServer().toString(), privateKey, publicKey, false);
+            }
+        });
     }
 
     @Override
@@ -869,17 +884,19 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         setProgressMessage(getString(R.string.msg_initializing));
     }
 
-    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData) {
+    protected void finishLogin(final String serverUri, final byte[] privateKeyData, final byte[] publicKeyData, boolean updateKey) {
         Log.v(TAG, "finishing login");
         statusInitializing();
 
-        // update public key
-        try {
-            mKey.update(publicKeyData);
-        }
-        catch (IOException e) {
-            // abort
-            throw new RuntimeException("error decoding public key", e);
+        if (updateKey) {
+            // update public key
+            try {
+                mKey.update(publicKeyData);
+            }
+            catch (IOException e) {
+                // abort
+                throw new RuntimeException("error decoding public key", e);
+            }
         }
 
         completeLogin(serverUri, privateKeyData, publicKeyData);
