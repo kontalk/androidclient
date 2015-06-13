@@ -30,7 +30,7 @@
   <string name="hint_validation_code">Κωδικός επαλήθευσης</string>
   <string name="warn_invalid_number">παρακαλώ εισάγετε ένα έγκυρο αριθμό τηλεφώνου.</string>
   <string name="msg_validating_phone">Ζητώντας τον κωδικό επαλήθευσης μεσω SMS…</string>
-  <string name="msg_initializing">Συνδεθήκατε στο Kontalk δίκτυο!</string>
+  <string name="msg_initializing"/>
   <string name="msg_authenticated">Συνδεθήκατε στο δίκτυο!</string>
   <string name="share">Κοινοποίηση</string>
   <string name="resend">Αποστολη ξανα</string>
@@ -162,8 +162,10 @@
   <string name="err_sync_failed">Δεν είναι δυνατή η ανανέωση λίστας επαφών. Παρακαλούμε δοκιμάστε ξανά αργότερα.</string>
   <string name="err_sync_nonetwork">Το δίκτυο δεν είναι διαθέσιμο. Παρακαλούμε δοκιμάστε ξανά αργότερα.</string>
   <string name="text_invite_message">Γεια σας! Ελέγξτε το Kontalk στο Google Play Store, μια δωρεάν εφαρμογή ανταλλαγής μηνυμάτων! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Οι νέοι χρήστες θα προστεθούν αυτόματα σε αυτή τη λίστα &amp; lt?. Br / &amp; gt? &amp; Lt? Br / &amp; gt? Χρήση &amp; lt? B &amp; gt? Μενού &amp; lt? / B &amp; gt? &amp; gt? &amp; lt? b &amp; gt? Προσκαλέστε τους χρήστες &amp; lt? / b &amp; gt? για να στείλετε ένα μήνυμα πρόσκλησης σε κάποιον.</string>
-  <string name="text_conversations_empty">Για να αρχίσετε να γράφετε τα μηνύματα χρησιμοποιήσετε το &amp; lt? B &amp; gt? Νέο μήνυμα &amp; lt? / B &amp; gt? icon παραπάνω.</string>
+  <string name="text_contacts_empty">Οι νέοι χρήστες θα προστεθούν αυτόματα σε αυτή τη λίστα
+
+Χρήση <b>Μενού</b> &amp;gt; <b>Προσκαλέστε τους χρήστες</b> για να στείλετε ένα μήνυμα πρόσκλησης σε κάποιον.</string>
+  <string name="text_conversations_empty">Για να αρχίσετε να γράφετε τα μηνύματα χρησιμοποιήσετε το <b>Νέο μήνυμα</b> icon παραπάνω.</string>
   <string name="notify_ticker_external_storage">Το εξωτερικό μέσο αποθήκευσης δεν είναι διαθέσιμο</string>
   <string name="notify_text_external_storage">Δεν είναι δυνατή η εγγραφή σε εξωτερικό μέσο αποθήκευσης.</string>
   <string name="title_user_not_found">Ο χρήστης δεν βρέθηκε</string>
@@ -326,11 +328,11 @@
   <string name="msg_delete_account_progress">Διαγραφή του λογαριασμού σας…</string>
   <string name="msg_user_blocked">Ο χρήστης έχει αποκλειστεί.</string>
   <string name="msg_user_unblocked">Ο χρήστης έχει απεμπλακεί.</string>
-  <string name="msg_block_user_warning">&amp; lt? b &amp; gt? Διαβάστε προσεκτικά το &amp; lt?! / b &amp; gt? &amp; lt? br &amp; gt? Είστε έτοιμοι να εμποδίσει αυτόν τον χρήστη. Αν το κάνετε αυτό, ο χρήστης δεν θα είναι σε θέση να σας στείλει κάποιο μήνυμα ή πολυμέσα μέχρι να τον ξεμπλοκάρετε. Αυτός ο χρήστης δεν θα είναι επίσης σε θέση να δει την κατάστασή σας και δεν θα είστε σε θέση να βλέπετε την κατάσταση του επίσης. Ως μια παρενέργεια, δεν θα είστε σε θέση να στείλετε οποιοδήποτε μήνυμα ή πολυμέσο σε αυτόν..</string>
-  <string name="msg_unblock_user_warning">&amp; lt? b &amp; gt? Διαβάστε προσεκτικά το &amp; lt?! / b &amp; gt? &amp; lt? br &amp; gt? Είστε έτοιμοι να ξεμπλοκάρετε αυτό τον χρήστη. Η απεμπλοκή θα του επιτρέψει να σας στείλει μηνύματα και να δεί την κατάστασή σας.</string>
+  <string name="msg_block_user_warning"><b>Διαβάστε προσεκτικά το</b>\\nΕίστε έτοιμοι να εμποδίσει αυτόν τον χρήστη. Αν το κάνετε αυτό, ο χρήστης δεν θα είναι σε θέση να σας στείλει κάποιο μήνυμα ή πολυμέσα μέχρι να τον ξεμπλοκάρετε. Αυτός ο χρήστης δεν θα είναι επίσης σε θέση να δει την κατάστασή σας και δεν θα είστε σε θέση να βλέπετε την κατάσταση του επίσης. Ως μια παρενέργεια, δεν θα είστε σε θέση να στείλετε οποιοδήποτε μήνυμα ή πολυμέσο σε αυτόν.</string>
+  <string name="msg_unblock_user_warning"><b>Διαβάστε προσεκτικά το</b>\\nΕίστε έτοιμοι να ξεμπλοκάρετε αυτό τον χρήστη. Η απεμπλοκή θα του επιτρέψει να σας στείλει μηνύματα και να δεί την κατάστασή σας.</string>
   <string name="notification_text_more">Πατήστε εδώ για να μάθετε περισσότερα</string>
   <string name="title_auth_error">Σφάλμα ταυτοποίησης</string>
-  <string name="msg_auth_error">&amp;lt?b&amp;gt?!ΠΡΟΕΙΔΟΠΟΙΗΣΗ&amp;lt?/b&amp;gt?&amp;lt?br&amp;gt?Ο έλεγχος ταυτότητας σε ένα διακομιστή του Kontalk απέτυχε την τελευταία φορά που προσπάθησατε να συνδεθείτε. Θα μπορούσε να είναι μια προσωρινή αποτυχία του διακομιστή ή, πιθανότατα, ο διακομιστής να αρνείται το προσωπικο σας κλειδί. Συνιστούμε τη διαγραφή του λογαριασμού Kontalk από τις ρυθμίσεις του συστήματος Android και να εγγραφείτε ξανά (θα χάσετε όλα τα μηνύματά σας).</string>
+  <string name="msg_auth_error"><b>!ΠΡΟΕΙΔΟΠΟΙΗΣΗ</b>\\nΟ έλεγχος ταυτότητας σε ένα διακομιστή του Kontalk απέτυχε την τελευταία φορά που προσπάθησατε να συνδεθείτε. Θα μπορούσε να είναι μια προσωρινή αποτυχία του διακομιστή ή, πιθανότατα, ο διακομιστής να αρνείται το προσωπικο σας κλειδί. Συνιστούμε τη διαγραφή του λογαριασμού Kontalk από τις ρυθμίσεις του συστήματος Android και να εγγραφείτε ξανά (θα χάσετε όλα τα μηνύματά σας).</string>
   <string name="warn_invite_no_app">Δεν υπάρχει διαθέσιμη εφαρμογή για να προσκαλέσετε τους χρήστες της εφαρμογής.</string>
   <string name="pref_text_enter">Πλήκτρο Enter </string>
   <string name="pref_title_text_enter">Επιλέξτε την συμπεριφορά του πλήκτρο enter στο πληκτρολόγιο</string>
