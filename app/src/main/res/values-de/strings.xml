@@ -162,9 +162,7 @@
   <string name="err_sync_failed">Das Aktualisieren der Kontaktliste ist fehlgeschlagen. Bitte versuchen Sie es später noch einmal.</string>
   <string name="err_sync_nonetwork">Das Netzwerk ist nicht erreichbar. Bitte versuchen Sie es später noch einmal.</string>
   <string name="text_invite_message">Hey! Schau dir Kontalk im Google Play Store an, eine kostenlose Instant Messenger App! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Neue Nutzer werden automatisch zu dieser Liste hinzugefügt.
-
-Nutzen Sie <b>Menü</b> &amp;gt; <b>Nutzer einladen</b> um jemandem eine Einladung zu schicken.</string>
+  <string name="text_contacts_empty">Neue Nutzer werden automatisch zu dieser Liste hinzugefügt.\n\nNutzen Sie <b>Menü</b> &amp;gt; <b>Nutzer einladen</b> um jemandem eine Einladung zu schicken.</string>
   <string name="text_conversations_empty">Um mit einem Gespräch zu beginnen, obiges &lt;b&gt;Neue Nachricht&lt;/b&gt; Icon antippen.</string>
   <string name="notify_ticker_external_storage">Externer Speicher nicht verfügbar</string>
   <string name="notify_text_external_storage">Nicht möglich auf externen Speicher zu schreiben.</string>
