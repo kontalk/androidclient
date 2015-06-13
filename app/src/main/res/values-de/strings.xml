@@ -326,11 +326,11 @@
   <string name="msg_delete_account_progress">Ihr Account wird gelöscht…</string>
   <string name="msg_user_blocked">Nutzer wurde blockiert.</string>
   <string name="msg_user_unblocked">Nutzer wurde freigegeben.</string>
-  <string name="msg_block_user_warning"><b>BITTE GENAU LESEN!</b>\\nSie haben vor, diesen Nutzer zu blockieren. Danach wird Ihnen dieser Nutzer keine Nachrichten mehr senden können, bis Sie ihn/sie wieder freigeben. Dieser Nutzer wird Ihren Status oder letzte bekannte Anwesenheit nicht sehen können und auch Sie werden seinen Status nicht sehen. Es wird für Sie auch nicht möglich sein, Nachrichten an ihn/sie zu senden.</string>
-  <string name="msg_unblock_user_warning"><b>BITTE GENAU LESEN!</b>\\nSie haben vor, diesen Nutzer frei zu geben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
+  <string name="msg_block_user_warning"><b>BITTE GENAU LESEN!</b>\nSie haben vor, diesen Nutzer zu blockieren. Danach wird Ihnen dieser Nutzer keine Nachrichten mehr senden können, bis Sie ihn/sie wieder freigeben. Dieser Nutzer wird Ihren Status oder letzte bekannte Anwesenheit nicht sehen können und auch Sie werden seinen Status nicht sehen. Es wird für Sie auch nicht möglich sein, Nachrichten an ihn/sie zu senden.</string>
+  <string name="msg_unblock_user_warning"><b>BITTE GENAU LESEN!</b>\nSie haben vor, diesen Nutzer frei zu geben. Das bedeutet, er/sie kann Ihnen Nachrichten senden und Ihren Status bzw. letzte bekannte Anwesenheit sehen.</string>
   <string name="notification_text_more">Antippen um mehr zu erfahren</string>
   <string name="title_auth_error">Verifizierungsfehler</string>
-  <string name="msg_auth_error"><b>WARNUNG!</b>\\nDas letzte Mal als versucht wurde einen Kontalkserver zu kontaktieren ist die Authentifikation fehlgeschlagen. Es könnte ein vorrübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihr Kontalk Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre geamten Kontalknachrichten verloren).</string>
+  <string name="msg_auth_error"><b>WARNUNG!</b>\nDas letzte Mal als versucht wurde einen Kontalkserver zu kontaktieren ist die Authentifikation fehlgeschlagen. Es könnte ein vorrübergehender Serverfehler sein. Am wahrscheinlichsten ist es aber, dass Ihr persönlicher Schlüssel abgelehnt wurde. Wir empfehlen, Ihr Kontalk Account in den Android-System-Einstellungen zu löschen und sich neu im System zu registrieren (Dabei gehen leider Ihre geamten Kontalknachrichten verloren).</string>
   <string name="warn_invite_no_app">Keine App verfügbar um Nutzer einzuladen.</string>
   <string name="pref_text_enter">Entertaste</string>
   <string name="pref_title_text_enter">Wählen Sie die Funktion der Entertaste</string>
