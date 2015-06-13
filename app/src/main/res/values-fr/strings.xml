@@ -31,7 +31,7 @@
   <string name="warn_invalid_number">Veuillez insérer un numéro de téléphone valide.</string>
   <string name="msg_validating_phone">Demande de code de vérification par SMS…</string>
   <string name="msg_initializing">Enregistrement au réseau Kontalk…</string>
-  <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau !</string>
+  <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau!</string>
   <string name="share">Partager</string>
   <string name="resend">Envoyer à nouveau</string>
   <string name="copy_message_text">Copier le message</string>
