@@ -251,7 +251,7 @@ public class Syncer {
             }
 
             // connected! Retry...
-            else if (MessageCenterService.ACTION_CONNECTED.equals(action) && rosterParts <= 0) {
+            else if (MessageCenterService.ACTION_CONNECTED.equals(action) && rosterParts < 0) {
                 Syncer w = notifyTo.get();
                 if (w != null) {
                     // request a roster match
