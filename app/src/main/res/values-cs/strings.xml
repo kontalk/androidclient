@@ -162,9 +162,7 @@
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
   <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk na Google Play, aplikaci pro posílání zpráv zdarma! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.
-
-Použijte <b>Menu</b> &amp;gt; <b>Pozvat uživatele</b> a pošlete někomu pozvánku.</string>
+  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.\n\nPoužijte <b>Menu</b> &amp;gt; <b>Pozvat uživatele</b> a pošlete někomu pozvánku.</string>
   <string name="text_conversations_empty">Pokud chcete začít psát zprávu, použijte ikonu &lt;b&gt;nová zpráva&lt;/b&gt; výše.</string>
   <string name="notify_ticker_external_storage">Externí úložiště není dostupné</string>
   <string name="notify_text_external_storage">Nepodařilo se zapsat do externího úložiště.</string>
