@@ -162,7 +162,7 @@
   <string name="err_sync_failed">No ha estat possible actualitzar la llista de contactes. Per favor, torneu a intentar-ho més tard.</string>
   <string name="err_sync_nonetwork">La xarxa no està disponible. Per favor, intenteu-ho més tard.</string>
   <string name="text_invite_message">Ei! Proveu Kontalk (és a Google Play Store), una aplicació de missatgeria lliure i gratuïta! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Els nou usuaris s\'afegiran automàticament a esta llista.&lt;br/&gt;&lt;br/&gt;Useu &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Convida usuaris&lt;/b&gt; per a enviar un missatge d\'invitació a algú.</string>
+  <string name="text_contacts_empty">Els nou usuaris s'afegiran automàticament a esta llista.\n\nUseu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\'invitació a algú.</string>
   <string name="text_conversations_empty">Per a començar a escriure missatges useu la icona &lt;b&gt;missatge nou&lt;/b&gt; que hi ha dalt.</string>
   <string name="notify_ticker_external_storage">L\'emmagatzematge extern no està disponible</string>
   <string name="notify_text_external_storage">No ha estat possible escriure a l\'emmagatzematge extern.</string>
@@ -326,11 +326,11 @@
   <string name="msg_delete_account_progress">S\'està suprimint el vostre compte…</string>
   <string name="msg_user_blocked">S\'ha blocat l\'usuari.</string>
   <string name="msg_user_unblocked">S\'ha desblocat l\'usuari.</string>
-  <string name="msg_block_user_warning">&lt;b&gt;LLEGIU ATENTAMENT. GRÀCIES.&lt;/b&gt;&lt;br&gt;A punt de blocar l\'usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.</string>
-  <string name="msg_unblock_user_warning">&lt;b&gt;LLEGIU ATENTAMENT. GRÀCIES.&lt;b&gt;br&gt;A punt de desblocar l\'usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.</string>
+  <string name="msg_block_user_warning"><b>LLEGIU ATENTAMENT. GRÀCIES.</b>\\nA punt de blocar l\'usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.</string>
+  <string name="msg_unblock_user_warning"><b>LLEGIU ATENTAMENT. GRÀCIES.</b>\\nA punt de desblocar l\'usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.</string>
   <string name="notification_text_more">Toque ací si en voleu més informació</string>
   <string name="title_auth_error">Error d\'autenticació</string>
-  <string name="msg_auth_error">&lt;b&gt;WARNING!&lt;/b&gt;&lt;br&gt;L\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
+  <string name="msg_auth_error"><b>WARNING!</b>\\nL\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
   <string name="warn_invite_no_app">No hi ha cap aplicació disponible per a convidar usuaris.</string>
   <string name="pref_text_enter">Botó retorn</string>
   <string name="pref_title_text_enter">Trieu el comportament del botó retorn al teclat</string>

@@ -721,6 +721,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mConnection = null;
         }
 
+        // clear cached data from contacts
+        Contact.invalidateData();
+
         // stop any key pair regeneration service
         if (!LegacyAuthentication.isUpgrading())
             endKeyPairRegeneration();
@@ -932,10 +935,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_ROSTER_LOADED.equals(action)) {
-                if (isConnected) {
-                    if (isRosterLoaded()) {
-                        broadcast(ACTION_ROSTER_LOADED);
-                    }
+                if (isConnected && isRosterLoaded()) {
+                    broadcast(ACTION_ROSTER_LOADED);
                 }
             }
 
@@ -2281,6 +2282,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestRosterStatus(final Context context) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_ROSTER_LOADED);
+        context.startService(i);
+    }
+
+    public static void requestLastActivity(final Context context, String to, String id) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
+        i.putExtra(EXTRA_TO, to);
+        i.putExtra(EXTRA_PACKET_ID, id);
         context.startService(i);
     }
 

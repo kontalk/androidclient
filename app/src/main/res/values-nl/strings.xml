@@ -162,7 +162,7 @@
   <string name="err_sync_failed">Kan contacten niet vernieuwen. Probeer het later opnieuw.</string>
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
   <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger in de Google Play Store, een app om gratis berichten te sturen! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst. &lt;br/&gt;&lt;br/&gt;Gebruik &lt;b&gt;Menu&lt;/b&gt; &gt; &lt;b&gt;Gebruikers uitnodigen&lt;/b&gt; om een SMS met een uitnodiging te sturen.</string>
+  <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst.\n\nGebruik <b>Menu</b> &amp;gt; <b>Gebruikers uitnodigen</b> om een SMS met een uitnodiging te sturen.</string>
   <string name="text_conversations_empty">Gebruik de &lt;b&gt;nieuw bericht&lt;/b&gt;-knop hierboven om te beginnen met berichten schrijven.</string>
   <string name="notify_ticker_external_storage">Externe opslag niet beschikbaar</string>
   <string name="notify_text_external_storage">Kan niet schrijven naar externe opslag.</string>
@@ -326,11 +326,11 @@
   <string name="msg_delete_account_progress">Je account wordt verwijderd…</string>
   <string name="msg_user_blocked">Gebruiker is geblokkeerd.</string>
   <string name="msg_user_unblocked">Deze gebruiker is geblokkeerd.</string>
-  <string name="msg_block_user_warning">&lt;b&gt;LET OP!&lt;/b&gt;&lt;br&gt;Je staat op het punt deze gebruiker te blokkeren. Hij/zij  kan jou dan geen berichten sturen en jij kan hem/haar ook geen berichten sturen. Verder kan hij/zij dan ook niet je onlinestatus zien en jij kan zijn/haar onlinestatus ook niet zien.</string>
-  <string name="msg_unblock_user_warning">&lt;b&gt;LET OP!&lt;/b&gt;&lt;br&gt;Je staat op het punt deze gebruiker te deblokkeren. Hij/zij kan jou dan weer berichten sturen en andersom. Verder kan hij/zij weer je onlinestatus zien en andersom.</string>
+  <string name="msg_block_user_warning"><b>LET OP!</b>\\nJe staat op het punt deze gebruiker te blokkeren. Hij/zij kan jou dan geen berichten sturen en jij kan hem/haar ook geen berichten sturen. Verder kan hij/zij dan ook niet je onlinestatus zien en jij kan zijn/haar onlinestatus ook niet zien.</string>
+  <string name="msg_unblock_user_warning"><b>LET OP!</b>\\nJe staat op het punt deze gebruiker te deblokkeren. Hij/zij kan jou dan weer berichten sturen en andersom. Verder kan hij/zij weer je onlinestatus zien en andersom.</string>
   <string name="notification_text_more">Tik hier voor meer informatie</string>
   <string name="title_auth_error">Authenticatiefout</string>
-  <string name="msg_auth_error">&lt;b&gt;WAARSCHUWING!&lt;/b&gt;&lt;br&gt;De laatste keer dat je probeerde te verbinden met een Kontalk-server is de authenticatie mislukt. Mogelijk is de server tijdelijk uit de lucht, maar waarschijnlijk weigert de server je persoonlijk sleutelpaar. Als je sleutelpaar geweigerd wordt is de enige oplossing om je Kontalk-account te verwijderen in de Instellingen van Android en jezelf opnieuw te registreren. Helaas raak je hierbij wel al je Kontalk-berichten kwijt.</string>
+  <string name="msg_auth_error"><b>WAARSCHUWING!</b>\\nDe laatste keer dat je probeerde te verbinden met een Kontalk-server is de authenticatie mislukt. Mogelijk is de server tijdelijk uit de lucht, maar waarschijnlijk weigert de server je persoonlijk sleutelpaar. Als je sleutelpaar geweigerd wordt is de enige oplossing om je Kontalk-account te verwijderen in de Instellingen van Android en jezelf opnieuw te registreren. Helaas raak je hierbij wel al je Kontalk-berichten kwijt.</string>
   <string name="warn_invite_no_app">Er is op dit apparaat geen app beschikbaar waarmee uitnodigingen verstuurd kunnen worden.</string>
   <string name="pref_text_enter">Enter-toets</string>
   <string name="pref_title_text_enter">Selecteren van het gedrag van de Enter-toets in het toetsenbord</string>

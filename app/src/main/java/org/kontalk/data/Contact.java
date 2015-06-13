@@ -98,6 +98,9 @@ public class Contact {
     private String mFingerprint;
     private PGPPublicKeyRing mTrustedKeyRing;
 
+    /** Timestamp the user was last seen. Not coming from the database. */
+    private long mLastSeen;
+
     public interface ContactCallback {
         public void avatarLoaded(Contact contact, Drawable avatar);
     }
@@ -215,6 +218,14 @@ public class Contact {
         return mFingerprint;
     }
 
+    public long getLastSeen() {
+        return mLastSeen;
+    }
+
+    public void setLastSeen(long lastSeen) {
+        mLastSeen = lastSeen;
+    }
+
     public void getAvatarAsync(final Context context, final ContactCallback callback) {
         if (mAvatar != null) {
             callback.avatarLoaded(this, mAvatar);
@@ -249,12 +260,25 @@ public class Contact {
         return mAvatar != null ? mAvatar : defaultValue;
     }
 
+    private void clear() {
+        mLastSeen = 0;
+    }
+
     public static void invalidate(String userId) {
         cache.remove(userId);
     }
 
     public static void invalidate() {
         cache.evictAll();
+    }
+
+    /** Invalidates cached data for all contacts. Does not delete contact information. */
+    public static void invalidateData() {
+        synchronized (cache) {
+            for (Contact c : cache.snapshot().values()) {
+                c.clear();
+            }
+        }
     }
 
     /** Builds a contact from a UsersProvider cursor. */
