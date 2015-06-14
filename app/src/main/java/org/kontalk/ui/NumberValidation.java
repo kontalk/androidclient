@@ -706,6 +706,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             if (TextUtils.isEmpty(manualServer))
                 manualServer = XmppStringUtils.parseDomain(email);
 
+            mName = uid.getName();
             mImportedPublicKey = importer.getPublicKeyData();
             mImportedPrivateKey = importer.getPrivateKeyData();
         }
@@ -713,6 +714,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         catch (Exception e) {
             Log.e(TAG, "error importing keys", e);
             mImportedPublicKey = mImportedPrivateKey = null;
+            mName = null;
 
             Toast.makeText(this,
                 R.string.err_import_keypair_failed,
