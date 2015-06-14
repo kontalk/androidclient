@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Instant messaging-netwerk gedreven door vrijwilligers</string>
@@ -372,4 +371,9 @@
   <string name="warning_public_key">WAARSCHUWING! De persoonlijke sleutel voor deze gebruiker is onverwacht veranderd! Klik hier voor details.</string>
   <string name="title_public_key_warning">Persoonlijke sleutel veranderd</string>
   <string name="msg_public_key_warning">De persoonlijke sleutel voor deze gebruiker is veranderd. Ga na bij de gebruiker of hij/zij Kontalk opnieuw heeft geïnstalleerd of zijn/haar sleutel bewust opnieuw heeft aangemaakt, anders zou je communicatie aangetast kunnen zijn!</string>
+<string name="title_user_exists">Gebruiker bestaat</string>
+    <string name="err_validation_user_exists"><b>Het nummer dat je gebruikt is al geregistreerd op Kontalk.</b> Als je al met een ander apparaat hebt geregistreerd, kan deze Kontalk niet meer gebruiken. Lees onze documentatie voor instructies over het kopiëren van jouw account tussen apparaten. Kies OK om toch door te gaan.</string>
+    <string name="about_credits_devteam"><b>Kontalk is gemaakt door:</b></string>
+    <string name="about_credits_translators"><b>Vertalers</b></string>
+
 </resources>
