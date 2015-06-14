@@ -17,7 +17,7 @@
  -->
 <resources>
   <string name="app_name">Kontalk</string>
-  <string name="app_description">Chatovací program vytvořený dobrovolníky - opensource a zdarma</string>
+  <string name="app_description">Síť rychlých zpráv provozovaná komunitou</string>
   <string name="service_name">Centrum zpráv</string>
   <string name="authenticator_name">Autentizační služba</string>
   <string name="sync_service_name">Synchronizovat kontakty</string>
