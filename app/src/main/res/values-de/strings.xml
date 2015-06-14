@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Gemeinschaftlich betriebenes Instant Messaging Netzwerk</string>
@@ -374,4 +373,7 @@
   <string name="msg_public_key_warning">Der persönliche Schlüssel dieses Nutzers hat sich geändert. Klären Sie bitte mit dem Nutzer ab, ob er/sie Kontalk neu installiert hat oder seinen/ihren Schlüssel absichtlich neu erzeugt hat. Andernfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
 <string name="title_user_exists">Nutzer existiert bereits</string>
     <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es aus dem Kontalktalknetzwerk entfernt wenn sie fortfahren. Bitte lesen Sie in unserer Dokumentation nach wie ihr Account auf verschiedene Geräte kopiert werden kann. Wählen Sie OK um dennoch fortzufahren.</string>
+    <string name="about_credits_translators"><b>Übersetzer</b></string>
+
+<string name="about_credits_devteam"><b>Kontalk wird entwickelt von:</b></string>
     </resources>
