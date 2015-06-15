@@ -172,8 +172,8 @@
   <string name="err_sync_failed">Não foi possível recarregar a lista de contactos. Por favor, tente mais tarde.</string>
   <string name="err_sync_nonetwork">Rede não disponível. Por favor, tente mais tarde.</string>
   <string name="text_invite_message">Olá! Dê uma olhada no Kontalk na Google Play Store, um app de mensagens livre! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Os novos usuários serão automaticamente acrescentados a esta lista.\n\nUse <b>Menu</b> &amp;gt; <b>Convidar usuários</b> para enviar uma mensagem de convite para alguém.</string>
-  <string name="text_conversations_empty">Para começar a escrever mensagens use o ícone &lt;b&gt;nova mensagem&lt;/b&gt; acima.</string>
+  <string name="text_contacts_empty">Os novos usuários serão automaticamente acrescentados a esta lista.\n\nUse <b>Menu</b> > <b>Convidar usuários</b> para enviar uma mensagem de convite para alguém.</string>
+  <string name="text_conversations_empty">Para começar a escrever mensagens use o ícone <b>nova mensagem</b> acima.</string>
   <string name="notify_ticker_external_storage">Armazenamento externo não disponível</string>
   <string name="notify_text_external_storage">Não foi possível gravar para um armazenamento externo.</string>
   <string name="title_user_not_found">Usuário não encontrado</string>

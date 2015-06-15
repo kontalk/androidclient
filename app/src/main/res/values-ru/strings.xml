@@ -179,8 +179,8 @@
   <string name="err_sync_failed">Невозможно обновить список контактов. Пожалуйста, повторите позднее.</string>
   <string name="err_sync_nonetwork">Сеть недоступна. Пожалуйста, повторите позднее.</string>
   <string name="text_invite_message">Привет! Попробуй Kontalk из Google Play Маркет, бесплатное приложение для обмена сообщениями! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Новые пользователи будут добавлены в этот список автоматически.\n\nИспользуйте <b>меню</b> &amp;gt; <b>Пригласить пользователей</b>, чтобы отправить кому-нибудь пригласительное сообщение.</string>
-  <string name="text_conversations_empty">Для написания &lt;b&gt;нового сообщения&lt;/b&gt; используйте значок выше.</string>
+  <string name="text_contacts_empty">Новые пользователи будут добавлены в этот список автоматически.\n\nИспользуйте <b>меню</b> > <b>Пригласить пользователей</b>, чтобы отправить кому-нибудь пригласительное сообщение.</string>
+  <string name="text_conversations_empty">Для написания <b>нового сообщения</b> используйте значок выше.</string>
   <string name="notify_ticker_external_storage">Внешнее хранилище недоступно</string>
   <string name="notify_text_external_storage">Невозможно записать на внешее хранилище.</string>
   <string name="title_user_not_found">Пользователь не найден</string>

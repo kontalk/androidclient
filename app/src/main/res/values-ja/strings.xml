@@ -180,8 +180,8 @@
   <string name="err_sync_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
   <string name="text_invite_message">Google Play ストアで Kontalk をご覧ください。フリーのメッセージングアプリです!
 https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">新しいユーザーは、自動的にこのリストに追加されます。\n\n誰かに招待メッセージを送信するには、<b>メニュー</b> &amp;gt; <b>ユーザーを招待</b> を使用します。</string>
-  <string name="text_conversations_empty">メッセージを書くには、上の &lt;b&gt;新しいメッセージ&lt;/b&gt; アイコン を使用します。</string>
+  <string name="text_contacts_empty">新しいユーザーは、自動的にこのリストに追加されます。\n\n誰かに招待メッセージを送信するには、<b>メニュー</b> > <b>ユーザーを招待</b> を使用します。</string>
+  <string name="text_conversations_empty">メッセージを書くには、上の <b>新しいメッセージ</b> アイコン を使用します。</string>
   <string name="notify_ticker_external_storage">外部ストレージが使用できません</string>
   <string name="notify_text_external_storage">外部ストレージに書き込みできません。</string>
   <string name="title_user_not_found">ユーザーが見つかりません</string>
