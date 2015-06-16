@@ -416,6 +416,7 @@
     <string name="msg_public_key_warning">Personal key for this user has changed. Please verify with the user that he/she reinstalled Kontalk or regenerated his/her key intentionally, otherwise communication could be compromised!</string>
 
     <string name="about_credits_devteam"><b>Kontalk is brought to you by:</b></string>
+    <string name="about_credits_gfx"><b>Graphics/Iconography</b></string>
     <string name="about_credits_translators"><b>Translators</b></string>
 
 </resources>

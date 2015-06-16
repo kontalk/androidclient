@@ -49,6 +49,7 @@ public class CreditsFragment extends Fragment {
         View view = inflater.inflate(R.layout.about_credits, container, false);
 
         TextView coredevs = (TextView) view.findViewById(R.id.coredevs);
+        TextView gfx = (TextView) view.findViewById(R.id.gfx);
         TextView translators = (TextView) view.findViewById(R.id.translators);
 
         InputStream in = null;
@@ -61,6 +62,9 @@ public class CreditsFragment extends Fragment {
 
             JSONArray devteam = root.getJSONArray("devteam");
             addCredits(coredevs, devteam);
+
+            JSONArray gfxteam = root.getJSONArray("gfx");
+            addCredits(gfx, gfxteam);
 
             JSONArray trans = root.getJSONArray("translators");
             addCredits(translators, trans);
