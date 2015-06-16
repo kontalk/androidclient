@@ -340,7 +340,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
-        Preferences.RegistrationProgress saved = Preferences.getRegistrationProgress(this);
+        Preferences.RegistrationProgress saved;
+        try {
+            saved = Preferences.getRegistrationProgress(this);
+        }
+        catch (Exception e) {
+            Log.w(TAG, "unable to restore registration progress");
+            Preferences.clearRegistrationProgress(this);
+            saved = null;
+        }
         if (saved != null) {
             mName = saved.name;
             mPhoneNumber = saved.phone;
