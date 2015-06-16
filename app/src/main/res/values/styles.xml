@@ -19,9 +19,9 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
   <!-- default theme selector -->
   <style name="Theme.Light" parent="@style/Theme.AppCompat.Light">
-      <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue.Bold</item>
-      <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
-      </style>
+    <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue.Bold</item>
+    <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+  </style>
 
   <style name="Theme.Light.Subtitle" parent="@style/Theme.Light">
       <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue</item>
