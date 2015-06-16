@@ -526,7 +526,7 @@ public class ComposerBar extends RelativeLayout implements
                 Toast.LENGTH_LONG).show();
         }
         finally {
-            if (!canSend)
+            if (!canSend && mRecordFile != null)
                 mRecordFile.delete();
         }
     }
