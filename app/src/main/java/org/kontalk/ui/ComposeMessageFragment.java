@@ -70,6 +70,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -147,6 +148,13 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
 
     private static final int PRESENCE_DELAY_THRESHOLD = 5000;
+
+    private enum WarningType {
+        FATAL,
+        WARNING,
+        INFO,       // not implemented
+        SUCCESS,    // not implemented
+    }
 
     /** Context menu group ID for this fragment. */
     private static final int CONTEXT_MENU_GROUP_ID = 2;
@@ -1555,6 +1563,9 @@ public class ComposeMessageFragment extends ListFragment implements
                                         R.string.msg_user_unblocked,
                                         Toast.LENGTH_LONG).show();
 
+                                // hide any block warning
+                                // a new warning will be issued for the key if needed
+                                hideWarning();
                                 presenceSubscribe();
                             }
                             else {
@@ -1711,19 +1722,35 @@ public class ComposeMessageFragment extends ListFragment implements
                     .setNegativeButton(R.string.button_block, listener)
                     .show();
             }
-        });
+        }, WarningType.FATAL);
     }
 
-    private void showWarning(CharSequence text, View.OnClickListener listener) {
+    private void showWarning(CharSequence text, View.OnClickListener listener, WarningType type) {
         LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
         TextView warning = (TextView) root.findViewById(R.id.warning_bar);
         if (warning == null) {
             warning = (TextView) LayoutInflater.from(getActivity())
                 .inflate(R.layout.warning_bar, root, false);
-            warning.setText(text);
-            warning.setOnClickListener(listener);
             root.addView(warning, 0);
         }
+        int textId = 0;
+        int colorId = 0;
+        switch (type) {
+            case FATAL:
+                textId = android.R.attr.textAppearanceSmallInverse;
+                colorId = R.color.warning_bar_background_fatal;
+                break;
+            case WARNING:
+                textId = android.R.attr.textAppearanceSmall;
+                colorId = R.color.warning_bar_background_warning;
+                break;
+        }
+        final TypedValue typedValue = new TypedValue();
+        getActivity().getTheme().resolveAttribute(textId, typedValue, true);
+        warning.setTextAppearance(getActivity(), typedValue.resourceId);
+        warning.setBackgroundColor(getResources().getColor(colorId));
+        warning.setOnClickListener(listener);
+        warning.setText(text);
     }
 
     private void subscribePresence() {
@@ -2236,6 +2263,9 @@ public class ComposeMessageFragment extends ListFragment implements
             else if (contact != null) {
                 // block/unblock
                 boolean blocked = contact.isBlocked();
+                if (blocked)
+                    // show warning if blocked
+                    showWarning(getText(R.string.warning_user_blocked), null, WarningType.WARNING);
 
                 mBlockMenu.setVisible(!blocked).setEnabled(!blocked);
                 mUnblockMenu.setVisible(blocked).setEnabled(blocked);

@@ -45,7 +45,8 @@
     <color name="date_stamp_background">#ff33B5E5</color>
     <color name="date_stamp_text">#dddddd</color>
 
-    <color name="warning_bar_background">#ffdd1812</color>
+    <color name="warning_bar_background_fatal">#dd1812</color>
+    <color name="warning_bar_background_warning">#ffc107</color>
     
     <color name="notification_name_color">@android:color/white</color>
 
