@@ -178,7 +178,7 @@
   <string name="err_sync_failed">Kan contacten niet vernieuwen. Probeer het later opnieuw.</string>
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
   <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger in de Google Play Store, een app om gratis berichten te sturen! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst.\n\nGebruik <b>Menu</b> > <b>Gebruikers uitnodigen</b> om een SMS met een uitnodiging te sturen.</string>
+  <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst.\n\nGebruik <b>Menu</b> &gt; <b>Gebruikers uitnodigen</b> om een SMS met een uitnodiging te sturen.</string>
   <string name="text_conversations_empty">Gebruik de <b>nieuw bericht</b>-knop hierboven om te beginnen met berichten schrijven.</string>
   <string name="notify_ticker_external_storage">Externe opslag niet beschikbaar</string>
   <string name="notify_text_external_storage">Kan niet schrijven naar externe opslag.</string>
@@ -376,4 +376,7 @@
     <string name="about_credits_devteam"><b>Kontalk is gemaakt door:</b></string>
     <string name="about_credits_translators"><b>Vertalers</b></string>
 
-</resources>
+<string name="warning_user_blocked">Je hebt deze gebruiker geblokkeerd.</string>
+
+    <string name="about_credits_gfx"><b>Design</b></string>
+    </resources>
