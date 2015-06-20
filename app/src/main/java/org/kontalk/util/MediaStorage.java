@@ -242,7 +242,7 @@ public abstract class MediaStorage {
 
     /** Creates a file object for an incoming image file. */
     public static File getIncomingImageFile(Date date, String extension) {
-        createNoMedia(PICTURES_ROOT);
+        createMedia(PICTURES_ROOT);
         String timeStamp = sDateFormat.format(date);
         return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
     }
@@ -275,7 +275,7 @@ public abstract class MediaStorage {
     /** Ensures that the given path exists and a .nomedia file exists. */
     private static boolean createNoMedia(File path) {
         try {
-            if (path.isDirectory() || path.mkdirs()) {
+            if (createMedia(path)) {
                 File nomedia = new File(path, ".nomedia");
                 return nomedia.isFile() || nomedia.createNewFile();
             }
