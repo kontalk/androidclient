@@ -277,7 +277,13 @@ public class PGPCoder extends Coder {
                 if (message instanceof PGPOnePassSignatureList) {
                     if (verify && mSender != null) {
                         ops = ((PGPOnePassSignatureList) message).get(0);
-                        ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
+                        try {
+                            ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
+                        }
+                        catch (ClassCastException e) {
+                            // workaround for backward compatibility
+                            ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getMasterKey(mSender));
+                        }
                     }
 
                     message = pgpFact.nextObject();
