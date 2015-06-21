@@ -159,7 +159,7 @@ public class PGP {
     public static PGPKeyPairRing store(PGPDecryptedKeyPairRing pair,
             String id,
             String passphrase)
-                throws PGPException {
+        throws PGPException, IOException {
 
         PGPSignatureSubpacketGenerator sbpktGen;
 
@@ -169,16 +169,17 @@ public class PGP {
         sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_AUTHENTICATE | PGPKeyFlags.CAN_CERTIFY);
         sbpktGen.setPrimaryUserID(false, true);
 
-        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
+        PGPDigestCalculator digestCalc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.authKey,
-            id, sha1Calc, sbpktGen.generate(), null,
-            new JcaPGPContentSignerBuilder(pair.authKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
-            new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
+            id, digestCalc, sbpktGen.generate(), null,
+            new JcaPGPContentSignerBuilder(pair.authKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256),
+            new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, digestCalc)
                 .setProvider(PROVIDER).build(passphrase.toCharArray()));
 
         // add signing subkey
         sbpktGen = new PGPSignatureSubpacketGenerator();
         sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_SIGN);
+        sbpktGen.setEmbeddedSignature(false, crossCertify(pair.signKey, pair.authKey.getPublicKey()));
         keyRingGen.addSubKey(pair.signKey, sbpktGen.generate(), null);
 
         // add encryption subkey
@@ -192,6 +193,15 @@ public class PGP {
         return new PGPKeyPairRing(pubRing, secRing);
     }
 
+    /** Generates a cross-certification for a subkey. */
+    private static PGPSignature crossCertify(PGPKeyPair signer, PGPPublicKey key) throws PGPException {
+        PGPSignatureGenerator sGen = new PGPSignatureGenerator(
+            new JcaPGPContentSignerBuilder(signer.getPublicKey().getAlgorithm(),
+                PGPUtil.SHA256).setProvider(PROVIDER));
+        sGen.init(PGPSignature.PRIMARYKEY_BINDING, signer.getPrivateKey());
+        return sGen.generateCertification(key);
+    }
+
     /** Revokes the given key. */
     public static PGPPublicKey revokeKey(PGPKeyPair secret)
             throws PGPException, IOException, SignatureException {
@@ -201,7 +211,7 @@ public class PGP {
 
         PGPSignatureGenerator       sGen = new PGPSignatureGenerator(
             new JcaPGPContentSignerBuilder(secret.getPublicKey().getAlgorithm(),
-                PGPUtil.SHA1).setProvider(PROVIDER));
+                PGPUtil.SHA256).setProvider(PROVIDER));
 
         sGen.init(PGPSignature.KEY_REVOCATION, pgpPrivKey);
 
@@ -543,8 +553,8 @@ public class PGP {
     public static PrivateKey convertPrivateKey(byte[] privateKeyData, String passphrase)
             throws PGPException, IOException {
 
-        PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
-        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
+        PGPDigestCalculatorProvider digestCalc = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(digestCalc)
             .setProvider(PGP.PROVIDER)
             .build(passphrase.toCharArray());
 
@@ -584,13 +594,13 @@ public class PGP {
     public static PGPSecretKeyRing copySecretKeyRingWithNewPassword(PGPSecretKeyRing secRing,
             String oldPassphrase, String newPassphrase) throws PGPException {
 
-        PGPDigestCalculatorProvider sha1CalcProv = new JcaPGPDigestCalculatorProviderBuilder().build();
-        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1CalcProv)
+        PGPDigestCalculatorProvider digestCalcProv = new JcaPGPDigestCalculatorProviderBuilder().build();
+        PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(digestCalcProv)
             .setProvider(PGP.PROVIDER)
             .build(oldPassphrase.toCharArray());
 
-        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
-        PBESecretKeyEncryptor encryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc)
+        PGPDigestCalculator digestCalc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA256);
+        PBESecretKeyEncryptor encryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, digestCalc)
             .setProvider(PROVIDER).build(newPassphrase.toCharArray());
 
         return PGPSecretKeyRing.copyWithNewPassword(secRing, decryptor, encryptor);

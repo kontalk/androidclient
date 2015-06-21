@@ -131,11 +131,11 @@ public class PersonalKey implements Parcelable {
         return PGP.getFingerprint(mPair.authKey.getPublicKey());
     }
 
-    public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException {
+    public PGPKeyPairRing storeNetwork(String userId, String network, String name, String passphrase) throws PGPException, IOException {
         return store(name, userId + '@' + network, null, passphrase);
     }
 
-    public PGPKeyPairRing store(String name, String email, String comment, String passphrase) throws PGPException {
+    public PGPKeyPairRing store(String name, String email, String comment, String passphrase) throws PGPException, IOException {
         // name[ (comment)] <[email]>
         StringBuilder userid = new StringBuilder(name);
 
