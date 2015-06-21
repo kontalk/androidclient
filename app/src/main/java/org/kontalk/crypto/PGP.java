@@ -432,7 +432,7 @@ public class PGP {
             PGPSignature sig = sigs.next();
             if (sig != null) {
                 PGPSignatureSubpacketVector subpackets = sig.getHashedSubPackets();
-                if (subpackets != null && subpackets.isPrimaryUserID()) {
+                if (subpackets != null) {
                     return subpackets.getKeyFlags();
                 }
             }

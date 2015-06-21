@@ -178,7 +178,7 @@ public class PGPCoder extends Coder {
         // setup signature generator
         PGPSignatureGenerator sigGen = new PGPSignatureGenerator
                 (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
-                    .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
+                    .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256));
         sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
 
         PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
@@ -478,7 +478,7 @@ public class PGPCoder extends Coder {
             // setup signature generator
             PGPSignatureGenerator sigGen = new PGPSignatureGenerator
                 (new BcPGPContentSignerBuilder(mKey.getSignKeyPair()
-                    .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
+                    .getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256));
             sigGen.init(PGPSignature.BINARY_DOCUMENT, mKey.getSignKeyPair().getPrivateKey());
 
             PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
