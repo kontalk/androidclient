@@ -167,6 +167,7 @@ public class PGP {
         sbpktGen = new PGPSignatureSubpacketGenerator();
         // the master key is used for authentication and certification
         sbpktGen.setKeyFlags(false, PGPKeyFlags.CAN_AUTHENTICATE | PGPKeyFlags.CAN_CERTIFY);
+        sbpktGen.setPrimaryUserID(false, true);
 
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, pair.authKey,
