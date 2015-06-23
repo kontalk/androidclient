@@ -18,6 +18,8 @@
 
 package org.kontalk.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.content.Context;
@@ -32,13 +34,36 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import org.kontalk.R;
+
+
 /**
  * System-related utilities.
  * @author Daniele Ricci
  */
 public final class SystemUtils {
 
+    private static final Pattern VERSION_CODE_MATCH = Pattern
+        .compile("\\(([0-9]+)\\)$");
+
     private SystemUtils() {
+    }
+
+    public static boolean isOlderVersion(Context context, String version) {
+        Matcher m = VERSION_CODE_MATCH.matcher(version);
+        if (m.find() && m.groupCount() > 0) {
+            try {
+                int versionCode = Integer.parseInt(m.group(1));
+                int currentVersion = getVersionCode(context);
+                return versionCode < currentVersion;
+            }
+            catch (Exception ignored) {
+            }
+
+        }
+
+        // no version code found at the end - assume older version
+        return true;
     }
 
     public static PackageInfo getPackageInfo(Context context) throws PackageManager.NameNotFoundException {
@@ -65,6 +90,18 @@ public final class SystemUtils {
         catch (PackageManager.NameNotFoundException e) {
             // shouldn't happen
             return 0;
+        }
+    }
+
+    public static String getVersionFullName(Context context) {
+        try {
+            PackageInfo pInfo = SystemUtils.getPackageInfo(context);
+            return context.getString(R.string.about_version,
+                pInfo.versionName, pInfo.versionCode);
+        }
+        catch (PackageManager.NameNotFoundException e) {
+            // shouldn't happen
+            return null;
         }
     }
 

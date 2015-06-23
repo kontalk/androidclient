@@ -54,6 +54,7 @@ import org.jivesoftware.smackx.csi.ClientStateIndicationManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
 import org.jivesoftware.smackx.iqlast.packet.LastActivity;
 import org.jivesoftware.smackx.iqversion.VersionManager;
+import org.jivesoftware.smackx.iqversion.packet.Version;
 import org.jivesoftware.smackx.ping.PingFailedListener;
 import org.jivesoftware.smackx.ping.PingManager;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
@@ -241,6 +242,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Broadcasted when an unblock request has ben accepted by the server. */
     public static final String ACTION_UNBLOCKED = "org.kontalk.action.UNBLOCKED";
 
+    /**
+     * Broadcasted when receiving version information.
+     * Send this intent to request version information to an entity.
+     */
+    public static final String ACTION_VERSION = "org.kontalk.action.VERSION";
+
     // common parameters
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
@@ -276,6 +283,10 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     // used with org.kontalk.action.IMPORT_KEYPAIR
     public static final String EXTRA_KEYPACK = "org.kontalk.keypack";
     public static final String EXTRA_PASSPHRASE = "org.kontalk.passphrase";
+
+    // used with org.kontalk.action.VERSION
+    public static final String EXTRA_VERSION_NAME = "org.kontalk.version.name";
+    public static final String EXTRA_VERSION_NUMBER = "org.kontalk.version.number";
 
     // used for org.kontalk.presence.privacy.action extra
     /** Accept subscription. */
@@ -1091,6 +1102,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                     requestBlocklist();
             }
 
+            else if (ACTION_VERSION.equals(action)) {
+                if (isConnected) {
+                    Version version = new Version(intent.getStringExtra(EXTRA_TO));
+                    version.setStanzaId(intent.getStringExtra(EXTRA_PACKET_ID));
+                    sendPacket(version);
+                }
+            }
+
             else {
                 // no command means normal service start, connect if not connected
                 doConnect = true;
@@ -1186,7 +1205,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // setup version manager
         final VersionManager verMgr = VersionManager.getInstanceFor(connection);
-        verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionName(this));
+        verMgr.setVersion(getString(R.string.app_name), SystemUtils.getVersionFullName(this));
 
         // setup roster
         Roster roster = getRoster();
@@ -1232,6 +1251,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         filter = new StanzaTypeFilter(LastActivity.class);
         connection.addAsyncStanzaListener(new LastActivityListener(this), filter);
+
+        filter = new StanzaTypeFilter(Version.class);
+        connection.addAsyncStanzaListener(new VersionListener(this), filter);
 
         filter = new StanzaTypeFilter(PublicKeyPublish.class);
         connection.addAsyncStanzaListener(new PublicKeyListener(this), filter);
@@ -2288,6 +2310,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static void requestLastActivity(final Context context, String to, String id) {
         Intent i = new Intent(context, MessageCenterService.class);
         i.setAction(MessageCenterService.ACTION_LAST_ACTIVITY);
+        i.putExtra(EXTRA_TO, to);
+        i.putExtra(EXTRA_PACKET_ID, id);
+        context.startService(i);
+    }
+
+    public static void requestVersionInfo(final Context context, String to, String id) {
+        Intent i = new Intent(context, MessageCenterService.class);
+        i.setAction(MessageCenterService.ACTION_VERSION);
         i.putExtra(EXTRA_TO, to);
         i.putExtra(EXTRA_PACKET_ID, id);
         context.startService(i);

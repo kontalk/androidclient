@@ -100,6 +100,8 @@ public class Contact {
 
     /** Timestamp the user was last seen. Not coming from the database. */
     private long mLastSeen;
+    /** Version information. Not coming from the database. */
+    private String mVersion;
 
     public interface ContactCallback {
         public void avatarLoaded(Contact contact, Drawable avatar);
@@ -226,6 +228,14 @@ public class Contact {
         mLastSeen = lastSeen;
     }
 
+    public String getVersion() {
+        return mVersion;
+    }
+
+    public void setVersion(String version) {
+        mVersion = version;
+    }
+
     public void getAvatarAsync(final Context context, final ContactCallback callback) {
         if (mAvatar != null) {
             callback.avatarLoaded(this, mAvatar);
@@ -262,6 +272,7 @@ public class Contact {
 
     private void clear() {
         mLastSeen = 0;
+        mVersion = null;
     }
 
     public static void invalidate(String userId) {

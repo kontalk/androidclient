@@ -121,6 +121,7 @@ import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
@@ -146,8 +147,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private static final int SELECT_ATTACHMENT_OPENABLE = Activity.RESULT_FIRST_USER + 1;
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
-
-    private static final int PRESENCE_DELAY_THRESHOLD = 5000;
 
     private enum WarningType {
         FATAL,
@@ -190,7 +189,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
     /** Available resources. */
     private Set<String> mAvailableResources = new HashSet<String>();
-    private String mLastActivityId;
+    private String mLastActivityRequestId;
+    private String mVersionRequestId;
 
     /** MediaPlayer */
     private MediaPlayer mPlayer;
@@ -1827,6 +1827,14 @@ public class ComposeMessageFragment extends ListFragment implements
                                 if (Presence.Type.available.toString().equals(type)) {
                                     mAvailableResources.add(from);
                                     statusText = context.getString(R.string.seen_online_label);
+
+                                    // request version information
+                                    if (contact != null && contact.getVersion() != null) {
+                                        setVersionInfo(context, contact.getVersion());
+                                    }
+                                    else if (mVersionRequestId == null) {
+                                        requestVersion(from);
+                                    }
                                 }
                                 else if (Presence.Type.unavailable.toString().equals(type)) {
                                     boolean removed = mAvailableResources.remove(from);
@@ -1848,21 +1856,11 @@ public class ComposeMessageFragment extends ListFragment implements
                                             if (contact != null && contact.getLastSeen() > 0) {
                                                 setLastSeenTimestamp(context, contact.getLastSeen());
                                             }
-                                            else if (mLastActivityId == null) {
-                                                mLastActivityId = StringUtils.randomString(6);
-                                                MessageCenterService.requestLastActivity(context, bareFrom, mLastActivityId);
+                                            else if (mLastActivityRequestId == null) {
+                                                mLastActivityRequestId = StringUtils.randomString(6);
+                                                MessageCenterService.requestLastActivity(context, bareFrom, mLastActivityRequestId);
                                             }
                                         }
-
-                                        /* user offline
-                                        long stamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
-                                        if (stamp >= 0 && ((System.currentTimeMillis() - stamp) > PRESENCE_DELAY_THRESHOLD)) {
-                                            statusText = MessageUtils.formatRelativeTimeSpan(context, stamp);
-                                        }
-                                        else {
-                                            statusText = context.getString(R.string.seen_moment_ago_label);
-                                        }
-                                        */
                                     }
                                 }
 
@@ -1881,10 +1879,10 @@ public class ComposeMessageFragment extends ListFragment implements
                     }
 
                     else if (MessageCenterService.ACTION_LAST_ACTIVITY.equals(action)) {
-                        // ignore last activity if we had an available presence in the meantime
                         String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
-                        if (id != null && id.equals(mLastActivityId)) {
-                            mLastActivityId = null;
+                        if (id != null && id.equals(mLastActivityRequestId)) {
+                            mLastActivityRequestId = null;
+                            // ignore last activity if we had an available presence in the meantime
                             if (mAvailableResources.size() == 0) {
                                 String type = intent.getStringExtra(MessageCenterService.EXTRA_TYPE);
                                 if (type == null || !type.equalsIgnoreCase(IQ.Type.error.toString())) {
@@ -1895,13 +1893,33 @@ public class ComposeMessageFragment extends ListFragment implements
                         }
                     }
 
+                    else if (MessageCenterService.ACTION_VERSION.equals(action)) {
+                        // compare version and show warning if needed
+                        String id = intent.getStringExtra(MessageCenterService.EXTRA_PACKET_ID);
+                        if (id != null && id.equals(mVersionRequestId)) {
+                            mVersionRequestId = null;
+                            String name = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NAME);
+                            if (name != null && name.equalsIgnoreCase(getString(R.string.app_name))) {
+                                String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
+                                if (version != null) {
+                                    Contact contact = getContact();
+                                    if (contact != null)
+                                        // cache the version
+                                        contact.setVersion(version);
+                                    setVersionInfo(context, version);
+                                }
+                            }
+                        }
+                    }
+
                     else if (MessageCenterService.ACTION_CONNECTED.equals(action)) {
                         // reset compose sent flag
                         mComposer.resetCompose();
                         // reset available resources list
                         mAvailableResources.clear();
-                        // reset any pending last activity request
-                        mLastActivityId = null;
+                        // reset any pending request
+                        mLastActivityRequestId = null;
+                        mVersionRequestId = null;
                     }
 
                     else if (MessageCenterService.ACTION_ROSTER_LOADED.equals(action)) {
@@ -1936,6 +1954,7 @@ public class ComposeMessageFragment extends ListFragment implements
             filter.addAction(MessageCenterService.ACTION_ROSTER_LOADED);
             filter.addAction(MessageCenterService.ACTION_LAST_ACTIVITY);
             filter.addAction(MessageCenterService.ACTION_MESSAGE);
+            filter.addAction(MessageCenterService.ACTION_VERSION);
 
             mLocalBroadcastManager.registerReceiver(mPresenceReceiver, filter);
 
@@ -1945,6 +1964,14 @@ public class ComposeMessageFragment extends ListFragment implements
                 MessageCenterService.requestConnectionStatus(ctx);
                 MessageCenterService.requestRosterStatus(ctx);
             }
+        }
+    }
+
+    private void setVersionInfo(Context context, String version) {
+        if (SystemUtils.isOlderVersion(context, version)) {
+            // TODO i18n
+            showWarning("Your buddy is using an older version of Kontalk. Some features might not work correctly.",
+                null, WarningType.WARNING);
         }
     }
 
@@ -1979,6 +2006,14 @@ public class ComposeMessageFragment extends ListFragment implements
         mCurrentStatus = statusText;
         if (!mIsTyping)
             setStatusText(statusText);
+    }
+
+    private void requestVersion(String jid) {
+        Context context = getActivity();
+        if (context != null) {
+            mVersionRequestId = StringUtils.randomString(6);
+            MessageCenterService.requestVersionInfo(context, jid, mVersionRequestId);
+        }
     }
 
     /** Sends a subscription request for the current peer. */

@@ -23,8 +23,6 @@ import org.kontalk.util.SystemUtils;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -46,18 +44,10 @@ public class AboutFragment extends Fragment implements OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.about_about, container, false);
 
-        try {
-            Context parent = getActivity();
-            if (parent != null) {
-                PackageInfo pInfo = SystemUtils.getPackageInfo(parent);
-
-                TextView txtVersion = (TextView) view.findViewById(R.id.version);
-                txtVersion.setText(getString(R.string.about_version,
-                    pInfo.versionName, pInfo.versionCode));
-            }
-        }
-        catch (NameNotFoundException e) {
-            // shouldn't happen
+        Context parent = getActivity();
+        if (parent != null) {
+            TextView txtVersion = (TextView) view.findViewById(R.id.version);
+            txtVersion.setText(SystemUtils.getVersionFullName(parent));
         }
 
         view.findViewById(R.id.button_twitter).setOnClickListener(this);
