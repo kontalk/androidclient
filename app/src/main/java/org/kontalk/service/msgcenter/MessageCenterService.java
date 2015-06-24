@@ -106,7 +106,6 @@ import org.kontalk.client.PublicKeyPublish;
 import org.kontalk.client.RosterMatch;
 import org.kontalk.client.OutOfBandData;
 import org.kontalk.client.PushRegistration;
-import org.kontalk.client.RawPacket;
 import org.kontalk.client.ServerlistCommand;
 import org.kontalk.client.SmackInitializer;
 import org.kontalk.client.VCard4;
@@ -794,24 +793,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             // TODO convert actions to classes
 
-            if (ACTION_PACKET.equals(action)) {
-                Object data;
-                String[] group = intent.getStringArrayExtra(EXTRA_PACKET_GROUP);
-                if (group != null)
-                    data = group;
-                else
-                    data = intent.getStringExtra(EXTRA_PACKET);
-
-                try {
-                    for (String pack : group)
-                        sendPacket(new RawPacket(pack));
-                }
-                catch (NullPointerException e) {
-                    sendPacket(new RawPacket((String) data));
-                }
-            }
-
-            else if (ACTION_HOLD.equals(action)) {
+            if (ACTION_HOLD.equals(action)) {
                 if (!mFirstStart)
                     mIdleHandler.hold();
                 doConnect = true;
