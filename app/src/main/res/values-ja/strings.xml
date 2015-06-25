@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">コミュニティ主導のインスタント メッセージング ネットワーク</string>
@@ -180,7 +179,7 @@
   <string name="err_sync_nonetwork">ネットワークが使用できません。後で再度実行してください。</string>
   <string name="text_invite_message">Google Play ストアで Kontalk をご覧ください。フリーのメッセージングアプリです!
 https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">新しいユーザーは、自動的にこのリストに追加されます。\n\n誰かに招待メッセージを送信するには、<b>メニュー</b> > <b>ユーザーを招待</b> を使用します。</string>
+  <string name="text_contacts_empty">新しいユーザーは、自動的にこのリストに追加されます。\n\n誰かに招待メッセージを送信するには、<b>メニュー</b> &gt; <b>ユーザーを招待</b> を使用します。</string>
   <string name="text_conversations_empty">メッセージを書くには、上の <b>新しいメッセージ</b> アイコン を使用します。</string>
   <string name="notify_ticker_external_storage">外部ストレージが使用できません</string>
   <string name="notify_text_external_storage">外部ストレージに書き込みできません。</string>
@@ -375,4 +374,10 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="msg_public_key_warning">このユーザーのパーソナルキーが変更されました。このユーザーに Kontalk を再インストールしたか、あるいは意図的に鍵を再生成したかを確認してください。そうしないと通信が危険にさらされる可能性があります!</string>
 <string name="title_user_exists">ユーザーが存在します</string>
     <string name="err_validation_user_exists"><b>使用している番号はすでにKontalkに登録されています。</b>別のデバイスで登録している場合、この方法では Kontalk から遮断されます。デバイス間でアカウントをコピーする方法については、ドキュメントを参照してください。とにかく続行するには OK を選択します。</string>
-    </resources>
+    <string name="warning_user_blocked">ユーザーはあなたがブロックしました。</string>
+
+    <string name="about_credits_devteam"><b>Kontalk の提供:</b></string>
+    <string name="about_credits_gfx"><b>グラフィックス/アイコンデザイン</b></string>
+    <string name="about_credits_translators"><b>翻訳者</b></string>
+
+</resources>
