@@ -100,7 +100,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
         }
         catch (Exception e) {
-            Log.w(MessageCenterService.TAG, "unable add user to whitelist", e);
+            Log.w(MessageCenterService.TAG, "unable to accept subscription from user", e);
             // TODO should we notify the user about this?
             // TODO throw new PGPException(...)
             return null;
@@ -300,6 +300,8 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
         i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
+        String jid = XmppStringUtils.parseBareJid(p.getFrom());
+
         long timestamp;
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
         if (delay != null) {
@@ -307,7 +309,7 @@ class PresenceListener extends MessageCenterPacketListener {
         }
         else {
             // try last seen from database
-            timestamp = UsersProvider.getLastSeen(ctx, XmppStringUtils.parseBareJid(p.getFrom()));
+            timestamp = UsersProvider.getLastSeen(ctx, jid);
             if (timestamp < 0)
                 timestamp = System.currentTimeMillis();
         }
@@ -315,7 +317,12 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_STAMP, timestamp);
 
         // public key fingerprint
-        i.putExtra(EXTRA_FINGERPRINT, PublicKeyPresence.getFingerprint(p));
+        String fingerprint = PublicKeyPresence.getFingerprint(p);
+        if (fingerprint == null) {
+            // try untrusted fingerprint from database
+            fingerprint = UsersProvider.getFingerprint(ctx, jid, false);
+        }
+        i.putExtra(EXTRA_FINGERPRINT, fingerprint);
 
         // subscription information
         if (entry != null) {

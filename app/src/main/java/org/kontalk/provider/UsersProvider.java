@@ -742,7 +742,7 @@ public class UsersProvider extends ContentProvider {
         return new PGPCoder(server, key, senderKey);
     }
 
-    /** Retrieves the trusted public key for a user. */
+    /** Retrieves the (un)trusted public key for a user. */
     public static PGPPublicKeyRing getPublicKey(Context context, String jid, boolean trusted) {
         byte[] keydata = null;
         ContentResolver res = context.getContentResolver();
@@ -764,6 +764,23 @@ public class UsersProvider extends ContentProvider {
         }
 
         return null;
+    }
+
+    /** Retrieves the (un)trusted fingerprint for a user. */
+    public static String getFingerprint(Context context, String jid, boolean trusted) {
+        String fingerprint = null;
+        ContentResolver res = context.getContentResolver();
+        Cursor c = res.query(Users.CONTENT_URI.buildUpon()
+                .appendPath(jid).build(), new String[] { trusted ?
+                Keys.TRUSTED_FINGERPRINT : Users.FINGERPRINT },
+            null, null, null);
+
+        if (c.moveToFirst())
+            fingerprint = c.getString(0);
+
+        c.close();
+
+        return fingerprint;
     }
 
     /** Retrieves the last seen timestamp for a user. */
