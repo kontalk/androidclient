@@ -267,8 +267,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_SUBSCRIBED_FROM = "org.kontalk.presence.subscribed.from";
     public static final String EXTRA_SUBSCRIBED_TO = "org.kontalk.presence.subscribed.to";
 
-    // use with org.kontalk.action.ROSTER
+    // use with org.kontalk.action.ROSTER(_MATCH)
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
+    public static final String EXTRA_ROSTER_NAME = "org.kontalk.roster.name";
 
     // use with org.kontalk.action.LAST_ACTIVITY
     public static final String EXTRA_SECONDS = "org.kontalk.last.seconds";

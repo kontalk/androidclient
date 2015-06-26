@@ -55,6 +55,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIB
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PRIORITY;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ROSTER_NAME;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SHOW;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
@@ -326,6 +327,8 @@ class PresenceListener extends MessageCenterPacketListener {
 
         // subscription information
         if (entry != null) {
+            i.putExtra(EXTRA_ROSTER_NAME, entry.getName());
+
             RosterPacket.ItemType subscriptionType = entry.getType();
             i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
                 subscriptionType == RosterPacket.ItemType.from);
