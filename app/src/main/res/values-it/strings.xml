@@ -379,4 +379,7 @@
 <string name="warning_user_blocked">Hai bloccato questo utente.</string>
 
     <string name="about_credits_gfx"><b>Grafica/Icone</b></string>
+    <string name="err_no_contact">Contatto non trovato.</string>
+
+    <string name="warning_older_version">Il tuo contatto sta usando una vecchia versione di Kontalk. Qualcosa potrebbe non funzionare correttamente.</string>
     </resources>
