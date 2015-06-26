@@ -21,7 +21,6 @@ package org.kontalk.service.msgcenter;
 import java.util.List;
 
 import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.roster.RosterEntry;
 
 import android.content.Intent;
 
@@ -31,7 +30,6 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_ROSTER_M
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_JIDLIST;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
-import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ROSTER_NAME;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TO;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_TYPE;
 
