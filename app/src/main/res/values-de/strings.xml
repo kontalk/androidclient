@@ -381,5 +381,5 @@
     <string name="about_credits_gfx"><b>Grafiken/Icons</b></string>
     <string name="err_no_contact">Kontakt nicht gefunden.</string>
 
-    <string name="warning_older_version">Ihr Freund verwendet eine ältere Version von Kontalk. Einige Funktionen könnten nicht richtig arbeiten.</string>
+    <string name="warning_older_version">Ihr Freund verwendet eine ältere Version von Kontalk. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     </resources>
