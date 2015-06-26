@@ -144,7 +144,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         SmackConfiguration.DEBUG = BuildConfig.DEBUG;
     }
 
-    public static final String ACTION_PACKET = "org.kontalk.action.PACKET";
     public static final String ACTION_HOLD = "org.kontalk.action.HOLD";
     public static final String ACTION_RELEASE = "org.kontalk.action.RELEASE";
     public static final String ACTION_RESTART = "org.kontalk.action.RESTART";
@@ -251,11 +250,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_PACKET_ID = "org.kontalk.packet.id";
     public static final String EXTRA_TYPE = "org.kontalk.packet.type";
 
-    // use with org.kontalk.action.PACKET
-    public static final String EXTRA_PACKET = "org.kontalk.packet";
-    public static final String EXTRA_PACKET_GROUP = "org.kontalk.packet.group";
-    public static final String EXTRA_STAMP = "org.kontalk.packet.delay";
-
     // use with org.kontalk.action.PRESENCE/SUBSCRIBED
     public static final String EXTRA_FROM = "org.kontalk.stanza.from";
     public static final String EXTRA_TO = "org.kontalk.stanza.to";
@@ -266,6 +260,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String EXTRA_FINGERPRINT = "org.kontalk.presence.fingerprint";
     public static final String EXTRA_SUBSCRIBED_FROM = "org.kontalk.presence.subscribed.from";
     public static final String EXTRA_SUBSCRIBED_TO = "org.kontalk.presence.subscribed.to";
+    public static final String EXTRA_STAMP = "org.kontalk.packet.delay";
 
     // use with org.kontalk.action.ROSTER(_MATCH)
     public static final String EXTRA_JIDLIST = "org.kontalk.roster.JIDList";
