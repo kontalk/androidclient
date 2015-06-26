@@ -178,7 +178,7 @@
   <string name="err_sync_failed">Nepodařilo se aktualizovat seznam kontaktů. Zkuste to prosím později.</string>
   <string name="err_sync_nonetwork">Síť není dostupná. Zkuste to prosím později.</string>
   <string name="text_invite_message">Ahoj! Vyzkoušej Kontalk na Google Play, aplikaci pro posílání zpráv zdarma! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.\n\nPoužijte <b>Menu</b> > <b>Pozvat uživatele</b> a pošlete někomu pozvánku.</string>
+  <string name="text_contacts_empty">Noví uživatelé budou automaticky přidáni do tohoto seznamu.\n\nPoužijte <b>Menu</b> &gt; <b>Pozvat uživatele</b> a pošlete někomu pozvánku.</string>
   <string name="text_conversations_empty">Pokud chcete začít psát zprávu, použijte ikonu <b>nová zpráva</b> výše.</string>
   <string name="notify_ticker_external_storage">Externí úložiště není dostupné</string>
   <string name="notify_text_external_storage">Nepodařilo se zapsat do externího úložiště.</string>
@@ -376,4 +376,10 @@
     <string name="about_credits_devteam"><b>Kontalk vám přináší:</b></string>
     <string name="about_credits_translators"><b>Překladatelé</b></string>
 
-</resources>
+<string name="err_no_contact">Kontakt nebyl nalezen.</string>
+
+    <string name="warning_older_version">Váš přítel používá starší verzi Kontalku. Některé funkce nemusí fungovat správně.</string>
+    <string name="warning_user_blocked">Uživatel byl vámi zablokován.</string>
+
+    <string name="about_credits_gfx"><b>Grafika/Ikony</b></string>
+    </resources>
