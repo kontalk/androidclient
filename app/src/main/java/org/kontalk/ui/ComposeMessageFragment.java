@@ -149,10 +149,20 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int SELECT_ATTACHMENT_CONTACT = Activity.RESULT_FIRST_USER + 2;
 
     private enum WarningType {
-        FATAL,
-        WARNING,
-        INFO,       // not implemented
-        SUCCESS,    // not implemented
+        SUCCESS(0),    // not implemented
+        INFO(1),       // not implemented
+        WARNING(2),
+        FATAL(3);
+
+        private final int value;
+
+        WarningType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
     }
 
     /** Context menu group ID for this fragment. */
@@ -1733,6 +1743,12 @@ public class ComposeMessageFragment extends ListFragment implements
                 .inflate(R.layout.warning_bar, root, false);
             root.addView(warning, 0);
         }
+        else {
+            // check type priority
+            WarningType oldType = (WarningType) warning.getTag();
+            if (oldType != null && oldType.getValue() > type.getValue())
+                return;
+        }
         int textId = 0;
         int colorId = 0;
         switch (type) {
@@ -1749,6 +1765,7 @@ public class ComposeMessageFragment extends ListFragment implements
         getActivity().getTheme().resolveAttribute(textId, typedValue, true);
         warning.setTextAppearance(getActivity(), typedValue.resourceId);
         warning.setBackgroundColor(getResources().getColor(colorId));
+        warning.setTag(type);
         warning.setOnClickListener(listener);
         warning.setText(text);
     }
@@ -1969,9 +1986,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void setVersionInfo(Context context, String version) {
         if (SystemUtils.isOlderVersion(context, version)) {
-            // TODO i18n
-            showWarning("Your buddy is using an older version of Kontalk. Some features might not work correctly.",
-                null, WarningType.WARNING);
+            showWarning(getText(R.string.warning_older_version), null, WarningType.WARNING);
         }
     }
 
