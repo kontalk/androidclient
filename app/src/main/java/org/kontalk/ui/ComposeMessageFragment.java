@@ -707,15 +707,24 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mConversation != null) {
             Contact contact = mConversation.getContact();
             if (contact != null) {
-                Intent i = new Intent(Intent.ACTION_VIEW, contact.getUri());
-                if (i.resolveActivity(getActivity().getPackageManager()) != null) {
-                    startActivity(i);
+                Uri uri = contact.getUri();
+                if (uri != null) {
+                    Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                    if (i.resolveActivity(getActivity().getPackageManager()) != null) {
+                        startActivity(i);
+                    }
+                    else {
+                        // no contacts app found (crap device eh?)
+                        Toast.makeText(getActivity(),
+                            R.string.err_no_contacts_app,
+                            Toast.LENGTH_LONG).show();
+                    }
                 }
                 else {
-                    // no contacts app found (crap device eh?)
+                    // no contact found
                     Toast.makeText(getActivity(),
-                        R.string.err_no_contacts_app,
-                        Toast.LENGTH_LONG).show();
+                        R.string.err_no_contact,
+                        Toast.LENGTH_SHORT).show();
                 }
             }
         }

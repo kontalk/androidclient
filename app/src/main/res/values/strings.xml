@@ -410,6 +410,7 @@
     <string name="err_server_invalid_format">Invalid address format.</string>
 
     <string name="err_no_contacts_app">No contacts app found.</string>
+    <string name="err_no_contact">Contact not found.</string>
 
     <string name="warning_older_version">Your buddy is using an older version of Kontalk. Some features might not work correctly.</string>
     <string name="warning_public_key">WARNING! The personal key for this user changed unexpectedly! Click here for details.</string>
