@@ -382,4 +382,5 @@
     <string name="err_no_contact">Kontakt nicht gefunden.</string>
 
     <string name="warning_older_version">Ihr Freund verwendet eine ältere Version von Kontalk. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
+    <string name="pref_help">Hilfe</string>
     </resources>
