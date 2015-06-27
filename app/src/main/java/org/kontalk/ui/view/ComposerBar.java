@@ -475,7 +475,7 @@ public class ComposerBar extends RelativeLayout implements
             // Start recording
             mRecord.start();
             mIsRecordingAudio = true;
-            lockOrientation();
+            lockScreen();
             disableTextEntry();
         }
         catch (IllegalStateException e) {
@@ -495,7 +495,7 @@ public class ComposerBar extends RelativeLayout implements
 
     private void stopRecording(boolean send) {
         mIsRecordingAudio = false;
-        unlockOrientation();
+        unlockScreen();
         enableTextEntry();
 
         mVibrator.vibrate(AUDIO_RECORD_VIBRATION);
@@ -541,16 +541,18 @@ public class ComposerBar extends RelativeLayout implements
         mRecordLayout.setVisibility(View.GONE);
     }
 
-    private void lockOrientation() {
+    private void lockScreen() {
         int orientation = SystemUtils.getScreenOrientation((Activity) mContext);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2)
             orientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED;
         //noinspection ResourceType
         ((Activity) mContext).setRequestedOrientation(orientation);
+        SystemUtils.acquireScreenOn((Activity) mContext);
     }
 
-    private void unlockOrientation() {
+    private void unlockScreen() {
         ((Activity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        SystemUtils.releaseScreenOn((Activity) mContext);
     }
 
     private void startTimer() {

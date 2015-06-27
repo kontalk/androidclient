@@ -174,6 +174,16 @@ public final class SystemUtils {
         return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
+    public static void acquireScreenOn(Activity activity) {
+        activity.getWindow().addFlags(WindowManager
+            .LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    public static void releaseScreenOn(Activity activity) {
+        activity.getWindow().clearFlags(WindowManager
+            .LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
     /** Returns the type name of the current network, or null. */
     public static String getCurrentNetworkName(Context context) {
         ConnectivityManager connMgr = (ConnectivityManager) context

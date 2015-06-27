@@ -418,7 +418,7 @@ public class AudioDialog extends AlertDialog {
     private void pauseAudio(boolean sending) {
         mImageButton.setImageResource(R.drawable.play);
         mProgressBarAnimator.cancel();
-        mData.getPlayer().pause();
+        mData.pausePlaying();
         if (!sending)
             mStatus = STATUS_PAUSED;
     }
