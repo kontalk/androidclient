@@ -30,4 +30,5 @@
     <string name="flattr_url" translatable="false">http://flattr.com/thing/1194909/Kontalk-network</string>
     <string name="paypal_url" translatable="false">https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=VU57LMG64GATN</string>
     <string name="devteam" translatable="false">Kontalk devteam</string>
+    <string name="help_url" translatable="false">https://github.com/kontalk/androidclient/wiki</string>
 </resources>

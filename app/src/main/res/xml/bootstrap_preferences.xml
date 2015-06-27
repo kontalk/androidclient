@@ -105,6 +105,12 @@
 
     <PreferenceCategory android:key="pref_other"
         android:title="@string/pref_other">
+        <Preference android:key="pref_help"
+            android:title="@string/pref_help">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/help_url" />
+        </Preference>
         <Preference android:key="pref_donate"
             android:title="@string/pref_donate">
             <intent
