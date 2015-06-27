@@ -97,6 +97,7 @@ public class Syncer {
     private final static class PresenceItem {
         public String from;
         public String status;
+        public String rosterName;
         public long timestamp;
         public byte[] publicKey;
         public boolean blocked;
@@ -144,6 +145,7 @@ public class Syncer {
                         PresenceItem item = getPresenceItem(bareJid);
                         item.status = intent.getStringExtra(MessageCenterService.EXTRA_STATUS);
                         item.timestamp = intent.getLongExtra(MessageCenterService.EXTRA_STAMP, -1);
+                        item.rosterName = intent.getStringExtra(MessageCenterService.EXTRA_ROSTER_NAME);
                         if (!item.presence) {
                             item.presence = true;
                             // increment presence count
@@ -526,6 +528,8 @@ public class Syncer {
                         else {
                             registeredValues.putNull(Users.FINGERPRINT);
                             registeredValues.putNull(Users.PUBLIC_KEY);
+                            if (entry.rosterName != null)
+                                registeredValues.put(Users.DISPLAY_NAME, entry.rosterName);
                         }
 
                         // blocked status

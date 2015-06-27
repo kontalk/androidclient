@@ -55,6 +55,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_SUBSCRIB
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PACKET_ID;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_PRIORITY;
+import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_ROSTER_NAME;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_SHOW;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STAMP;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_STATUS;
@@ -100,7 +101,7 @@ class PresenceListener extends MessageCenterPacketListener {
 
         }
         catch (Exception e) {
-            Log.w(MessageCenterService.TAG, "unable add user to whitelist", e);
+            Log.w(MessageCenterService.TAG, "unable to accept subscription from user", e);
             // TODO should we notify the user about this?
             // TODO throw new PGPException(...)
             return null;
@@ -300,6 +301,8 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_SHOW, mode != null ? mode.name() : Presence.Mode.available.name());
         i.putExtra(EXTRA_PRIORITY, p.getPriority());
 
+        String jid = XmppStringUtils.parseBareJid(p.getFrom());
+
         long timestamp;
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
         if (delay != null) {
@@ -307,7 +310,7 @@ class PresenceListener extends MessageCenterPacketListener {
         }
         else {
             // try last seen from database
-            timestamp = UsersProvider.getLastSeen(ctx, XmppStringUtils.parseBareJid(p.getFrom()));
+            timestamp = UsersProvider.getLastSeen(ctx, jid);
             if (timestamp < 0)
                 timestamp = System.currentTimeMillis();
         }
@@ -315,10 +318,17 @@ class PresenceListener extends MessageCenterPacketListener {
         i.putExtra(EXTRA_STAMP, timestamp);
 
         // public key fingerprint
-        i.putExtra(EXTRA_FINGERPRINT, PublicKeyPresence.getFingerprint(p));
+        String fingerprint = PublicKeyPresence.getFingerprint(p);
+        if (fingerprint == null) {
+            // try untrusted fingerprint from database
+            fingerprint = UsersProvider.getFingerprint(ctx, jid, false);
+        }
+        i.putExtra(EXTRA_FINGERPRINT, fingerprint);
 
         // subscription information
         if (entry != null) {
+            i.putExtra(EXTRA_ROSTER_NAME, entry.getName());
+
             RosterPacket.ItemType subscriptionType = entry.getType();
             i.putExtra(EXTRA_SUBSCRIBED_FROM, subscriptionType == RosterPacket.ItemType.both ||
                 subscriptionType == RosterPacket.ItemType.from);

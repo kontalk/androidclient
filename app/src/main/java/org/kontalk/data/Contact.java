@@ -176,10 +176,12 @@ public class Contact {
     /** Returns the {@link Contacts} {@link Uri} identified by this object. */
     public Uri getUri() {
         if (mContactUri == null) {
-            if (mLookupKey != null)
+            if (mLookupKey != null) {
                 mContactUri = ContactsContract.Contacts.getLookupUri(mContactId, mLookupKey);
-            else
+            }
+            else if (mContactId > 0) {
                 mContactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, mContactId);
+            }
         }
         return mContactUri;
     }
@@ -259,8 +261,11 @@ public class Contact {
 
     public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
         if (mAvatar == null) {
-            if (mAvatarData == null)
-                mAvatarData = loadAvatarData(context, getUri());
+            if (mAvatarData == null) {
+                Uri uri = getUri();
+                if (uri != null)
+                    mAvatarData = loadAvatarData(context, uri);
+            }
 
             if (mAvatarData != null) {
                 Bitmap b = BitmapFactory.decodeByteArray(mAvatarData, 0, mAvatarData.length);
