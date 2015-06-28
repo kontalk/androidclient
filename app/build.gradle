@@ -93,10 +93,6 @@ dependencies {
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.2.0'
     compile 'com.segment.backo:backo:1.0.0'
-    compile "org.igniterealtime.smack:smack-android:$smackVersion"
-    compile "org.igniterealtime.smack:smack-core:$smackVersion"
-    compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
-    compile "org.igniterealtime.smack:smack-extensions:$smackVersion"
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
 
