@@ -19,13 +19,11 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
-import org.kontalk.service.msgcenter.PushServiceManager;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.view.MenuItem;
 
