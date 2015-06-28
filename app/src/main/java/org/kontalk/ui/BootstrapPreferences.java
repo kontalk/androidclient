@@ -42,12 +42,6 @@ public class BootstrapPreferences extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.bootstrap_preferences);
 
-        // disable push notifications if GCM is not available on the device
-        if (!PushServiceManager.getInstance(this).isServiceAvailable()) {
-            final Preference push = findPreference("pref_push_notifications");
-            push.setEnabled(false);
-        }
-
         setupActivity();
         PreferencesActivity.setupPreferences(this);
     }
