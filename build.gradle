@@ -13,7 +13,7 @@ allprojects {
         jcenter()
     }
 
-	evaluationDependsOn ":client-common-java"
+    evaluationDependsOn ":client-common-java"
     ext {
         smackVersion = project(':client-common-java').smackVersion
     }
