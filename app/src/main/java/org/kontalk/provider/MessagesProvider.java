@@ -32,6 +32,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.provider.MyMessages.Messages.Fulltext;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
+import org.kontalk.provider.MyMessages.Threads.Groups;
 import org.kontalk.service.ServerListUpdater;
 
 import android.annotation.TargetApi;
@@ -63,6 +64,12 @@ public class MessagesProvider extends ContentProvider {
     private static final String TABLE_MESSAGES = "messages";
     private static final String TABLE_FULLTEXT = "fulltext";
     private static final String TABLE_THREADS = "threads";
+    private static final String TABLE_GROUPS = "groups";
+
+    private static final String TABLE_THREADS_GROUPS = TABLE_THREADS +
+        " LEFT OUTER JOIN " + TABLE_GROUPS + " ON " +
+        TABLE_THREADS + "." + Threads._ID + "=" +
+        TABLE_GROUPS + "." + Groups.THREAD_ID;
 
     private static final int THREADS = 1;
     private static final int THREADS_ID = 2;
@@ -82,7 +89,7 @@ public class MessagesProvider extends ContentProvider {
     private static HashMap<String, String> fulltextProjectionMap;
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
-        private static final int DATABASE_VERSION = 8;
+        private static final int DATABASE_VERSION = 9;
         private static final String DATABASE_NAME = "messages.db";
 
         private static final String _SCHEMA_MESSAGES = "(" +
@@ -154,6 +161,17 @@ public class MessagesProvider extends ContentProvider {
         /** This table will contain the latest message from each conversation. */
         private static final String SCHEMA_THREADS =
             "CREATE TABLE " + TABLE_THREADS + " " + _SCHEMA_THREADS;
+
+        private static final String _SCHEMA_GROUPS = "(" +
+            "group_id TEXT NOT NULL, " +
+            "group_peer TEXT NOT NULL, " +
+            "thread_id INTEGER NOT NULL," +
+            "PRIMARY KEY (group_id, group_peer)" +
+            ")";
+
+        /** This table will contain the groups participants .*/
+        private static final String SCHEMA_GROUPS =
+            "CREATE TABLE " + TABLE_GROUPS + " " + _SCHEMA_GROUPS;
 
         /** This table will contain every text message to speed-up full text searches. */
         private static final String SCHEMA_FULLTEXT =
@@ -279,6 +297,10 @@ public class MessagesProvider extends ContentProvider {
             TRIGGER_THREADS_DELETE_COUNT
         };
 
+        private static final String[] SCHEMA_UPGRADE_V8 = {
+            SCHEMA_GROUPS
+        };
+
         private Context mContext;
 
         protected DatabaseHelper(Context context) {
@@ -290,6 +312,7 @@ public class MessagesProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SCHEMA_MESSAGES);
             db.execSQL(SCHEMA_THREADS);
+            db.execSQL(SCHEMA_GROUPS);
             db.execSQL(SCHEMA_FULLTEXT);
             db.execSQL(SCHEMA_MESSAGES_INDEX);
             db.execSQL(SCHEMA_MESSAGES_TIMESTAMP_IDX);
@@ -321,6 +344,15 @@ public class MessagesProvider extends ContentProvider {
                     else {
                         db.execSQL(sql);
                     }
+                }
+
+                // fallback to next upgrade
+                oldVersion = 8;
+            }
+
+            if (oldVersion == 8) {
+                for (String sql : SCHEMA_UPGRADE_V8) {
+                    db.execSQL(sql);
                 }
             }
         }
@@ -356,18 +388,18 @@ public class MessagesProvider extends ContentProvider {
                 break;
 
             case THREADS:
-                qb.setTables(TABLE_THREADS);
+                qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
                 break;
 
             case THREADS_ID:
-                qb.setTables(TABLE_THREADS);
+                qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
                 qb.appendWhere(Threads._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
             case THREADS_PEER:
-                qb.setTables(TABLE_THREADS);
+                qb.setTables(TABLE_THREADS_GROUPS);
                 qb.setProjectionMap(threadsProjectionMap);
                 qb.appendWhere(Threads.PEER + "='" + DatabaseUtils.sqlEscapeString(uri.getPathSegments().get(1)) + "'");
                 break;
@@ -1302,6 +1334,7 @@ public class MessagesProvider extends ContentProvider {
         threadsProjectionMap.put(Threads.ENCRYPTED, Threads.ENCRYPTED);
         threadsProjectionMap.put(Threads.DRAFT, Threads.DRAFT);
         threadsProjectionMap.put(Threads.REQUEST_STATUS, Threads.REQUEST_STATUS);
+        threadsProjectionMap.put(Groups.GROUP_ID, Groups.GROUP_ID);
 
         fulltextProjectionMap = new HashMap<String, String>();
         fulltextProjectionMap.put(Fulltext.THREAD_ID, Fulltext.THREAD_ID);

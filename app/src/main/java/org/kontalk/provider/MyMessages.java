@@ -79,6 +79,8 @@ public final class MyMessages {
         }
 
         public static final class Fulltext implements BaseColumns {
+            private Fulltext() {}
+
             public static final Uri CONTENT_URI = Uri.parse("content://"
                     + MessagesProvider.AUTHORITY + "/fulltext");
 
@@ -140,6 +142,8 @@ public final class MyMessages {
 
         /** Request represents a presence subscription request. */
         public static final class Requests implements BaseColumns {
+            private Requests() {}
+
             public static final Uri CONTENT_URI = Uri
                 .parse("content://" + MessagesProvider.AUTHORITY + "/requests");
         }
@@ -152,6 +156,14 @@ public final class MyMessages {
         public static Uri getUri(String peer) {
             return Uri.parse("content://"
                     + MessagesProvider.AUTHORITY + "/threads/" + Uri.encode(peer));
+        }
+
+        public static final class Groups {
+            private Groups() {}
+
+            public static final String GROUP_ID = "group_id";
+            public static final String PEER = "group_" + CommonColumns.PEER;
+            public static final String THREAD_ID = Messages.THREAD_ID;
         }
 
         private static final String ITEM_TYPE = BuildConfig.APPLICATION_ID + ".thread";

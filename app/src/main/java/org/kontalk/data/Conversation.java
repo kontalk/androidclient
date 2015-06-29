@@ -47,6 +47,7 @@ public class Conversation {
         Threads.ENCRYPTED,
         Threads.DRAFT,
         Threads.REQUEST_STATUS,
+        Threads.Groups.GROUP_ID,
     };
 
     private final int COLUMN_ID = 0;
@@ -60,6 +61,7 @@ public class Conversation {
     private final int COLUMN_ENCRYPTED = 8;
     private final int COLUMN_DRAFT = 9;
     private final int COLUMN_REQUEST_STATUS = 10;
+    private final int COLUMN_GROUP_ID = 11;
 
     private final Context mContext;
 
@@ -77,6 +79,10 @@ public class Conversation {
     private String mNumberHint;
     private boolean mEncrypted;
     private int mRequestStatus;
+
+    // from groups table
+    private String mGroupId;
+    private String[] mGroupPeers;
 
     private Conversation(Context context) {
         mContext = context;
@@ -99,6 +105,9 @@ public class Conversation {
             mEncrypted = c.getInt(COLUMN_ENCRYPTED) != 0;
             mDraft = c.getString(COLUMN_DRAFT);
             mRequestStatus = c.getInt(COLUMN_REQUEST_STATUS);
+
+            mGroupId = c.getString(COLUMN_GROUP_ID);
+            // group peers are loaded on demand
 
             loadContact();
         }
@@ -147,8 +156,8 @@ public class Conversation {
         return mDate;
     }
 
-    public void setDate(long mDate) {
-        this.mDate = mDate;
+    public void setDate(long date) {
+        this.mDate = date;
     }
 
     public String getMime() {
@@ -159,16 +168,12 @@ public class Conversation {
         return mSubject;
     }
 
-    public void setSubject(String mSubject) {
-        this.mSubject = mSubject;
-    }
-
     public String getRecipient() {
         return mRecipient;
     }
 
-    public void setRecipient(String mRecipient) {
-        this.mRecipient = mRecipient;
+    public void setRecipient(String recipient) {
+        mRecipient = recipient;
         // reload contact
         loadContact();
     }
@@ -213,6 +218,25 @@ public class Conversation {
         mNumberHint = numberHint;
     }
 
+    public String getGroupId() {
+        return mGroupId;
+    }
+
+    public String[] getGroupPeers() {
+        return mGroupPeers;
+    }
+
+    public boolean isGroupChat() {
+        loadGroupPeers(false);
+        return mGroupId != null && mGroupPeers != null && mGroupPeers.length > 1;
+    }
+
+    private void loadGroupPeers(boolean force) {
+        if (mGroupId != null && (mGroupPeers == null || force)) {
+            // TODO load group peer
+        }
+    }
+
     public static void startQuery(AsyncQueryHandler handler, int token) {
         // cancel previous operations
         handler.cancelOperation(token);
@@ -224,7 +248,7 @@ public class Conversation {
         // cancel previous operations
         handler.cancelOperation(token);
         handler.startQuery(token, null, Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, Threads.DEFAULT_SORT_ORDER);
+                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
     public static Cursor startQuery(Context context) {
@@ -234,7 +258,7 @@ public class Conversation {
 
     public static Cursor startQuery(Context context, long threadId) {
         return context.getContentResolver().query(Threads.CONTENT_URI,
-                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, Threads.DEFAULT_SORT_ORDER);
+                ALL_THREADS_PROJECTION, Threads._ID + " = " + threadId, null, null);
     }
 
     public void markAsRead() {
