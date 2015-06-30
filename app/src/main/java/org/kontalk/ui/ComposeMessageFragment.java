@@ -1354,7 +1354,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mArguments != null) {
             String title = mUserName;
             //if (mUserPhone != null) title += " <" + mUserPhone + ">";
-            setActivityTitle(title, "", null);
+            setActivityTitle(title, "");
         }
 
         // update conversation stuff
@@ -1392,20 +1392,27 @@ public class ComposeMessageFragment extends ListFragment implements
         }
     }
 
-    public void setActivityTitle(CharSequence title, CharSequence status, Contact contact) {
-        Activity parent = getActivity();
-        if (parent instanceof ComposeMessage)
-            ((ComposeMessage) parent).setTitle(title, status, contact);
-        else if (title != null)
-            parent.setTitle(title);
+    public void setActivityTitle(CharSequence title, CharSequence status) {
+        if (mStatusText != null) {
+            // tablet UI - ignore title
+            mStatusText.setText(status);
+        }
+        else {
+            ComposeMessageParent parent = (ComposeMessageParent) getActivity();
+            parent.setTitle(title, status);
+        }
     }
 
     public void setActivityStatusUpdating() {
-        Activity parent = getActivity();
-        if (parent instanceof ComposeMessage)
-            ((ComposeMessage) parent).setUpdatingSubtitle();
-        else if (mStatusText != null) {
-            ComposeMessage.setUpdatingSubtitle(mStatusText, null);
+        if (mStatusText != null) {
+            CharSequence text = mStatusText.getText();
+            if (text != null && text.length() > 0) {
+                mStatusText.setText(ComposeMessage.applyUpdatingStyle(text));
+            }
+        }
+        else {
+            ComposeMessageParent parent = (ComposeMessageParent) getActivity();
+            parent.setUpdatingSubtitle();
         }
     }
 
@@ -1473,9 +1480,6 @@ public class ComposeMessageFragment extends ListFragment implements
             // new conversation -- observe peer Uri
             registerPeerObserver();
         }
-
-        // update contact icon
-        setActivityTitle(null, null, mConversation.getContact());
 
         // setup invitation bar
         boolean visible = (mConversation.getRequestStatus() == Threads.REQUEST_WAITING);
@@ -2064,9 +2068,9 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void setStatusText(CharSequence text) {
-        Activity parent = getActivity();
+        ComposeMessageParent parent = (ComposeMessageParent) getActivity();
         if (parent instanceof ComposeMessage)
-            setActivityTitle(null, text, null);
+            setActivityTitle(null, text);
         else {
             if (mStatusText != null)
                 mStatusText.setText(text);

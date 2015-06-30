@@ -25,7 +25,6 @@ import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.NumberValidator;
-import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.message.ImageComponent;
 import org.kontalk.message.TextComponent;
@@ -43,7 +42,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -51,7 +49,6 @@ import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -60,7 +57,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ComposeMessage extends ToolbarActivity {
+public class ComposeMessage extends ToolbarActivity implements ComposeMessageParent {
     public static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
@@ -126,8 +123,8 @@ public class ComposeMessage extends ToolbarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /** Sets custom title. Pass null to any of the arguments to skip setting it. */
-    public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
+    @Override
+    public void setTitle(CharSequence title, CharSequence subtitle) {
         ActionBar bar = getSupportActionBar();
         if (title != null)
             bar.setTitle(title);
@@ -135,25 +132,22 @@ public class ComposeMessage extends ToolbarActivity {
             bar.setSubtitle(subtitle);
     }
 
+    @Override
     public void setUpdatingSubtitle() {
-        setUpdatingSubtitle(null, this);
+        ActionBar bar = getSupportActionBar();
+        CharSequence current = bar.getSubtitle();
+        // no need to set updating status if no text is displayed
+        if (current != null && current.length() > 0) {
+            bar.setSubtitle(applyUpdatingStyle(current));
+        }
     }
 
-    static void setUpdatingSubtitle(TextView view, AppCompatActivity activity) {
-        CharSequence current = view != null ?
-            view.getText() : activity.getSupportActionBar().getSubtitle();
-        // no need to set updating status if no text is displayed
-        if (current.length() > 0) {
-            // we call toString() to strip any existing span
-            SpannableString status = new SpannableString(current.toString());
-            status.setSpan(sUpdatingTextSpan,
-                0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            if (view != null)
-                view.setText(status);
-            else
-                activity.getSupportActionBar().setSubtitle(status);
-        }
+    static CharSequence applyUpdatingStyle(CharSequence text) {
+        // we call toString() to strip any existing span
+        SpannableString status = new SpannableString(text.toString());
+        status.setSpan(sUpdatingTextSpan,
+            0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return status;
     }
 
     @Override

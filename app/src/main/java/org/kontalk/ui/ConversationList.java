@@ -60,7 +60,7 @@ import android.widget.Toast;
  * @version 1.0
  */
 public class ConversationList extends ToolbarActivity
-        implements ContactsSyncActivity, ContactPickerListener {
+        implements ContactsSyncActivity, ContactPickerListener, ComposeMessageParent {
     public static final String TAG = ConversationList.class.getSimpleName();
 
     private ConversationListFragment mFragment;
@@ -338,6 +338,16 @@ public class ConversationList extends ToolbarActivity
     @Override
     public void setSyncing(boolean syncing) {
         // TODO
+    }
+
+    @Override
+    public void setTitle(CharSequence title, CharSequence subtitle) {
+        // nothing
+    }
+
+    @Override
+    public void setUpdatingSubtitle() {
+        // nothing
     }
 
     public void openConversation(Conversation conv, int position) {
