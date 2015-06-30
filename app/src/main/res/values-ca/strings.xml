@@ -374,4 +374,13 @@
 <string name="title_user_exists">L\'usuari ja existeix</string>
     <string name="err_validation_user_exists"><b>Aquest número ja està registrat a Kontalk.</b> Si estàs registrat amb un altre dispositiu, continuar amb el procés desconnectarà aquell dispositiu de Kontalk. Sisplau consulta la nostra documentació per copiar el compte entre diferents dispositius. Selecciona OK per continuar de totes maneres.</string>
     <string name="pref_help">Ajuda</string>
-    </resources>
+    <string name="err_no_contact">Usuari no trobat.</string>
+
+    <string name="warning_older_version">La teva col·lega està utilitzant una versió antiga de Kontalk. Algunes funcionalitats poden no estar operatives.</string>
+    <string name="warning_user_blocked">Has bloquejat a aquest usuari.</string>
+
+    <string name="about_credits_devteam"><b>Kontalk ha arribat a tu gràcies a:</b></string>
+    <string name="about_credits_gfx"><b>Gràfics/Iconografia</b></string>
+    <string name="about_credits_translators"><b>Traductors</b></string>
+
+</resources>
