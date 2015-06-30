@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Xarxa de missatgeria instantània gestionada pels usuaris</string>
@@ -179,7 +178,7 @@
   <string name="err_sync_failed">No ha estat possible actualitzar la llista de contactes. Per favor, torneu a intentar-ho més tard.</string>
   <string name="err_sync_nonetwork">La xarxa no està disponible. Per favor, intenteu-ho més tard.</string>
   <string name="text_invite_message">Ei! Proveu Kontalk (és a Google Play Store), una aplicació de missatgeria lliure i gratuïta! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Els nou usuaris s\'afegiran automàticament a esta llista.\n\nUseu <b>Menu</b> > <b>Convida usuaris</b> per a enviar un missatge d\'invitació a algú.</string>
+  <string name="text_contacts_empty">Els nou usuaris s\'afegiran automàticament a esta llista.\n\nUseu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\'invitació a algú.</string>
   <string name="text_conversations_empty">Per a començar a escriure missatges useu la icona <b>missatge nou</b> que hi ha dalt.</string>
   <string name="notify_ticker_external_storage">L\'emmagatzematge extern no està disponible</string>
   <string name="notify_text_external_storage">No ha estat possible escriure a l\'emmagatzematge extern.</string>
@@ -372,4 +371,7 @@
   <string name="warning_public_key">ALERTA! La clau personal d\'aquest usuari ha canviat! Feu clic ací si en voleu més informació.</string>
   <string name="title_public_key_warning">La clau personal ha canviat</string>
   <string name="msg_public_key_warning">La clau personal d\'aquest usuari ha canviat. Per favor, esbrineu si l\'usuari ha reinstal·lat Kontalk o si ha regenerat la clau deliberadament; si no, la comunicació podria haver estat compromesa!</string>
-</resources>
+<string name="title_user_exists">L\'usuari ja existeix</string>
+    <string name="err_validation_user_exists"><b>Aquest número ja està registrat a Kontalk.</b> Si estàs registrat amb un altre dispositiu, continuar amb el procés desconnectarà aquell dispositiu de Kontalk. Sisplau consulta la nostra documentació per copiar el compte entre diferents dispositius. Selecciona OK per continuar de totes maneres.</string>
+    <string name="pref_help">Ajuda</string>
+    </resources>
