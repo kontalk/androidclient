@@ -351,6 +351,9 @@ public class ComposerBar extends RelativeLayout implements
     }
 
     public void setRootView(View rootView) {
+        if (!(rootView instanceof KeyboardAwareRelativeLayout)) {
+            rootView = rootView.findViewById(R.id.root_view);
+        }
         mRootView = (KeyboardAwareRelativeLayout) rootView;
         // this will handle closing of keyboard while emoji drawer is open
         mRootView.setOnKeyboardShownListener(new KeyboardAwareRelativeLayout.OnKeyboardShownListener() {

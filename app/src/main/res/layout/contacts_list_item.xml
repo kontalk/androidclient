@@ -21,11 +21,12 @@
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:paddingRight="10dip" >
 
-    <android.widget.QuickContactBadge
+    <org.kontalk.ui.view.CircleContactBadge
         android:id="@+id/avatar"
-        android:layout_marginLeft="7dip"
-        android:layout_centerVertical="true"
-        style="?android:attr/quickContactBadgeStyleWindowSmall" />
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/conv_list_margin_left"
+        android:layout_centerVertical="true"/>
 
     <TextView android:id="@android:id/text1"
         android:layout_width="wrap_content"

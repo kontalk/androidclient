@@ -24,11 +24,19 @@
     android:paddingRight="10dip" >
     <!-- android:background="@drawable/conversation_item_background_unread" -->
 
+    <!--
     <android.widget.QuickContactBadge
         android:id="@+id/avatar"
         android:layout_marginLeft="@dimen/conv_list_margin_left"
         android:layout_centerVertical="true"
         style="?android:attr/quickContactBadgeStyleWindowSmall" />
+     -->
+    <org.kontalk.ui.view.CircleContactBadge
+        android:id="@+id/avatar"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/conv_list_margin_left"
+        android:layout_centerVertical="true"/>
 
     <TextView android:id="@+id/from"
         android:layout_width="wrap_content"

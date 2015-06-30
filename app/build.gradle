@@ -96,6 +96,7 @@ dependencies {
     compile 'com.segment.backo:backo:1.0.0'
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
+    compile "de.hdodenhof:circleimageview:1.3.0"
 
     googleplayCompile 'com.google.android.gms:play-services-base:6.5.87'
 

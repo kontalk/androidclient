@@ -39,6 +39,7 @@ import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
 public class ConversationListItem extends AvatarListItem implements Checkable {
 
     private static final StyleSpan STYLE_BOLD = new StyleSpan(Typeface.BOLD);

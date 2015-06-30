@@ -26,12 +26,16 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.widget.QuickContactBadge;
 import android.widget.RelativeLayout;
 
+
+/**
+ * A list item for avatar use.
+ * @author Daniele Ricci
+ */
 public abstract class AvatarListItem extends RelativeLayout implements ContactCallback {
 
-    protected QuickContactBadge mAvatarView;
+    protected CircleContactBadge mAvatarView;
 
     private Handler mHandler;
 
@@ -58,7 +62,7 @@ public abstract class AvatarListItem extends RelativeLayout implements ContactCa
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mAvatarView = (QuickContactBadge) findViewById(R.id.avatar);
+        mAvatarView = (CircleContactBadge) findViewById(R.id.avatar);
 
         if (isInEditMode()) {
             mAvatarView.setImageDrawable(sDefaultContactImage);
