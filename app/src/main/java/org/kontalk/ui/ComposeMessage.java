@@ -36,7 +36,6 @@ import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.XMPPUtils;
 
-import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -46,15 +45,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -85,8 +83,8 @@ public class ComposeMessage extends ActionBarActivity {
     private Intent sendIntent;
 
     private ComposeMessageFragment mFragment;
-    private TextView mTitleView;
-    private TextView mSubtitleView;
+    //private TextView mTitleView;
+    //private TextView mSubtitleView;
 
     /**
      * True if the window has lost focus the last time
@@ -97,7 +95,7 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        // TODO supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.compose_message_screen);
 
@@ -107,15 +105,24 @@ public class ComposeMessage extends ActionBarActivity {
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
 
+        /*
         View customView = getSupportActionBar().getCustomView();
         mTitleView = (TextView) customView.findViewById(R.id.title);
         mSubtitleView = (TextView) customView.findViewById(R.id.summary);
+        */
 
         processIntent(savedInstanceState);
     }
 
-    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
     private void setupActionBar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        ActionBar bar = getSupportActionBar();
+        bar.setDisplayHomeAsUpEnabled(true);
+        bar.setHomeButtonEnabled(true);
+
+        /*
         ActionBar bar = getSupportActionBar();
         bar.setDisplayShowHomeEnabled(true);
         bar.setCustomView(R.layout.compose_message_action_view);
@@ -137,6 +144,7 @@ public class ComposeMessage extends ActionBarActivity {
             iconLp.topMargin = iconLp.bottomMargin = 0;
             icon.setLayoutParams(iconLp);
         }
+        */
     }
 
     @Override
@@ -154,10 +162,11 @@ public class ComposeMessage extends ActionBarActivity {
 
     /** Sets custom title. Pass null to any of the arguments to skip setting it. */
     public void setTitle(CharSequence title, CharSequence subtitle, Contact contact) {
+        ActionBar bar = getSupportActionBar();
         if (title != null)
-            mTitleView.setText(title);
+            bar.setTitle(title);
         if (subtitle != null)
-            mSubtitleView.setText(subtitle);
+            bar.setSubtitle(subtitle);
         if (contact != null) {
             Drawable avatar = contact.getAvatar(this, null);
             if (avatar == null)
@@ -168,11 +177,12 @@ public class ComposeMessage extends ActionBarActivity {
     }
 
     public void setUpdatingSubtitle() {
-        setUpdatingSubtitle(mSubtitleView);
+        setUpdatingSubtitle(null, this);
     }
 
-    static void setUpdatingSubtitle(TextView view) {
-        CharSequence current = view.getText();
+    static void setUpdatingSubtitle(TextView view, AppCompatActivity activity) {
+        CharSequence current = view != null ?
+            view.getText() : activity.getSupportActionBar().getSubtitle();
         // no need to set updating status if no text is displayed
         if (current.length() > 0) {
             // we call toString() to strip any existing span
@@ -180,7 +190,10 @@ public class ComposeMessage extends ActionBarActivity {
             status.setSpan(sUpdatingTextSpan,
                 0, status.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-            view.setText(status);
+            if (view != null)
+                view.setText(status);
+            else
+                activity.getSupportActionBar().setSubtitle(status);
         }
     }
 

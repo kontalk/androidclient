@@ -17,6 +17,11 @@
  -->
 
 <resources>
+    <!-- application colors -->
+    <color name="app_primary">#2196F3</color>
+    <color name="app_primary_dark">#1976D2</color>
+    <color name="app_accent">#03A9F4</color>
+
     <!-- Widget background -->
     <drawable name="light_blue_background">#ffecfbff</drawable>
 

@@ -17,16 +17,6 @@
  -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- default theme selector -->
-  <style name="Theme.Light" parent="@style/Theme.AppCompat.Light">
-    <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue.Bold</item>
-    <item name="actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
-  </style>
-
-  <style name="Theme.Light.Subtitle" parent="@style/Theme.Light">
-      <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue</item>
-  </style>
-
   <style name="Widget.Light.ActionBar.Blue" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
     <item name="background">@drawable/titlebar_bg</item>
     <item name="android:background">@drawable/titlebar_bg</item>
@@ -65,9 +55,6 @@
   </style>
    -->
 
-  <!-- default light-to-dark theme selector -->
-  <style name="Theme.Light2" parent="@android:style/Theme"/>
-
   <style name="TextAppearance.Widget.ConversationCountBadge"
       parent="@android:style/TextAppearance.Small.Inverse">
     <item name="android:textAppearance">?android:attr/textAppearanceSmallInverse</item>
@@ -79,5 +66,4 @@
     <item name="android:paddingRight">4dp</item>
 
   </style>
-
 </resources>

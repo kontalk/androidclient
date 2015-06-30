@@ -16,8 +16,13 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<fragment android:name="org.kontalk.ui.ComposeMessageFragment"
-    android:id="@+id/fragment_compose_message"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-  xmlns:android="http://schemas.android.com/apk/res/android" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_height="match_parent"
+              android:layout_width="match_parent"
+              android:orientation="vertical">
+    <include layout="@layout/toolbar_simple"/>
+    <fragment android:name="org.kontalk.ui.ComposeMessageFragment"
+              android:id="@+id/fragment_compose_message"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"/>
+</LinearLayout>

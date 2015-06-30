@@ -280,7 +280,7 @@ public class ComposeMessageFragment extends ListFragment implements
             background.setImageDrawable(bg);
         }
 
-        mComposer.setRootView(getView().findViewById(R.id.root_view));
+        mComposer.setRootView(getView());
 
         Configuration config = getResources().getConfiguration();
         mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
@@ -1405,7 +1405,7 @@ public class ComposeMessageFragment extends ListFragment implements
         if (parent instanceof ComposeMessage)
             ((ComposeMessage) parent).setUpdatingSubtitle();
         else if (mStatusText != null) {
-            ComposeMessage.setUpdatingSubtitle(mStatusText);
+            ComposeMessage.setUpdatingSubtitle(mStatusText, null);
         }
     }
 

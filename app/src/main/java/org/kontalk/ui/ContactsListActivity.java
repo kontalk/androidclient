@@ -40,13 +40,15 @@ import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.Toast;
 
 
-public class ContactsListActivity extends ActionBarActivity
+public class ContactsListActivity extends AppCompatActivity
         implements ContactsSyncActivity, ContactPickerListener {
 
     public static final String TAG = ContactsListActivity.class.getSimpleName();
@@ -62,9 +64,12 @@ public class ContactsListActivity extends ActionBarActivity
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list_screen);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         //setSupportProgressBarIndeterminate(true);
         // HACK this is for crappy honeycomb :)
-        setSupportProgressBarIndeterminateVisibility(false);
+        // TODO setSupportProgressBarIndeterminateVisibility(false);
 
         mFragment = (ContactsListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);
