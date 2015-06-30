@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Réseau de messagerie instantanée géré par la communauté</string>
@@ -374,4 +373,14 @@
   <string name="msg_public_key_warning">La clé personnelle pour cet utilisateur a changé. S\'il vous plaît vérifier avec l\'utilisateur qu\'il/elle à réinstallé Kontalk ou régénéré sa clé intentionnellement, sinon la communication pourrait être compromise !</string>
 <string name="title_user_exists">L\'utilisateur existe</string>
     <string name="err_validation_user_exists"><b>Le numéro que vous utilisez est déjà inscrit sur Kontalk.</b> Si vous avez enregistré un autre appareil, cela va vous couper de Kontalk. S\'il vous plaît référer vous à notre documentation sur la façon d\'importer votre compte entre différents appareils. Choisissez OK pour continuer tout de même.</string>
-    </resources>
+    <string name="about_credits_gfx"><b>Graphiques/Icônes</b></string>
+    <string name="pref_help">Aide</string>
+    <string name="err_no_contact">Contact non trouvé.</string>
+
+    <string name="warning_older_version">Votre ami utilise une ancienne version de Kontalk. Certaines fonctionnalités pourraient ne pas fonctionner correctement.</string>
+    <string name="warning_user_blocked">Vous avez bloqué l\'utilisateur.</string>
+
+    <string name="about_credits_devteam"><b>Kontalk vous est présenté par :</b></string>
+    <string name="about_credits_translators"><b>Traducteurs</b></string>
+
+</resources>
