@@ -1995,7 +1995,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void setVersionInfo(Context context, String version) {
         if (SystemUtils.isOlderVersion(context, version)) {
-            showWarning(getText(R.string.warning_older_version), null, WarningType.WARNING);
+            showWarning(context.getText(R.string.warning_older_version), null, WarningType.WARNING);
         }
     }
 
