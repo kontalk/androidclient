@@ -40,11 +40,9 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
@@ -62,7 +60,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ComposeMessage extends ActionBarActivity {
+public class ComposeMessage extends ToolbarActivity {
     public static final String TAG = ComposeMessage.class.getSimpleName();
 
     private static final int REQUEST_CONTACT_PICKER = 9721;
@@ -83,8 +81,6 @@ public class ComposeMessage extends ActionBarActivity {
     private Intent sendIntent;
 
     private ComposeMessageFragment mFragment;
-    //private TextView mTitleView;
-    //private TextView mSubtitleView;
 
     /**
      * True if the window has lost focus the last time
@@ -95,8 +91,6 @@ public class ComposeMessage extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
         setContentView(R.layout.compose_message_screen);
 
         setupActionBar();
@@ -105,46 +99,18 @@ public class ComposeMessage extends ActionBarActivity {
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
 
-        /*
-        View customView = getSupportActionBar().getCustomView();
-        mTitleView = (TextView) customView.findViewById(R.id.title);
-        mSubtitleView = (TextView) customView.findViewById(R.id.summary);
-        */
-
         processIntent(savedInstanceState);
     }
 
     private void setupActionBar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setHomeButtonEnabled(true);
-
-        /*
-        ActionBar bar = getSupportActionBar();
-        bar.setDisplayShowHomeEnabled(true);
-        bar.setCustomView(R.layout.compose_message_action_view);
-        bar.setDisplayShowCustomEnabled(true);
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setHomeButtonEnabled(true);
-
-        // hack to remove padding from activity icon
-
-        int homeId;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-            homeId = android.R.id.home;
-        else
-            homeId = android.support.v7.appcompat.R.id.home;
-
-        ImageView icon = (ImageView) findViewById(homeId);
-        if (icon != null) {
-            FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) icon.getLayoutParams();
-            iconLp.topMargin = iconLp.bottomMargin = 0;
-            icon.setLayoutParams(iconLp);
-        }
-        */
+        Toolbar toolbar = super.setupToolbar(true);
+        // TODO find a way to use a colored selector
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onTitleClick();
+            }
+        });
     }
 
     @Override
@@ -153,7 +119,7 @@ public class ComposeMessage extends ActionBarActivity {
 
         switch (itemId) {
             case android.R.id.home:
-                onAvatarClick();
+                onHomeClick();
                 return true;
         }
 
@@ -167,13 +133,6 @@ public class ComposeMessage extends ActionBarActivity {
             bar.setTitle(title);
         if (subtitle != null)
             bar.setSubtitle(subtitle);
-        if (contact != null) {
-            Drawable avatar = contact.getAvatar(this, null);
-            if (avatar == null)
-                avatar = getResources().getDrawable(R.drawable.ic_contact_picture);
-
-            getSupportActionBar().setIcon(avatar);
-        }
     }
 
     public void setUpdatingSubtitle() {
@@ -203,12 +162,12 @@ public class ComposeMessage extends ActionBarActivity {
             super.onBackPressed();
     }
 
-    private void onAvatarClick() {
+    private void onHomeClick() {
         finish();
         startActivity(new Intent(this, ConversationList.class));
     }
 
-    public void onTitleboxClick(View view) {
+    public void onTitleClick() {
         if (mFragment != null)
             mFragment.viewContact();
     }

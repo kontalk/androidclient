@@ -85,6 +85,7 @@ dependencies {
     compile project(':emojicon:library')
 
     compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:design:22.2.0'
     compile 'com.madgag.spongycastle:core:1.51.0.0'
     compile 'com.madgag.spongycastle:prov:1.51.0.0'
     compile 'com.madgag.spongycastle:pkix:1.51.0.0'

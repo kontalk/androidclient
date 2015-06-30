@@ -22,8 +22,6 @@ import java.io.File;
 
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
-import android.annotation.TargetApi;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -32,7 +30,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
@@ -482,13 +479,12 @@ public final class PreferencesActivity extends PreferenceActivity {
             .show();
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void setupActivity() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            ActionBar bar = getActionBar();
-            bar.setDisplayShowHomeEnabled(true);
-            bar.setDisplayHomeAsUpEnabled(true);
-        }
+        /*
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        */
     }
 
     @Override

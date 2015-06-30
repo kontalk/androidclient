@@ -31,8 +31,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -49,7 +47,7 @@ import org.kontalk.util.SystemUtils;
  * My key activity.
  * @author Daniele Ricci
  */
-public class MyKeyActivity extends ActionBarActivity {
+public class MyKeyActivity extends ToolbarActivity {
     private static final String TAG = Kontalk.TAG;
 
     private TextView mTextName;
@@ -61,7 +59,7 @@ public class MyKeyActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mykey_screen);
 
-        setupActivity();
+        setupToolbar(true);
 
         mTextName = (TextView) findViewById(R.id.name);
         mTextFingerprint = (TextView) findViewById(R.id.fingerprint);
@@ -97,11 +95,6 @@ public class MyKeyActivity extends ActionBarActivity {
             // TODO handle errors
             Log.w(TAG, "unable to generate fingerprint QR code");
         }
-    }
-
-    private void setupActivity() {
-        ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

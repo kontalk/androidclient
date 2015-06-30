@@ -18,20 +18,17 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
-import org.kontalk.billing.IBillingService;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBar.Tab;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
+
+import org.kontalk.R;
+import org.kontalk.billing.IBillingService;
 
 
 /**
@@ -42,7 +39,7 @@ import android.view.MenuItem;
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class AboutActivity extends ActionBarActivity {
+public class AboutActivity extends ToolbarActivity {
 
     public static final String ACTION_DONATION = "org.kontalk.DONATION";
     public static final String ACTION_CREDITS = "org.kontalk.CREDITS";
@@ -54,37 +51,21 @@ public class AboutActivity extends ActionBarActivity {
     private static final int NUM_ITEMS = 3;
 
     private AboutPagerAdapter mAdapter;
-    private ViewPager mPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_screen);
 
+        setupToolbar(true);
+
         mAdapter = new AboutPagerAdapter(getSupportFragmentManager());
 
-        mPager = (ViewPager) findViewById(R.id.pager);
-        mPager.setAdapter(mAdapter);
-        mPager.setOnPageChangeListener(
-            new ViewPager.OnPageChangeListener() {
+        ViewPager pager = (ViewPager) findViewById(R.id.pager);
+        pager.setAdapter(mAdapter);
 
-                @Override
-                public void onPageSelected(int position) {
-                    getSupportActionBar().setSelectedNavigationItem(position);
-                }
-
-                @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                }
-
-                @Override
-                public void onPageScrollStateChanged(int position) {
-                }
-
-            }
-        );
-
-        setupActivity();
+        TabLayout tabs = (TabLayout) findViewById(R.id.sliding_tabs);
+        tabs.setupWithViewPager(pager);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -92,45 +73,12 @@ public class AboutActivity extends ActionBarActivity {
             if (action != null) {
 
                 if (ACTION_DONATION.equals(action))
-                    mPager.setCurrentItem(ABOUT_DONATION, true);
+                    pager.setCurrentItem(ABOUT_DONATION, true);
 
                 else if (ACTION_CREDITS.equals(action))
-                    mPager.setCurrentItem(ABOUT_CREDITS, true);
+                    pager.setCurrentItem(ABOUT_CREDITS, true);
             }
         }
-    }
-
-    private void setupActivity() {
-        ActionBar bar = getSupportActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
-        bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-        ActionBar.TabListener listener = new ActionBar.TabListener() {
-
-            @Override
-            public void onTabSelected(Tab tab, FragmentTransaction ft) {
-                mPager.setCurrentItem(tab.getPosition(), true);
-            }
-
-            @Override
-            public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-            }
-
-            @Override
-            public void onTabReselected(Tab tab, FragmentTransaction ft) {
-            }
-
-        };
-
-        bar.addTab(bar.newTab()
-            .setText(R.string.title_about)
-            .setTabListener(listener));
-        bar.addTab(bar.newTab()
-            .setText(R.string.title_donation)
-            .setTabListener(listener));
-        bar.addTab(bar.newTab()
-            .setText(R.string.title_credits)
-            .setTabListener(listener));
     }
 
     @Override
@@ -153,7 +101,7 @@ public class AboutActivity extends ActionBarActivity {
             super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private static class AboutPagerAdapter extends FragmentPagerAdapter {
+    private class AboutPagerAdapter extends FragmentPagerAdapter {
 
         // this is for IabHelper
         private DonationFragment mDonationFragment;
@@ -183,6 +131,23 @@ public class AboutActivity extends ActionBarActivity {
 
             // shouldn't happen, but just in case
             return new AboutFragment();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case ABOUT_ABOUT:
+                    return getText(R.string.title_about);
+
+                case ABOUT_DONATION:
+                    return getText(R.string.title_donation);
+
+                case ABOUT_CREDITS:
+                    return getText(R.string.title_credits);
+            }
+
+            // shouldn't happen, but just in case
+            return super.getPageTitle(position);
         }
 
         public DonationFragment getDonationFragment() {

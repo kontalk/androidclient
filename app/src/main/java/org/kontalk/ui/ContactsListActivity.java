@@ -39,16 +39,13 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.Toast;
 
 
-public class ContactsListActivity extends AppCompatActivity
+public class ContactsListActivity extends ToolbarActivity
         implements ContactsSyncActivity, ContactPickerListener {
 
     public static final String TAG = ContactsListActivity.class.getSimpleName();
@@ -64,18 +61,12 @@ public class ContactsListActivity extends AppCompatActivity
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list_screen);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        //setSupportProgressBarIndeterminate(true);
-        // HACK this is for crappy honeycomb :)
-        // TODO setSupportProgressBarIndeterminateVisibility(false);
+        setupToolbar(false);
+        if (!getIntent().getBooleanExtra("picker", false))
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mFragment = (ContactsListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);
-
-        if (!getIntent().getBooleanExtra("picker", false))
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (!Preferences.getContactsListVisited(this))
             Toast.makeText(this, R.string.msg_do_refresh,

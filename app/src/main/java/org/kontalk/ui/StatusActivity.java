@@ -23,8 +23,6 @@ import org.kontalk.R;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 
@@ -33,16 +31,14 @@ import android.view.MenuItem;
  * TODO use popup activity on tablet
  * @author Daniele Ricci
  */
-public class StatusActivity extends ActionBarActivity {
+public class StatusActivity extends ToolbarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.status_screen);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setupToolbar(true);
     }
 
     public static void start(Activity context) {

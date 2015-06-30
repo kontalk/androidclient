@@ -49,8 +49,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.widget.ListAdapter;
 import android.widget.Toast;
@@ -61,7 +59,7 @@ import android.widget.Toast;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ConversationList extends AppCompatActivity
+public class ConversationList extends ToolbarActivity
         implements ContactsSyncActivity, ContactPickerListener {
     public static final String TAG = ConversationList.class.getSimpleName();
 
@@ -81,8 +79,7 @@ public class ConversationList extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.conversation_list_screen);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setupToolbar(false);
 
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
