@@ -23,5 +23,8 @@ package org.kontalk.ui;
 public interface ContactsSyncActivity {
 
     /** Alerts the user in some way that a contacts sync is under way. */
-    public void setSyncing(boolean syncing);
+    void setSyncing(boolean syncing);
+
+    /** Starts a sync. */
+    void startSync(boolean errorWarning);
 }

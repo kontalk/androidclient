@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,10 +42,12 @@ import android.widget.ListView;
 
 /** Contacts list selection fragment. */
 public class ContactsListFragment extends ListFragment
-        implements ContactsListAdapter.OnContentChangedListener {
+        implements ContactsListAdapter.OnContentChangedListener,
+        SwipeRefreshLayout.OnRefreshListener {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
+    private SwipeRefreshLayout mRefresher;
 
     private LocalBroadcastManager mBroadcastManager;
 
@@ -55,11 +58,11 @@ public class ContactsListFragment extends ListFragment
             new RunnableBroadcastReceiver.ActionRunnable() {
         public void run(String action) {
             if (SyncAdapter.ACTION_SYNC_START.equals(action)) {
-                ((ContactsSyncActivity) getActivity()).setSyncing(true);
+                setSyncing(true);
             }
             else if (SyncAdapter.ACTION_SYNC_FINISH.equals(action)) {
                 startQuery();
-                ((ContactsSyncActivity) getActivity()).setSyncing(false);
+                setSyncing(false);
             }
         }
     };
@@ -67,6 +70,14 @@ public class ContactsListFragment extends ListFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.contacts_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
+        mRefresher.setOnRefreshListener(this);
     }
 
     @Override
@@ -84,8 +95,21 @@ public class ContactsListFragment extends ListFragment
 
         // retain current sync state to hide the refresh button and start indeterminate progress
         registerSyncReceiver();
-        if (SyncAdapter.isActive(parent))
-            ((ContactsSyncActivity) parent).setSyncing(true);
+        if (SyncAdapter.isActive(parent)) {
+            // workaround for https://code.google.com/p/android/issues/detail?id=77712
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mRefresher.setRefreshing(true);
+                }
+            }, 50);
+            ((ContactsSyncActivity) getActivity()).setSyncing(true);
+        }
+    }
+
+    private void setSyncing(boolean syncing) {
+        mRefresher.setRefreshing(syncing);
+        ((ContactsSyncActivity) getActivity()).setSyncing(syncing);
     }
 
     @Override
@@ -121,6 +145,11 @@ public class ContactsListFragment extends ListFragment
 
         if (parent != null)
             parent.onContactSelected(this, ((ContactsListItem) v).getContact());
+    }
+
+    @Override
+    public void onRefresh() {
+        ((ContactsSyncActivity) getActivity()).startSync(true);
     }
 
     private void registerSyncReceiver() {

@@ -341,6 +341,11 @@ public class ConversationList extends ToolbarActivity
     }
 
     @Override
+    public void startSync(boolean errorWarning) {
+        // TODO
+    }
+
+    @Override
     public void setTitle(CharSequence title, CharSequence subtitle) {
         // nothing
     }

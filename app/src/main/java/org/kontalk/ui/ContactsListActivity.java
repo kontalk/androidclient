@@ -41,7 +41,6 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.widget.Toast;
 
 
@@ -50,15 +49,12 @@ public class ContactsListActivity extends ToolbarActivity
 
     public static final String TAG = ContactsListActivity.class.getSimpleName();
 
-    private MenuItem mSyncButton;
-
     private ContactsListFragment mFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list_screen);
 
         setupToolbar(false);
@@ -99,8 +95,6 @@ public class ContactsListActivity extends ToolbarActivity
     @Override
     public synchronized boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.contacts_list_menu, menu);
-        mSyncButton = menu.findItem(R.id.menu_refresh);
-        mSyncButton.setVisible(!SyncAdapter.isActive(this));
         return true;
     }
 
@@ -110,10 +104,6 @@ public class ContactsListActivity extends ToolbarActivity
             case android.R.id.home:
                 finish();
                 startActivity(new Intent(this, ConversationList.class));
-                return true;
-
-            case R.id.menu_refresh:
-                startSync(true);
                 return true;
 
             case R.id.menu_invite:
@@ -132,7 +122,8 @@ public class ContactsListActivity extends ToolbarActivity
         finish();
     }
 
-    private void startSync(boolean errorWarning) {
+    @Override
+    public void startSync(boolean errorWarning) {
         if (MessageCenterService.isNetworkConnectionAvailable(this)) {
             if (SyncAdapter.requestSync(this, true))
                 setSyncing(true);
@@ -144,9 +135,6 @@ public class ContactsListActivity extends ToolbarActivity
 
     @Override
     public void setSyncing(boolean syncing) {
-        if (mSyncButton != null)
-            mSyncButton.setVisible(!syncing);
-        setSupportProgressBarIndeterminateVisibility(syncing);
     }
 
     private void startInvite() {
