@@ -322,8 +322,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_settings: {
-                Intent intent = new Intent(this, BootstrapPreferences.class);
-                startActivityIfNeeded(intent, -1);
+                PreferencesActivity.start(this);
                 break;
             }
             case R.id.menu_import_key: {
