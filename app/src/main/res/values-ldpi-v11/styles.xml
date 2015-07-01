@@ -18,7 +18,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <!-- default theme selector -->
+  <!-- default theme selector
   <style name="Theme.Light" parent="@style/Theme.AppCompat.Light">
       <item name="android:actionBarStyle">@style/Widget.Light.ActionBar.Blue.Bold</item>
       <item name="android:actionBarSize">@dimen/actionbar_height</item>
@@ -38,5 +38,6 @@
   <style name="Widget.Light.ActionButton.LowDensity" parent="@style/Widget.AppCompat.Light.ActionButton">
       <item name="android:minWidth">@dimen/actionbar_item_width</item>
   </style>
+  -->
 
 </resources>
