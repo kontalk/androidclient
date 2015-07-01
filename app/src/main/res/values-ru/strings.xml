@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Сеть обмена мгновенными сообщениями, управляемая сообществом</string>
@@ -179,7 +178,7 @@
   <string name="err_sync_failed">Невозможно обновить список контактов. Пожалуйста, повторите позднее.</string>
   <string name="err_sync_nonetwork">Сеть недоступна. Пожалуйста, повторите позднее.</string>
   <string name="text_invite_message">Привет! Попробуй Kontalk из Google Play Маркет, бесплатное приложение для обмена сообщениями! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Новые пользователи будут добавлены в этот список автоматически.\n\nИспользуйте <b>меню</b> > <b>Пригласить пользователей</b>, чтобы отправить кому-нибудь пригласительное сообщение.</string>
+  <string name="text_contacts_empty">Новые пользователи будут добавлены в этот список автоматически.\n\nИспользуйте <b>меню</b> &gt; <b>Пригласить пользователей</b>, чтобы отправить кому-нибудь пригласительное сообщение.</string>
   <string name="text_conversations_empty">Для написания <b>нового сообщения</b> используйте значок выше.</string>
   <string name="notify_ticker_external_storage">Внешнее хранилище недоступно</string>
   <string name="notify_text_external_storage">Невозможно записать на внешее хранилище.</string>
@@ -372,4 +371,16 @@
   <string name="warning_public_key">ВНИМАНИЕ! Ключевая пара для данного пользователя неожиданно изменилась! Нажмите здесь для подробностей.</string>
   <string name="title_public_key_warning">Ключевая пара изменилась</string>
   <string name="msg_public_key_warning">Ключевая пара для данного пользователя изменилась. Пожалуйста, проверьте, возможно он/она переустанавливали Kontalk или непреднамеренно повторно сгенерировали ключевую пару, в противном случае общение может быть небезопасным!</string>
+<string name="title_user_exists">Пользователь уже сществует</string>
+    <string name="err_validation_user_exists"><b>Ваш номер уже зарегистрирован в Kontalk.</b> Если вы продолжите, предыдущая регистрация будет удалена из  Kontalk. Пожалуйста, обратитесь к документации чтобы узнать как подключаться к одному аккаунту с разных устройств. Для продолжения нажмите OK.</string>
+    <string name="pref_help">Помощь</string>
+    <string name="err_no_contact">Контакт не найден.</string>
+
+    <string name="warning_older_version">Ваш собеседник использует старую версию Kontalk. Некоторые функции могут работать неправильно.</string>
+    <string name="warning_user_blocked">Пользователь был заблокирован вами.</string>
+
+    <string name="about_credits_devteam"><b>Kontalk сделан для вас вот этими людьми:</b></string>
+    <string name="about_credits_gfx"><b>Графика/Иконки</b></string>
+    <string name="about_credits_translators"><b>Переводчики</b></string>
+
 </resources>
