@@ -17,6 +17,7 @@
  -->
 
 <resources>
+
   <!-- default theme selector -->
   <style name="Theme.Light" parent="Theme.AppCompat.Light.NoActionBar">
     <item name="colorPrimary">@color/app_primary</item>
@@ -27,12 +28,5 @@
      -->
     <item name="colorAccent">@color/app_accent</item>
   </style>
-
-  <style name="Theme.Light.Subtitle" parent="Theme.Light">
-      <item name="actionBarStyle">@style/Widget.Light.ActionBar.Blue</item>
-  </style>
-
-  <!-- default light-to-dark theme selector -->
-  <style name="Theme.Light2" parent="@android:style/Theme"/>
 
 </resources>

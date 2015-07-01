@@ -17,43 +17,6 @@
  -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-  <style name="Widget.Light.ActionBar.Blue" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
-    <item name="background">@drawable/titlebar_bg</item>
-    <item name="android:background">@drawable/titlebar_bg</item>
-    <item name="titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse</item>
-    <item name="subtitleTextStyle">@style/TextAppearance.Widget.ActionBar.Subtitle.Inverse</item>
-  </style>
-
-  <style name="Widget.Light.ActionBar.Blue.Bold" parent="@style/Widget.Light.ActionBar.Blue">
-    <item name="titleTextStyle">@style/TextAppearance.Widget.ActionBar.Title.Inverse.Bold</item>
-  </style>
-
-  <style name="TextAppearance.Widget.ActionBar.Title.Inverse.Bold"
-      parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse">
-      <item name="android:textStyle">bold</item>
-  </style>
-
-  <style name="TextAppearance.Widget.ActionBar.Title.Inverse"
-      parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse">
-  </style>
-
-  <style name="TextAppearance.Widget.ActionBar.Subtitle.Inverse"
-      parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse">
-  </style>
-
-  <style name="Widget.ActionButton.Overflow" parent="@style/Widget.AppCompat.ActionButton.Overflow">
-    <item name="android:src">@drawable/ic_menu_overflow</item>
-  </style>
-
-  <!--
-  <style name="Widget.ProgressBar" parent="android:Widget.ProgressBar.Inverse">
-    <item name="android:minWidth">24dip</item>
-    <item name="android:maxWidth">24dip</item>
-    <item name="android:minHeight">24dip</item>
-    <item name="android:maxHeight">24dip</item>
-    <item name="android:layout_marginRight">24dip</item>
-  </style>
-   -->
 
   <style name="TextAppearance.Widget.ConversationCountBadge"
       parent="@android:style/TextAppearance.Small.Inverse">
@@ -64,6 +27,6 @@
     <item name="android:background">@drawable/conversation_badge</item>
     <item name="android:paddingLeft">4dp</item>
     <item name="android:paddingRight">4dp</item>
-
   </style>
+
 </resources>
