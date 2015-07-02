@@ -55,6 +55,8 @@ android {
                 signingConfig signingConfigs.release
         }
         debug {
+            minifyEnabled true
+            proguardFile 'proguard.cfg'
         }
     }
 
@@ -99,6 +101,7 @@ dependencies {
     compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
     compile 'com.github.machinarius:preferencefragment:0.1.1'
     compile 'com.afollestad:material-dialogs:0.7.6.0'
+    compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
 
     googleplayCompile 'com.google.android.gms:play-services-base:6.5.87'
 

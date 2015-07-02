@@ -184,6 +184,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.number_validation);
+        setupToolbar(false);
 
         mAccountManager = AccountManager.get(this);
         mHandler = new Handler();

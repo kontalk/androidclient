@@ -28,6 +28,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
     private EditText mCode;
     private Button mButton;
+    private ProgressBar mProgress;
     private NumberValidator mValidator;
     private PersonalKey mKey;
     private String mName;
@@ -69,14 +71,11 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.code_validation_screen);
-
-        //setSupportProgressBarIndeterminate(true);
-        // HACK this is for crappy honeycomb :)
-        setSupportProgressBarIndeterminateVisibility(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setupToolbar(true);
 
         mCode = (EditText) findViewById(R.id.validation_code);
         mButton = (Button) findViewById(R.id.send_button);
+        mProgress = (ProgressBar) findViewById(R.id.progressbar);
 
         // configuration change??
         RetainData data = (RetainData) getLastCustomNonConfigurationInstance();
@@ -207,14 +206,14 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void startProgress() {
-        setSupportProgressBarIndeterminateVisibility(true);
+        mProgress.setVisibility(View.VISIBLE);
         enableControls(false);
         keepScreenOn(true);
     }
 
     private void abort(boolean ending) {
         if (!ending) {
-            setSupportProgressBarIndeterminateVisibility(false);
+            mProgress.setVisibility(View.GONE);
             enableControls(true);
         }
         else {
