@@ -18,10 +18,10 @@
 
 package org.kontalk.ui;
 
-import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +36,7 @@ import org.kontalk.R;
  * A password input dialog supporting double input with verification.
  * @author Daniele Ricci
  */
+// TODO convert to material dialog
 public class PasswordInputDialog {
 
     private PasswordInputDialog() {
@@ -45,7 +46,7 @@ public class PasswordInputDialog {
         public void onClick(DialogInterface dialog, int which, String password);
     }
 
-    public static class Builder extends AlertDialog.Builder {
+    public static class Builder extends AlertDialog.Builder{
 
         private Context mContext;
         private EditText mPassword1;

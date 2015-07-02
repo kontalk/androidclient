@@ -22,7 +22,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
@@ -479,7 +479,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void error(int title, int message) {
-        new AlertDialog.Builder(this)
+        new AlertDialogWrapper.Builder(this)
             .setTitle(title)
             .setMessage(message)
             .setNeutralButton(android.R.string.ok, null)
@@ -620,7 +620,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // TODO allow for manual validation too
             // TODO we should verify the number against the user ID
 
-            new AlertDialog.Builder(this)
+            new AlertDialogWrapper.Builder(this)
                 .setTitle(R.string.pref_import_keypair)
                 .setMessage(getString(R.string.msg_import_keypair, PersonalKeyImporter.KEYPACK_FILENAME))
                 .setNegativeButton(android.R.string.cancel, null)
@@ -992,7 +992,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void userExistsWarning() {
-        new AlertDialog.Builder(this)
+        new AlertDialogWrapper.Builder(this)
             .setTitle(R.string.title_user_exists)
             .setMessage(R.string.err_validation_user_exists)
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {

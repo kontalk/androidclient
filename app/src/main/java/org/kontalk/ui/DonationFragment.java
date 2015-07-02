@@ -34,7 +34,7 @@ import org.kontalk.billing.OnPurchaseFinishedListener;
 import org.kontalk.billing.QueryInventoryFinishedListener;
 
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -160,7 +160,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         if (pm.resolveActivity(intent, 0) != null)
             startActivity(intent);
         else
-            new AlertDialog
+            new AlertDialogWrapper
                 .Builder(getActivity())
                 .setTitle(R.string.title_bitcoin_dialog)
                 .setMessage(getString(R.string.text_bitcoin_dialog, address))
@@ -265,7 +265,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         final String[] iabItems = getResources().getStringArray(R.array.iab_items);
 
         // show dialog with choices
-        new AlertDialog.Builder(getActivity())
+        new AlertDialogWrapper.Builder(getActivity())
             .setTitle(R.string.title_donation)
             .setItems(dialogItems, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
@@ -307,7 +307,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
     }
 
     private void alert(int title, String message) {
-        new AlertDialog
+        new AlertDialogWrapper
             .Builder(getActivity())
             .setTitle(title)
             .setMessage(message)

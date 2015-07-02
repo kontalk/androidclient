@@ -26,7 +26,7 @@ import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.Preferences;
 
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -159,7 +159,7 @@ public class ConversationListFragment extends ListFragment {
                 final boolean currentMode = Preferences.getOfflineMode(ctx);
                 if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
                     // show offline mode warning
-                    new AlertDialog.Builder(ctx)
+                    new AlertDialogWrapper.Builder(ctx)
                         .setTitle(R.string.title_offline_mode_warning)
                         .setMessage(R.string.message_offline_mode_warning)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -269,8 +269,7 @@ public class ConversationListFragment extends ListFragment {
     }
 
     private void deleteThread(final long threadId) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_thread);
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
         builder.setMessage(R.string.confirm_will_delete_thread);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
@@ -290,8 +289,7 @@ public class ConversationListFragment extends ListFragment {
     }
 
     private void deleteAll() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_all);
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
         builder.setMessage(R.string.confirm_will_delete_all);
         builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {

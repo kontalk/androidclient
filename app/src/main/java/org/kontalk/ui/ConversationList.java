@@ -37,7 +37,7 @@ import org.kontalk.util.XMPPUtils;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -134,7 +134,7 @@ public class ConversationList extends ToolbarActivity
 
         DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
-                new AlertDialog.Builder(ConversationList.this)
+                new AlertDialogWrapper.Builder(ConversationList.this)
                     .setTitle(R.string.title_no_personal_key)
                     .setMessage(R.string.msg_no_personal_key)
                     .setPositiveButton(android.R.string.ok, null)
@@ -201,7 +201,7 @@ public class ConversationList extends ToolbarActivity
     protected Dialog onCreateDialog(int id, Bundle args) {
         if (id == DIALOG_AUTH_ERROR_WARNING) {
 
-            return new AlertDialog.Builder(this)
+            return new AlertDialogWrapper.Builder(this)
                 .setTitle(R.string.title_auth_error)
                 .setMessage(R.string.msg_auth_error)
                 .setPositiveButton(android.R.string.ok, null)

@@ -26,6 +26,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
@@ -36,7 +38,6 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -609,7 +610,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     .getFileInfoMessage(getActivity(), msg,
                         mUserPhone != null ? mUserPhone : mUserJID);
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity())
                     .setTitle(R.string.title_file_info)
                     .setMessage(message)
                     .setNegativeButton(android.R.string.cancel, null)
@@ -740,7 +741,7 @@ public class ComposeMessageFragment extends ListFragment implements
                 attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
             attachmentMenu.setOnClickListener(this);
         }
-        attachmentMenu.createMenu(getString(R.string.menu_attachment)).show();
+        attachmentMenu.createMenu(null).show();
     }
 
     /** Starts activity for an image attachment. */
@@ -815,8 +816,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void deleteThread() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_thread);
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
         builder.setMessage(R.string.confirm_will_delete_thread);
         builder.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
@@ -831,8 +831,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void deleteMessage(final long id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.confirm_delete_message);
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
         builder.setMessage(R.string.confirm_will_delete_message);
         builder.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
@@ -848,8 +847,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void blockUser() {
-        new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.menu_block_user)
+        new AlertDialogWrapper.Builder(getActivity())
             .setMessage(R.string.msg_block_user_warning)
             .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
@@ -861,8 +859,7 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private void unblockUser() {
-        new AlertDialog.Builder(getActivity())
-            .setTitle(R.string.menu_unblock_user)
+        new AlertDialogWrapper.Builder(getActivity())
             .setMessage(R.string.msg_unblock_user_warning)
             .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
@@ -1073,10 +1070,9 @@ public class ComposeMessageFragment extends ListFragment implements
             case MENU_DETAILS: {
                 CharSequence messageDetails = MessageUtils.getMessageDetails(
                         getActivity(), msg, mUserPhone != null ? mUserPhone : mUserJID);
-                new AlertDialog.Builder(getActivity())
+                new AlertDialogWrapper.Builder(getActivity())
                         .setTitle(R.string.title_message_details)
                         .setMessage(messageDetails)
-                        .setPositiveButton(android.R.string.ok, null)
                         .setCancelable(true).show();
                 return true;
             }
@@ -1377,7 +1373,7 @@ public class ComposeMessageFragment extends ListFragment implements
                     }
                 };
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
                 builder.
                     setTitle(R.string.title_user_not_found)
                     .setMessage(R.string.message_user_not_found)
@@ -1657,7 +1653,7 @@ public class ComposeMessageFragment extends ListFragment implements
         text.append(fingerprint);
         text.setSpan(MessageUtils.STYLE_BOLD, start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        AlertDialog.Builder builder = new AlertDialog
+        AlertDialogWrapper.Builder builder = new AlertDialogWrapper
             .Builder(getActivity())
             .setMessage(text);
 
@@ -1733,7 +1729,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         }
                     }
                 };
-                new AlertDialog.Builder(getActivity())
+                new AlertDialogWrapper.Builder(getActivity())
                     .setTitle(R.string.title_public_key_warning)
                     .setMessage(R.string.msg_public_key_warning)
                     .setPositiveButton(R.string.button_accept, listener)

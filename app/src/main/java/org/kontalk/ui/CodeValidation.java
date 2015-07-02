@@ -18,7 +18,7 @@
 
 package org.kontalk.ui;
 
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -172,7 +172,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void error(int title, int message) {
-        new AlertDialog.Builder(this)
+        new AlertDialogWrapper.Builder(this)
             .setTitle(title)
             .setMessage(message)
             .setNeutralButton(android.R.string.ok, null)

@@ -20,10 +20,10 @@ package org.kontalk.ui;
 
 import org.kontalk.R;
 
-import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
@@ -39,6 +39,7 @@ import android.widget.EditText;
  * dialog builder which adds some features over the default one.
  * @author Daniele Ricci
  */
+// TODO convert to material dialog
 public class InputDialog {
 
     private static final int TEXT_VIEW_ID = R.id.textinput;
@@ -50,7 +51,7 @@ public class InputDialog {
         return ((EditText) dialog.findViewById(TEXT_VIEW_ID)).getText();
     }
 
-    public static class Builder extends AlertDialog.Builder {
+    public static class Builder extends AlertDialog.Builder{
 
         public Builder(Context context, int inputType) {
             super(context);

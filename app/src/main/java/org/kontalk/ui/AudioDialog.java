@@ -26,7 +26,7 @@ import org.kontalk.ui.view.CircularSeekBar;
 import org.kontalk.util.MediaStorage;
 
 import android.annotation.SuppressLint;
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,6 +35,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -356,7 +357,7 @@ public class AudioDialog extends AlertDialog {
         catch (RuntimeException e) {
             Log.e(TAG, "error starting audio recording", e);
             cancel();
-            new AlertDialog.Builder(getContext())
+            new AlertDialogWrapper.Builder(getContext())
                 .setMessage(R.string.err_audio_record)
                 .setNegativeButton(android.R.string.ok, null)
                 .show();
@@ -371,7 +372,7 @@ public class AudioDialog extends AlertDialog {
         catch (RuntimeException e) {
             Log.e(TAG, "error recording audio", e);
             cancel();
-            new AlertDialog.Builder(getContext())
+            new AlertDialogWrapper.Builder(getContext())
                 .setMessage(R.string.err_audio_record)
                 .setNegativeButton(android.R.string.ok, null)
                 .show();
@@ -391,7 +392,7 @@ public class AudioDialog extends AlertDialog {
         }
         catch (IOException e) {
             Log.e (TAG, "error reading from external storage", e);
-            new AlertDialog.Builder(getContext())
+            new AlertDialogWrapper.Builder(getContext())
                 .setMessage(R.string.err_playing_sdcard)
                 .setNegativeButton(android.R.string.ok, null)
                 .show();

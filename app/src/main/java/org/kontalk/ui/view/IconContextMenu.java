@@ -19,19 +19,20 @@ package org.kontalk.ui.view;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
 
 /**
  * @author nguyendt
@@ -62,7 +63,6 @@ public class IconContextMenu implements DialogInterface.OnCancelListener,
 
     /**
      * Add menu item
-     * @param menuItem
      */
     public void addItem(Resources res, CharSequence title,
             int imageResourceId, int actionTag) {
@@ -102,7 +102,7 @@ public class IconContextMenu implements DialogInterface.OnCancelListener,
 
         builder.setInverseBackgroundForced(true);
 
-        AlertDialog dialog = builder.create();
+        Dialog dialog = builder.create();
         dialog.setOnCancelListener(this);
         dialog.setOnDismissListener(this);
         return dialog;

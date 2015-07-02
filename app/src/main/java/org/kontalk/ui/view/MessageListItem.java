@@ -18,7 +18,7 @@
 
 package org.kontalk.ui.view;
 
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -426,7 +426,7 @@ public class MessageListItem extends RelativeLayout {
                     }
                 };
 
-            AlertDialog.Builder b = new AlertDialog.Builder(mInflater.getContext());
+            AlertDialogWrapper.Builder b = new AlertDialogWrapper.Builder(mInflater.getContext());
 
             final TextContentView textView = textContent;
             DialogInterface.OnClickListener click = new DialogInterface.OnClickListener() {

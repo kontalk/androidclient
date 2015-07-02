@@ -25,7 +25,7 @@ import com.github.machinarius.preferencefragment.PreferenceFragment;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
+import com.afollestad.materialdialogs.AlertDialogWrapper;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -133,7 +133,7 @@ public final class PreferencesFragment extends PreferenceFragment {
                         }
 
                         public void onInvalidPassphrase() {
-                            new AlertDialog.Builder(getActivity())
+                            new AlertDialogWrapper.Builder(getActivity())
                                 .setTitle(R.string.title_passphrase)
                                 .setMessage(R.string.err_password_invalid)
                                 .show();
@@ -156,7 +156,7 @@ public final class PreferencesFragment extends PreferenceFragment {
         regenKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new AlertDialog.Builder(getActivity())
+                new AlertDialogWrapper.Builder(getActivity())
                     .setTitle(R.string.pref_regenerate_keypair)
                     .setMessage(R.string.pref_regenerate_keypair_confirm)
                     .setNegativeButton(android.R.string.cancel, null)
@@ -219,7 +219,7 @@ public final class PreferencesFragment extends PreferenceFragment {
                         }
 
                         public void onInvalidPassphrase() {
-                            new AlertDialog.Builder(getActivity())
+                            new AlertDialogWrapper.Builder(getActivity())
                                 .setTitle(R.string.pref_export_keypair)
                                 .setMessage(R.string.err_password_invalid)
                                 .setPositiveButton(android.R.string.ok, null)
@@ -239,7 +239,7 @@ public final class PreferencesFragment extends PreferenceFragment {
         importKeyPair.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new AlertDialog.Builder(getActivity())
+                new AlertDialogWrapper.Builder(getActivity())
                     .setTitle(R.string.pref_import_keypair)
                     .setMessage(getString(R.string.msg_import_keypair, KEYPACK_FILENAME))
                     .setNegativeButton(android.R.string.cancel, null)
@@ -263,7 +263,7 @@ public final class PreferencesFragment extends PreferenceFragment {
         deleteAccount.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new AlertDialog.Builder(getActivity())
+                new AlertDialogWrapper.Builder(getActivity())
                     .setTitle(R.string.pref_delete_account)
                     .setMessage(R.string.msg_delete_account)
                     .setNegativeButton(android.R.string.cancel, null)
@@ -515,7 +515,7 @@ public final class PreferencesFragment extends PreferenceFragment {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 String value = newValue.toString().trim();
                 if (value.length() > 0 && !EndpointServer.validate(value)) {
-                    new AlertDialog.Builder(fragment.getActivity())
+                    new AlertDialogWrapper.Builder(fragment.getActivity())
                         .setTitle(R.string.pref_network_uri)
                         .setMessage(R.string.err_server_invalid_format)
                         .setPositiveButton(android.R.string.ok, null)
