@@ -40,10 +40,11 @@ import org.kontalk.util.Preferences;
  * TODO convert to fragments layout
  * @author Daniele Ricci
  */
-public final class PreferencesActivity extends ToolbarActivity {
+public final class PreferencesActivity extends ToolbarActivity implements PreferencesFragment.Callback {
     private static final String TAG = Kontalk.TAG;
 
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
+    private static final String TAG_NESTED = "nested";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,19 +53,21 @@ public final class PreferencesActivity extends ToolbarActivity {
         setContentView(R.layout.preferences_screen);
         setupToolbar(true);
 
-        Fragment fragment;
+        if (savedInstanceState == null) {
+            Fragment fragment;
 
-        // no account - redirect to bootstrap preferences
-        if (Authenticator.getDefaultAccount(this) == null) {
-            fragment = new BootstrapPreferences();
-        }
-        else {
-            fragment = new PreferencesFragment();
-        }
+            // no account - redirect to bootstrap preferences
+            if (Authenticator.getDefaultAccount(this) == null) {
+                fragment = new BootstrapPreferences();
+            }
+            else {
+                fragment = new PreferencesFragment();
+            }
 
-        getSupportFragmentManager().beginTransaction()
-            .replace(R.id.container, fragment)
-            .commit();
+            getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
+        }
     }
 
     @Override
@@ -95,6 +98,33 @@ public final class PreferencesActivity extends ToolbarActivity {
         }
         else
             super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // this if statement is necessary to navigate through nested and main fragments
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            super.onBackPressed();
+        }
+        else {
+            getSupportFragmentManager().popBackStack();
+        }
+    }
+
+    @Override
+    public void onNestedPreferenceSelected(int key) {
+        Fragment fragment;
+        switch (key) {
+            case R.xml.privacy_preferences:
+                fragment = new PrivacyPreferences();
+                break;
+            default:
+                throw new IllegalArgumentException("unknown preference screen: " + key);
+        }
+
+        getSupportFragmentManager().beginTransaction()
+            .replace(R.id.container, fragment, TAG_NESTED)
+            .addToBackStack(TAG_NESTED).commit();
     }
 
     public static void start(Activity context) {

@@ -70,6 +70,8 @@ public final class PreferencesFragment extends PreferenceFragment {
 
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
 
+    private Callback mCallback;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +91,16 @@ public final class PreferencesFragment extends PreferenceFragment {
         }
 
         addPreferencesFromResource(R.xml.preferences);
+
+        // privacy section
+        final Preference privacy = findPreference("pref_privacy_settings");
+        privacy.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                mCallback.onNestedPreferenceSelected(R.xml.privacy_preferences);
+                return true;
+            }
+        });
 
         // push notifications checkbox
         final Preference pushNotifications = findPreference("pref_push_notifications");
@@ -414,6 +426,17 @@ public final class PreferencesFragment extends PreferenceFragment {
     }
 
     @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (activity instanceof Callback) {
+            mCallback = (Callback) activity;
+        }
+        else {
+            throw new IllegalStateException("Owner must implement Callback interface");
+        }
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setupPreferences(this);
@@ -431,7 +454,6 @@ public final class PreferencesFragment extends PreferenceFragment {
 
         return super.onOptionsItemSelected(item);
     }
-
 
     private interface OnPassphraseChangedListener {
         void onPassphraseChanged(String passphrase);
@@ -526,6 +548,10 @@ public final class PreferencesFragment extends PreferenceFragment {
             }
         });
 
+    }
+
+    public interface Callback {
+        public void onNestedPreferenceSelected(int key);
     }
 
 }

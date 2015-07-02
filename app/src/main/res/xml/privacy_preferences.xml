@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
+     Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference android:key="pref_encrypt"
+        android:summaryOff="@string/pref_title_off_encrypt"
+        android:summaryOn="@string/pref_title_on_encrypt"
+        android:title="@string/pref_encrypt"
+        android:defaultValue="@bool/pref_default_encrypt"/>
+    <!--
+    <CheckBoxPreference android:key="pref_encrypt_userdata"
+        android:summaryOff="@string/pref_title_off_encrypt_userdata"
+        android:summaryOn="@string/pref_title_on_encrypt_userdata"
+        android:title="@string/pref_encrypt_userdata"
+        android:defaultValue="true"/>
+     -->
+    <CheckBoxPreference android:key="pref_auto_accept_subscriptions"
+        android:title="@string/pref_auto_accept_subscriptions"
+        android:summary="@string/pref_title_auto_accept_subscriptions"
+        android:defaultValue="@bool/pref_default_auto_accept_subscriptions"/>
+    <CheckBoxPreference android:key="pref_send_typing"
+        android:title="@string/pref_send_typing"
+        android:defaultValue="@bool/pref_default_send_typing"/>
+    <!--
+    <CheckBoxPreference android:key="pref_hide_presence"
+        android:summaryOff="@string/pref_title_off_hide_presence"
+        android:summaryOn="@string/pref_title_on_hide_presence"
+        android:title="@string/pref_hide_presence"
+        android:defaultValue="false"/>
+     -->
+
+</PreferenceScreen>
