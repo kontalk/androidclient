@@ -35,7 +35,9 @@ import org.kontalk.billing.QueryInventoryFinishedListener;
 
 import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
-import android.app.ProgressDialog;
+import com.afollestad.materialdialogs.MaterialDialog;
+
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -183,7 +185,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.paypal_url))));
     }
 
-    private void setupGoogle(final ProgressDialog progress) {
+    private void setupGoogle(final Dialog progress) {
         if (mBillingService == null) {
             mBillingService = BillingServiceManager.getInstance(getActivity());
             mBillingService.enableDebugLogging(BuildConfig.DEBUG);
@@ -207,7 +209,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
         }
     }
 
-    private void queryInventory(final ProgressDialog progress) {
+    private void queryInventory(final Dialog progress) {
         final String[] iabItems = getResources().getStringArray(R.array.iab_items);
 
         QueryInventoryFinishedListener gotInventoryListener = new QueryInventoryFinishedListener() {
@@ -281,9 +283,12 @@ public class DonationFragment extends Fragment implements OnClickListener {
 
     private void donateGoogle() {
         // progress dialog
-        ProgressDialog dialog = ProgressDialog.show(getActivity(), getString(R.string.title_donation),
-            getString(R.string.msg_connecting_iab), true, true,
-            new DialogInterface.OnCancelListener() {
+        Dialog dialog = new MaterialDialog.Builder(getActivity())
+            .content(R.string.msg_connecting_iab)
+            .cancelable(true)
+            .progress(true, 0)
+            .cancelListener(new DialogInterface.OnCancelListener() {
+                @Override
                 public void onCancel(DialogInterface dialog) {
                     // FIXME this doesn't seem to work in some cases
                     if (mBillingService != null) {
@@ -291,7 +296,8 @@ public class DonationFragment extends Fragment implements OnClickListener {
                         mBillingService = null;
                     }
                 }
-            });
+            })
+            .show();
 
         setupGoogle(dialog);
     }
