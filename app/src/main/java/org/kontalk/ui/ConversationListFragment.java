@@ -271,7 +271,6 @@ public class ConversationListFragment extends ListFragment {
     private void deleteThread(final long threadId) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.confirm_delete_thread);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setMessage(R.string.confirm_will_delete_thread);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
@@ -293,7 +292,6 @@ public class ConversationListFragment extends ListFragment {
     private void deleteAll() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.confirm_delete_all);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setMessage(R.string.confirm_will_delete_all);
         builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {

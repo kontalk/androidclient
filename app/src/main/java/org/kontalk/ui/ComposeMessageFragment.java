@@ -817,7 +817,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private void deleteThread() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.confirm_delete_thread);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setMessage(R.string.confirm_will_delete_thread);
         builder.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
@@ -834,7 +833,6 @@ public class ComposeMessageFragment extends ListFragment implements
     private void deleteMessage(final long id) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.confirm_delete_message);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setMessage(R.string.confirm_will_delete_message);
         builder.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
@@ -1661,7 +1659,6 @@ public class ComposeMessageFragment extends ListFragment implements
 
         AlertDialog.Builder builder = new AlertDialog
             .Builder(getActivity())
-            .setIcon(android.R.drawable.ic_dialog_info)
             .setMessage(text);
 
         if (informationOnly) {
@@ -1737,7 +1734,6 @@ public class ComposeMessageFragment extends ListFragment implements
                     }
                 };
                 new AlertDialog.Builder(getActivity())
-                    .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle(R.string.title_public_key_warning)
                     .setMessage(R.string.msg_public_key_warning)
                     .setPositiveButton(R.string.button_accept, listener)

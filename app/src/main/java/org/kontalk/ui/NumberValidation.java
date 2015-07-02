@@ -994,7 +994,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private void userExistsWarning() {
         new AlertDialog.Builder(this)
             .setTitle(R.string.title_user_exists)
-            .setIcon(android.R.drawable.ic_dialog_alert)
             .setMessage(R.string.err_validation_user_exists)
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override

@@ -516,7 +516,6 @@ public final class PreferencesFragment extends PreferenceFragment {
                 String value = newValue.toString().trim();
                 if (value.length() > 0 && !EndpointServer.validate(value)) {
                     new AlertDialog.Builder(fragment.getActivity())
-                        .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle(R.string.pref_network_uri)
                         .setMessage(R.string.err_server_invalid_format)
                         .setPositiveButton(android.R.string.ok, null)
