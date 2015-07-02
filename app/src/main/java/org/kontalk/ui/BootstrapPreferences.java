@@ -18,8 +18,6 @@
 
 package org.kontalk.ui;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
-
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -31,18 +29,12 @@ import org.kontalk.R;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class BootstrapPreferences extends PreferenceFragment {
+public class BootstrapPreferences extends RootPreferenceFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.bootstrap_preferences);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        PreferencesFragment.setupPreferences(this);
     }
 
     @Override

@@ -20,8 +20,6 @@ package org.kontalk.ui;
 
 import java.io.File;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
-
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
@@ -65,12 +63,10 @@ import static org.kontalk.crypto.PersonalKeyImporter.KEYPACK_FILENAME;
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public final class PreferencesFragment extends PreferenceFragment {
+public final class PreferencesFragment extends RootPreferenceFragment {
     private static final String TAG = Kontalk.TAG;
 
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
-
-    private Callback mCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,16 +87,6 @@ public final class PreferencesFragment extends PreferenceFragment {
         }
 
         addPreferencesFromResource(R.xml.preferences);
-
-        // privacy section
-        final Preference privacy = findPreference("pref_privacy_settings");
-        privacy.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                mCallback.onNestedPreferenceSelected(R.xml.privacy_preferences);
-                return true;
-            }
-        });
 
         // push notifications checkbox
         final Preference pushNotifications = findPreference("pref_push_notifications");
@@ -426,23 +412,6 @@ public final class PreferencesFragment extends PreferenceFragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (activity instanceof Callback) {
-            mCallback = (Callback) activity;
-        }
-        else {
-            throw new IllegalStateException("Owner must implement Callback interface");
-        }
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setupPreferences(this);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -522,22 +491,24 @@ public final class PreferencesFragment extends PreferenceFragment {
             .show();
     }
 
-    static void setupPreferences(final PreferenceFragment fragment) {
+    @Override
+    protected void setupPreferences() {
+        super.setupPreferences();
+
         // disable push notifications if GCM is not available on the device
-        if (!PushServiceManager.getInstance(fragment.getActivity()).isServiceAvailable()) {
-            final CheckBoxPreference push = (CheckBoxPreference) fragment
-                .findPreference("pref_push_notifications");
+        if (!PushServiceManager.getInstance(getActivity()).isServiceAvailable()) {
+            final CheckBoxPreference push = (CheckBoxPreference) findPreference("pref_push_notifications");
             push.setEnabled(false);
             push.setChecked(false);
             push.setSummary(R.string.pref_title_disabled_push_notifications);
         }
 
-        final Preference manualServer = fragment.findPreference("pref_network_uri");
+        final Preference manualServer = findPreference("pref_network_uri");
         manualServer.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 String value = newValue.toString().trim();
                 if (value.length() > 0 && !EndpointServer.validate(value)) {
-                    new AlertDialogWrapper.Builder(fragment.getActivity())
+                    new AlertDialogWrapper.Builder(getActivity())
                         .setTitle(R.string.pref_network_uri)
                         .setMessage(R.string.err_server_invalid_format)
                         .setPositiveButton(android.R.string.ok, null)
@@ -548,10 +519,6 @@ public final class PreferencesFragment extends PreferenceFragment {
             }
         });
 
-    }
-
-    public interface Callback {
-        public void onNestedPreferenceSelected(int key);
     }
 
 }
