@@ -26,7 +26,7 @@ import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.Preferences;
 
-import android.app.AlertDialog;
+import android.support.v7.app.AlertDialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
