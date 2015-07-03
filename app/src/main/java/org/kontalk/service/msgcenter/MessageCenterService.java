@@ -300,13 +300,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
 
-    /** How much time before a wakeup alarm triggers. */
-    public final static int DEFAULT_WAKEUP_TIME = 900000;
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
-
-    /** How much time to wait to idle the message center (default 5 mins). */
-    private final static int DEFAULT_IDLE_TIME = 5*60*1000;
 
     /** Normal ping tester timeout. */
     private static final int SLOW_PING_TIMEOUT = 10000;
@@ -2432,7 +2427,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void setWakeupAlarm() {
         long delay = Preferences.getWakeupTimeMillis(this,
-            MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
+            MIN_WAKEUP_TIME);
 
         // start message center pending intent
         PendingIntent pi = PendingIntent.getService(
@@ -2462,7 +2457,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void setIdleAlarm() {
-        long delay = Preferences.getIdleTimeMillis(this, 0, DEFAULT_IDLE_TIME);
+        long delay = Preferences.getIdleTimeMillis(this, 0);
         if (delay > 0) {
             ensureIdleAlarm();
             mAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,

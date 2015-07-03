@@ -164,39 +164,48 @@ public final class Preferences {
     }
 
     public static boolean getEncryptionEnabled(Context context) {
-        return getBoolean(context, "pref_encrypt", true);
+        return getBoolean(context, "pref_encrypt", context
+            .getResources().getBoolean(R.bool.pref_default_encrypt));
     }
 
     public static boolean getSyncSIMContacts(Context context) {
-        return getBoolean(context, "pref_sync_sim_contacts", false);
+        return getBoolean(context, "pref_sync_sim_contacts", context
+            .getResources().getBoolean(R.bool.pref_default_sync_sim_contacts));
     }
 
     public static boolean getSyncInvisibleContacts(Context context) {
-        return getBoolean(context, "pref_sync_invisible_contacts", false);
+        return getBoolean(context, "pref_sync_invisible_contacts", context
+            .getResources().getBoolean(R.bool.pref_default_sync_invisible_contacts));
     }
 
     public static boolean getAutoAcceptSubscriptions(Context context) {
-        return getBoolean(context, "pref_auto_accept_subscriptions", false);
+        return getBoolean(context, "pref_auto_accept_subscriptions", context
+            .getResources().getBoolean(R.bool.pref_default_auto_accept_subscriptions));
     }
 
     public static boolean getPushNotificationsEnabled(Context context) {
-        return getBoolean(context, "pref_push_notifications", true);
+        return getBoolean(context, "pref_push_notifications", context
+            .getResources().getBoolean(R.bool.pref_default_push_notifications));
     }
 
     public static boolean getNotificationsEnabled(Context context) {
-        return getBoolean(context, "pref_enable_notifications", true);
+        return getBoolean(context, "pref_enable_notifications", context
+            .getResources().getBoolean(R.bool.pref_default_enable_notifications));
     }
 
     public static String getNotificationVibrate(Context context) {
-        return getString(context, "pref_vibrate", "never");
+        return getString(context, "pref_vibrate", context
+            .getString(R.string.pref_default_vibrate));
     }
 
     public static String getNotificationRingtone(Context context) {
-        return getString(context, "pref_ringtone", null);
+        return getString(context, "pref_ringtone", context
+            .getString(R.string.pref_default_ringtone));
     }
 
     public static int getImageCompression(Context context) {
-        return Integer.parseInt(getString(context, "pref_image_resize", "1024"));
+        return Integer.parseInt(getString(context, "pref_image_resize", String
+            .valueOf(context.getResources().getInteger(R.integer.pref_default_image_resize))));
     }
 
     public static boolean setLastCountryCode(Context context, int countryCode) {
@@ -235,12 +244,14 @@ public final class Preferences {
 
     /** TODO cache value */
     public static String getFontSize(Context context) {
-        return getString(context, "pref_font_size", "medium");
+        return getString(context, "pref_font_size", context
+            .getString(R.string.pref_default_font_size));
     }
 
     public static int getBalloonResource(Context context, int direction) {
         if (sBalloonTheme == null)
-            sBalloonTheme = getString(context, "pref_balloons", "classic");
+            sBalloonTheme = getString(context, "pref_balloons", context
+                .getString(R.string.pref_default_balloons));
 
         if ("iphone".equals(sBalloonTheme))
             return direction == Messages.DIRECTION_IN ?
@@ -357,10 +368,6 @@ public final class Preferences {
         return null;
     }
 
-    public static boolean getBigUpgrade1(Context context) {
-        return getBooleanOnce(context, "bigupgrade1");
-    }
-
     /**
      * Switches offline mode on or off.
      * @return offline mode status before the switch
@@ -410,7 +417,8 @@ public final class Preferences {
     }
 
     public static boolean getSendTyping(Context context) {
-        return getBoolean(context, "pref_send_typing", true);
+        return getBoolean(context, "pref_send_typing", context.getResources()
+            .getBoolean(R.bool.pref_default_send_typing));
     }
 
     public static String getDialPrefix(Context context) {
@@ -429,15 +437,18 @@ public final class Preferences {
     }
 
     public static boolean getAcceptAnyCertificate(Context context) {
-        return getBoolean(context, "pref_accept_any_certificate", false);
+        return getBoolean(context, "pref_accept_any_certificate", context.getResources()
+            .getBoolean(R.bool.pref_default_accept_any_certificate));
     }
 
-    public static int getIdleTimeMillis(Context context, int minValue, int defaultValue) {
-        return getIntMinValue(context, "pref_idle_time", minValue, defaultValue);
+    public static int getIdleTimeMillis(Context context, int minValue) {
+        return getIntMinValue(context, "pref_idle_time", minValue, context
+            .getResources().getInteger(R.integer.pref_default_idle_time));
     }
 
-    public static int getWakeupTimeMillis(Context context, int minValue, int defaultValue) {
-        return getIntMinValue(context, "pref_wakeup_time", minValue, defaultValue);
+    public static int getWakeupTimeMillis(Context context, int minValue) {
+        return getIntMinValue(context, "pref_wakeup_time", minValue, context
+            .getResources().getInteger(R.integer.pref_default_wakeup_time));
     }
 
     public static long getLastConnection(Context context) {
@@ -453,7 +464,8 @@ public final class Preferences {
 
     public static String getEnterKeyMode(Context context) {
         try {
-            return getString(context, "pref_text_enter", "default");
+            return getString(context, "pref_text_enter", context
+                .getString(R.string.pref_default_text_enter));
         }
         catch (ClassCastException e) {
             // legacy mode
