@@ -24,6 +24,8 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -437,11 +439,12 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     private void askCurrentPassphrase(final OnPassphraseRequestListener action) {
         new InputDialog.Builder(getActivity(),
             InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
-            .setTitle(R.string.title_passphrase)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-
+            .title(R.string.title_passphrase)
+            .negativeText(android.R.string.cancel)
+            .positiveText(android.R.string.ok)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
                     String passphrase = InputDialog.getInputText((Dialog) dialog).toString();
                     // user-entered passphrase is hashed, so compare with SHA-1 version
                     String hashed = MessageUtils.sha1(passphrase);
@@ -452,7 +455,6 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                     else {
                         action.onInvalidPassphrase();
                     }
-
                 }
             })
             .show();
@@ -465,8 +467,8 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     private void askNewPassphrase(final OnPassphraseChangedListener action) {
         new PasswordInputDialog.Builder(getActivity())
             .setMinLength(PersonalKey.MIN_PASSPHRASE_LENGTH)
-            .setTitle(R.string.pref_change_passphrase)
-            .setPositiveButton(android.R.string.ok, new PasswordInputDialog.OnPasswordInputListener() {
+            .title(R.string.pref_change_passphrase)
+            .positiveText(android.R.string.ok, new PasswordInputDialog.OnPasswordInputListener() {
                 public void onClick(DialogInterface dialog, int which, String password) {
                     Context ctx = getActivity();
                     String oldPassword = Kontalk.get(getActivity()).getCachedPassphrase();
@@ -487,7 +489,7 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                     }
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
+            .negativeText(android.R.string.cancel)
             .show();
     }
 

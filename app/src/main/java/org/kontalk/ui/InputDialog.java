@@ -18,6 +18,8 @@
 
 package org.kontalk.ui;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import org.kontalk.R;
 
 import android.app.Dialog;
@@ -51,39 +53,23 @@ public class InputDialog {
         return ((EditText) dialog.findViewById(TEXT_VIEW_ID)).getText();
     }
 
-    public static class Builder extends AlertDialog.Builder{
+    public static class Builder extends MaterialDialog.Builder {
 
         public Builder(Context context, int inputType) {
             super(context);
-
-            setCustomView(context, inputType);
-        }
-
-        private void setCustomView(Context context, int inputType) {
-            View view = LayoutInflater.from(context)
-                .inflate(R.layout.edittext_dialog, null, false);
-            EditText text = (EditText) view.findViewById(TEXT_VIEW_ID);
-
-            text.setInputType(inputType);
-            if ((inputType & InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0) {
-                text.setTransformationMethod(PasswordTransformationMethod.getInstance());
-            }
-
-            setView(view);
+            inputType(inputType);
         }
 
         @NonNull
         @Override
-        public AlertDialog create() {
-            AlertDialog dialog = super.create();
-            requestInputMethod(dialog);
+        public MaterialDialog build() {
+            MaterialDialog dialog = super.build();
+            if ((inputType & InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0) {
+                dialog.getInputEditText()
+                    .setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
             return dialog;
         }
-    }
-
-    static void requestInputMethod(Dialog dialog) {
-        Window window = dialog.getWindow();
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
 }

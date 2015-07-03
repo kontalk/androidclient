@@ -38,6 +38,8 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -115,44 +117,41 @@ public class ConversationList extends ToolbarActivity
     }
 
     private void askForPersonalName() {
-        DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // no key pair found, generate a new one
-                if (BuildConfig.DEBUG) {
-                    Toast.makeText(ConversationList.this,
-                        R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
-                }
-
-                String name = InputDialog
-                        .getInputText((Dialog) dialog)
-                        .toString();
-
-                // upgrade account
-                proceedXmppUpgrade(name);
-            }
-        };
-
-        DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
-            public void onCancel(DialogInterface dialog) {
-                new AlertDialogWrapper.Builder(ConversationList.this)
-                    .setTitle(R.string.title_no_personal_key)
-                    .setMessage(R.string.msg_no_personal_key)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show();
-            }
-        };
-
         new InputDialog.Builder(this,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
-            .setTitle(R.string.title_no_name)
-            .setMessage(R.string.msg_no_name)
-            .setPositiveButton(android.R.string.ok, okListener)
-            .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+            .title(R.string.title_no_name)
+            .content(R.string.msg_no_name)
+            .positiveText(android.R.string.ok)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
+                    // no key pair found, generate a new one
+                    if (BuildConfig.DEBUG) {
+                        Toast.makeText(ConversationList.this,
+                            R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
+                    }
+
+                    String name = dialog.getInputEditText().getText().toString();
+
+                    // upgrade account
+                    proceedXmppUpgrade(name);
+                }
+
+                @Override
+                public void onNegative(MaterialDialog dialog) {
                     dialog.cancel();
                 }
             })
-            .setOnCancelListener(cancelListener)
+            .negativeText(android.R.string.cancel)
+            .cancelListener(new DialogInterface.OnCancelListener() {
+                public void onCancel(DialogInterface dialog) {
+                    new AlertDialogWrapper.Builder(ConversationList.this)
+                        .setTitle(R.string.title_no_personal_key)
+                        .setMessage(R.string.msg_no_personal_key)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+                }
+            })
             .show();
     }
 

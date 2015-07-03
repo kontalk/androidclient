@@ -23,7 +23,6 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -56,6 +55,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -663,9 +663,15 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private void importAskPassphrase(final ZipInputStream zip) {
         new InputDialog.Builder(this,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
-            .setTitle(R.string.title_passphrase)
-            .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+            .title(R.string.title_passphrase)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
+                    startImport(zip, dialog.getInputEditText().getText().toString());
+                }
+
+                @Override
+                public void onNegative(MaterialDialog dialog) {
                     try {
                         zip.close();
                     }
@@ -674,12 +680,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                     }
                 }
             })
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    startImport(zip, InputDialog.getInputText
-                        ((Dialog) dialog).toString());
-                }
-            })
+            .negativeText(android.R.string.cancel)
+            .positiveText(android.R.string.ok)
             .show();
     }
 
