@@ -243,8 +243,14 @@ public abstract class MediaStorage {
     /** Creates a file object for an incoming image file. */
     public static File getIncomingImageFile(Date date, String extension) {
         createMedia(PICTURES_ROOT);
+        removeNoMediaFix(PICTURES_ROOT);
         String timeStamp = sDateFormat.format(date);
         return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
+    }
+
+    @Deprecated
+    private static void removeNoMediaFix(File path) {
+        new File(path, ".nomedia").delete();
     }
 
     /** Creates a temporary 3gp file. */
