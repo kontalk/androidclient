@@ -290,6 +290,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static void changePassphrase(Context ctx, String oldPassphrase, String newPassphrase, boolean fromUser)
             throws PGPException, IOException {
 
+        // TODO let handle this to PGP or PersonalKey
+
         AccountManager am = AccountManager.get(ctx);
         Account acc = getDefaultAccount(am);
 

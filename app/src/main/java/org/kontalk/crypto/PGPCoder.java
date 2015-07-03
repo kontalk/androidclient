@@ -79,7 +79,7 @@ import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION
 public class PGPCoder extends Coder {
 
     private static final KeyFingerPrintCalculator sFingerprintCalculator =
-        new BcKeyFingerprintCalculator();
+        PGP.sFingerprintCalculator;
 
     /** Buffer size. It should always be a power of 2. */
     private static final int BUFFER_SIZE = 1 << 8;
