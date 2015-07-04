@@ -51,7 +51,6 @@ import org.spongycastle.openpgp.PGPSignatureGenerator;
 import org.spongycastle.openpgp.PGPSignatureList;
 import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
-import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPGPContentVerifierBuilderProvider;
 import org.spongycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
@@ -79,7 +78,7 @@ import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_VERIFICATION
 public class PGPCoder extends Coder {
 
     private static final KeyFingerPrintCalculator sFingerprintCalculator =
-        new BcKeyFingerprintCalculator();
+        PGP.sFingerprintCalculator;
 
     /** Buffer size. It should always be a power of 2. */
     private static final int BUFFER_SIZE = 1 << 8;
@@ -281,8 +280,15 @@ public class PGPCoder extends Coder {
                             ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
                         }
                         catch (ClassCastException e) {
-                            // workaround for backward compatibility
-                            ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getMasterKey(mSender));
+                            try {
+                                // workaround for backward compatibility
+                                ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getMasterKey(mSender));
+                            }
+                            catch (ClassCastException e2) {
+                                // peer used new ECC key to sign, but we still have the old RSA one
+                                // no verification is possible
+                                ops = null;
+                            }
                         }
                     }
 

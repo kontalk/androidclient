@@ -89,11 +89,11 @@ dependencies {
 
     compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.android.support:design:22.2.0'
-    compile 'com.madgag.spongycastle:core:1.51.0.0'
-    compile 'com.madgag.spongycastle:prov:1.51.0.0'
-    compile 'com.madgag.spongycastle:pkix:1.51.0.0'
-    compile 'com.madgag.spongycastle:pg:1.51.0.0'
-    compile 'com.googlecode.libphonenumber:libphonenumber:7.0.4'
+    compile "com.madgag.spongycastle:core:$spongyCastleVersion"
+    compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
+    compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
+    compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
+    compile 'com.googlecode.libphonenumber:libphonenumber:7.0.7'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.2.0'
     compile 'com.segment.backo:backo:1.0.0'

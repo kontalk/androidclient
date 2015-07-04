@@ -20,6 +20,8 @@ package org.kontalk.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -106,6 +108,12 @@ public class Contact {
     public interface ContactCallback {
         public void avatarLoaded(Contact contact, Drawable avatar);
     }
+
+    public interface ContactChangeListener {
+        public void onContactInvalidated(String userId);
+    }
+
+    private static final Set<ContactChangeListener> sListeners = new HashSet<>();
 
     /**
      * Contact cache.
@@ -282,10 +290,12 @@ public class Contact {
 
     public static void invalidate(String userId) {
         cache.remove(userId);
+        fireContactInvalidated(userId);
     }
 
     public static void invalidate() {
         cache.evictAll();
+        fireContactInvalidated(null);
     }
 
     /** Invalidates cached data for all contacts. Does not delete contact information. */
@@ -294,6 +304,20 @@ public class Contact {
             for (Contact c : cache.snapshot().values()) {
                 c.clear();
             }
+        }
+    }
+
+    public static void registerContactChangeListener(ContactChangeListener l) {
+        sListeners.add(l);
+    }
+
+    public static void unregisterContactChangeListener(ContactChangeListener l) {
+        sListeners.remove(l);
+    }
+
+    private static void fireContactInvalidated(String userId) {
+        for (ContactChangeListener l : sListeners) {
+            l.onContactInvalidated(userId);
         }
     }
 

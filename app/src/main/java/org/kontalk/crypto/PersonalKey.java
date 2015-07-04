@@ -43,7 +43,6 @@ import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
-import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.operator.OperatorCreationException;
@@ -67,6 +66,9 @@ import java.util.Iterator;
 /** Personal asymmetric encryption key. */
 public class PersonalKey implements Parcelable {
     private static final String TAG = Kontalk.TAG;
+
+    private static final KeyFingerPrintCalculator sFingerprintCalculator =
+        PGP.sFingerprintCalculator;
 
     public static final int MIN_PASSPHRASE_LENGTH = 4;
 
@@ -111,7 +113,7 @@ public class PersonalKey implements Parcelable {
     }
 
     public PGPPublicKeyRing getPublicKeyRing() throws IOException {
-        return new PGPPublicKeyRing(getEncodedPublicKeyRing(), new BcKeyFingerprintCalculator());
+        return new PGPPublicKeyRing(getEncodedPublicKeyRing(), sFingerprintCalculator);
     }
 
     public byte[] getEncodedPublicKeyRing() throws IOException {
@@ -157,7 +159,7 @@ public class PersonalKey implements Parcelable {
      * @return the public keyring.
      */
     public PGPPublicKeyRing update(byte[] keyData) throws IOException {
-        PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, new BcKeyFingerprintCalculator());
+        PGPPublicKeyRing ring = new PGPPublicKeyRing(keyData, sFingerprintCalculator);
         // FIXME should loop through the ring and check for master/subkey
         mPair.authKey = new PGPKeyPair(ring.getPublicKey(), mPair.authKey.getPrivateKey());
         return ring;
@@ -223,9 +225,8 @@ public class PersonalKey implements Parcelable {
     public static PGPKeyPairRing test(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
             throws PGPException, IOException, CertificateException, NoSuchProviderException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         // X.509 bridge certificate
         X509Certificate bridgeCert = (bridgeCertData != null) ?
@@ -238,9 +239,8 @@ public class PersonalKey implements Parcelable {
     public static PGPKeyPairRing test(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
             throws PGPException, IOException, CertificateException, NoSuchProviderException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         // X.509 bridge certificate
         X509Certificate bridgeCert = (bridgeCertData != null) ?
@@ -262,9 +262,8 @@ public class PersonalKey implements Parcelable {
     public static PersonalKey load(InputStream privateKeyData, InputStream publicKeyData, String passphrase, InputStream bridgeCertData)
             throws PGPException, IOException, CertificateException, NoSuchProviderException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         // X.509 bridge certificate
         X509Certificate bridgeCert = (bridgeCertData != null) ?
@@ -277,9 +276,8 @@ public class PersonalKey implements Parcelable {
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, byte[] bridgeCertData)
             throws PGPException, IOException, CertificateException, NoSuchProviderException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         // X.509 bridge certificate
         X509Certificate bridgeCert = (bridgeCertData != null) ?
@@ -292,9 +290,8 @@ public class PersonalKey implements Parcelable {
     public static PersonalKey load(byte[] privateKeyData, byte[] publicKeyData, String passphrase, X509Certificate bridgeCert)
         throws PGPException, IOException, CertificateException, NoSuchProviderException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         return load(secRing, pubRing, passphrase, bridgeCert);
     }

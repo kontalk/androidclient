@@ -134,8 +134,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
 
         long now = System.currentTimeMillis();
         long diff = Preferences.getWakeupTimeMillis(context,
-            MessageCenterService.MIN_WAKEUP_TIME,
-            MessageCenterService.DEFAULT_WAKEUP_TIME);
+            MessageCenterService.MIN_WAKEUP_TIME);
 
         return (now - lastConnect) >= diff;
     }

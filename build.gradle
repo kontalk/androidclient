@@ -16,5 +16,6 @@ allprojects {
     evaluationDependsOn ":client-common-java"
     ext {
         smackVersion = project(':client-common-java').smackVersion
+        spongyCastleVersion = '1.52.0.0'
     }
 }
