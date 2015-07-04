@@ -170,9 +170,8 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void error(int title, int message) {
+    private void error(int message) {
         new AlertDialogWrapper.Builder(this)
-            .setTitle(title)
             .setMessage(message)
             .setNeutralButton(android.R.string.ok, null)
             .show();
@@ -181,7 +180,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
     public void validateCode(View view) {
         String code = mCode.getText().toString().trim();
         if (code.length() == 0) {
-            error(R.string.title_invalid_code, R.string.msg_invalid_code);
+            error(R.string.msg_invalid_code);
             return;
         }
 

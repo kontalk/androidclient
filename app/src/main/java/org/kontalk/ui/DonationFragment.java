@@ -193,7 +193,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
             mBillingService.startSetup(new OnBillingSetupFinishedListener() {
                 public void onSetupFinished(BillingResult result) {
                     if (!result.isSuccess()) {
-                        alert(R.string.title_error, getString(R.string.iab_error_setup, result.getResponse()));
+                        alert(getString(R.string.iab_error_setup, result.getResponse()));
                         mBillingService = null;
                         progress.dismiss();
                         return;
@@ -220,7 +220,7 @@ public class DonationFragment extends Fragment implements OnClickListener {
                 progress.dismiss();
 
                 if (result.isFailure()) {
-                    alert(R.string.title_error, getString(R.string.iab_error_query, result.getResponse()));
+                    alert(getString(R.string.iab_error_query, result.getResponse()));
                 }
 
                 else {
@@ -268,7 +268,6 @@ public class DonationFragment extends Fragment implements OnClickListener {
 
         // show dialog with choices
         new AlertDialogWrapper.Builder(getActivity())
-            .setTitle(R.string.title_donation)
             .setItems(dialogItems, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     // start the purchase
@@ -312,10 +311,9 @@ public class DonationFragment extends Fragment implements OnClickListener {
         }
     }
 
-    private void alert(int title, String message) {
+    private void alert(String message) {
         new AlertDialogWrapper
             .Builder(getActivity())
-            .setTitle(title)
             .setMessage(message)
             .setNeutralButton(android.R.string.ok, null)
             .show();

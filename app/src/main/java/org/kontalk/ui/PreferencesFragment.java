@@ -26,7 +26,6 @@ import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -134,8 +133,8 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
                         public void onInvalidPassphrase() {
                             new AlertDialogWrapper.Builder(getActivity())
-                                .setTitle(R.string.title_passphrase)
                                 .setMessage(R.string.err_password_invalid)
+                                .setPositiveButton(android.R.string.ok, null)
                                 .show();
                         }
                     };
@@ -220,7 +219,6 @@ public final class PreferencesFragment extends RootPreferenceFragment {
 
                         public void onInvalidPassphrase() {
                             new AlertDialogWrapper.Builder(getActivity())
-                                .setTitle(R.string.pref_export_keypair)
                                 .setMessage(R.string.err_password_invalid)
                                 .setPositiveButton(android.R.string.ok, null)
                                 .show();
@@ -440,12 +438,10 @@ public final class PreferencesFragment extends RootPreferenceFragment {
         new InputDialog.Builder(getActivity(),
             InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
             .title(R.string.title_passphrase)
-            .negativeText(android.R.string.cancel)
-            .positiveText(android.R.string.ok)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .input(0, 0, true, new MaterialDialog.InputCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
-                    String passphrase = InputDialog.getInputText((Dialog) dialog).toString();
+                public void onInput(MaterialDialog dialog, CharSequence input) {
+                    String passphrase = input.toString();
                     // user-entered passphrase is hashed, so compare with SHA-1 version
                     String hashed = MessageUtils.sha1(passphrase);
                     if (hashed.equals(Kontalk.get(getActivity())
@@ -457,6 +453,8 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                     }
                 }
             })
+            .negativeText(android.R.string.cancel)
+            .positiveText(android.R.string.ok)
             .show();
     }
 

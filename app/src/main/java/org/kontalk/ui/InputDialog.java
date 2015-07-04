@@ -41,16 +41,9 @@ import android.widget.EditText;
  * dialog builder which adds some features over the default one.
  * @author Daniele Ricci
  */
-// TODO convert to material dialog
 public class InputDialog {
 
-    private static final int TEXT_VIEW_ID = R.id.textinput;
-
     private InputDialog() {
-    }
-
-    public static CharSequence getInputText(Dialog dialog) {
-        return ((EditText) dialog.findViewById(TEXT_VIEW_ID)).getText();
     }
 
     public static class Builder extends MaterialDialog.Builder {
