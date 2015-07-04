@@ -479,9 +479,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mPhone.setEnabled(enabled);
     }
 
-    private void error(int title, int message) {
+    private void error(int message) {
         new AlertDialogWrapper.Builder(this)
-            .setTitle(title)
             .setMessage(message)
             .setNeutralButton(android.R.string.ok, null)
             .show();
@@ -495,7 +494,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         if (!importing) {
             mName = mNameText.getText().toString().trim();
             if (mName.length() == 0) {
-                error(R.string.title_no_name, R.string.msg_no_name);
+                error(R.string.msg_no_name);
                 return false;
             }
         }
@@ -526,7 +525,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 }
             }
             catch (NumberParseException e1) {
-                error(R.string.title_invalid_number, R.string.msg_invalid_number);
+                error(R.string.msg_invalid_number);
                 return false;
             }
 
@@ -622,7 +621,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             // TODO we should verify the number against the user ID
 
             new AlertDialogWrapper.Builder(this)
-                .setTitle(R.string.pref_import_keypair)
                 .setMessage(getString(R.string.msg_import_keypair, PersonalKeyImporter.KEYPACK_FILENAME))
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -996,7 +994,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void userExistsWarning() {
         new AlertDialogWrapper.Builder(this)
-            .setTitle(R.string.title_user_exists)
             .setMessage(R.string.err_validation_user_exists)
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
