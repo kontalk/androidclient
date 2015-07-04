@@ -1572,8 +1572,8 @@ public class ComposeMessageFragment extends ListFragment implements
                             .getStringExtra(MessageCenterService.EXTRA_FROM));
 
                         if (mUserJID.equals(from)) {
-                            // this will trigger a Contact reload
-                            mConversation.setRecipient(mUserJID);
+                            // reload contact
+                            reloadContact();
                             // this will update block/unblock menu items
                             updateUI();
                             // request presence subscription if unblocking
@@ -1611,8 +1611,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void invalidateContact() {
         Contact.invalidate(mUserJID);
-        // this will trigger contact reload
-        mConversation.setRecipient(mUserJID);
+        reloadContact();
+    }
+
+    private void reloadContact() {
+        if (mConversation != null) {
+            // this will trigger contact reload
+            mConversation.setRecipient(mUserJID);
+        }
     }
 
     private void showIdentityDialog(boolean informationOnly) {

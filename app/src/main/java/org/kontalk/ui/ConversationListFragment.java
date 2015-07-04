@@ -51,7 +51,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class ConversationListFragment extends ListFragment {
+public class ConversationListFragment extends ListFragment implements Contact.ContactChangeListener {
     private static final String TAG = ConversationList.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
@@ -324,6 +324,7 @@ public class ConversationListFragment extends ListFragment {
     public void onStart() {
         super.onStart();
         startQuery();
+        Contact.registerContactChangeListener(this);
     }
 
     @Override
@@ -337,6 +338,7 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onStop() {
         super.onStop();
+        Contact.unregisterContactChangeListener(this);
         mListAdapter.changeCursor(null);
     }
 
@@ -395,6 +397,17 @@ public class ConversationListFragment extends ListFragment {
         // notify the user about the change
         int text = (currentMode) ? R.string.going_online : R.string.going_offline;
         Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onContactInvalidated(String userId) {
+        mQueryHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                // just requery
+                startQuery();
+            }
+        });
     }
 
     /**
