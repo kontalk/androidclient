@@ -119,24 +119,24 @@ public class ConversationList extends ToolbarActivity
     private void askForPersonalName() {
         new InputDialog.Builder(this,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
-            .title(R.string.title_no_name)
             .content(R.string.msg_no_name)
             .positiveText(android.R.string.ok)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .input(R.string.hint_validation_name, 0, false, new MaterialDialog.InputCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
+                public void onInput(MaterialDialog dialog, CharSequence input) {
                     // no key pair found, generate a new one
                     if (BuildConfig.DEBUG) {
                         Toast.makeText(ConversationList.this,
                             R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
                     }
 
-                    String name = dialog.getInputEditText().getText().toString();
+                    String name = input.toString();
 
                     // upgrade account
                     proceedXmppUpgrade(name);
                 }
-
+            })
+            .callback(new MaterialDialog.ButtonCallback() {
                 @Override
                 public void onNegative(MaterialDialog dialog) {
                     dialog.cancel();

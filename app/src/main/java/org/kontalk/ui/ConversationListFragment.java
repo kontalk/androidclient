@@ -160,7 +160,6 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
                 if (!currentMode && !Preferences.getOfflineModeUsed(ctx)) {
                     // show offline mode warning
                     new AlertDialogWrapper.Builder(ctx)
-                        .setTitle(R.string.title_offline_mode_warning)
                         .setMessage(R.string.message_offline_mode_warning)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
