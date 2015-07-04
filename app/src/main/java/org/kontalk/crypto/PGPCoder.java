@@ -280,8 +280,15 @@ public class PGPCoder extends Coder {
                             ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getSigningKey(mSender));
                         }
                         catch (ClassCastException e) {
-                            // workaround for backward compatibility
-                            ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getMasterKey(mSender));
+                            try {
+                                // workaround for backward compatibility
+                                ops.init(new BcPGPContentVerifierBuilderProvider(), PGP.getMasterKey(mSender));
+                            }
+                            catch (ClassCastException e2) {
+                                // peer used new ECC key to sign, but we still have the old RSA one
+                                // no verification is possible
+                                ops = null;
+                            }
                         }
                     }
 
