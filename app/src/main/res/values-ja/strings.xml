@@ -380,4 +380,8 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="about_credits_gfx"><b>グラフィックス/アイコンデザイン</b></string>
     <string name="about_credits_translators"><b>翻訳者</b></string>
 
-</resources>
+<string name="pref_help">ヘルプ</string>
+    <string name="err_no_contact">連絡先がみつかりません。</string>
+
+    <string name="warning_older_version">あなたの相手は古いバージョンの Kontalk を使用しています。一部の機能が正常に動作しない場合があります。</string>
+    </resources>
