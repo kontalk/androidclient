@@ -49,6 +49,8 @@ public class ContactsListActivity extends ToolbarActivity
 
     public static final String TAG = ContactsListActivity.class.getSimpleName();
 
+    private MenuItem mSyncButton;
+
     private ContactsListFragment mFragment;
 
     @Override
@@ -95,6 +97,8 @@ public class ContactsListActivity extends ToolbarActivity
     @Override
     public synchronized boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.contacts_list_menu, menu);
+        mSyncButton = menu.findItem(R.id.menu_refresh);
+        mSyncButton.setEnabled(!SyncAdapter.isActive(this));
         return true;
     }
 
@@ -104,6 +108,10 @@ public class ContactsListActivity extends ToolbarActivity
             case android.R.id.home:
                 finish();
                 startActivity(new Intent(this, ConversationList.class));
+                return true;
+
+            case R.id.menu_refresh:
+                startSync(true);
                 return true;
 
             case R.id.menu_invite:
@@ -135,6 +143,8 @@ public class ContactsListActivity extends ToolbarActivity
 
     @Override
     public void setSyncing(boolean syncing) {
+        if (mSyncButton != null)
+            mSyncButton.setEnabled(!syncing);
     }
 
     private void startInvite() {

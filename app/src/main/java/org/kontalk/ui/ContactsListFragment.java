@@ -37,6 +37,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ListView;
 
 
@@ -78,6 +79,21 @@ public class ContactsListFragment extends ListFragment
 
         mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
         mRefresher.setOnRefreshListener(this);
+
+        // http://nlopez.io/swiperefreshlayout-with-listview-done-right/
+        getListView().setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                int topRowVerticalPosition =
+                    (view == null || view.getChildCount() == 0) ?
+                        0 : view.getChildAt(0).getTop();
+                mRefresher.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
+            }
+        });
     }
 
     @Override
@@ -100,10 +116,9 @@ public class ContactsListFragment extends ListFragment
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mRefresher.setRefreshing(true);
+                    setSyncing(true);
                 }
             });
-            ((ContactsSyncActivity) getActivity()).setSyncing(true);
         }
     }
 
