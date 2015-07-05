@@ -1664,8 +1664,7 @@ public class ComposeMessageFragment extends ListFragment implements
             .setMessage(text);
 
         if (informationOnly) {
-            builder.setPositiveButton(android.R.string.ok, null)
-                .setTitle(R.string.title_invitation);
+            builder.setTitle(R.string.title_invitation);
         }
         else {
             DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
