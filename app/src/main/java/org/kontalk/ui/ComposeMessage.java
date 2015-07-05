@@ -96,7 +96,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         mFragment = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
 
-        processIntent(savedInstanceState);
+        Bundle args = processIntent(savedInstanceState);
+        mFragment.setMyArguments(args);
     }
 
     private void setupActionBar() {
@@ -166,7 +167,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             mFragment.viewContact();
     }
 
-    private void processIntent(Bundle savedInstanceState) {
+    private Bundle processIntent(Bundle savedInstanceState) {
         Intent intent;
         if (savedInstanceState != null) {
             mLostFocus = savedInstanceState.getBoolean("lostFocus");
@@ -198,7 +199,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     startActivity(startIntent);
                     // no need to go further
                     finish();
-                    return;
+                    return null;
                 }
                 // single-pane UI: start normally
                 else {
@@ -219,7 +220,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 chooseContact();
 
                 // onActivityResult will handle the rest
-                return;
+                return null;
             }
 
             // send to someone
@@ -241,7 +242,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                         startActivity(startIntent);
                         // no need to go further
                         finish();
-                        return;
+                        return null;
                     }
                     // single-pane UI: start normally
                     else {
@@ -257,10 +258,10 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                 }
             }
 
-            if (args != null) {
-                mFragment.setMyArguments(args);
-            }
+            return args;
         }
+
+        return null;
     }
 
     @Override
@@ -273,7 +274,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
                     String userId = threadUri.getLastPathSegment();
                     Intent i = fromUserId(this, userId);
                     if (i != null) {
-                        onNewIntent(i);
+                        onNewIntent(i, true);
 
                         // process SEND intent if necessary
                         if (sendIntent != null)
@@ -407,15 +408,36 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
     @Override
     protected void onNewIntent(Intent intent) {
+        onNewIntent(intent, false);
+    }
+
+    protected void onNewIntent(Intent intent, boolean starting) {
         setIntent(intent);
-        processIntent(null);
-        mFragment.reload();
+        Bundle args = processIntent(null);
+        if (args != null) {
+            if (starting) {
+                mFragment.setMyArguments(args);
+                mFragment.reload();
+            }
+            else {
+                // recreate fragment
+                mFragment = new ComposeMessageFragment();
+                mFragment.setMyArguments(args);
+                getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_compose_message, mFragment)
+                    .commit();
+            }
+        }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
-        processIntent(state);
+        Bundle args = processIntent(state);
+        if (args != null) {
+            mFragment.setMyArguments(args);
+        }
     }
 
     @Override
