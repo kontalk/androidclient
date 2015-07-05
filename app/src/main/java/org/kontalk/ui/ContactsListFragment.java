@@ -97,12 +97,12 @@ public class ContactsListFragment extends ListFragment
         registerSyncReceiver();
         if (SyncAdapter.isActive(parent)) {
             // workaround for https://code.google.com/p/android/issues/detail?id=77712
-            mHandler.postDelayed(new Runnable() {
+            mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     mRefresher.setRefreshing(true);
                 }
-            }, 50);
+            });
             ((ContactsSyncActivity) getActivity()).setSyncing(true);
         }
     }
