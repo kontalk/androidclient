@@ -67,7 +67,7 @@ public class ConversationList extends ToolbarActivity
 
     private ConversationListFragment mFragment;
 
-    private LockedProgressDialog mUpgradeProgress;
+    private Dialog mUpgradeProgress;
     private BroadcastReceiver mUpgradeReceiver;
 
     private static final int REQUEST_CONTACT_PICKER = 7720;
@@ -157,10 +157,10 @@ public class ConversationList extends ToolbarActivity
 
     private void proceedXmppUpgrade(String name) {
         // start progress dialog
-        mUpgradeProgress = new LockedProgressDialog(this);
-        mUpgradeProgress.setIndeterminate(true);
-        mUpgradeProgress.setMessage(getString(R.string.msg_xmpp_upgrading));
-        mUpgradeProgress.show();
+        mUpgradeProgress = new LockedDialog.Builder(this)
+            .progress(true, 0)
+            .content(R.string.msg_xmpp_upgrading)
+            .show();
 
         // setup operation completed received
         mUpgradeReceiver = new BroadcastReceiver() {
@@ -404,7 +404,7 @@ public class ConversationList extends ToolbarActivity
                 // with this one inside the frame.
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_compose_message, f);
-                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 ft.addToBackStack(null);
                 ft.commitAllowingStateLoss();
             }

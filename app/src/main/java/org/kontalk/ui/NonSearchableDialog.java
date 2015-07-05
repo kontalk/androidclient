@@ -18,20 +18,32 @@
 
 package org.kontalk.ui;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import android.content.Context;
 
 
-/**
- * A progress dialog that can't be dismissed.
- * @author Daniele Ricci
- * @version 1.0
- */
-public class LockedProgressDialog extends NonSearchableProgressDialog {
+public class NonSearchableDialog extends MaterialDialog {
 
-    public LockedProgressDialog(Context ctx) {
-        super(ctx);
-        setCancelable(false);
-        setCanceledOnTouchOutside(false);
+    private NonSearchableDialog(Builder builder) {
+        super(builder);
+    }
+
+    @Override
+    public boolean onSearchRequested() {
+        return false;
+    }
+
+    public static class Builder extends MaterialDialog.Builder {
+
+        public Builder(Context context) {
+            super(context);
+        }
+
+        @Override
+        public MaterialDialog build() {
+            return new NonSearchableDialog(this);
+        }
     }
 
 }

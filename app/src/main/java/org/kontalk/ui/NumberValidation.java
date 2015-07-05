@@ -23,7 +23,7 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
-import android.app.ProgressDialog;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -117,7 +117,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private EditText mPhone;
     private Button mValidateButton;
     private Button mInsertCode;
-    private ProgressDialog mProgress;
+    private MaterialDialog mProgress;
     private CharSequence mProgressMessage;
     private NumberValidator mValidator;
     private Handler mHandler;
@@ -760,27 +760,28 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void startProgress(CharSequence message) {
         if (mProgress == null) {
-            mProgress = new NonSearchableProgressDialog(this);
-            mProgress.setIndeterminate(true);
+            mProgress = new NonSearchableDialog.Builder(this)
+                .progress(true, 0)
+                .cancelListener(new OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        keepScreenOn(false);
+                        Toast.makeText(NumberValidation.this, R.string.msg_validation_canceled, Toast.LENGTH_LONG).show();
+                        abort();
+                    }
+                })
+                .dismissListener(new OnDismissListener() {
+                    public void onDismiss(DialogInterface dialog) {
+                        // remove sync starter
+                        if (mSyncStart != null) {
+                            mHandler.removeCallbacks(mSyncStart);
+                            mSyncStart = null;
+                        }
+                    }
+                })
+                .build();
             mProgress.setCanceledOnTouchOutside(false);
             setProgressMessage(message != null ? message : getText(R.string.msg_validating_phone));
-            mProgress.setOnCancelListener(new OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialog) {
-                    keepScreenOn(false);
-                    Toast.makeText(NumberValidation.this, R.string.msg_validation_canceled, Toast.LENGTH_LONG).show();
-                    abort();
-                }
-            });
-            mProgress.setOnDismissListener(new OnDismissListener() {
-                public void onDismiss(DialogInterface dialog) {
-                    // remove sync starter
-                    if (mSyncStart != null) {
-                        mHandler.removeCallbacks(mSyncStart);
-                        mSyncStart = null;
-                    }
-                }
-            });
         }
         mProgress.show();
     }
@@ -823,7 +824,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         if (mProgress != null) {
             mProgressMessage = message;
-            mProgress.setMessage(message);
+            mProgress.setContent(message);
         }
     }
 

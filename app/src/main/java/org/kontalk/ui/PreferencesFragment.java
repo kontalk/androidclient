@@ -26,7 +26,7 @@ import android.app.Activity;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -268,10 +268,11 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // progress dialog
-                            final LockedProgressDialog progress = new LockedProgressDialog(getActivity());
-                            progress.setMessage(getString(R.string.msg_delete_account_progress));
-                            progress.setIndeterminate(true);
-                            progress.show();
+                            final Dialog progress = new LockedDialog
+                                .Builder(getActivity())
+                                .content(R.string.msg_delete_account_progress)
+                                .progress(true, 0)
+                                .show();
 
                             // stop the message center first
                             Context ctx = getActivity();
@@ -339,16 +340,17 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                 Context ctx = getActivity();
                 final ServerListUpdater updater = new ServerListUpdater(ctx);
 
-                final ProgressDialog diag = new ProgressDialog(ctx);
-                diag.setCancelable(true);
-                diag.setMessage(getString(R.string.serverlist_updating));
-                diag.setIndeterminate(true);
-                diag.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        updater.cancel();
-                    }
-                });
+                final MaterialDialog diag = new MaterialDialog.Builder(ctx)
+                    .cancelable(true)
+                    .content(R.string.serverlist_updating)
+                    .progress(true, 0)
+                    .cancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            updater.cancel();
+                        }
+                    })
+                    .build();
 
                 updater.setListener(new ServerListUpdater.UpdaterListener() {
                     @Override
