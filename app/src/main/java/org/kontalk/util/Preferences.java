@@ -253,7 +253,11 @@ public final class Preferences {
             sBalloonTheme = getString(context, "pref_balloons", context
                 .getString(R.string.pref_default_balloons));
 
-        if ("iphone".equals(sBalloonTheme))
+        if ("classic".equals(sBalloonTheme))
+            return direction == Messages.DIRECTION_IN ?
+                R.drawable.balloon_classic_incoming :
+                R.drawable.balloon_classic_outgoing;
+        else if ("iphone".equals(sBalloonTheme))
             return direction == Messages.DIRECTION_IN ?
                 R.drawable.balloon_iphone_incoming :
                     R.drawable.balloon_iphone_outgoing;
@@ -264,8 +268,8 @@ public final class Preferences {
 
         // all other cases
         return direction == Messages.DIRECTION_IN ?
-            R.drawable.balloon_classic_incoming :
-                R.drawable.balloon_classic_outgoing;
+            R.drawable.balloon_hangout_incoming :
+                R.drawable.balloon_hangout_outgoing;
     }
 
     public static String getStatusMessage(Context context) {
