@@ -67,7 +67,7 @@
   <string name="only_one_account_supported">Només s\'admet un compte de Kontalk.</string>
   <string name="hint_enter_text">Escriviu ací</string>
   <string name="hint_type_to_compose">Utilitzeu el teclat per escriure</string>
-  <string name="hint_open_kbd_to_compose">Obriu el teclat per a redactar un missatge</string>
+  <string name="hint_open_kbd_to_compose">Utilitzeu el teclat per a redactar un missatge</string>
   <string name="view_image">Mostra la imatge</string>
   <string name="title_message_options">Opcions del missatge</string>
   <string name="menu_message_details">Mira els detalls del missatge</string>
@@ -225,7 +225,7 @@ Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'i
   <string name="pref_fontsize_label_medium">Mitjana</string>
   <string name="pref_fontsize_label_large">Grossa</string>
   <string name="pref_balloon_label_classic">Clàssic</string>
-  <string name="pref_balloon_label_classic_old">Clàssic (vell)</string>
+  <string name="pref_balloon_label_classic_old">Clàssic (antic)</string>
   <string name="pref_balloon_label_iphone">iPhone</string>
   <string name="pref_text_enter_label_default">Valor per defecte</string>
   <string name="pref_text_enter_label_newline">Retorn</string>
@@ -244,13 +244,13 @@ Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'i
   <string name="pref_wakeup_time_label_30m">30 minuts</string>
   <string name="pref_wakeup_time_label_1h">1 hora</string>
   <string name="pref_wakeup_time_label_3h">3 hores</string>
-  <string name="pref_remove_prefix">Prefix</string>
+  <string name="pref_remove_prefix">Prefix telefònic</string>
   <string name="pref_change_passphrase">Canvia la contrasenya de la clau personal</string>
   <string name="pref_title_remove_prefix">Elimina el prefix perquè l\'aplicació trobe els números de telèfon</string>
   <string name="pref_export_keypair">Exporta la clau personal</string>
-  <string name="pref_title_export_keypair">Exporteu la clau personal i el certificat de connexió a l\'emmagatzematge extern</string>
+  <string name="pref_title_export_keypair">Exporteu la clau personal i el certificat d\'autenticació a l\'emmagatzematge extern</string>
   <string name="pref_import_keypair">Importa la clau personal</string>
-  <string name="pref_title_import_keypair">Importa la clau personal i el certificat d\'accés d\'un sistema d\'emmagatzematge extern</string>
+  <string name="pref_title_import_keypair">Importa la clau personal i el certificat d\'autenticació de l\'emmagatzematge extern</string>
   <string name="msg_import_keypair">Kontalk importara les vostres claus de %s al vostre sistema d\'emmagatzematge extern. Assegureu-vos que el fitxer existeix i que és un arxiu d\'exportació de claus vàlid.</string>
   <string name="msg_import_keypair_complete">S\'ha completat la importació de la clau personal.</string>
   <string name="err_import_keypair_failed">Ha fallat la importació de la clau personal.</string>
@@ -302,8 +302,8 @@ Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'i
   <string name="notify_gen_keypair_text">Podeu continuar treballant normalment.</string>
   <string name="msg_xmpp_upgrading">S\'està actualitzant…</string>
   <string name="title_no_personal_key">No hi ha cap clau personal</string>
-  <string name="msg_no_personal_key">No hi ha disponible cap clau personal (probablement a causa d\'una actualització). No podreu connectar a la xarxa Kontalk si no genereu una clau personal. Per favor introduïu el vostre nom tancant Kontalk i tornant-lo a obrir.</string>
-  <string name="msg_keypair_exported">S\'ha exportat la clau i el certificat de connexió a l\'emmagatzemament extern.</string>
+  <string name="msg_no_personal_key">No hi ha disponible cap clau personal (probablement a causa d\'una actualització). No podreu autenticar-vos a la xarxa Kontalk si no genereu una clau personal. Per favor introduïu el vostre nom tancant Kontalk i tornant-lo a obrir.</string>
+  <string name="msg_keypair_exported">S\'ha exportat la clau i el certificat d\'autenticació a l\'emmagatzemament extern.</string>
   <string name="security_status_good">bo</string>
   <string name="security_status_bad">dolent</string>
   <string name="security_error_invalid_signature">\u0020(la firma no és vàlida)</string>
