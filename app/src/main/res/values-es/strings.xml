@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
@@ -15,7 +15,6 @@
      You should have received a copy of the GNU General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
-
 <resources>
   <string name="app_name">Kontalk</string>
   <string name="app_description">Red de mensajería instantánea gestionada por la comunidad</string>
@@ -372,4 +371,16 @@
   <string name="warning_public_key">¡AVISO! ¡La clave personal de este usuario cambió inesperadamente! Clic aquí para detalles.</string>
   <string name="title_public_key_warning">Cambió la clave personal</string>
   <string name="msg_public_key_warning">La clave personal de este usuario ha cambiado. Por favor verifique con esa persona que reinstaló Kontalk o que regeneró su clave de manera intencionada, en otro caso, ¡la comunicación puede estar comprometida!</string>
+<string name="title_user_exists">El usuario ya existe</string>
+    <string name="err_validation_user_exists"><b>Este número ya está registrado en Kontalk.</b> Si està registrado con otro dispositivo, continuar con este proceso desconectará aquel dispositivo de Kontalk. Por favor consulte nuestra documentación para copiar la cuenta entre diferentes dispositivos. Seleccione OK para continuar igualmente.</string>
+    <string name="pref_help">Ayuda</string>
+    <string name="err_no_contact">Contacto no encontrado.</string>
+
+    <string name="warning_older_version">Tu compañer@ està usando una versión antigua de Kontalk. Algunas funciones podrían no estar operativas.</string>
+    <string name="warning_user_blocked">El usuario ha sido bloqueado por usted.</string>
+
+    <string name="about_credits_devteam"><b>Kontalk ha sido posible gracias a:</b></string>
+    <string name="about_credits_gfx"><b>Gráficos/Iconografía</b></string>
+    <string name="about_credits_translators"><b>Traductores</b></string>
+
 </resources>
