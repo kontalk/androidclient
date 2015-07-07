@@ -30,6 +30,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -62,12 +63,8 @@ public class MessageListItem extends RelativeLayout {
     private LayoutInflater mInflater;
 
     private CompositeMessage mMessage;
-    private MessageContentLayout mContent;
-    private ImageView mStatusIcon;
-    private ImageView mWarningIcon;
-    private TextView mDateView;
-    private LinearLayout mBalloonView;
-    private LinearLayout mParentView;
+
+    private MessageListItemTheme mBalloonTheme;
 
     private ImageView mAvatarIncoming;
     private ImageView mAvatarOutgoing;
@@ -110,14 +107,13 @@ public class MessageListItem extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mContent = (MessageContentLayout) findViewById(R.id.content);
-        mStatusIcon = (ImageView) findViewById(R.id.status_indicator);
-        mWarningIcon = (ImageView) findViewById(R.id.warning_icon);
-        mBalloonView = (LinearLayout) findViewById(R.id.balloon_view);
-        mDateView = (TextView) findViewById(R.id.date_view);
+        ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
+        mBalloonTheme = new BaseMessageTheme(R.layout.balloon_base_noavatar);
+        mBalloonTheme.inflate(stub);
+
+        // TODO move these to the theme
         mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
         mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
-        mParentView = (LinearLayout) findViewById(R.id.message_view_parent);
 
         mDateHeader = (TextView) findViewById(R.id.date_header);
 
@@ -133,7 +129,7 @@ public class MessageListItem extends RelativeLayout {
             mDateView.setText("28 Nov");
             */
 
-            /* OUTGOING */
+            /* OUTGOING
             if (mStatusIcon != null) {
                 mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
                 mStatusIcon.setVisibility(VISIBLE);
@@ -151,6 +147,7 @@ public class MessageListItem extends RelativeLayout {
                 mAvatarOutgoing.setVisibility(VISIBLE);
                 mAvatarOutgoing.setImageResource(R.drawable.ic_contact_picture);
             }
+            */
         }
     }
 
@@ -169,109 +166,25 @@ public class MessageListItem extends RelativeLayout {
         }
 
         if (msg.isEncrypted()) {
-            // FIXME this is not good
-            TextContentView view = TextContentView.obtain(mInflater, mContent, true);
-
-            String text = getResources().getString(R.string.text_encrypted);
-            view.bind(mMessage.getDatabaseId(), new TextComponent(text), contact, highlight);
-            mContent.addContent(view);
+            mBalloonTheme.setEncryptedContent(mMessage.getDatabaseId(), contact);
         }
 
         else {
             // process components
-            List<MessageComponent<?>> components = msg.getComponents();
-            for (MessageComponent<?> cmp : components) {
-                MessageContentView<?> view = MessageContentViewFactory
-                    .createContent(mInflater, mContent, cmp, mMessage.getDatabaseId(),
-                        contact, highlight, args);
-
-                mContent.addContent(view);
-            }
+            mBalloonTheme.processComponents(mMessage.getDatabaseId(),
+                contact, highlight, msg.getComponents(), args);
         }
 
-        int resId = 0;
-        int statusId = 0;
-
-        int securityFlags = mMessage.getSecurityFlags();
-
-        if (Coder.isError(securityFlags)) {
-            mWarningIcon.setImageResource(R.drawable.ic_msg_security);
-            mWarningIcon.setVisibility(VISIBLE);
-        }
-        else {
-            mWarningIcon.setImageResource(R.drawable.ic_msg_warning);
-            mWarningIcon.setVisibility((securityFlags != Coder.SECURITY_CLEARTEXT) ? GONE : VISIBLE);
-        }
+        mBalloonTheme.setSecurityFlags(mMessage.getSecurityFlags());
 
         if (mMessage.getSender() != null) {
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(Preferences
-                        .getBalloonResource(getContext(), Messages.DIRECTION_IN));
-            }
-            mParentView.setGravity(Gravity.LEFT);
-
-            if (mAvatarIncoming != null) {
-                mAvatarOutgoing.setVisibility(GONE);
-                mAvatarIncoming.setVisibility(VISIBLE);
-                mAvatarIncoming.setImageDrawable(contact != null ?
-                    contact.getAvatar(context, sDefaultContactImage) : sDefaultContactImage);
-            }
+            mBalloonTheme.setIncoming(contact);
         }
         else {
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(Preferences
-                        .getBalloonResource(getContext(), Messages.DIRECTION_OUT));
-            }
-            mParentView.setGravity(Gravity.RIGHT);
-
-            if (mAvatarOutgoing != null) {
-                mAvatarIncoming.setVisibility(GONE);
-                mAvatarOutgoing.setVisibility(VISIBLE);
-                // TODO show own profile picture
-                mAvatarOutgoing.setImageDrawable(sDefaultContactImage);
-            }
-
-            // status icon
-            if (mMessage.getSender() == null)
-            switch (mMessage.getStatus()) {
-                case Messages.STATUS_SENDING:
-                // use pending icon even for errors
-                case Messages.STATUS_ERROR:
-                case Messages.STATUS_PENDING:
-                    resId = R.drawable.ic_msg_pending;
-                    statusId = R.string.msg_status_sending;
-                    break;
-                case Messages.STATUS_RECEIVED:
-                    resId = R.drawable.ic_msg_delivered;
-                    statusId = R.string.msg_status_delivered;
-                    break;
-                // here we use the error icon
-                case Messages.STATUS_NOTACCEPTED:
-                    resId = R.drawable.ic_msg_error;
-                    statusId = R.string.msg_status_notaccepted;
-                    break;
-                case Messages.STATUS_SENT:
-                    resId = R.drawable.ic_msg_sent;
-                    statusId = R.string.msg_status_sent;
-                    break;
-                case Messages.STATUS_NOTDELIVERED:
-                    resId = R.drawable.ic_msg_notdelivered;
-                    statusId = R.string.msg_status_notdelivered;
-                    break;
-            }
+            mBalloonTheme.setOutgoing(contact, mMessage.getStatus());
         }
 
-        if (resId > 0) {
-            mStatusIcon.setImageResource(resId);
-            mStatusIcon.setVisibility(VISIBLE);
-            mStatusIcon.setContentDescription(getResources().getString(statusId));
-        }
-        else {
-            mStatusIcon.setImageDrawable(null);
-            mStatusIcon.setVisibility(GONE);
-        }
-
-        mDateView.setText(formatTimestamp());
+        mBalloonTheme.setTimestamp(formatTimestamp());
     }
 
     /*
