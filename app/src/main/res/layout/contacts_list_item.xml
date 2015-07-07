@@ -23,9 +23,8 @@
 
     <org.kontalk.ui.view.CircleContactBadge
         android:id="@+id/avatar"
-        android:layout_width="wrap_content"
+        style="@style/AvatarListItemStyle"
         android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/conv_list_margin_left"
         android:layout_centerVertical="true"/>
 
     <TextView android:id="@android:id/text1"
@@ -35,7 +34,6 @@
         android:singleLine="true"
         android:layout_marginTop="6dip"
         android:layout_marginRight="5dip"
-        android:layout_marginLeft="7dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/avatar"
         android:layout_alignWithParentIfMissing="true"
@@ -47,7 +45,6 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:singleLine="true"
         android:layout_marginBottom="10dip"
-        android:layout_marginLeft="7dip"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@id/avatar"
         android:layout_alignWithParentIfMissing="true"
