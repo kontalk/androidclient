@@ -58,6 +58,13 @@ public class SimpleMessageTheme extends BaseMessageTheme {
     }
 
     @Override
+    public void processComponentView(MessageContentView<?> view) {
+        if (view instanceof TextContentView) {
+            ((TextContentView) view).enableMeasureHack(true);
+        }
+    }
+
+    @Override
     public void setIncoming(Contact contact) {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mIncomingDrawableId);

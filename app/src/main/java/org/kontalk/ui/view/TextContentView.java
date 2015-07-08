@@ -67,6 +67,8 @@ public class TextContentView extends EmojiconTextView
     private boolean mEncryptionPlaceholder;
     private BackgroundColorSpan mHighlightColorSpan;  // set in ctor
 
+    private boolean mMeasureHack;
+
     public TextContentView(Context context) {
         super(context);
         init(context);
@@ -93,16 +95,22 @@ public class TextContentView extends EmojiconTextView
      * http://stackoverflow.com/questions/7439748/why-is-wrap-content-in-multiple-line-textview-filling-parent
      */
 
+    void enableMeasureHack(boolean enabled) {
+        mMeasureHack = enabled;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        Layout layout = getLayout();
-        if (layout != null) {
-            int width = (int) Math.ceil(getMaxLineWidth(layout))
+        if (mMeasureHack) {
+            Layout layout = getLayout();
+            if (layout != null) {
+                int width = (int) Math.ceil(getMaxLineWidth(layout))
                     + getCompoundPaddingLeft() + getCompoundPaddingRight();
-            int height = getMeasuredHeight();
-            setMeasuredDimension(width, height);
+                int height = getMeasuredHeight();
+                setMeasuredDimension(width, height);
+            }
         }
     }
 

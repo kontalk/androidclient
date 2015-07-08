@@ -66,13 +66,10 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
     @Override
     public void processComponentView(MessageContentView<?> view) {
-        // FIXME setting right gravity hides outgoing messages text if < 4 chars
-        /*
         if (view instanceof TextContentView) {
             ((TextContentView) view).setGravity(isIncoming() ?
-                Gravity.LEFT : Gravity.RIGHT);
+                Gravity.START : Gravity.END);
         }
-        */
     }
 
     public void setView() {
