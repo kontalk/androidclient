@@ -121,8 +121,8 @@ public class MessageListItem extends RelativeLayout {
     public void afterInflate(int direction) {
         ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
         String theme = Preferences.getBalloonTheme(getContext());
-        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme);
-        mBalloonTheme.inflate(stub, direction);
+        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme, direction);
+        mBalloonTheme.inflate(stub);
     }
 
     public final void bind(Context context, final CompositeMessage msg,
@@ -139,16 +139,6 @@ public class MessageListItem extends RelativeLayout {
             mDateHeader.setVisibility(View.VISIBLE);
         }
 
-        if (msg.isEncrypted()) {
-            mBalloonTheme.setEncryptedContent(mMessage.getDatabaseId(), contact);
-        }
-
-        else {
-            // process components
-            mBalloonTheme.processComponents(mMessage.getDatabaseId(),
-                contact, highlight, msg.getComponents(), args);
-        }
-
         mBalloonTheme.setSecurityFlags(mMessage.getSecurityFlags());
 
         if (mMessage.getSender() != null) {
@@ -159,6 +149,16 @@ public class MessageListItem extends RelativeLayout {
         }
 
         mBalloonTheme.setTimestamp(formatTimestamp());
+
+        if (msg.isEncrypted()) {
+            mBalloonTheme.setEncryptedContent(mMessage.getDatabaseId());
+        }
+
+        else {
+            // process components
+            mBalloonTheme.processComponents(mMessage.getDatabaseId(),
+                highlight, msg.getComponents(), args);
+        }
     }
 
     /*

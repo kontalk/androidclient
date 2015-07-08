@@ -36,13 +36,11 @@ public interface MessageListItemTheme {
 
     View inflate(ViewStub stub);
 
-    View inflate(ViewStub stub, int direction);
-
     MessageContentLayout getContent();
 
-    void setEncryptedContent(long databaseId, Contact contact);
+    void setEncryptedContent(long databaseId);
 
-    void processComponents(long databaseId, Contact contact, Pattern highlight,
+    void processComponents(long databaseId, Pattern highlight,
         List<MessageComponent<?>> components, Object... args);
 
     void setSecurityFlags(int securityFlags);

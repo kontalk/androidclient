@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.kontalk.R;
+import org.kontalk.provider.MyMessages;
+import org.kontalk.provider.MyMessages.Messages;
 
 
 /**
@@ -31,35 +33,43 @@ import org.kontalk.R;
 public class MessageListItemThemeFactory {
 
     private interface FactoryCreator {
-        MessageListItemTheme create();
+        MessageListItemTheme create(int direction);
     }
 
     private static final Map<String, FactoryCreator> mThemes = new HashMap<>();
     static {
         mThemes.put("hangout", new FactoryCreator() {
             @Override
-            public MessageListItemTheme create() {
-                return new AvatarMessageTheme(R.drawable.balloon_hangout_incoming,
-                    R.drawable.balloon_hangout_outgoing);
+            public MessageListItemTheme create(int direction) {
+                int layoutId, drawableId;
+                if (direction == Messages.DIRECTION_IN) {
+                    layoutId = R.layout.balloon_avatar_in;
+                    drawableId = R.drawable.balloon_hangout_incoming;
+                }
+                else {
+                    layoutId = R.layout.balloon_avatar_out;
+                    drawableId = R.drawable.balloon_hangout_outgoing;
+                }
+                return new AvatarMessageTheme(layoutId, drawableId);
             }
         });
         mThemes.put("classic", new FactoryCreator() {
             @Override
-            public MessageListItemTheme create() {
+            public MessageListItemTheme create(int direction) {
                 return new SimpleMessageTheme(R.drawable.balloon_classic_incoming,
                     R.drawable.balloon_classic_outgoing);
             }
         });
         mThemes.put("old_classic", new FactoryCreator() {
             @Override
-            public MessageListItemTheme create() {
+            public MessageListItemTheme create(int direction) {
                 return new SimpleMessageTheme(R.drawable.balloon_old_classic_incoming,
                     R.drawable.balloon_old_classic_outgoing);
             }
         });
         mThemes.put("iphone", new FactoryCreator() {
             @Override
-            public MessageListItemTheme create() {
+            public MessageListItemTheme create(int direction) {
                 return new SimpleMessageTheme(R.drawable.balloon_iphone_incoming,
                     R.drawable.balloon_iphone_outgoing);
             }
@@ -69,11 +79,11 @@ public class MessageListItemThemeFactory {
     private MessageListItemThemeFactory() {
     }
 
-    public static MessageListItemTheme createTheme(String theme) {
+    public static MessageListItemTheme createTheme(String theme, int direction) {
         FactoryCreator factory = mThemes.get(theme);
         if (factory == null)
             throw new IllegalArgumentException("theme not found: " + theme);
 
-        return factory.create();
+        return factory.create(direction);
     }
 }

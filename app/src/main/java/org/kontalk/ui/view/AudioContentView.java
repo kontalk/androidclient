@@ -38,7 +38,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
 import org.kontalk.message.AudioComponent;
 
 
@@ -89,7 +88,8 @@ public class AudioContentView extends RelativeLayout
         mTime = (TextView) findViewById(R.id.balloon_audio_time);
     }
 
-    public void bind(long messageId, AudioComponent component, Contact contact, Pattern highlight) {
+    @Override
+    public void bind(long messageId, AudioComponent component, Pattern highlight) {
         mComponent = component;
         mMessageId = messageId;
 
@@ -105,11 +105,13 @@ public class AudioContentView extends RelativeLayout
         mAudioPlayerControl.onBind(messageId, this);
     }
 
+    @Override
     public void unbind() {
         clear();
         mAudioPlayerControl.onUnbind(mMessageId, this);
     }
 
+    @Override
     public AudioComponent getComponent() {
         return mComponent;
     }

@@ -6,8 +6,10 @@
     android:orientation="horizontal">
 
     <LinearLayout android:id="@+id/balloon_view"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="12dp"
         android:orientation="vertical"
         android:gravity="right">
 
@@ -53,11 +55,10 @@
     </LinearLayout>
 
     <org.kontalk.ui.view.CircleContactBadge
-        android:id="@+id/avatar_outgoing"
-        android:layout_gravity="center_vertical"
+        android:id="@+id/avatar"
+        android:layout_gravity="bottom"
         android:layout_height="48dp"
         android:layout_width="48dp"
-        android:layout_marginLeft="4dp"
-        android:visibility="gone"/>
+        android:layout_marginBottom="8dp"/>
 
 </LinearLayout>

@@ -26,7 +26,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
 import org.kontalk.message.ImageComponent;
 
 import java.util.regex.Pattern;
@@ -53,7 +52,8 @@ public class ImageContentView extends ImageView
         super(context, attrs, defStyle);
     }
 
-    public void bind(long messageId, ImageComponent component, Contact contact, Pattern highlight) {
+    @Override
+    public void bind(long messageId, ImageComponent component, Pattern highlight) {
         mComponent = component;
 
         // prepend some text for the ImageSpan
@@ -67,10 +67,12 @@ public class ImageContentView extends ImageView
 
     }
 
+    @Override
     public void unbind() {
         clear();
     }
 
+    @Override
     public ImageComponent getComponent() {
         return mComponent;
     }

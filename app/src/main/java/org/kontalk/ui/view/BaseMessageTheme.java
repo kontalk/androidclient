@@ -51,20 +51,13 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     private ImageView mWarningIcon;
     private TextView mDateView;
 
-    protected BaseMessageTheme() {
-    }
-
     protected BaseMessageTheme(int layoutId) {
         mLayoutId = layoutId;
     }
 
     @Override
     public View inflate(ViewStub stub) {
-        return inflate(stub, mLayoutId);
-    }
-
-    protected View inflate(ViewStub stub, int layoutId) {
-        stub.setLayoutResource(stub, mLayoutId);
+        stub.setLayoutResource(mLayoutId);
         View view = stub.inflate();
         // save the inflater for later
         mContext = stub.getContext();
@@ -84,22 +77,22 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     }
 
     @Override
-    public void setEncryptedContent(long databaseId, Contact contact) {
+    public void setEncryptedContent(long databaseId) {
         // FIXME this is not good
         TextContentView view = TextContentView.obtain(mInflater, mContent, true);
 
         String text = mContext.getResources().getString(R.string.text_encrypted);
-        view.bind(databaseId, new TextComponent(text), contact, null);
+        view.bind(databaseId, new TextComponent(text), null);
         mContent.addContent(view);
     }
 
     @Override
-    public void processComponents(long databaseId, Contact contact, Pattern highlight,
+    public void processComponents(long databaseId, Pattern highlight,
         List<MessageComponent<?>> components, Object... args) {
         for (MessageComponent<?> cmp : components) {
             MessageContentView<?> view = MessageContentViewFactory
                 .createContent(mInflater, mContent, cmp, databaseId,
-                    contact, highlight, args);
+                    highlight, args);
 
             processComponentView(view);
 
@@ -173,6 +166,10 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
             mStatusIcon.setImageDrawable(null);
             mStatusIcon.setVisibility(View.GONE);
         }
+    }
+
+    protected boolean isIncoming() {
+        return mStatusIcon.getVisibility() == View.GONE;
     }
 
     @Override

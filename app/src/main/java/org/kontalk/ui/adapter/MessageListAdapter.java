@@ -38,6 +38,7 @@ import android.widget.AbsListView.RecyclerListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 
+
 public class MessageListAdapter extends CursorAdapter {
 
     private static final String TAG = ComposeMessage.TAG;

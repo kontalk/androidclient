@@ -27,7 +27,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.VCardComponent;
 
@@ -53,7 +52,8 @@ public class VCardContentView extends TextView
         super(context, attrs, defStyle);
     }
 
-    public void bind(long id, VCardComponent component, Contact contact, Pattern highlight) {
+    @Override
+    public void bind(long id, VCardComponent component, Pattern highlight) {
         mComponent = component;
 
         // TODO set text appearance (since this is text)
@@ -61,10 +61,12 @@ public class VCardContentView extends TextView
         setText(text);
     }
 
+    @Override
     public void unbind() {
         clear();
     }
 
+    @Override
     public VCardComponent getComponent() {
         return mComponent;
     }

@@ -19,6 +19,7 @@
 package org.kontalk.ui.view;
 
 import android.graphics.drawable.Drawable;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.ImageView;
@@ -36,28 +37,24 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
     private static Drawable sDefaultContactImage;
 
-    private final int mIncomingDrawableId;
-    private final int mOutgoingDrawableId;
+    private final int mDrawableId;
 
     private LinearLayout mBalloonView;
 
-    private ImageView mAvatarIncoming;
-    private ImageView mAvatarOutgoing;
+    private ImageView mAvatar;
 
-    public AvatarMessageTheme(int incomingDrawableId, int outgoingDrawableId) {
-        super();
-        mIncomingDrawableId = incomingDrawableId;
-        mOutgoingDrawableId = outgoingDrawableId;
+    public AvatarMessageTheme(int layoutId, int drawableId) {
+        super(layoutId);
+        mDrawableId = drawableId;
     }
 
     @Override
-    public View inflate(ViewStub stub, int direction) {
+    public View inflate(ViewStub stub) {
         View view = super.inflate(stub);
 
         mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
 
-        mAvatarIncoming = (ImageView) view.findViewById(R.id.avatar_incoming);
-        mAvatarOutgoing = (ImageView) view.findViewById(R.id.avatar_outgoing);
+        mAvatar = (ImageView) view.findViewById(R.id.avatar);
 
         if (sDefaultContactImage == null) {
             sDefaultContactImage = mContext.getResources()
@@ -69,36 +66,45 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
     @Override
     public void processComponentView(MessageContentView<?> view) {
+        // FIXME setting right gravity hides outgoing messages text if < 4 chars
+        /*
+        if (view instanceof TextContentView) {
+            ((TextContentView) view).setGravity(isIncoming() ?
+                Gravity.LEFT : Gravity.RIGHT);
+        }
+        */
+    }
+
+    public void setView() {
+        if (mBalloonView != null) {
+            mBalloonView.setBackgroundResource(mDrawableId);
+        }
     }
 
     @Override
     public void setIncoming(Contact contact) {
-        if (mBalloonView != null) {
-            mBalloonView.setBackgroundResource(mIncomingDrawableId);
-        }
+        setView();
 
-        if (mAvatarIncoming != null) {
-            mAvatarOutgoing.setVisibility(View.GONE);
-            mAvatarIncoming.setVisibility(View.VISIBLE);
-            mAvatarIncoming.setImageDrawable(contact != null ?
+        if (mAvatar != null) {
+            mAvatar.setImageDrawable(contact != null ?
                 contact.getAvatar(mContext, sDefaultContactImage) : sDefaultContactImage);
         }
+
+        getContent().setGravity(Gravity.LEFT);
 
         super.setIncoming(contact);
     }
 
     @Override
     public void setOutgoing(Contact contact, int status) {
-        if (mBalloonView != null) {
-            mBalloonView.setBackgroundResource(mOutgoingDrawableId);
+        setView();
+
+        if (mAvatar != null) {
+            // TODO show own profile picture
+            mAvatar.setImageDrawable(sDefaultContactImage);
         }
 
-        if (mAvatarOutgoing != null) {
-            mAvatarIncoming.setVisibility(View.GONE);
-            mAvatarOutgoing.setVisibility(View.VISIBLE);
-            // TODO show own profile picture
-            mAvatarOutgoing.setImageDrawable(sDefaultContactImage);
-        }
+        getContent().setGravity(Gravity.RIGHT);
 
         super.setOutgoing(contact, status);
     }

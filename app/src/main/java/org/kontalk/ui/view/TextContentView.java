@@ -28,7 +28,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.kontalk.R;
-import org.kontalk.data.Contact;
 import org.kontalk.message.TextComponent;
 import org.kontalk.util.Preferences;
 
@@ -118,11 +117,12 @@ public class TextContentView extends EmojiconTextView
         return max_width;
     }
 
-    public void bind(long databaseId, TextComponent component, Contact contact, Pattern highlight) {
+    @Override
+    public void bind(long databaseId, TextComponent component, Pattern highlight) {
         mComponent = component;
         Context context = getContext();
 
-        SpannableStringBuilder formattedMessage = formatMessage(contact, highlight);
+        SpannableStringBuilder formattedMessage = formatMessage(highlight);
         String size = Preferences.getFontSize(context);
         int sizeId;
         if (size.equals("small"))
@@ -152,10 +152,12 @@ public class TextContentView extends EmojiconTextView
         setText(formattedMessage);
     }
 
+    @Override
     public void unbind() {
         recycle();
     }
 
+    @Override
     public TextComponent getComponent() {
         return mComponent;
     }
@@ -170,7 +172,7 @@ public class TextContentView extends EmojiconTextView
         return mEncryptionPlaceholder;
     }
 
-    private SpannableStringBuilder formatMessage(final Contact contact, final Pattern highlight) {
+    private SpannableStringBuilder formatMessage(final Pattern highlight) {
         SpannableStringBuilder buf;
 
         String textContent = mComponent.getContent();
