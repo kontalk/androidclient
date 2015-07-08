@@ -51,13 +51,20 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     private ImageView mWarningIcon;
     private TextView mDateView;
 
+    protected BaseMessageTheme() {
+    }
+
     protected BaseMessageTheme(int layoutId) {
         mLayoutId = layoutId;
     }
 
     @Override
     public View inflate(ViewStub stub) {
-        stub.setLayoutResource(mLayoutId);
+        return inflate(stub, mLayoutId);
+    }
+
+    protected View inflate(ViewStub stub, int layoutId) {
+        stub.setLayoutResource(stub, mLayoutId);
         View view = stub.inflate();
         // save the inflater for later
         mContext = stub.getContext();
@@ -94,8 +101,14 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
                 .createContent(mInflater, mContent, cmp, databaseId,
                     contact, highlight, args);
 
+            processComponentView(view);
+
             mContent.addContent(view);
         }
+    }
+
+    /** Override to modify a component view before adding it. */
+    public void processComponentView(MessageContentView<?> view) {
     }
 
     @Override
@@ -171,7 +184,7 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
     public TextContentView getTextContentView() {
         int c = mContent.getChildCount();
         for (int i = 0; i < c; i++) {
-            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
+            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(i);
             if (view instanceof TextContentView) {
                 return (TextContentView) view;
             }

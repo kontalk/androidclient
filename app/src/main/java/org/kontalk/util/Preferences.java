@@ -248,28 +248,11 @@ public final class Preferences {
             .getString(R.string.pref_default_font_size));
     }
 
-    public static int getBalloonResource(Context context, int direction) {
+    public static String getBalloonTheme(Context context) {
         if (sBalloonTheme == null)
             sBalloonTheme = getString(context, "pref_balloons", context
                 .getString(R.string.pref_default_balloons));
-
-        if ("classic".equals(sBalloonTheme))
-            return direction == Messages.DIRECTION_IN ?
-                R.drawable.balloon_classic_incoming :
-                R.drawable.balloon_classic_outgoing;
-        else if ("iphone".equals(sBalloonTheme))
-            return direction == Messages.DIRECTION_IN ?
-                R.drawable.balloon_iphone_incoming :
-                    R.drawable.balloon_iphone_outgoing;
-        else if ("old_classic".equals(sBalloonTheme))
-            return direction == Messages.DIRECTION_IN ?
-                R.drawable.balloon_old_classic_incoming :
-                    R.drawable.balloon_old_classic_outgoing;
-
-        // all other cases
-        return direction == Messages.DIRECTION_IN ?
-            R.drawable.balloon_hangout_incoming :
-                R.drawable.balloon_hangout_outgoing;
+        return sBalloonTheme;
     }
 
     public static String getStatusMessage(Context context) {

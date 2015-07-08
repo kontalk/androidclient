@@ -36,6 +36,8 @@ public interface MessageListItemTheme {
 
     View inflate(ViewStub stub);
 
+    View inflate(ViewStub stub, int direction);
+
     MessageContentLayout getContent();
 
     void setEncryptedContent(long databaseId, Contact contact);

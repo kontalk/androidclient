@@ -18,9 +18,10 @@
 
 package org.kontalk.ui.view;
 
-import android.view.Gravity;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewStub;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.kontalk.R;
@@ -28,33 +29,46 @@ import org.kontalk.data.Contact;
 
 
 /**
- * Simple drawable-based message theme.
+ * Avatar-based message balloon theme.
  * @author Daniele Ricci
  */
-public class SimpleMessageTheme extends BaseMessageTheme {
+public class AvatarMessageTheme extends BaseMessageTheme {
+
+    private static Drawable sDefaultContactImage;
 
     private final int mIncomingDrawableId;
     private final int mOutgoingDrawableId;
 
     private LinearLayout mBalloonView;
-    private LinearLayout mParentView;
 
-    public SimpleMessageTheme(int incomingDrawableId, int outgoingDrawableId) {
-        this(R.layout.balloon_base_noavatar, incomingDrawableId, outgoingDrawableId);
-    }
+    private ImageView mAvatarIncoming;
+    private ImageView mAvatarOutgoing;
 
-    protected SimpleMessageTheme(int layoutId, int incomingDrawableId, int outgoingDrawableId) {
-        super(layoutId);
+    public AvatarMessageTheme(int incomingDrawableId, int outgoingDrawableId) {
+        super();
         mIncomingDrawableId = incomingDrawableId;
         mOutgoingDrawableId = outgoingDrawableId;
     }
 
     @Override
-    public View inflate(ViewStub stub) {
+    public View inflate(ViewStub stub, int direction) {
         View view = super.inflate(stub);
+
         mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
-        mParentView = (LinearLayout) view.findViewById(R.id.message_view_parent);
+
+        mAvatarIncoming = (ImageView) view.findViewById(R.id.avatar_incoming);
+        mAvatarOutgoing = (ImageView) view.findViewById(R.id.avatar_outgoing);
+
+        if (sDefaultContactImage == null) {
+            sDefaultContactImage = mContext.getResources()
+                .getDrawable(R.drawable.ic_contact_picture);
+        }
+
         return view;
+    }
+
+    @Override
+    public void processComponentView(MessageContentView<?> view) {
     }
 
     @Override
@@ -62,7 +76,13 @@ public class SimpleMessageTheme extends BaseMessageTheme {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mIncomingDrawableId);
         }
-        mParentView.setGravity(Gravity.LEFT);
+
+        if (mAvatarIncoming != null) {
+            mAvatarOutgoing.setVisibility(View.GONE);
+            mAvatarIncoming.setVisibility(View.VISIBLE);
+            mAvatarIncoming.setImageDrawable(contact != null ?
+                contact.getAvatar(mContext, sDefaultContactImage) : sDefaultContactImage);
+        }
 
         super.setIncoming(contact);
     }
@@ -72,7 +92,13 @@ public class SimpleMessageTheme extends BaseMessageTheme {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mOutgoingDrawableId);
         }
-        mParentView.setGravity(Gravity.RIGHT);
+
+        if (mAvatarOutgoing != null) {
+            mAvatarIncoming.setVisibility(View.GONE);
+            mAvatarOutgoing.setVisibility(View.VISIBLE);
+            // TODO show own profile picture
+            mAvatarOutgoing.setImageDrawable(sDefaultContactImage);
+        }
 
         super.setOutgoing(contact, status);
     }

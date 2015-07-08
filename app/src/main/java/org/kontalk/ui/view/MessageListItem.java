@@ -29,19 +29,16 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
@@ -53,16 +50,9 @@ import org.kontalk.util.Preferences;
  */
 public class MessageListItem extends RelativeLayout {
 
-    static private Drawable sDefaultContactImage;
-
-    private LayoutInflater mInflater;
-
     private CompositeMessage mMessage;
 
     private MessageListItemTheme mBalloonTheme;
-
-    private ImageView mAvatarIncoming;
-    private ImageView mAvatarOutgoing;
 
     private TextView mDateHeader;
 
@@ -82,36 +72,15 @@ public class MessageListItem extends RelativeLayout {
 
     public MessageListItem(Context context) {
         super(context);
-        init(context);
     }
 
     public MessageListItem(final Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
-    }
-
-    private void init(Context context) {
-        if (sDefaultContactImage == null) {
-            sDefaultContactImage = context.getResources().getDrawable(R.drawable.ic_contact_picture);
-        }
-
-        mInflater = LayoutInflater.from(context);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
-        ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
-        mBalloonTheme = new SimpleMessageTheme(
-            // FIXME make only one lookup
-            Preferences.getBalloonResource(getContext(), Messages.DIRECTION_IN),
-            Preferences.getBalloonResource(getContext(), Messages.DIRECTION_OUT));
-        mBalloonTheme.inflate(stub);
-
-        // TODO move these to the theme
-        mAvatarIncoming = (ImageView) findViewById(R.id.avatar_incoming);
-        mAvatarOutgoing = (ImageView) findViewById(R.id.avatar_outgoing);
 
         mDateHeader = (TextView) findViewById(R.id.date_header);
 
@@ -147,6 +116,13 @@ public class MessageListItem extends RelativeLayout {
             }
             */
         }
+    }
+
+    public void afterInflate(int direction) {
+        ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
+        String theme = Preferences.getBalloonTheme(getContext());
+        mBalloonTheme = MessageListItemThemeFactory.createTheme(theme);
+        mBalloonTheme.inflate(stub, direction);
     }
 
     public final void bind(Context context, final CompositeMessage msg,
@@ -293,11 +269,11 @@ public class MessageListItem extends RelativeLayout {
         }
         else {
             ArrayAdapter<URLSpan> adapter =
-                new ArrayAdapter<URLSpan>(mInflater.getContext(), android.R.layout.select_dialog_item, spans) {
+                new ArrayAdapter<URLSpan>(getContext(), android.R.layout.select_dialog_item, spans) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         View v = super.getView(position, convertView, parent);
-                        Context context = mInflater.getContext();
+                        Context context = getContext();
                         try {
                             URLSpan span = getItem(position);
                             String url = span.getURL();
@@ -324,7 +300,7 @@ public class MessageListItem extends RelativeLayout {
                     }
                 };
 
-            AlertDialogWrapper.Builder b = new AlertDialogWrapper.Builder(mInflater.getContext());
+            AlertDialogWrapper.Builder b = new AlertDialogWrapper.Builder(getContext());
 
             final TextContentView textView = textContent;
             DialogInterface.OnClickListener click = new DialogInterface.OnClickListener() {

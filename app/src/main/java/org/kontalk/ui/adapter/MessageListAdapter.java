@@ -86,8 +86,24 @@ public class MessageListAdapter extends CursorAdapter {
     }
 
     @Override
+    public int getItemViewType(int position) {
+        Cursor c = (Cursor) getItem(position);
+        return c.getInt(CompositeMessage.COLUMN_DIRECTION);
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        // incoming+outgoing
+        return 2;
+    }
+
+    @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.message_list_item, parent, false);
+        int type = cursor.getInt(CompositeMessage.COLUMN_DIRECTION);
+        MessageListItem view = (MessageListItem) mFactory
+            .inflate(R.layout.message_list_item, parent, false);
+        view.afterInflate(type);
+        return view;
     }
 
     public interface OnContentChangedListener {
