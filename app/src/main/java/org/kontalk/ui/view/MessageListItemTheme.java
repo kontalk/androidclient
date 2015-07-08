@@ -21,6 +21,7 @@ package org.kontalk.ui.view;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import android.view.View;
 import android.view.ViewStub;
 
 import org.kontalk.data.Contact;
@@ -33,7 +34,7 @@ import org.kontalk.message.MessageComponent;
  */
 public interface MessageListItemTheme {
 
-    void inflate(ViewStub stub);
+    View inflate(ViewStub stub);
 
     MessageContentLayout getContent();
 
@@ -49,5 +50,9 @@ public interface MessageListItemTheme {
     void setOutgoing(Contact contact, int status);
 
     void setTimestamp(CharSequence timestamp);
+
+    TextContentView getTextContentView();
+
+    void unload();
 
 }

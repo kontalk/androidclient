@@ -18,7 +18,10 @@
 
 package org.kontalk.ui.view;
 
+import java.util.regex.Pattern;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,29 +29,21 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.style.URLSpan;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
-import org.kontalk.crypto.Coder;
 import org.kontalk.data.Contact;
 import org.kontalk.message.CompositeMessage;
-import org.kontalk.message.MessageComponent;
-import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
-
-import java.util.List;
-import java.util.regex.Pattern;
 
 
 /**
@@ -108,7 +103,10 @@ public class MessageListItem extends RelativeLayout {
         super.onFinishInflate();
 
         ViewStub stub = (ViewStub) findViewById(R.id.balloon_stub);
-        mBalloonTheme = new BaseMessageTheme(R.layout.balloon_base_noavatar);
+        mBalloonTheme = new SimpleMessageTheme(
+            // FIXME make only one lookup
+            Preferences.getBalloonResource(getContext(), Messages.DIRECTION_IN),
+            Preferences.getBalloonResource(getContext(), Messages.DIRECTION_OUT));
         mBalloonTheme.inflate(stub);
 
         // TODO move these to the theme
@@ -274,25 +272,12 @@ public class MessageListItem extends RelativeLayout {
     public final void unbind() {
         // TODO mMessage.recycle();
         mMessage = null;
-
-        int c = mContent.getChildCount();
-        for (int i = 0; i < c; i++) {
-            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
-            mContent.removeView((View) view);
-            view.unbind();
-        }
+        mBalloonTheme.unload();
     }
 
     // Thanks to Google Mms app :)
     public void onClick() {
-        TextContentView textContent = null;
-        int c = mContent.getChildCount();
-        for (int i = 0; i < c; i++) {
-            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
-            if (view instanceof TextContentView) {
-                textContent = (TextContentView) view;
-            }
-        }
+        TextContentView textContent = mBalloonTheme.getTextContentView();
 
         if (textContent == null)
             return;

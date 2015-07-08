@@ -22,12 +22,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.kontalk.R;
@@ -36,7 +34,6 @@ import org.kontalk.data.Contact;
 import org.kontalk.message.MessageComponent;
 import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages;
-import org.kontalk.util.Preferences;
 
 
 /**
@@ -46,22 +43,20 @@ import org.kontalk.util.Preferences;
 public abstract class BaseMessageTheme implements MessageListItemTheme {
 
     private final int mLayoutId;
-    private Context mContext;
-    private LayoutInflater mInflater;
+    protected Context mContext;
+    protected LayoutInflater mInflater;
 
     private MessageContentLayout mContent;
     private ImageView mStatusIcon;
     private ImageView mWarningIcon;
     private TextView mDateView;
-    private LinearLayout mBalloonView;
-    private LinearLayout mParentView;
 
-    public BaseMessageTheme(int layoutId) {
+    protected BaseMessageTheme(int layoutId) {
         mLayoutId = layoutId;
     }
 
     @Override
-    public void inflate(ViewStub stub) {
+    public View inflate(ViewStub stub) {
         stub.setLayoutResource(mLayoutId);
         View view = stub.inflate();
         // save the inflater for later
@@ -71,9 +66,9 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         mContent = (MessageContentLayout) view.findViewById(R.id.content);
         mStatusIcon = (ImageView) view.findViewById(R.id.status_indicator);
         mWarningIcon = (ImageView) view.findViewById(R.id.warning_icon);
-        mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
         mDateView = (TextView) view.findViewById(R.id.date_view);
-        mParentView = (LinearLayout) view.findViewById(R.id.message_view_parent);
+
+        return view;
     }
 
     @Override
@@ -118,23 +113,6 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
 
     @Override
     public void setIncoming(Contact contact) {
-        // TODO this is not base
-        if (mBalloonView != null) {
-            mBalloonView.setBackgroundResource(Preferences
-                .getBalloonResource(mContext, MyMessages.Messages.DIRECTION_IN));
-        }
-        // TODO this is not base
-        mParentView.setGravity(Gravity.LEFT);
-
-        /*
-        if (mAvatarIncoming != null) {
-            mAvatarOutgoing.setVisibility(GONE);
-            mAvatarIncoming.setVisibility(VISIBLE);
-            mAvatarIncoming.setImageDrawable(contact != null ?
-                contact.getAvatar(context, sDefaultContactImage) : sDefaultContactImage);
-        }
-        */
-
         // no status icon for incoming messages
         mStatusIcon.setImageDrawable(null);
         mStatusIcon.setVisibility(View.GONE);
@@ -142,23 +120,6 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
 
     @Override
     public void setOutgoing(Contact contact, int status) {
-        // TODO this is not base
-        if (mBalloonView != null) {
-            mBalloonView.setBackgroundResource(Preferences
-                .getBalloonResource(mContext, MyMessages.Messages.DIRECTION_OUT));
-        }
-        // TODO this is not base
-        mParentView.setGravity(Gravity.RIGHT);
-
-        /*
-        if (mAvatarOutgoing != null) {
-            mAvatarIncoming.setVisibility(GONE);
-            mAvatarOutgoing.setVisibility(VISIBLE);
-            // TODO show own profile picture
-            mAvatarOutgoing.setImageDrawable(sDefaultContactImage);
-        }
-        */
-
         int resId = 0;
         int statusId = 0;
 
@@ -206,4 +167,25 @@ public abstract class BaseMessageTheme implements MessageListItemTheme {
         mDateView.setText(timestamp);
     }
 
+    @Override
+    public TextContentView getTextContentView() {
+        int c = mContent.getChildCount();
+        for (int i = 0; i < c; i++) {
+            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
+            if (view instanceof TextContentView) {
+                return (TextContentView) view;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void unload() {
+        int c = mContent.getChildCount();
+        for (int i = 0; i < c; i++) {
+            MessageContentView<?> view = (MessageContentView<?>) mContent.getChildAt(0);
+            mContent.removeView((View) view);
+            view.unbind();
+        }
+    }
 }

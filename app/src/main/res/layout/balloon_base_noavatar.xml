@@ -3,7 +3,6 @@
     android:id="@+id/message_view_parent"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_below="@id/date_header"
     android:orientation="horizontal">
 
     <LinearLayout android:id="@+id/balloon_view"
