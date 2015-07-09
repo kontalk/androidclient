@@ -18,18 +18,25 @@
 
 package org.kontalk.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
+import android.provider.ContactsContract;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -203,6 +210,29 @@ public final class SystemUtils {
 
     public static boolean isOnWifi(Context context) {
         return getCurrentNetworkType(context) == ConnectivityManager.TYPE_WIFI;
+    }
+
+    public static Bitmap getProfilePhoto(Context context) {
+        // profile photo is available only since API level 14
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            ContentResolver cr = context.getContentResolver();
+            InputStream input = ContactsContract.Contacts
+                .openContactPhotoInputStream(cr, ContactsContract.Profile.CONTENT_URI);
+            if (input != null) {
+                try {
+                    return BitmapFactory.decodeStream(input);
+                }
+                finally {
+                    try {
+                        input.close();
+                    }
+                    catch (IOException ignore) {
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
 }

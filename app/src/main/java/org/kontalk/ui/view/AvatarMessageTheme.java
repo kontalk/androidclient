@@ -18,6 +18,8 @@
 
 package org.kontalk.ui.view;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.View;
@@ -27,6 +29,7 @@ import android.widget.LinearLayout;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -97,8 +100,16 @@ public class AvatarMessageTheme extends BaseMessageTheme {
         setView();
 
         if (mAvatar != null) {
-            // TODO show own profile picture
-            mAvatar.setImageDrawable(sDefaultContactImage);
+            Drawable avatar;
+            Bitmap profile = SystemUtils.getProfilePhoto(mContext);
+            if (profile != null) {
+                avatar = new BitmapDrawable(mContext.getResources(), profile);
+            }
+            else {
+                avatar = sDefaultContactImage;
+            }
+
+            mAvatar.setImageDrawable(avatar);
         }
 
         getContent().setGravity(Gravity.RIGHT);
