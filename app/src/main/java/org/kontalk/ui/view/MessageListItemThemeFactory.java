@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.kontalk.R;
-import org.kontalk.provider.MyMessages;
 import org.kontalk.provider.MyMessages.Messages;
 
 
@@ -37,6 +36,7 @@ public class MessageListItemThemeFactory {
     }
 
     private static final Map<String, FactoryCreator> mThemes = new HashMap<>();
+
     static {
         mThemes.put("hangout", new FactoryCreator() {
             @Override
