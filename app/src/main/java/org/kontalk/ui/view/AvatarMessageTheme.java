@@ -44,7 +44,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
     private LinearLayout mBalloonView;
 
-    private ImageView mAvatar;
+    private CircleContactBadge mAvatar;
 
     public AvatarMessageTheme(int layoutId, int drawableId) {
         super(layoutId);
@@ -57,7 +57,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
         mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
 
-        mAvatar = (ImageView) view.findViewById(R.id.avatar);
+        mAvatar = (CircleContactBadge) view.findViewById(R.id.avatar);
 
         if (sDefaultContactImage == null) {
             sDefaultContactImage = mContext.getResources()
@@ -86,6 +86,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
         setView();
 
         if (mAvatar != null) {
+            mAvatar.assignContactUri(contact.getUri());
             mAvatar.setImageDrawable(contact != null ?
                 contact.getAvatar(mContext) : sDefaultContactImage);
         }
