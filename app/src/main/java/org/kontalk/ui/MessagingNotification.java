@@ -447,7 +447,7 @@ public class MessagingNotification {
         }
 
         // features (priority, category)
-        setFeatures(builder);
+        setFeatures(context, builder);
 
         nm.notify(NOTIFICATION_ID_MESSAGES, builder.build());
 
@@ -481,9 +481,10 @@ public class MessagingNotification {
         builder.setDefaults(defaults);
     }
 
-    private static void setFeatures(NotificationCompat.Builder builder) {
+    private static void setFeatures(Context context, NotificationCompat.Builder builder) {
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
         builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+        builder.setColor(context.getResources().getColor(R.color.app_accent));
     }
 
     /** Triggers a notification for a chat invitation. */
@@ -526,7 +527,7 @@ public class MessagingNotification {
         // defaults (sound, vibration, lights)
         setDefaults(context, builder);
         // features (priority, category)
-        setFeatures(builder);
+        setFeatures(context, builder);
 
         // fire it up!
         NotificationManager nm = (NotificationManager) context

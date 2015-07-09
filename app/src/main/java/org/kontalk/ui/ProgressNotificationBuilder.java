@@ -52,6 +52,8 @@ public class ProgressNotificationBuilder extends NotificationCompat.Builder {
         setSmallIcon(smallIcon);
         setContentIntent(intent);
         setOngoing(true);
+        setCategory(NotificationCompat.CATEGORY_PROGRESS);
+        setPriority(NotificationCompat.PRIORITY_LOW);
     }
 
     /**

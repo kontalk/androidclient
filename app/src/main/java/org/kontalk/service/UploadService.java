@@ -298,6 +298,8 @@ public class UploadService extends IntentService implements ProgressListener {
             .setContentText(text)
             .setTicker(ticker)
             .setContentIntent(pi)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_ERROR)
             .setAutoCancel(true);
 
 

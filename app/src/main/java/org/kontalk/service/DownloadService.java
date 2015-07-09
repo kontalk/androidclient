@@ -350,6 +350,7 @@ public class DownloadService extends IntentService implements DownloadListener {
                 .setContentText(getString(R.string.notify_text_download_completed))
                 .setTicker(getString(R.string.notify_ticker_download_completed))
                 .setContentIntent(pi)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true);
 
             // notify!!
@@ -379,6 +380,8 @@ public class DownloadService extends IntentService implements DownloadListener {
             .setContentTitle(getString(R.string.notify_title_download_error))
             .setContentText(text)
             .setTicker(ticker)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_ERROR)
             .setContentIntent(pi)
             .setAutoCancel(true);
 
