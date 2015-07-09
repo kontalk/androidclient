@@ -27,7 +27,6 @@
     <org.kontalk.ui.view.CircleContactBadge
         android:id="@+id/avatar"
         style="@style/AvatarListItemStyle"
-        android:layout_height="match_parent"
         android:layout_centerVertical="true"/>
 
     <TextView android:id="@+id/from"
