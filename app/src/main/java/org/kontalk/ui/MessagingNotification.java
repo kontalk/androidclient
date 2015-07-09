@@ -483,8 +483,7 @@ public class MessagingNotification {
 
     private static void setFeatures(NotificationCompat.Builder builder) {
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
-        // FIXME this can't be used with appcompat v21
-        //builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+        builder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
     }
 
     /** Triggers a notification for a chat invitation. */
