@@ -23,6 +23,9 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
+
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
 
@@ -42,6 +45,7 @@ import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
+import org.kontalk.R;
 import org.kontalk.crypto.PGP;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
@@ -94,7 +98,7 @@ public class Contact {
 
     private boolean mBlocked;
 
-    private BitmapDrawable mAvatar;
+    private Drawable mAvatar;
     private byte [] mAvatarData;
 
     private String mFingerprint;
@@ -246,6 +250,16 @@ public class Contact {
         mVersion = version;
     }
 
+    private static Drawable generateRandomAvatar(Context context, Contact contact) {
+        return TextDrawable.builder()
+            .beginConfig()
+            .width(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
+            .height(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
+            .endConfig()
+            .buildRect(contact.mName.substring(0, 1),
+                ColorGenerator.MATERIAL.getColor(contact.mJID));
+    }
+
     public void getAvatarAsync(final Context context, final ContactCallback callback) {
         if (mAvatar != null) {
             callback.avatarLoaded(this, mAvatar);
@@ -255,7 +269,7 @@ public class Contact {
             new Thread(new Runnable() {
                 public void run() {
                     try {
-                        Drawable avatar = getAvatar(context, null);
+                        Drawable avatar = getAvatar(context);
                         callback.avatarLoaded(Contact.this, avatar);
                     }
                     catch (Exception e) {
@@ -267,7 +281,7 @@ public class Contact {
         }
     }
 
-    public synchronized Drawable getAvatar(Context context, Drawable defaultValue) {
+    public synchronized Drawable getAvatar(Context context) {
         if (mAvatar == null) {
             if (mAvatarData == null) {
                 Uri uri = getUri();
@@ -280,7 +294,11 @@ public class Contact {
                 mAvatar = new BitmapDrawable(context.getResources(), b);
             }
         }
-        return mAvatar != null ? mAvatar : defaultValue;
+
+        if (mAvatar == null)
+            mAvatar = generateRandomAvatar(context, this);
+
+        return mAvatar;
     }
 
     private void clear() {

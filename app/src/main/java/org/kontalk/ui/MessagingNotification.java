@@ -29,6 +29,7 @@ import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.CommonColumns;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 
 import android.accounts.Account;
@@ -42,7 +43,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
@@ -370,9 +371,9 @@ public class MessagingNotification {
 
                 // avatar
                 if (contact != null) {
-                    BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+                    Drawable avatar = contact.getAvatar(context);
                     if (avatar != null)
-                        builder.setLargeIcon(avatar.getBitmap());
+                        builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
                 }
             }
 
@@ -429,9 +430,9 @@ public class MessagingNotification {
             builder.setTicker(accumulator.getTicker());
             Contact contact = accumulator.getContact();
             if (contact != null) {
-                BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+                Drawable avatar = contact.getAvatar(context);
                 if (avatar != null)
-                    builder.setLargeIcon(avatar.getBitmap());
+                    builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
             }
             builder.setNumber(accumulator.unreadCount);
             builder.setSmallIcon(R.drawable.ic_stat_notify);
@@ -519,9 +520,9 @@ public class MessagingNotification {
 
         // include an avatar if any
         if (contact != null) {
-            BitmapDrawable avatar = (BitmapDrawable) contact.getAvatar(context, null);
+            Drawable avatar = contact.getAvatar(context);
             if (avatar != null)
-                builder.setLargeIcon(avatar.getBitmap());
+                builder.setLargeIcon(MessageUtils.drawableToBitmap(avatar));
         }
 
         // defaults (sound, vibration, lights)

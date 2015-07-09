@@ -84,7 +84,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
         if (mAvatar != null) {
             mAvatar.setImageDrawable(contact != null ?
-                contact.getAvatar(mContext, sDefaultContactImage) : sDefaultContactImage);
+                contact.getAvatar(mContext) : sDefaultContactImage);
         }
 
         getContent().setGravity(Gravity.LEFT);
