@@ -21,7 +21,6 @@
 
     <!-- actions -->
     <item android:id="@+id/menu_search" android:title="@string/menu_search" android:icon="@drawable/ic_menu_search" app:showAsAction="always"/>
-    <item android:id="@+id/menu_compose" android:title="@string/menu_compose" android:icon="@drawable/ic_menu_compose" app:showAsAction="always"/>
 
     <!-- menu -->
     <item android:id="@+id/menu_offline" android:title="@string/menu_offline" android:icon="@android:drawable/ic_menu_close_clear_cancel"/>

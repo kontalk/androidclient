@@ -105,6 +105,13 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
 
         setListAdapter(mListAdapter);
         registerForContextMenu(list);
+
+        getView().findViewById(R.id.action).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseContact();
+            }
+        });
     }
 
     @Override
@@ -146,10 +153,6 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            case R.id.menu_compose:
-                chooseContact();
-                return true;
-
             case R.id.menu_status:
                 StatusActivity.start(getActivity());
                 return true;
