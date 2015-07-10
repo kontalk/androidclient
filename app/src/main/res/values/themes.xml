@@ -27,6 +27,8 @@
     <item name="android:textColorSecondary">#727272</item>
      -->
     <item name="colorAccent">@color/app_accent</item>
+
+    <item name="windowActionModeOverlay">true</item>
   </style>
 
 </resources>
