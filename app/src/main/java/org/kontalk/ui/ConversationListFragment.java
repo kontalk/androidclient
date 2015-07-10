@@ -38,6 +38,7 @@ import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -46,12 +47,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class ConversationListFragment extends ListFragment implements Contact.ContactChangeListener {
+public class ConversationListFragment extends ListFragment
+        implements Contact.ContactChangeListener, AbsListView.MultiChoiceModeListener {
     private static final String TAG = ConversationList.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
@@ -102,9 +105,13 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
             list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             list.setItemsCanFocus(true);
         }
+        else {
+            list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        }
+
+        list.setMultiChoiceModeListener(this);
 
         setListAdapter(mListAdapter);
-        registerForContextMenu(list);
 
         getView().findViewById(R.id.action).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -203,30 +210,38 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        // TODO called on select/deselect
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        // TODO handle actions
+        return false;
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.conversation_list_ctx, menu);
+        return true;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        // TODO what to do here?
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        // TODO what to do here?
+        return false;
+    }
+
     private static final int MENU_OPEN_THREAD = 1;
     private static final int MENU_VIEW_CONTACT = 2;
     private static final int MENU_DELETE_THREAD = 3;
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        ConversationListItem vitem = (ConversationListItem) info.targetView;
-        Conversation conv = vitem.getConversation();
-        if (conv != null) {
-            Contact contact = conv.getContact();
-            String title;
-            if (contact != null)
-                title = contact.getName() != null ? contact.getName() : contact.getNumber();
-            else
-                title = conv.getRecipient();
-
-            menu.setHeaderTitle(title);
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN_THREAD, MENU_OPEN_THREAD, R.string.view_conversation);
-            if (contact != null && contact.getId() > 0)
-                menu.add(CONTEXT_MENU_GROUP_ID, MENU_VIEW_CONTACT, MENU_VIEW_CONTACT, R.string.view_contact);
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE_THREAD, MENU_DELETE_THREAD, R.string.delete_thread);
-        }
-    }
 
     @Override
     public boolean onContextItemSelected(android.view.MenuItem item) {
