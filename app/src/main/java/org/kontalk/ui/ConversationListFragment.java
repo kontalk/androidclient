@@ -221,7 +221,8 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         if (item.getItemId() == R.id.menu_delete) {
-            deleteSelectedThreads();
+            // using clone because listview returns its original copy
+            deleteSelectedThreads(getListView().getCheckedItemPositions().clone());
             mode.finish();
             return true;
         }
@@ -294,16 +295,23 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
         startActivity(i);
     }
 
-    private void deleteSelectedThreads() {
-        // TODO show alert dialog
-        ListView list = getListView();
-        SparseBooleanArray checked = list.getCheckedItemPositions();
-        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
-            if (checked.get(i)) {
-                // TODO delete item?
-            }
-        }
-        mListAdapter.notifyDataSetChanged();
+    private void deleteSelectedThreads(final SparseBooleanArray checked) {
+        new AlertDialogWrapper
+            .Builder(getActivity())
+            .setMessage(R.string.confirm_will_delete_threads)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Context ctx = getActivity();
+                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+                        if (checked.get(i))
+                            Conversation.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                    }
+                    mListAdapter.notifyDataSetChanged();
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void deleteThread(final long threadId) {

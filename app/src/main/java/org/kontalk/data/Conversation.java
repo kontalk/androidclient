@@ -49,17 +49,17 @@ public class Conversation {
         Threads.REQUEST_STATUS,
     };
 
-    private final int COLUMN_ID = 0;
-    private final int COLUMN_PEER = 1;
-    private final int COLUMN_COUNT = 2;
-    private final int COLUMN_UNREAD = 3;
-    private final int COLUMN_MIME = 4;
-    private final int COLUMN_CONTENT = 5;
-    private final int COLUMN_TIMESTAMP = 6;
-    private final int COLUMN_STATUS = 7;
-    private final int COLUMN_ENCRYPTED = 8;
-    private final int COLUMN_DRAFT = 9;
-    private final int COLUMN_REQUEST_STATUS = 10;
+    private static final int COLUMN_ID = 0;
+    private static final int COLUMN_PEER = 1;
+    private static final int COLUMN_COUNT = 2;
+    private static final int COLUMN_UNREAD = 3;
+    private static final int COLUMN_MIME = 4;
+    private static final int COLUMN_CONTENT = 5;
+    private static final int COLUMN_TIMESTAMP = 6;
+    private static final int COLUMN_STATUS = 7;
+    private static final int COLUMN_ENCRYPTED = 8;
+    private static final int COLUMN_DRAFT = 9;
+    private static final int COLUMN_REQUEST_STATUS = 10;
 
     private final Context mContext;
 
@@ -133,6 +133,10 @@ public class Conversation {
 
         cp.close();
         return cv;
+    }
+
+    public static void deleteFromCursor(Context context, Cursor cursor) {
+        MessagesProvider.deleteThread(context, cursor.getLong(COLUMN_ID));
     }
 
     private void loadContact() {
