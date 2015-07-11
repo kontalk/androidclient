@@ -40,6 +40,7 @@ import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.view.ActionMode;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -219,7 +220,11 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        // TODO handle actions
+        if (item.getItemId() == R.id.menu_delete) {
+            deleteSelectedThreads();
+            mode.finish();
+            return true;
+        }
         return false;
     }
 
@@ -287,6 +292,18 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
     private void launchMyKey() {
         Intent i = new Intent(getActivity(), MyKeyActivity.class);
         startActivity(i);
+    }
+
+    private void deleteSelectedThreads() {
+        // TODO show alert dialog
+        ListView list = getListView();
+        SparseBooleanArray checked = list.getCheckedItemPositions();
+        for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+            if (checked.get(i)) {
+                // TODO delete item?
+            }
+        }
+        mListAdapter.notifyDataSetChanged();
     }
 
     private void deleteThread(final long threadId) {
