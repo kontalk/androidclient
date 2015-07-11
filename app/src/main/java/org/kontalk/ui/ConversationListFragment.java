@@ -47,7 +47,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -57,9 +56,6 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
     private static final String TAG = ConversationList.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
-
-    /** Context menu group ID for this fragment. */
-    private static final int CONTEXT_MENU_GROUP_ID = 1;
 
     private ThreadListQueryHandler mQueryHandler;
     private ConversationListAdapter mListAdapter;
@@ -247,41 +243,6 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         // TODO what to do here?
         return false;
-    }
-
-    private static final int MENU_OPEN_THREAD = 1;
-    private static final int MENU_VIEW_CONTACT = 2;
-    private static final int MENU_DELETE_THREAD = 3;
-
-    @Override
-    public boolean onContextItemSelected(android.view.MenuItem item) {
-        // not our context
-        if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
-            return false;
-
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-        ConversationListItem vitem = (ConversationListItem) info.targetView;
-        Conversation conv = vitem.getConversation();
-
-        switch (item.getItemId()) {
-            case MENU_OPEN_THREAD:
-                ConversationList parent = getParentActivity();
-                if (parent != null)
-                    parent.openConversation(conv, info.position);
-                return true;
-
-            case MENU_VIEW_CONTACT:
-                Contact contact = conv.getContact();
-                if (contact != null)
-                    startActivity(new Intent(Intent.ACTION_VIEW, contact.getUri()));
-                return true;
-
-            case MENU_DELETE_THREAD:
-                deleteThread(conv.getThreadId());
-                return true;
-        }
-
-        return super.onContextItemSelected(item);
     }
 
     private void launchDonate() {
