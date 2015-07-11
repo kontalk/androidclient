@@ -224,12 +224,14 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     public void setChecked(boolean checked) {
         mChecked = checked;
 
-        /** TODO checked conversation item
+        int backgroundId;
+
         if (mChecked)
-            setBackgroundResource(R.color.conversation_active_background);
+            backgroundId = R.drawable.list_selected_holo_light;
         else
-            setBackgroundResource(0);
-         */
+            backgroundId = 0;
+
+        setBackgroundResource(backgroundId);
     }
 
     @Override

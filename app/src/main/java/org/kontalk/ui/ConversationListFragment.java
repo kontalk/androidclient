@@ -27,6 +27,8 @@ import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.Preferences;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.akalipetis.fragment.MultiChoiceModeListener;
+
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -36,25 +38,21 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v7.view.ActionMode;
 import android.util.Log;
-import android.view.ActionMode;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class ConversationListFragment extends ListFragment
-        implements Contact.ContactChangeListener, AbsListView.MultiChoiceModeListener {
+public class ConversationListFragment extends com.akalipetis.fragment.ActionModeListFragment
+        implements Contact.ContactChangeListener, MultiChoiceModeListener {
     private static final String TAG = ConversationList.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
@@ -71,6 +69,8 @@ public class ConversationListFragment extends ListFragment
     private MenuItem mDeleteAllMenu;
     /** Offline mode menu item. */
     private MenuItem mOfflineMenu;
+
+    private int mCheckedItemCount;
 
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
         new ConversationListAdapter.OnContentChangedListener() {
@@ -105,13 +105,9 @@ public class ConversationListFragment extends ListFragment
             list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             list.setItemsCanFocus(true);
         }
-        else {
-            list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        }
-
-        list.setMultiChoiceModeListener(this);
 
         setListAdapter(mListAdapter);
+        setMultiChoiceModeListener(this);
 
         getView().findViewById(R.id.action).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -212,7 +208,13 @@ public class ConversationListFragment extends ListFragment
 
     @Override
     public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-        // TODO called on select/deselect
+        if (checked)
+            mCheckedItemCount++;
+        else
+            mCheckedItemCount--;
+        mode.setTitle(getResources()
+            .getQuantityString(R.plurals.context_selected,
+                mCheckedItemCount, mCheckedItemCount));
     }
 
     @Override
@@ -230,7 +232,9 @@ public class ConversationListFragment extends ListFragment
 
     @Override
     public void onDestroyActionMode(ActionMode mode) {
-        // TODO what to do here?
+        mCheckedItemCount = 0;
+        getListView().clearChoices();
+        mListAdapter.notifyDataSetChanged();
     }
 
     @Override
