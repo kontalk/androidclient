@@ -23,6 +23,7 @@ import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.ui.adapter.ConversationListAdapter;
+import org.kontalk.ui.view.AbsListViewScrollDetector;
 import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.Preferences;
 
@@ -47,6 +48,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -67,6 +70,9 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
     /** Offline mode menu item. */
     private MenuItem mOfflineMenu;
 
+    private View mAction;
+    private boolean mActionVisible;
+
     private int mCheckedItemCount;
 
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
@@ -79,6 +85,80 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.conversation_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mAction = view.findViewById(R.id.action);
+        mAction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseContact();
+            }
+        });
+        mActionVisible = true;
+
+        getListView().setOnScrollListener(new AbsListViewScrollDetector() {
+            @Override
+            public void onScrollUp() {
+                if (mActionVisible) {
+                    mActionVisible = false;
+                    if (isAnimating())
+                        mAction.clearAnimation();
+
+                    Animation anim = AnimationUtils.loadAnimation(getActivity(), R.anim.exit_to_bottom);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            mAction.clearAnimation();
+                            mAction.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                    mAction.startAnimation(anim);
+                }
+            }
+
+            @Override
+            public void onScrollDown() {
+                if (!mActionVisible) {
+                    mActionVisible = true;
+                    if (isAnimating())
+                        mAction.clearAnimation();
+
+                    Animation anim = AnimationUtils.loadAnimation(getActivity(), R.anim.enter_from_bottom);
+                    mAction.startAnimation(anim);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                            mAction.setVisibility(View.VISIBLE);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            mAction.clearAnimation();
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                }
+            }
+
+            private boolean isAnimating() {
+                return mAction.getAnimation() != null;
+            }
+        });
     }
 
     @Override
@@ -105,13 +185,6 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
 
         setListAdapter(mListAdapter);
         setMultiChoiceModeListener(this);
-
-        getView().findViewById(R.id.action).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                chooseContact();
-            }
-        });
     }
 
     @Override
