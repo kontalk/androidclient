@@ -28,7 +28,7 @@ import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -69,6 +69,12 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if (mWrapper != null) mWrapper.finish();
+    }
+
+    @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
         int choiceMode = l.getChoiceMode();
@@ -93,7 +99,7 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
 
             list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             list.setLongClickable(false);
-            ((ActionBarActivity) getActivity()).startSupportActionMode(new InternalOlderListener());
+            ((AppCompatActivity) getActivity()).startSupportActionMode(new InternalOlderListener());
             if (mListener != null) mListener.onItemCheckedStateChanged(mWrapper, position, id, true);
         } else {
             list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);

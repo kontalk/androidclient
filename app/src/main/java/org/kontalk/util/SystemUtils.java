@@ -37,6 +37,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.util.SparseBooleanArray;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -233,6 +234,24 @@ public final class SystemUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Provides clone functionality for the {@link SparseBooleanArray}.
+     * See https://code.google.com/p/android/issues/detail?id=39242
+     */
+    public static SparseBooleanArray cloneSparseBooleanArray(SparseBooleanArray array) {
+        final SparseBooleanArray clone = new SparseBooleanArray();
+
+        synchronized (array) {
+            final int size = array.size();
+            for (int i = 0; i < size; i++) {
+                int key = array.keyAt(i);
+                clone.put(key, array.get(i));
+            }
+        }
+
+        return clone;
     }
 
 }

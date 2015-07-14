@@ -26,6 +26,7 @@ import org.kontalk.ui.adapter.ConversationListAdapter;
 import org.kontalk.ui.view.AbsListViewScrollDetector;
 import org.kontalk.ui.view.ConversationListItem;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.akalipetis.fragment.MultiChoiceModeListener;
@@ -291,7 +292,8 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         if (item.getItemId() == R.id.menu_delete) {
             // using clone because listview returns its original copy
-            deleteSelectedThreads(getListView().getCheckedItemPositions().clone());
+            deleteSelectedThreads(SystemUtils
+                .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
             mode.finish();
             return true;
         }
@@ -420,12 +422,18 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        ConversationListItem cv = (ConversationListItem) v;
-        Conversation conv = cv.getConversation();
+        int choiceMode = l.getChoiceMode();
+        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
+            ConversationListItem cv = (ConversationListItem) v;
+            Conversation conv = cv.getConversation();
 
-        ConversationList parent = getParentActivity();
-        if (parent != null)
-            parent.openConversation(conv, position);
+            ConversationList parent = getParentActivity();
+            if (parent != null)
+                parent.openConversation(conv, position);
+        }
+        else {
+            super.onListItemClick(l, v, position, id);
+        }
     }
 
     /** Used only in fragment contexts. */
