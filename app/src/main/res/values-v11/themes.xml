@@ -19,21 +19,6 @@
 <resources>
 
   <!-- default theme selector -->
-  <style name="Theme.Light" parent="Base.Theme.Light">
-    <item name="actionModeBackground">@drawable/cab_background_top_holo_dark</item>
-  </style>
-
-  <!-- base theme selector -->
-  <style name="Base.Theme.Light" parent="Theme.AppCompat.Light.NoActionBar">
-    <item name="colorPrimary">@color/app_primary</item>
-    <item name="colorPrimaryDark">@color/app_primary_dark</item>
-    <!-- not working pre-Lollipop
-    <item name="android:textColorPrimary">#212121</item>
-    <item name="android:textColorSecondary">#727272</item>
-     -->
-    <item name="colorAccent">@color/app_accent</item>
-
-    <item name="windowActionModeOverlay">true</item>
-  </style>
+  <style name="Theme.Light" parent="Base.Theme.Light"/>
 
 </resources>
