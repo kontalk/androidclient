@@ -437,9 +437,9 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     }
 
     private void askCurrentPassphrase(final OnPassphraseRequestListener action) {
-        new InputDialog.Builder(getActivity(),
-            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+        new MaterialDialog.Builder(getActivity())
             .title(R.string.title_passphrase)
+            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
             .input(0, 0, true, new MaterialDialog.InputCallback() {
                 @Override
                 public void onInput(MaterialDialog dialog, CharSequence input) {

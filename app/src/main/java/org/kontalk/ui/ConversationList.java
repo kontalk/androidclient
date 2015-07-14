@@ -117,10 +117,10 @@ public class ConversationList extends ToolbarActivity
     }
 
     private void askForPersonalName() {
-        new InputDialog.Builder(this,
-                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
+        new MaterialDialog.Builder(this)
             .content(R.string.msg_no_name)
             .positiveText(android.R.string.ok)
+            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME)
             .input(R.string.hint_validation_name, 0, false, new MaterialDialog.InputCallback() {
                 @Override
                 public void onInput(MaterialDialog dialog, CharSequence input) {

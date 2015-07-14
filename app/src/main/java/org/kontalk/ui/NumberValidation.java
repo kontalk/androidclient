@@ -659,9 +659,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     }
 
     private void importAskPassphrase(final ZipInputStream zip) {
-        new InputDialog.Builder(this,
-                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+        new MaterialDialog.Builder(this)
             .title(R.string.title_passphrase)
+            .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
             .input(null, null, new MaterialDialog.InputCallback() {
                 @Override
                 public void onInput(MaterialDialog dialog, CharSequence input) {
