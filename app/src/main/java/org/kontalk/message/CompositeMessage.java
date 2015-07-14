@@ -33,6 +33,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcelable;
 
+import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.MyMessages.Threads.Conversations;
 import org.kontalk.util.MediaStorage;
@@ -376,6 +377,12 @@ public class CompositeMessage {
         msg.populateFromCursor(cursor);
         // TODO
         return msg;
+    }
+
+    public static void deleteFromCursor(Context context, Cursor cursor) {
+        context.getContentResolver().delete(ContentUris
+            .withAppendedId(Messages.CONTENT_URI,
+                cursor.getLong(COLUMN_ID)), null, null);
     }
 
     public static void startQuery(AsyncQueryHandler handler, int token, long threadId) {

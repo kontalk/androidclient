@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.akalipetis.fragment.ActionModeListFragment;
+import com.akalipetis.fragment.MultiChoiceModeListener;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
@@ -64,13 +66,14 @@ import android.os.Handler;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.view.ActionMode;
 import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -137,10 +140,10 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  * @author Daniele Ricci
  * @author Andrea Cappelli
  */
-public class ComposeMessageFragment extends ListFragment implements
+public class ComposeMessageFragment extends ActionModeListFragment implements
         ComposerListener, View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
-        AudioDialog.AudioDialogListener, AudioPlayerControl {
+        AudioDialog.AudioDialogListener, AudioPlayerControl, MultiChoiceModeListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -223,6 +226,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private CharSequence mCurrentStatus;
     private boolean mIsTyping;
 
+    private int mCheckedItemCount;
+
     /** Returns a new fragment instance from a picked contact. */
     public static ComposeMessageFragment fromUserId(Context context, String userId) {
         ComposeMessageFragment f = new ComposeMessageFragment();
@@ -252,7 +257,7 @@ public class ComposeMessageFragment extends ListFragment implements
         Bundle args = new Bundle();
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
         args.putParcelable("data",
-                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
         f.setArguments(args);
         return f;
     }
@@ -264,13 +269,8 @@ public class ComposeMessageFragment extends ListFragment implements
 
         ListView list = getListView();
         list.setFastScrollEnabled(true);
-        registerForContextMenu(list);
 
-        mComposer = (ComposerBar) getView().findViewById(R.id.composer_bar);
-        mComposer.setComposerListener(this);
-
-        // footer (for tablet presence status)
-        mStatusText = (TextView) getView().findViewById(R.id.status_text);
+        setMultiChoiceModeListener(this);
 
         // set custom background (if any)
         Drawable bg = Preferences.getConversationBackground(getActivity());
@@ -280,11 +280,6 @@ public class ComposeMessageFragment extends ListFragment implements
             list.setBackgroundColor(Color.TRANSPARENT);
             background.setImageDrawable(bg);
         }
-
-        mComposer.setRootView(getView());
-
-        Configuration config = getResources().getConfiguration();
-        mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
 
         processArguments(savedInstanceState);
     }
@@ -315,7 +310,20 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.compose_message, container, false);
+        View view = inflater.inflate(R.layout.compose_message, container, false);
+
+        mComposer = (ComposerBar) view.findViewById(R.id.composer_bar);
+        mComposer.setComposerListener(this);
+
+        // footer (for tablet presence status)
+        mStatusText = (TextView) view.findViewById(R.id.status_text);
+
+        mComposer.setRootView(view);
+
+        Configuration config = getResources().getConfiguration();
+        mComposer.onKeyboardStateChanged(config.keyboardHidden == KEYBOARDHIDDEN_NO);
+
+        return view;
     }
 
     private final MessageListAdapter.OnContentChangedListener mContentChangedListener = new MessageListAdapter.OnContentChangedListener() {
@@ -334,6 +342,119 @@ public class ComposeMessageFragment extends ListFragment implements
         mHandler = new Handler();
 
         // list adapter creation is post-poned
+    }
+
+    @Override
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        if (checked)
+            mCheckedItemCount++;
+        else
+            mCheckedItemCount--;
+        mode.setTitle(getResources()
+            .getQuantityString(R.plurals.context_selected,
+                mCheckedItemCount, mCheckedItemCount));
+
+        mode.invalidate();
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.compose_message_ctx, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        boolean singleItem = (mCheckedItemCount == 1);
+        menu.findItem(R.id.menu_share).setVisible(singleItem);
+        menu.findItem(R.id.menu_copy_text).setVisible(singleItem);
+        menu.findItem(R.id.menu_details).setVisible(singleItem);
+        return true;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_delete: {
+                // using clone because listview returns its original copy
+                deleteSelectedMessages(SystemUtils
+                    .cloneSparseBooleanArray(getListView().getCheckedItemPositions()));
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_share: {
+                // FIXME recreating the whole message object
+                Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
+                CompositeMessage msg = CompositeMessage.fromCursor(getActivity(), cursor);
+                shareMessage(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_copy_text: {
+                // FIXME recreating the whole message object
+                Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
+                CompositeMessage msg = CompositeMessage.fromCursor(getActivity(), cursor);
+
+                TextComponent txt = (TextComponent) msg
+                    .getComponent(TextComponent.class);
+
+                String text = (txt != null) ? txt.getContent() : "";
+
+                ClipboardManager cpm = (ClipboardManager) getActivity()
+                    .getSystemService(Context.CLIPBOARD_SERVICE);
+                cpm.setText(text);
+
+                Toast.makeText(getActivity(), R.string.message_text_copied,
+                    Toast.LENGTH_SHORT).show();
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_details: {
+                // FIXME recreating the whole message object
+                Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
+                CompositeMessage msg = CompositeMessage.fromCursor(getActivity(), cursor);
+                showMessageDetails(msg);
+                mode.finish();
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        mCheckedItemCount = 0;
+        getListView().clearChoices();
+        mListAdapter.notifyDataSetChanged();
+    }
+
+    private int getCheckedItemPosition() {
+        SparseBooleanArray checked = getListView().getCheckedItemPositions();
+        return checked.keyAt(checked.indexOfValue(true));
+    }
+
+    private void deleteSelectedMessages(final SparseBooleanArray checked) {
+        new AlertDialogWrapper
+            .Builder(getActivity())
+            .setMessage(R.string.confirm_will_delete_messages)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Context ctx = getActivity();
+                    for (int i = 0, c = mListAdapter.getCount(); i < c; ++i) {
+                        if (checked.get(i))
+                            CompositeMessage.deleteFromCursor(ctx, (Cursor) mListAdapter.getItem(i));
+                    }
+                    mListAdapter.notifyDataSetChanged();
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     /** Sends out a binary message. */
@@ -591,56 +712,62 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
-        MessageListItem item = (MessageListItem) view;
-        final CompositeMessage msg = item.getMessage();
+        int choiceMode = listView.getChoiceMode();
+        if (choiceMode == ListView.CHOICE_MODE_NONE || choiceMode == ListView.CHOICE_MODE_SINGLE) {
+            MessageListItem item = (MessageListItem) view;
+            final CompositeMessage msg = item.getMessage();
 
-        AttachmentComponent attachment = (AttachmentComponent) msg
+            AttachmentComponent attachment = (AttachmentComponent) msg
                 .getComponent(AttachmentComponent.class);
 
-        if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
+            if (attachment != null && (attachment.getFetchUrl() != null || attachment.getLocalUri() != null)) {
 
-            // outgoing message or already fetched
-            if (attachment.getLocalUri() != null) {
-                // open file
-                openFile(msg);
-            }
-            else {
-                // info & download dialog
-                CharSequence message = MessageUtils
-                    .getFileInfoMessage(getActivity(), msg,
-                        mUserPhone != null ? mUserPhone : mUserJID);
-
-                AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity())
-                    .setTitle(R.string.title_file_info)
-                    .setMessage(message)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setCancelable(true);
-
-                if (!DownloadService.isQueued(attachment.getFetchUrl())) {
-                    DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // start file download
-                            startDownload(msg);
-                        }
-                    };
-                    builder.setPositiveButton(R.string.download, startDL);
+                // outgoing message or already fetched
+                if (attachment.getLocalUri() != null) {
+                    // open file
+                    openFile(msg);
                 }
                 else {
-                    DialogInterface.OnClickListener stopDL = new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // cancel file download
-                            stopDownload(msg);
-                        }
-                    };
-                    builder.setPositiveButton(R.string.download_cancel, stopDL);
-                }
+                    // info & download dialog
+                    CharSequence message = MessageUtils
+                        .getFileInfoMessage(getActivity(), msg,
+                            mUserPhone != null ? mUserPhone : mUserJID);
 
-                builder.show();
+                    AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity())
+                        .setTitle(R.string.title_file_info)
+                        .setMessage(message)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setCancelable(true);
+
+                    if (!DownloadService.isQueued(attachment.getFetchUrl())) {
+                        DialogInterface.OnClickListener startDL = new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // start file download
+                                startDownload(msg);
+                            }
+                        };
+                        builder.setPositiveButton(R.string.download, startDL);
+                    }
+                    else {
+                        DialogInterface.OnClickListener stopDL = new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // cancel file download
+                                stopDownload(msg);
+                            }
+                        };
+                        builder.setPositiveButton(R.string.download_cancel, stopDL);
+                    }
+
+                    builder.show();
+                }
+            }
+
+            else {
+                item.onClick();
             }
         }
-
         else {
-            item.onClick();
+            super.onListItemClick(listView, view, position, id);
         }
     }
 
@@ -910,6 +1037,8 @@ public class ComposeMessageFragment extends ListFragment implements
     private static final int MENU_DETAILS = 8;
     private static final int MENU_DELETE = 9;
 
+    /** @deprecated Move to {@link #onPrepareActionMode}. */
+    @Deprecated
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
@@ -993,6 +1122,8 @@ public class ComposeMessageFragment extends ListFragment implements
         menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE, MENU_DELETE, R.string.delete_message);
     }
 
+    /** @deprecated Move to {@link #onActionItemClicked}. */
+    @Deprecated
     @Override
     public boolean onContextItemSelected(android.view.MenuItem item) {
         // not our context
@@ -1107,6 +1238,40 @@ public class ComposeMessageFragment extends ListFragment implements
         catch (SQLiteException e) {
             Log.e(TAG, "query error", e);
         }
+    }
+
+    private void showMessageDetails(CompositeMessage msg) {
+        CharSequence messageDetails = MessageUtils.getMessageDetails(
+            getActivity(), msg, mUserPhone != null ? mUserPhone : mUserJID);
+        new AlertDialogWrapper.Builder(getActivity())
+            .setTitle(R.string.title_message_details)
+            .setMessage(messageDetails)
+            .setCancelable(true).show();
+    }
+
+    private void shareMessage(CompositeMessage msg) {
+        Intent i = null;
+        AttachmentComponent attachment = (AttachmentComponent) msg
+            .getComponent(AttachmentComponent.class);
+
+        if (attachment != null) {
+            i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
+                attachment.getMime());
+        }
+
+        else {
+            TextComponent txt = (TextComponent) msg
+                .getComponent(TextComponent.class);
+
+            if (txt != null)
+                i = ComposeMessage.sendTextMessage(txt.getContent());
+        }
+
+        if (i != null)
+            startActivity(i);
+        else
+            // TODO ehm...
+            Log.w(TAG, "error sharing message");
     }
 
     private void loadConversationMetadata(Uri uri) {

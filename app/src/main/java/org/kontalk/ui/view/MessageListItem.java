@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ArrayAdapter;
+import android.widget.Checkable;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -48,13 +49,15 @@ import org.kontalk.util.Preferences;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class MessageListItem extends RelativeLayout {
+public class MessageListItem extends RelativeLayout implements Checkable {
 
     private CompositeMessage mMessage;
 
     private MessageListItemTheme mBalloonTheme;
 
     private TextView mDateHeader;
+
+    private boolean mChecked;
 
     /*
     private LeadingMarginSpan mLeadingMarginSpan;
@@ -130,6 +133,8 @@ public class MessageListItem extends RelativeLayout {
        Object... args) {
 
         mMessage = msg;
+        // FIXME this might not work
+        mChecked = false;
 
         if (MessageUtils.isSameDate(mMessage.getTimestamp(), previous)) {
             mDateHeader.setVisibility(View.GONE);
@@ -249,6 +254,30 @@ public class MessageListItem extends RelativeLayout {
         // TODO mMessage.recycle();
         mMessage = null;
         mBalloonTheme.unload();
+    }
+
+    @Override
+    public boolean isChecked() {
+        return mChecked;
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        mChecked = checked;
+
+        int backgroundId;
+
+        if (mChecked)
+            backgroundId = R.drawable.list_selected_holo_light;
+        else
+            backgroundId = 0;
+
+        setBackgroundResource(backgroundId);
+    }
+
+    @Override
+    public void toggle() {
+        setChecked(!mChecked);
     }
 
     // Thanks to Google Mms app :)

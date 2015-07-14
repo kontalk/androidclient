@@ -51,7 +51,7 @@
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="share">Share</string>
     <string name="resend">Send again</string>
-    <string name="copy_message_text">Copy message text</string>
+    <string name="copy_message_text">Copy text</string>
     <string name="delete_message">Delete message</string>
     <string name="confirm_delete_all">Delete all chats</string>
     <string name="confirm_will_delete_all">All chats will be deleted.</string>
@@ -72,7 +72,7 @@
     <string name="hint_open_kbd_to_compose">Open keyboard to compose message</string>
     <string name="view_image">View image</string>
     <string name="title_message_options">Message options</string>
-    <string name="menu_message_details">View message details</string>
+    <string name="menu_message_details">Details</string>
     <string name="title_message_details">Message details</string>
     <string name="message_type_label">Type:\u0020</string>
     <string name="text_message">Text message</string>
@@ -141,6 +141,7 @@
     <string name="pref_title_vibrate">Also vibrate when notified</string>
     <string name="confirm_delete_message">Delete message</string>
     <string name="confirm_will_delete_message">The message will be deleted.</string>
+    <string name="confirm_will_delete_messages">The selected messages will be deleted.</string>
     <string name="title_user_exists">User exists</string>
     <string name="err_authentication_failed">Verification code refused. Authentication failed.</string>
     <string name="err_validation_failed">Phone number verification failed.</string>

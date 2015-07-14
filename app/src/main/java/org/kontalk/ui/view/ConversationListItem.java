@@ -52,7 +52,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     private ImageView mErrorIndicator;
     private TextView mCounterView;
 
-    private boolean mChecked = false;
+    private boolean mChecked;
 
     public ConversationListItem(Context context) {
         super(context);
@@ -89,6 +89,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
 
     public final void bind(Context context, final Conversation conv) {
         mConversation = conv;
+        // FIXME this might not work
         mChecked = false;
 
         String recipient = null;

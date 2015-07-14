@@ -29,6 +29,7 @@ import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
 
 import android.content.AsyncQueryHandler;
@@ -55,7 +56,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class ConversationListFragment extends com.akalipetis.fragment.ActionModeListFragment
+public class ConversationListFragment extends ActionModeListFragment
         implements Contact.ContactChangeListener, MultiChoiceModeListener {
     private static final String TAG = ConversationList.TAG;
 
@@ -316,7 +317,6 @@ public class ConversationListFragment extends com.akalipetis.fragment.ActionMode
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        // TODO what to do here?
         return false;
     }
 
