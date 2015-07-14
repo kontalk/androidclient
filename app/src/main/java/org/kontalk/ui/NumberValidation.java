@@ -662,12 +662,13 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         new InputDialog.Builder(this,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
             .title(R.string.title_passphrase)
-            .callback(new MaterialDialog.ButtonCallback() {
+            .input(null, null, new MaterialDialog.InputCallback() {
                 @Override
-                public void onPositive(MaterialDialog dialog) {
+                public void onInput(MaterialDialog dialog, CharSequence input) {
                     startImport(zip, dialog.getInputEditText().getText().toString());
                 }
-
+            })
+            .callback(new MaterialDialog.ButtonCallback() {
                 @Override
                 public void onNegative(MaterialDialog dialog) {
                     try {

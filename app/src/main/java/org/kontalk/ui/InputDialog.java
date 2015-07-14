@@ -33,12 +33,15 @@ import android.widget.EditText;
  * This isn't really a dialog class, it is rather a container for a custom
  * dialog builder which adds some features over the default one.
  * @author Daniele Ricci
+ * @deprecated {@link MaterialDialog} should be able to handle passwords as well.
  */
+@Deprecated
 public class InputDialog {
 
     private InputDialog() {
     }
 
+    @Deprecated
     public static class Builder extends MaterialDialog.Builder {
 
         public Builder(Context context, int inputType) {
@@ -46,16 +49,6 @@ public class InputDialog {
             inputType(inputType);
         }
 
-        @NonNull
-        @Override
-        public MaterialDialog build() {
-            MaterialDialog dialog = super.build();
-            if ((inputType & InputType.TYPE_TEXT_VARIATION_PASSWORD) != 0) {
-                dialog.getInputEditText()
-                    .setTransformationMethod(PasswordTransformationMethod.getInstance());
-            }
-            return dialog;
-        }
     }
 
 }
