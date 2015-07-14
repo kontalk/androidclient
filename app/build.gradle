@@ -18,6 +18,7 @@ task checkstyle(type: Checkstyle){
     // 3rd-party code
     exclude '**/IconContextMenu.java', '**/CircularSeekBar.java',
         '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
+        '**/AbsListViewScrollDetector.java'
         'main/java/com/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
