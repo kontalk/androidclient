@@ -23,8 +23,13 @@
     <item android:id="@+id/menu_delete" android:title="@string/delete_message" android:icon="@android:drawable/ic_menu_delete" app:showAsAction="always"/>
 
     <!-- menu -->
+    <item android:id="@+id/menu_retry" android:title="@string/resend" app:showAsAction="never"/>
     <item android:id="@+id/menu_share" android:title="@string/share" android:icon="@android:drawable/ic_menu_share" app:showAsAction="never"/>
     <item android:id="@+id/menu_copy_text" android:title="@string/copy_message_text" android:icon="@android:drawable/ic_menu_edit" app:showAsAction="never"/>
+    <item android:id="@+id/menu_decrypt" android:title="@string/decrypt_message" app:showAsAction="never"/>
+    <item android:id="@+id/menu_open" android:title="@string/open_file" app:showAsAction="never"/>
+    <item android:id="@+id/menu_download" android:title="@string/download_file" app:showAsAction="never"/>
+    <item android:id="@+id/menu_cancel_download" android:title="@string/download_cancel" app:showAsAction="never"/>
     <item android:id="@+id/menu_details" android:title="@string/menu_message_details" android:icon="@android:drawable/ic_menu_info_details" app:showAsAction="never"/>
 
 </menu>

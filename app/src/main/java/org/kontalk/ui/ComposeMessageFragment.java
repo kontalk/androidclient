@@ -75,15 +75,12 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.TypedValue;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -143,7 +140,8 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
 public class ComposeMessageFragment extends ActionModeListFragment implements
         ComposerListener, View.OnLongClickListener, IconContextMenuOnClickListener,
         // TODO these two interfaces should be handled by an inner class
-        AudioDialog.AudioDialogListener, AudioPlayerControl, MultiChoiceModeListener {
+        AudioDialog.AudioDialogListener, AudioPlayerControl,
+        MultiChoiceModeListener {
     private static final String TAG = ComposeMessage.TAG;
 
     private static final int MESSAGE_LIST_QUERY_TOKEN = 8720;
@@ -370,10 +368,97 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        MenuItem retryMenu = menu.findItem(R.id.menu_retry);
+        MenuItem shareMenu = menu.findItem(R.id.menu_share);
+        MenuItem copyTextMenu = menu.findItem(R.id.menu_copy_text);
+        MenuItem detailsMenu = menu.findItem(R.id.menu_details);
+        MenuItem openMenu = menu.findItem(R.id.menu_open);
+        MenuItem dlMenu = menu.findItem(R.id.menu_download);
+        MenuItem cancelDlMenu = menu.findItem(R.id.menu_cancel_download);
+        MenuItem decryptMenu = menu.findItem(R.id.menu_decrypt);
+
+        // initial status
+        retryMenu.setVisible(false);
+        shareMenu.setVisible(false);
+        copyTextMenu.setVisible(false);
+        detailsMenu.setVisible(false);
+        openMenu.setVisible(false);
+        dlMenu.setVisible(false);
+        cancelDlMenu.setVisible(false);
+        decryptMenu.setVisible(false);
+
         boolean singleItem = (mCheckedItemCount == 1);
-        menu.findItem(R.id.menu_share).setVisible(singleItem);
-        menu.findItem(R.id.menu_copy_text).setVisible(singleItem);
-        menu.findItem(R.id.menu_details).setVisible(singleItem);
+        if (singleItem) {
+            CompositeMessage msg = getCheckedItem();
+
+            // message waiting for user review
+            if (msg.getStatus() == Messages.STATUS_PENDING) {
+                retryMenu.setVisible(true);
+            }
+
+            // some commands can be used only on unencrypted messages
+            if (!msg.isEncrypted()) {
+                AttachmentComponent attachment = (AttachmentComponent) msg
+                    .getComponent(AttachmentComponent.class);
+                TextComponent text = (TextComponent) msg
+                    .getComponent(TextComponent.class);
+
+                // sharing media messages has no purpose if media file hasn't been
+                // retrieved yet
+                if (text != null || attachment == null || attachment.getLocalUri() != null)
+                    shareMenu.setVisible(true);
+
+                // non-empty text: copy text to clipboard
+                if (text != null && !TextUtils.isEmpty(text.getContent()))
+                    copyTextMenu.setVisible(true);
+
+                if (attachment != null) {
+
+                    // message has a local uri - add open file entry
+                    if (attachment.getLocalUri() != null) {
+                        int resId;
+                        if (attachment instanceof ImageComponent)
+                            resId = R.string.view_image;
+                        else if (attachment instanceof  AudioComponent)
+                            resId = R.string.open_audio;
+                        else
+                            resId = R.string.open_file;
+
+                        openMenu.setTitle(resId);
+                        openMenu.setVisible(true);
+                    }
+
+                    // message has a fetch url - add download control entry
+                    if (msg.getDirection() == Messages.DIRECTION_IN && attachment.getFetchUrl() != null) {
+                        if (!DownloadService.isQueued(attachment.getFetchUrl())) {
+                            int string;
+                            // already fetched
+                            if (attachment.getLocalUri() != null)
+                                string = R.string.download_again;
+                            else
+                                string = R.string.download_file;
+
+                            dlMenu.setTitle(string);
+                            dlMenu.setVisible(true);
+                        }
+                        else {
+                            cancelDlMenu.setVisible(true);
+                        }
+                    }
+
+
+                }
+
+            }
+
+            else {
+
+                decryptMenu.setVisible(true);
+
+            }
+
+            detailsMenu.setVisible(true);
+        }
         return true;
     }
 
@@ -388,19 +473,22 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 return true;
             }
 
+            case R.id.menu_retry: {
+                CompositeMessage msg = getCheckedItem();
+                retryMessage(msg);
+                mode.finish();
+                return true;
+            }
+
             case R.id.menu_share: {
-                // FIXME recreating the whole message object
-                Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
-                CompositeMessage msg = CompositeMessage.fromCursor(getActivity(), cursor);
+                CompositeMessage msg = getCheckedItem();
                 shareMessage(msg);
                 mode.finish();
                 return true;
             }
 
             case R.id.menu_copy_text: {
-                // FIXME recreating the whole message object
-                Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
-                CompositeMessage msg = CompositeMessage.fromCursor(getActivity(), cursor);
+                CompositeMessage msg = getCheckedItem();
 
                 TextComponent txt = (TextComponent) msg
                     .getComponent(TextComponent.class);
@@ -417,15 +505,40 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 return true;
             }
 
-            case R.id.menu_details: {
-                // FIXME recreating the whole message object
-                Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
-                CompositeMessage msg = CompositeMessage.fromCursor(getActivity(), cursor);
-                showMessageDetails(msg);
+            case R.id.menu_decrypt: {
+                CompositeMessage msg = getCheckedItem();
+                decryptMessage(msg);
                 mode.finish();
                 return true;
             }
 
+            case R.id.menu_open: {
+                CompositeMessage msg = getCheckedItem();
+                openFile(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_download: {
+                CompositeMessage msg = getCheckedItem();
+                startDownload(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_cancel_download: {
+                CompositeMessage msg = getCheckedItem();
+                stopDownload(msg);
+                mode.finish();
+                return true;
+            }
+
+            case R.id.menu_details: {
+                CompositeMessage msg = getCheckedItem();
+                showMessageDetails(msg);
+                mode.finish();
+                return true;
+            }
         }
         return false;
     }
@@ -435,6 +548,14 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         mCheckedItemCount = 0;
         getListView().clearChoices();
         mListAdapter.notifyDataSetChanged();
+    }
+
+    private CompositeMessage getCheckedItem() {
+        if (mCheckedItemCount != 1)
+            throw new IllegalStateException("checked items count must be exactly 1");
+
+        Cursor cursor = (Cursor) mListAdapter.getItem(getCheckedItemPosition());
+        return CompositeMessage.fromCursor(getActivity(), cursor);
     }
 
     private int getCheckedItemPosition() {
@@ -1033,201 +1154,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         i.putExtra(MessageCenterService.EXTRA_MESSAGE, ContentUris.withAppendedId
                 (Messages.CONTENT_URI, msg.getDatabaseId()));
         getActivity().startService(i);
-    }
-
-    private static final int MENU_RETRY = 1;
-    private static final int MENU_SHARE = 2;
-    private static final int MENU_COPY_TEXT = 3;
-    private static final int MENU_DECRYPT = 4;
-    private static final int MENU_OPEN = 5;
-    private static final int MENU_DOWNLOAD = 6;
-    private static final int MENU_CANCEL_DOWNLOAD = 7;
-    private static final int MENU_DETAILS = 8;
-    private static final int MENU_DELETE = 9;
-
-    /** @deprecated Move to {@link #onPrepareActionMode}. */
-    @Deprecated
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-            ContextMenuInfo menuInfo) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        MessageListItem vitem = (MessageListItem) info.targetView;
-        CompositeMessage msg = vitem.getMessage();
-
-        menu.setHeaderTitle(R.string.title_message_options);
-
-        // message waiting for user review
-        if (msg.getStatus() == Messages.STATUS_PENDING) {
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_RETRY, MENU_RETRY, R.string.resend);
-        }
-
-        // some commands can be used only on unencrypted messages
-        if (!msg.isEncrypted()) {
-
-            AttachmentComponent attachment = (AttachmentComponent) msg
-                    .getComponent(AttachmentComponent.class);
-            TextComponent text = (TextComponent) msg
-                    .getComponent(TextComponent.class);
-
-            // sharing media messages has no purpose if media file hasn't been
-            // retrieved yet
-            if (text != null || (attachment != null ? attachment.getLocalUri() != null : true)) {
-                menu.add(CONTEXT_MENU_GROUP_ID, MENU_SHARE, MENU_SHARE, R.string.share);
-            }
-
-            // non-empty text: copy text to clipboard
-            if (text != null && !TextUtils.isEmpty(text.getContent())) {
-                menu.add(CONTEXT_MENU_GROUP_ID, MENU_COPY_TEXT, MENU_COPY_TEXT,
-                        R.string.copy_message_text);
-            }
-
-            if (attachment != null) {
-
-                // message has a local uri - add open file entry
-                if (attachment.getLocalUri() != null) {
-                    int resId;
-                    if (attachment instanceof ImageComponent)
-                        resId = R.string.view_image;
-                    else if (attachment instanceof  AudioComponent)
-                        resId = R.string.open_audio;
-                    else
-                        resId = R.string.open_file;
-
-                    menu.add(CONTEXT_MENU_GROUP_ID, MENU_OPEN, MENU_OPEN, resId);
-                }
-
-                // message has a fetch url - add download control entry
-                if (msg.getDirection() == Messages.DIRECTION_IN && attachment.getFetchUrl() != null) {
-                    int id, string;
-                    if (!DownloadService.isQueued(attachment.getFetchUrl())) {
-                        // already fetched
-                        if (attachment.getLocalUri() != null)
-                            string = R.string.download_again;
-                        else
-                            string = R.string.download_file;
-                        id = MENU_DOWNLOAD;
-                    }
-                    else {
-                        string = R.string.download_cancel;
-                        id = MENU_CANCEL_DOWNLOAD;
-                    }
-                    menu.add(CONTEXT_MENU_GROUP_ID, id, id, string);
-                }
-
-
-            }
-
-        }
-
-        else {
-
-            menu.add(CONTEXT_MENU_GROUP_ID, MENU_DECRYPT, MENU_DECRYPT,
-                    R.string.decrypt_message);
-
-        }
-
-        menu.add(CONTEXT_MENU_GROUP_ID, MENU_DETAILS, MENU_DETAILS, R.string.menu_message_details);
-        menu.add(CONTEXT_MENU_GROUP_ID, MENU_DELETE, MENU_DELETE, R.string.delete_message);
-    }
-
-    /** @deprecated Move to {@link #onActionItemClicked}. */
-    @Deprecated
-    @Override
-    public boolean onContextItemSelected(android.view.MenuItem item) {
-        // not our context
-        if (item.getGroupId() != CONTEXT_MENU_GROUP_ID)
-            return false;
-
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
-                .getMenuInfo();
-        MessageListItem v = (MessageListItem) info.targetView;
-        CompositeMessage msg = v.getMessage();
-
-        switch (item.getItemId()) {
-            case MENU_SHARE: {
-                Intent i = null;
-                AttachmentComponent attachment = (AttachmentComponent) msg
-                        .getComponent(AttachmentComponent.class);
-
-                if (attachment != null) {
-                    i = ComposeMessage.sendMediaMessage(attachment.getLocalUri(),
-                            attachment.getMime());
-                }
-
-                else {
-                    TextComponent txt = (TextComponent) msg
-                            .getComponent(TextComponent.class);
-
-                    if (txt != null)
-                        i = ComposeMessage.sendTextMessage(txt.getContent());
-                }
-
-                if (i != null)
-                    startActivity(i);
-                else
-                    // TODO ehm...
-                    Log.w(TAG, "error sharing message");
-
-                return true;
-            }
-
-            case MENU_COPY_TEXT: {
-                TextComponent txt = (TextComponent) msg
-                        .getComponent(TextComponent.class);
-
-                String text = (txt != null) ? txt.getContent() : "";
-
-                ClipboardManager cpm = (ClipboardManager) getActivity()
-                        .getSystemService(Context.CLIPBOARD_SERVICE);
-                cpm.setText(text);
-
-                Toast.makeText(getActivity(), R.string.message_text_copied,
-                        Toast.LENGTH_SHORT).show();
-                return true;
-            }
-
-            case MENU_DECRYPT: {
-                decryptMessage(msg);
-                return true;
-            }
-
-            case MENU_RETRY: {
-                retryMessage(msg);
-                return true;
-            }
-
-            case MENU_DOWNLOAD: {
-                startDownload(msg);
-                return true;
-            }
-
-            case MENU_CANCEL_DOWNLOAD: {
-                stopDownload(msg);
-                return true;
-            }
-
-            case MENU_DETAILS: {
-                CharSequence messageDetails = MessageUtils.getMessageDetails(
-                        getActivity(), msg, mUserPhone != null ? mUserPhone : mUserJID);
-                new AlertDialogWrapper.Builder(getActivity())
-                        .setTitle(R.string.title_message_details)
-                        .setMessage(messageDetails)
-                        .setCancelable(true).show();
-                return true;
-            }
-
-            case MENU_DELETE: {
-                deleteMessage(msg.getDatabaseId());
-                return true;
-            }
-
-            case MENU_OPEN: {
-                openFile(msg);
-                return true;
-            }
-        }
-
-        return super.onContextItemSelected(item);
     }
 
     private void startQuery(boolean reloadConversation, boolean progress) {
