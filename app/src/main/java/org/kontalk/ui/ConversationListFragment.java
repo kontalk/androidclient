@@ -227,6 +227,9 @@ public class ConversationListFragment extends ActionModeListFragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (isActionModeActive())
+            return true;
+
         switch(item.getItemId()) {
             case R.id.menu_status:
                 StatusActivity.start(getActivity());
@@ -276,6 +279,10 @@ public class ConversationListFragment extends ActionModeListFragment
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public boolean isActionModeActive() {
+        return mCheckedItemCount > 0;
     }
 
     @Override

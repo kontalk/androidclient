@@ -106,7 +106,8 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onTitleClick();
+                if (mFragment == null || !mFragment.isActionModeActive())
+                    onTitleClick();
             }
         });
     }

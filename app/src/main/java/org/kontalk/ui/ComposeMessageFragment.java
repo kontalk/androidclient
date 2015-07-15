@@ -344,6 +344,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         // list adapter creation is post-poned
     }
 
+    public boolean isActionModeActive() {
+        return mCheckedItemCount > 0;
+    }
+
     @Override
     public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
         if (checked)
@@ -677,6 +681,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // action mode is active - no processing
+        if (isActionModeActive())
+            return true;
+
         switch (item.getItemId()) {
             case R.id.call_contact:
                 startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"
