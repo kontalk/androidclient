@@ -23,15 +23,10 @@
     <item android:id="@+id/menu_search" android:title="@string/menu_search" android:icon="@drawable/ic_menu_search" app:showAsAction="always"/>
 
     <!-- menu -->
-    <!-- TODO icon -->
-    <item android:id="@+id/menu_offline" android:title="@string/menu_offline" android:icon="@android:drawable/ic_menu_close_clear_cancel"/>
-    <!-- TODO icon -->
+    <item android:id="@+id/menu_offline" android:title="@string/menu_offline" android:icon="@drawable/ic_menu_cancel"/>
     <item android:id="@+id/menu_status" android:title="@string/menu_status" android:icon="@drawable/ic_menu_status"/>
     <item android:id="@+id/menu_delete_all" android:title="@string/menu_delete_all" android:icon="@drawable/ic_menu_delete"/>
-    <!-- TODO icon -->
-    <item android:id="@+id/menu_mykey" android:title="@string/mykey_activity_title" android:icon="@android:drawable/ic_menu_info_details"/>
-    <!-- TODO icon -->
-    <item android:id="@+id/menu_donate" android:title="@string/pref_donate" android:icon="@android:drawable/ic_menu_info_details"/>
-    <!-- TODO icon -->
-    <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@android:drawable/ic_menu_preferences"/>
+    <item android:id="@+id/menu_mykey" android:title="@string/mykey_activity_title" android:icon="@drawable/ic_menu_key"/>
+    <item android:id="@+id/menu_donate" android:title="@string/pref_donate" android:icon="@drawable/ic_menu_donate"/>
+    <item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:icon="@drawable/ic_menu_preferences"/>
 </menu>
