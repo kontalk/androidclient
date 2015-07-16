@@ -151,8 +151,7 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             if (mListener != null) mListener.onDestroyActionMode(mWrapper);
-            ListView list = getListView();
-            list.post(restoreList);
+            restoreList.run();
         }
     }
 
@@ -184,7 +183,7 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
             list.setLongClickable(true);
             list.clearChoices();
             list.requestLayout();
-            list.post(restoreList);
+            restoreList.run();
         }
     }
 }
