@@ -27,6 +27,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListAdapter;
+import com.afollestad.materialdialogs.simplelist.MaterialSimpleListItem;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
 
@@ -40,6 +43,7 @@ import org.spongycastle.openpgp.PGPPublicKeyRing;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -116,8 +120,6 @@ import org.kontalk.ui.view.AudioContentViewControl;
 import org.kontalk.ui.view.AudioPlayerControl;
 import org.kontalk.ui.view.ComposerBar;
 import org.kontalk.ui.view.ComposerListener;
-import org.kontalk.ui.view.IconContextMenu;
-import org.kontalk.ui.view.IconContextMenu.IconContextMenuOnClickListener;
 import org.kontalk.ui.view.MessageListItem;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
@@ -138,7 +140,7 @@ import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_UNBLOCK
  * @author Andrea Cappelli
  */
 public class ComposeMessageFragment extends ActionModeListFragment implements
-        ComposerListener, View.OnLongClickListener, IconContextMenuOnClickListener,
+        ComposerListener, View.OnLongClickListener,
         // TODO these two interfaces should be handled by an inner class
         AudioDialog.AudioDialogListener, AudioPlayerControl,
         MultiChoiceModeListener {
@@ -167,15 +169,11 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
     }
 
-    /** Context menu group ID for this fragment. */
-    private static final int CONTEXT_MENU_GROUP_ID = 2;
-
     /* Attachment chooser stuff. */
-    private static final int CONTEXT_MENU_ATTACHMENT = 1;
-    private static final int ATTACHMENT_ACTION_PICTURE = 1;
-    private static final int ATTACHMENT_ACTION_CONTACT = 2;
-    private static final int ATTACHMENT_ACTION_AUDIO = 3;
-    private IconContextMenu attachmentMenu;
+    private static final int ATTACHMENT_ACTION_PICTURE = 0;
+    private static final int ATTACHMENT_ACTION_CONTACT = 1;
+    private static final int ATTACHMENT_ACTION_AUDIO = 2;
+    private Dialog attachmentMenu;
 
     private ComposerBar mComposer;
 
@@ -944,22 +942,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
     }
 
-    /** Listener for attachment type chooser. */
-    @Override
-    public void onClick(int id) {
-        switch (id) {
-            case ATTACHMENT_ACTION_PICTURE:
-                selectImageAttachment();
-                break;
-            case ATTACHMENT_ACTION_CONTACT:
-                selectContactAttachment();
-                break;
-            case ATTACHMENT_ACTION_AUDIO:
-                selectAudioAttachment();
-                break;
-        }
-    }
-
     public void viewContact() {
         if (mConversation != null) {
             Contact contact = mConversation.getContact();
@@ -990,14 +972,44 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     /** Starts dialog for attachment selection. */
     public void selectAttachment() {
         if (attachmentMenu == null) {
-            attachmentMenu = new IconContextMenu(getActivity(), CONTEXT_MENU_ATTACHMENT);
-            attachmentMenu.addItem(getResources(), R.string.attachment_picture, R.drawable.ic_launcher_gallery, ATTACHMENT_ACTION_PICTURE);
-            attachmentMenu.addItem(getResources(), R.string.attachment_contact, R.drawable.ic_launcher_contacts, ATTACHMENT_ACTION_CONTACT);
-            if (AudioDialog.isSupported(getActivity()))
-                attachmentMenu.addItem(getResources(), R.string.attachment_audio, R.drawable.ic_launcher_audio, ATTACHMENT_ACTION_AUDIO);
-            attachmentMenu.setOnClickListener(this);
+            Context ctx = getActivity();
+            MaterialSimpleListAdapter menu = new MaterialSimpleListAdapter(ctx);
+            menu.add(new MaterialSimpleListItem.Builder(ctx)
+                .content(R.string.attachment_picture)
+                .icon(R.drawable.ic_attach_picture)
+                .build());
+            menu.add(new MaterialSimpleListItem.Builder(ctx)
+                .content(R.string.attachment_contact)
+                .icon(R.drawable.ic_attach_contact)
+                .build());
+            if (AudioDialog.isSupported(ctx)) {
+                menu.add(new MaterialSimpleListItem.Builder(ctx)
+                    .content(R.string.attachment_audio)
+                    .icon(R.drawable.ic_attach_audio)
+                    .build());
+            }
+
+            attachmentMenu = new MaterialDialog.Builder(ctx)
+                .adapter(menu, new MaterialDialog.ListCallback() {
+                    @Override
+                    public void onSelection(MaterialDialog dialog, View view, int id, CharSequence text) {
+                        switch (id) {
+                            case ATTACHMENT_ACTION_PICTURE:
+                                selectImageAttachment();
+                                break;
+                            case ATTACHMENT_ACTION_CONTACT:
+                                selectContactAttachment();
+                                break;
+                            case ATTACHMENT_ACTION_AUDIO:
+                                selectAudioAttachment();
+                                break;
+                        }
+                        dialog.dismiss();
+                    }
+                })
+                .build();
         }
-        attachmentMenu.createMenu(null).show();
+        attachmentMenu.show();
     }
 
     /** Starts activity for an image attachment. */
