@@ -29,6 +29,7 @@ import android.widget.TextView;
 import org.kontalk.R;
 import org.kontalk.message.CompositeMessage;
 import org.kontalk.message.VCardComponent;
+import org.kontalk.util.Preferences;
 
 
 /**
@@ -56,7 +57,17 @@ public class VCardContentView extends TextView
     public void bind(long id, VCardComponent component, Pattern highlight) {
         mComponent = component;
 
-        // TODO set text appearance (since this is text)
+        Context context = getContext();
+        String size = Preferences.getFontSize(context);
+        int sizeId;
+        if (size.equals("small"))
+            sizeId = android.R.style.TextAppearance_Small;
+        else if (size.equals("large"))
+            sizeId = android.R.style.TextAppearance_Large;
+        else
+            sizeId = android.R.style.TextAppearance;
+        setTextAppearance(context, sizeId);
+
         String text = CompositeMessage.getSampleTextContent(component.getMime());
         setText(text);
     }
