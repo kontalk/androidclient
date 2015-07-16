@@ -50,9 +50,14 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
     private Runnable restoreList = new Runnable() {
         @Override
         public void run() {
-            ListView list = getListView();
-            list.setChoiceMode(mLastChoiceMode);
-            list.setItemChecked(mLastCheckedItem, true);
+            try {
+                ListView list = getListView();
+                list.setChoiceMode(mLastChoiceMode);
+                list.setItemChecked(mLastCheckedItem, true);
+            }
+            catch (IllegalStateException e) {
+                // recreating configuration - just ignore it
+            }
         }
     };
 
@@ -151,7 +156,8 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             if (mListener != null) mListener.onDestroyActionMode(mWrapper);
-            restoreList.run();
+            ListView list = getListView();
+            list.post(restoreList);
         }
     }
 
@@ -183,7 +189,7 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
             list.setLongClickable(true);
             list.clearChoices();
             list.requestLayout();
-            restoreList.run();
+            list.post(restoreList);
         }
     }
 }
