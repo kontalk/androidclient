@@ -33,6 +33,7 @@ import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -132,7 +133,7 @@ public class ContactsListActivity extends ToolbarActivity
 
     @Override
     public void startSync(boolean errorWarning) {
-        if (MessageCenterService.isNetworkConnectionAvailable(this)) {
+        if (SystemUtils.isNetworkConnectionAvailable(this)) {
             if (SyncAdapter.requestSync(this, true))
                 setSyncing(true);
         }

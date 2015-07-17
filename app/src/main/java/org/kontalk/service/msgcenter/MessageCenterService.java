@@ -73,8 +73,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -842,13 +840,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_TEST.equals(action)) {
-                if (isConnected()) {
+                if (isConnected) {
                     if (canTest()) {
                         mLastTest = SystemClock.elapsedRealtime();
                         mIdleHandler.test();
                     }
                 }
                 else {
+                    if (mHelper != null && mHelper.isBackingOff()) {
+                        // helper is waiting for backoff - restart immediately
+                        quit(true);
+                    }
                     doConnect = canConnect;
                 }
             }
@@ -2067,7 +2069,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public boolean canConnect() {
-        return isNetworkConnectionAvailable(this) && !isOfflineMode(this);
+        return SystemUtils.isNetworkConnectionAvailable(this) && !isOfflineMode(this);
     }
 
     public boolean isConnected() {
@@ -2076,19 +2078,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public boolean isConnecting() {
         return mHelper != null;
-    }
-
-    /** Checks for network availability. */
-    public static boolean isNetworkConnectionAvailable(Context context) {
-        final ConnectivityManager cm = (ConnectivityManager) context
-            .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm.getBackgroundDataSetting()) {
-            NetworkInfo info = cm.getActiveNetworkInfo();
-            if (info != null && info.getState() == NetworkInfo.State.CONNECTED)
-                return true;
-        }
-
-        return false;
     }
 
     private static boolean isOfflineMode(Context context) {
@@ -2107,7 +2096,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // check for network state
-        if (isNetworkConnectionAvailable(context)) {
+        if (SystemUtils.isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");
             final Intent intent = getStartIntent(context);
 

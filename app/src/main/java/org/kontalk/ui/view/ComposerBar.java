@@ -506,6 +506,8 @@ public class ComposerBar extends RelativeLayout implements
             mHandler.removeCallbacks(mMediaPlayerUpdater);
 
         boolean canSend = send && (elapsedTime > MIN_RECORDING_TIME);
+        // reset elapsed recording time
+        elapsedTime = 0;
 
         try {
             if (mRecord != null) {
