@@ -15,5 +15,21 @@ Stable versions are available through Google Play Store and F-Droid:
 <a href="https://f-droid.org/repository/browse/?fdid=org.kontalk"><img
   alt="Available on F-Droid" height="45" src="http://www.kontalk.org/images/fdroid.png" /></a>
 
+---
+
 Help us translate Kontalk! Sign up for a free account on our translation portal:  
 https://translate.kontalk.org/engage/kontalk-androidclient/
+
+---
+
+Developers and users can discuss about Kontalk through:
+
+* IRC: [Freenode #kontalk](irc://chat.freenode.net/kontalk)
+* Google groups (mailing list, no Google account needed):  
+  kontalk-devel@googlegroups.com ([for development and translation discussions](https://groups.google.com/d/forum/kontalk-devel))  
+  kontalk-users@googlegroups.com ([for everything else](https://groups.google.com/d/forum/kontalk-users))
+
+
+### Contribute
+
+Please refer to [our wiki](https://github.com/kontalk/androidclient/wiki) to know how to contribute to Kontalk.
