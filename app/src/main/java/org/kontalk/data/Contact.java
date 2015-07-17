@@ -42,7 +42,7 @@ import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
-import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 
@@ -98,7 +98,7 @@ public class Contact {
     private byte [] mAvatarData;
 
     private String mFingerprint;
-    private PGPPublicKeyRing mTrustedKeyRing;
+    private PGPLazyPublicKeyRingLoader mTrustedKeyRing;
 
     /** Timestamp the user was last seen. Not coming from the database. */
     private long mLastSeen;
@@ -223,7 +223,15 @@ public class Contact {
     }
 
     public PGPPublicKeyRing getTrustedPublicKeyRing() {
-        return mTrustedKeyRing;
+        try {
+            if (mTrustedKeyRing != null)
+                return mTrustedKeyRing.getPublicKeyRing();
+        }
+        catch (Exception e) {
+            // ignored for now
+            Log.w(TAG, "unable to load public keyring", e);
+        }
+        return null;
     }
 
     public String getFingerprint() {
@@ -342,14 +350,8 @@ public class Contact {
             c.mRegistered = registered;
             c.mStatus = status;
             c.mFingerprint = fingerprint;
-            try {
-                if (trustedKeyring != null)
-                    c.mTrustedKeyRing = PGP.readPublicKeyring(trustedKeyring);
-            }
-            catch (Exception e) {
-                // ignored for now
-                Log.w(TAG, "unable to load public keyring", e);
-            }
+            if (trustedKeyring != null)
+                c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
 
             cache.put(jid, c);
         }
@@ -414,14 +416,8 @@ public class Contact {
             contact.mRegistered = registered;
             contact.mStatus = status;
             contact.mFingerprint = fingerprint;
-            try {
-                if (trustedKeyring != null)
-                    contact.mTrustedKeyRing = PGP.readPublicKeyring(trustedKeyring);
-            }
-            catch (Exception e) {
-                // ignored for now
-                Log.w(TAG, "unable to load public keyring", e);
-            }
+            if (trustedKeyring != null)
+                contact.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
 
             return contact;
         }
