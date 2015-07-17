@@ -842,13 +842,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_TEST.equals(action)) {
-                if (isConnected()) {
+                if (isConnected) {
                     if (canTest()) {
                         mLastTest = SystemClock.elapsedRealtime();
                         mIdleHandler.test();
                     }
                 }
                 else {
+                    if (mHelper != null && mHelper.isBackingOff()) {
+                        // helper is waiting for backoff - restart immediately
+                        quit(true);
+                    }
                     doConnect = canConnect;
                 }
             }

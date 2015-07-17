@@ -92,6 +92,9 @@ public class XMPPConnectionHelper extends Thread {
     /** Retry enabled flag. */
     protected boolean mRetryEnabled = true;
 
+    /** Waiting for exponential backoff. */
+    protected boolean mBackoff;
+
     /** Connecting flag. */
     protected volatile boolean mConnecting;
 
@@ -300,6 +303,7 @@ public class XMPPConnectionHelper extends Thread {
                             if (mListener != null)
                                 mListener.reconnectingIn((int) time);
 
+                            mBackoff = true;
                             Thread.sleep(time);
                             // this is to avoid the exponential backoff counter to be reset
                             continue;
@@ -308,6 +312,9 @@ public class XMPPConnectionHelper extends Thread {
                             // interrupted - exit
                             Log.e(TAG, "- interrupted.");
                             break;
+                        }
+                        finally {
+                            mBackoff = false;
                         }
                     }
                     else {
@@ -346,6 +353,10 @@ public class XMPPConnectionHelper extends Thread {
 
     public boolean isServerDirty() {
         return mServerDirty;
+    }
+
+    public boolean isBackingOff() {
+        return mBackoff;
     }
 
     /** Shortcut for {@link EndpointServer#getNetwork()}. */
