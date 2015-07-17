@@ -146,6 +146,7 @@
     <string name="err_validation_retry_later">Too many attempts. Please wait a few minutes and try again.</string>
     <string name="msg_validation_canceled">Verification canceled. You might receive a SMS anyway.</string>
     <string name="err_validation_error">An error occurred during verification. Please try again later.</string>
+    <string name="err_validation_nonetwork">No Internet connection is available. Kontalk requires an active Internet connection to work.</string>
     <string name="err_validation_network_error">Unable to connect to server. Please try again later.</string>
     <string name="err_validation_server_not_supported">Selected server does not support registration. Please configure another one in Settings screen.</string>
     <string name="err_validation_user_exists"><b>The number you are using is already registered to Kontalk.</b> If you have registered another device, proceeding in this manner will cut it off from Kontalk. Please refer to our documentation on how to copy your account between devices. Choose OK to continue anyway.</string>
@@ -171,6 +172,7 @@
     <string name="msg_invalid_cc">Please insert a valid country code.</string>
     <string name="title_invalid_code">Invalid code</string>
     <string name="msg_invalid_code">Please insert a valid code.</string>
+    <string name="title_nonetwork">No internet connection</string>
     <string name="title_no_name">Your name</string>
     <string name="msg_no_name">Please insert a name.</string>
     <string name="menu_refresh">Refresh</string>

@@ -85,6 +85,7 @@ import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -557,15 +558,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private void startValidation(boolean force) {
         enableControls(false);
 
-        if (!checkInput(false)) {
+        if (!checkInput(false) || !startValidationNormal(null, force, false)) {
             enableControls(true);
-        }
-        else {
-            startValidationNormal(null, force, false);
         }
     }
 
-    private void startValidationNormal(String manualServer, boolean force, boolean testImport) {
+    private boolean startValidationNormal(String manualServer, boolean force, boolean testImport) {
+        if (!SystemUtils.isNetworkConnectionAvailable(this)) {
+            error(R.string.title_nonetwork, R.string.err_validation_nonetwork);
+            return false;
+        }
+
         // start async request
         Log.d(TAG, "phone number checked, sending validation request");
         startProgress();
@@ -591,6 +594,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mValidator.testImport();
 
         mValidator.start();
+        return true;
     }
 
     /**
@@ -744,7 +748,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = passphrase;
 
             // begin usual validation
-            startValidationNormal(manualServer, true, true);
+            if (!startValidationNormal(manualServer, true, true)) {
+                enableControls(true);
+            }
         }
     }
 
