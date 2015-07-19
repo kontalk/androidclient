@@ -115,6 +115,11 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
     }
 
     @Override
+    public void onConnectivityChanged() {
+        onConnectionCompleted();
+    }
+
+    @Override
     public void setEnabled(boolean enabled) {
         if (enabled && !isEnabled()) {
             enable();
@@ -210,7 +215,7 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
             Iterator<XMPPConnection> it = INSTANCES.keySet().iterator();
             while (it.hasNext()) {
                 final XMPPConnection connection = it.next();
-                getInstanceFor(connection, context).onConnectionCompleted();
+                getInstanceFor(connection, context).onConnectivityChanged();
             }
         }
     }

@@ -67,6 +67,8 @@ public abstract class AbstractAdaptiveServerPingManager extends Manager {
 
     public abstract void onConnectionCompleted();
 
+    public abstract void onConnectivityChanged();
+
     /**
      * Called by the ping failed listener.
      * It will half the interval for the next alarm.
