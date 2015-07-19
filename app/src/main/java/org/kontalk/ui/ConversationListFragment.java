@@ -34,6 +34,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -276,8 +277,15 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                MessagesProvider.deleteThread(getActivity(), threadId);
-                MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
+                try {
+                    MessagesProvider.deleteThread(getActivity(), threadId);
+                    MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
+                }
+                catch (SQLiteDiskIOException e) {
+                    Log.w(TAG, "error deleting thread");
+                    Toast.makeText(getActivity(), R.string.error_delete_thread,
+                        Toast.LENGTH_LONG).show();
+                }
             }
         });
         builder.setNegativeButton(android.R.string.cancel, null);

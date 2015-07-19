@@ -117,7 +117,9 @@
     <string name="pref_title_on_hide_presence">Users will not see you online</string>
     <string name="pref_title_off_hide_presence">Users will see you online and when you last connected</string>
     <string name="contact_not_registered">Contact seems not to be registered on Kontalk.</string>
-    <string name="error_store_outbox">Unable to store message to outbox.</string>
+    <string name="error_store_outbox">Unable to store message to outbox. Maybe your memory is full?</string>
+    <string name="error_delete_thread">Unable to delete thread.</string>
+    <string name="error_delete_message">Unable to delete message.</string>
     <string name="decrypt_message">Decrypt message</string>
     <string name="download_file">Download file</string>
     <string name="download_again">Download again</string>
