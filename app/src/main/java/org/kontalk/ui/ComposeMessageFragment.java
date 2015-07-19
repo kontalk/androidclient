@@ -1931,7 +1931,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         if (id != null && id.equals(mVersionRequestId)) {
                             mVersionRequestId = null;
                             String name = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NAME);
-                            if (name != null && name.equalsIgnoreCase(getString(R.string.app_name))) {
+                            if (name != null && name.equalsIgnoreCase(context.getString(R.string.app_name))) {
                                 String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
                                 if (version != null) {
                                     Contact contact = getContact();
