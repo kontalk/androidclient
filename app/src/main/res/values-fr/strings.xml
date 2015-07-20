@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">Les utilisateurs ne nous verront pas en ligne</string>
   <string name="pref_title_off_hide_presence">Les utilisateurs vous verrons en ligne et votre dernière connexion</string>
   <string name="contact_not_registered">Le contact ne semble pas être enregistré sur le réseau Kontalk.</string>
-  <string name="error_store_outbox">Impossible de stocker le message dans la boîte d\'envoi.</string>
+  <string name="error_store_outbox">Impossible de stocker le message dans la boîte d\'envoi. Peut-être la mémoire est pleine ?</string>
   <string name="decrypt_message">Déchiffrer le message</string>
   <string name="download_file">Télécharger le fichier</string>
   <string name="download_again">Télécharger à nouveau</string>
@@ -383,4 +383,8 @@
     <string name="about_credits_devteam"><b>Kontalk vous est présenté par :</b></string>
     <string name="about_credits_translators"><b>Traducteurs</b></string>
 
-</resources>
+<string name="error_delete_thread">Impossible de supprimer la conversation.</string>
+    <string name="error_delete_message">Impossible de supprimer le message.</string>
+    <string name="err_validation_nonetwork">Connexion Internet non disponible. Kontalk a besoin d\'une connexion Internet pour fonctionner.</string>
+    <string name="title_nonetwork">Pas de connexion à Internet</string>
+    </resources>
