@@ -310,6 +310,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     public void reload() {
         processArguments(null);
+        onFocus(false);
     }
 
     @Override
@@ -2154,11 +2155,11 @@ public class ComposeMessageFragment extends ListFragment implements
 
         ComposeMessage activity = getParentActivity();
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
-            onFocus();
+            onFocus(true);
         }
     }
 
-    public void onFocus() {
+    public void onFocus(boolean resuming) {
         // resume content watcher
         resumeContentListener();
 
@@ -2167,7 +2168,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
         // cursor was previously destroyed -- reload everything
         // mConversation = null;
-        processStart(true);
+        processStart(resuming);
         if (mUserJID != null) {
             // set notifications on pause
             MessagingNotification.setPaused(mUserJID);

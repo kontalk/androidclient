@@ -308,7 +308,7 @@ public class ComposeMessage extends ActionBarActivity {
                     String userId = threadUri.getLastPathSegment();
                     Intent i = fromUserId(this, userId);
                     if (i != null) {
-                        onNewIntent(i, true);
+                        onNewIntent(i);
 
                         // process SEND intent if necessary
                         if (sendIntent != null)
@@ -442,26 +442,11 @@ public class ComposeMessage extends ActionBarActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        onNewIntent(intent, false);
-    }
-
-    protected void onNewIntent(Intent intent, boolean starting) {
         setIntent(intent);
         Bundle args = processIntent(null);
         if (args != null) {
-            if (starting) {
-                mFragment.setMyArguments(args);
-                mFragment.reload();
-            }
-            else {
-                // recreate fragment
-                mFragment = new ComposeMessageFragment();
-                mFragment.setMyArguments(args);
-                getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_compose_message, mFragment)
-                    .commit();
-            }
+            mFragment.setMyArguments(args);
+            mFragment.reload();
         }
     }
 
@@ -487,7 +472,7 @@ public class ComposeMessage extends ActionBarActivity {
 
         if (hasFocus) {
             if (mLostFocus) {
-                mFragment.onFocus();
+                mFragment.onFocus(true);
                 mLostFocus = false;
             }
         }
