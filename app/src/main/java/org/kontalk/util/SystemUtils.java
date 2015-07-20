@@ -260,7 +260,7 @@ public final class SystemUtils {
             final int size = array.size();
             for (int i = 0; i < size; i++) {
                 int key = array.keyAt(i);
-                clone.put(key, array.get(i));
+                clone.put(key, array.get(key));
             }
         }
 
