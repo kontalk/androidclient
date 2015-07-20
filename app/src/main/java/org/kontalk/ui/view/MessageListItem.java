@@ -161,8 +161,14 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
         else {
             // process components
+            Object[] argsAppend = null;
+            if (args != null) {
+                argsAppend = new Object[args.length+1];
+                System.arraycopy(args, 0, argsAppend, 0, args.length);
+                argsAppend[args.length] = mBalloonTheme;
+            }
             mBalloonTheme.processComponents(mMessage.getDatabaseId(),
-                highlight, msg.getComponents(), args);
+                highlight, msg.getComponents(), argsAppend);
         }
     }
 

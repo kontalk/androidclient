@@ -67,6 +67,11 @@ public class AvatarMessageTheme extends BaseMessageTheme {
     }
 
     @Override
+    public boolean isFullWidth() {
+        return true;
+    }
+
+    @Override
     public void processComponentView(MessageContentView<?> view) {
         if (view instanceof TextContentView) {
             ((TextContentView) view).setGravity(isIncoming() ?

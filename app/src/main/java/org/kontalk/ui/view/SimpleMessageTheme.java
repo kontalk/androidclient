@@ -58,6 +58,11 @@ public class SimpleMessageTheme extends BaseMessageTheme {
     }
 
     @Override
+    public boolean isFullWidth() {
+        return false;
+    }
+
+    @Override
     public void processComponentView(MessageContentView<?> view) {
         if (view instanceof TextContentView) {
             ((TextContentView) view).enableMeasureHack(true);

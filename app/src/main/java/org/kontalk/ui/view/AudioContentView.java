@@ -125,6 +125,15 @@ public class AudioContentView extends RelativeLayout
         mComponent = null;
     }
 
+    // FIXME this is crap
+    private void setTheme(MessageListItemTheme theme) {
+        if (theme.isFullWidth()) {
+            RelativeLayout.LayoutParams params = (LayoutParams) mSeekBar.getLayoutParams();
+            params.width = LayoutParams.MATCH_PARENT;
+            // no layout has been requested yet - mSeekBar.setLayoutParams(params);
+        }
+    }
+
     @Override
     public void onClick(View v) {
         mAudioPlayerControl.buttonClick(new File(mComponent.getLocalUri().getPath()), this, mMessageId);
@@ -231,11 +240,14 @@ public class AudioContentView extends RelativeLayout
         }
     }
 
-    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent, AudioPlayerControl control) {
+    public static AudioContentView create(LayoutInflater inflater, ViewGroup parent, AudioPlayerControl control, MessageListItemTheme theme) {
         AudioContentView view = (AudioContentView) inflater.inflate(R.layout.message_content_audio,
                 parent, false);
-        if (view != null)
+        if (view != null) {
             view.mAudioPlayerControl = control;
+            view.setTheme(theme);
+        }
         return view;
     }
+
 }

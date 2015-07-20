@@ -56,7 +56,8 @@ public class MessageContentViewFactory {
             view = (MessageContentView<T>) ImageContentView.create(inflater, parent);
         }
         else if (component instanceof AudioComponent) {
-            view = (MessageContentView<T>) AudioContentView.create(inflater, parent, (AudioPlayerControl) args[0]);
+            view = (MessageContentView<T>) AudioContentView.create(inflater, parent,
+                (AudioPlayerControl) args[0], (MessageListItemTheme) args[1]);
         }
         else if (component instanceof VCardComponent) {
             view = (MessageContentView<T>) VCardContentView.create(inflater, parent);

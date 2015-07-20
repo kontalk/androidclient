@@ -36,6 +36,8 @@ public interface MessageListItemTheme {
 
     View inflate(ViewStub stub);
 
+    boolean isFullWidth();
+
     MessageContentLayout getContent();
 
     void setEncryptedContent(long databaseId);
