@@ -260,7 +260,7 @@
     <string name="pref_title_import_keypair">Import personal key and login certificate from external storage</string>
     <string name="msg_import_keypair">Kontalk will import your keys from %s in your external storage. Be sure that the file exists and it\'s a valid exported keys archive.</string>
     <string name="msg_import_keypair_complete">Personal key import completed.</string>
-    <string name="err_import_keypair_failed">Personal key imported failed.</string>
+    <string name="err_import_keypair_failed">Personal key import failed.</string>
     <string name="title_passphrase">Password</string>
 
     <string name="msg_status_sending">Sending</string>

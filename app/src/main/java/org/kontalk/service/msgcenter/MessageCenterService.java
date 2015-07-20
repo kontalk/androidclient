@@ -2060,7 +2060,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             catch (Exception e) {
                 Log.e(TAG, "unable to initiate keypair import", e);
-                // TODO warn user
+                Toast.makeText(this, R.string.err_import_keypair_failed,
+                    Toast.LENGTH_LONG).show();
 
                 endKeyPairImport();
             }
