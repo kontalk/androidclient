@@ -118,7 +118,9 @@
     <string name="pref_title_on_hide_presence">Users will not see you online</string>
     <string name="pref_title_off_hide_presence">Users will see you online and when you last connected</string>
     <string name="contact_not_registered">Contact seems not to be registered on Kontalk.</string>
-    <string name="error_store_outbox">Unable to store message to outbox.</string>
+    <string name="error_store_outbox">Unable to store message to outbox. Maybe your memory is full?</string>
+    <string name="error_delete_thread">Unable to delete thread.</string>
+    <string name="error_delete_message">Unable to delete message.</string>
     <string name="decrypt_message">Decrypt message</string>
     <string name="download_file">Download file</string>
     <string name="download_again">Download again</string>
@@ -261,7 +263,7 @@
     <string name="pref_title_import_keypair">Import personal key and login certificate from external storage</string>
     <string name="msg_import_keypair">Kontalk will import your keys from %s in your external storage. Be sure that the file exists and it\'s a valid exported keys archive.</string>
     <string name="msg_import_keypair_complete">Personal key import completed.</string>
-    <string name="err_import_keypair_failed">Personal key imported failed.</string>
+    <string name="err_import_keypair_failed">Personal key import failed.</string>
     <string name="title_passphrase">Password</string>
 
     <string name="msg_status_sending">Sending</string>

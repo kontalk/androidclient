@@ -433,11 +433,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT) {
                     if (!service.fastReply()) {
                         Log.v(TAG, "test ping failed");
-                        AdaptiveServerPingManager.pingFailed(service.mConnection);
+                        AndroidAdaptiveServerPingManager
+                            .getInstanceFor(service.mConnection, service)
+                            .pingFailed();
                         restart(service.getApplicationContext());
                     }
                     else {
-                        AdaptiveServerPingManager.pingSuccess(service.mConnection);
+                        AndroidAdaptiveServerPingManager
+                            .getInstanceFor(service.mConnection, service)
+                            .pingSuccess();
                     }
                 }
                 return true;
@@ -568,9 +572,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void onCreate() {
         configure();
 
-        // activate ping manager
-        AdaptiveServerPingManager.onCreate(this);
-
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
 
@@ -660,7 +661,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "destroying message center");
         quit(false);
         // deactivate ping manager
-        AdaptiveServerPingManager.onDestroy();
+        AndroidAdaptiveServerPingManager.onDestroy(this);
         // destroy roster store
         mRosterStore.onDestroy();
         // unregister screen off listener for manual inactivation
@@ -712,7 +713,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // disconnect from server (if any)
         if (mConnection != null) {
             // disable ping manager
-            AdaptiveServerPingManager.getInstanceFor(mConnection).setEnabled(false);
+            AndroidAdaptiveServerPingManager
+                .getInstanceFor(mConnection, this)
+                .setEnabled(false);
             PingManager.getInstanceFor(mConnection)
                 .unregisterPingFailedListener(mPingFailedListener);
             // this is because of NetworkOnMainThreadException
@@ -866,10 +869,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         public void run() {
                             try {
                                 if (pingManager.pingMyServer(true, SLOW_PING_TIMEOUT)) {
-                                    AdaptiveServerPingManager.pingSuccess(connection);
+                                    AndroidAdaptiveServerPingManager
+                                        .getInstanceFor(connection, MessageCenterService.this)
+                                        .pingSuccess();
                                 }
                                 else {
-                                    AdaptiveServerPingManager.pingFailed(connection);
+                                    AndroidAdaptiveServerPingManager
+                                        .getInstanceFor(connection, MessageCenterService.this)
+                                        .pingFailed();
                                 }
                             }
                             catch (SmackException.NotConnectedException e) {
@@ -1198,7 +1205,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.setRosterStore(mRosterStore);
 
         // enable ping manager
-        AdaptiveServerPingManager.getInstanceFor(connection).setEnabled(true);
+        AndroidAdaptiveServerPingManager
+            .getInstanceFor(connection, this)
+            .setEnabled(true);
         mPingFailedListener = new PingFailedListener() {
             @Override
             public void pingFailed() {
@@ -1271,7 +1280,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mIdleHandler.queueInactiveIfNeeded();
 
         // update alarm manager
-        AdaptiveServerPingManager.onConnected(mConnection);
+        AndroidAdaptiveServerPingManager
+            .getInstanceFor(connection, this)
+            .onConnectionCompleted();
 
         // release the wakelock
         mWakeLock.release();
@@ -2049,7 +2060,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             catch (Exception e) {
                 Log.e(TAG, "unable to initiate keypair import", e);
-                // TODO warn user
+                Toast.makeText(this, R.string.err_import_keypair_failed,
+                    Toast.LENGTH_LONG).show();
 
                 endKeyPairImport();
             }

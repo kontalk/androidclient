@@ -92,6 +92,8 @@ public class ComposerBar extends RelativeLayout implements
     private ComposerListener mListener;
     private TextWatcher mChatStateListener;
 
+    boolean mEnterSend;
+
     /** Used during audio recording to restore focus status of the text entry. */
     private boolean mTextEntryFocus;
     private boolean mComposeSent;
@@ -167,6 +169,7 @@ public class ComposerBar extends RelativeLayout implements
                 InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE;
             mTextEntry.setImeOptions(EditorInfo.IME_ACTION_SEND);
             mTextEntry.setInputType(inputTypeFlags);
+            mEnterSend = true;
         }
         else {
             inputTypeFlags = mTextEntry.getInputType() | InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
@@ -197,9 +200,11 @@ public class ComposerBar extends RelativeLayout implements
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    InputMethodManager imm = (InputMethodManager) mContext
-                        .getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    if (!mEnterSend) {
+                        InputMethodManager imm = (InputMethodManager) mContext
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    }
                     submitSend();
                     return true;
                 }

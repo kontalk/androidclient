@@ -354,7 +354,7 @@ public class Syncer {
             int count = usersProvider.update(uri, new ContentValues(), null, null);
             Log.d(TAG, "users database resynced (" + count + ")");
         }
-        catch (RemoteException e) {
+        catch (Exception e) {
             Log.e(TAG, "error resyncing users database - aborting sync", e);
             syncResult.databaseError = true;
             return;
@@ -367,7 +367,7 @@ public class Syncer {
                 new String[] { Users.JID, Users.NUMBER, Users.LOOKUP_KEY },
                 null, null, null);
         }
-        catch (RemoteException e) {
+        catch (Exception e) {
             Log.e(TAG, "error querying users database - aborting sync", e);
             syncResult.databaseError = true;
             return;
@@ -560,7 +560,7 @@ public class Syncer {
                         if (Authenticator.isSelfJID(mContext, entry.from))
                             ownContactJid = entry.from;
                     }
-                    catch (RemoteException e) {
+                    catch (Exception e) {
                         Log.e(TAG, "error updating users database", e);
                         // we shall continue here...
                     }
@@ -606,7 +606,7 @@ public class Syncer {
             Log.d(TAG, "users database committed");
             Contact.invalidate();
         }
-        catch (RemoteException e) {
+        catch (Exception e) {
             Log.e(TAG, "error committing users database - aborting sync", e);
             syncResult.databaseError = true;
         }

@@ -19,7 +19,7 @@
 package org.kontalk.service;
 
 import org.kontalk.Kontalk;
-import org.kontalk.service.msgcenter.AdaptiveServerPingManager;
+import org.kontalk.service.msgcenter.AndroidAdaptiveServerPingManager;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
 
@@ -64,7 +64,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 // start message center
                 serviceAction = ACTION_START;
                 // notify ping manager that connection type has changed
-                AdaptiveServerPingManager.onConnected();
+                AndroidAdaptiveServerPingManager.onConnected(context);
             }
         }
 
@@ -87,7 +87,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                         // test connection or reconnect
                         serviceAction = ACTION_TEST;
                         // notify ping manager that connection type has changed
-                        AdaptiveServerPingManager.onConnected();
+                        AndroidAdaptiveServerPingManager.onConnected(context);
                         break;
                     case SUSPENDED:
                         Log.v(TAG, "suspending network traffic");
