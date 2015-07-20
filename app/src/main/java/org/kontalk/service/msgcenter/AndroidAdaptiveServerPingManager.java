@@ -78,20 +78,12 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
         onConnectionCompleted();
     }
 
-    private static final BroadcastReceiver ALARM_BROADCAST_RECEIVER = new BroadcastReceiver() {
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             LOGGER.fine("Ping Alarm broadcast received");
-            synchronized (INSTANCES) {
-                Iterator<XMPPConnection> it = INSTANCES.keySet().iterator();
-                while (it.hasNext()) {
-                    final XMPPConnection connection = it.next();
-                    if (getInstanceFor(connection, context).isEnabled()) {
-                        MessageCenterService.ping(context);
-                        // just ping once
-                        break;
-                    }
-                }
+            if (isEnabled()) {
+                MessageCenterService.ping(context);
             }
         }
     };
@@ -132,17 +124,17 @@ public class AndroidAdaptiveServerPingManager extends AbstractAdaptiveServerPing
         super.setEnabled(enabled);
     }
 
-    private void enable() {
+    private synchronized void enable() {
         if (mPendingIntent == null) {
-            mContext.registerReceiver(ALARM_BROADCAST_RECEIVER, new IntentFilter(PING_ALARM_ACTION));
+            mContext.registerReceiver(mReceiver, new IntentFilter(PING_ALARM_ACTION));
             ensureAlarmManager(mContext);
             mPendingIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(PING_ALARM_ACTION), 0);
         }
     }
 
-    private void disable() {
+    private synchronized void disable() {
         if (mPendingIntent != null) {
-            mContext.unregisterReceiver(ALARM_BROADCAST_RECEIVER);
+            mContext.unregisterReceiver(mReceiver);
             sAlarmManager.cancel(mPendingIntent);
             mPendingIntent = null;
         }
