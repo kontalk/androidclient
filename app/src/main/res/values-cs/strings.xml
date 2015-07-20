@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">Uživatelé vás neuvidí online</string>
   <string name="pref_title_off_hide_presence">Uživatelé vás uvidí online a kdy jste byli naposledy připojení</string>
   <string name="contact_not_registered">Vypadá to, že tento kontakt není zaregistrován u Kontalku.</string>
-  <string name="error_store_outbox">Nepodařilo se uložit zprávu do odeslaných.</string>
+  <string name="error_store_outbox">Nepodařilo se uložit zprávu do odeslaných. Možná máte plnou paměť?</string>
   <string name="decrypt_message">Dešifrovat zprávu</string>
   <string name="download_file">Stáhnout soubor</string>
   <string name="download_again">Stáhnout znovu</string>
@@ -383,4 +383,8 @@
 
     <string name="about_credits_gfx"><b>Grafika/Ikony</b></string>
     <string name="pref_help">Nápověda</string>
+    <string name="error_delete_thread">Nepodařilo se smazat konverzaci.</string>
+    <string name="error_delete_message">Nepodařilo se smazat zprávu.</string>
+    <string name="err_validation_nonetwork">Není k dispozici připojení k Internetu. Kontalk ke svému chodu potřebuje aktivní připojení k Internetu.</string>
+    <string name="title_nonetwork">Žádné připojení k Internetu</string>
     </resources>
