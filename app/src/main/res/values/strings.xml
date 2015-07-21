@@ -405,6 +405,7 @@
     <string name="err_file_not_found">File not found.</string>
     <string name="err_audio_record">Error starting audio recording.</string>
     <string name="err_audio_record_writing">Error writing on external storage.</string>
+    <string name="err_audio_record_noaudio">No audio was recorded.</string>
     <string name="err_playing_audio">Error playing audio.</string>
     <string name="err_playing_sdcard">Error reading from external storage.</string>
     <string name="slide_to_cancel">SLIDE TO CANCEL</string>

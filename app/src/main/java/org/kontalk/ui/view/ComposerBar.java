@@ -527,10 +527,12 @@ public class ComposerBar extends RelativeLayout implements
             canSend = false;
         }
         catch (RuntimeException e) {
-            Log.w(TAG, "no audio data received", e);
+            if (canSend) {
+                Log.w(TAG, "no audio data received", e);
+                Toast.makeText(mContext, R.string.err_audio_record_noaudio,
+                    Toast.LENGTH_LONG).show();
+            }
             canSend = false;
-            Toast.makeText(mContext, R.string.err_audio_record,
-                Toast.LENGTH_LONG).show();
         }
         finally {
             if (!canSend && mRecordFile != null)
