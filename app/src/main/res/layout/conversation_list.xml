@@ -52,6 +52,8 @@
         android:clickable="true"
         android:src="@drawable/ic_create_white"
         android:layout_gravity="bottom|right|end"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp"
         app:fabSize="normal"/>
 
 </FrameLayout>
