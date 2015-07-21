@@ -30,11 +30,13 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
 import android.util.SparseBooleanArray;
@@ -43,6 +45,7 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
 
 
 /**
@@ -53,6 +56,8 @@ public final class SystemUtils {
 
     private static final Pattern VERSION_CODE_MATCH = Pattern
         .compile("\\(([0-9]+)\\)$");
+
+    private static Uri sProfileUri;
 
     private SystemUtils() {
     }
@@ -243,6 +248,45 @@ public final class SystemUtils {
                     catch (IOException ignore) {
                     }
                 }
+            }
+        }
+
+        return null;
+    }
+
+    public static Uri getProfileUri(Context context) {
+        if (sProfileUri == null) {
+            // profile contact is available only since API level 14
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                sProfileUri = ContactsContract.Profile.CONTENT_URI;
+            }
+            else {
+                // try with the phone number
+                String phoneNumber = Authenticator.getDefaultAccountName(context);
+                sProfileUri = lookupPhoneNumber(context, phoneNumber);
+            }
+        }
+
+        return sProfileUri;
+    }
+
+    public static Uri lookupPhoneNumber(Context context, String phoneNumber) {
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber));
+        Cursor cur = context.getContentResolver().query(uri,
+            new String[] { ContactsContract.PhoneLookup._ID,
+                ContactsContract.PhoneLookup.LOOKUP_KEY },
+            null, null, null);
+        if (cur != null) {
+            try {
+                if (cur.moveToNext()) {
+                    long id = cur.getLong(0);
+                    String lookupKey = cur.getString(1);
+                    return ContactsContract.Contacts.getLookupUri(id, lookupKey);
+                }
+            }
+            finally {
+                cur.close();
             }
         }
 

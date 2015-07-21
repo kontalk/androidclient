@@ -115,6 +115,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
             }
 
             mAvatar.setImageDrawable(avatar);
+            mAvatar.assignContactUri(SystemUtils.getProfileUri(mContext));
         }
 
         getContent().setGravity(Gravity.RIGHT);
