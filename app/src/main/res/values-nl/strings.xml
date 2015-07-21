@@ -387,4 +387,6 @@
     <string name="error_delete_message">Kon bericht niet verwijderen.</string>
     <string name="err_validation_nonetwork">Geen internetverbinding beschikbaar. Kontalk heeft een internetverbinding nodig om te werken.</string>
     <string name="title_nonetwork">Geen internetverbinding</string>
+    <string name="err_import_keypair_uid_mismatch">Geïmporteerde sleutel komt niet overeen met het ingevoerde telefoonnummer.</string>
+    <string name="err_audio_record_noaudio">Er was geen audio opgenomen.</string>
     </resources>
