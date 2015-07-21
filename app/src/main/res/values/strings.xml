@@ -261,6 +261,7 @@
     <string name="msg_import_keypair">Kontalk will import your keys from %s in your external storage. Be sure that the file exists and it\'s a valid exported keys archive.</string>
     <string name="msg_import_keypair_complete">Personal key import completed.</string>
     <string name="err_import_keypair_failed">Personal key import failed.</string>
+    <string name="err_import_keypair_uid_mismatch">Imported key doesn't match the phone number you entered.</string>
     <string name="title_passphrase">Password</string>
 
     <string name="msg_status_sending">Sending</string>

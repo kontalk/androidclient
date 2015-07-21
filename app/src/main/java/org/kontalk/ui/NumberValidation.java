@@ -73,6 +73,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.crypto.PGPUidMismatchException;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
@@ -712,7 +713,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             String numberHash = MessageUtils.sha1(mPhoneNumber);
             String localpart = XmppStringUtils.parseLocalpart(email);
             if (!numberHash.equalsIgnoreCase(localpart))
-                throw new PGPException("email does not match phone number: " + email);
+                throw new PGPUidMismatchException("email does not match phone number: " + email);
 
             // use server from the key only if we didn't set our own
             if (TextUtils.isEmpty(manualServer))
@@ -721,6 +722,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mName = uid.getName();
             mImportedPublicKey = importer.getPublicKeyData();
             mImportedPrivateKey = importer.getPrivateKeyData();
+        }
+
+        catch (PGPUidMismatchException e) {
+            Log.w(TAG, "uid mismatch!");
+            mImportedPublicKey = mImportedPrivateKey = null;
+            mName = null;
+
+            Toast.makeText(this,
+                R.string.err_import_keypair_uid_mismatch,
+                Toast.LENGTH_LONG).show();
         }
 
         catch (Exception e) {
