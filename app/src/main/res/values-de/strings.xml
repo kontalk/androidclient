@@ -387,4 +387,6 @@
     <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
     <string name="err_validation_nonetwork">Es ist keine Internetverbindung verfügbar. Kontalk benötigt aber eine aktive Internetverbindung um zu funktionieren.</string>
     <string name="title_nonetwork">Keine Internetverbindung</string>
+    <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegbenen Nummer.</string>
+    <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
     </resources>
