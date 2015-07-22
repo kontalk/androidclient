@@ -387,4 +387,6 @@
     <string name="error_delete_message">Nepodařilo se smazat zprávu.</string>
     <string name="err_validation_nonetwork">Není k dispozici připojení k Internetu. Kontalk ke svému chodu potřebuje aktivní připojení k Internetu.</string>
     <string name="title_nonetwork">Žádné připojení k Internetu</string>
+    <string name="err_import_keypair_uid_mismatch">Importovaný klíč neodpovídá telefonnímu číslu, které jste zadali.</string>
+    <string name="err_audio_record_noaudio">Nebyl zaznamenán žádný zvuk.</string>
     </resources>
