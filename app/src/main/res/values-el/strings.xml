@@ -179,7 +179,7 @@
   <string name="err_sync_failed">Δεν είναι δυνατή η ανανέωση λίστας επαφών. Παρακαλούμε δοκιμάστε ξανά αργότερα.</string>
   <string name="err_sync_nonetwork">Το δίκτυο δεν είναι διαθέσιμο. Παρακαλούμε δοκιμάστε ξανά αργότερα.</string>
   <string name="text_invite_message">Γεια σας! Ελέγξτε το Kontalk στο Google Play Store, μια δωρεάν εφαρμογή ανταλλαγής μηνυμάτων! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Οι νέοι χρήστες θα προστεθούν αυτόματα σε αυτή τη λίστα\n\nΧρήση <b>Μενού</b> &amp;gt; <b>Προσκαλέστε τους χρήστες</b> για να στείλετε ένα μήνυμα πρόσκλησης σε κάποιον.</string>
+  <string name="text_contacts_empty">Οι νέοι χρήστες θα προστεθούν αυτόματα σε αυτή τη λίστα\n\nΧρήση <b>Μενού</b> &gt; <b>Προσκαλέστε τους χρήστες</b> για να στείλετε ένα μήνυμα πρόσκλησης σε κάποιον.</string>
   <string name="text_conversations_empty">Για να αρχίσετε να γράφετε τα μηνύματα χρησιμοποιήσετε το <b>Νέο μήνυμα</b> icon παραπάνω.</string>
   <string name="notify_ticker_external_storage">Το εξωτερικό μέσο αποθήκευσης δεν είναι διαθέσιμο</string>
   <string name="notify_text_external_storage">Δεν είναι δυνατή η εγγραφή σε εξωτερικό μέσο αποθήκευσης.</string>

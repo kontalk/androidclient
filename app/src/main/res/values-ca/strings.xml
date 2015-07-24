@@ -178,9 +178,9 @@
   <string name="err_sync_failed">No ha estat possible actualitzar la llista de contactes. Per favor, torneu a intentar-ho més tard.</string>
   <string name="err_sync_nonetwork">La xarxa no està disponible. Per favor, intenteu-ho més tard.</string>
   <string name="text_invite_message">Ei! Proveu Kontalk (és a Google Play Store), una aplicació de missatgeria lliure i gratuïta! https://play.google.com/store/apps/details?id=org.kontalk</string>
-  <string name="text_contacts_empty">Els nou usuaris s'afegiran automàticament a aquesta llista.
+  <string name="text_contacts_empty">Els nou usuaris s\'afegiran automàticament a aquesta llista.
 
-Useu <b>Menu</b> &amp;gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invitació a algú.</string>
+Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invitació a algú.</string>
   <string name="text_conversations_empty">Per a començar a escriure missatges useu la icona <b>missatge nou</b> que hi ha dalt.</string>
   <string name="notify_ticker_external_storage">L\'emmagatzematge extern no està disponible</string>
   <string name="notify_text_external_storage">No ha estat possible escriure a l\'emmagatzematge extern.</string>
