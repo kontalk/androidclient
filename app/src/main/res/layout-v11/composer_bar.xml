@@ -55,7 +55,6 @@
         android:nextFocusRight="@+id/send_button"
         android:hint="@string/hint_enter_text"
         android:minHeight="48dip"
-        android:maxLines="3"
         android:inputType="textAutoCorrect|textCapSentences|textMultiLine"
         android:imeOptions="actionSend|flagNoEnterAction"
         />

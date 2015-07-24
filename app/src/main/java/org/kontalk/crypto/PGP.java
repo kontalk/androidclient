@@ -87,6 +87,9 @@ public class PGP {
     /** Singleton for converting a PGP key to a JCA key. */
     private static JcaPGPKeyConverter sKeyConverter;
 
+    static KeyFingerPrintCalculator sFingerprintCalculator =
+        new BcKeyFingerprintCalculator();
+
     private PGP() {
     }
 
@@ -116,11 +119,10 @@ public class PGP {
 
         public static PGPKeyPairRing load(byte[] privateKeyData, byte[] publicKeyData)
                 throws IOException, PGPException {
-            KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
             ArmoredInputStream inPublic = new ArmoredInputStream(new ByteArrayInputStream(publicKeyData));
-            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, fpr);
+            PGPPublicKeyRing publicKey = new PGPPublicKeyRing(inPublic, sFingerprintCalculator);
             ArmoredInputStream inPrivate = new ArmoredInputStream(new ByteArrayInputStream(privateKeyData));
-            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(inPrivate, fpr);
+            PGPSecretKeyRing secretKey = new PGPSecretKeyRing(inPrivate, sFingerprintCalculator);
             return new PGPKeyPairRing(publicKey, secretKey);
         }
     }
@@ -527,7 +529,7 @@ public class PGP {
     }
 
     public static PGPPublicKeyRing readPublicKeyring(byte[] publicKeyring) throws IOException, PGPException {
-        PGPObjectFactory reader = new PGPObjectFactory(publicKeyring);
+        PGPObjectFactory reader = new PGPObjectFactory(publicKeyring, sFingerprintCalculator);
         Object o = reader.nextObject();
         while (o != null) {
             if (o instanceof PGPPublicKeyRing)
@@ -559,8 +561,7 @@ public class PGP {
             .build(passphrase.toCharArray());
 
         // load the secret key ring
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
 
         // search and decrypt the master (signing key)
         // secret keys
@@ -585,8 +586,7 @@ public class PGP {
             String oldPassphrase, String newPassphrase) throws PGPException, IOException {
 
         // load the secret key ring
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
 
         return copySecretKeyRingWithNewPassword(secRing, oldPassphrase, newPassphrase);
     }

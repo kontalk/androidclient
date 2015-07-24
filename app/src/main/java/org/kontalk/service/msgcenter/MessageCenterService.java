@@ -73,8 +73,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -300,13 +298,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public static final String PUSH_REGISTRATION_ID = "org.kontalk.PUSH_REGISTRATION_ID";
     private static final String DEFAULT_PUSH_PROVIDER = "gcm";
 
-    /** How much time before a wakeup alarm triggers. */
-    public final static int DEFAULT_WAKEUP_TIME = 900000;
     /** Minimal wakeup time. */
     public final static int MIN_WAKEUP_TIME = 300000;
-
-    /** How much time to wait to idle the message center (default 5 mins). */
-    private final static int DEFAULT_IDLE_TIME = 5*60*1000;
 
     /** Normal ping tester timeout. */
     private static final int SLOW_PING_TIMEOUT = 10000;
@@ -440,11 +433,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT) {
                     if (!service.fastReply()) {
                         Log.v(TAG, "test ping failed");
-                        AdaptiveServerPingManager.pingFailed(service.mConnection);
+                        AndroidAdaptiveServerPingManager
+                            .getInstanceFor(service.mConnection, service)
+                            .pingFailed();
                         restart(service.getApplicationContext());
                     }
                     else {
-                        AdaptiveServerPingManager.pingSuccess(service.mConnection);
+                        AndroidAdaptiveServerPingManager
+                            .getInstanceFor(service.mConnection, service)
+                            .pingSuccess();
                     }
                 }
                 return true;
@@ -575,9 +572,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     public void onCreate() {
         configure();
 
-        // activate ping manager
-        AdaptiveServerPingManager.onCreate(this);
-
         // create the roster store
         mRosterStore = new SQLiteRosterStore(this);
 
@@ -667,7 +661,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "destroying message center");
         quit(false);
         // deactivate ping manager
-        AdaptiveServerPingManager.onDestroy();
+        AndroidAdaptiveServerPingManager.onDestroy(this);
         // destroy roster store
         mRosterStore.onDestroy();
         // unregister screen off listener for manual inactivation
@@ -719,7 +713,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // disconnect from server (if any)
         if (mConnection != null) {
             // disable ping manager
-            AdaptiveServerPingManager.getInstanceFor(mConnection).setEnabled(false);
+            AndroidAdaptiveServerPingManager
+                .getInstanceFor(mConnection, this)
+                .setEnabled(false);
             PingManager.getInstanceFor(mConnection)
                 .unregisterPingFailedListener(mPingFailedListener);
             // this is because of NetworkOnMainThreadException
@@ -847,13 +843,17 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
 
             else if (ACTION_TEST.equals(action)) {
-                if (isConnected()) {
+                if (isConnected) {
                     if (canTest()) {
                         mLastTest = SystemClock.elapsedRealtime();
                         mIdleHandler.test();
                     }
                 }
                 else {
+                    if (mHelper != null && mHelper.isBackingOff()) {
+                        // helper is waiting for backoff - restart immediately
+                        quit(true);
+                    }
                     doConnect = canConnect;
                 }
             }
@@ -869,10 +869,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         public void run() {
                             try {
                                 if (pingManager.pingMyServer(true, SLOW_PING_TIMEOUT)) {
-                                    AdaptiveServerPingManager.pingSuccess(connection);
+                                    AndroidAdaptiveServerPingManager
+                                        .getInstanceFor(connection, MessageCenterService.this)
+                                        .pingSuccess();
                                 }
                                 else {
-                                    AdaptiveServerPingManager.pingFailed(connection);
+                                    AndroidAdaptiveServerPingManager
+                                        .getInstanceFor(connection, MessageCenterService.this)
+                                        .pingFailed();
                                 }
                             }
                             catch (SmackException.NotConnectedException e) {
@@ -1201,7 +1205,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         roster.setRosterStore(mRosterStore);
 
         // enable ping manager
-        AdaptiveServerPingManager.getInstanceFor(connection).setEnabled(true);
+        AndroidAdaptiveServerPingManager
+            .getInstanceFor(connection, this)
+            .setEnabled(true);
         mPingFailedListener = new PingFailedListener() {
             @Override
             public void pingFailed() {
@@ -1274,7 +1280,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         mIdleHandler.queueInactiveIfNeeded();
 
         // update alarm manager
-        AdaptiveServerPingManager.onConnected(mConnection);
+        AndroidAdaptiveServerPingManager
+            .getInstanceFor(connection, this)
+            .onConnectionCompleted();
 
         // release the wakelock
         mWakeLock.release();
@@ -2052,7 +2060,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             }
             catch (Exception e) {
                 Log.e(TAG, "unable to initiate keypair import", e);
-                // TODO warn user
+                Toast.makeText(this, R.string.err_import_keypair_failed,
+                    Toast.LENGTH_LONG).show();
 
                 endKeyPairImport();
             }
@@ -2072,7 +2081,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     public boolean canConnect() {
-        return isNetworkConnectionAvailable(this) && !isOfflineMode(this);
+        return SystemUtils.isNetworkConnectionAvailable(this) && !isOfflineMode(this);
     }
 
     public boolean isConnected() {
@@ -2081,19 +2090,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     public boolean isConnecting() {
         return mHelper != null;
-    }
-
-    /** Checks for network availability. */
-    public static boolean isNetworkConnectionAvailable(Context context) {
-        final ConnectivityManager cm = (ConnectivityManager) context
-            .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm.getBackgroundDataSetting()) {
-            NetworkInfo info = cm.getActiveNetworkInfo();
-            if (info != null && info.getState() == NetworkInfo.State.CONNECTED)
-                return true;
-        }
-
-        return false;
     }
 
     private static boolean isOfflineMode(Context context) {
@@ -2112,7 +2108,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // check for network state
-        if (isNetworkConnectionAvailable(context)) {
+        if (SystemUtils.isNetworkConnectionAvailable(context)) {
             Log.d(TAG, "starting message center");
             final Intent intent = getStartIntent(context);
 
@@ -2432,7 +2428,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     private void setWakeupAlarm() {
         long delay = Preferences.getWakeupTimeMillis(this,
-            MIN_WAKEUP_TIME, DEFAULT_WAKEUP_TIME);
+            MIN_WAKEUP_TIME);
 
         // start message center pending intent
         PendingIntent pi = PendingIntent.getService(
@@ -2462,7 +2458,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private void setIdleAlarm() {
-        long delay = Preferences.getIdleTimeMillis(this, 0, DEFAULT_IDLE_TIME);
+        long delay = Preferences.getIdleTimeMillis(this, 0);
         if (delay > 0) {
             ensureIdleAlarm();
             mAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,

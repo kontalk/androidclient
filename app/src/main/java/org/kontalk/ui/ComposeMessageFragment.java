@@ -51,6 +51,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -251,7 +252,7 @@ public class ComposeMessageFragment extends ListFragment implements
         Bundle args = new Bundle();
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
         args.putParcelable("data",
-                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
         f.setArguments(args);
         return f;
     }
@@ -309,6 +310,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     public void reload() {
         processArguments(null);
+        onFocus(false);
     }
 
     @Override
@@ -500,17 +502,20 @@ public class ComposeMessageFragment extends ListFragment implements
                         ContentUris.parseId(newMsg), msgId);
                 }
                 else {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getActivity(), R.string.error_store_outbox,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    throw new SQLiteDiskIOException();
                 }
             }
+            catch (SQLiteDiskIOException e) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), R.string.error_store_outbox,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
             catch (Exception e) {
-                // whatever
+                // TODO warn user
                 Log.d(TAG, "broken message thread", e);
             }
         }
@@ -520,11 +525,6 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void sendTextMessage(String message) {
         if (!TextUtils.isEmpty(message)) {
-            /*
-             * TODO show an animation to warn the user that the message
-             * is being sent (actually stored).
-             */
-
             offlineModeWarning();
 
             // start thread
@@ -824,7 +824,14 @@ public class ComposeMessageFragment extends ListFragment implements
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mComposer.setText("");
-                        MessagesProvider.deleteThread(getActivity(), threadId);
+                        try {
+                            MessagesProvider.deleteThread(getActivity(), threadId);
+                        }
+                        catch (SQLiteDiskIOException e) {
+                            Log.w(TAG, "error deleting thread");
+                            Toast.makeText(getActivity(), R.string.error_delete_thread,
+                                Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
         builder.setNegativeButton(android.R.string.cancel, null);
@@ -840,9 +847,16 @@ public class ComposeMessageFragment extends ListFragment implements
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        getActivity().getContentResolver().delete(
+                        try {
+                            getActivity().getContentResolver().delete(
                                 ContentUris.withAppendedId(
-                                        Messages.CONTENT_URI, id), null, null);
+                                    Messages.CONTENT_URI, id), null, null);
+                        }
+                        catch (SQLiteDiskIOException e) {
+                            Log.w(TAG, "error deleting message");
+                            Toast.makeText(getActivity(), R.string.error_delete_message,
+                                Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
         builder.setNegativeButton(android.R.string.cancel, null);
@@ -1572,8 +1586,8 @@ public class ComposeMessageFragment extends ListFragment implements
                             .getStringExtra(MessageCenterService.EXTRA_FROM));
 
                         if (mUserJID.equals(from)) {
-                            // this will trigger a Contact reload
-                            mConversation.setRecipient(mUserJID);
+                            // reload contact
+                            reloadContact();
                             // this will update block/unblock menu items
                             updateUI();
                             // request presence subscription if unblocking
@@ -1611,8 +1625,14 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void invalidateContact() {
         Contact.invalidate(mUserJID);
-        // this will trigger contact reload
-        mConversation.setRecipient(mUserJID);
+        reloadContact();
+    }
+
+    private void reloadContact() {
+        if (mConversation != null) {
+            // this will trigger contact reload
+            mConversation.setRecipient(mUserJID);
+        }
     }
 
     private void showIdentityDialog(boolean informationOnly) {
@@ -1925,7 +1945,7 @@ public class ComposeMessageFragment extends ListFragment implements
                         if (id != null && id.equals(mVersionRequestId)) {
                             mVersionRequestId = null;
                             String name = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NAME);
-                            if (name != null && name.equalsIgnoreCase(getString(R.string.app_name))) {
+                            if (name != null && name.equalsIgnoreCase(context.getString(R.string.app_name))) {
                                 String version = intent.getStringExtra(MessageCenterService.EXTRA_VERSION_NUMBER);
                                 if (version != null) {
                                     Contact contact = getContact();
@@ -1995,7 +2015,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
     private void setVersionInfo(Context context, String version) {
         if (SystemUtils.isOlderVersion(context, version)) {
-            showWarning(getText(R.string.warning_older_version), null, WarningType.WARNING);
+            showWarning(context.getText(R.string.warning_older_version), null, WarningType.WARNING);
         }
     }
 
@@ -2135,11 +2155,11 @@ public class ComposeMessageFragment extends ListFragment implements
 
         ComposeMessage activity = getParentActivity();
         if (activity == null || !activity.hasLostFocus() || activity.hasWindowFocus()) {
-            onFocus();
+            onFocus(true);
         }
     }
 
-    public void onFocus() {
+    public void onFocus(boolean resuming) {
         // resume content watcher
         resumeContentListener();
 
@@ -2148,7 +2168,7 @@ public class ComposeMessageFragment extends ListFragment implements
 
         // cursor was previously destroyed -- reload everything
         // mConversation = null;
-        processStart(true);
+        processStart(resuming);
         if (mUserJID != null) {
             // set notifications on pause
             MessagingNotification.setPaused(mUserJID);
@@ -2198,9 +2218,16 @@ public class ComposeMessageFragment extends ListFragment implements
             else {
                 ContentValues values = new ContentValues(1);
                 values.put(Threads.DRAFT, (len > 0) ? text.toString() : null);
-                getActivity().getContentResolver().update(
+                try {
+                    getActivity().getContentResolver().update(
                         ContentUris.withAppendedId(Threads.CONTENT_URI, threadId),
                         values, null, null);
+                }
+                catch (SQLiteDiskIOException e) {
+                    // TODO warn user
+                    Log.w(TAG, "error saving draft", e);
+                    len = 0;
+                }
             }
         }
 
@@ -2220,8 +2247,15 @@ public class ComposeMessageFragment extends ListFragment implements
                 values.put(Messages.TIMESTAMP, System.currentTimeMillis());
                 values.put(Messages.ENCRYPTED, false);
                 values.put(Threads.DRAFT, text.toString());
-                getActivity().getContentResolver().insert(Messages.CONTENT_URI,
+                try {
+                    getActivity().getContentResolver().insert(Messages.CONTENT_URI,
                         values);
+                }
+                catch (SQLiteDiskIOException e) {
+                    // TODO warn user
+                    Log.w(TAG, "error saving draft", e);
+                    len = 0;
+                }
             }
         }
 

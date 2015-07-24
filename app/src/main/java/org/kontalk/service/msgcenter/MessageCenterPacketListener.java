@@ -22,7 +22,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
 
@@ -43,7 +43,7 @@ import android.net.Uri;
  * Packet listener for the Message Center.
  * @author Daniele Ricci
  */
-abstract class MessageCenterPacketListener implements PacketListener {
+abstract class MessageCenterPacketListener implements StanzaListener {
 
     private WeakReference<MessageCenterService> mInstance;
 

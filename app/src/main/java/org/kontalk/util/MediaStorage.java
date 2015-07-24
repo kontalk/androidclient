@@ -83,6 +83,11 @@ public abstract class MediaStorage {
     private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
 
+    // @deprecated
+    static {
+        removeNoMediaFix(PICTURES_ROOT);
+    }
+
     public static boolean isExternalStorageAvailable() {
         return Environment.getExternalStorageState()
             .equals(Environment.MEDIA_MOUNTED);
@@ -245,6 +250,11 @@ public abstract class MediaStorage {
         createMedia(PICTURES_ROOT);
         String timeStamp = sDateFormat.format(date);
         return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
+    }
+
+    @Deprecated
+    private static void removeNoMediaFix(File path) {
+        new File(path, ".nomedia").delete();
     }
 
     /** Creates a temporary 3gp file. */

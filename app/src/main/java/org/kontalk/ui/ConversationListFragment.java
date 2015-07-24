@@ -34,6 +34,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -51,7 +52,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-public class ConversationListFragment extends ListFragment {
+public class ConversationListFragment extends ListFragment implements Contact.ContactChangeListener {
     private static final String TAG = ConversationList.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
@@ -276,8 +277,15 @@ public class ConversationListFragment extends ListFragment {
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                MessagesProvider.deleteThread(getActivity(), threadId);
-                MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
+                try {
+                    MessagesProvider.deleteThread(getActivity(), threadId);
+                    MessagingNotification.updateMessagesNotification(getActivity().getApplicationContext(), false);
+                }
+                catch (SQLiteDiskIOException e) {
+                    Log.w(TAG, "error deleting thread");
+                    Toast.makeText(getActivity(), R.string.error_delete_thread,
+                        Toast.LENGTH_LONG).show();
+                }
             }
         });
         builder.setNegativeButton(android.R.string.cancel, null);
@@ -324,6 +332,7 @@ public class ConversationListFragment extends ListFragment {
     public void onStart() {
         super.onStart();
         startQuery();
+        Contact.registerContactChangeListener(this);
     }
 
     @Override
@@ -337,6 +346,7 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onStop() {
         super.onStop();
+        Contact.unregisterContactChangeListener(this);
         mListAdapter.changeCursor(null);
     }
 
@@ -395,6 +405,17 @@ public class ConversationListFragment extends ListFragment {
         // notify the user about the change
         int text = (currentMode) ? R.string.going_online : R.string.going_offline;
         Toast.makeText(ctx, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onContactInvalidated(String userId) {
+        mQueryHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                // just requery
+                startQuery();
+            }
+        });
     }
 
     /**

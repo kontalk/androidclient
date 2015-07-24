@@ -92,6 +92,8 @@ public class ComposerBar extends RelativeLayout implements
     private ComposerListener mListener;
     private TextWatcher mChatStateListener;
 
+    boolean mEnterSend;
+
     /** Used during audio recording to restore focus status of the text entry. */
     private boolean mTextEntryFocus;
     private boolean mComposeSent;
@@ -167,6 +169,7 @@ public class ComposerBar extends RelativeLayout implements
                 InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE;
             mTextEntry.setImeOptions(EditorInfo.IME_ACTION_SEND);
             mTextEntry.setInputType(inputTypeFlags);
+            mEnterSend = true;
         }
         else {
             inputTypeFlags = mTextEntry.getInputType() | InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE;
@@ -197,9 +200,11 @@ public class ComposerBar extends RelativeLayout implements
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    InputMethodManager imm = (InputMethodManager) mContext
-                        .getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    if (!mEnterSend) {
+                        InputMethodManager imm = (InputMethodManager) mContext
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+                    }
                     submitSend();
                     return true;
                 }
@@ -503,6 +508,8 @@ public class ComposerBar extends RelativeLayout implements
             mHandler.removeCallbacks(mMediaPlayerUpdater);
 
         boolean canSend = send && (elapsedTime > MIN_RECORDING_TIME);
+        // reset elapsed recording time
+        elapsedTime = 0;
 
         try {
             if (mRecord != null) {
@@ -513,6 +520,10 @@ public class ComposerBar extends RelativeLayout implements
                     mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
                         AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
                 }
+                else if (send) {
+                    Toast.makeText(mContext, R.string.hint_ptt,
+                        Toast.LENGTH_LONG).show();
+                }
             }
         }
         catch (IllegalStateException e) {
@@ -520,10 +531,12 @@ public class ComposerBar extends RelativeLayout implements
             canSend = false;
         }
         catch (RuntimeException e) {
-            Log.w(TAG, "no audio data received", e);
+            if (canSend) {
+                Log.w(TAG, "no audio data received", e);
+                Toast.makeText(mContext, R.string.err_audio_record_noaudio,
+                    Toast.LENGTH_LONG).show();
+            }
             canSend = false;
-            Toast.makeText(mContext, R.string.err_audio_record,
-                Toast.LENGTH_LONG).show();
         }
         finally {
             if (!canSend && mRecordFile != null)

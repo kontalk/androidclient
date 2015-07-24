@@ -66,7 +66,6 @@ import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculatorProvider;
-import org.spongycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.spongycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.spongycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.spongycastle.operator.ContentSigner;
@@ -88,6 +87,9 @@ import android.os.Parcel;
  */
 public class X509Bridge {
 
+    private static final KeyFingerPrintCalculator sFingerprintCalculator =
+        PGP.sFingerprintCalculator;
+
     public static final String PEM_TYPE_PRIVATE_KEY = "RSA PRIVATE KEY";
     public static final String PEM_TYPE_CERTIFICATE = "CERTIFICATE";
 
@@ -101,8 +103,7 @@ public class X509Bridge {
         NoSuchAlgorithmException, SignatureException, CertificateException,
         NoSuchProviderException, IOException, OperatorCreationException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         return createCertificate(pubRing, secretKey, passphrase, subjectAltName);
 
@@ -128,9 +129,8 @@ public class X509Bridge {
         throws PGPException, IOException, InvalidKeyException, IllegalStateException,
         NoSuchAlgorithmException, SignatureException, CertificateException, NoSuchProviderException, OperatorCreationException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, fpr);
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPSecretKeyRing secRing = new PGPSecretKeyRing(privateKeyData, sFingerprintCalculator);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         PGPDigestCalculatorProvider sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build();
         PBESecretKeyDecryptor decryptor = new JcePBESecretKeyDecryptorBuilder(sha1Calc)
@@ -147,8 +147,7 @@ public class X509Bridge {
         throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException,
         SignatureException, CertificateException, NoSuchProviderException, PGPException, IOException, OperatorCreationException {
 
-        KeyFingerPrintCalculator fpr = new BcKeyFingerprintCalculator();
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, fpr);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(publicKeyData, sFingerprintCalculator);
 
         return createCertificate(pubRing, privateKey, subjectAltName);
     }

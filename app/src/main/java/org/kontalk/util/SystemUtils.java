@@ -205,4 +205,16 @@ public final class SystemUtils {
         return getCurrentNetworkType(context) == ConnectivityManager.TYPE_WIFI;
     }
 
+    /** Checks for network availability. */
+    public static boolean isNetworkConnectionAvailable(Context context) {
+        final ConnectivityManager cm = (ConnectivityManager) context
+            .getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm.getBackgroundDataSetting()) {
+            NetworkInfo info = cm.getActiveNetworkInfo();
+            if (info != null && info.getState() == NetworkInfo.State.CONNECTED)
+                return true;
+        }
+
+        return false;
+    }
 }

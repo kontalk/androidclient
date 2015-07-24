@@ -32,8 +32,6 @@ import org.kontalk.crypto.X509Bridge;
 import org.kontalk.data.Contact;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.sync.SyncAdapter;
-import org.kontalk.util.MessageUtils;
-import org.kontalk.util.XMPPUtils;
 
 import static org.kontalk.service.msgcenter.MessageCenterService.ACTION_PUBLICKEY;
 import static org.kontalk.service.msgcenter.MessageCenterService.EXTRA_FROM;
@@ -56,28 +54,16 @@ class PublicKeyListener extends MessageCenterPacketListener {
     public void processPacket(Stanza packet) {
         PublicKeyPublish p = (PublicKeyPublish) packet;
 
-        // will be true if it's our card
-        boolean myCard = false;
         byte[] _publicKey = p.getPublicKey();
 
         // vcard was requested, store but do not broadcast
         if (p.getType() == IQ.Type.result) {
 
             if (_publicKey != null) {
-
                 String from = XmppStringUtils.parseBareJid(p.getFrom());
 
-                boolean networkUser = XMPPUtils.isLocalJID(from, getServer().getNetwork());
-                // our network - convert to userId
-                if (networkUser) {
-                    // is this our vCard?
-                    String userId = XmppStringUtils.parseLocalpart(from);
-                    String hash = MessageUtils.sha1(getMyUsername());
-                    if (userId.equalsIgnoreCase(hash))
-                        myCard = true;
-                }
-
-                if (myCard) {
+                // is this our key?
+                if (Authenticator.isSelfJID(getContext(), from)) {
                     byte[] bridgeCertData;
                     try {
                         PersonalKey key = getApplication().getPersonalKey();
@@ -118,15 +104,13 @@ class PublicKeyListener extends MessageCenterPacketListener {
 
                 else {
                     try {
-                        if (networkUser) {
-                            Log.v("pubkey", "Updating key for " + from);
-                            UsersProvider.setUserKey(getContext(), from, _publicKey);
-                            // maybe trust the key
-                            UsersProvider.maybeTrustUserKey(getContext(), from, _publicKey);
+                        Log.v("pubkey", "Updating key for " + from);
+                        UsersProvider.setUserKey(getContext(), from, _publicKey);
+                        // maybe trust the key
+                        UsersProvider.maybeTrustUserKey(getContext(), from, _publicKey);
 
-                            // invalidate cache for this user
-                            Contact.invalidate(from);
-                        }
+                        // invalidate cache for this user
+                        Contact.invalidate(from);
                     }
                     catch (Exception e) {
                         // TODO warn user

@@ -42,6 +42,7 @@ import org.kontalk.client.EndpointServer;
 import org.kontalk.client.ServerList;
 import org.kontalk.service.msgcenter.MessageCenterService;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 
 /**
@@ -91,7 +92,7 @@ public class ServerListUpdater extends BroadcastReceiver {
         }
 
         // check for network
-        if (!MessageCenterService.isNetworkConnectionAvailable(mContext)) {
+        if (!SystemUtils.isNetworkConnectionAvailable(mContext)) {
             if (mListener != null)
                 mListener.networkNotAvailable();
             return;

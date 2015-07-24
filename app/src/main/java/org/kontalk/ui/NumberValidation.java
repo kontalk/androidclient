@@ -73,6 +73,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.client.EndpointServer;
 import org.kontalk.client.NumberValidator;
 import org.kontalk.client.NumberValidator.NumberValidatorListener;
+import org.kontalk.crypto.PGPUidMismatchException;
 import org.kontalk.crypto.PGPUserID;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.crypto.PersonalKeyImporter;
@@ -85,6 +86,7 @@ import org.kontalk.ui.adapter.CountryCodesAdapter;
 import org.kontalk.ui.adapter.CountryCodesAdapter.CountryCode;
 import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
+import org.kontalk.util.SystemUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -557,15 +559,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private void startValidation(boolean force) {
         enableControls(false);
 
-        if (!checkInput(false)) {
+        if (!checkInput(false) || !startValidationNormal(null, force, false)) {
             enableControls(true);
-        }
-        else {
-            startValidationNormal(null, force, false);
         }
     }
 
-    private void startValidationNormal(String manualServer, boolean force, boolean testImport) {
+    private boolean startValidationNormal(String manualServer, boolean force, boolean testImport) {
+        if (!SystemUtils.isNetworkConnectionAvailable(this)) {
+            error(R.string.title_nonetwork, R.string.err_validation_nonetwork);
+            return false;
+        }
+
         // start async request
         Log.d(TAG, "phone number checked, sending validation request");
         startProgress();
@@ -591,6 +595,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mValidator.testImport();
 
         mValidator.start();
+        return true;
     }
 
     /**
@@ -708,7 +713,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             String numberHash = MessageUtils.sha1(mPhoneNumber);
             String localpart = XmppStringUtils.parseLocalpart(email);
             if (!numberHash.equalsIgnoreCase(localpart))
-                throw new PGPException("email does not match phone number: " + email);
+                throw new PGPUidMismatchException("email does not match phone number: " + email);
 
             // use server from the key only if we didn't set our own
             if (TextUtils.isEmpty(manualServer))
@@ -717,6 +722,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mName = uid.getName();
             mImportedPublicKey = importer.getPublicKeyData();
             mImportedPrivateKey = importer.getPrivateKeyData();
+        }
+
+        catch (PGPUidMismatchException e) {
+            Log.w(TAG, "uid mismatch!");
+            mImportedPublicKey = mImportedPrivateKey = null;
+            mName = null;
+
+            Toast.makeText(this,
+                R.string.err_import_keypair_uid_mismatch,
+                Toast.LENGTH_LONG).show();
         }
 
         catch (Exception e) {
@@ -744,7 +759,9 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = passphrase;
 
             // begin usual validation
-            startValidationNormal(manualServer, true, true);
+            if (!startValidationNormal(manualServer, true, true)) {
+                enableControls(true);
+            }
         }
     }
 

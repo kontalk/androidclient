@@ -20,6 +20,8 @@ package org.kontalk.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jxmpp.util.XmppStringUtils;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
@@ -40,7 +42,7 @@ import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
-import org.kontalk.crypto.PGP;
+import org.kontalk.crypto.PGPLazyPublicKeyRingLoader;
 import org.kontalk.provider.MyUsers.Keys;
 import org.kontalk.provider.MyUsers.Users;
 
@@ -96,7 +98,7 @@ public class Contact {
     private byte [] mAvatarData;
 
     private String mFingerprint;
-    private PGPPublicKeyRing mTrustedKeyRing;
+    private PGPLazyPublicKeyRingLoader mTrustedKeyRing;
 
     /** Timestamp the user was last seen. Not coming from the database. */
     private long mLastSeen;
@@ -106,6 +108,12 @@ public class Contact {
     public interface ContactCallback {
         public void avatarLoaded(Contact contact, Drawable avatar);
     }
+
+    public interface ContactChangeListener {
+        public void onContactInvalidated(String userId);
+    }
+
+    private static final Set<ContactChangeListener> sListeners = new HashSet<>();
 
     /**
      * Contact cache.
@@ -215,7 +223,15 @@ public class Contact {
     }
 
     public PGPPublicKeyRing getTrustedPublicKeyRing() {
-        return mTrustedKeyRing;
+        try {
+            if (mTrustedKeyRing != null)
+                return mTrustedKeyRing.getPublicKeyRing();
+        }
+        catch (Exception e) {
+            // ignored for now
+            Log.w(TAG, "unable to load public keyring", e);
+        }
+        return null;
     }
 
     public String getFingerprint() {
@@ -282,10 +298,12 @@ public class Contact {
 
     public static void invalidate(String userId) {
         cache.remove(userId);
+        fireContactInvalidated(userId);
     }
 
     public static void invalidate() {
         cache.evictAll();
+        fireContactInvalidated(null);
     }
 
     /** Invalidates cached data for all contacts. Does not delete contact information. */
@@ -294,6 +312,20 @@ public class Contact {
             for (Contact c : cache.snapshot().values()) {
                 c.clear();
             }
+        }
+    }
+
+    public static void registerContactChangeListener(ContactChangeListener l) {
+        sListeners.add(l);
+    }
+
+    public static void unregisterContactChangeListener(ContactChangeListener l) {
+        sListeners.remove(l);
+    }
+
+    private static void fireContactInvalidated(String userId) {
+        for (ContactChangeListener l : sListeners) {
+            l.onContactInvalidated(userId);
         }
     }
 
@@ -318,14 +350,8 @@ public class Contact {
             c.mRegistered = registered;
             c.mStatus = status;
             c.mFingerprint = fingerprint;
-            try {
-                if (trustedKeyring != null)
-                    c.mTrustedKeyRing = PGP.readPublicKeyring(trustedKeyring);
-            }
-            catch (Exception e) {
-                // ignored for now
-                Log.w(TAG, "unable to load public keyring", e);
-            }
+            if (trustedKeyring != null)
+                c.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
 
             cache.put(jid, c);
         }
@@ -390,14 +416,8 @@ public class Contact {
             contact.mRegistered = registered;
             contact.mStatus = status;
             contact.mFingerprint = fingerprint;
-            try {
-                if (trustedKeyring != null)
-                    contact.mTrustedKeyRing = PGP.readPublicKeyring(trustedKeyring);
-            }
-            catch (Exception e) {
-                // ignored for now
-                Log.w(TAG, "unable to load public keyring", e);
-            }
+            if (trustedKeyring != null)
+                contact.mTrustedKeyRing = new PGPLazyPublicKeyRingLoader(trustedKeyring);
 
             return contact;
         }

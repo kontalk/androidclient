@@ -111,7 +111,8 @@ public class ComposeMessage extends ActionBarActivity {
         mTitleView = (TextView) customView.findViewById(R.id.title);
         mSubtitleView = (TextView) customView.findViewById(R.id.summary);
 
-        processIntent(savedInstanceState);
+        Bundle args = processIntent(savedInstanceState);
+        mFragment.setMyArguments(args);
     }
 
     @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
@@ -200,7 +201,7 @@ public class ComposeMessage extends ActionBarActivity {
             mFragment.viewContact();
     }
 
-    private void processIntent(Bundle savedInstanceState) {
+    private Bundle processIntent(Bundle savedInstanceState) {
         Intent intent;
         if (savedInstanceState != null) {
             mLostFocus = savedInstanceState.getBoolean("lostFocus");
@@ -232,7 +233,7 @@ public class ComposeMessage extends ActionBarActivity {
                     startActivity(startIntent);
                     // no need to go further
                     finish();
-                    return;
+                    return null;
                 }
                 // single-pane UI: start normally
                 else {
@@ -253,7 +254,7 @@ public class ComposeMessage extends ActionBarActivity {
                 chooseContact();
 
                 // onActivityResult will handle the rest
-                return;
+                return null;
             }
 
             // send to someone
@@ -275,7 +276,7 @@ public class ComposeMessage extends ActionBarActivity {
                         startActivity(startIntent);
                         // no need to go further
                         finish();
-                        return;
+                        return null;
                     }
                     // single-pane UI: start normally
                     else {
@@ -291,10 +292,10 @@ public class ComposeMessage extends ActionBarActivity {
                 }
             }
 
-            if (args != null) {
-                mFragment.setMyArguments(args);
-            }
+            return args;
         }
+
+        return null;
     }
 
     @Override
@@ -442,14 +443,20 @@ public class ComposeMessage extends ActionBarActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
-        processIntent(null);
-        mFragment.reload();
+        Bundle args = processIntent(null);
+        if (args != null) {
+            mFragment.setMyArguments(args);
+            mFragment.reload();
+        }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
-        processIntent(state);
+        Bundle args = processIntent(state);
+        if (args != null) {
+            mFragment.setMyArguments(args);
+        }
     }
 
     @Override
@@ -465,7 +472,7 @@ public class ComposeMessage extends ActionBarActivity {
 
         if (hasFocus) {
             if (mLostFocus) {
-                mFragment.onFocus();
+                mFragment.onFocus(true);
                 mLostFocus = false;
             }
         }

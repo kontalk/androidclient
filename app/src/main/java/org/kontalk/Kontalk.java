@@ -46,6 +46,7 @@ import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.SearchActivity;
+import org.kontalk.util.MediaStorage;
 import org.kontalk.util.Preferences;
 
 import org.spongycastle.openpgp.PGPException;
@@ -63,6 +64,15 @@ import java.security.cert.CertificateException;
  */
 public class Kontalk extends Application {
     public static final String TAG = Kontalk.class.getSimpleName();
+
+    // @deprecated
+    static {
+        try {
+            Class.forName(MediaStorage.class.getName());
+        }
+        catch (ClassNotFoundException ignored) {
+        }
+    }
 
     private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 
