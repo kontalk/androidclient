@@ -389,4 +389,6 @@
     <string name="title_nonetwork">Žádné připojení k Internetu</string>
     <string name="err_import_keypair_uid_mismatch">Importovaný klíč neodpovídá telefonnímu číslu, které jste zadali.</string>
     <string name="err_audio_record_noaudio">Nebyl zaznamenán žádný zvuk.</string>
+    <string name="err_custom_background">Při nastavení pozadí došlo k chybě. Zkuste prosím jiný obrázek.</string>
+    <string name="hint_ptt">Pro nahrávání stiskněte a držte mikrofon.</string>
     </resources>
