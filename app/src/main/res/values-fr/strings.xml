@@ -178,7 +178,7 @@
   <string name="err_sync_failed">Impossible de rafraichir l\'annuaire des contacts. Veuillez réessayer plus tard.</string>
   <string name="err_sync_nonetwork">Réseau indisponible. Veuillez réessayer plus tard.</string>
   <string name="text_invite_message">Hey! Tu devrais essayer Kontalk une application de messagerie gratuite. Disponible sur F-droid la plateforme d\'application open-source ou Google Play Store https://play.google.com/store/apps/details?id=org.kontalk </string>
-  <string name="text_contacts_empty">Les nouveaux utilisateurs seront ajouté a cette liste list automatiquement.\n\nUtiliser <b>Menu</b> &amp;gt; <b>Inviter des utilisateurs</b> pour envoyer une invitation à rejoindre Kontalk.</string>
+  <string name="text_contacts_empty">Les nouveaux utilisateurs seront ajouté a cette liste list automatiquement.\n\nUtiliser <b>Menu</b> &gt; <b>Inviter des utilisateurs</b> pour envoyer une invitation à rejoindre Kontalk.</string>
   <string name="text_conversations_empty">Pour écrire un nouveau message utilise l\'icône <b>nouveau message</b> ci-dessus.</string>
   <string name="notify_ticker_external_storage">Mémoire externe non disponible</string>
   <string name="notify_text_external_storage">Impossible d\'écrire sur la mémoire externe.</string>
