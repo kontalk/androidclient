@@ -389,4 +389,6 @@
     <string name="title_nonetwork">Keine Internetverbindung</string>
     <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegbenen Nummer.</string>
     <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
+    <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
+    <string name="hint_ptt">Um Aufzunehmen das Mikrofon gedrückt halten.</string>
     </resources>
