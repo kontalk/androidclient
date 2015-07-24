@@ -520,6 +520,10 @@ public class ComposerBar extends RelativeLayout implements
                     mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
                         AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
                 }
+                else if (send) {
+                    Toast.makeText(mContext, R.string.hint_ptt,
+                        Toast.LENGTH_LONG).show();
+                }
             }
         }
         catch (IllegalStateException e) {
