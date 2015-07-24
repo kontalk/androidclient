@@ -26,7 +26,7 @@
   <string name="no">いいえ</string>
   <string name="send">送信</string>
   <string name="menu_compose">作成</string>
-  <string name="menu_delete_all">スレッドを削除</string>
+  <string name="menu_delete_all">チャットを削除</string>
   <string name="menu_search">検索</string>
   <string name="mykey_activity_title">マイパーソナルキー</string>
   <string name="menu_settings">設定</string>
@@ -52,16 +52,16 @@
   <string name="resend">再送信</string>
   <string name="copy_message_text">メッセージ テキストをコピー</string>
   <string name="delete_message">メッセージを削除</string>
-  <string name="confirm_delete_all">すべてのスレッドを削除</string>
-  <string name="confirm_will_delete_all">すべてのスレッドが削除されました。</string>
+  <string name="confirm_delete_all">すべてのチャットを削除</string>
+  <string name="confirm_will_delete_all">すべてのチャットが削除されます。</string>
   <string name="sending_message">メッセージ送信中…</string>
   <string name="message_text_copied">メッセージ テキストをコピーしました。</string>
   <string name="call">呼び出し</string>
   <string name="view_contact">連絡先を表示</string>
-  <string name="view_conversation">スレッドを表示</string>
-  <string name="delete_thread">スレッドを削除</string>
-  <string name="confirm_delete_thread">スレッドを削除</string>
-  <string name="confirm_will_delete_thread">スレッドが全体が削除されます。</string>
+  <string name="view_conversation">チャットを表示</string>
+  <string name="delete_thread">チャットを削除</string>
+  <string name="confirm_delete_thread">チャットを削除</string>
+  <string name="confirm_will_delete_thread">チャット全体が削除されます。</string>
   <string name="new_messages">新しいメッセージ</string>
   <string name="unread_messages">%d の未読メッセージ</string>
   <string name="only_one_account_supported">1 つの Kontalk アカウントのみサポートされます。</string>
@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">ユーザーからオンラインとして表示されません</string>
   <string name="pref_title_off_hide_presence">あなたが最後に接続した時に、ユーザーからオンラインとして表示されます</string>
   <string name="contact_not_registered">連絡先が Kontalk に登録されていないようです。</string>
-  <string name="error_store_outbox">送信トレイにメッセージを保存することはできません。</string>
+  <string name="error_store_outbox">送信トレイにメッセージを保存できません。メモリーが一杯ではありませんか?</string>
   <string name="decrypt_message">メッセージを復号化</string>
   <string name="download_file">ファイルをダウンロード</string>
   <string name="download_again">再度ダウンロード</string>
@@ -380,4 +380,14 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="about_credits_gfx"><b>グラフィックス/アイコンデザイン</b></string>
     <string name="about_credits_translators"><b>翻訳者</b></string>
 
-</resources>
+<string name="pref_help">ヘルプ</string>
+    <string name="err_no_contact">連絡先がみつかりません。</string>
+
+    <string name="warning_older_version">あなたの相手は古いバージョンの Kontalk を使用しています。一部の機能が正常に動作しない場合があります。</string>
+    <string name="error_delete_thread">スレッドを削除できません。</string>
+    <string name="error_delete_message">メッセージを削除できません。</string>
+    <string name="err_validation_nonetwork">インターネット接続が利用できません。Kontalk の動作には有効なインターネット接続が必要です。</string>
+    <string name="title_nonetwork">インターネット接続がありません</string>
+    <string name="err_import_keypair_uid_mismatch">インポートしたキーが入力された電話番号と一致しません。</string>
+    <string name="err_audio_record_noaudio">録音された音声はありません。</string>
+    </resources>

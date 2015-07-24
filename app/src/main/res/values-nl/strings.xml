@@ -26,7 +26,7 @@
   <string name="no">Nee</string>
   <string name="send">Verzenden</string>
   <string name="menu_compose">Nieuw bericht</string>
-  <string name="menu_delete_all">Gesprekken verwijderen</string>
+  <string name="menu_delete_all">Verwijder gesprekken</string>
   <string name="menu_search">Zoeken</string>
   <string name="mykey_activity_title">Mijn persoonlijke sleutel</string>
   <string name="menu_settings">Instellingen</string>
@@ -52,7 +52,7 @@
   <string name="resend">Opnieuw verzenden</string>
   <string name="copy_message_text">Kopiëren</string>
   <string name="delete_message">Berichttekst verwijderen</string>
-  <string name="confirm_delete_all">Alle gesprekken verwijderen</string>
+  <string name="confirm_delete_all">Verwijder alle gesprekken</string>
   <string name="confirm_will_delete_all">Alle gesprekken zullen verwijderd worden.</string>
   <string name="sending_message">Bezig met bericht sturen…</string>
   <string name="message_text_copied">Tekst gekopieerd.</string>
@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">Gebruikers zullen je niet online zien</string>
   <string name="pref_title_off_hide_presence">Gebruikers zullen je online zien, of wanneer je voor het laatst online was</string>
   <string name="contact_not_registered">Dit contact lijkt niet geregistreerd te zijn bij Kontalk.</string>
-  <string name="error_store_outbox">Het opslaan van het bericht in het Postvak UIT is mislukt.</string>
+  <string name="error_store_outbox">Het opslaan van het bericht in het Postvak UIT is mislukt. Is het telefoongeheugen vol?</string>
   <string name="decrypt_message">Bericht ontsleutelen</string>
   <string name="download_file">Bestand downloaden</string>
   <string name="download_again">Opnieuw downloaden</string>
@@ -383,4 +383,12 @@
 
     <string name="warning_older_version">Deze vriend gebruikt een oude versie van Kontalk. Sommige functies werken mogelijk niet correct.</string>
     <string name="pref_help">Help</string>
+    <string name="error_delete_thread">Kon gesprek niet verwijderen.</string>
+    <string name="error_delete_message">Kon bericht niet verwijderen.</string>
+    <string name="err_validation_nonetwork">Geen internetverbinding beschikbaar. Kontalk heeft een internetverbinding nodig om te werken.</string>
+    <string name="title_nonetwork">Geen internetverbinding</string>
+    <string name="err_import_keypair_uid_mismatch">Geïmporteerde sleutel komt niet overeen met het ingevoerde telefoonnummer.</string>
+    <string name="err_audio_record_noaudio">Er was geen audio opgenomen.</string>
+    <string name="err_custom_background">Er ging iets fout bij het instellen van de achtergrondafbeelding. Probeer een andere afbeelding.</string>
+    <string name="hint_ptt">Houd de microfoon in om op te nemen.</string>
     </resources>

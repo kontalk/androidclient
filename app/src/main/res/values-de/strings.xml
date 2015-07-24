@@ -26,7 +26,7 @@
   <string name="no">Nein</string>
   <string name="send">Senden</string>
   <string name="menu_compose">Verfassen</string>
-  <string name="menu_delete_all">Gespräche löschen</string>
+  <string name="menu_delete_all">Chats löschen</string>
   <string name="menu_search">Suche</string>
   <string name="mykey_activity_title">Mein persönlicher Schlüssel</string>
   <string name="menu_settings">Einstellungen</string>
@@ -52,16 +52,16 @@
   <string name="resend">Erneut senden</string>
   <string name="copy_message_text">Nachrichtentext kopieren</string>
   <string name="delete_message">Nachricht löschen</string>
-  <string name="confirm_delete_all">Alle Gespräche löschen</string>
-  <string name="confirm_will_delete_all">Alle Gespräche werden gelöscht.</string>
+  <string name="confirm_delete_all">Alle Chats löschen</string>
+  <string name="confirm_will_delete_all">Alle Chats werden gelöscht.</string>
   <string name="sending_message">Sende Nachricht…</string>
   <string name="message_text_copied">Nachrichtentext kopiert.</string>
   <string name="call">Anruf</string>
   <string name="view_contact">Kontakt anzeigen</string>
-  <string name="view_conversation">Gespräch anzeigen</string>
-  <string name="delete_thread">Gespräch löschen</string>
-  <string name="confirm_delete_thread">Gespräch löschen</string>
-  <string name="confirm_will_delete_thread">Das gesamte Gespräch wird gelöscht.</string>
+  <string name="view_conversation">Chat anzeigen</string>
+  <string name="delete_thread">Chat löschen</string>
+  <string name="confirm_delete_thread">Chat löschen</string>
+  <string name="confirm_will_delete_thread">Der gesamte Chat wird gelöscht.</string>
   <string name="new_messages">Neue Nachrichten</string>
   <string name="unread_messages">%d ungelesene Nachrichten</string>
   <string name="only_one_account_supported">Es wird nur ein Kontalk Account unterstützt.</string>
@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">Sie werden anderen Nutzern als offline angezeigt</string>
   <string name="pref_title_off_hide_presence">Andere Nutzer können sehen wenn Sie online sind bzw. wann Sie es zuletzt waren</string>
   <string name="contact_not_registered">Der Kontakt ist offenbar nicht bei Kontalk registriert.</string>
-  <string name="error_store_outbox">Nachricht kann nicht im Postausgang gespeichert werden.</string>
+  <string name="error_store_outbox">Nachricht kann nicht im Postausgang gespeichert werden. Eventuell ist Ihr Speicher voll?</string>
   <string name="decrypt_message">Nachricht entschlüsseln</string>
   <string name="download_file">Datei herunterladen</string>
   <string name="download_again">Nochmals herunterladen</string>
@@ -383,4 +383,12 @@
 
     <string name="warning_older_version">Ihr Freund verwendet eine ältere Version von Kontalk. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     <string name="pref_help">Hilfe</string>
+    <string name="error_delete_thread">Es ist nicht möglich das Gespräch zu löschen.</string>
+    <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
+    <string name="err_validation_nonetwork">Es ist keine Internetverbindung verfügbar. Kontalk benötigt aber eine aktive Internetverbindung um zu funktionieren.</string>
+    <string name="title_nonetwork">Keine Internetverbindung</string>
+    <string name="err_import_keypair_uid_mismatch">Der importierte Schlüssel gehört nicht zu der von Ihnen angegbenen Nummer.</string>
+    <string name="err_audio_record_noaudio">Es wurde kein Audio aufgenommen.</string>
+    <string name="err_custom_background">Beim setzen des Hintergrundes ist ein Fehler aufgetreten. Bitte versuchen Sie ein anderes Bild.</string>
+    <string name="hint_ptt">Um Aufzunehmen das Mikrofon gedrückt halten.</string>
     </resources>

@@ -20,6 +20,7 @@ package org.kontalk.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -265,7 +266,7 @@ public final class Preferences {
     }
 
     /** Loads and stores a cached version of the given conversation background. */
-    public static File cacheConversationBackground(Context context, Uri uri) {
+    public static File cacheConversationBackground(Context context, Uri uri) throws IOException {
         InputStream in = null;
         OutputStream out = null;
         try {
@@ -306,9 +307,6 @@ public final class Preferences {
 
             return outFile;
         }
-        catch (Exception e) {
-            // ignored
-        }
         finally {
             try {
                 in.close();
@@ -323,7 +321,6 @@ public final class Preferences {
                 // ignored
             }
         }
-        return null;
     }
 
     public static Drawable getConversationBackground(Context context) {
