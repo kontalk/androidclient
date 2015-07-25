@@ -390,4 +390,6 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="title_nonetwork">インターネット接続がありません</string>
     <string name="err_import_keypair_uid_mismatch">インポートしたキーが入力された電話番号と一致しません。</string>
     <string name="err_audio_record_noaudio">録音された音声はありません。</string>
+    <string name="err_custom_background">背景の設定中にエラーが発生しました。別の画像を試してください。</string>
+    <string name="hint_ptt">タップし続けると録音します。</string>
     </resources>
