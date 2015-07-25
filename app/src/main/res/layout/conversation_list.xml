@@ -52,6 +52,9 @@
         android:clickable="true"
         android:src="@drawable/ic_create_white"
         android:layout_gravity="bottom|right|end"
+        android:layout_marginBottom="@dimen/action_button_margin"
+        android:layout_marginRight="@dimen/action_button_margin"
+        android:layout_marginEnd="@dimen/action_button_margin"
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
         app:fabSize="normal"/>

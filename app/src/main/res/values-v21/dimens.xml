@@ -17,18 +17,5 @@
  -->
 
 <resources>
-    <dimen name="message_text_width">240dp</dimen>
-    <dimen name="dateview_text_size">11sp</dimen>
-    <dimen name="conv_list_margin_left">8dp</dimen>
-
-    <dimen name="min_emoji_drawer_height">120dp</dimen>
-    <dimen name="emoji_drawer_default_height">200dp</dimen>
-    <integer name="emoji_overflow_length">10240</integer>
-    <dimen name="emoji_textview_size">22sp</dimen>
-    <dimen name="emoji_edittext_size">22sp</dimen>
-    <dimen name="emoji_listitem_size">18sp</dimen>
-
-    <dimen name="avatar_size">40dp</dimen>
-
-    <dimen name="action_button_margin">0dp</dimen>
+    <dimen name="action_button_margin">16dp</dimen>
 </resources>
