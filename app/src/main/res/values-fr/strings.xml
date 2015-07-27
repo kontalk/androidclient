@@ -251,7 +251,7 @@
   <string name="pref_title_import_keypair">Importer une clé personnelle et un certificat d\'un support de stockage externe</string>
   <string name="msg_import_keypair">Kontalk va importer votre clé depuis %s dans votre stockage externe. Soyez sûr que le fichier existe et que l\'archive de la clé exporté est valide.</string>
   <string name="msg_import_keypair_complete">Importation de la clé personnelle réussie.</string>
-  <string name="err_import_keypair_failed">Importation de la clé personelle échouée.</string>
+  <string name="err_import_keypair_failed">Import de la clé personelle échouée.</string>
   <string name="title_passphrase">Mot de passe</string>
   <string name="msg_status_sending">Envoi</string>
   <string name="msg_status_sent">Envoyé</string>
@@ -387,4 +387,8 @@
     <string name="error_delete_message">Impossible de supprimer le message.</string>
     <string name="err_validation_nonetwork">Connexion Internet non disponible. Kontalk a besoin d\'une connexion Internet pour fonctionner.</string>
     <string name="title_nonetwork">Pas de connexion à Internet</string>
+    <string name="err_custom_background">Une erreur est survenu lors du changement de l\'arrière plan. Essayer avec une autre image.</string>
+    <string name="err_import_keypair_uid_mismatch">La clé importée ne correspond pas au numéro de téléphone que vous avez entré.</string>
+    <string name="hint_ptt">Tapez et maintenez le micro pour enregistrer.</string>
+    <string name="err_audio_record_noaudio">Le son n\'a pas été enregistré.</string>
     </resources>
