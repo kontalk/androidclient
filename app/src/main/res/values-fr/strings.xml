@@ -26,16 +26,16 @@
   <string name="no">Non</string>
   <string name="send">Envoyer</string>
   <string name="menu_compose">Ecrire</string>
-  <string name="menu_delete_all">Supprimer la conversation</string>
+  <string name="menu_delete_all">Supprimer les conversations</string>
   <string name="menu_search">Rechercher</string>
   <string name="mykey_activity_title">Ma clé personnelle</string>
   <string name="menu_settings">Paramètres</string>
-  <string name="menu_offline">Hors-ligne</string>
+  <string name="menu_offline">Aller hors ligne</string>
   <string name="menu_online">En ligne</string>
   <string name="menu_import_key">Importation de la clé</string>
   <string name="pref_network_settings">Paramètres réseaux</string>
   <string name="pref_network_uri">Éditer l\'adresse du serveur </string>
-  <string name="pref_title_network_uri">Ceci annulera la gestion automatique des serveurs</string>
+  <string name="pref_title_network_uri">Ceci remplacera la gestion automatique des serveurs</string>
   <string name="number_validation_intro1">Veuillez entrer votre nom, sélectionner votre code de pays et entrez votre numéro de téléphone portable. Un SMS avec un code de vérification vous sera envoyé. Votre numéro de téléphone ne sera utilisé qu\'une seule fois et sera ensuite ignoré.</string>
   <string name="number_validation_intro2">Si vous ne pouvez pas recevoir des SMS sur cet appareil, entrez un numéro de téléphone que vous possédez et entrez le code de vérification reçus par SMS.</string>
   <string name="code_validation_intro">Vous devriez recevoir un SMS ou un appel de ce numéro brièvement:</string>
@@ -66,7 +66,7 @@
   <string name="unread_messages">%d messages non lus</string>
   <string name="only_one_account_supported">Uniquement un compte Kontalk est supporté.</string>
   <string name="hint_enter_text">Écrire ici</string>
-  <string name="hint_type_to_compose">Écrivez pour commencer le message</string>
+  <string name="hint_type_to_compose">Taper pour écrire</string>
   <string name="hint_open_kbd_to_compose">Ouvrir le clavier pour écrire le message</string>
   <string name="view_image">Voir l\'image</string>
   <string name="title_message_options">Options du message</string>
@@ -110,8 +110,8 @@
   <string name="pref_title_on_encrypt_userdata">Les statuts seront visible que pour les utilisateurs possédant votre numéro</string>
   <string name="pref_title_off_encrypt_userdata">Les statuts seront visible par tout le monde</string>
   <string name="pref_auto_accept_subscriptions">Automatiquement accepter les invitations</string>
-  <string name="pref_title_auto_accept_subscriptions">Automatiquer accepter les invitations au tchat par d\'autres utilisateurs</string>
-  <string name="pref_send_typing">Notification de rédaction du message</string>
+  <string name="pref_title_auto_accept_subscriptions">Automatiquement accepter les invitations à discuter par d\'autres utilisateurs</string>
+  <string name="pref_send_typing">Envoyer notification de rédaction du message</string>
   <string name="pref_hide_presence">Masquer la présence</string>
   <string name="pref_title_on_hide_presence">Les utilisateurs ne nous verront pas en ligne</string>
   <string name="pref_title_off_hide_presence">Les utilisateurs vous verrons en ligne et votre dernière connexion</string>
@@ -136,7 +136,7 @@
   <string name="pref_title_enable_notifications">Afficher les notifications dans la barre de statut</string>
   <string name="pref_ringtone">Choisir une sonnerie</string>
   <string name="pref_vibrate">Vibreur</string>
-  <string name="pref_title_vibrate">Vibrer pour les nouveaux messages</string>
+  <string name="pref_title_vibrate">Vibrer lors de la notification</string>
   <string name="confirm_delete_message">Supprimer le message</string>
   <string name="confirm_will_delete_message">Ce message sera supprimé.</string>
   <string name="err_authentication_failed">Code de vérification refusé. Authentification échouée.</string>
@@ -152,7 +152,7 @@
   <string name="send_mime_not_supported">Type de fichier non supporté.</string>
   <string name="button_validate">Demander un code de vérification</string>
   <string name="button_validation_code">J\'ai déjà un code de vérification</string>
-  <string name="button_validation_register">Vérifie</string>
+  <string name="button_validation_register">Vérifier</string>
   <string name="notify_ticker_download_completed">Téléchargement réussi</string>
   <string name="notify_title_download_completed">Téléchargement réussi</string>
   <string name="notify_text_download_completed">Téléchargement réussi de la pièce jointe</string>
@@ -188,8 +188,8 @@
   <string name="no_user_not_found">Envoyer l\'invitation</string>
   <string name="pref_appearance_settings">Paramètres d\'apparence</string>
   <string name="pref_font_size">Taille de la police</string>
-  <string name="menu_status">Statuts</string>
-  <string name="menu_attachment">Attache</string>
+  <string name="menu_status">Statut</string>
+  <string name="menu_attachment">Attacher</string>
   <string name="menu_smileys">Frimousses</string>
   <string name="menu_block_user">Bloquer</string>
   <string name="menu_unblock_user">Débloquer</string>
@@ -208,8 +208,8 @@
   <string name="pref_custom_background">Fond d\'écran personnalisé</string>
   <string name="pref_background_uri">Fond d\'écran</string>
   <string name="pref_title_background_uri">Utiliser un fond d\'écran personnalisé pour les conversations</string>
-  <string name="pref_title_off_custom_background">Utiliser le fond d\'écran par défaut</string>
-  <string name="pref_title_on_custom_background">Choisir un fond d\'écran suivant les options ci-dessous</string>
+  <string name="pref_title_off_custom_background">Utilise le fond d\'écran par défaut</string>
+  <string name="pref_title_on_custom_background">Choisir un fond d\'écran avec l\'options ci-dessous</string>
   <string name="err_attachment_corrupted">Impossible de télécharger la pièce jointe. Le message peut être corrompu.</string>
   <string name="serverlist_updating">Mise à jour de la liste listes des serveurs…</string>
   <string name="serverlist_update_error">Impossible de télécharger la liste de serveurs. Veuillez réessayer plus tard.</string>
@@ -260,7 +260,7 @@
   <string name="msg_status_delivered">Reçu</string>
   <string name="msg_status_encrypted">Chiffré</string>
   <string name="pref_balloons">Thème des conversations</string>
-  <string name="pref_title_balloons">Choisissez un thème de ballon de tchat</string>
+  <string name="pref_title_balloons">Choisissez un thème de ballon de discussion</string>
   <string name="attachment_picture">Photo</string>
   <string name="attachment_contact">Contact</string>
   <string name="attachment_audio">Audio</string>
@@ -268,16 +268,16 @@
   <string name="chooser_error_no_camera">Stockage externe non disponible. La prise de photo avec l\'appareil ne sera pas actif.</string>
   <string name="chooser_select_link">Choisir une action</string>
   <string name="status_activity_title">Message de statut</string>
-  <string name="hint_status_entry">Ecrivez votre statut ici</string>
-  <string name="header_recent_status">Précédent statut</string>
-  <string name="title_offline_mode_warning">Hors-ligne</string>
+  <string name="hint_status_entry">Ecrivez votre message de statut ici</string>
+  <string name="header_recent_status">Message de statut utilisé récemment</string>
+  <string name="title_offline_mode_warning">Mode hors ligne</string>
   <string name="message_offline_mode_warning">En mode hors ligne, Kontalk ne se connectera pas au serveur tant que vous ne vous désactivez pas le mode hors ligne. Vous ne pourrez ni envoyer ni recevoir de message. Les utilisateurs vous verront comme hors ligne.</string>
   <string name="warning_offline_mode">Le mode hors ligne est actif. Les messages seront envoyés lorsque vous serez en ligne.</string>
   <string name="going_offline">Aller hors-ligne.</string>
   <string name="going_online">Aller en-ligne.</string>
   <string name="pref_other">Autre</string>
   <string name="pref_donate">Faire un Don</string>
-  <string name="pref_about">A propos</string>
+  <string name="pref_about">À propos</string>
   <string name="title_about">A propos</string>
   <string name="title_donation">Faire un don</string>
   <string name="title_credits">Crédits</string>
@@ -286,7 +286,7 @@
   <string name="social_googleplus">Google Plus</string>
   <string name="social_facebook">Facebook</string>
   <string name="social_identica">Identi.ca</string>
-  <string name="donate_text">Kontalk a besoin d\'argent pour continuer à fonctionner. Veuillez penser à faire un don, même petit.</string>
+  <string name="donate_text">Kontalk a besoin d\'argent pour continuer à fonctionner. Faites un don, même petit, cela fait une grande différence.</string>
   <string name="title_bitcoin_dialog">Bitcoin</string>
   <string name="text_bitcoin_dialog">Adresse bitcoin:\n%s</string>
   <string name="donate_wallet">Google Play</string>
@@ -377,7 +377,7 @@
     <string name="pref_help">Aide</string>
     <string name="err_no_contact">Contact non trouvé.</string>
 
-    <string name="warning_older_version">Votre ami utilise une ancienne version de Kontalk. Certaines fonctionnalités pourraient ne pas fonctionner correctement.</string>
+    <string name="warning_older_version">Votre ami(e) utilise une ancienne version de Kontalk. Certaines fonctionnalités pourraient ne pas fonctionner correctement.</string>
     <string name="warning_user_blocked">Vous avez bloqué l\'utilisateur.</string>
 
     <string name="about_credits_devteam"><b>Kontalk vous est présenté par :</b></string>
