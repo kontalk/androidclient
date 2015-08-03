@@ -1991,7 +1991,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         final Context context = getApplicationContext();
         new Thread(new Runnable() {
             public void run() {
-            UsersProvider.markRegistered(context, sender);
+                try {
+                    UsersProvider.markRegistered(context, sender);
+                }
+                catch (SQLiteConstraintException e) {
+                    // this might happen during an online/offline switch
+                }
             }
         }).start();
 
