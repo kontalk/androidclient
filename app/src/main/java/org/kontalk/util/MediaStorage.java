@@ -395,7 +395,13 @@ public abstract class MediaStorage {
             return null;
         }
 
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+        Bitmap scaledBitmap;
+        try {
+            scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+        }
+        finally {
+            bitmap.recycle();
+        }
 
         // check for rotation data
         scaledBitmap = bitmapOrientation(context, uri, scaledBitmap);
