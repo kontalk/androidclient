@@ -18,14 +18,9 @@
 
 package org.kontalk.upload;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
-import java.util.List;
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.net.Uri;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
@@ -46,13 +41,9 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-
-import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.net.Uri;
-
 import org.kontalk.Kontalk;
 import org.kontalk.client.ClientHTTPConnection;
 import org.kontalk.client.EndpointServer;
@@ -62,6 +53,15 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.ProgressListener;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressInputStreamEntity;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 
 /**
@@ -250,6 +250,8 @@ public class KontalkBoxUploadConnection implements UploadConnection {
                 // HttpClient bug caused by Lighttpd
                 params.setBooleanParameter("http.protocol.expect-continue", false);
 
+                HttpConnectionParams.setConnectionTimeout(params, 10000);
+                HttpConnectionParams.setSoTimeout(params, 40000);
                 // create connection manager
                 ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
 

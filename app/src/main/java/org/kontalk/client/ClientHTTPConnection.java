@@ -18,6 +18,35 @@
 
 package org.kontalk.client;
 
+import android.content.Context;
+import android.util.Log;
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
+import org.kontalk.message.CompositeMessage;
+import org.kontalk.service.DownloadListener;
+import org.kontalk.util.InternalTrustStore;
+import org.kontalk.util.MediaStorage;
+import org.kontalk.util.Preferences;
+import org.kontalk.util.ProgressOutputStreamEntity;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,35 +71,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
-
-import org.kontalk.message.CompositeMessage;
-import org.kontalk.service.DownloadListener;
-import org.kontalk.util.InternalTrustStore;
-import org.kontalk.util.MediaStorage;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.ProgressOutputStreamEntity;
-
-import android.content.Context;
-import android.util.Log;
 
 
 /**
@@ -165,6 +165,8 @@ public class ClientHTTPConnection {
                 // HttpClient bug caused by Lighttpd
                 params.setBooleanParameter("http.protocol.expect-continue", false);
 
+                HttpConnectionParams.setConnectionTimeout(params, 10000);
+                HttpConnectionParams.setSoTimeout(params, 40000);
                 // create connection manager
                 ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
 
