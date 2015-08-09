@@ -48,6 +48,7 @@ import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.apache.http.params.HttpConnectionParams;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -81,7 +82,7 @@ public class KontalkBoxUploadConnection implements UploadConnection {
 
     protected HttpRequestBase currentRequest;
     protected HttpClient mConnection;
-	private final static int CONNECT_TIMEOUT = 15000;
+    private final static int CONNECT_TIMEOUT = 15000;
     private final static int READ_TIMEOUT = 40000;
 
     private final PrivateKey mPrivateKey;
