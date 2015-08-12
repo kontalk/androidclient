@@ -17,7 +17,8 @@ task checkstyle(type: Checkstyle){
         '*/java/org/kontalk/billing/Purchase.java'
     // 3rd-party code
     exclude '**/IconContextMenu.java', '**/CircularSeekBar.java',
-        '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java'
+        '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
+        '**/NoCacheMiniDnsResolver.java'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
     classpath = files()

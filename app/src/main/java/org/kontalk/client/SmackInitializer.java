@@ -32,6 +32,7 @@ import org.jivesoftware.smackx.xdata.provider.DataFormProvider;
 import android.content.Context;
 
 import org.kontalk.R;
+import org.kontalk.util.NoCacheMiniDnsResolver;
 
 
 /**
@@ -87,6 +88,11 @@ public class SmackInitializer {
         // disable extensions and experimental - we will load our own extensions
         SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.extensions.ExtensionsInitializer");
         SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.experimental.ExperimentalInitializer");
+        if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO) {
+            // java.net.IDN, needed by minidns, is not present on API level 8
+            SmackConfiguration.addDisabledSmackClass("org.jivesoftware.smack.util.dns.minidns.MiniDnsResolver");
+            NoCacheMiniDnsResolver.setup();
+        }
     }
 
 }
