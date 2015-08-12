@@ -1834,47 +1834,55 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void showKeyChangedWarning() {
-        showWarning(getText(R.string.warning_public_key), new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                // hide warning bar
-                                hideWarning();
-                                // trust new key
-                                trustKeyChange();
-                                break;
-                            case DialogInterface.BUTTON_NEUTRAL:
-                                showIdentityDialog(false);
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                // hide warning bar
-                                hideWarning();
-                                // block user immediately
-                                setPrivacy(PRIVACY_BLOCK);
-                                break;
+        Activity context = getActivity();
+        if (context != null) {
+            showWarning(context.getText(R.string.warning_public_key), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    // hide warning bar
+                                    hideWarning();
+                                    // trust new key
+                                    trustKeyChange();
+                                    break;
+                                case DialogInterface.BUTTON_NEUTRAL:
+                                    showIdentityDialog(false);
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    // hide warning bar
+                                    hideWarning();
+                                    // block user immediately
+                                    setPrivacy(PRIVACY_BLOCK);
+                                    break;
+                            }
                         }
-                    }
-                };
-                new AlertDialogWrapper.Builder(getActivity())
-                    .setTitle(R.string.title_public_key_warning)
-                    .setMessage(R.string.msg_public_key_warning)
-                    .setPositiveButton(R.string.button_accept, listener)
-                    .setNeutralButton(R.string.button_identity, listener)
-                    .setNegativeButton(R.string.button_block, listener)
-                    .show();
-            }
-        }, WarningType.FATAL);
+                    };
+                    new AlertDialogWrapper.Builder(getActivity())
+                        .setTitle(R.string.title_public_key_warning)
+                        .setMessage(R.string.msg_public_key_warning)
+                        .setPositiveButton(R.string.button_accept, listener)
+                        .setNeutralButton(R.string.button_identity, listener)
+                        .setNegativeButton(R.string.button_block, listener)
+                        .show();
+                }
+            }, WarningType.FATAL);
+        }
     }
 
     private void showWarning(CharSequence text, View.OnClickListener listener, WarningType type) {
-        LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
+        View view = getView();
+        Activity context = getActivity();
+        if (view == null || context == null)
+            return;
+
+        LinearLayout root = (LinearLayout) view.findViewById(R.id.container);
         TextView warning = (TextView) root.findViewById(R.id.warning_bar);
         if (warning == null) {
-            warning = (TextView) LayoutInflater.from(getActivity())
+            warning = (TextView) LayoutInflater.from(context)
                 .inflate(R.layout.warning_bar, root, false);
             root.addView(warning, 0);
         }
@@ -1897,8 +1905,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 break;
         }
         final TypedValue typedValue = new TypedValue();
-        getActivity().getTheme().resolveAttribute(textId, typedValue, true);
-        warning.setTextAppearance(getActivity(), typedValue.resourceId);
+        context.getTheme().resolveAttribute(textId, typedValue, true);
+        warning.setTextAppearance(context, typedValue.resourceId);
         warning.setBackgroundColor(getResources().getColor(colorId));
         warning.setTag(type);
         warning.setOnClickListener(listener);

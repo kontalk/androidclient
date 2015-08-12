@@ -48,6 +48,7 @@ import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.apache.http.params.HttpConnectionParams;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -62,7 +63,6 @@ import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.ProgressListener;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressInputStreamEntity;
-
 
 /**
  * Upload service implementation for Kontalk Box dropbox service.
@@ -82,6 +82,8 @@ public class KontalkBoxUploadConnection implements UploadConnection {
 
     protected HttpRequestBase currentRequest;
     protected HttpClient mConnection;
+    private final static int CONNECT_TIMEOUT = 15000;
+    private final static int READ_TIMEOUT = 40000;
 
     private final PrivateKey mPrivateKey;
     private final X509Certificate mCertificate;
@@ -250,6 +252,8 @@ public class KontalkBoxUploadConnection implements UploadConnection {
                 // HttpClient bug caused by Lighttpd
                 params.setBooleanParameter("http.protocol.expect-continue", false);
 
+                HttpConnectionParams.setConnectionTimeout(params, CONNECT_TIMEOUT);
+                HttpConnectionParams.setSoTimeout(params, READ_TIMEOUT);
                 // create connection manager
                 ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
 

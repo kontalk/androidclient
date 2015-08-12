@@ -571,7 +571,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
         // start async request
         Log.d(TAG, "phone number checked, sending validation request");
-        startProgress();
+        startProgress(testImport ? getText(R.string.msg_importing_key) : null);
 
         EndpointServer.EndpointServerProvider provider;
         if (manualServer != null) {

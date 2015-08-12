@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">Пользователи не будут видеть Вас онлайн</string>
   <string name="pref_title_off_hide_presence">Пользователи будут видеть Вас онлайн и время Вашего последнего подключения</string>
   <string name="contact_not_registered">Контакт скорее всего не зарегистрирован в Kontalk.</string>
-  <string name="error_store_outbox">Невозможно сохранить сообщение в исходящих.</string>
+  <string name="error_store_outbox">Невозможно сохранить сообщение в исходящих. Возможно, память заполнена?</string>
   <string name="decrypt_message">Расшифровать сообщение</string>
   <string name="download_file">Загрузить файл</string>
   <string name="download_again">Повторить загрузку</string>
@@ -383,4 +383,12 @@
     <string name="about_credits_gfx"><b>Графика/Иконки</b></string>
     <string name="about_credits_translators"><b>Переводчики</b></string>
 
-</resources>
+<string name="error_delete_thread">Невозможно удалить цепочку.</string>
+    <string name="error_delete_message">Невозможно удалить сообщение.</string>
+    <string name="err_validation_nonetwork">Интернет-соединение недоступно. Для работы Kontalk необходим подключенный интернет.</string>
+    <string name="title_nonetwork">Нет интернет-соединения</string>
+    <string name="err_custom_background">Произошла ошибка при установке фона. Пожалуйста, попробуйте другое изображение.</string>
+    <string name="err_import_keypair_uid_mismatch">Импортированная ключевая пара не соответствует номеру, который Вы ввели.</string>
+    <string name="hint_ptt">Нажмите и удерживайте на микрофоне для записи.</string>
+    <string name="err_audio_record_noaudio">Аудио не было записано.</string>
+    </resources>

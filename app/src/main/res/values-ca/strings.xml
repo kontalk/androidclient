@@ -116,7 +116,7 @@
   <string name="pref_title_on_hide_presence">La resta d\'usuaris no sabrà que esteu en línia</string>
   <string name="pref_title_off_hide_presence">La resta d\'usuaris veuran quan esteu en línia i quan va ser l\'última connexió</string>
   <string name="contact_not_registered">Aquest contacte no sembla registrat a Kontalk.</string>
-  <string name="error_store_outbox">No ha estat possible desar el missatge a la safata d\'eixida.</string>
+  <string name="error_store_outbox">No ha estat possible desar el missatge a la safata d\'eixida. Hi ha espai lliure a la memòria?</string>
   <string name="decrypt_message">Desxifra el missatge</string>
   <string name="download_file">Descarrega el fitxer</string>
   <string name="download_again">Torna a descarregar</string>
@@ -385,4 +385,12 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="about_credits_gfx"><b>Gràfics/Iconografia</b></string>
     <string name="about_credits_translators"><b>Traductors</b></string>
 
-</resources>
+<string name="error_delete_thread">No es pot eliminar la conversa.</string>
+    <string name="error_delete_message">No es pot eliminar el missatge.</string>
+    <string name="err_validation_nonetwork">No hi ha accés a internet. Kontalk no pot funcionar sense connexió a internet.</string>
+    <string name="title_nonetwork">No hi ha connexió a Internet</string>
+    <string name="err_custom_background">S\'ha produït un error en configurar el fons. Si us plau, proveu amb una altra imatge.</string>
+    <string name="err_import_keypair_uid_mismatch">La clau importada no coincideix amb el número de telèfon que ha introduït.</string>
+    <string name="hint_ptt">Mantingui premut el botó de micro per gravar.</string>
+    <string name="err_audio_record_noaudio">No s\'ha enregistrat cap àudio.</string>
+    </resources>
