@@ -47,6 +47,7 @@
     <string name="hint_validation_code">Verification code</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
     <string name="msg_validating_phone">Requesting verification code SMS&#8230;</string>
+    <string name="msg_importing_key">Importing personal key&#8230;</string>
     <string name="msg_initializing">Registering to the Kontalk network&#8230;</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="share">Share</string>
