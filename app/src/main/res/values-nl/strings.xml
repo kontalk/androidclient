@@ -391,4 +391,5 @@
     <string name="err_audio_record_noaudio">Er was geen audio opgenomen.</string>
     <string name="err_custom_background">Er ging iets fout bij het instellen van de achtergrondafbeelding. Probeer een andere afbeelding.</string>
     <string name="hint_ptt">Houd de microfoon in om op te nemen.</string>
+    <string name="msg_importing_key">Persoonlijk sleutelpaar importeren…</string>
     </resources>
