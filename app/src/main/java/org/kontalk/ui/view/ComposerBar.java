@@ -507,15 +507,14 @@ public class ComposerBar extends RelativeLayout implements
         if (mMediaPlayerUpdater != null)
             mHandler.removeCallbacks(mMediaPlayerUpdater);
 
-        boolean canSend = send && (elapsedTime > MIN_RECORDING_TIME);
+        boolean minDuration = (elapsedTime > MIN_RECORDING_TIME);
+        boolean canSend = send && minDuration;
         // reset elapsed recording time
         elapsedTime = 0;
 
         try {
             if (mRecord != null) {
                 mRecord.stop();
-                mRecord.reset();
-                mRecord.release();
                 if (canSend) {
                     mListener.sendBinaryMessage(Uri.fromFile(mRecordFile),
                         AudioDialog.DEFAULT_MIME, true, AudioComponent.class);
@@ -531,14 +530,25 @@ public class ComposerBar extends RelativeLayout implements
             canSend = false;
         }
         catch (RuntimeException e) {
-            if (canSend) {
-                Log.w(TAG, "no audio data received", e);
-                Toast.makeText(mContext, R.string.err_audio_record_noaudio,
-                    Toast.LENGTH_LONG).show();
+            if (send) {
+                int msgId;
+                if (!minDuration) {
+                    msgId = R.string.hint_ptt;
+                }
+                else {
+                    Log.w(TAG, "no audio data received", e);
+                    msgId = R.string.err_audio_record_noaudio;
+                }
+                Toast.makeText(mContext, msgId, Toast.LENGTH_LONG).show();
             }
             canSend = false;
         }
         finally {
+            if (mRecord != null) {
+                mRecord.reset();
+                mRecord.release();
+            }
+
             if (!canSend && mRecordFile != null)
                 mRecordFile.delete();
         }
