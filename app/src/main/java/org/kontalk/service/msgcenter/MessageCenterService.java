@@ -433,15 +433,21 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if ((now - service.getLastReceivedStanza()) >= FAST_PING_TIMEOUT) {
                     if (!service.fastReply()) {
                         Log.v(TAG, "test ping failed");
-                        AndroidAdaptiveServerPingManager
-                            .getInstanceFor(service.mConnection, service)
-                            .pingFailed();
+                        XMPPConnection conn = service.mConnection;
+                        if (conn != null) {
+                            AndroidAdaptiveServerPingManager
+                                .getInstanceFor(conn, service)
+                                .pingFailed();
+                        }
                         restart(service.getApplicationContext());
                     }
                     else {
-                        AndroidAdaptiveServerPingManager
-                            .getInstanceFor(service.mConnection, service)
-                            .pingSuccess();
+                        XMPPConnection conn = service.mConnection;
+                        if (conn != null) {
+                            AndroidAdaptiveServerPingManager
+                                .getInstanceFor(conn, service)
+                                .pingSuccess();
+                        }
                     }
                 }
                 return true;
