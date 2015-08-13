@@ -391,4 +391,5 @@
     <string name="err_audio_record_noaudio">Nebyl zaznamenán žádný zvuk.</string>
     <string name="err_custom_background">Při nastavení pozadí došlo k chybě. Zkuste prosím jiný obrázek.</string>
     <string name="hint_ptt">Pro nahrávání stiskněte a držte mikrofon.</string>
+    <string name="msg_importing_key">Importuji osobní klíč…</string>
     </resources>
