@@ -31,8 +31,8 @@ android {
 
     defaultConfig {
         applicationId "org.kontalk"
-        versionCode 57
-        versionName "3.0.3-preview"
+        versionCode 58
+        versionName "3.0.3"
         targetSdkVersion 22
         resValue "string", "account_type", applicationId + '.account'
         buildConfigField "String", "ACCOUNT_TYPE", '"org.kontalk.account"'
