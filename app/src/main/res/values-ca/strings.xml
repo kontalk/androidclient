@@ -393,4 +393,5 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="err_import_keypair_uid_mismatch">La clau importada no coincideix amb el número de telèfon que ha introduït.</string>
     <string name="hint_ptt">Mantingui premut el botó de micro per gravar.</string>
     <string name="err_audio_record_noaudio">No s\'ha enregistrat cap àudio.</string>
+    <string name="msg_importing_key">Important la clau personal…</string>
     </resources>
