@@ -391,4 +391,5 @@
     <string name="err_import_keypair_uid_mismatch">La clave importada no coincide con el número de teléfono que ha introducido.</string>
     <string name="hint_ptt">Mantenga el botón de micro pulsado para grabar.</string>
     <string name="err_audio_record_noaudio">No se ha grabado ningún audio.</string>
+    <string name="msg_importing_key">Importando la clave personal…</string>
     </resources>
