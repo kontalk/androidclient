@@ -64,7 +64,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 // start message center
                 serviceAction = ACTION_START;
                 // notify ping manager that connection type has changed
-                AndroidAdaptiveServerPingManager.onConnected(context);
+                AndroidAdaptiveServerPingManager.onConnected();
             }
         }
 
@@ -87,7 +87,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                         // test connection or reconnect
                         serviceAction = ACTION_TEST;
                         // notify ping manager that connection type has changed
-                        AndroidAdaptiveServerPingManager.onConnected(context);
+                        AndroidAdaptiveServerPingManager.onConnected();
                         break;
                     case SUSPENDED:
                         Log.v(TAG, "suspending network traffic");
