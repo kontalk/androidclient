@@ -65,6 +65,12 @@ public final class Preferences {
 
     public static void init(Context context) {
         sPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // set the new default theme if this is the first upgrade
+        String newTheme = context.getString(R.string.pref_default_balloons);
+        if (!getBooleanOnce(context, "has_new_theme." + newTheme))
+            sPreferences.edit().putString("pref_balloons", newTheme)
+                .commit();
     }
 
     public static void setCachedCustomBackground(Drawable customBackground) {
