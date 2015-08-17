@@ -667,7 +667,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         Log.d(TAG, "destroying message center");
         quit(false);
         // deactivate ping manager
-        AndroidAdaptiveServerPingManager.onDestroy(this);
+        AndroidAdaptiveServerPingManager.onDestroy();
         // destroy roster store
         mRosterStore.onDestroy();
         // unregister screen off listener for manual inactivation
