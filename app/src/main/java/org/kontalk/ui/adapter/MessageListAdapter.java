@@ -74,7 +74,8 @@ public class MessageListAdapter extends CursorAdapter {
 
         MessageListItem headerView = (MessageListItem) view;
         CompositeMessage msg = CompositeMessage.fromCursor(context, cursor);
-        if (msg.getDirection() == Messages.DIRECTION_IN && mContact == null)
+        if (msg.getDirection() == Messages.DIRECTION_IN &&
+                (mContact == null || !mContact.getJID().equalsIgnoreCase(msg.getSender())))
             mContact = Contact.findByUserId(context, msg.getSender());
 
         long previous = -1;

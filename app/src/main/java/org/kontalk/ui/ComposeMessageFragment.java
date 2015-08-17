@@ -1465,6 +1465,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 }
                 else {
                     mUserName = mUserJID;
+                    mUserPhone = null;
                 }
             }
         }
