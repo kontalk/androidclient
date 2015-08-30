@@ -41,12 +41,14 @@
     <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the verification code you will receive via SMS.</string>
     <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
+    <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly:</string>
+    <string name="code_validation_intro2_missed_call">Please insert the last %d digits of the number you will be called by.</string>
     <string name="code_validation_intro_manual">Please insert the verification code you received. Please note that a verification code can be used only once.</string>
     <string name="hint_validation_name">Your name</string>
     <string name="hint_validation_number">Your number</string>
     <string name="hint_validation_code">Verification code</string>
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
-    <string name="msg_validating_phone">Requesting verification code SMS&#8230;</string>
+    <string name="msg_validating_phone">Requesting registration&#8230;</string>
     <string name="msg_importing_key">Importing personal key&#8230;</string>
     <string name="msg_initializing">Registering to the Kontalk network&#8230;</string>
     <string name="msg_authenticated">Registered to the network!</string>
@@ -157,9 +159,10 @@
     <string name="peer_unknown">(unknown)</string>
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
-    <string name="button_validate">Request verification code</string>
+    <string name="button_validate">Register</string>
     <string name="button_validation_code">I already have a verification code</string>
     <string name="button_validation_register">Verify</string>
+    <string name="button_validation_fallback">Not receiving a call?</string>
     <string name="notify_ticker_download_completed">Download completed</string>
     <string name="notify_title_download_completed">Download completed</string>
     <string name="notify_text_download_completed">Attachment download completed</string>
@@ -176,6 +179,8 @@
     <string name="title_invalid_code">Invalid code</string>
     <string name="msg_invalid_code">Please insert a valid code.</string>
     <string name="title_nonetwork">No internet connection</string>
+    <string name="title_fallback">Having problems?</string>
+    <string name="msg_fallback">We\'ll try another way to verify your phone number.</string>
     <string name="title_no_name">Your name</string>
     <string name="msg_no_name">Please insert a name.</string>
     <string name="menu_refresh">Refresh</string>

@@ -75,6 +75,14 @@
             android:layout_height="fill_parent"
             android:onClick="validateCode"
             android:text="@string/button_validation_register" />
+
+        <Button
+            android:id="@+id/fallback_button"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:onClick="doFallback"
+            android:text="@string/button_validation_fallback" />
+
     </LinearLayout>
 
 </ScrollView>

@@ -107,6 +107,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     public static final int REQUEST_MANUAL_VALIDATION = 771;
     public static final int REQUEST_VALIDATION_CODE = 772;
 
+    public static final int RESULT_FALLBACK = RESULT_FIRST_USER+1;
+
     public static final String PARAM_FROM_INTERNAL = "org.kontalk.internal";
 
     public static final String PARAM_PUBLICKEY = "org.kontalk.publickey";
@@ -131,9 +133,12 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private String mPassphrase;
     private byte[] mImportedPublicKey;
     private byte[] mImportedPrivateKey;
+    private boolean mForce;
 
     private LocalBroadcastManager lbm;
 
+    /** Will be true when resuming for a fallback registration. */
+    private boolean mClearState;
     private boolean mFromInternal;
     /** Runnable for delaying initial manual sync starter. */
     private Runnable mSyncStart;
@@ -342,14 +347,19 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     protected void onStart() {
         super.onStart();
 
-        Preferences.RegistrationProgress saved;
-        try {
-            saved = Preferences.getRegistrationProgress(this);
-        }
-        catch (Exception e) {
-            Log.w(TAG, "unable to restore registration progress");
+        Preferences.RegistrationProgress saved = null;
+        if (mClearState) {
             Preferences.clearRegistrationProgress(this);
-            saved = null;
+            mClearState = false;
+        }
+        else {
+            try {
+                saved = Preferences.getRegistrationProgress(this);
+            }
+            catch (Exception e) {
+                Log.w(TAG, "unable to restore registration progress");
+                Preferences.clearRegistrationProgress(this);
+            }
         }
         if (saved != null) {
             mName = saved.name;
@@ -430,11 +440,17 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_MANUAL_VALIDATION && resultCode == RESULT_OK) {
-            finishLogin(data.getStringExtra(PARAM_SERVER_URI),
-                data.getByteArrayExtra(PARAM_PRIVATEKEY),
-                data.getByteArrayExtra(PARAM_PUBLICKEY),
-                true);
+        if (requestCode == REQUEST_MANUAL_VALIDATION) {
+            if (resultCode == RESULT_OK) {
+                finishLogin(data.getStringExtra(PARAM_SERVER_URI),
+                    data.getByteArrayExtra(PARAM_PRIVATEKEY),
+                    data.getByteArrayExtra(PARAM_PUBLICKEY),
+                    true);
+            }
+            else if (resultCode == RESULT_FALLBACK) {
+                mClearState = true;
+                startValidation(data.getBooleanExtra("force", false), true);
+            }
         }
     }
 
@@ -556,15 +572,16 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         return true;
     }
 
-    private void startValidation(boolean force) {
+    private void startValidation(boolean force, boolean fallback) {
+        mForce = force;
         enableControls(false);
 
-        if (!checkInput(false) || !startValidationNormal(null, force, false)) {
+        if (!checkInput(false) || !startValidationNormal(null, force, fallback, false)) {
             enableControls(true);
         }
     }
 
-    private boolean startValidationNormal(String manualServer, boolean force, boolean testImport) {
+    private boolean startValidationNormal(String manualServer, boolean force, boolean fallback, boolean testImport) {
         if (!SystemUtils.isNetworkConnectionAvailable(this)) {
             error(R.string.title_nonetwork, R.string.err_validation_nonetwork);
             return false;
@@ -588,6 +605,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             imported ? null : mKey, mPassphrase);
         mValidator.setListener(this);
         mValidator.setForce(force);
+        mValidator.setFallback(fallback);
         if (imported)
             mValidator.importKey(mImportedPrivateKey, mImportedPublicKey);
 
@@ -605,7 +623,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
      */
     public void validatePhone(View v) {
         keepScreenOn(true);
-        startValidation(false);
+        startValidation(false, false);
     }
 
     /**
@@ -759,7 +777,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             mPassphrase = passphrase;
 
             // begin usual validation
-            if (!startValidationNormal(manualServer, true, true)) {
+            // TODO implement fallback usage
+            if (!startValidationNormal(manualServer, true, false, true)) {
                 enableControls(true);
             }
         }
@@ -823,6 +842,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             abortProgress(true);
         }
 
+        mForce = false;
         if (mValidator != null) {
             mValidator.shutdown();
             mValidator = null;
@@ -1017,7 +1037,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    startValidation(true);
+                    startValidation(true, false);
                 }
             })
             .setNegativeButton(android.R.string.cancel, null)
@@ -1052,13 +1072,14 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             Preferences.saveRegistrationProgress(this,
                 mName, mPhoneNumber, mKey, mPassphrase,
                 mImportedPublicKey, mImportedPrivateKey,
-                serverUri, sender);
+                serverUri, sender, mForce);
         }
 
         Intent i = new Intent(NumberValidation.this, CodeValidation.class);
         i.putExtra("requestCode", requestCode);
         i.putExtra("name", mName);
         i.putExtra("phone", mPhoneNumber);
+        i.putExtra("force", mForce);
         i.putExtra("passphrase", mPassphrase);
         i.putExtra("importedPublicKey", mImportedPublicKey);
         i.putExtra("importedPrivateKey", mImportedPrivateKey);

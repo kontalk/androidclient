@@ -19,6 +19,7 @@
 package org.kontalk.ui;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,11 +50,13 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
     private EditText mCode;
     private Button mButton;
+    private Button mFallbackButton;
     private NumberValidator mValidator;
     private PersonalKey mKey;
     private String mName;
     private String mPhone;
     private String mPassphrase;
+    private boolean mForce;
     private EndpointServer.EndpointServerProvider mServerProvider;
 
     private byte[] mImportedPrivateKey;
@@ -77,6 +80,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
         mCode = (EditText) findViewById(R.id.validation_code);
         mButton = (Button) findViewById(R.id.send_button);
+        mFallbackButton = (Button) findViewById(R.id.fallback_button);
 
         // configuration change??
         RetainData data = (RetainData) getLastCustomNonConfigurationInstance();
@@ -102,12 +106,29 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             String sender = getIntent().getStringExtra("sender");
             ((TextView) findViewById(R.id.code_validation_sender))
                 .setText(sender);
+
+            CharSequence textId1, textId2;
+            if (NumberValidator.isMissedCall(sender)) {
+                textId1 = getText(R.string.code_validation_intro_missed_call);
+                textId2 = getString(R.string.code_validation_intro2_missed_call,
+                    NumberValidator.getChallengeLength(sender));
+                findViewById(R.id.fallback_button).setVisibility(View.VISIBLE);
+            }
+            else {
+                textId1 = getText(R.string.code_validation_intro);
+                textId2 = getText(R.string.code_validation_intro2);
+                findViewById(R.id.fallback_button).setVisibility(View.GONE);
+            }
+
+            ((TextView) findViewById(R.id.code_validation_intro)).setText(textId1);
+            ((TextView) findViewById(R.id.code_validation_intro2)).setText(textId2);
         }
 
         Intent i = getIntent();
         mKey = i.getParcelableExtra(KeyPairGeneratorService.EXTRA_KEY);
         mName = i.getStringExtra("name");
         mPhone = i.getStringExtra("phone");
+        mForce = i.getBooleanExtra("force", false);
         mPassphrase = i.getStringExtra("passphrase");
         mImportedPrivateKey = i.getByteArrayExtra("importedPrivateKey");
         mImportedPublicKey = i.getByteArrayExtra("importedPublicKey");
@@ -179,6 +200,24 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
             .show();
     }
 
+    public void doFallback(View view) {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.title_fallback)
+            .setMessage(R.string.msg_fallback)
+            .setIcon(android.R.drawable.ic_dialog_info)
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent i = new Intent();
+                    i.putExtra("force", mForce);
+                    setResult(NumberValidation.RESULT_FALLBACK, i);
+                    finish();
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
     public void validateCode(View view) {
         String code = mCode.getText().toString().trim();
         if (code.length() == 0) {
@@ -203,6 +242,7 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
     private void enableControls(boolean enabled) {
         mButton.setEnabled(enabled);
+        mFallbackButton.setEnabled(enabled);
         mCode.setEnabled(enabled);
     }
 
