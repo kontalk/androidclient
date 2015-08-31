@@ -47,7 +47,7 @@ import android.widget.Toast;
 
 /** Contacts list selection fragment. */
 public class ContactsListFragment extends ListFragment
-        implements ContactsListAdapter.OnContentChangedListener, ContactsSyncActivity {
+        implements ContactsListAdapter.OnContentChangedListener, ContactsSyncer {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
