@@ -29,9 +29,9 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Window;
 
 
-public class ContactsListActivity extends ActionBarActivity implements ContactPickerListener {
+public class ContactPickerActivity extends ActionBarActivity implements ContactPickerListener {
 
-    public static final String TAG = ContactsListActivity.class.getSimpleName();
+    public static final String TAG = ContactPickerActivity.class.getSimpleName();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -375,7 +375,7 @@ public class ComposeMessage extends ActionBarActivity {
     private void chooseContact() {
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
-        Intent i = new Intent(this, ContactsListActivity.class);
+        Intent i = new Intent(this, ContactPickerActivity.class);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
