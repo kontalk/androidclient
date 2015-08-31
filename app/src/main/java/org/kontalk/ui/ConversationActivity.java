@@ -78,8 +78,8 @@ import java.util.List;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ConversationList extends ActionBarActivity implements ContactPickerListener {
-    public static final String TAG = ConversationList.class.getSimpleName();
+public class ConversationActivity extends ActionBarActivity implements ContactPickerListener {
+    public static final String TAG = ConversationActivity.class.getSimpleName();
 
     private ConversationListFragment mFragment;
     private SlidingPaneLayout mSlidingPanel;
@@ -183,7 +183,7 @@ public class ConversationList extends ActionBarActivity implements ContactPicker
             public void onClick(DialogInterface dialog, int which) {
                 // no key pair found, generate a new one
                 if (BuildConfig.DEBUG) {
-                    Toast.makeText(ConversationList.this,
+                    Toast.makeText(ConversationActivity.this,
                         R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
                 }
 
@@ -198,7 +198,7 @@ public class ConversationList extends ActionBarActivity implements ContactPicker
 
         DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
-                new AlertDialog.Builder(ConversationList.this)
+                new AlertDialog.Builder(ConversationActivity.this)
                     .setTitle(R.string.title_no_personal_key)
                     .setMessage(R.string.msg_no_personal_key)
                     .setPositiveButton(android.R.string.ok, null)
@@ -237,7 +237,7 @@ public class ConversationList extends ActionBarActivity implements ContactPicker
                 mUpgradeReceiver = null;
 
                 // force contact list update
-                SyncAdapter.requestSync(ConversationList.this, true);
+                SyncAdapter.requestSync(ConversationActivity.this, true);
 
                 if (mUpgradeProgress != null) {
                     mUpgradeProgress.dismiss();
@@ -466,7 +466,7 @@ public class ConversationList extends ActionBarActivity implements ContactPicker
     }
 
     public static Intent authenticationErrorWarning(Context context) {
-        Intent i = new Intent(context.getApplicationContext(), ConversationList.class);
+        Intent i = new Intent(context.getApplicationContext(), ConversationActivity.class);
         i.setAction(ACTION_AUTH_ERROR_WARNING);
         return i;
     }

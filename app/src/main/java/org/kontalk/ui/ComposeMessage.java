@@ -193,7 +193,7 @@ public class ComposeMessage extends ActionBarActivity {
 
     private void onAvatarClick() {
         finish();
-        startActivity(new Intent(this, ConversationList.class));
+        startActivity(new Intent(this, ConversationActivity.class));
     }
 
     public void onTitleboxClick(View view) {
@@ -227,7 +227,7 @@ public class ComposeMessage extends ActionBarActivity {
 
                 // two-panes UI: start conversation list
                 if (Kontalk.hasTwoPanesUI(this) && Intent.ACTION_VIEW.equals(action)) {
-                    Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                    Intent startIntent = new Intent(getApplicationContext(), ConversationActivity.class);
                     startIntent.setAction(Intent.ACTION_VIEW);
                     startIntent.setData(uri);
                     startActivity(startIntent);
@@ -270,7 +270,7 @@ public class ComposeMessage extends ActionBarActivity {
 
                     // two-panes UI: start conversation list
                     if (Kontalk.hasTwoPanesUI(this)) {
-                        Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                        Intent startIntent = new Intent(getApplicationContext(), ConversationActivity.class);
                         startIntent.setAction(ACTION_VIEW_USERID);
                         startIntent.setData(Threads.getUri(jid));
                         startActivity(startIntent);

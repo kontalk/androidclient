@@ -145,7 +145,7 @@ public class ContactsListFragment extends ListFragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.contacts_list_menu, menu);
 
-        menu.findItem(R.id.menu_invite).setVisible(getActivity() instanceof ConversationList);
+        menu.findItem(R.id.menu_invite).setVisible(getActivity() instanceof ConversationActivity);
 
         mSyncButton = menu.findItem(R.id.menu_refresh);
         mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));

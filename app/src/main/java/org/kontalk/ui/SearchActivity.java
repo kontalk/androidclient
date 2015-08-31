@@ -60,7 +60,7 @@ public class SearchActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                startActivity(new Intent(this, ConversationList.class));
+                startActivity(new Intent(this, ConversationActivity.class));
                 return true;
 
             default:

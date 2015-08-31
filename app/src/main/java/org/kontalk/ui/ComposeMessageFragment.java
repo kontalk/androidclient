@@ -1134,7 +1134,7 @@ public class ComposeMessageFragment extends ListFragment implements
         mConversation = Conversation.loadFromId(getActivity(), threadId);
         if (mConversation == null) {
             Log.w(TAG, "conversation for thread " + threadId + " not found!");
-            startActivity(new Intent(getActivity(), ConversationList.class));
+            startActivity(new Intent(getActivity(), ConversationActivity.class));
             getActivity().finish();
             return;
         }
@@ -2507,7 +2507,7 @@ public class ComposeMessageFragment extends ListFragment implements
         }
         // using fragments...
         else {
-            ConversationList activity = (ConversationList) getActivity();
+            ConversationActivity activity = (ConversationActivity) getActivity();
             activity.getListFragment().endConversation(this);
         }
     }

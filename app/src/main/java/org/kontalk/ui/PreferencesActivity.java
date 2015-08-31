@@ -496,7 +496,7 @@ public final class PreferencesActivity extends PreferenceActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                startActivity(new Intent(this, ConversationList.class));
+                startActivity(new Intent(this, ConversationActivity.class));
                 return true;
         }
 

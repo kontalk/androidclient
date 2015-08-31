@@ -101,7 +101,7 @@
             android:value=".ui.SearchActivity" />
 
         <!-- Activities -->
-        <activity android:name=".ui.ConversationList"
+        <activity android:name=".ui.ConversationActivity"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Light"
             android:configChanges="orientation|screenSize">
