@@ -25,6 +25,7 @@ import org.kontalk.ui.adapter.ContactsListAdapter;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.ui.view.ContactsListItem;
 import org.kontalk.util.RunnableBroadcastReceiver;
+import org.kontalk.util.SystemUtils;
 
 import android.app.Activity;
 import android.content.IntentFilter;
@@ -33,15 +34,20 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 /** Contacts list selection fragment. */
 public class ContactsListFragment extends ListFragment
-        implements ContactsListAdapter.OnContentChangedListener {
+        implements ContactsListAdapter.OnContentChangedListener, ContactsSyncActivity {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
@@ -51,18 +57,30 @@ public class ContactsListFragment extends ListFragment
     private RunnableBroadcastReceiver mSyncMonitor;
     private Handler mHandler;
 
+    private MenuItem mSyncButton;
+
     private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
             new RunnableBroadcastReceiver.ActionRunnable() {
         public void run(String action) {
             if (SyncAdapter.ACTION_SYNC_START.equals(action)) {
-                ((ContactsSyncActivity) getActivity()).setSyncing(true);
+                setSyncing(true);
             }
             else if (SyncAdapter.ACTION_SYNC_FINISH.equals(action)) {
                 startQuery();
-                ((ContactsSyncActivity) getActivity()).setSyncing(false);
+                setSyncing(false);
             }
         }
     };
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
+        //setSupportProgressBarIndeterminate(true);
+        // HACK this is for crappy honeycomb :)
+        ((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(false);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -85,7 +103,7 @@ public class ContactsListFragment extends ListFragment
         // retain current sync state to hide the refresh button and start indeterminate progress
         registerSyncReceiver();
         if (SyncAdapter.isActive(parent))
-            ((ContactsSyncActivity) parent).setSyncing(true);
+            setSyncing(true);
     }
 
     @Override
@@ -121,6 +139,46 @@ public class ContactsListFragment extends ListFragment
 
         if (parent != null)
             parent.onContactSelected(this, ((ContactsListItem) v).getContact());
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.contacts_list_menu, menu);
+
+        menu.findItem(R.id.menu_invite).setVisible(getActivity() instanceof ConversationList);
+
+        mSyncButton = menu.findItem(R.id.menu_refresh);
+        mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_refresh:
+                startSync(true);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void startSync(boolean errorWarning) {
+        Activity activity = getActivity();
+        if (SystemUtils.isNetworkConnectionAvailable(activity)) {
+            if (SyncAdapter.requestSync(activity, true))
+                setSyncing(true);
+        }
+        else if (errorWarning) {
+            Toast.makeText(activity, R.string.err_sync_nonetwork, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void setSyncing(boolean syncing) {
+        if (mSyncButton != null)
+            mSyncButton.setVisible(!syncing);
+        ((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(syncing);
     }
 
     private void registerSyncReceiver() {
