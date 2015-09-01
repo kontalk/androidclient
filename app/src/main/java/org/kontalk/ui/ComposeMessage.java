@@ -343,7 +343,6 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
         Intent i = new Intent(this, ContactsListActivity.class);
-        i.putExtra("picker", true);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 

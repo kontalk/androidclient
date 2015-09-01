@@ -25,6 +25,7 @@ import org.kontalk.ui.adapter.ContactsListAdapter;
 import org.kontalk.ui.view.ContactPickerListener;
 import org.kontalk.ui.view.ContactsListItem;
 import org.kontalk.util.RunnableBroadcastReceiver;
+import org.kontalk.util.SystemUtils;
 
 import android.app.Activity;
 import android.content.IntentFilter;
@@ -35,16 +36,21 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 /** Contacts list selection fragment. */
 public class ContactsListFragment extends ListFragment
         implements ContactsListAdapter.OnContentChangedListener,
-        SwipeRefreshLayout.OnRefreshListener {
+        SwipeRefreshLayout.OnRefreshListener,
+        ContactsSyncActivity {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
@@ -54,6 +60,8 @@ public class ContactsListFragment extends ListFragment
 
     private RunnableBroadcastReceiver mSyncMonitor;
     private Handler mHandler;
+
+    private MenuItem mSyncButton;
 
     private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
             new RunnableBroadcastReceiver.ActionRunnable() {
@@ -122,11 +130,6 @@ public class ContactsListFragment extends ListFragment
         }
     }
 
-    private void setSyncing(boolean syncing) {
-        mRefresher.setRefreshing(syncing);
-        ((ContactsSyncActivity) getActivity()).setSyncing(syncing);
-    }
-
     @Override
     public void onStop() {
         super.onStop();
@@ -163,8 +166,49 @@ public class ContactsListFragment extends ListFragment
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.contacts_list_menu, menu);
+
+        menu.findItem(R.id.menu_invite).setVisible(getActivity() instanceof ConversationList);
+
+        mSyncButton = menu.findItem(R.id.menu_refresh);
+        mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_refresh:
+                startSync(true);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void startSync(boolean errorWarning) {
+        Activity activity = getActivity();
+        if (SystemUtils.isNetworkConnectionAvailable(activity)) {
+            if (SyncAdapter.requestSync(activity, true))
+                setSyncing(true);
+        }
+        else if (errorWarning) {
+            Toast.makeText(activity, R.string.err_sync_nonetwork, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void setSyncing(boolean syncing) {
+        if (mSyncButton != null)
+            mSyncButton.setVisible(!syncing);
+        //((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(syncing);
+    }
+
+    @Override
     public void onRefresh() {
-        ((ContactsSyncActivity) getActivity()).startSync(true);
+        this.startSync(true);
     }
 
     private void registerSyncReceiver() {
