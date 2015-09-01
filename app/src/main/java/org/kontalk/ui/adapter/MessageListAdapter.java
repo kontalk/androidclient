@@ -27,6 +27,7 @@ import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.ui.view.AudioPlayerControl;
 import org.kontalk.ui.ComposeMessage;
 import org.kontalk.ui.view.MessageListItem;
+import org.kontalk.util.MessageUtils;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -78,7 +79,7 @@ public class MessageListAdapter extends CursorAdapter {
 
         long previous = -1;
         if (cursor.moveToPrevious()) {
-            previous = cursor.getLong(CompositeMessage.COLUMN_TIMESTAMP);
+            previous = MessageUtils.getMessageTimestamp(cursor);
             cursor.moveToNext();
         }
 
