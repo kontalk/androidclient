@@ -397,4 +397,5 @@
     <string name="button_validation_fallback">No ha recibido la llamada?</string>
     <string name="title_fallback">Tiene algún problema?</string>
     <string name="msg_fallback">Vamos a verificar su número de teléfono de otra manera.</string>
+    <string name="menu_manual_verification">Ya tiene un código?</string>
     </resources>
