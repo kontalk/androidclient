@@ -62,13 +62,6 @@
             android:onClick="validatePhone"
             android:text="@string/button_validate" />
 
-        <Button
-            android:id="@+id/button_validation_code"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:onClick="validateCode"
-            android:text="@string/button_validation_code" />
-
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"

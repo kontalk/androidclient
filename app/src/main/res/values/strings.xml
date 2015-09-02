@@ -34,6 +34,7 @@
     <string name="menu_offline">Go offline</string>
     <string name="menu_online">Go online</string>
     <string name="menu_import_key">Import key</string>
+    <string name="menu_manual_verification">Already have a code?</string>
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
@@ -160,7 +161,6 @@
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Register</string>
-    <string name="button_validation_code">I already have a verification code</string>
     <string name="button_validation_register">Verify</string>
     <string name="button_validation_fallback">Not receiving a call?</string>
     <string name="notify_ticker_download_completed">Download completed</string>

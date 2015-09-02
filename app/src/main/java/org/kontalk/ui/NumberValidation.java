@@ -337,6 +337,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
                 importKey();
                 break;
             }
+            case R.id.menu_manual_verification: {
+                validateCode();
+                break;
+            }
             default:
                 return true;
         }
@@ -626,12 +630,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         startValidation(false, false);
     }
 
-    /**
-     * Opens manual validation window immediately.
-     * Also used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void validateCode(View v) {
+    /** Opens manual validation window immediately. */
+    public void validateCode() {
         if (checkInput(false))
             startValidationCode(REQUEST_VALIDATION_CODE, null);
     }
