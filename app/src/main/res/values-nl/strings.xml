@@ -397,4 +397,5 @@
     <string name="button_validation_fallback">Wordt je niet gebeld?</string>
     <string name="title_fallback">Loop je tegen problemen aan?</string>
     <string name="msg_fallback">We zullen een andere manier proberen om je telefoonnummer te bevestigen.</string>
+    <string name="menu_manual_verification">Heb je al een code?</string>
     </resources>
