@@ -399,4 +399,5 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="button_validation_fallback">No ha rebut cap trucada?</string>
     <string name="title_fallback">Hi ha algun problema?</string>
     <string name="msg_fallback">Intentarem verificar el seu número de telèfon d\'una altra manera.</string>
+    <string name="menu_manual_verification">Ja tens un codi?</string>
     </resources>
