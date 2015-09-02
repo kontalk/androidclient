@@ -397,4 +397,5 @@
     <string name="button_validation_fallback">Hovor nepřichází?</string>
     <string name="title_fallback">Máte potíže?</string>
     <string name="msg_fallback">Zkusíme jiný způsob, jak ověřit vaše telefonní číslo.</string>
+    <string name="menu_manual_verification">Už máte kód?</string>
     </resources>
