@@ -120,7 +120,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
-    private Button mInsertCode;
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
     private NumberValidator mValidator;
@@ -204,7 +203,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
-        mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
         final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
@@ -496,7 +494,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
-        mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
     }
