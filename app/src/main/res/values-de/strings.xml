@@ -394,7 +394,7 @@
     <string name="msg_importing_key">Importiere persönlichen Schlüssel…</string>
     <string name="button_validation_fallback">Keinen Anruf erhalten?</string>
     <string name="msg_fallback">Wir werden einen anderen Weg probieren um Ihre Tel.Nr. zu überprüfen.</string>
-    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf von dieser Nummer vorfinden.</string>
+    <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf von dieser Nummer vorfinden:</string>
     <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen werden.</string>
     <string name="title_fallback">Haben Sie Probleme?</string>
     <string name="menu_manual_verification">Code bereits vorhanden?</string>
