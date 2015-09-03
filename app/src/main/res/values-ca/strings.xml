@@ -45,7 +45,7 @@
   <string name="hint_validation_number">El vostre número</string>
   <string name="hint_validation_code">Codi de verificació</string>
   <string name="warn_invalid_number">Per favor, escriviu un número de teléfon vàlid.</string>
-  <string name="msg_validating_phone">S\'està sol·licitant el codi SMS de verificació…</string>
+  <string name="msg_validating_phone">Fent la petició de registre…</string>
   <string name="msg_initializing">S\'està fent el registre a la xarxa Kontalk…</string>
   <string name="msg_authenticated">S\'ha registrat a la xarxa!</string>
   <string name="share">Comparteix</string>
@@ -150,7 +150,7 @@
   <string name="peer_unknown">(desconegut)</string>
   <string name="msg_draft_saved">El missatge s\'ha desat com a esborrany.</string>
   <string name="send_mime_not_supported">Aquest tipus de fitxer no està suportat.</string>
-  <string name="button_validate">Sol·licita el codi de verificació</string>
+  <string name="button_validate">Registre</string>
   <string name="button_validation_code">Ja tinc codi de verificació</string>
   <string name="button_validation_register">Verifica</string>
   <string name="notify_ticker_download_completed">Descàrrega completa</string>
@@ -378,7 +378,7 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="pref_help">Ajuda</string>
     <string name="err_no_contact">Usuari no trobat.</string>
 
-    <string name="warning_older_version">La teva col·lega està utilitzant una versió antiga de Kontalk. Algunes funcionalitats poden no estar operatives.</string>
+    <string name="warning_older_version">Aquest contacte està utilitzant una versió antiga de Kontalk. Algunes funcionalitats poden no estar operatives.</string>
     <string name="warning_user_blocked">Has bloquejat a aquest usuari.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha arribat a tu gràcies a:</b></string>
@@ -393,4 +393,11 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="err_import_keypair_uid_mismatch">La clau importada no coincideix amb el número de telèfon que ha introduït.</string>
     <string name="hint_ptt">Mantingui premut el botó de micro per gravar.</string>
     <string name="err_audio_record_noaudio">No s\'ha enregistrat cap àudio.</string>
+    <string name="msg_importing_key">Important la clau personal…</string>
+    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda d\'aquest número:</string>
+    <string name="code_validation_intro2_missed_call">Si us plau, inseriu els últims %d dígits del número de la trucada perduda.</string>
+    <string name="button_validation_fallback">No ha rebut cap trucada?</string>
+    <string name="title_fallback">Hi ha algun problema?</string>
+    <string name="msg_fallback">Intentarem verificar el seu número de telèfon d\'una altra manera.</string>
+    <string name="menu_manual_verification">Ja té un codi?</string>
     </resources>
