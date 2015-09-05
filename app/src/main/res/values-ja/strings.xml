@@ -45,7 +45,7 @@
   <string name="hint_validation_number">あなたの番号</string>
   <string name="hint_validation_code">検証コード</string>
   <string name="warn_invalid_number">正しい電話番号を入力してください。</string>
-  <string name="msg_validating_phone">検証コードをSMSで要求中…</string>
+  <string name="msg_validating_phone">登録を要求中…</string>
   <string name="msg_initializing">Kontalk ネットワークに登録中…</string>
   <string name="msg_authenticated">ネットワークに登録しました!</string>
   <string name="share">共有</string>
@@ -150,7 +150,7 @@
   <string name="peer_unknown">(不明)</string>
   <string name="msg_draft_saved">メッセージは下書きとして保存しました。</string>
   <string name="send_mime_not_supported">ファイルタイプがサポートされていません。</string>
-  <string name="button_validate">検証コードを要求</string>
+  <string name="button_validate">登録</string>
   <string name="button_validation_code">すでに検証コードを持っています</string>
   <string name="button_validation_register">検証</string>
   <string name="notify_ticker_download_completed">ダウンロードが完了しました</string>
@@ -393,4 +393,10 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="err_custom_background">背景の設定中にエラーが発生しました。別の画像を試してください。</string>
     <string name="hint_ptt">押し続けると録音します。</string>
     <string name="msg_importing_key">パーソナルキーのインポート中…</string>
+    <string name="menu_manual_verification">すでにコードがありますか?</string>
+    <string name="code_validation_intro_missed_call">一度この番号で不在着信を受ける必要があります:</string>
+    <string name="code_validation_intro2_missed_call">着信される番号の最後の %d 桁を入力してください。</string>
+    <string name="button_validation_fallback">着信していませんか?</string>
+    <string name="title_fallback">問題がありますか?</string>
+    <string name="msg_fallback">あなたの電話番号を確認する別の方法を試します。</string>
     </resources>
