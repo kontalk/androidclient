@@ -100,7 +100,7 @@ public class ConversationsActivity extends ActionBarActivity implements ContactP
         super.onCreate(savedInstanceState);
 
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        setContentView(R.layout.conversation_screen);
+        setContentView(R.layout.conversations_screen);
 
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
@@ -146,7 +146,7 @@ public class ConversationsActivity extends ActionBarActivity implements ContactP
 
         mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.slider_pane);
         mSlidingPanel.setPanelSlideListener(slidingListener);
-        mSlidingPanel.setParallaxDistance(200);
+        mSlidingPanel.setParallaxDistance(getResources().getDimensionPixelSize(R.dimen.slidepane_parallax));
 
         // initial menu
         if (!mSlidingPanel.isSlideable()) {
