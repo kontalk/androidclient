@@ -876,7 +876,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
                 // if we have been called internally, start ConversationList
                 if (mFromInternal)
-                    startActivity(new Intent(getApplicationContext(), ConversationActivity.class));
+                    startActivity(new Intent(getApplicationContext(), ConversationsActivity.class));
 
                 Toast.makeText(getApplicationContext(), R.string.msg_authenticated, Toast.LENGTH_LONG).show();
 

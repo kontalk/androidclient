@@ -101,10 +101,9 @@
             android:value=".ui.SearchActivity" />
 
         <!-- Activities -->
-        <activity android:name=".ui.ConversationActivity"
+        <activity android:name=".ui.ConversationsActivity"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.Light"
-            android:configChanges="orientation|screenSize">
+            android:theme="@style/Theme.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -35,7 +35,7 @@ import org.kontalk.R;
 import org.kontalk.crypto.PersonalKey;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.ui.ConversationActivity;
+import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.upload.KontalkBoxUploadConnection;
 import org.kontalk.upload.UploadConnection;
@@ -229,7 +229,7 @@ public class UploadService extends IntentService implements ProgressListener {
     public void startForeground(long totalBytes) {
         Log.d(TAG, "starting foreground progress notification");
 
-        Intent ni = new Intent(getApplicationContext(), ConversationActivity.class);
+        Intent ni = new Intent(getApplicationContext(), ConversationsActivity.class);
         ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
@@ -286,7 +286,7 @@ public class UploadService extends IntentService implements ProgressListener {
 
     private void errorNotification(String ticker, String text) {
         // create intent for upload error notification
-        Intent i = new Intent(this, ConversationActivity.class);
+        Intent i = new Intent(this, ConversationsActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_UPLOAD_ERROR, i, 0);

@@ -78,8 +78,8 @@ import java.util.List;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ConversationActivity extends ActionBarActivity implements ContactPickerListener {
-    public static final String TAG = ConversationActivity.class.getSimpleName();
+public class ConversationsActivity extends ActionBarActivity implements ContactPickerListener {
+    public static final String TAG = ConversationsActivity.class.getSimpleName();
 
     private ConversationListFragment mFragment;
     private SlidingPaneLayout mSlidingPanel;
@@ -93,6 +93,8 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
 
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
 
+    private static final String EXTRA_CONTACTS_OPEN = "contactsOpen";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,8 +107,7 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
         final Fragment contactsListFragment = getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);
 
-        mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.slider_pane);
-        mSlidingPanel.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+        SlidingPaneLayout.PanelSlideListener slidingListener = new SlidingPaneLayout.PanelSlideListener() {
             @Override
             public void onPanelClosed(View panel) {
                 getSupportActionBar().setTitle(getString(R.string.app_name));
@@ -116,6 +117,9 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
                 Fragment composeMessageFragment = composeMessageFragmentOrNull();
                 if (composeMessageFragment != null) {
                     composeMessageFragment.setHasOptionsMenu(true);
+                }
+                else {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 }
             }
 
@@ -129,13 +133,19 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
                 if (composeMessageFragment != null) {
                     composeMessageFragment.setHasOptionsMenu(false);
                 }
+                else {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                }
                 showOnFirstVisit();
             }
 
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
             }
-        });
+        };
+
+        mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.slider_pane);
+        mSlidingPanel.setPanelSlideListener(slidingListener);
         mSlidingPanel.setParallaxDistance(200);
 
         // initial menu
@@ -144,8 +154,21 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
             contactsListFragment.setHasOptionsMenu(false);
         }
 
+        if (savedInstanceState != null) {
+            boolean contactsOpen = savedInstanceState.getBoolean(EXTRA_CONTACTS_OPEN, false);
+            if (contactsOpen) {
+                slidingListener.onPanelOpened(mSlidingPanel);
+            }
+        }
+
         if (!xmppUpgrade())
             handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(EXTRA_CONTACTS_OPEN, mSlidingPanel.isOpen());
     }
 
     private Fragment composeMessageFragmentOrNull() {
@@ -183,7 +206,7 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
             public void onClick(DialogInterface dialog, int which) {
                 // no key pair found, generate a new one
                 if (BuildConfig.DEBUG) {
-                    Toast.makeText(ConversationActivity.this,
+                    Toast.makeText(ConversationsActivity.this,
                         R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
                 }
 
@@ -198,7 +221,7 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
 
         DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
-                new AlertDialog.Builder(ConversationActivity.this)
+                new AlertDialog.Builder(ConversationsActivity.this)
                     .setTitle(R.string.title_no_personal_key)
                     .setMessage(R.string.msg_no_personal_key)
                     .setPositiveButton(android.R.string.ok, null)
@@ -237,7 +260,7 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
                 mUpgradeReceiver = null;
 
                 // force contact list update
-                SyncAdapter.requestSync(ConversationActivity.this, true);
+                SyncAdapter.requestSync(ConversationsActivity.this, true);
 
                 if (mUpgradeProgress != null) {
                     mUpgradeProgress.dismiss();
@@ -466,7 +489,7 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
     }
 
     public static Intent authenticationErrorWarning(Context context) {
-        Intent i = new Intent(context.getApplicationContext(), ConversationActivity.class);
+        Intent i = new Intent(context.getApplicationContext(), ConversationsActivity.class);
         i.setAction(ACTION_AUTH_ERROR_WARNING);
         return i;
     }
@@ -474,6 +497,9 @@ public class ConversationActivity extends ActionBarActivity implements ContactPi
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
             case R.id.menu_invite:
                 startInvite();
                 return true;

@@ -53,7 +53,7 @@ import android.widget.Toast;
 
 
 public class ConversationListFragment extends ListFragment implements Contact.ContactChangeListener {
-    private static final String TAG = ConversationActivity.TAG;
+    private static final String TAG = ConversationsActivity.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
@@ -239,7 +239,7 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
 
         switch (item.getItemId()) {
             case MENU_OPEN_THREAD:
-                ConversationActivity parent = getParentActivity();
+                ConversationsActivity parent = getParentActivity();
                 if (parent != null)
                     parent.openConversation(conv, info.position);
                 return true;
@@ -293,7 +293,7 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
     }
 
     public void chooseContact() {
-        ConversationActivity parent = getParentActivity();
+        ConversationsActivity parent = getParentActivity();
         if (parent != null)
             parent.showContactPicker();
     }
@@ -313,8 +313,8 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         builder.create().show();
     }
 
-    public ConversationActivity getParentActivity() {
-        return (ConversationActivity) getActivity();
+    public ConversationsActivity getParentActivity() {
+        return (ConversationsActivity) getActivity();
     }
 
     public void startQuery() {
@@ -355,7 +355,7 @@ public class ConversationListFragment extends ListFragment implements Contact.Co
         ConversationListItem cv = (ConversationListItem) v;
         Conversation conv = cv.getConversation();
 
-        ConversationActivity parent = getParentActivity();
+        ConversationsActivity parent = getParentActivity();
         if (parent != null)
             parent.openConversation(conv, position);
     }
