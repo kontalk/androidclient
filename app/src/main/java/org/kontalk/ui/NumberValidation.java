@@ -120,7 +120,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private Spinner mCountryCode;
     private EditText mPhone;
     private Button mValidateButton;
-    private Button mInsertCode;
     private ProgressDialog mProgress;
     private CharSequence mProgressMessage;
     private NumberValidator mValidator;
@@ -204,7 +203,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         mCountryCode = (Spinner) findViewById(R.id.phone_cc);
         mPhone = (EditText) findViewById(R.id.phone_number);
         mValidateButton = (Button) findViewById(R.id.button_validate);
-        mInsertCode = (Button) findViewById(R.id.button_validation_code);
 
         // populate country codes
         final CountryCodesAdapter ccList = new CountryCodesAdapter(this, R.layout.country_item, R.layout.country_dropdown_item);
@@ -335,6 +333,10 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
             }
             case R.id.menu_import_key: {
                 importKey();
+                break;
+            }
+            case R.id.menu_manual_verification: {
+                validateCode();
                 break;
             }
             default:
@@ -492,7 +494,6 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
 
     private void enableControls(boolean enabled) {
         mValidateButton.setEnabled(enabled);
-        mInsertCode.setEnabled(enabled);
         mCountryCode.setEnabled(enabled);
         mPhone.setEnabled(enabled);
     }
@@ -626,12 +627,8 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
         startValidation(false, false);
     }
 
-    /**
-     * Opens manual validation window immediately.
-     * Also used by the view definition as the {@link OnClickListener}.
-     * @param v not used
-     */
-    public void validateCode(View v) {
+    /** Opens manual validation window immediately. */
+    public void validateCode() {
         if (checkInput(false))
             startValidationCode(REQUEST_VALIDATION_CODE, null);
     }

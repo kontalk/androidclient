@@ -45,7 +45,7 @@
   <string name="hint_validation_number">Votre numéro</string>
   <string name="hint_validation_code">Code de vérification</string>
   <string name="warn_invalid_number">Veuillez insérer un numéro de téléphone valide.</string>
-  <string name="msg_validating_phone">Demande de code de vérification par SMS…</string>
+  <string name="msg_validating_phone">Demande d\'enregistrement…</string>
   <string name="msg_initializing">Enregistrement au réseau Kontalk…</string>
   <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau!</string>
   <string name="share">Partager</string>
@@ -150,7 +150,7 @@
   <string name="peer_unknown">(inconnu)</string>
   <string name="msg_draft_saved">Brouillon enregistré.</string>
   <string name="send_mime_not_supported">Type de fichier non supporté.</string>
-  <string name="button_validate">Demander un code de vérification</string>
+  <string name="button_validate">Inscription</string>
   <string name="button_validation_code">J\'ai déjà un code de vérification</string>
   <string name="button_validation_register">Vérifier</string>
   <string name="notify_ticker_download_completed">Téléchargement réussi</string>
@@ -391,4 +391,11 @@
     <string name="err_import_keypair_uid_mismatch">La clé importée ne correspond pas au numéro de téléphone que vous avez entré.</string>
     <string name="hint_ptt">Tapez et maintenez le micro pour enregistrer.</string>
     <string name="err_audio_record_noaudio">Le son n\'a pas été enregistré.</string>
+    <string name="msg_importing_key">Importation de la clé personnelle…</string>
+    <string name="menu_manual_verification">Vous avez déjà un code ?</string>
+    <string name="code_validation_intro_missed_call">Vous devriez recevoir un appel manqué de ce numéro brièvement :</string>
+    <string name="code_validation_intro2_missed_call">S\'il vous plaît insérer les %d derniers chiffres du numéro dont vous allez être appelé.</string>
+    <string name="button_validation_fallback">L\'appel n\'a pas été reçu ?</string>
+    <string name="title_fallback">Des problèmes ?</string>
+    <string name="msg_fallback">Nous allons essayer une autre façon de vérifier votre numéro de téléphone.</string>
     </resources>

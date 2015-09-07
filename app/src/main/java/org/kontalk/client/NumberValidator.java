@@ -260,7 +260,7 @@ public class NumberValidator implements Runnable, ConnectionHelperListener {
                                 for (FormField field : iter) {
                                     if (field.getVariable().equals("from")) {
                                         String smsFrom = field.getValues().get(0);
-                                        Log.d(TAG, "using sms sender id: " + smsFrom);
+                                        Log.d(TAG, "using sender id: " + smsFrom);
                                         mListener.onValidationRequested(NumberValidator.this, smsFrom);
 
                                         // prevent error handling

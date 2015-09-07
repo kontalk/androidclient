@@ -34,11 +34,12 @@
     <string name="menu_offline">Go offline</string>
     <string name="menu_online">Go online</string>
     <string name="menu_import_key">Import key</string>
+    <string name="menu_manual_verification">Already have a code?</string>
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
-    <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. A SMS with a verification code will be sent to you. Your phone number will be used once and then discarded.</string>
-    <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the verification code you will receive via SMS.</string>
+    <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. More instructions will be provided in the next screen.</string>
+    <string name="number_validation_intro2">If you are unable to receive calls or SMS on this device, insert a phone number you own: we will associate that number to this device.</string>
     <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
     <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly:</string>
@@ -160,7 +161,6 @@
     <string name="msg_draft_saved">Message saved as draft.</string>
     <string name="send_mime_not_supported">File type not supported.</string>
     <string name="button_validate">Register</string>
-    <string name="button_validation_code">I already have a verification code</string>
     <string name="button_validation_register">Verify</string>
     <string name="button_validation_fallback">Not receiving a call?</string>
     <string name="notify_ticker_download_completed">Download completed</string>

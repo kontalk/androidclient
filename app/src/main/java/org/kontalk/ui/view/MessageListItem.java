@@ -160,11 +160,12 @@ public class MessageListItem extends RelativeLayout {
 
         mMessage = msg;
 
-        if (MessageUtils.isSameDate(mMessage.getTimestamp(), previous)) {
+        long msgTs = MessageUtils.getMessageTimestamp(mMessage);
+        if (MessageUtils.isSameDate(msgTs, previous)) {
             mDateHeader.setVisibility(View.GONE);
         }
         else {
-            mDateHeader.setText(MessageUtils.formatDateString(context, mMessage.getTimestamp()));
+            mDateHeader.setText(MessageUtils.formatDateString(context, msgTs));
             mDateHeader.setVisibility(View.VISIBLE);
         }
 
@@ -352,10 +353,7 @@ public class MessageListItem extends RelativeLayout {
     */
 
     private CharSequence formatTimestamp() {
-        long serverTime = mMessage.getServerTimestamp();
-        long ts = serverTime > 0 ? serverTime : mMessage.getTimestamp();
-
-        return MessageUtils.formatTimeString(getContext(), ts);
+        return MessageUtils.formatTimeString(getContext(), MessageUtils.getMessageTimestamp(mMessage));
     }
 
     public final void unbind() {
