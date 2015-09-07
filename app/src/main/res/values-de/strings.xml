@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Netzwerkeinstellungen</string>
   <string name="pref_network_uri">Manuelle Serveradresse</string>
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste</string>
-  <string name="number_validation_intro1">Bitte Ihren Namen und Ihre Mobilfunknummer eingeben sowie den Ländercode auswählen. Eine SMS mit einem Verfikationscode wird Ihnen zugesendet. Ihre Tel.Nr. wird nur einmalig benutzt und dann verworfen.</string>
-  <string name="number_validation_intro2">Wenn Sie auf diesem Gerät keine SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an und geben Sie den Verifikationscode ein, den Sie per SMS erhalten.</string>
+  <string name="number_validation_intro1">Bitte Ihren Namen und Ihre Mobilfunknummer eingeben sowie den Ländercode auswählen. Das weitere Vorgehen wird im nächsten Schritt erläutert.</string>
+  <string name="number_validation_intro2">Wenn Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
   <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer bekommen:</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
   <string name="code_validation_intro_manual">Bitte fügen Sie den Verifikationscode ein den Sie bekommen haben. Beachten Sie bitte, dass ein Verfikationscode nur einmal verwendet werden kann.</string>
