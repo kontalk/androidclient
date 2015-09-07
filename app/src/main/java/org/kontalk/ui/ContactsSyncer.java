@@ -20,7 +20,7 @@ package org.kontalk.ui;
 
 
 /** Interface for activities embedding a {@link ContactsListFragment}. */
-public interface ContactsSyncActivity {
+public interface ContactsSyncer {
 
     /** Alerts the user in some way that a contacts sync is under way. */
     public void setSyncing(boolean syncing);

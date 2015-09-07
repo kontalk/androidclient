@@ -59,7 +59,7 @@ import org.kontalk.message.CompositeMessage;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.provider.UsersProvider;
 import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.ui.ConversationList;
+import org.kontalk.ui.ConversationsActivity;
 import org.kontalk.ui.MessagingNotification;
 import org.kontalk.ui.ProgressNotificationBuilder;
 import org.kontalk.util.MediaStorage;
@@ -213,7 +213,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         Log.d(TAG, "starting foreground progress notification");
         mTotalBytes = totalBytes;
 
-        Intent ni = new Intent(getApplicationContext(), ConversationList.class);
+        Intent ni = new Intent(getApplicationContext(), ConversationsActivity.class);
         // FIXME this intent should actually open the ComposeMessage activity
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOADING, ni, 0);
@@ -368,7 +368,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
     private void errorNotification(String ticker, String text) {
         // create intent for download error notification
-        Intent i = new Intent(this, ConversationList.class);
+        Intent i = new Intent(this, ConversationsActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
                 NOTIFICATION_ID_DOWNLOAD_ERROR, i, 0);

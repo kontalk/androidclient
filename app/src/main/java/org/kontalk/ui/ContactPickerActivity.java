@@ -19,45 +19,33 @@
 package org.kontalk.ui;
 
 import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.ui.view.ContactPickerListener;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.view.MenuItem;
+import android.view.Window;
 
 
-/**
- * Status message activity.
- * TODO use popup activity on tablet
- * @author Daniele Ricci
- */
-public class StatusActivity extends ActionBarActivity {
+public class ContactPickerActivity extends ActionBarActivity implements ContactPickerListener {
+
+    public static final String TAG = ContactPickerActivity.class.getSimpleName();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.status_screen);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setContentView(R.layout.contacts_list_screen);
     }
 
-    public static void start(Activity context) {
-        Intent intent = new Intent(context, StatusActivity.class);
-        context.startActivityIfNeeded(intent, -1);
-    }
-
+    /** Called when a contact has been selected from a {@link ContactsListFragment}. */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                startActivity(new Intent(this, ConversationsActivity.class));
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    public void onContactSelected(ContactsListFragment fragment, Contact contact) {
+        Intent i = new Intent(Intent.ACTION_PICK, Threads.getUri(contact.getJID()));
+        setResult(RESULT_OK, i);
+        finish();
     }
-
 }

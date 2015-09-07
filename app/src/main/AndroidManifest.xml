@@ -101,7 +101,7 @@
             android:value=".ui.SearchActivity" />
 
         <!-- Activities -->
-        <activity android:name=".ui.ConversationList"
+        <activity android:name=".ui.ConversationsActivity"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Light">
             <intent-filter>
@@ -180,7 +180,7 @@
         <activity android:name=".ui.CodeValidation"
             android:theme="@style/Theme.Light"/>
 
-        <activity android:name=".ui.ContactsListActivity"
+        <activity android:name=".ui.ContactPickerActivity"
             android:label="@string/contacts_list_title"
             android:theme="@style/Theme.Light"/>
 
