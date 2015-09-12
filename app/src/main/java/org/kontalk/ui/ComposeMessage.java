@@ -160,7 +160,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
     private void onHomeClick() {
         finish();
-        startActivity(new Intent(this, ConversationList.class));
+        startActivity(new Intent(this, ConversationsActivity.class));
     }
 
     public void onTitleClick() {
@@ -194,7 +194,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
                 // two-panes UI: start conversation list
                 if (Kontalk.hasTwoPanesUI(this) && Intent.ACTION_VIEW.equals(action)) {
-                    Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                    Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
                     startIntent.setAction(Intent.ACTION_VIEW);
                     startIntent.setData(uri);
                     startActivity(startIntent);
@@ -237,7 +237,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
 
                     // two-panes UI: start conversation list
                     if (Kontalk.hasTwoPanesUI(this)) {
-                        Intent startIntent = new Intent(getApplicationContext(), ConversationList.class);
+                        Intent startIntent = new Intent(getApplicationContext(), ConversationsActivity.class);
                         startIntent.setAction(ACTION_VIEW_USERID);
                         startIntent.setData(Threads.getUri(jid));
                         startActivity(startIntent);
@@ -342,7 +342,7 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
     private void chooseContact() {
         // TODO one day it will be like this
         // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
-        Intent i = new Intent(this, ContactsListActivity.class);
+        Intent i = new Intent(this, ContactPickerActivity.class);
         startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 

@@ -102,10 +102,8 @@
             android:value=".ui.SearchActivity" />
 
         <!-- Activities -->
-        <activity android:name=".ui.ConversationList"
-            android:launchMode="singleTop"
-            android:theme="@style/Theme.Light"
-            android:configChanges="orientation|screenSize">
+        <activity android:name=".ui.ConversationsActivity"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -176,7 +174,7 @@
 
         <activity android:name=".ui.CodeValidation"/>
 
-        <activity android:name=".ui.ContactsListActivity"
+        <activity android:name=".ui.ContactPickerActivity"
             android:label="@string/contacts_list_title"/>
 
         <activity android:name=".ui.StatusActivity"

@@ -31,4 +31,6 @@
     <dimen name="avatar_size">40dp</dimen>
 
     <dimen name="action_button_margin">0dp</dimen>
+
+    <dimen name="slidepane_parallax">200dp</dimen>
 </resources>

@@ -59,7 +59,7 @@ public class SearchActivity extends ToolbarActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                startActivity(new Intent(this, ConversationList.class));
+                startActivity(new Intent(this, ConversationsActivity.class));
                 return true;
 
             default:

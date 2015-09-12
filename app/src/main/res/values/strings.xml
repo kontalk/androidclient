@@ -38,8 +38,8 @@
     <string name="pref_network_settings">Network settings</string>
     <string name="pref_network_uri">Manual server address</string>
     <string name="pref_title_network_uri">This will override server list automatic management</string>
-    <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. A SMS with a verification code will be sent to you. Your phone number will be used once and then discarded.</string>
-    <string name="number_validation_intro2">If you are unable to receive SMS on this device, insert a phone number you own and input the verification code you will receive via SMS.</string>
+    <string name="number_validation_intro1">Please enter your name, select your country code and input your mobile phone number. More instructions will be provided in the next screen.</string>
+    <string name="number_validation_intro2">If you are unable to receive calls or SMS on this device, insert a phone number you own: we will associate that number to this device.</string>
     <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
     <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly:</string>

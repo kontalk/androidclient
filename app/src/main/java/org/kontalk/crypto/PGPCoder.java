@@ -27,6 +27,7 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -218,9 +219,13 @@ public class PGPCoder extends Coder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void decryptText(byte[] encrypted, boolean verify,
-            StringBuilder out, StringBuilder mime, List<DecryptException> errors)
-                    throws GeneralSecurityException {
+    public DecryptOutput decryptText(byte[] encrypted, boolean verify)
+                throws GeneralSecurityException {
+
+        List<DecryptException> errors = new ArrayList<>();
+        String mime = null;
+        Date timestamp = null;
+        String out = null;
 
         try {
             PGPObjectFactory pgpF = new PGPObjectFactory(encrypted, sFingerprintCalculator);
@@ -312,7 +317,7 @@ public class PGPCoder extends Coder {
                     }
 
                     if (verify) {
-                        if (ops == null && errors != null) {
+                        if (ops == null) {
                             errors.add(new DecryptException(
                                 DECRYPT_EXCEPTION_VERIFICATION_FAILED,
                                 "No signature list found"));
@@ -325,14 +330,13 @@ public class PGPCoder extends Coder {
                             if (message instanceof PGPSignatureList) {
                                 PGPSignature signature = ((PGPSignatureList) message).get(0);
                                 if (!ops.verify(signature)) {
-                                    if (errors != null)
-                                        errors.add(new DecryptException(
-                                            DECRYPT_EXCEPTION_VERIFICATION_FAILED,
-                                            "Signature verification failed"));
+                                    errors.add(new DecryptException(
+                                        DECRYPT_EXCEPTION_VERIFICATION_FAILED,
+                                        "Signature verification failed"));
                                 }
                             }
 
-                            else if (errors != null) {
+                            else {
                                 errors.add(new DecryptException(
                                         DECRYPT_EXCEPTION_INVALID_DATA,
                                         "Invalid signature packet"));
@@ -366,8 +370,7 @@ public class PGPCoder extends Coder {
                         // parse and check Message/CPIM
                         CPIMMessage msg = CPIMMessage.parse(data);
 
-                        if (mime != null)
-                            mime.append(msg.getMime());
+                        mime = msg.getMime();
 
                         msgData = msg.getBody();
 
@@ -385,7 +388,7 @@ public class PGPCoder extends Coder {
 
                             // check that the recipient matches the full uid of the personal key
                             String myUid = mKey.getUserId(mServer.getNetwork());
-                            if (!myUid.equals(msg.getTo()) && errors != null) {
+                            if (!myUid.equals(msg.getTo())) {
                                 errors.add(new DecryptException(
                                     DECRYPT_EXCEPTION_INVALID_RECIPIENT,
                                     "Destination does not match personal key"));
@@ -394,25 +397,36 @@ public class PGPCoder extends Coder {
                             // check that the sender matches the full uid of the sender's key
                             if (mSender != null) {
                                 String otherUid = PGP.getUserId(PGP.getMasterKey(mSender), mServer.getNetwork());
-                                if (!otherUid.equals(msg.getFrom()) && errors != null) {
+                                if (!otherUid.equals(msg.getFrom())) {
                                     errors.add(new DecryptException(
                                         DECRYPT_EXCEPTION_INVALID_SENDER,
                                         "Sender does not match sender's key"));
                                 }
                             }
-                            else if (verify && errors != null) {
+                            else if (verify) {
                                 errors.add(new DecryptException(
                                     DECRYPT_EXCEPTION_VERIFICATION_FAILED,
                                     "No public key available to verify sender"));
                             }
 
-                            if (msg.getDate() == null && errors != null) {
+                            timestamp = msg.getDate();
+                            if (timestamp == null) {
                                 errors.add(new DecryptException(
                                     DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
                                     "Invalid timestamp"));
                             }
 
-                            // TODO check DateTime (possibly compare it with <delay/>)
+                            // check DateTime (plain text only, <delay/> is left to the caller)
+                            if (TextComponent.MIME_TYPE.equalsIgnoreCase(msg.getMime())) {
+                                long time = msg.getDate().getTime();
+                                long now = System.currentTimeMillis();
+                                long diff = Math.abs(now - time);
+                                if (diff > TIMEDIFF_THRESHOLD) {
+                                    errors.add(new DecryptException(
+                                        DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
+                                        "Drifted timestamp"));
+                                }
+                            }
                         }
 
                     }
@@ -420,7 +434,7 @@ public class PGPCoder extends Coder {
                         // return data as-is
                         msgData = data;
 
-                        if (verify && errors != null) {
+                        if (verify) {
                             // verification requested: invalid CPIM data
                             errors.add(new DecryptException(
                                 DECRYPT_EXCEPTION_INVALID_DATA, pe,
@@ -429,13 +443,12 @@ public class PGPCoder extends Coder {
                     }
 
                     catch (DecryptException de) {
-                        if (errors != null)
-                            errors.add(de);
+                        errors.add(de);
                     }
 
                     finally {
                         if (msgData != null)
-                            out.append(msgData);
+                            out = String.valueOf(msgData);
                     }
 
                 }
@@ -466,6 +479,7 @@ public class PGPCoder extends Coder {
             throw new DecryptException(DECRYPT_EXCEPTION_INVALID_DATA, pe);
         }
 
+        return new DecryptOutput(out, mime, timestamp, errors);
     }
 
     @Override

@@ -59,7 +59,7 @@ import android.widget.Toast;
 
 public class ConversationListFragment extends ActionModeListFragment
         implements Contact.ContactChangeListener, MultiChoiceModeListener {
-    private static final String TAG = ConversationList.TAG;
+    private static final String TAG = ConversationsActivity.TAG;
 
     private static final int THREAD_LIST_QUERY_TOKEN = 8720;
 
@@ -380,7 +380,7 @@ public class ConversationListFragment extends ActionModeListFragment
     }
 
     public void chooseContact() {
-        ConversationList parent = getParentActivity();
+        ConversationsActivity parent = getParentActivity();
         if (parent != null)
             parent.showContactPicker();
     }
@@ -398,8 +398,8 @@ public class ConversationListFragment extends ActionModeListFragment
         builder.create().show();
     }
 
-    public ConversationList getParentActivity() {
-        return (ConversationList) getActivity();
+    public ConversationsActivity getParentActivity() {
+        return (ConversationsActivity) getActivity();
     }
 
     public void startQuery() {

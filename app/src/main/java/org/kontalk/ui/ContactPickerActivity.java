@@ -18,50 +18,27 @@
 
 package org.kontalk.ui;
 
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import org.kontalk.R;
-import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
-import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.service.msgcenter.MessageCenterService;
-import org.kontalk.sync.SyncAdapter;
 import org.kontalk.ui.view.ContactPickerListener;
-import org.kontalk.util.Preferences;
-import org.kontalk.util.SystemUtils;
 
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.Window;
-import android.widget.Toast;
 
 
-public class ContactsListActivity extends ToolbarActivity implements ContactPickerListener {
+public class ContactPickerActivity extends ActionBarActivity implements ContactPickerListener {
 
-    public static final String TAG = ContactsListActivity.class.getSimpleName();
-
-    private MenuItem mSyncButton;
-
-    private ContactsListFragment mFragment;
+    public static final String TAG = ContactPickerActivity.class.getSimpleName();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list_screen);
-
-        setupToolbar(false);
     }
 
     /** Called when a contact has been selected from a {@link ContactsListFragment}. */

@@ -390,7 +390,7 @@ public class MessagingNotification {
             Intent ni;
             // more than one unread conversation - open ConversationList
             if (convs.size() > 1) {
-                ni = new Intent(context, ConversationList.class);
+                ni = new Intent(context, ConversationsActivity.class);
                 ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -553,7 +553,7 @@ public class MessagingNotification {
     /** Fires an authentication error notification. */
     public static void authenticationError(Context context) {
         // notification will open the conversation
-        Intent ni = ConversationList.authenticationErrorWarning(context);
+        Intent ni = ConversationsActivity.authenticationErrorWarning(context);
         PendingIntent pi = PendingIntent.getActivity(context,
             NOTIFICATION_ID_AUTH_ERROR, ni, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -674,7 +674,7 @@ public class MessagingNotification {
             Intent ni;
             // more than one unread conversation - open ConversationList
             if (convCount > 1) {
-                ni = new Intent(mContext, ConversationList.class);
+                ni = new Intent(mContext, ConversationsActivity.class);
                 ni.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);

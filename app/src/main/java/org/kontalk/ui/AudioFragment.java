@@ -42,6 +42,9 @@ public class AudioFragment extends Fragment {
 
     private long mStartTime;
 
+    /** Message id of the media currently being played. */
+    private long mMessageId = -1;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +105,34 @@ public class AudioFragment extends Fragment {
             // paused, release lock
             releaseLock();
         }
+    }
+
+    public void seekPlayerTo(int msec) {
+        if (mPlayer != null)
+            mPlayer.seekTo(msec);
+    }
+
+    public void resetPlayer() {
+        if (mPlayer != null)
+            mPlayer.reset();
+    }
+
+    public boolean isPlaying() {
+        return mPlayer != null && mPlayer.isPlaying();
+    }
+
+    public void setMessageId(long mMessageId) {
+        this.mMessageId = mMessageId;
+    }
+
+    public long getMessageId() {
+        return mMessageId;
+    }
+
+    public void finish(boolean release) {
+        if (mPlayer != null && release)
+            mPlayer.release();
+        finish();
     }
 
     public void finish() {

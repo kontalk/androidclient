@@ -83,11 +83,6 @@ public abstract class MediaStorage {
     private static final String COMPRESS_FILENAME_FORMAT = "compress_%d.jpg";
     private static final int COMPRESSION_QUALITY = 85;
 
-    // @deprecated
-    static {
-        removeNoMediaFix(PICTURES_ROOT);
-    }
-
     public static boolean isExternalStorageAvailable() {
         return Environment.getExternalStorageState()
             .equals(Environment.MEDIA_MOUNTED);
@@ -250,11 +245,6 @@ public abstract class MediaStorage {
         createMedia(PICTURES_ROOT);
         String timeStamp = sDateFormat.format(date);
         return new File(PICTURES_ROOT, "IMG_" + timeStamp + "." + extension);
-    }
-
-    @Deprecated
-    private static void removeNoMediaFix(File path) {
-        new File(path, ".nomedia").delete();
     }
 
     /** Creates a temporary 3gp file. */
@@ -437,10 +427,9 @@ public abstract class MediaStorage {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static void requestPersistablePermissions(Context context, Intent intent) {
-        final int takeFlags = intent.getFlags()
-                & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
         final Uri uri = intent.getData();
-        context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+        context.getContentResolver().takePersistableUriPermission(uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
     public static void scanFile(Context context, File file, String mime) {

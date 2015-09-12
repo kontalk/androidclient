@@ -47,10 +47,10 @@ import android.widget.Toast;
 
 
 /** Contacts list selection fragment. */
-public class ContactsListFragment extends ListFragment
-        implements ContactsListAdapter.OnContentChangedListener,
+public class ContactsListFragment extends ListFragment implements
+        ContactsListAdapter.OnContentChangedListener,
         SwipeRefreshLayout.OnRefreshListener,
-        ContactsSyncActivity {
+        ContactsSyncer {
 
     private Cursor mCursor;
     private ContactsListAdapter mListAdapter;
@@ -75,6 +75,16 @@ public class ContactsListFragment extends ListFragment
             }
         }
     };
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
+        //setSupportProgressBarIndeterminate(true);
+        // HACK this is for crappy honeycomb :)
+        ((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(false);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -169,7 +179,7 @@ public class ContactsListFragment extends ListFragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.contacts_list_menu, menu);
 
-        menu.findItem(R.id.menu_invite).setVisible(getActivity() instanceof ConversationList);
+        menu.findItem(R.id.menu_invite).setVisible(getActivity() instanceof ConversationsActivity);
 
         mSyncButton = menu.findItem(R.id.menu_refresh);
         mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));
@@ -203,7 +213,6 @@ public class ContactsListFragment extends ListFragment
     public void setSyncing(boolean syncing) {
         if (mSyncButton != null)
             mSyncButton.setVisible(!syncing);
-        //((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(syncing);
     }
 
     @Override

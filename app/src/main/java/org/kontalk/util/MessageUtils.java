@@ -65,10 +65,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 
 
 public final class MessageUtils {
@@ -87,8 +88,8 @@ public final class MessageUtils {
                 DateUtils.FORMAT_CAP_AMPM;
 
         return DateUtils.getRelativeDateTimeString(context, when,
-                DateUtils.SECOND_IN_MILLIS, DateUtils.DAY_IN_MILLIS * 2,
-                format_flags);
+            DateUtils.SECOND_IN_MILLIS, DateUtils.DAY_IN_MILLIS * 2,
+            format_flags);
     }
 
     public static String formatDateString(Context context, long when) {
@@ -564,19 +565,21 @@ public final class MessageUtils {
             Coder coder = UsersProvider.getDecryptCoder(context, server, key, msg.getSender(true));
 
             // decrypt
-            StringBuilder mimeFound = new StringBuilder();
-            StringBuilder clearText = new StringBuilder();
-            List<DecryptException> errors = new LinkedList<DecryptException>();
-            coder.decryptText(encryptedData, true, clearText, mimeFound, errors);
+            Coder.DecryptOutput result = coder.decryptText(encryptedData, true);
 
             String contentText;
 
-            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(mimeFound.toString())) {
-                m = XMPPUtils.parseMessageStanza(clearText.toString());
+            if (XMPPUtils.XML_XMPP_TYPE.equalsIgnoreCase(result.mime)) {
+                m = XMPPUtils.parseMessageStanza(result.cleartext);
+
+                if (result.timestamp != null && !checkDriftedDelay(m, result.timestamp))
+                    result.errors.add(new DecryptException(DECRYPT_EXCEPTION_INVALID_TIMESTAMP,
+                        "Drifted timestamp"));
+
                 contentText = m.getBody();
             }
             else {
-                contentText = clearText.toString();
+                contentText = result.cleartext;
             }
 
             // clear componenets (we are adding new ones)
@@ -585,11 +588,11 @@ public final class MessageUtils {
             if (contentText != null)
                 msg.addComponent(new TextComponent(contentText));
 
-            if (errors.size() > 0) {
+            if (result.errors.size() > 0) {
 
                 int securityFlags = msg.getSecurityFlags();
 
-                for (DecryptException err : errors) {
+                for (DecryptException err : result.errors) {
 
                     int code = err.getCode();
                     switch (code) {
@@ -741,6 +744,19 @@ public final class MessageUtils {
             }
 
         }
+    }
+
+    private static boolean checkDriftedDelay(Message m, Date expected) {
+        Date stamp = XMPPUtils.getStanzaDelay(m);
+        if (stamp != null) {
+            long time = stamp.getTime();
+            long now = expected.getTime();
+            long diff = Math.abs(now - time);
+            return (diff < Coder.TIMEDIFF_THRESHOLD);
+        }
+
+        // no timestamp found
+        return true;
     }
 
     /** Fills in a {@link ContentValues} object from the given message. */

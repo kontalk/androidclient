@@ -81,8 +81,8 @@ import java.util.List;
  * @author Daniele Ricci
  * @version 1.0
  */
-public class ConversationList extends ToolbarActivity
-        implements ContactsSyncActivity, ContactPickerListener, ComposeMessageParent {
+public class ConversationsActivity extends ToolbarActivity
+        implements ContactPickerListener, ComposeMessageParent {
     public static final String TAG = ConversationList.class.getSimpleName();
 
     private ConversationListFragment mFragment;
@@ -97,11 +97,13 @@ public class ConversationList extends ToolbarActivity
 
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
 
+    private static final String EXTRA_CONTACTS_OPEN = "contactsOpen";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.conversation_screen);
+        setContentView(R.layout.conversations_screen);
 
         setupToolbar(false);
 
@@ -110,8 +112,7 @@ public class ConversationList extends ToolbarActivity
         final Fragment contactsListFragment = getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_contacts_list);
 
-        mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.slider_pane);
-        mSlidingPanel.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+        SlidingPaneLayout.PanelSlideListener slidingListener = new SlidingPaneLayout.PanelSlideListener() {
             @Override
             public void onPanelClosed(View panel) {
                 getSupportActionBar().setTitle(getString(R.string.app_name));
@@ -121,6 +122,9 @@ public class ConversationList extends ToolbarActivity
                 Fragment composeMessageFragment = composeMessageFragmentOrNull();
                 if (composeMessageFragment != null) {
                     composeMessageFragment.setHasOptionsMenu(true);
+                }
+                else {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 }
             }
 
@@ -134,14 +138,20 @@ public class ConversationList extends ToolbarActivity
                 if (composeMessageFragment != null) {
                     composeMessageFragment.setHasOptionsMenu(false);
                 }
+                else {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                }
                 showOnFirstVisit();
             }
 
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
             }
-        });
-        mSlidingPanel.setParallaxDistance(200);
+        };
+
+        mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.slider_pane);
+        mSlidingPanel.setPanelSlideListener(slidingListener);
+        mSlidingPanel.setParallaxDistance(getResources().getDimensionPixelSize(R.dimen.slidepane_parallax));
 
         // initial menu
         if (!mSlidingPanel.isSlideable()) {
@@ -149,8 +159,21 @@ public class ConversationList extends ToolbarActivity
             contactsListFragment.setHasOptionsMenu(false);
         }
 
+        if (savedInstanceState != null) {
+            boolean contactsOpen = savedInstanceState.getBoolean(EXTRA_CONTACTS_OPEN, false);
+            if (contactsOpen) {
+                slidingListener.onPanelOpened(mSlidingPanel);
+            }
+        }
+
         if (!xmppUpgrade())
             handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(EXTRA_CONTACTS_OPEN, mSlidingPanel.isOpen());
     }
 
     private Fragment composeMessageFragmentOrNull() {
@@ -239,7 +262,7 @@ public class ConversationList extends ToolbarActivity
                 mUpgradeReceiver = null;
 
                 // force contact list update
-                SyncAdapter.requestSync(ConversationList.this, true);
+                SyncAdapter.requestSync(ConversationsActivity.this, true);
 
                 if (mUpgradeProgress != null) {
                     mUpgradeProgress.dismiss();
@@ -329,6 +352,10 @@ public class ConversationList extends ToolbarActivity
 
     @Override
     public void onBackPressed() {
+        if (mSlidingPanel.closePane()) {
+            return;
+        }
+
         ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
         if (f == null || !f.tryHideEmojiDrawer())
@@ -400,16 +427,6 @@ public class ConversationList extends ToolbarActivity
     }
 
     @Override
-    public void setSyncing(boolean syncing) {
-        // TODO
-    }
-
-    @Override
-    public void startSync(boolean errorWarning) {
-        // TODO
-    }
-
-    @Override
     public void setTitle(CharSequence title, CharSequence subtitle) {
         // nothing
     }
@@ -438,8 +455,7 @@ public class ConversationList extends ToolbarActivity
                 ft.addToBackStack(null);
                 ft.commit();
             }
-        }
-        else {
+        } else {
             Intent i = ComposeMessage.fromConversation(this, conv);
             startActivity(i);
         }
@@ -485,7 +501,7 @@ public class ConversationList extends ToolbarActivity
     }
 
     public static Intent authenticationErrorWarning(Context context) {
-        Intent i = new Intent(context.getApplicationContext(), ConversationList.class);
+        Intent i = new Intent(context.getApplicationContext(), ConversationsActivity.class);
         i.setAction(ACTION_AUTH_ERROR_WARNING);
         return i;
     }
@@ -493,6 +509,9 @@ public class ConversationList extends ToolbarActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
             case R.id.menu_invite:
                 startInvite();
                 return true;
