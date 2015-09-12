@@ -207,7 +207,7 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public void setSyncing(boolean syncing) {
-        mRefresher.setRefreshing(true);
+        mRefresher.setRefreshing(syncing);
         if (mSyncButton != null)
             mSyncButton.setVisible(!syncing);
     }
