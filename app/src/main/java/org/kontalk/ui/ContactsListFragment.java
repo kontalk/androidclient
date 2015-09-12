@@ -80,10 +80,6 @@ public class ContactsListFragment extends ListFragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        //setSupportProgressBarIndeterminate(true);
-        // HACK this is for crappy honeycomb :)
-        ((ActionBarActivity) getActivity()).setSupportProgressBarIndeterminateVisibility(false);
     }
 
     @Override
@@ -211,13 +207,14 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public void setSyncing(boolean syncing) {
+        mRefresher.setRefreshing(true);
         if (mSyncButton != null)
             mSyncButton.setVisible(!syncing);
     }
 
     @Override
     public void onRefresh() {
-        this.startSync(true);
+        startSync(true);
     }
 
     private void registerSyncReceiver() {

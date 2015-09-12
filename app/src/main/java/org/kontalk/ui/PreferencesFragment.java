@@ -419,7 +419,7 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             case android.R.id.home:
                 Activity ctx = getActivity();
                 ctx.finish();
-                startActivity(new Intent(ctx, ConversationList.class));
+                startActivity(new Intent(ctx, ConversationsActivity.class));
                 return true;
         }
 

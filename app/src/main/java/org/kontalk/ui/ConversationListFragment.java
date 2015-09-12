@@ -442,7 +442,7 @@ public class ConversationListFragment extends ActionModeListFragment
             ConversationListItem cv = (ConversationListItem) v;
             Conversation conv = cv.getConversation();
 
-            ConversationList parent = getParentActivity();
+            ConversationsActivity parent = getParentActivity();
             if (parent != null)
                 parent.openConversation(conv, position);
         }

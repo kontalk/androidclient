@@ -83,7 +83,7 @@ import java.util.List;
  */
 public class ConversationsActivity extends ToolbarActivity
         implements ContactPickerListener, ComposeMessageParent {
-    public static final String TAG = ConversationList.class.getSimpleName();
+    public static final String TAG = ConversationsActivity.class.getSimpleName();
 
     private ConversationListFragment mFragment;
     private SlidingPaneLayout mSlidingPanel;
@@ -216,7 +216,7 @@ public class ConversationsActivity extends ToolbarActivity
                 public void onInput(MaterialDialog dialog, CharSequence input) {
                     // no key pair found, generate a new one
                     if (BuildConfig.DEBUG) {
-                        Toast.makeText(ConversationList.this,
+                        Toast.makeText(ConversationsActivity.this,
                             R.string.msg_generating_keypair, Toast.LENGTH_LONG).show();
                     }
 
@@ -235,7 +235,7 @@ public class ConversationsActivity extends ToolbarActivity
             .negativeText(android.R.string.cancel)
             .cancelListener(new DialogInterface.OnCancelListener() {
                 public void onCancel(DialogInterface dialog) {
-                    new AlertDialogWrapper.Builder(ConversationList.this)
+                    new AlertDialogWrapper.Builder(ConversationsActivity.this)
                         .setTitle(R.string.title_no_personal_key)
                         .setMessage(R.string.msg_no_personal_key)
                         .setPositiveButton(android.R.string.ok, null)
