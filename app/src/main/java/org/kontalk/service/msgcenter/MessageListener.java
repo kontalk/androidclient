@@ -31,7 +31,6 @@ import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.chatstates.ChatState;
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension;
-import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.receipts.DeliveryReceipt;
 import org.jivesoftware.smackx.receipts.DeliveryReceiptRequest;
 
@@ -49,6 +48,7 @@ import org.kontalk.message.VCardComponent;
 import org.kontalk.provider.MyMessages.Messages;
 import org.kontalk.util.MediaStorage;
 import org.kontalk.util.MessageUtils;
+import org.kontalk.util.XMPPUtils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -99,16 +99,7 @@ class MessageListener extends MessageCenterPacketListener {
 
             // delayed deliver extension is the first the be processed
             // because it's used also in delivery receipts
-            ExtensionElement _delay = m.getExtension("delay", "urn:xmpp:delay");
-            if (_delay == null)
-                _delay = m.getExtension("x", "jabber:x:delay");
-
-            Date stamp = null;
-            if (_delay != null) {
-                if (_delay instanceof DelayInformation) {
-                    stamp = ((DelayInformation) _delay).getStamp();
-                }
-            }
+            Date stamp = XMPPUtils.getStanzaDelay(m);
 
             long serverTimestamp;
             if (stamp != null)
