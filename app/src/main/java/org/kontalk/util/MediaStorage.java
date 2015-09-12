@@ -427,10 +427,9 @@ public abstract class MediaStorage {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static void requestPersistablePermissions(Context context, Intent intent) {
-        final int takeFlags = intent.getFlags()
-                & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
         final Uri uri = intent.getData();
-        context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+        context.getContentResolver().takePersistableUriPermission(uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
     public static void scanFile(Context context, File file, String mime) {
