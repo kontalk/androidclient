@@ -203,13 +203,13 @@ public class ComposeMessageFragment extends ListFragment implements
     private String mLastActivityRequestId;
     private String mVersionRequestId;
 
-    /** MediaPlayer */
-    private MediaPlayer mPlayer;
-    private int mStatus = AudioContentView.STATUS_IDLE;
-    private long mMediaPlayerMessageId;
+    /** Media player stuff. */
+    private int mMediaPlayerStatus = AudioContentView.STATUS_IDLE;
     private Handler mHandler;
     private Runnable mMediaPlayerUpdater;
     private AudioContentViewControl mAudioControl;
+
+    /** Audio recording dialog. */
     private AudioDialog mAudioDialog;
 
     private PeerObserver mPeerObserver;
@@ -801,17 +801,21 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private AudioFragment getAudioFragment() {
-        FragmentManager fm = getFragmentManager();
-        AudioFragment fragment = (AudioFragment) fm
-            .findFragmentByTag("audio");
+        AudioFragment fragment = findAudioFragment();
         if (fragment == null) {
             fragment = new AudioFragment();
-            fm.beginTransaction()
+            getFragmentManager().beginTransaction()
                 .add(fragment, "audio")
                 .commit();
         }
 
         return fragment;
+    }
+
+    private AudioFragment findAudioFragment() {
+        FragmentManager fm = getFragmentManager();
+        return (AudioFragment) fm
+            .findFragmentByTag("audio");
     }
 
     private void deleteThread() {
@@ -1258,6 +1262,8 @@ public class ComposeMessageFragment extends ListFragment implements
         if (mAudioDialog != null) {
             mAudioDialog.onSaveInstanceState(out);
         }
+        // audio player stuff
+        out.putInt("mediaPlayerStatus", mMediaPlayerStatus);
     }
 
     private void processArguments(Bundle savedInstanceState) {
@@ -2286,11 +2292,11 @@ public class ComposeMessageFragment extends ListFragment implements
         MessageCenterService.release(getActivity());
 
         // release audio player
-        if (mPlayer != null) {
+        AudioFragment audio = findAudioFragment();
+        if (audio != null) {
             stopMediaPlayerUpdater();
-            mMediaPlayerMessageId = -1;
-            mPlayer.release();
-            mPlayer = null;
+            audio.setMessageId(-1);
+            audio.finish(true);
         }
     }
 
@@ -2533,8 +2539,9 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void buttonClick(File audioFile, AudioContentViewControl view, long messageId) {
-        if (mMediaPlayerMessageId == messageId) {
-            switch (mStatus) {
+        AudioFragment audio = getAudioFragment();
+        if (audio.getMessageId() == messageId) {
+            switch (mMediaPlayerStatus) {
                 case AudioContentView.STATUS_PLAYING:
                     pauseAudio(view);
                     break;
@@ -2546,7 +2553,7 @@ public class ComposeMessageFragment extends ListFragment implements
             }
         }
         else {
-            switch (mStatus) {
+            switch (mMediaPlayerStatus) {
                 case AudioContentView.STATUS_IDLE:
                     if (prepareAudio(audioFile, view, messageId))
                         playAudio(view, messageId);
@@ -2563,28 +2570,29 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     private boolean prepareAudio(File audioFile, final AudioContentViewControl view, final long messageId) {
-        if (mPlayer == null)
-            mPlayer = new MediaPlayer();
-
         stopMediaPlayerUpdater();
         try {
-            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mPlayer.setDataSource(audioFile.getAbsolutePath());
-            mPlayer.prepare();
+            AudioFragment audio = getAudioFragment();
+            final MediaPlayer player = audio.getPlayer();
+            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            player.setDataSource(audioFile.getAbsolutePath());
+            player.prepare();
 
             // prepare was successful
-            mMediaPlayerMessageId = messageId;
+            audio.setMessageId(messageId);
             mAudioControl = view;
 
-            view.prepare(mPlayer.getDuration());
-            mPlayer.seekTo(view.getPosition());
+            view.prepare(player.getDuration());
+            player.seekTo(view.getPosition());
             view.setProgressChangeListener(true);
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     stopMediaPlayerUpdater();
                     view.end();
-                    mPlayer.seekTo(0);
+                    AudioFragment audio = findAudioFragment();
+                    if (audio != null)
+                        audio.seekPlayerTo(0);
                     setAudioStatus(AudioContentView.STATUS_ENDED);
                 }
             });
@@ -2599,35 +2607,37 @@ public class ComposeMessageFragment extends ListFragment implements
     @Override
     public void playAudio(AudioContentViewControl view, long messageId) {
         view.play();
-        mPlayer.start();
+        findAudioFragment().getPlayer().start();
         setAudioStatus(AudioContentView.STATUS_PLAYING);
         startMediaPlayerUpdater(view);
     }
 
     private void updatePosition(AudioContentViewControl view) {
-        view.updatePosition(mPlayer.getCurrentPosition());
+        view.updatePosition(findAudioFragment().getPlayer().getCurrentPosition());
     }
 
     @Override
     public void pauseAudio(AudioContentViewControl view) {
         view.pause();
-        mPlayer.pause();
+        findAudioFragment().getPlayer().pause();
         stopMediaPlayerUpdater();
         setAudioStatus(AudioContentView.STATUS_PAUSED);
     }
 
     private void resetAudio(AudioContentViewControl view) {
-        if (view != null){
+        if (view != null) {
             stopMediaPlayerUpdater();
             view.end();
         }
-        if (mPlayer != null)
-            mPlayer.reset();
-        mMediaPlayerMessageId = -1;
+        AudioFragment audio = findAudioFragment();
+        if (audio != null) {
+            audio.resetPlayer();
+            audio.setMessageId(-1);
+        }
     }
 
     private void setAudioStatus(int audioStatus) {
-        mStatus = audioStatus;
+        mMediaPlayerStatus = audioStatus;
     }
 
     @Override
@@ -2637,45 +2647,44 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public void onBind(long messageId, final AudioContentViewControl view) {
-        if (mMediaPlayerMessageId == messageId) {
+        final AudioFragment audio = findAudioFragment();
+        if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = view;
-            if (mPlayer != null) {
-                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        stopMediaPlayerUpdater();
-                        view.end();
-                        mPlayer.seekTo(0);
-                        setAudioStatus(AudioContentView.STATUS_ENDED);
-                    }
-                });
+            audio.getPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    stopMediaPlayerUpdater();
+                    view.end();
+                    audio.seekPlayerTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+            });
 
-                view.setProgressChangeListener(true);
-                view.prepare(mPlayer.getDuration());
-                if (mPlayer.isPlaying()) {
-                    startMediaPlayerUpdater(view);
-                    view.play();
-                }
-                else {
-                    view.pause();
-                }
+            view.setProgressChangeListener(true);
+            view.prepare(audio.getPlayer().getDuration());
+            if (audio.isPlaying()) {
+                startMediaPlayerUpdater(view);
+                view.play();
+            }
+            else {
+                view.pause();
             }
         }
     }
 
     @Override
     public void onUnbind(long messageId, AudioContentViewControl view) {
-        if (mMediaPlayerMessageId == messageId) {
+        AudioFragment audio = findAudioFragment();
+        if (audio != null && audio.getMessageId() == messageId) {
             mAudioControl = null;
-            if (mPlayer != null) {
-                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        mPlayer.seekTo(0);
-                        setAudioStatus(AudioContentView.STATUS_ENDED);
-                    }
-                });
-            }
+            MediaPlayer player = audio.getPlayer();
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    getAudioFragment().seekPlayerTo(0);
+                    setAudioStatus(AudioContentView.STATUS_ENDED);
+                }
+            });
 
             view.setProgressChangeListener(false);
             if (!MessagesProvider.exists(getActivity(), messageId)) {
@@ -2690,12 +2699,15 @@ public class ComposeMessageFragment extends ListFragment implements
 
     @Override
     public boolean isPlaying() {
-        return mPlayer.isPlaying();
+        AudioFragment audio = findAudioFragment();
+        return audio != null && audio.isPlaying();
     }
 
     @Override
     public void seekTo(int position) {
-        mPlayer.seekTo(position);
+        AudioFragment audio = findAudioFragment();
+        if (audio != null)
+            audio.seekPlayerTo(position);
     }
 
     private void startMediaPlayerUpdater(final AudioContentViewControl view) {
