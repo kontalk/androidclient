@@ -796,6 +796,15 @@ public class ComposeMessageFragment extends ListFragment implements
     private void selectAudioAttachment() {
         // create audio fragment if needed
         AudioFragment audio = getAudioFragment();
+        // stop everything
+        if (mAudioControl != null) {
+            resetAudio(mAudioControl);
+        }
+        else {
+            audio.resetPlayer();
+            audio.setMessageId(-1);
+        }
+        // show dialog
         mAudioDialog = new AudioDialog(getActivity(), audio, this);
         mAudioDialog.show();
     }
@@ -804,9 +813,12 @@ public class ComposeMessageFragment extends ListFragment implements
         AudioFragment fragment = findAudioFragment();
         if (fragment == null) {
             fragment = new AudioFragment();
-            getFragmentManager().beginTransaction()
+            FragmentManager fm = getActivity().getSupportFragmentManager();
+            fm.beginTransaction()
                 .add(fragment, "audio")
                 .commit();
+            // commit immediately please
+            fm.executePendingTransactions();
         }
 
         return fragment;
@@ -2295,8 +2307,13 @@ public class ComposeMessageFragment extends ListFragment implements
         AudioFragment audio = findAudioFragment();
         if (audio != null) {
             stopMediaPlayerUpdater();
-            audio.setMessageId(-1);
-            audio.finish(true);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                if (!getActivity().isChangingConfigurations()) {
+                    audio.setMessageId(-1);
+                    audio.finish(true);
+                }
+            }
         }
     }
 
