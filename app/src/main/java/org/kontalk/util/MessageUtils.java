@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -168,6 +169,16 @@ public final class MessageUtils {
         a += tm.getOffset(a);
         b += tm.getOffset(b);
         return (a / MILLISECONDS_IN_DAY) == (b / MILLISECONDS_IN_DAY);
+    }
+
+    public static long getMessageTimestamp(CompositeMessage msg) {
+        long serverTime = msg.getServerTimestamp();
+        return serverTime > 0 ? serverTime : msg.getTimestamp();
+    }
+
+    public static long getMessageTimestamp(Cursor c) {
+        long serverTime = c.getLong(CompositeMessage.COLUMN_SERVER_TIMESTAMP);
+        return serverTime > 0 ? serverTime : c.getLong(CompositeMessage.COLUMN_TIMESTAMP);
     }
 
     public static String bytesToHex(byte[] data) {

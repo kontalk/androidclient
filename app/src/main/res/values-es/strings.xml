@@ -45,7 +45,7 @@
   <string name="hint_validation_number">Su número</string>
   <string name="hint_validation_code">Código de verificación</string>
   <string name="warn_invalid_number">Por favor, introduzca un número de teléfono válido.</string>
-  <string name="msg_validating_phone">Solicitando SMS con código de verificación…</string>
+  <string name="msg_validating_phone">Solicitando el registro…</string>
   <string name="msg_initializing">Registrándose en la red de Kontalk…</string>
   <string name="msg_authenticated">¡Registrado en la red!</string>
   <string name="share">Compartir</string>
@@ -150,7 +150,7 @@
   <string name="peer_unknown">(desconocido)</string>
   <string name="msg_draft_saved">Mensaje guardado como borrador.</string>
   <string name="send_mime_not_supported">Tipo de archivo no soportado.</string>
-  <string name="button_validate">Solicitar código de verificación</string>
+  <string name="button_validate">Registro</string>
   <string name="button_validation_code">Ya tengo un código de verificación</string>
   <string name="button_validation_register">Verificar</string>
   <string name="notify_ticker_download_completed">Descarga completada</string>
@@ -391,4 +391,11 @@
     <string name="err_import_keypair_uid_mismatch">La clave importada no coincide con el número de teléfono que ha introducido.</string>
     <string name="hint_ptt">Mantenga el botón de micro pulsado para grabar.</string>
     <string name="err_audio_record_noaudio">No se ha grabado ningún audio.</string>
+    <string name="msg_importing_key">Importando la clave personal…</string>
+    <string name="code_validation_intro_missed_call">En breves instantes tendrá una llamada perdida de este número:</string>
+    <string name="code_validation_intro2_missed_call">Por favor, introduzca los últimos %d dígitos del número de la llamada perdida.</string>
+    <string name="button_validation_fallback">No ha recibido la llamada?</string>
+    <string name="title_fallback">Tiene algún problema?</string>
+    <string name="msg_fallback">Vamos a verificar su número de teléfono de otra manera.</string>
+    <string name="menu_manual_verification">Ya tiene un código?</string>
     </resources>

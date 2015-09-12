@@ -775,7 +775,7 @@ public class MessagesProvider extends ContentProvider {
                             if (doUpdateFulltext) {
                                 int direction = c.getInt(2);
                                 int encrypted = c.getInt(3);
-                                if ((direction == Messages.DIRECTION_IN) ? (encrypted == 0) : true)
+                                if (direction != Messages.DIRECTION_IN || encrypted == 0)
                                     updateFulltext(db, c.getLong(1), threadId, c.getBlob(4));
                             }
                         }
@@ -1021,6 +1021,7 @@ public class MessagesProvider extends ContentProvider {
                 Messages.BODY_MIME,
                 Messages.ATTACHMENT_MIME,
                 Messages.TIMESTAMP,
+                Messages.SERVER_TIMESTAMP,
             }, Messages.THREAD_ID + " = ?", new String[] { String.valueOf(threadId) },
             null, null, Messages.INVERTED_SORT_ORDER, "1");
 
@@ -1034,7 +1035,10 @@ public class MessagesProvider extends ContentProvider {
 
                 setThreadContent(c.getBlob(3), c.getString(4), c.getString(5), v);
 
-                v.put(Threads.TIMESTAMP, c.getLong(6));
+                // use server timestamp if present
+                long ts = c.getLong(7);
+                v.put(Threads.TIMESTAMP, ts > 0 ? ts : c.getLong(6));
+
                 rc = db.update(TABLE_THREADS, v, Threads._ID + " = ?", new String[] { String.valueOf(threadId) });
                 if (rc > 0) {
                     notifications.add(ContentUris.withAppendedId(Threads.CONTENT_URI, threadId));
