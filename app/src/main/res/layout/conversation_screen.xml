@@ -16,8 +16,19 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<fragment android:name="org.kontalk.ui.ConversationListFragment"
-    android:id="@+id/fragment_conversation_list"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical">
+    <include layout="@layout/toolbar_simple"/>
+
+<android.support.v4.widget.SlidingPaneLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:id="@+id/slider_pane">
+
+    <include layout="@layout/contacts_list_fragment"/>
+
+    <include layout="@layout/conversation_list_screen"/>
+
+</android.support.v4.widget.SlidingPaneLayout>
+</LinearLayout>

@@ -24,6 +24,7 @@ import org.kontalk.authenticator.Authenticator;
 import org.kontalk.authenticator.LegacyAuthentication;
 import org.kontalk.data.Contact;
 import org.kontalk.data.Conversation;
+import org.kontalk.message.TextComponent;
 import org.kontalk.provider.MessagesProvider;
 import org.kontalk.provider.MyMessages.Threads;
 import org.kontalk.service.msgcenter.MessageCenterService;
@@ -42,22 +43,41 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SlidingPaneLayout;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
 import android.widget.ListAdapter;
 import android.widget.Toast;
+
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 
 /**
  * The conversations list activity.
+ *
+ * Layout is a sliding pane holding the conversation list as primary view and the contact list as
+ * browser side view.
+ *
  * @author Daniele Ricci
  * @version 1.0
  */
@@ -66,6 +86,7 @@ public class ConversationList extends ToolbarActivity
     public static final String TAG = ConversationList.class.getSimpleName();
 
     private ConversationListFragment mFragment;
+    private SlidingPaneLayout mSlidingPanel;
 
     private Dialog mUpgradeProgress;
     private BroadcastReceiver mUpgradeReceiver;
@@ -79,15 +100,61 @@ public class ConversationList extends ToolbarActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.conversation_list_screen);
+
+        setContentView(R.layout.conversation_screen);
 
         setupToolbar(false);
 
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
+        final Fragment contactsListFragment = getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_contacts_list);
+
+        mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.slider_pane);
+        mSlidingPanel.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+            @Override
+            public void onPanelClosed(View panel) {
+                getSupportActionBar().setTitle(getString(R.string.app_name));
+                //supportInvalidateOptionsMenu();
+                mFragment.setHasOptionsMenu(true);
+                contactsListFragment.setHasOptionsMenu(false);
+                Fragment composeMessageFragment = composeMessageFragmentOrNull();
+                if (composeMessageFragment != null) {
+                    composeMessageFragment.setHasOptionsMenu(true);
+                }
+            }
+
+            @Override
+            public void onPanelOpened(View panel) {
+                getSupportActionBar().setTitle(getString(R.string.contacts_list_title));
+                //supportInvalidateOptionsMenu();
+                mFragment.setHasOptionsMenu(false);
+                contactsListFragment.setHasOptionsMenu(true);
+                Fragment composeMessageFragment = composeMessageFragmentOrNull();
+                if (composeMessageFragment != null) {
+                    composeMessageFragment.setHasOptionsMenu(false);
+                }
+                showOnFirstVisit();
+            }
+
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+            }
+        });
+        mSlidingPanel.setParallaxDistance(200);
+
+        // initial menu
+        if (!mSlidingPanel.isSlideable()) {
+            //mFragment.setHasOptionsMenu(true);
+            contactsListFragment.setHasOptionsMenu(false);
+        }
 
         if (!xmppUpgrade())
             handleIntent(getIntent());
+    }
+
+    private Fragment composeMessageFragmentOrNull() {
+        return getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */
@@ -325,13 +392,11 @@ public class ConversationList extends ToolbarActivity
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
         // open by user hash
         openConversation(Threads.getUri(contact.getJID()));
+        mSlidingPanel.closePane();
     }
 
     public void showContactPicker() {
-        // TODO one day it will be like this
-        // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
-        Intent i = new Intent(this, ContactsListActivity.class);
-        startActivityForResult(i, REQUEST_CONTACT_PICKER);
+        mSlidingPanel.openPane();
     }
 
     @Override
@@ -423,6 +488,90 @@ public class ConversationList extends ToolbarActivity
         Intent i = new Intent(context.getApplicationContext(), ConversationList.class);
         i.setAction(ACTION_AUTH_ERROR_WARNING);
         return i;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_invite:
+                startInvite();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void startInvite() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType(TextComponent.MIME_TYPE);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_invite_message));
+
+        List<ResolveInfo> resInfo = getPackageManager().queryIntentActivities(shareIntent, 0);
+        // having size=1 means that we are the only handlers
+        if (resInfo != null && resInfo.size() > 1) {
+            List<Intent> targets = new ArrayList<Intent>();
+
+            for (ResolveInfo resolveInfo : resInfo) {
+                String packageName = resolveInfo.activityInfo.packageName;
+
+                if (!getPackageName().equals(packageName)) {
+                    // copy intent and add resolved info
+                    Intent targetShareIntent = new Intent(shareIntent);
+                    targetShareIntent
+                            .setPackage(packageName)
+                            .setComponent(new ComponentName(
+                                    packageName, resolveInfo.activityInfo.name))
+                            .putExtra("org.kontalk.invite.label", resolveInfo.loadLabel(getPackageManager()));
+
+                    targets.add(targetShareIntent);
+                }
+            }
+
+            // initial intents are added before of the main intent, so we remove the last one here
+            Intent chooser = Intent.createChooser(targets.remove(targets.size() - 1), getString(R.string.menu_invite));
+            Collections.sort(targets, new DisplayNameComparator());
+            // remove custom extras
+            for (Intent intent : targets)
+                intent.removeExtra("org.kontalk.invite.label");
+
+            Parcelable[] extraIntents = new Parcelable[targets.size()];
+            targets.toArray(extraIntents);
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+
+            startActivity(chooser);
+        }
+
+        else {
+            // no activity to handle invitation
+            Toast.makeText(this, R.string.warn_invite_no_app,
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showOnFirstVisit() {
+        if (!Preferences.getContactsListVisited(this))
+            Toast.makeText(this, R.string.msg_do_refresh,
+                    Toast.LENGTH_LONG).show();
+    }
+
+    public static class DisplayNameComparator implements
+            Comparator<Intent> {
+        public DisplayNameComparator() {
+            mCollator.setStrength(Collator.PRIMARY);
+        }
+
+        public final int compare(Intent a, Intent b) {
+            CharSequence sa = a.getCharSequenceExtra("org.kontalk.invite.label");
+            if (sa == null)
+                sa = a.getComponent().getClassName();
+            CharSequence sb = b.getCharSequenceExtra("org.kontalk.invite.label");
+            if (sb == null)
+                sb = b.getComponent().getClassName();
+
+            return mCollator.compare(sa.toString(), sb.toString());
+        }
+
+        private final Collator mCollator = Collator.getInstance();
     }
 
 }
