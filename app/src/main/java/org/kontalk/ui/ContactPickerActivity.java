@@ -25,20 +25,31 @@ import org.kontalk.ui.view.ContactPickerListener;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Window;
+import android.view.MenuItem;
 
 
-public class ContactPickerActivity extends ActionBarActivity implements ContactPickerListener {
-
+public class ContactPickerActivity extends ToolbarActivity implements ContactPickerListener {
     public static final String TAG = ContactPickerActivity.class.getSimpleName();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.contacts_list_screen);
+
+        setupToolbar(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                startActivity(new Intent(this, ConversationsActivity.class));
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /** Called when a contact has been selected from a {@link ContactsListFragment}. */
