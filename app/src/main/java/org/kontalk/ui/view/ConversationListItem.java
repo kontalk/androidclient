@@ -48,7 +48,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
     private TextView mSubjectView;
     private TextView mFromView;
     private TextView mDateView;
-    //private View mAttachmentView;
     private ImageView mErrorIndicator;
     private TextView mCounterView;
 
@@ -70,7 +69,6 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
         mSubjectView = (TextView) findViewById(R.id.subject);
 
         mDateView = (TextView) findViewById(R.id.date);
-        //mAttachmentView = findViewById(R.id.attachment);
         mErrorIndicator = (ImageView) findViewById(R.id.error);
         mCounterView = (TextView) findViewById(R.id.counter);
 
