@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Paramètres réseaux</string>
   <string name="pref_network_uri">Éditer l\'adresse du serveur </string>
   <string name="pref_title_network_uri">Ceci remplacera la gestion automatique des serveurs</string>
-  <string name="number_validation_intro1">Veuillez entrer votre nom, sélectionner votre code de pays et entrez votre numéro de téléphone portable. Un SMS avec un code de vérification vous sera envoyé. Votre numéro de téléphone ne sera utilisé qu\'une seule fois et sera ensuite ignoré.</string>
-  <string name="number_validation_intro2">Si vous ne pouvez pas recevoir des SMS sur cet appareil, entrez un numéro de téléphone que vous possédez et entrez le code de vérification reçus par SMS.</string>
+  <string name="number_validation_intro1">Veuillez entrer votre nom, sélectionner votre code de pays et entrer votre numéro de téléphone portable. Plus d\'instructions sur l\'écran suivant.</string>
+  <string name="number_validation_intro2">Si vous ne pouvez recevoir ni appels ni SMS sur cet appareil, entrez un de vos numéros de téléphone et nous l\'associerons à cet appareil.</string>
   <string name="code_validation_intro">Vous devriez recevoir un SMS ou un appel de ce numéro brièvement:</string>
   <string name="code_validation_intro2">S\'il vous plaît insérez le code que vous recevez ou entendez ci-dessous.</string>
   <string name="code_validation_intro_manual">S\'il vous plaît insérez le code de vérification que vous avez reçu. S\'il vous plaît noter que le code de vérification ne peut être utilisé qu\'une seule fois.</string>
