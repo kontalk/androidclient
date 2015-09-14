@@ -138,9 +138,7 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
             String source = (draft != null) ? draft : conv.getSubject();
 
             if (source != null) {
-                text = new SpannableString(source);
-                if (conv.getUnreadCount() > 0)
-                    ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                text = source;
             }
 
             else if (conv.isEncrypted()) {
@@ -151,6 +149,11 @@ public class ConversationListItem extends AvatarListItem implements Checkable {
                 // determine from mime type
                 text = CompositeMessage.getSampleTextContent(conv.getMime());
             }
+        }
+
+        if (conv.getUnreadCount() > 0) {
+            text = new SpannableString(text);
+            ((Spannable) text).setSpan(STYLE_BOLD, 0, text.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
 
         mSubjectView.setText(text);
