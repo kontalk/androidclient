@@ -1,9 +1,9 @@
 [submodule "client-common-java"]
 	path = client-common-java
-	url = git@github.com:kontalk/client-common-java.git
+	url = https://github.com/kontalk/client-common-java.git
 [submodule "emojicon"]
 	path = emojicon
-	url = git@github.com:kontalk/emojicon.git
+	url = https://github.com/kontalk/emojicon.git
 [submodule "CircleImageView"]
 	path = CircleImageView
-	url = git@github.com:kontalk/CircleImageView.git
+	url = https://github.com/kontalk/CircleImageView.git
