@@ -23,35 +23,23 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.List;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
-import org.apache.http.params.HttpConnectionParams;
+import javax.net.ssl.HttpsURLConnection;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
 
 import org.kontalk.Kontalk;
@@ -64,24 +52,20 @@ import org.kontalk.service.ProgressListener;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.ProgressInputStreamEntity;
 
+
 /**
  * Upload service implementation for Kontalk Box dropbox service.
  * @author Daniele Ricci
  */
 public class KontalkBoxUploadConnection implements UploadConnection {
-    private static final String TAG = KontalkBoxUploadConnection.class.getSimpleName();
-
-    /** The authentication token header. */
-    private static final String HEADER_NAME_AUTHORIZATION = "Authorization";
-    private static final String HEADER_VALUE_AUTHORIZATION = "KontalkToken auth=";
 
     /** Message flags header. */
     private static final String HEADER_MESSAGE_FLAGS = "X-Message-Flags";
 
     protected final Context mContext;
 
-    protected HttpRequestBase currentRequest;
-    protected HttpClient mConnection;
+    protected HttpsURLConnection currentRequest;
+
     private final static int CONNECT_TIMEOUT = 15000;
     private final static int READ_TIMEOUT = 40000;
 
@@ -101,21 +85,15 @@ public class KontalkBoxUploadConnection implements UploadConnection {
     @Override
     public void abort() {
         if (currentRequest != null)
-            currentRequest.abort();
+            currentRequest.disconnect();
     }
 
     @Override
     public String upload(Uri uri, String mime, boolean encrypt, String to, ProgressListener listener)
             throws IOException {
 
-        HttpResponse response = null;
         InputStream inMessage = null;
         try {
-            AssetFileDescriptor stat = mContext.getContentResolver()
-                .openAssetFileDescriptor(uri, "r");
-            long inLength = stat.getLength();
-            stat.close();
-
             inMessage = mContext.getContentResolver().openInputStream(uri);
 
             boolean encrypted = false;
@@ -136,7 +114,6 @@ public class KontalkBoxUploadConnection implements UploadConnection {
 
                     // open the encrypted file
                     inMessage = new FileInputStream(temp);
-                    inLength = temp.length();
                     encrypted = true;
 
                     // delete the encrypted file
@@ -146,31 +123,54 @@ public class KontalkBoxUploadConnection implements UploadConnection {
             }
 
             // http request!
-            currentRequest = prepareMessage(listener,
-                mime, inMessage, inLength, encrypted);
-            response = execute(currentRequest);
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
-                throw new HttpException(response.getStatusLine().getReasonPhrase());
+            boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
+            currentRequest = prepareMessage(mime, encrypted, acceptAnyCertificate);
 
-            return EntityUtils.toString(response.getEntity());
+            // execute!
+            ProgressInputStreamEntity entity = new ProgressInputStreamEntity(inMessage, this, listener);
+            entity.writeTo(currentRequest.getOutputStream());
+
+            if (currentRequest.getResponseCode() != 200)
+                throw new IOException(currentRequest.getResponseCode() + " " + currentRequest.getResponseMessage());
+
+            return responseToString(currentRequest, Charset.defaultCharset());
         }
         catch (Exception e) {
             throw innerException("upload error", e);
         }
         finally {
             currentRequest = null;
-            try {
-                response.getEntity().consumeContent();
+            if (inMessage != null) {
+                try {
+                    inMessage.close();
+                }
+                catch (Exception e) {
+                    // ignore
+                }
             }
-            catch (Exception e) {
-                // ignore
+        }
+    }
+
+    public static String responseToString(HttpURLConnection conn, final Charset charset) throws IOException {
+        final InputStream instream = conn.getInputStream();
+        if (instream == null) {
+            return null;
+        }
+        try {
+            int i = conn.getContentLength();
+            if (i < 0) {
+                i = 4096;
             }
-            try {
-                inMessage.close();
+            final Reader reader = new InputStreamReader(instream, charset);
+            final StringBuilder buffer = new StringBuilder(i);
+            final char[] tmp = new char[1024];
+            int l;
+            while((l = reader.read(tmp)) != -1) {
+                buffer.append(tmp, 0, l);
             }
-            catch (Exception e) {
-                // ignore
-            }
+            return buffer.toString();
+        } finally {
+            instream.close();
         }
     }
 
@@ -180,93 +180,43 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         return ie;
     }
 
-    /** A generic endpoint request method for the messaging server. */
-    public HttpRequestBase prepare(List<NameValuePair> params,
-        String mime, byte[] content, boolean forcePost)
-        throws IOException {
+    private void setupClient(HttpsURLConnection conn, boolean acceptAnyCertificate)
+        throws CertificateException, UnrecoverableKeyException,
+        NoSuchAlgorithmException, KeyStoreException,
+        KeyManagementException, NoSuchProviderException,
+        IOException {
 
-        HttpRequestBase req;
-
-        // compose uri
-        StringBuilder uri = new StringBuilder(mBaseUrl);
-        if (params != null)
-            uri.append("?").append(URLEncodedUtils.format(params, "UTF-8"));
-
-        // request type
-        if (content != null || forcePost) {
-            req = new HttpPost(uri.toString());
-            req.setHeader("Content-Type", mime != null ? mime
-                : "application/octet-stream");
-            if (content != null)
-                ((HttpPost) req).setEntity(new ByteArrayEntity(content));
-        }
-        else
-            req = new HttpGet(uri.toString());
-
-        return req;
+        // bug caused by Lighttpd
+        conn.setRequestProperty("Expect", "100-continue");
+        conn.setConnectTimeout(CONNECT_TIMEOUT);
+        conn.setReadTimeout(READ_TIMEOUT);
+        conn.setDoOutput(true);
+        conn.setDoInput(true);
+        conn.setSSLSocketFactory(ClientHTTPConnection.setupSSLSocketFactory(mContext,
+            mPrivateKey, mCertificate, acceptAnyCertificate));
     }
 
     /** A message posting method. */
-    private HttpRequestBase prepareMessage(ProgressListener listener,
-        String mime, InputStream data, long length, boolean encrypted)
+    private HttpsURLConnection prepareMessage(String mime, boolean encrypted, boolean acceptAnyCertificate)
             throws IOException {
 
-        HttpPost req = (HttpPost) prepare(null, mime, null, true);
-        req.setEntity(new ProgressInputStreamEntity(data, length, this, listener));
+        // create uri
+        HttpsURLConnection conn = (HttpsURLConnection) new URL(mBaseUrl).openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", mime != null ? mime
+            : "application/octet-stream");
 
         if (encrypted)
-            req.addHeader(HEADER_MESSAGE_FLAGS, "encrypted");
+            conn.setRequestProperty(HEADER_MESSAGE_FLAGS, "encrypted");
 
-        return req;
-    }
-
-    /**
-     * Executes the given request.
-     *
-     * @param request
-     *            the request
-     * @return the response
-     * @throws IOException
-     */
-    private HttpResponse execute(HttpRequestBase request) throws IOException {
-        // execute!
         try {
-            if (mConnection == null) {
-                SchemeRegistry registry = new SchemeRegistry();
-                try {
-                    registry.register(new Scheme("http",  PlainSocketFactory.getSocketFactory(), 80));
-
-                    boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
-                    registry.register(new Scheme("https", ClientHTTPConnection
-                        .setupSSLSocketFactory(mContext, mPrivateKey, mCertificate, acceptAnyCertificate), 443));
-                }
-                catch (Exception e) {
-                    IOException ie = new IOException("unable to create keystore");
-                    ie.initCause(e);
-                    throw ie;
-                }
-
-                HttpParams params = new BasicHttpParams();
-                // handle redirects :)
-                params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
-                // HttpClient bug caused by Lighttpd
-                params.setBooleanParameter("http.protocol.expect-continue", false);
-
-                HttpConnectionParams.setConnectionTimeout(params, CONNECT_TIMEOUT);
-                HttpConnectionParams.setSoTimeout(params, READ_TIMEOUT);
-                // create connection manager
-                ClientConnectionManager connMgr = new SingleClientConnManager(params, registry);
-
-                mConnection = new DefaultHttpClient(connMgr, params);
-            }
-            return mConnection.execute(request);
+            setupClient(conn, acceptAnyCertificate);
         }
-        catch (ClientProtocolException e) {
-            IOException ie = new IOException("client protocol error");
-            ie.initCause(e);
-            throw ie;
+        catch (Exception e) {
+            throw new IOException("error setting up SSL connection", e);
         }
 
+        return conn;
     }
 
 }

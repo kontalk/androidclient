@@ -23,26 +23,47 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.http.entity.InputStreamEntity;
 import org.kontalk.service.ProgressListener;
 import org.kontalk.upload.UploadConnection;
 
 
-public class ProgressInputStreamEntity extends InputStreamEntity {
-    protected final UploadConnection mConn;
-    protected final ProgressListener mListener;
+public class ProgressInputStreamEntity {
+    private static final int BUFFER_SIZE = 1024 * 2;
 
-    public ProgressInputStreamEntity(InputStream instream, long length,
+    private final InputStream mStream;
+    private final UploadConnection mConn;
+    private final ProgressListener mListener;
+
+    public ProgressInputStreamEntity(InputStream instream,
             final UploadConnection conn, final ProgressListener listener) {
-        super(instream, length);
+        mStream = instream;
         mConn = conn;
         mListener = listener;
     }
 
-    @Override
+    private void _writeTo(OutputStream outstream) throws IOException {
+        InputStream instream = mStream;
+        try {
+            final byte[] buffer = new byte[BUFFER_SIZE];
+            int l;
+            while ((l = instream.read(buffer)) != -1) {
+                outstream.write(buffer, 0, l);
+            }
+        }
+        finally {
+            if (instream != null) {
+                try {
+                    instream.close();
+                }
+                catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     public void writeTo(final OutputStream outstream) throws IOException {
         mListener.start(mConn);
-        super.writeTo(new CountingOutputStream(outstream, mConn, mListener));
+        _writeTo(new CountingOutputStream(outstream, mConn, mListener));
     }
 
     private static final class CountingOutputStream extends FilterOutputStream {
