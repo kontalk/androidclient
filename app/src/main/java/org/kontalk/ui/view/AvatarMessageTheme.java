@@ -42,6 +42,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
     private final int mDrawableId;
 
     private LinearLayout mBalloonView;
+    private LinearLayout mParentView;
 
     private CircleContactBadge mAvatar;
 
@@ -55,6 +56,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
         View view = super.inflate(stub);
 
         mBalloonView = (LinearLayout) view.findViewById(R.id.balloon_view);
+        mParentView = (LinearLayout) view.findViewById(R.id.message_view_parent);
 
         mAvatar = (CircleContactBadge) view.findViewById(R.id.avatar);
 
@@ -68,18 +70,17 @@ public class AvatarMessageTheme extends BaseMessageTheme {
 
     @Override
     public boolean isFullWidth() {
-        return true;
+        return false;
     }
 
     @Override
     public void processComponentView(MessageContentView<?> view) {
         if (view instanceof TextContentView) {
-            ((TextContentView) view).setGravity(isIncoming() ?
-                Gravity.START : Gravity.END);
+            ((TextContentView) view).enableMeasureHack(true);
         }
     }
 
-    public void setView() {
+    private void setView() {
         if (mBalloonView != null) {
             mBalloonView.setBackgroundResource(mDrawableId);
         }
@@ -95,7 +96,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
                 contact.getAvatar(mContext) : sDefaultContactImage);
         }
 
-        getContent().setGravity(Gravity.LEFT);
+        mParentView.setGravity(Gravity.LEFT);
 
         super.setIncoming(contact);
     }
@@ -118,7 +119,7 @@ public class AvatarMessageTheme extends BaseMessageTheme {
             mAvatar.assignContactUri(SystemUtils.getProfileUri(mContext));
         }
 
-        getContent().setGravity(Gravity.RIGHT);
+        mParentView.setGravity(Gravity.RIGHT);
 
         super.setOutgoing(contact, status);
     }

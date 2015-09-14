@@ -28,7 +28,7 @@
 
     <SeekBar
         android:id="@+id/balloon_audio_seekbar"
-        android:layout_width="120dp"
+        android:layout_width="@dimen/message_audio_width"
         android:layout_height="wrap_content"
         android:layout_marginLeft="9dp"
         android:layout_marginTop="6dp"

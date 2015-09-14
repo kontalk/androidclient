@@ -18,6 +18,7 @@
 
 <resources>
     <dimen name="message_text_width">240dp</dimen>
+    <dimen name="message_audio_width">180dp</dimen>
     <dimen name="dateview_text_size">11sp</dimen>
     <dimen name="conv_list_margin_left">8dp</dimen>
 
