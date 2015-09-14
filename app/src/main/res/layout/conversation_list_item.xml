@@ -53,6 +53,7 @@
         android:layout_alignWithParentIfMissing="true"
         android:layout_toLeftOf="@+id/emblems"
         app:emojiconSize="@dimen/emoji_listitem_size"
+        app:emojiconAlignment="baseline"
         android:ellipsize="marquee" />
 
     <TextView
