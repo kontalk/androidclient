@@ -399,7 +399,9 @@ public class ComposeMessage extends ToolbarActivity implements ComposeMessagePar
             }
 
             else {
-                sendMedia((Uri) sendIntent.getParcelableExtra(Intent.EXTRA_STREAM));
+                Uri uri = sendIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+                if (uri != null)
+                    sendMedia(uri);
             }
         }
 
