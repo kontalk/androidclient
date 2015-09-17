@@ -195,6 +195,9 @@ public class ComposerBar extends RelativeLayout implements
                     mSendButton.setVisibility(textPresent ? View.VISIBLE : View.INVISIBLE);
                 }
                 mSendButton.setEnabled(textPresent);
+
+                if (mListener != null)
+                    mListener.textChanged(s);
             }
         });
         mTextEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {

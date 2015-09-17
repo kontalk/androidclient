@@ -104,6 +104,7 @@ dependencies {
     compile 'com.github.machinarius:preferencefragment:0.1.1'
     compile 'com.afollestad:material-dialogs:0.7.9.1'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
+    compile 'com.nispok:snackbar:2.11.0'
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"

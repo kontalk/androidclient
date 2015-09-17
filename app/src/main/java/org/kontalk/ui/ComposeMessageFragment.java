@@ -32,6 +32,10 @@ import com.afollestad.materialdialogs.simplelist.MaterialSimpleListAdapter;
 import com.afollestad.materialdialogs.simplelist.MaterialSimpleListItem;
 import com.akalipetis.fragment.ActionModeListFragment;
 import com.akalipetis.fragment.MultiChoiceModeListener;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.enums.SnackbarType;
+import com.nispok.snackbar.listeners.ActionClickListener;
 
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Presence;
@@ -79,7 +83,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseBooleanArray;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -87,7 +90,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -1841,11 +1843,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void hideWarning() {
-        LinearLayout root = (LinearLayout) getView().findViewById(R.id.container);
-        TextView warning = (TextView) root.findViewById(R.id.warning_bar);
-        if (warning != null) {
-            root.removeView(warning);
-        }
+        SnackbarManager.dismiss();
     }
 
     private void trustKeyChange() {
@@ -1895,44 +1893,67 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
     }
 
-    private void showWarning(CharSequence text, View.OnClickListener listener, WarningType type) {
+    private void showWarning(CharSequence text, final View.OnClickListener listener, WarningType type) {
         View view = getView();
         Activity context = getActivity();
         if (view == null || context == null)
             return;
 
-        LinearLayout root = (LinearLayout) view.findViewById(R.id.container);
-        TextView warning = (TextView) root.findViewById(R.id.warning_bar);
-        if (warning == null) {
-            warning = (TextView) LayoutInflater.from(context)
-                .inflate(R.layout.warning_bar, root, false);
-            root.addView(warning, 0);
-        }
-        else {
-            // check type priority
-            WarningType oldType = (WarningType) warning.getTag();
+        Snackbar bar = SnackbarManager.getCurrentSnackbar();
+        if (bar != null) {
+            WarningType oldType = (WarningType) bar.getTag();
             if (oldType != null && oldType.getValue() > type.getValue())
                 return;
+
+            bar.dismiss();
         }
-        int textId = 0;
+
+        bar = Snackbar.with(context)
+            .type(SnackbarType.MULTI_LINE)
+            .text(text)
+            .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
+            .dismissOnActionClicked(false)
+            .allowMultipleActionClicks(true);
+
+        if (listener != null) {
+            bar.swipeToDismiss(false)
+                .actionLabel(R.string.warning_button_details)
+                .actionListener(new ActionClickListener() {
+                    @Override
+                    public void onActionClicked(Snackbar snackbar) {
+                        listener.onClick(null);
+                    }
+                });
+        }
+        else {
+            bar.swipeToDismiss(true)
+                .animation(false);
+        }
+
         int colorId = 0;
+        int textColorId = 0;
         switch (type) {
             case FATAL:
-                textId = android.R.attr.textAppearanceSmallInverse;
+                textColorId = R.color.warning_bar_text_fatal;
                 colorId = R.color.warning_bar_background_fatal;
                 break;
             case WARNING:
-                textId = android.R.attr.textAppearanceSmall;
+                textColorId = R.color.warning_bar_text_warning;
                 colorId = R.color.warning_bar_background_warning;
                 break;
         }
-        final TypedValue typedValue = new TypedValue();
-        context.getTheme().resolveAttribute(textId, typedValue, true);
-        warning.setTextAppearance(context, typedValue.resourceId);
-        warning.setBackgroundColor(getResources().getColor(colorId));
-        warning.setTag(type);
-        warning.setOnClickListener(listener);
-        warning.setText(text);
+
+        bar.setTag(type);
+        bar
+            .color(getResources().getColor(colorId))
+            .textColor(getResources().getColor(textColorId));
+
+        if (listener != null) {
+            SnackbarManager.show(bar);
+        }
+        else {
+            SnackbarManager.show(bar, (ViewGroup) view.findViewById(R.id.warning_bar));
+        }
     }
 
     private void subscribePresence() {
@@ -2241,7 +2262,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     private synchronized void unregisterPeerObserver() {
         if (mPeerObserver != null) {
             getActivity().getContentResolver().unregisterContentObserver(
-                    mPeerObserver);
+                mPeerObserver);
             mPeerObserver = null;
         }
     }
@@ -2650,6 +2671,17 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             mOfflineModeWarned = true;
             Toast.makeText(getActivity(), R.string.warning_offline_mode,
                 Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void textChanged(CharSequence text) {
+        Snackbar bar = SnackbarManager.getCurrentSnackbar();
+        if (bar != null) {
+            WarningType type = (WarningType) bar.getTag();
+            if (type != null && type.getValue() < WarningType.FATAL.getValue()) {
+                bar.dismiss();
+            }
         }
     }
 
