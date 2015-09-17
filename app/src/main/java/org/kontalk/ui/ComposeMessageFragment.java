@@ -309,6 +309,9 @@ public class ComposeMessageFragment extends ListFragment implements
     }
 
     public void reload() {
+        // hide the warning bar
+        hideWarning();
+        // reload data
         processArguments(null);
         onFocus(false);
     }
