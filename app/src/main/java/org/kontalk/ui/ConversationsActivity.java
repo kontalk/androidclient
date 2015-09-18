@@ -450,7 +450,6 @@ public class ConversationsActivity extends ToolbarActivity
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_compose_message, f);
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                ft.addToBackStack(null);
                 ft.commit();
             }
         } else {
@@ -484,7 +483,6 @@ public class ConversationsActivity extends ToolbarActivity
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_compose_message, f);
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                ft.addToBackStack(null);
                 ft.commitAllowingStateLoss();
             }
         }

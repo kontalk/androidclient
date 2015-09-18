@@ -81,7 +81,8 @@ public class ConversationListFragment extends ActionModeListFragment
     private final ConversationListAdapter.OnContentChangedListener mContentChangedListener =
         new ConversationListAdapter.OnContentChangedListener() {
         public void onContentChanged(ConversationListAdapter adapter) {
-            startQuery();
+            if (!isFinishing())
+                startQuery();
         }
     };
 
