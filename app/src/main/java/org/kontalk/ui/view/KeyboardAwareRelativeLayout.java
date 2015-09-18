@@ -16,6 +16,8 @@
  */
 package org.kontalk.ui.view;
 
+import java.lang.reflect.Field;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -26,6 +28,7 @@ import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -70,7 +73,8 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
         int res = getResources().getIdentifier("status_bar_height", "dimen", "android");
         int statusBarHeight = res > 0 ? getResources().getDimensionPixelSize(res) : 0;
 
-        final int availableHeight = this.getRootView().getHeight() - statusBarHeight;
+        View rootView = getRootView();
+        final int availableHeight = rootView.getHeight() - (rect.top != 0 ? statusBarHeight : 0) - getViewInset(rootView);
         getWindowVisibleDisplayFrame(rect);
 
         final int keyboardHeight = availableHeight - (rect.bottom - rect.top);
@@ -87,6 +91,27 @@ public class KeyboardAwareRelativeLayout extends FrameLayout {
             mListener.onKeyboardShown(mKeyboardVisible);
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    // waiting for a fix: https://code.google.com/p/android/issues/detail?id=88256
+    public static int getViewInset(View view) {
+        if (view == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return 0;
+        }
+        try {
+            Field mAttachInfoField = View.class.getDeclaredField("mAttachInfo");
+            mAttachInfoField.setAccessible(true);
+            Object mAttachInfo = mAttachInfoField.get(view);
+            if (mAttachInfo != null) {
+                Field mStableInsetsField = mAttachInfo.getClass().getDeclaredField("mStableInsets");
+                mStableInsetsField.setAccessible(true);
+                Rect insets = (Rect)mStableInsetsField.get(mAttachInfo);
+                return insets.bottom;
+            }
+        }
+        catch (Exception ignored) {
+        }
+        return 0;
     }
 
     protected void onKeyboardShown(int keyboardHeight) {
