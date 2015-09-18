@@ -20,28 +20,21 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical">
-    <include layout="@layout/toolbar_simple"/>
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    android:baselineAligned="false"
+    android:orientation="horizontal">
+    <fragment android:name="org.kontalk.ui.ConversationListFragment"
+      android:id="@+id/fragment_conversation_list"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_weight="4" >
+        <!-- Preview: layout=@layout/conversation_list -->
+    </fragment>
+    <FrameLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
-        <fragment android:name="org.kontalk.ui.ConversationListFragment"
-          android:id="@+id/fragment_conversation_list"
-          android:layout_width="fill_parent"
-          android:layout_height="fill_parent"
-          android:layout_weight="4" >
-            <!-- Preview: layout=@layout/conversation_list -->
-        </fragment>
-        <FrameLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/fragment_compose_message"
-            android:layout_marginLeft="5dip"
-            android:layout_weight="2">
-            <!-- Preview: layout=@layout/compose_message -->
-        </FrameLayout>
-    </LinearLayout>
+        android:id="@+id/fragment_compose_message"
+        android:layout_marginLeft="5dip"
+        android:layout_weight="2">
+        <!-- Preview: layout=@layout/compose_message -->
+    </FrameLayout>
 </LinearLayout>
