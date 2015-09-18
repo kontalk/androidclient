@@ -19,6 +19,9 @@
 <resources>
 
   <!-- default theme selector -->
-  <style name="Theme.Light" parent="Base.Theme.Light"/>
+  <style name="Theme.Light" parent="Base.Theme.Light">
+    <item name="android:fastScrollThumbDrawable">@drawable/fastscroll_thumb_holo</item>
+    <item name="android:fastScrollTrackDrawable">@drawable/fastscroll_track_holo_light</item>
+  </style>
 
 </resources>
