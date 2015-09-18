@@ -175,7 +175,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static boolean isActive(Context context) {
         Account acc = Authenticator.getDefaultAccount(context);
-        return ContentResolver.isSyncActive(acc, ContactsContract.AUTHORITY);
+        return acc != null && ContentResolver.isSyncActive(acc, ContactsContract.AUTHORITY);
     }
 
     public static boolean isError(SyncResult syncResult) {
