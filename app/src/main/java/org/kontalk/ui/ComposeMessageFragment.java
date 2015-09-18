@@ -1126,50 +1126,35 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         builder.create().show();
     }
 
-    private void deleteMessage(final long id) {
-        AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(getActivity());
-        builder.setMessage(R.string.confirm_will_delete_message);
-        builder.setPositiveButton(android.R.string.ok,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            getActivity().getContentResolver().delete(
-                                ContentUris.withAppendedId(
-                                    Messages.CONTENT_URI, id), null, null);
-                        }
-                        catch (SQLiteDiskIOException e) {
-                            Log.w(TAG, "error deleting message");
-                            Toast.makeText(getActivity(), R.string.error_delete_message,
-                                Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.create().show();
-    }
-
     private void blockUser() {
-        new AlertDialogWrapper.Builder(getActivity())
-            .setMessage(R.string.msg_block_user_warning)
-            .setPositiveButton(R.string.menu_block_user, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+        new MaterialDialog.Builder(getActivity())
+            .title(R.string.title_block_user_warning)
+            .content(R.string.msg_block_user_warning)
+            .positiveText(R.string.menu_block_user)
+            .positiveColorRes(R.color.button_danger)
+            .negativeText(android.R.string.cancel)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
                     setPrivacy(PRIVACY_BLOCK);
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
             .show();
     }
 
     private void unblockUser() {
-        new AlertDialogWrapper.Builder(getActivity())
-            .setMessage(R.string.msg_unblock_user_warning)
-            .setPositiveButton(R.string.menu_unblock_user, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+        new MaterialDialog.Builder(getActivity())
+            .title(R.string.title_unblock_user_warning)
+            .content(R.string.msg_unblock_user_warning)
+            .positiveText(R.string.menu_unblock_user)
+            .positiveColorRes(R.color.button_danger)
+            .negativeText(android.R.string.cancel)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
                     setPrivacy(PRIVACY_UNBLOCK);
                 }
             })
-            .setNegativeButton(android.R.string.cancel, null)
             .show();
     }
 
