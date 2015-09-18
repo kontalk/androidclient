@@ -501,7 +501,7 @@ public class NumberValidation extends AccountAuthenticatorActionBarActivity
     private void error(int message) {
         new AlertDialogWrapper.Builder(this)
             .setMessage(message)
-            .setNeutralButton(android.R.string.ok, null)
+            .setPositiveButton(android.R.string.ok, null)
             .show();
     }
 
