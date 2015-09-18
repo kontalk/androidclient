@@ -29,8 +29,16 @@
       "email": "translateKontalkOrg.misc@mailget.de"
     },
     {
+      "name": "gaich",
+      "email": "gaich@mail.ru"
+    },
+    {
       "name": "Giovanni Palleschi",
       "email": "gpalleschi@gmail.com"
+    },
+    {
+      "name": "Hysyn Hejdyri Nysyb",
+      "email": "hsn6@openmailbox.org"
     },
     {
       "name": "Jean Elchinger",
@@ -41,8 +49,16 @@
       "email": "necik@centrum.cz"
     },
     {
+      "name": "Julio Amoros",
+      "email": "jamoros@escoladeltreball.org"
+    },
+    {
       "name": "Laura Arjona Reina",
       "email": "larjona@larjona.net"
+    },
+    {
+      "name": "Markus Büttner",
+      "email": "m.buettner@privatdemail.net"
     },
     {
       "name": "Mike Zehbe",
@@ -57,8 +73,12 @@
       "email": "slsimic@gmail.com"
     },
     {
-      "name": "SylvieLorxu ",
+      "name": "SylvieLorxu",
       "email": "iamsylvie@openmailbox.org"
+    },
+    {
+      "name": "Viktor Filinkov",
+      "email": "bruteforce@sigil.tk"
     }
   ]
 }
