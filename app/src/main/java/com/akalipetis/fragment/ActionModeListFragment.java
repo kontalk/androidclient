@@ -105,11 +105,12 @@ public abstract class ActionModeListFragment extends ListFragment implements Ada
             list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             list.setLongClickable(false);
             ((AppCompatActivity) getActivity()).startSupportActionMode(new InternalOlderListener());
+            list.setItemChecked(position, true);
             if (mListener != null) mListener.onItemCheckedStateChanged(mWrapper, position, id, true);
         } else {
             list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+            list.setItemChecked(position, true);
         }
-        list.setItemChecked(position, true);
         return true;
     }
 
