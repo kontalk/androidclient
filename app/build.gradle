@@ -97,11 +97,16 @@ dependencies {
     compile 'com.googlecode.libphonenumber:libphonenumber:7.0.11'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.zxing:core:3.2.1'
-    compile 'com.segment.backo:backo:1.1.0'
+    compile 'com.segment.backo:backo:1.0.0'
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    compile 'com.afollestad:material-dialogs:0.8.1.0'
+    compile('com.afollestad.material-dialogs:core:0.8.1.0@aar') {
+        transitive = true
+    }
+    compile('com.afollestad.material-dialogs:commons:0.8.0.1@aar') {
+        transitive = true
+    }
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
