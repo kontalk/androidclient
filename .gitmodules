@@ -4,6 +4,3 @@
 [submodule "emojicon"]
 	path = emojicon
 	url = https://github.com/kontalk/emojicon.git
-[submodule "CircleImageView"]
-	path = CircleImageView
-	url = https://github.com/kontalk/CircleImageView.git

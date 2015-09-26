@@ -87,7 +87,6 @@ dependencies {
         exclude group: 'net.sf.kxml'
     }
     compile project(':emojicon:library')
-    compile project(':CircleImageView:circleimageview')
 
     compile "com.android.support:appcompat-v7:$appcompatVersion"
     compile "com.android.support:design:$appcompatVersion"
@@ -95,16 +94,17 @@ dependencies {
     compile "com.madgag.spongycastle:prov:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pkix:$spongyCastleVersion"
     compile "com.madgag.spongycastle:pg:$spongyCastleVersion"
-    compile 'com.googlecode.libphonenumber:libphonenumber:7.0.10'
+    compile 'com.googlecode.libphonenumber:libphonenumber:7.0.11'
     compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.google.zxing:core:3.2.0'
-    compile 'com.segment.backo:backo:1.0.0'
+    compile 'com.google.zxing:core:3.2.1'
+    compile 'com.segment.backo:backo:1.1.0'
     compile "org.igniterealtime.smack:smack-experimental:$smackVersion"
     compile "org.igniterealtime.smack:smack-android-extensions:$smackVersion"
     compile 'com.github.machinarius:preferencefragment:0.1.1'
-    compile 'com.afollestad:material-dialogs:0.7.9.1'
+    compile 'com.afollestad:material-dialogs:0.8.1.0'
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
+    compile 'de.hdodenhof:circleimageview:2.0.0'
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
