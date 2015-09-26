@@ -26,6 +26,7 @@ package org.kontalk.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.PrivateKey;
@@ -81,7 +82,7 @@ public class DownloadService extends IntentService implements DownloadListener {
     private static final String TAG = MessageCenterService.TAG;
 
     /** A map to avoid duplicate downloads. */
-    private static final Map<String, Long> sQueue = new LinkedHashMap<String, Long>();
+    private static final Map<String, Long> sQueue = new LinkedHashMap<>();
 
     public static final String ACTION_DOWNLOAD_URL = "org.kontalk.action.DOWNLOAD_URL";
     public static final String ACTION_DOWNLOAD_ABORT = "org.kontalk.action.DOWNLOAD_ABORT";
@@ -278,7 +279,7 @@ public class DownloadService extends IntentService implements DownloadListener {
 
                     File outFile = new File(destination + ".new");
                     out = new FileOutputStream(outFile);
-                    List<DecryptException> errors = new LinkedList<DecryptException>();
+                    List<DecryptException> errors = new LinkedList<>();
                     coder.decryptFile(in, true, out, errors);
 
                     // TODO process errors
@@ -302,15 +303,17 @@ public class DownloadService extends IntentService implements DownloadListener {
             }
             finally {
                 try {
-                    in.close();
+                    if (in != null)
+                        in.close();
                 }
-                catch (Exception e) {
+                catch (IOException e) {
                     // ignored
                 }
                 try {
-                    out.close();
+                    if (out != null)
+                        out.close();
                 }
-                catch (Exception e) {
+                catch (IOException e) {
                     // ignored
                 }
             }
@@ -330,7 +333,7 @@ public class DownloadService extends IntentService implements DownloadListener {
         stopForeground();
 
         // notify only if conversation is not open
-        if (!mPeer.equals(MessagingNotification.getPaused())) {
+        if (!MessagingNotification.isPaused(mPeer)) {
 
             // detect mime type if not available
             if (mime == null)

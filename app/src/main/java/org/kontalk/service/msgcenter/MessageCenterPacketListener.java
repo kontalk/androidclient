@@ -83,6 +83,12 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         return (instance != null) ? instance.getRosterEntry(jid) : null;
     }
 
+    protected void queueTask(Runnable task) {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null)
+            instance.queueTask(task);
+    }
+
     protected void sendBroadcast(Intent intent) {
         MessageCenterService instance = mInstance.get();
         if (instance != null)

@@ -27,6 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
@@ -346,6 +350,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Service handler. */
     Handler mHandler;
+    /** Task execution pool. Generally used by packet listeners. */
+    private ThreadPoolExecutor mThreadPool;
+    private BlockingQueue<Runnable> mWorkQueue;
 
     /** Idle handler. */
     IdleConnectionHandler mIdleHandler;
@@ -359,7 +366,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     private boolean mFirstStart = true;
 
     /** Messages waiting for server receipt (packetId: internalStorageId). */
-    Map<String, Long> mWaitingReceipt = new HashMap<String, Long>();
+    Map<String, Long> mWaitingReceipt = new HashMap<>();
 
     private RegenerateKeyPairListener mKeyPairRegenerator;
     private ImportKeyPairListener mKeyPairImporter;
@@ -382,7 +389,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         public IdleConnectionHandler(MessageCenterService service, int refCount, Looper looper) {
             super(looper);
-            s = new WeakReference<MessageCenterService>(service);
+            s = new WeakReference<>(service);
             mRefCount = refCount;
 
             // set idle handler for the first idle message
@@ -605,6 +612,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         registerInactivity();
     }
 
+    void queueTask(Runnable task) {
+        if (mWorkQueue != null) {
+            try {
+                mWorkQueue.put(task);
+            }
+            catch (InterruptedException ignored) {
+            }
+        }
+    }
+
     private void createIdleHandler() {
         HandlerThread thread = new HandlerThread("IdleThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
@@ -701,6 +718,14 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // reset the reference counter
             int refCount = ((Kontalk) getApplicationContext()).getReferenceCounter();
             mIdleHandler.reset(refCount);
+        }
+
+        // stop all running tasks
+        if (mWorkQueue != null) {
+            mWorkQueue.clear();
+            mWorkQueue = null;
+            mThreadPool.shutdownNow();
+            mThreadPool = null;
         }
 
         // disable listeners
@@ -1132,6 +1157,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             // reset waiting messages
             mWaitingReceipt.clear();
 
+            // setup task execution pool
+            final int numCores = Runtime.getRuntime().availableProcessors();
+            mWorkQueue = new LinkedBlockingQueue<>();
+            mThreadPool = new ThreadPoolExecutor(numCores, numCores,
+                1, TimeUnit.SECONDS, mWorkQueue);
+
             mInactive = false;
 
             // retrieve account name
@@ -1419,7 +1450,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             .append(" IS NOT NULL");
 
         Cursor c = getContentResolver().query(Messages.CONTENT_URI,
-            new String[] {
+            new String[]{
                 Messages._ID,
                 Messages.MESSAGE_ID,
                 Messages.PEER,
@@ -1762,7 +1793,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         if (!isAuthorized(to)) {
             Log.i(TAG, "not subscribed to " + to + ", not sending message");
             // warn user: message will not be sent
-            if (!retrying && to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+            if (!retrying && MessagingNotification.isPaused(to)) {
                 Toast.makeText(this, R.string.warn_not_subscribed,
                     Toast.LENGTH_LONG).show();
             }
@@ -1776,7 +1807,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         catch (Exception pgpe) {
             Log.w(TAG, "no personal key available - not allowed to send messages");
             // warn user: message will not be sent
-            if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+            if (MessagingNotification.isPaused(to)) {
                 Toast.makeText(this, R.string.warn_no_personal_key,
                     Toast.LENGTH_LONG).show();
             }
@@ -1913,7 +1944,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 catch (IllegalArgumentException noPublicKey) {
                     // warn user: message will be not sent
-                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                    if (MessagingNotification.isPaused(to)) {
                         Toast.makeText(this, R.string.warn_no_public_key,
                             Toast.LENGTH_LONG).show();
                     }
@@ -1921,7 +1952,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
                 catch (GeneralSecurityException e) {
                     // warn user: message will not be sent
-                    if (to.equalsIgnoreCase(MessagingNotification.getPaused())) {
+                    if (MessagingNotification.isPaused(to)) {
                         Toast.makeText(this, R.string.warn_encryption_failed,
                             Toast.LENGTH_LONG).show();
                     }
@@ -2007,7 +2038,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }).start();
 
         // fire notification only if message was actually inserted to database
-        if (msgUri != null && !sender.equalsIgnoreCase(MessagingNotification.getPaused())) {
+        if (msgUri != null && !MessagingNotification.isPaused(sender)) {
             // update notifications (delayed)
             MessagingNotification.delayedUpdateMessagesNotification(getApplicationContext(), true);
         }

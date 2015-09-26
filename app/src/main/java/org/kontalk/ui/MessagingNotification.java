@@ -21,6 +21,8 @@ package org.kontalk.ui;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jxmpp.util.XmppStringUtils;
+
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
 import org.kontalk.data.Contact;
@@ -136,8 +138,8 @@ public class MessagingNotification {
         sPaused = jid;
     }
 
-    public static String getPaused() {
-        return sPaused;
+    public static boolean isPaused(String jid) {
+        return sPaused != null && sPaused.equalsIgnoreCase(XmppStringUtils.parseBareJid(jid));
     }
 
     private static boolean supportsBigNotifications() {
