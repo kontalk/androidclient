@@ -21,7 +21,6 @@ package org.kontalk.ui.view;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
