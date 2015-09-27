@@ -27,10 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
@@ -351,8 +349,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     /** Service handler. */
     Handler mHandler;
     /** Task execution pool. Generally used by packet listeners. */
-    private ThreadPoolExecutor mThreadPool;
-    private BlockingQueue<Runnable> mWorkQueue;
+    private ExecutorService mThreadPool;
 
     /** Idle handler. */
     IdleConnectionHandler mIdleHandler;
@@ -613,12 +610,8 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     void queueTask(Runnable task) {
-        if (mWorkQueue != null) {
-            try {
-                mWorkQueue.put(task);
-            }
-            catch (InterruptedException ignored) {
-            }
+        if (mThreadPool != null) {
+            mThreadPool.execute(task);
         }
     }
 
@@ -721,9 +714,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // stop all running tasks
-        if (mWorkQueue != null) {
-            mWorkQueue.clear();
-            mWorkQueue = null;
+        if (mThreadPool != null) {
             mThreadPool.shutdownNow();
             mThreadPool = null;
         }
@@ -1158,10 +1149,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mWaitingReceipt.clear();
 
             // setup task execution pool
-            final int numCores = Runtime.getRuntime().availableProcessors();
-            mWorkQueue = new LinkedBlockingQueue<>();
-            mThreadPool = new ThreadPoolExecutor(numCores, numCores,
-                1, TimeUnit.SECONDS, mWorkQueue);
+            mThreadPool = Executors.newCachedThreadPool();
 
             mInactive = false;
 
