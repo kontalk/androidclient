@@ -84,41 +84,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
         mDateHeader = (TextView) findViewById(R.id.date_header);
-
-        if (isInEditMode()) {
-            //mTextView.setText("Test messaggio\nCiao zio!\nBelluuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu!!");
-            //mTextView.setText("TEST");
-            //mTextView.setText(":-)");
-            /* INCOMING
-            //setGravity(Gravity.LEFT);
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(R.drawable.balloon_classic_incoming);
-            }
-            mDateView.setText("28 Nov");
-            */
-
-            /* OUTGOING
-            if (mStatusIcon != null) {
-                mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
-                mStatusIcon.setVisibility(VISIBLE);
-            }
-            if (mStatusIcon != null)
-                mStatusIcon.setImageResource(R.drawable.ic_msg_delivered);
-            mWarningIcon.setVisibility(VISIBLE);
-            setGravity(Gravity.RIGHT);
-            if (mBalloonView != null) {
-                mBalloonView.setBackgroundResource(R.drawable.balloon_classic_outgoing);
-            }
-            mDateView.setText("16:25");
-            if (mAvatarIncoming != null) {
-                mAvatarIncoming.setVisibility(GONE);
-                mAvatarOutgoing.setVisibility(VISIBLE);
-                mAvatarOutgoing.setImageResource(R.drawable.ic_contact_picture);
-            }
-            */
-        }
     }
 
     public void afterInflate(int direction) {

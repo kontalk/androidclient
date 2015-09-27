@@ -19,9 +19,8 @@
 <org.kontalk.ui.view.TextContentView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:maxWidth="@dimen/message_text_width"
     app:emojiconSize="@dimen/emoji_textview_size"
     app:emojiconTextLength="@integer/emoji_overflow_length"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:linksClickable="false"/>

@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/message_view_parent"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content">
 
     <LinearLayout android:id="@+id/balloon_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="12dp"
-        android:orientation="vertical"
-        android:gravity="right">
+        android:layout_marginStart="12dp"
+        android:layout_toLeftOf="@+id/avatar"
+        android:layout_toStartOf="@+id/avatar"
+        android:orientation="vertical">
 
         <org.kontalk.ui.view.MessageContentLayout
             android:id="@+id/content"
             android:orientation="vertical"
-            android:maxWidth="@dimen/message_text_width"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
-            android:layout_weight="1"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"/>
+            android:layout_height="wrap_content"/>
 
         <LinearLayout android:id="@+id/status_box"
-                      android:layout_width="wrap_content"
+                      android:layout_width="fill_parent"
                       android:layout_height="wrap_content"
                       android:orientation="horizontal"
                       android:baselineAligned="false"
@@ -55,9 +54,13 @@
 
     <org.kontalk.ui.view.CircleContactBadge
         android:id="@+id/avatar"
+        android:src="@drawable/ic_contact_picture"
         android:layout_gravity="bottom"
         android:layout_height="48dp"
         android:layout_width="48dp"
+        android:layout_alignBottom="@+id/balloon_view"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="8dp"/>
 
-</LinearLayout>
+</RelativeLayout>

@@ -22,7 +22,6 @@
         <org.kontalk.ui.view.MessageContentLayout
             android:id="@+id/content"
             android:orientation="vertical"
-            android:maxWidth="@dimen/message_text_width"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
             android:layout_weight="1"
