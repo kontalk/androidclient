@@ -59,10 +59,10 @@
 
     <org.kontalk.ui.view.CircleContactBadge
         android:id="@+id/avatar"
-        android:layout_gravity="bottom"
+        android:layout_gravity="top"
         android:layout_height="48dp"
         android:layout_width="48dp"
-        android:layout_alignBottom="@+id/balloon_view"
+        android:layout_alignTop="@+id/balloon_view"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="8dp"/>

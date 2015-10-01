@@ -275,8 +275,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         Drawable bg = Preferences.getConversationBackground(getActivity());
         if (bg != null) {
             ImageView background = (ImageView) getView().findViewById(R.id.background);
-            list.setCacheColorHint(Color.TRANSPARENT);
-            list.setBackgroundColor(Color.TRANSPARENT);
+            //list.setCacheColorHint(Color.TRANSPARENT);
+            //list.setBackgroundColor(Color.TRANSPARENT);
             background.setImageDrawable(bg);
         }
 
