@@ -24,11 +24,9 @@
     android:layout_height="fill_parent">
 
     <ImageView android:id="@+id/background"
-        android:scaleType="fitXY"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        tools:ignore="ContentDescription"
-        android:src="@drawable/app_background"/>
+        tools:ignore="ContentDescription"/>
 
     <LinearLayout android:id="@+id/container"
         android:layout_width="fill_parent"

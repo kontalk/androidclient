@@ -272,12 +272,15 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         setMultiChoiceModeListener(this);
 
         // set custom background (if any)
+        ImageView background = (ImageView) getView().findViewById(R.id.background);
         Drawable bg = Preferences.getConversationBackground(getActivity());
         if (bg != null) {
-            ImageView background = (ImageView) getView().findViewById(R.id.background);
-            //list.setCacheColorHint(Color.TRANSPARENT);
-            //list.setBackgroundColor(Color.TRANSPARENT);
+            background.setScaleType(ImageView.ScaleType.CENTER_CROP);
             background.setImageDrawable(bg);
+        }
+        else {
+            background.setScaleType(ImageView.ScaleType.FIT_XY);
+            background.setImageResource(R.drawable.app_background_tile);
         }
 
         processArguments(savedInstanceState);

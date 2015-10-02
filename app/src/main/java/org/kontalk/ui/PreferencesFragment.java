@@ -426,6 +426,35 @@ public final class PreferencesFragment extends RootPreferenceFragment {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_PICK_BACKGROUND) {
+            if (resultCode == Activity.RESULT_OK) {
+                Context ctx = getActivity();
+                if (ctx != null) {
+                    // invalidate any previous reference
+                    Preferences.setCachedCustomBackground(null);
+                    // resize and cache image
+                    // TODO do this in background (might take some time)
+                    try {
+                        File image = Preferences.cacheConversationBackground(ctx, data.getData());
+                        // save to preferences
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+                        prefs.edit()
+                            .putString("pref_background_uri", Uri.fromFile(image).toString())
+                            .commit();
+                    }
+                    catch (Exception e) {
+                        Toast.makeText(ctx, R.string.err_custom_background,
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        }
+        else
+            super.onActivityResult(requestCode, resultCode, data);
+    }
+
     private interface OnPassphraseChangedListener {
         void onPassphraseChanged(String passphrase);
     }

@@ -18,22 +18,15 @@
 
 package org.kontalk.ui;
 
-import java.io.File;
-
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import org.kontalk.Kontalk;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
-import org.kontalk.util.Preferences;
 
 
 /**
@@ -42,9 +35,6 @@ import org.kontalk.util.Preferences;
  * @author Daniele Ricci
  */
 public final class PreferencesActivity extends ToolbarActivity implements PreferencesFragment.Callback {
-    private static final String TAG = Kontalk.TAG;
-
-    private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
     private static final String TAG_NESTED = "nested";
 
     @Override
@@ -79,32 +69,6 @@ public final class PreferencesActivity extends ToolbarActivity implements Prefer
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_PICK_BACKGROUND) {
-            if (resultCode == RESULT_OK) {
-                // invalidate any previous reference
-                Preferences.setCachedCustomBackground(null);
-                // resize and cache image
-                // TODO do this in background (might take some time)
-                try {
-                    File image = Preferences.cacheConversationBackground(this, data.getData());
-                    // save to preferences
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                    prefs.edit()
-                        .putString("pref_background_uri", Uri.fromFile(image).toString())
-                        .commit();
-                }
-                catch (Exception e) {
-                    Toast.makeText(this, R.string.err_custom_background,
-                        Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-        else
-            super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
