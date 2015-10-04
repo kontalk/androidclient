@@ -20,7 +20,7 @@ package org.kontalk.ui.adapter;
 
 import org.kontalk.R;
 import org.kontalk.data.Contact;
-import org.kontalk.ui.ContactPickerActivity;
+import org.kontalk.ui.ContactsListActivity;
 import org.kontalk.ui.view.ContactsListItem;
 import org.kontalk.ui.view.MessageListItem;
 
@@ -36,7 +36,7 @@ import android.widget.AbsListView.RecyclerListener;
 
 
 public class ContactsListAdapter extends CursorAdapter {
-    private static final String TAG = ContactPickerActivity.TAG;
+    private static final String TAG = ContactsListActivity.TAG;
 
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;

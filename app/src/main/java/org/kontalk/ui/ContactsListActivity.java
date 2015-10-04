@@ -18,18 +18,26 @@
 
 package org.kontalk.ui;
 
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.provider.MyMessages.Threads;
-import org.kontalk.ui.view.ContactPickerListener;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import org.kontalk.R;
+import org.kontalk.authenticator.Authenticator;
+import org.kontalk.data.Contact;
+import org.kontalk.provider.MyMessages.Threads;
+import org.kontalk.service.msgcenter.MessageCenterService;
+import org.kontalk.ui.view.ContactPickerListener;
+import org.kontalk.util.Preferences;
 
 
-public class ContactPickerActivity extends ToolbarActivity implements ContactPickerListener {
-    public static final String TAG = ContactPickerActivity.class.getSimpleName();
+public class ContactsListActivity extends ToolbarActivity
+        implements ContactPickerListener {
+
+    public static final String TAG = ContactsListActivity.class.getSimpleName();
+
+    private ContactsListFragment mFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +46,39 @@ public class ContactPickerActivity extends ToolbarActivity implements ContactPic
         setContentView(R.layout.contacts_list_screen);
 
         setupToolbar(true);
+
+        mFragment = (ContactsListFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_contacts_list);
+
+        if (!getIntent().getBooleanExtra("picker", false))
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (!Preferences.getContactsListVisited(this))
+            Toast.makeText(this, R.string.msg_do_refresh,
+                    Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // release message center
+        MessageCenterService.release(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (Authenticator.getDefaultAccount(this) == null) {
+            NumberValidation.start(this);
+            finish();
+            return;
+        }
+
+        // hold message center
+        MessageCenterService.hold(this);
+
+        mFragment.startQuery();
     }
 
     @Override
@@ -59,4 +100,5 @@ public class ContactPickerActivity extends ToolbarActivity implements ContactPic
         setResult(RESULT_OK, i);
         finish();
     }
+
 }

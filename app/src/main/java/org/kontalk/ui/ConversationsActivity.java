@@ -18,6 +18,37 @@
 
 package org.kontalk.ui;
 
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.InputType;
+import android.view.MenuItem;
+import android.widget.ListAdapter;
+import android.widget.Toast;
+
 import org.kontalk.BuildConfig;
 import org.kontalk.R;
 import org.kontalk.authenticator.Authenticator;
@@ -35,40 +66,6 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.XMPPUtils;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.app.Activity;
-import com.afollestad.materialdialogs.AlertDialogWrapper;
-import com.afollestad.materialdialogs.MaterialDialog;
-
-import android.app.Dialog;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ResolveInfo;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Parcelable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SlidingPaneLayout;
-import android.text.InputType;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ListAdapter;
-import android.widget.Toast;
-
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 
 /**
  * The conversations list activity.
@@ -84,7 +81,6 @@ public class ConversationsActivity extends ToolbarActivity
     public static final String TAG = ConversationsActivity.class.getSimpleName();
 
     private ConversationListFragment mFragment;
-    private SlidingPaneLayout mSlidingPanel;
 
     private Dialog mUpgradeProgress;
     private BroadcastReceiver mUpgradeReceiver;
@@ -94,8 +90,6 @@ public class ConversationsActivity extends ToolbarActivity
     private static final int DIALOG_AUTH_ERROR_WARNING = 1;
 
     private static final String ACTION_AUTH_ERROR_WARNING = "org.kontalk.AUTH_ERROR_WARN";
-
-    private static final String EXTRA_CONTACTS_OPEN = "contactsOpen";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -107,75 +101,9 @@ public class ConversationsActivity extends ToolbarActivity
 
         mFragment = (ConversationListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_conversation_list);
-        final Fragment contactsListFragment = getSupportFragmentManager()
-                .findFragmentById(R.id.fragment_contacts_list);
-
-        SlidingPaneLayout.PanelSlideListener slidingListener = new SlidingPaneLayout.PanelSlideListener() {
-            @Override
-            public void onPanelClosed(View panel) {
-                getSupportActionBar().setTitle(getString(R.string.app_name));
-                //supportInvalidateOptionsMenu();
-                mFragment.setHasOptionsMenu(true);
-                contactsListFragment.setHasOptionsMenu(false);
-                Fragment composeMessageFragment = composeMessageFragmentOrNull();
-                if (composeMessageFragment != null) {
-                    composeMessageFragment.setHasOptionsMenu(true);
-                }
-                else {
-                    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-                }
-            }
-
-            @Override
-            public void onPanelOpened(View panel) {
-                getSupportActionBar().setTitle(getString(R.string.contacts_list_title));
-                //supportInvalidateOptionsMenu();
-                mFragment.setHasOptionsMenu(false);
-                contactsListFragment.setHasOptionsMenu(true);
-                Fragment composeMessageFragment = composeMessageFragmentOrNull();
-                if (composeMessageFragment != null) {
-                    composeMessageFragment.setHasOptionsMenu(false);
-                }
-                else {
-                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                }
-                showOnFirstVisit();
-            }
-
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-            }
-        };
-
-        mSlidingPanel = (SlidingPaneLayout) findViewById(R.id.slider_pane);
-        mSlidingPanel.setPanelSlideListener(slidingListener);
-        mSlidingPanel.setParallaxDistance(getResources().getDimensionPixelSize(R.dimen.slidepane_parallax));
-
-        // initial menu
-        if (!mSlidingPanel.isSlideable()) {
-            //mFragment.setHasOptionsMenu(true);
-            contactsListFragment.setHasOptionsMenu(false);
-        }
-
-        if (savedInstanceState != null) {
-            boolean contactsOpen = savedInstanceState.getBoolean(EXTRA_CONTACTS_OPEN, false);
-            if (contactsOpen) {
-                slidingListener.onPanelOpened(mSlidingPanel);
-            }
-        }
 
         if (!xmppUpgrade())
             handleIntent(getIntent());
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean(EXTRA_CONTACTS_OPEN, mSlidingPanel.isOpen());
-    }
-
-    private Fragment composeMessageFragmentOrNull() {
-        return getSupportFragmentManager().findFragmentById(R.id.fragment_compose_message);
     }
 
     /** Big upgrade: asymmetric key encryption (for XMPP). */
@@ -350,10 +278,6 @@ public class ConversationsActivity extends ToolbarActivity
 
     @Override
     public void onBackPressed() {
-        if (mSlidingPanel.closePane()) {
-            return;
-        }
-
         ComposeMessageFragment f = (ComposeMessageFragment) getSupportFragmentManager()
             .findFragmentById(R.id.fragment_compose_message);
         if (f == null || !f.tryHideEmojiDrawer())
@@ -417,11 +341,13 @@ public class ConversationsActivity extends ToolbarActivity
     public void onContactSelected(ContactsListFragment fragment, Contact contact) {
         // open by user hash
         openConversation(Threads.getUri(contact.getJID()));
-        mSlidingPanel.closePane();
     }
 
     public void showContactPicker() {
-        mSlidingPanel.openPane();
+        // TODO one day it will be like this
+        // Intent i = new Intent(Intent.ACTION_PICK, Users.CONTENT_URI);
+        Intent i = new Intent(this, ContactsListActivity.class);
+        startActivityForResult(i, REQUEST_CONTACT_PICKER);
     }
 
     @Override

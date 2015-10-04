@@ -21,5 +21,8 @@
               android:layout_width="match_parent"
               android:orientation="vertical">
     <include layout="@layout/toolbar_simple"/>
-    <include layout="@layout/contacts_list_fragment"/>
+    <fragment android:name="org.kontalk.ui.ContactsListFragment"
+        android:id="@+id/fragment_contacts_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"/>
 </LinearLayout>

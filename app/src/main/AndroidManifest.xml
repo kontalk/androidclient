@@ -174,7 +174,7 @@
 
         <activity android:name=".ui.CodeValidation"/>
 
-        <activity android:name=".ui.ContactPickerActivity"
+        <activity android:name=".ui.ContactsListActivity"
             android:label="@string/contacts_list_title"/>
 
         <activity android:name=".ui.StatusActivity"
