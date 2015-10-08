@@ -18,7 +18,7 @@
 
 <ContactsSource xmlns:android="http://schemas.android.com/apk/res/android">
   <ContactsDataKind
-    android:icon="@drawable/ic_launcher"
+    android:icon="@mipmap/ic_launcher"
     android:mimeType="vnd.android.cursor.item/org.kontalk.user"
     android:summaryColumn="data2"
     android:detailColumn="data3"
