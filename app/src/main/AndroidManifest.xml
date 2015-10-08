@@ -128,6 +128,7 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="vnd.android.cursor.item/${applicationId}.user"
+                    android:scheme="content"
                     android:host="com.android.contacts"/>
             </intent-filter>
             <intent-filter>
