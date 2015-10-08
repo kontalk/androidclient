@@ -69,6 +69,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import com.afollestad.materialdialogs.AlertDialogWrapper;
+
 import static org.kontalk.crypto.DecryptException.DECRYPT_EXCEPTION_INVALID_TIMESTAMP;
 
 
@@ -281,7 +283,16 @@ public final class MessageUtils {
         return details.toString();
     }
 
-    public static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+    public static void showMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
+        CharSequence messageDetails = MessageUtils.getMessageDetails(
+            context, msg, decodedPeer);
+        new AlertDialogWrapper.Builder(context)
+            .setTitle(R.string.title_message_details)
+            .setMessage(messageDetails)
+            .setCancelable(true).show();
+    }
+
+    private static CharSequence getMessageDetails(Context context, CompositeMessage msg, String decodedPeer) {
         SpannableStringBuilder details = new SpannableStringBuilder();
         Resources res = context.getResources();
         int direction = msg.getDirection();

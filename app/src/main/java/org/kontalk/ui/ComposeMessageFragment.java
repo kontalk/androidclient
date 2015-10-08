@@ -1209,12 +1209,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     private void showMessageDetails(CompositeMessage msg) {
-        CharSequence messageDetails = MessageUtils.getMessageDetails(
-            getActivity(), msg, mUserPhone != null ? mUserPhone : mUserJID);
-        new AlertDialogWrapper.Builder(getActivity())
-            .setTitle(R.string.title_message_details)
-            .setMessage(messageDetails)
-            .setCancelable(true).show();
+        MessageUtils.showMessageDetails(getActivity(), msg,
+            mUserPhone != null ? mUserPhone : mUserJID);
     }
 
     private void shareMessage(CompositeMessage msg) {

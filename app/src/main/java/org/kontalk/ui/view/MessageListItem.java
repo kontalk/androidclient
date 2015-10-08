@@ -52,6 +52,8 @@ import org.kontalk.util.Preferences;
 public class MessageListItem extends RelativeLayout implements Checkable {
 
     private CompositeMessage mMessage;
+    // for message details
+    private String mPeer;
 
     private MessageListItemTheme mBalloonTheme;
 
@@ -99,6 +101,7 @@ public class MessageListItem extends RelativeLayout implements Checkable {
        Object... args) {
 
         mMessage = msg;
+
         // FIXME this might not work
         mChecked = false;
 
@@ -115,9 +118,20 @@ public class MessageListItem extends RelativeLayout implements Checkable {
 
         if (mMessage.getSender() != null) {
             mBalloonTheme.setIncoming(contact);
+
+            Contact c = Contact.findByUserId(context, msg.getSender(true));
+            if (c != null)
+                mPeer = c.getNumber();
+            if (mPeer == null)
+                mPeer = msg.getSender(true);
         }
         else {
             mBalloonTheme.setOutgoing(contact, mMessage.getStatus());
+            Contact c = Contact.findByUserId(context, msg.getRecipients().get(0));
+            if (c != null)
+                mPeer = c.getNumber();
+            if (mPeer == null)
+                mPeer = msg.getRecipients().get(0);
         }
 
         mBalloonTheme.setTimestamp(formatTimestamp());
@@ -261,12 +275,15 @@ public class MessageListItem extends RelativeLayout implements Checkable {
         final URLSpan[] spans = textContent.getUrls();
 
         if (spans.length == 0) {
-            // TODO show the message details dialog
+            // show the message details dialog
+            MessageUtils.showMessageDetails(getContext(), mMessage, mPeer);
         }
         else if (spans.length == 1) {
+            // show link opener
             spans[0].onClick(textContent);
         }
         else {
+            // complex stuff (media)
             ArrayAdapter<URLSpan> adapter =
                 new ArrayAdapter<URLSpan>(getContext(), android.R.layout.select_dialog_item, spans) {
                     @Override
