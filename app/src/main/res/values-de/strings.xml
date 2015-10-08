@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Netzwerkeinstellungen</string>
   <string name="pref_network_uri">Manuelle Serveradresse</string>
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste</string>
-  <string name="number_validation_intro1">Bitte Ihren Namen und Ihre Mobilfunknummer eingeben sowie den Ländercode auswählen. Eine SMS mit einem Verfikationscode wird Ihnen zugesendet. Ihre Tel.Nr. wird nur einmalig benutzt und dann verworfen.</string>
-  <string name="number_validation_intro2">Wenn Sie auf diesem Gerät keine SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an und geben Sie den Verifikationscode ein, den Sie per SMS erhalten.</string>
+  <string name="number_validation_intro1">Bitte Namen und Mobilfunknummer eingeben sowie den Ländercode auswählen. Alles Weitere folgt im nächsten Schritt.</string>
+  <string name="number_validation_intro2">Falls Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
   <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer bekommen:</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
   <string name="code_validation_intro_manual">Bitte fügen Sie den Verifikationscode ein den Sie bekommen haben. Beachten Sie bitte, dass ein Verfikationscode nur einmal verwendet werden kann.</string>
@@ -395,7 +395,7 @@
     <string name="button_validation_fallback">Keinen Anruf erhalten?</string>
     <string name="msg_fallback">Wir werden einen anderen Weg probieren um Ihre Tel.Nr. zu überprüfen.</string>
     <string name="code_validation_intro_missed_call">Sie sollten in Kürze einen verpassten Anruf von dieser Nummer vorfinden:</string>
-    <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen werden.</string>
+    <string name="code_validation_intro2_missed_call">Bitte fügen Sie die letzten %d Ziffern der Nummer ein, von der Sie angerufen wurden.</string>
     <string name="title_fallback">Haben Sie Probleme?</string>
     <string name="menu_manual_verification">Code bereits vorhanden?</string>
     </resources>

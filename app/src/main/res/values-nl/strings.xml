@@ -36,8 +36,8 @@
   <string name="pref_network_settings">Netwerk</string>
   <string name="pref_network_uri">Zelf serveradres invoeren</string>
   <string name="pref_title_network_uri">Door het zelf opgeven van een Kontalk-server wordt het automatische serverlijstbeheer uitgeschakeld</string>
-  <string name="number_validation_intro1">Voer je naam in, selecteer je landcode en voer je mobiele telefoonnummer in. Je zult een SMS met een verificatiecode ontvangen. Je telefoonnummer wordt eenmaal gebruikt en dan niet meer.</string>
-  <string name="number_validation_intro2">Kan je op dit apparaat geen SMS ontvangen? Voer dan een telefoonnummer in van een apparaat waarop je wel een SMS op kan ontvangen.</string>
+  <string name="number_validation_intro1">Voer je naam in, selecteer je landcode en voer je mobiele telefoonnummer in. Meer instructies zullen in het volgende scherm getoond worden.</string>
+  <string name="number_validation_intro2">Kan je op dit apparaat geen SMS of telefoongesprekken ontvangen? Voer dan een telefoonnummer in van een apparaat waarop je dit wel kan. Dat telefoonnummer zal gebruikt worden als account voor dit apparaat.</string>
   <string name="code_validation_intro">Binnen enkele ogenblikken zou je een SMS of oproep van dit nummer moeten ontvangen:</string>
   <string name="code_validation_intro2">Voer hieronder de code in die je ontvangt of hoort.</string>
   <string name="code_validation_intro_manual">Voer de verificatiecode die je hebt ontvangen in. Let op: een verificatiecode kan slechts eenmaal gebruikt worden.</string>
