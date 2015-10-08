@@ -392,7 +392,7 @@
     <string name="err_custom_background">Er ging iets fout bij het instellen van de achtergrondafbeelding. Probeer een andere afbeelding.</string>
     <string name="hint_ptt">Houd de microfoon in om op te nemen.</string>
     <string name="msg_importing_key">Persoonlijk sleutelpaar importeren…</string>
-    <string name="code_validation_intro_missed_call">Je zou zo een gemiste oproep van het volgende nummer moeten ontvangen:</string>
+    <string name="code_validation_intro_missed_call">Je zou zo een gemiste oproep van het volgende nummer moeten ontvangen. <b>NEEM DIT GESPREK ALSJEBLIEFT NIET OP.</b></string>
     <string name="code_validation_intro2_missed_call">Vul alsjeblieft de laatste %d cijfers van het nummer waar je door gebeld wordt in.</string>
     <string name="button_validation_fallback">Wordt je niet gebeld?</string>
     <string name="title_fallback">Loop je tegen problemen aan?</string>
