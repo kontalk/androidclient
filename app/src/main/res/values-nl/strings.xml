@@ -50,7 +50,7 @@
   <string name="msg_authenticated">Je bent aangemeld bij het netwerk!</string>
   <string name="share">Delen</string>
   <string name="resend">Opnieuw verzenden</string>
-  <string name="copy_message_text">Kopiëren</string>
+  <string name="copy_message_text">Kopieer tekst</string>
   <string name="delete_message">Berichttekst verwijderen</string>
   <string name="confirm_delete_all">Verwijder alle gesprekken</string>
   <string name="confirm_will_delete_all">Alle gesprekken zullen verwijderd worden.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Open het toetsenbord om een nieuw bericht te schrijven</string>
   <string name="view_image">Afbeelding weergeven</string>
   <string name="title_message_options">Berichtopties</string>
-  <string name="menu_message_details">Berichtdetails weergeven</string>
+  <string name="menu_message_details">Details</string>
   <string name="title_message_details">Berichtdetails</string>
   <string name="message_type_label">Type:\u0020</string>
   <string name="text_message">Tekstbericht</string>
@@ -173,7 +173,7 @@
   <string name="menu_refresh">Vernieuwen</string>
   <string name="menu_invite">Gebruikers uitnodigen</string>
   <string name="title_error">Fout</string>
-  <string name="msg_do_refresh">Gebruik de vernieuwen-knop om je contacten bij te werken.</string>
+  <string name="msg_do_refresh">Sleep naar beneden om de contactenlijst te vernieuwen.</string>
   <string name="msg_sync_progress">Contacten vernieuwen…</string>
   <string name="err_sync_failed">Kan contacten niet vernieuwen. Probeer het later opnieuw.</string>
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
@@ -398,4 +398,6 @@
     <string name="title_fallback">Loop je tegen problemen aan?</string>
     <string name="msg_fallback">We zullen een andere manier proberen om je telefoonnummer te bevestigen.</string>
     <string name="menu_manual_verification">Heb je al een code?</string>
+    <string name="confirm_will_delete_threads">De geselecteerde gesprekken zullen verwijderd worden.</string>
+    <string name="confirm_will_delete_messages">De geselecteerde berichten zullen verwijderd worden.</string>
     </resources>

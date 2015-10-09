@@ -42,7 +42,7 @@
     <string name="number_validation_intro2">If you are unable to receive calls or SMS on this device, insert a phone number you own: we will associate that number to this device.</string>
     <string name="code_validation_intro">You should receive a SMS or a call from this number briefly:</string>
     <string name="code_validation_intro2">Please insert the code you receive or hear below.</string>
-    <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly:</string>
+    <string name="code_validation_intro_missed_call">You should receive a missed call from this number briefly. <b>PLEASE DO NOT ANSWER THE CALL.</b></string>
     <string name="code_validation_intro2_missed_call">Please insert the last %d digits of the number you will be called by.</string>
     <string name="code_validation_intro_manual">Please insert the verification code you received. Please note that a verification code can be used only once.</string>
     <string name="hint_validation_name">Your name</string>

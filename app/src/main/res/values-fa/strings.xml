@@ -36,8 +36,8 @@
     <string name="pref_network_settings">تنظیمات شبکه</string>
     <string name="pref_network_uri">نشانی کارساز دستی</string>
     <string name="pref_title_network_uri">این مدیریت خودکار فهرست کارساز را نادیده خواهد گرفت</string>
-    <string name="number_validation_intro1">لطفاً نامتان را وارد کنید، کشورتان را انتخاب کنید و شماره‌ی تلفن همراه‌تان را وارد کنید. یک پیامک با کد تأیید برای شما فرستاده خواهد شد.</string>
-    <string name="number_validation_intro2">اگر شما نمی‌توانید روی این وسیله پیامک دریافت کنید، یک شماره‌ی تلفن که مالک آن هستید وارد کنید و کد تأیید را که به وسیله‌ی پیامک برای شما فرستاده می‌شود وارد کنید.</string>
+    <string name="number_validation_intro1">لطفاً نامتان را وارد کنید، کد کشورتان را انتخاب کنید و شماره‌ی تلفن همراه‌تان را وارد کنید. دستورهای بیش‌تر در صفحه‌ی بعد ارائه می‌شود.</string>
+    <string name="number_validation_intro2">اگر شما نمی‌توانید روی این دستگاه تماس‌ها یا پیامک دریافت کنید، یک شماره‌ی تلفن که مالک آن هستید وارد کنید: ما آن شماره را به این دستگاه پیوند خواهیم داد.</string>
     <string name="code_validation_intro">پس از اندکی شما باید یک پیامک یا یک تماس از این شماره دریافت کنید:</string>
     <string name="code_validation_intro2">لطفاً کدی را که دریافت می‌کنید یا می‌شنوید وارد کنید.</string>
     <string name="code_validation_intro_missed_call">پس از اندکی شما باید یک تماس از دست رفته از این شماره دریافت کنید:</string>
@@ -100,4 +100,24 @@
     <string name="pref_title_wakeup_time">مدت انتظار پیش از اتصال مجدد به دلیل یک دوره‌ی عدم فعالیت. تنها اگر push notifications در دسترس نباشد کار می‌کند</string>
     <string name="pref_maintenance">نگه‌داری</string>
     <string name="pref_regenerate_keypair">بازسازی کلید شخصی</string>
+    <string name="menu_manual_verification">پیش از این یک کد داشته‌اید؟</string>
+    <string name="pref_restart_msgcenter">باز‌آغازی مرکز پیام</string>
+    <string name="pref_title_regenerate_keypair">در صورتی که کلید شخصی‌تان به خطر افتاده است از این استفاده کنید.</string>
+    <string name="pref_regenerate_keypair_confirm">جفت‌کلیدی تازه تولید خواهد شد و به حساب‌تان اختصاص داده خواهد شد.</string>
+    <string name="contacts_list_title">مخاطبی را برگزینید</string>
+    <string name="pref_messaging_settings">تنظیمات پیام‌رسانی</string>
+    <string name="pref_privacy_settings">تنظیمات حریم خصوصی</string>
+    <string name="pref_encrypt">رمزنگاری پیام‌ها</string>
+    <string name="pref_title_on_encrypt">از اکنون تمامی پیام‌ها رمزنگاری خواهند شد</string>
+    <string name="pref_title_off_encrypt">از اکنون تمامی پیام‌ها به صورت متن واضح فرستاده خواهد شد</string>
+    <string name="pref_encrypt_userdata">رمزنگاری داده‌های شخصی</string>
+    <string name="pref_title_on_encrypt_userdata">پیام وضعیت تنها برای کاربرهایی که شماره‌ی تلفن شما را دارند نمایان می‌شود</string>
+    <string name="pref_title_off_encrypt_userdata">پیام وضعیت برای همه نمایان خواهد شد</string>
+    <string name="pref_auto_accept_subscriptions">پذیرش خودکار دعوت‌ها</string>
+    <string name="pref_title_auto_accept_subscriptions">پذیرش خودکار دعوت‌های گپ با دیگر کاربرها</string>
+    <string name="pref_send_typing">فرستادن اعلان در حال نوشتن</string>
+    <string name="pref_hide_presence">پنهان‌سازی حضور</string>
+    <string name="pref_title_on_hide_presence">کاربرها شما را برخط نخواهند دید</string>
+    <string name="pref_title_off_hide_presence">کاربرها شما را برخط خواهند دید و هم‌چنین زمان آخرین باری که متصل شدید</string>
+    <string name="contact_not_registered">به نظر می‌رسد مخاطب در Kontalk ثبت نشده است.</string>
     </resources>
