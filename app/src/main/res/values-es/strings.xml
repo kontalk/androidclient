@@ -50,7 +50,7 @@
   <string name="msg_authenticated">¡Registrado en la red!</string>
   <string name="share">Compartir</string>
   <string name="resend">Reenviar</string>
-  <string name="copy_message_text">Copiar texto del mensaje</string>
+  <string name="copy_message_text">Copiar el texto</string>
   <string name="delete_message">Eliminar el mensaje</string>
   <string name="confirm_delete_all">Eliminar todas las conversaciones</string>
   <string name="confirm_will_delete_all">Todas las conversaciones serán eliminadas.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Use el teclado para escribir su mensaje</string>
   <string name="view_image">Ver imagen</string>
   <string name="title_message_options">Opciones del mensaje</string>
-  <string name="menu_message_details">Ver detalles del mensaje</string>
+  <string name="menu_message_details">Detalles</string>
   <string name="title_message_details">Detalles del mensaje</string>
   <string name="message_type_label">Tipo:\u0020</string>
   <string name="text_message">Mensaje de texto</string>
@@ -173,13 +173,13 @@
   <string name="menu_refresh">Actualizar</string>
   <string name="menu_invite">Invitar a usuarios</string>
   <string name="title_error">Error</string>
-  <string name="msg_do_refresh">Usa el botón de refrescar para actualizar la lista de contactos.</string>
+  <string name="msg_do_refresh">Estirar para actualizar la lista de contactos.</string>
   <string name="msg_sync_progress">Actualizando la lista de contactos…</string>
   <string name="err_sync_failed">No se pudo actualizar la lista de contactos. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="err_sync_nonetwork">Red no disponible. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="text_invite_message">¡Hola! Eche un vistazo a Kontalk en la Tienda de Google Play, ¡es una aplicación gratuita de mensajería! https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="text_contacts_empty">Los usuarios nuevos se agregarán automáticamente a esta lista.\n\nUse <b>Menú</b> &gt; <b>Invitar usuarios</b> para enviar un mensaje de invitación a alguien.</string>
-  <string name="text_conversations_empty">Para comenzar a escribir mensajes use el icono de <b>nuevo mensaje</b> que está arriba.</string>
+  <string name="text_conversations_empty">Para comenzar a escribir mensajes use el botón <b>nuevo mensaje</b> de abajo.</string>
   <string name="notify_ticker_external_storage">Dispositivo de almacenamiento externo no disponible</string>
   <string name="notify_text_external_storage">No se pudo escribir en el dispositivo de almacenamiento externo.</string>
   <string name="title_user_not_found">Usuario no encontrado</string>
@@ -392,10 +392,12 @@
     <string name="hint_ptt">Mantenga el botón de micro pulsado para grabar.</string>
     <string name="err_audio_record_noaudio">No se ha grabado ningún audio.</string>
     <string name="msg_importing_key">Importando la clave personal…</string>
-    <string name="code_validation_intro_missed_call">En breves instantes tendrá una llamada perdida de este número:</string>
+    <string name="code_validation_intro_missed_call">En breves instantes tendrá una llamada perdida de este número. <b>POR FAVOR NO RESPONDA A LA LLAMADA.</b></string>
     <string name="code_validation_intro2_missed_call">Por favor, introduzca los últimos %d dígitos del número de la llamada perdida.</string>
     <string name="button_validation_fallback">No ha recibido la llamada?</string>
     <string name="title_fallback">Tiene algún problema?</string>
     <string name="msg_fallback">Vamos a verificar su número de teléfono de otra manera.</string>
     <string name="menu_manual_verification">Ya tiene un código?</string>
+    <string name="confirm_will_delete_threads">Se eliminarán los chats seleccionados.</string>
+    <string name="confirm_will_delete_messages">Se eliminarán los mensajes seleccionados.</string>
     </resources>
