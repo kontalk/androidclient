@@ -406,8 +406,7 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
     <string name="title_unblock_user_warning">このユーザーのブロックを解除してもよろしいですか?</string>
     <string name="warning_button_details">詳細</string>
     <plurals name="context_selected">
-	<item quantity="one">1 選択しました</item>
-	<item quantity="other"></item>
+	<item quantity="other">1 選択済</item>
 </plurals>
 
 </resources>
