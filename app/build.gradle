@@ -115,4 +115,6 @@ dependencies {
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
 
     testCompile 'junit:junit:4.+'
+
+    compile "com.twotoasters.SectionCursorAdapter:library:1.0.+"
 }

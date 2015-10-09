@@ -33,16 +33,21 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.AbsListView.RecyclerListener;
+import android.widget.TextView;
+
+import com.twotoasters.sectioncursoradapter.SectionCursorAdapter;
 
 
-public class ContactsListAdapter extends CursorAdapter {
+public class ContactsListAdapter extends SectionCursorAdapter {
     private static final String TAG = ContactsListActivity.TAG;
 
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
+    private Context context;
+
     public ContactsListAdapter(Context context, ListView list) {
-        super(context, null, false);
+        super(context, null, false, null);
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
@@ -52,23 +57,41 @@ public class ContactsListAdapter extends CursorAdapter {
                 }
             }
         });
+
+        this.context = context;
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        if (!(view instanceof ContactsListItem)) {
-            Log.e(TAG, "Unexpected bound view: " + view);
+    protected View newSectionView(Context context, Object item, ViewGroup parent) {
+        return getLayoutInflater().inflate(R.layout.item_section, parent, false);
+    }
+
+    @Override
+    protected void bindSectionView(View convertView, Context context, int position, Object item) {
+        ((TextView) convertView).setText((String) item);
+    }
+
+    @Override
+    protected View newItemView(Context context, Cursor cursor, ViewGroup parent) {
+        return mFactory.inflate(R.layout.contacts_list_item, parent, false);
+    }
+
+    @Override
+    protected void bindItemView(View convertView, Context context, Cursor cursor) {
+        if (!(convertView instanceof ContactsListItem)) {
+            Log.e(TAG, "Unexpected bound view: " + convertView);
             return;
         }
 
-        ContactsListItem headerView = (ContactsListItem) view;
+        ContactsListItem headerView = (ContactsListItem) convertView;
         Contact contact = Contact.fromUsersCursor(context, cursor);
         headerView.bind(context, contact);
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.contacts_list_item, parent, false);
+    protected Object getSectionFromCursor(Cursor cursor) {
+        Contact contact = Contact.fromUsersCursor(context, cursor);
+        return contact.getName().toUpperCase().substring(0, 1);
     }
 
     public interface OnContentChangedListener {
