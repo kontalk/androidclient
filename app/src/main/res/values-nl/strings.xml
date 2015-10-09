@@ -404,4 +404,9 @@
     <string name="title_block_user_warning">Deze gebruiker echt blokkeren?</string>
     <string name="title_unblock_user_warning">Deze gebruiker echt deblokkeren?</string>
     <string name="warning_button_details">DETAILS</string>
-    </resources>
+    <plurals name="context_selected">
+	<item quantity="one">1 geselecteerd</item>
+	<item quantity="other">%d geselecteerd</item>
+</plurals>
+
+</resources>
