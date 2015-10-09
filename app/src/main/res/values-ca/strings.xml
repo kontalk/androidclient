@@ -50,7 +50,7 @@
   <string name="msg_authenticated">S\'ha registrat a la xarxa!</string>
   <string name="share">Comparteix</string>
   <string name="resend">Torna a enviar</string>
-  <string name="copy_message_text">Copia el text del missatge</string>
+  <string name="copy_message_text">Copia el text</string>
   <string name="delete_message">Esborra el missatge</string>
   <string name="confirm_delete_all">Elimina totes les converses</string>
   <string name="confirm_will_delete_all">S\'eliminaran totes les converses.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Utilitzeu el teclat per a redactar un missatge</string>
   <string name="view_image">Mostra la imatge</string>
   <string name="title_message_options">Opcions del missatge</string>
-  <string name="menu_message_details">Mira els detalls del missatge</string>
+  <string name="menu_message_details">Detalls</string>
   <string name="title_message_details">Detalls del missatge</string>
   <string name="message_type_label">"Tipus: "</string>
   <string name="text_message">Missatge de text</string>
@@ -173,7 +173,7 @@
   <string name="menu_refresh">Actualitza</string>
   <string name="menu_invite">Convida usuaris</string>
   <string name="title_error">Error</string>
-  <string name="msg_do_refresh">Premeu el botó \'refresca\' per a actualitzar la llista de contactes.</string>
+  <string name="msg_do_refresh">Estireu per a actualitzar la llista de contactes.</string>
   <string name="msg_sync_progress">S\'està actualitzant la llista de contactes…</string>
   <string name="err_sync_failed">No ha estat possible actualitzar la llista de contactes. Per favor, torneu a intentar-ho més tard.</string>
   <string name="err_sync_nonetwork">La xarxa no està disponible. Per favor, intenteu-ho més tard.</string>
@@ -181,7 +181,7 @@
   <string name="text_contacts_empty">Els nou usuaris s\'afegiran automàticament a aquesta llista.
 
 Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invitació a algú.</string>
-  <string name="text_conversations_empty">Per a començar a escriure missatges useu la icona <b>missatge nou</b> que hi ha dalt.</string>
+  <string name="text_conversations_empty">Per a començar a escriure missatges useu el botó <b>missatge nou</b> de sota.</string>
   <string name="notify_ticker_external_storage">L\'emmagatzematge extern no està disponible</string>
   <string name="notify_text_external_storage">No ha estat possible escriure a l\'emmagatzematge extern.</string>
   <string name="title_user_not_found">No s\'ha trobat l\'usuari</string>
@@ -344,11 +344,11 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
   <string name="msg_delete_account_progress">S\'està suprimint el vostre compte…</string>
   <string name="msg_user_blocked">S\'ha blocat l\'usuari.</string>
   <string name="msg_user_unblocked">S\'ha desblocat l\'usuari.</string>
-  <string name="msg_block_user_warning"><b>LLEGIU ATENTAMENT. GRÀCIES.</b>\nA punt de blocar l\'usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.</string>
-  <string name="msg_unblock_user_warning"><b>LLEGIU ATENTAMENT. GRÀCIES.</b>\nA punt de desblocar l\'usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.</string>
+  <string name="msg_block_user_warning">Esteu a punt de blocar aquest usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.<b>LLEGIU ATENTAMENT. GRÀCIES.</b>\nA punt de blocar l\'usuari. Si ho feu, aquest usuari no podrà enviar-vos cap missatge fins que el desbloqueu. Tampoc podrà veure el vostre estat ni l\'última connexió, i tampoc podreu veure el seu estat. Com a efecte secundari, tampoc podreu enviar-li cap missatge.</string>
+  <string name="msg_unblock_user_warning">Esteu a punt de desblocar aquest usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.<b>LLEGIU ATENTAMENT. GRÀCIES.</b>\nA punt de desblocar l\'usuari. Si el desbloqueu podrà enviar-vos missatges i veure el vostre estat i l\'última connexió.</string>
   <string name="notification_text_more">Toque ací si en voleu més informació</string>
   <string name="title_auth_error">Error d\'autenticació</string>
-  <string name="msg_auth_error"><b>WARNING!</b>\nL\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
+  <string name="msg_auth_error">L\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).<b>WARNING!</b>\nL\'autenticació amb el servidor de Kontalk va fallar l\'última vegada. Podria ser una fallada temporal del servidor o, més probablement, que el servidor haja refusat la vostra clau personal. La millor solució és esborrar el vostre compte de Kontalk des de la configuració d\'Android i tornar a donar-vos d\'alta (perdreu tots els missatges, això sí).</string>
   <string name="warn_invite_no_app">No hi ha cap aplicació disponible per a convidar usuaris.</string>
   <string name="pref_text_enter">Botó retorn</string>
   <string name="pref_title_text_enter">Trieu el comportament del botó retorn al teclat</string>
@@ -370,7 +370,7 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
   <string name="pref_title_image_resize">Redimensiona les imatges abans d\'enviar-les</string>
   <string name="err_server_invalid_format">Format d\'adreça no vàlid.</string>
   <string name="err_no_contacts_app">No s\'ha trobat l\'app de gestió de contactes.</string>
-  <string name="warning_public_key">ALERTA! La clau personal d\'aquest usuari ha canviat! Feu clic ací si en voleu més informació.</string>
+  <string name="warning_public_key">La clau personal d\'aquest usuari ha canviat inesperadament!</string>
   <string name="title_public_key_warning">La clau personal ha canviat</string>
   <string name="msg_public_key_warning">La clau personal d\'aquest usuari ha canviat. Per favor, esbrineu si l\'usuari ha reinstal·lat Kontalk o si ha regenerat la clau deliberadament; si no, la comunicació podria haver estat compromesa!</string>
 <string name="title_user_exists">L\'usuari ja existeix</string>
@@ -394,10 +394,21 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="hint_ptt">Mantingui premut el botó de micro per gravar.</string>
     <string name="err_audio_record_noaudio">No s\'ha enregistrat cap àudio.</string>
     <string name="msg_importing_key">Important la clau personal…</string>
-    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda d\'aquest número:</string>
+    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda d'aquest número. <b>PER FAVOR NO RESPONGUI A LA TRUCADA.</b></string>
     <string name="code_validation_intro2_missed_call">Si us plau, inseriu els últims %d dígits del número de la trucada perduda.</string>
     <string name="button_validation_fallback">No ha rebut cap trucada?</string>
     <string name="title_fallback">Hi ha algun problema?</string>
     <string name="msg_fallback">Intentarem verificar el seu número de telèfon d\'una altra manera.</string>
     <string name="menu_manual_verification">Ja té un codi?</string>
-    </resources>
+    <string name="confirm_will_delete_threads">S\'eliminaran els xats seleccionats.</string>
+    <string name="confirm_will_delete_messages">S\'eliminaran els missatges seleccionats.</string>
+    <string name="pref_balloon_label_hangout">Reunió</string>
+    <string name="title_block_user_warning">Esteu segurs de voler bloquejar a aquest usuari?</string>
+    <string name="title_unblock_user_warning">Esteu segurs de voler desbloquejar a aquest usuari?</string>
+    <string name="warning_button_details">DETALLS</string>
+    <plurals name="context_selected">
+	<item quantity="one">1 seleccionat</item>
+	<item quantity="other">%d seleccionats</item>
+</plurals>
+
+</resources>
