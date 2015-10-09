@@ -371,7 +371,7 @@
   <string name="warning_public_key">Der persönliche Schlüssel dieses Nutzers hat sich unerwartet geändert!</string>
   <string name="title_public_key_warning">Persönlicher Schlüssel geändert</string>
   <string name="msg_public_key_warning">Der persönliche Schlüssel dieses Nutzers hat sich geändert. Klären Sie bitte mit dem Nutzer ab, ob er/sie Kontalk neu installiert hat oder seinen/ihren Schlüssel absichtlich neu erzeugt hat. Andernfalls könnte es sein, dass die Kommunikation kompromittiert wurde!</string>
-<string name="title_user_exists">Nutzer existiert bereits</string>
+<string name="title_user_exists">Nutzer existiert</string>
     <string name="err_validation_user_exists"><b>Die von Ihnen benutzte Nummer ist bereits bei Kontalk registriert.</b> Wenn Sie bereits ein anderes Gerät registriert haben, wird es aus dem Kontalktalknetzwerk entfernt wenn sie fortfahren. Bitte lesen Sie in unserer Dokumentation nach wie ihr Account auf verschiedene Geräte kopiert werden kann. Wählen Sie OK um dennoch fortzufahren.</string>
     <string name="about_credits_translators"><b>Übersetzer</b></string>
 
@@ -381,7 +381,7 @@
     <string name="about_credits_gfx"><b>Grafiken/Icons</b></string>
     <string name="err_no_contact">Kontakt nicht gefunden.</string>
 
-    <string name="warning_older_version">Ihr Freund verwendet eine ältere Version von Kontalk. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
+    <string name="warning_older_version">Ihr Freund verwendet eine ältere Kontalkversion. Es könnte sein, dass manche Funktionen nicht richtig arbeiten.</string>
     <string name="pref_help">Hilfe</string>
     <string name="error_delete_thread">Es ist nicht möglich das Gespräch zu löschen.</string>
     <string name="error_delete_message">Es ist nicht möglich die Nachricht zu löschen.</string>
