@@ -22,7 +22,6 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.ui.ContactsListActivity;
 import org.kontalk.ui.view.ContactsListItem;
-import org.kontalk.ui.view.MessageListItem;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -30,7 +29,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.AbsListView.RecyclerListener;
 import android.widget.TextView;
@@ -44,21 +42,17 @@ public class ContactsListAdapter extends SectionCursorAdapter {
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
-    private Context context;
-
     public ContactsListAdapter(Context context, ListView list) {
         super(context, null, false, null);
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
             public void onMovedToScrapHeap(View view) {
-                if (view instanceof MessageListItem) {
+                if (view instanceof ContactsListItem) {
                     ((ContactsListItem) view).unbind();
                 }
             }
         });
-
-        this.context = context;
     }
 
     @Override
@@ -84,14 +78,13 @@ public class ContactsListAdapter extends SectionCursorAdapter {
         }
 
         ContactsListItem headerView = (ContactsListItem) convertView;
-        Contact contact = Contact.fromUsersCursor(context, cursor);
+        Contact contact = Contact.fromUsersCursor(cursor);
         headerView.bind(context, contact);
     }
 
     @Override
     protected Object getSectionFromCursor(Cursor cursor) {
-        Contact contact = Contact.fromUsersCursor(context, cursor);
-        return contact.getName().toUpperCase().substring(0, 1);
+        return Contact.getStringForSection(cursor);
     }
 
     public interface OnContentChangedListener {
