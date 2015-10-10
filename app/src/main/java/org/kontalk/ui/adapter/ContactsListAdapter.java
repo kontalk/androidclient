@@ -32,7 +32,6 @@ import org.kontalk.R;
 import org.kontalk.data.Contact;
 import org.kontalk.ui.ContactsListActivity;
 import org.kontalk.ui.view.ContactsListItem;
-import org.kontalk.ui.view.MessageListItem;
 
 import lb.library.cursor.SearchablePinnedHeaderCursorListViewAdapter;
 
@@ -43,34 +42,21 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
     private final LayoutInflater mFactory;
     private OnContentChangedListener mOnContentChangedListener;
 
-    private Context context;
-
     public ContactsListAdapter(Context context, ListView list) {
         super(context, null, Contact.COLUMN_DISPLAY_NAME, false);
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
             public void onMovedToScrapHeap(View view) {
-                if (view instanceof MessageListItem) {
+                if (view instanceof ContactsListItem) {
                     ((ContactsListItem) view).unbind();
                 }
             }
         });
-
-        this.context = context;
-    }
-
-    @Override
-    protected TextView findHeaderView(View itemView) {
-        return ((ViewHolder) itemView.getTag()).headerView;
     }
 
     public interface OnContentChangedListener {
         void onContentChanged(ContactsListAdapter adapter);
-    }
-
-    public void setOnContentChangedListener(OnContentChangedListener l) {
-        mOnContentChangedListener = l;
     }
 
     @Override
@@ -94,13 +80,22 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
         }
 
         ContactsListItem headerView = (ContactsListItem) view;
-        Contact contact = Contact.fromUsersCursor(context, cursor);
+        Contact contact = Contact.fromUsersCursor(cursor);
         headerView.bind(context, contact);
+    }
+
+    @Override
+    protected TextView findHeaderView(View itemView) {
+        return ((ViewHolder) itemView.getTag()).headerView;
     }
 
     @Override
     protected Cursor getFilterCursor(CharSequence charSequence) {
         return null;
+    }
+
+    public void setOnContentChangedListener(OnContentChangedListener l) {
+        mOnContentChangedListener = l;
     }
 
     @Override

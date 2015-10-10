@@ -347,8 +347,17 @@ public class Contact {
         }
     }
 
+    /** Returns the text to be used in a list view section indexer. */
+    public static String getStringForSection(Cursor cursor) {
+        String name = cursor.getString(COLUMN_DISPLAY_NAME);
+        if (name == null)
+            name = cursor.getString(COLUMN_NUMBER);
+
+        return name.substring(0, 1).toUpperCase();
+    }
+
     /** Builds a contact from a UsersProvider cursor. */
-    public static Contact fromUsersCursor(Context context, Cursor cursor) {
+    public static Contact fromUsersCursor(Cursor cursor) {
         // try the cache
         String jid = cursor.getString(COLUMN_JID);
         Contact c = cache.get(jid);
@@ -478,7 +487,8 @@ public class Contact {
 
     public static Cursor queryContacts(Context context) {
         return context.getContentResolver().query(Users.CONTENT_URI, ALL_CONTACTS_PROJECTION,
-            Users.REGISTERED + " <> 0", null, Users.DISPLAY_NAME);
+            Users.REGISTERED + " <> 0", null,
+            Users.DISPLAY_NAME + " COLLATE NOCASE," + Users.NUMBER + " COLLATE NOCASE");
     }
 
 }
