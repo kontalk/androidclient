@@ -18,27 +18,26 @@
 
 package org.kontalk.ui.adapter;
 
-import org.kontalk.R;
-import org.kontalk.data.Contact;
-import org.kontalk.ui.ContactsListActivity;
-import org.kontalk.ui.view.ContactsListItem;
-import org.kontalk.ui.view.MessageListItem;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CursorAdapter;
-import android.widget.ListView;
 import android.widget.AbsListView.RecyclerListener;
+import android.widget.ListView;
 import android.widget.TextView;
 
-import com.twotoasters.sectioncursoradapter.SectionCursorAdapter;
+import org.kontalk.R;
+import org.kontalk.data.Contact;
+import org.kontalk.ui.ContactsListActivity;
+import org.kontalk.ui.view.ContactsListItem;
+import org.kontalk.ui.view.MessageListItem;
+
+import lb.library.cursor.SearchablePinnedHeaderCursorListViewAdapter;
 
 
-public class ContactsListAdapter extends SectionCursorAdapter {
+public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAdapter {
     private static final String TAG = ContactsListActivity.TAG;
 
     private final LayoutInflater mFactory;
@@ -47,7 +46,7 @@ public class ContactsListAdapter extends SectionCursorAdapter {
     private Context context;
 
     public ContactsListAdapter(Context context, ListView list) {
-        super(context, null, false, null);
+        super(context, null, Contact.COLUMN_DISPLAY_NAME, false);
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
@@ -62,36 +61,8 @@ public class ContactsListAdapter extends SectionCursorAdapter {
     }
 
     @Override
-    protected View newSectionView(Context context, Object item, ViewGroup parent) {
-        return getLayoutInflater().inflate(R.layout.item_section, parent, false);
-    }
-
-    @Override
-    protected void bindSectionView(View convertView, Context context, int position, Object item) {
-        ((TextView) convertView).setText((String) item);
-    }
-
-    @Override
-    protected View newItemView(Context context, Cursor cursor, ViewGroup parent) {
-        return mFactory.inflate(R.layout.contacts_list_item, parent, false);
-    }
-
-    @Override
-    protected void bindItemView(View convertView, Context context, Cursor cursor) {
-        if (!(convertView instanceof ContactsListItem)) {
-            Log.e(TAG, "Unexpected bound view: " + convertView);
-            return;
-        }
-
-        ContactsListItem headerView = (ContactsListItem) convertView;
-        Contact contact = Contact.fromUsersCursor(context, cursor);
-        headerView.bind(context, contact);
-    }
-
-    @Override
-    protected Object getSectionFromCursor(Cursor cursor) {
-        Contact contact = Contact.fromUsersCursor(context, cursor);
-        return contact.getName().toUpperCase().substring(0, 1);
+    protected TextView findHeaderView(View itemView) {
+        return ((ViewHolder) itemView.getTag()).headerView;
     }
 
     public interface OnContentChangedListener {
@@ -103,10 +74,44 @@ public class ContactsListAdapter extends SectionCursorAdapter {
     }
 
     @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        final View inflated = mFactory.inflate(R.layout.contacts_list_item, null);
+        final ViewHolder holder = new ViewHolder();
+        holder.headerView = (TextView) inflated.findViewById(R.id.header_text);
+        holder.text1 = (TextView) inflated.findViewById(android.R.id.text1);
+        holder.text2 = (TextView) inflated.findViewById(android.R.id.text2);
+        inflated.setTag(holder);
+        return inflated;
+    }
+
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+        super.bindView(view, context, cursor);
+
+        if (!(view instanceof ContactsListItem)) {
+            Log.e(TAG, "Unexpected bound view: " + view);
+            return;
+        }
+
+        ContactsListItem headerView = (ContactsListItem) view;
+        Contact contact = Contact.fromUsersCursor(context, cursor);
+        headerView.bind(context, contact);
+    }
+
+    @Override
+    protected Cursor getFilterCursor(CharSequence charSequence) {
+        return null;
+    }
+
+    @Override
     protected void onContentChanged() {
         Cursor c = getCursor();
         if (c != null && !c.isClosed() && mOnContentChangedListener != null) {
             mOnContentChangedListener.onContentChanged(this);
         }
+    }
+
+    private static class ViewHolder {
+        public TextView headerView, text1, text2;
     }
 }
