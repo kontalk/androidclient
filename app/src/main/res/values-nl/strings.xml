@@ -409,4 +409,6 @@
 	<item quantity="other">%d geselecteerd</item>
 </plurals>
 
-</resources>
+<string name="title_confirm_cancel_registration">Registratie annuleren?</string>
+    <string name="confirm_cancel_registration">Indien je nu terug gaat, wordt de registratie geannuleerd. Indien je naar een andere app over moet schakelen kun je beter de thuisknop gebruiken.</string>
+    </resources>
