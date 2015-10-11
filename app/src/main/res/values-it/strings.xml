@@ -276,8 +276,8 @@
   <string name="going_offline">Entro in modalità offline.</string>
   <string name="going_online">Entro in modalità online.</string>
   <string name="pref_other">Altro</string>
-  <string name="pref_donate">Donazione</string>
-  <string name="pref_about">Informazioni</string>
+  <string name="pref_donate">Dona</string>
+  <string name="pref_about">Info</string>
   <string name="title_about">Informazioni</string>
   <string name="title_donation">Donazione</string>
   <string name="title_credits">Riconoscimenti</string>
