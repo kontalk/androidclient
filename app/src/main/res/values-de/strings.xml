@@ -409,4 +409,6 @@
 
 <string name="pref_balloon_label_hangout">Hangout</string>
     <string name="warning_button_details">DETAILS</string>
+    <string name="title_confirm_cancel_registration">Registrierung abbrechen?</string>
+    <string name="confirm_cancel_registration">Wenn Sie zurück gehen, werden sie die Registrierung von Anfang an beginnen müssen. Wenn Sie zu einer anderen Anwendung wechseln möchten, nutzen Sie einfach die \"Home\"-Taste.</string>
     </resources>
