@@ -394,7 +394,7 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="hint_ptt">Mantingui premut el botó de micro per gravar.</string>
     <string name="err_audio_record_noaudio">No s\'ha enregistrat cap àudio.</string>
     <string name="msg_importing_key">Important la clau personal…</string>
-    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda d'aquest número. <b>PER FAVOR NO RESPONGUI A LA TRUCADA.</b></string>
+    <string name="code_validation_intro_missed_call">En breu tindrà una trucada perduda d\'aquest número. <b>PER FAVOR NO RESPONGUI A LA TRUCADA.</b></string>
     <string name="code_validation_intro2_missed_call">Si us plau, inseriu els últims %d dígits del número de la trucada perduda.</string>
     <string name="button_validation_fallback">No ha rebut cap trucada?</string>
     <string name="title_fallback">Hi ha algun problema?</string>
