@@ -965,11 +965,11 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 if (canConnect && isConnected) {
                     final String id = intent.getStringExtra(EXTRA_PACKET_ID);
                     String type = intent.getStringExtra(EXTRA_TYPE);
-                    String to = intent.getStringExtra(EXTRA_TO);
+                    final String to = intent.getStringExtra(EXTRA_TO);
 
                     if ("probe".equals(type)) {
                         // probing is actually looking into the roster
-                        Roster roster = getRoster();
+                        final Roster roster = getRoster();
 
                         if (to == null) {
                             for (RosterEntry entry : roster.getEntries()) {
@@ -980,7 +980,12 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                             broadcastMyPresence(id);
                         }
                         else {
-                            broadcastPresence(roster, to, id);
+                            queueTask(new Runnable() {
+                                @Override
+                                public void run() {
+                                    broadcastPresence(roster, to, id);
+                                }
+                            });
                         }
                     }
                     else {
