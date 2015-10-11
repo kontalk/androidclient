@@ -95,7 +95,7 @@
   <string name="pref_idle_time">Verbindung trennen wenn ungenutzt</string>
   <string name="pref_title_idle_time">Wartezeit bis die Verbindung unterbrochen werden soll</string>
   <string name="pref_wakeup_time">Serververbindung wiederherstellen</string>
-  <string name="pref_title_wakeup_time">Wartezeit bis die Serververbindung wieder hergestellt werden soll. Arbeitet nur wenn Pushbenachrichtigungen nicht verfügbar sind</string>
+  <string name="pref_title_wakeup_time">Wartezeit bis die Serververbindung wieder hergestellt werden soll. Funktioniert nur wenn \"Push\"-Benachrichtigungen nicht verfügbar sind</string>
   <string name="pref_maintenance">Wartung</string>
   <string name="pref_regenerate_keypair">Persönlichen Schlüssel neu erzeugen</string>
   <string name="pref_title_regenerate_keypair">Antippen wenn ihr persönlicher Schlüssel kompromittiert wurde</string>
