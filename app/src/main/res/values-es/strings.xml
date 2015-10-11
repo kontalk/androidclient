@@ -409,4 +409,6 @@
 	<item quantity="other">%d seleccionados</item>
 </plurals>
 
-</resources>
+<string name="title_confirm_cancel_registration">Cancelar el registro?</string>
+    <string name="confirm_cancel_registration">Si utiliza el botón de volver atrás tendrá que hacer el registro partiendo de cero. Si necesita alternar con otra aplicación, utilice el botón de Inicio.</string>
+    </resources>
