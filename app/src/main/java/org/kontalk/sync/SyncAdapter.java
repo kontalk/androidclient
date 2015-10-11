@@ -87,9 +87,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             if (!force) {
-                long lastSync = Preferences.getLastSyncTimestamp(mContext);
-                long diff = (System.currentTimeMillis() - lastSync) / 1000;
-                if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
+                if (isThrottling(mContext)) {
                     Log.d(TAG, "not starting sync - throttling");
                     // TEST do not delay - syncResult.delayUntil = (long) diff;
                     return;
@@ -143,13 +141,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      * @return true if the sync has been actually requested to the system.
      */
     public static boolean requestSync(Context context, boolean force) {
-        if (!force) {
-            long lastSync = Preferences.getLastSyncTimestamp(context);
-            float diff = (System.currentTimeMillis() - lastSync) / 1000;
-            if (lastSync >= 0 && diff < MAX_SYNC_DELAY) {
-                Log.d(TAG, "not requesting sync - throttling");
-                return false;
-            }
+        if (!force && isThrottling(context)) {
+            Log.d(TAG, "not requesting sync - throttling");
+            return false;
         }
 
         // do not start if offline
@@ -166,6 +160,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         extra.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         ContentResolver.requestSync(acc, ContactsContract.AUTHORITY, extra);
         return true;
+    }
+
+    public static boolean isThrottling(Context context) {
+        long lastSync = Preferences.getLastSyncTimestamp(context);
+        float diff = (System.currentTimeMillis() - lastSync) / 1000;
+        return (lastSync >= 0 && diff < MAX_SYNC_DELAY);
     }
 
     public static boolean isPending(Context context) {

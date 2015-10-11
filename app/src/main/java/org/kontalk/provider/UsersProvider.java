@@ -635,8 +635,14 @@ public class UsersProvider extends ContentProvider {
         stm.bindString(++i, hash);
         stm.bindString(++i, number);
         stm.bindString(++i, jid);
-        stm.bindString(++i, displayName);
-        stm.bindString(++i, lookupKey);
+        if (displayName != null)
+            stm.bindString(++i, displayName);
+        else
+            stm.bindNull(++i);
+        if (lookupKey != null)
+            stm.bindString(++i, lookupKey);
+        else
+            stm.bindNull(++i);
         if (contactId != null)
             stm.bindLong(++i, contactId);
         else
@@ -656,8 +662,14 @@ public class UsersProvider extends ContentProvider {
         i = 0;
         onlineUpd.clearBindings();
         onlineUpd.bindString(++i, number);
-        onlineUpd.bindString(++i, displayName);
-        onlineUpd.bindString(++i, lookupKey);
+        if (displayName != null)
+            onlineUpd.bindString(++i, displayName);
+        else
+            onlineUpd.bindNull(++i);
+        if (lookupKey != null)
+            onlineUpd.bindString(++i, lookupKey);
+        else
+            onlineUpd.bindNull(++i);
         if (contactId != null)
             onlineUpd.bindLong(++i, contactId);
         else
@@ -672,8 +684,14 @@ public class UsersProvider extends ContentProvider {
             onlineIns.bindString(++i, hash);
             onlineIns.bindString(++i, number);
             onlineIns.bindString(++i, jid);
-            onlineIns.bindString(++i, displayName);
-            onlineIns.bindString(++i, lookupKey);
+            if (displayName != null)
+                onlineIns.bindString(++i, displayName);
+            else
+                onlineIns.bindNull(++i);
+            if (lookupKey != null)
+                onlineIns.bindString(++i, lookupKey);
+            else
+                onlineIns.bindNull(++i);
             if (contactId != null)
                 onlineIns.bindLong(++i, contactId);
             else
