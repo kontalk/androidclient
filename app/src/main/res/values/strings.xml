@@ -51,6 +51,8 @@
     <string name="warn_invalid_number">Please enter a valid phone number.</string>
     <string name="msg_validating_phone">Requesting registration&#8230;</string>
     <string name="msg_importing_key">Importing personal key&#8230;</string>
+    <string name="title_confirm_cancel_registration">Cancel registration?</string>
+    <string name="confirm_cancel_registration">If you go back you\'ll have to start registration from scratch. If you need to switch to another app, just use the device home button.</string>
     <string name="msg_initializing">Registering to the Kontalk network&#8230;</string>
     <string name="msg_authenticated">Registered to the network!</string>
     <string name="share">Share</string>
