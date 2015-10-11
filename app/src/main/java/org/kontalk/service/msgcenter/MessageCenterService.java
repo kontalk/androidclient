@@ -505,7 +505,13 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                         removeMessages(MSG_IDLE);
                         removeMessages(MSG_INACTIVE);
                         Looper.myQueue().addIdleHandler(IdleConnectionHandler.this);
-                        queueInactive();
+
+                        // trigger inactive timer only if connected
+                        // the authenticated callback will ensure it will trigger anyway
+                        MessageCenterService service = s.get();
+                        if (service != null && !service.isInactive() && service.isConnected()) {
+                            queueInactive();
+                        }
                     }
                 });
             }
