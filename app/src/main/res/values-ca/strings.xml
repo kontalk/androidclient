@@ -411,4 +411,6 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
 	<item quantity="other">%d seleccionats</item>
 </plurals>
 
-</resources>
+<string name="title_confirm_cancel_registration">Voleu cancel·lar el registre?</string>
+    <string name="confirm_cancel_registration">Si utilitzeu el botó de tornar enrere haureu de fer el registre partint de zero. Si necessiteu alternar amb una altra aplicació, podeu utilitzar el botó d\'inici.</string>
+    </resources>
