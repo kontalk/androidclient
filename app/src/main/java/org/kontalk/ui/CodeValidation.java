@@ -19,6 +19,8 @@
 package org.kontalk.ui;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -160,9 +162,21 @@ public class CodeValidation extends AccountAuthenticatorActionBarActivity
 
     @Override
     public void onBackPressed() {
-        // we are going back voluntarily
-        Preferences.clearRegistrationProgress(this);
-        super.onBackPressed();
+        new MaterialDialog.Builder(this)
+            .title(R.string.title_confirm_cancel_registration)
+            .content(R.string.confirm_cancel_registration)
+            .positiveText(android.R.string.ok)
+            .positiveColorRes(R.color.button_danger)
+            .negativeText(android.R.string.cancel)
+            .callback(new MaterialDialog.ButtonCallback() {
+                @Override
+                public void onPositive(MaterialDialog dialog) {
+                    // we are going back voluntarily
+                    Preferences.clearRegistrationProgress(CodeValidation.this);
+                    CodeValidation.super.onBackPressed();
+                }
+            })
+            .show();
     }
 
     /** No search here. */

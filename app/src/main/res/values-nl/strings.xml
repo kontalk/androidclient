@@ -179,7 +179,7 @@
   <string name="err_sync_nonetwork">Netwerk niet beschikbaar. Probeer het later opnieuw.</string>
   <string name="text_invite_message">Hoi! Kijk eens naar Kontalk Messenger in de Google Play Store, een app om gratis berichten te sturen! https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="text_contacts_empty">Nieuwe gebruikers zullen automatisch toegevoegd worden aan deze lijst.\n\nGebruik <b>Menu</b> &gt; <b>Gebruikers uitnodigen</b> om een SMS met een uitnodiging te sturen.</string>
-  <string name="text_conversations_empty">Gebruik de <b>nieuw bericht</b>-knop hierboven om te beginnen met berichten schrijven.</string>
+  <string name="text_conversations_empty">Gebruik de <b>nieuw bericht</b>-knop onder aan het scherm om te beginnen met het schrijven van berichten.</string>
   <string name="notify_ticker_external_storage">Externe opslag niet beschikbaar</string>
   <string name="notify_text_external_storage">Kan niet schrijven naar externe opslag.</string>
   <string name="title_user_not_found">Gebruiker niet gevonden</string>
@@ -342,11 +342,11 @@
   <string name="msg_delete_account_progress">Je account wordt verwijderd…</string>
   <string name="msg_user_blocked">Gebruiker is geblokkeerd.</string>
   <string name="msg_user_unblocked">Deze gebruiker is geblokkeerd.</string>
-  <string name="msg_block_user_warning"><b>LET OP!</b>\nJe staat op het punt deze gebruiker te blokkeren. Hij/zij kan jou dan geen berichten sturen en jij kan hem/haar ook geen berichten sturen. Verder kan hij/zij dan ook niet je onlinestatus zien en jij kan zijn/haar onlinestatus ook niet zien.</string>
-  <string name="msg_unblock_user_warning"><b>LET OP!</b>\nJe staat op het punt deze gebruiker te deblokkeren. Hij/zij kan jou dan weer berichten sturen en andersom. Verder kan hij/zij weer je onlinestatus zien en andersom.</string>
+  <string name="msg_block_user_warning">Je staat op het punt deze gebruiker te blokkeren. Indien je dit doet, kunnen jullie elkaars onlinestatus en statusbericht niet zien en elkaar geen berichten of media sturen.<b>LET OP!</b>\nJe staat op het punt deze gebruiker te blokkeren. Hij/zij kan jou dan geen berichten sturen en jij kan hem/haar ook geen berichten sturen. Verder kan hij/zij dan ook niet je onlinestatus zien en jij kan zijn/haar onlinestatus ook niet zien.</string>
+  <string name="msg_unblock_user_warning">Je staat op het punt deze gebruiker te deblokkeren. Indien je dit doet, kunnen jullie elkaars onlinestatus en statusbericht weer zien en elkaar weer berichten of media sturen.<b>LET OP!</b>\nJe staat op het punt deze gebruiker te deblokkeren. Hij/zij kan jou dan weer berichten sturen en andersom. Verder kan hij/zij weer je onlinestatus zien en andersom.</string>
   <string name="notification_text_more">Tik hier voor meer informatie</string>
   <string name="title_auth_error">Authenticatiefout</string>
-  <string name="msg_auth_error"><b>WAARSCHUWING!</b>\nDe laatste keer dat je probeerde te verbinden met een Kontalk-server is de authenticatie mislukt. Mogelijk is de server tijdelijk uit de lucht, maar waarschijnlijk weigert de server je persoonlijk sleutelpaar. Als je sleutelpaar geweigerd wordt is de enige oplossing om je Kontalk-account te verwijderen in de Instellingen van Android en jezelf opnieuw te registreren. Helaas raak je hierbij wel al je Kontalk-berichten kwijt.</string>
+  <string name="msg_auth_error">De laatste keer dat je probeerde te verbinden met een Kontalk-server is de authenticatie mislukt. Mogelijk is de server tijdelijk offline, maar waarschijnlijk weigert de server je persoonlijk sleutelpaar. Als je sleutelpaar geweigerd wordt is de enige oplossing om je Kontalk-account te verwijderen in de instellingen van Android en jezelf opnieuw te registreren. Helaas raak je hierbij wel al je Kontalk-berichten kwijt.<b>WAARSCHUWING!</b>\nDe laatste keer dat je probeerde te verbinden met een Kontalk-server is de authenticatie mislukt. Mogelijk is de server tijdelijk uit de lucht, maar waarschijnlijk weigert de server je persoonlijk sleutelpaar. Als je sleutelpaar geweigerd wordt is de enige oplossing om je Kontalk-account te verwijderen in de Instellingen van Android en jezelf opnieuw te registreren. Helaas raak je hierbij wel al je Kontalk-berichten kwijt.</string>
   <string name="warn_invite_no_app">Er is op dit apparaat geen app beschikbaar waarmee uitnodigingen verstuurd kunnen worden.</string>
   <string name="pref_text_enter">Enter-toets</string>
   <string name="pref_title_text_enter">Selecteren van het gedrag van de Enter-toets in het toetsenbord</string>
@@ -368,7 +368,7 @@
   <string name="pref_title_image_resize">Afbeelding schalen voordat ze verzonden worden</string>
   <string name="err_server_invalid_format">Ongeldig adres.</string>
   <string name="err_no_contacts_app">Er is op dit apparaat geen app beschikbaar waarmee contacten opgeslagen kunnen worden.</string>
-  <string name="warning_public_key">WAARSCHUWING! De persoonlijke sleutel voor deze gebruiker is onverwacht veranderd! Klik hier voor details.</string>
+  <string name="warning_public_key">De persoonlijke sleutel voor deze gebruiker is onverwacht veranderd!</string>
   <string name="title_public_key_warning">Persoonlijke sleutel veranderd</string>
   <string name="msg_public_key_warning">De persoonlijke sleutel voor deze gebruiker is veranderd. Ga na bij de gebruiker of hij/zij Kontalk opnieuw heeft geïnstalleerd of zijn/haar sleutel bewust opnieuw heeft aangemaakt, anders zou je communicatie aangetast kunnen zijn!</string>
 <string name="title_user_exists">Gebruiker bestaat</string>
@@ -392,7 +392,7 @@
     <string name="err_custom_background">Er ging iets fout bij het instellen van de achtergrondafbeelding. Probeer een andere afbeelding.</string>
     <string name="hint_ptt">Houd de microfoon in om op te nemen.</string>
     <string name="msg_importing_key">Persoonlijk sleutelpaar importeren…</string>
-    <string name="code_validation_intro_missed_call">Je zou zo een gemiste oproep van het volgende nummer moeten ontvangen:</string>
+    <string name="code_validation_intro_missed_call">Je zou zo een gemiste oproep van het volgende nummer moeten ontvangen. <b>NEEM DIT GESPREK ALSJEBLIEFT NIET OP.</b></string>
     <string name="code_validation_intro2_missed_call">Vul alsjeblieft de laatste %d cijfers van het nummer waar je door gebeld wordt in.</string>
     <string name="button_validation_fallback">Wordt je niet gebeld?</string>
     <string name="title_fallback">Loop je tegen problemen aan?</string>
@@ -400,4 +400,15 @@
     <string name="menu_manual_verification">Heb je al een code?</string>
     <string name="confirm_will_delete_threads">De geselecteerde gesprekken zullen verwijderd worden.</string>
     <string name="confirm_will_delete_messages">De geselecteerde berichten zullen verwijderd worden.</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="title_block_user_warning">Deze gebruiker echt blokkeren?</string>
+    <string name="title_unblock_user_warning">Deze gebruiker echt deblokkeren?</string>
+    <string name="warning_button_details">DETAILS</string>
+    <plurals name="context_selected">
+	<item quantity="one">1 geselecteerd</item>
+	<item quantity="other">%d geselecteerd</item>
+</plurals>
+
+<string name="title_confirm_cancel_registration">Registratie annuleren?</string>
+    <string name="confirm_cancel_registration">Indien je nu terug gaat, wordt de registratie geannuleerd. Indien je naar een andere app over moet schakelen kun je beter de thuisknop gebruiken.</string>
     </resources>
