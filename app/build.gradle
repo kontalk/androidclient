@@ -117,5 +117,5 @@ dependencies {
 
     testCompile 'junit:junit:4.+'
 
-    compile "com.github.acappelli:ListViewVariants:v.1.0"
+    compile "com.github.acappelli:ListViewVariants:v.1.0.1"
 }
