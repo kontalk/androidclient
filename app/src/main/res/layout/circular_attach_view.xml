@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.codetail.widget.RevealFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    android:layout_alignParentTop="true">
+
+    <!-- Put more views here if you want, it's stock frame layout  -->
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/circular_card"
+        style="@style/CardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardElevation="3dp"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/last_photo_list"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:scrollbars="none"
+                android:visibility="visible" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#000000" />
+
+            <android.support.v7.widget.GridLayout
+                android:id="@+id/gridLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:columnCount="4"
+                app:orientation="horizontal"
+                app:rowCount="2"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/ic_attach_picture"
+                    android:gravity="center"
+                    android:text="Foto"
+                    app:layout_columnWeight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/ic_attach_audio"
+                    android:gravity="center"
+                    android:layout_marginLeft="8dp"
+                    android:text="Audio"
+                    app:layout_columnWeight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/ic_attach_contact"
+                    android:gravity="center"
+                    android:layout_marginLeft="8dp"
+                    android:text="Contatti"
+                    app:layout_columnWeight="1" />
+
+
+            </android.support.v7.widget.GridLayout>
+
+        </LinearLayout>
+
+
+    </android.support.v7.widget.CardView>
+
+</io.codetail.widget.RevealFrameLayout>

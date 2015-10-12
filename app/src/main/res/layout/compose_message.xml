@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -16,60 +15,67 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<org.kontalk.ui.view.KeyboardAwareRelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<org.kontalk.ui.view.KeyboardAwareRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-    <ImageView android:id="@+id/background"
+    <ImageView
+        android:id="@+id/background"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
-    <LinearLayout android:id="@+id/container"
+    <LinearLayout
+        android:id="@+id/container"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical">
 
-        <include layout="@layout/invitation_bar"
+        <include
             android:id="@+id/invitation_bar"
-            android:visibility="gone"/>
+            layout="@layout/invitation_bar"
+            android:visibility="gone" />
 
-        <FrameLayout android:id="@+id/warning_bar"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"/>
+        <FrameLayout
+            android:id="@+id/warning_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-        <ListView android:id="@android:id/list"
+        <ListView
+            android:id="@android:id/list"
             style="?android:attr/listViewWhiteStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.0"
             android:background="@android:color/transparent"
             android:cacheColorHint="@android:color/transparent"
             android:divider="@null"
             android:dividerHeight="0.0sp"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1.0"
             android:drawSelectorOnTop="false"
-            android:transcriptMode="normal"
-            android:smoothScrollbar="false"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:fastScrollEnabled="true"
-            android:fastScrollAlwaysVisible="true"
-            android:scrollbarStyle="insideInset"
-            android:stackFromBottom="true"
             android:fadingEdgeLength="8dp"
-            >
+            android:fastScrollAlwaysVisible="true"
+            android:fastScrollEnabled="true"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbarStyle="insideInset"
+            android:smoothScrollbar="false"
+            android:stackFromBottom="true"
+            android:transcriptMode="normal">
             <!-- Preview: listitem=@layout/message_list_item -->
         </ListView>
 
         <!-- Divider. (Yes, the .9dp is on purpose.) -->
-        <View android:background="?attr/dividerHorizontal"
+        <View
             android:layout_width="match_parent"
-            android:layout_height=".9dp" />
+            android:layout_height=".9dp"
+            android:background="?attr/dividerHorizontal" />
 
-        <include layout="@layout/composer_bar"/>
+        <include layout="@layout/composer_bar" />
 
     </LinearLayout>
+
+    <include
+        layout="@layout/circular_attach_view" />
 
 </org.kontalk.ui.view.KeyboardAwareRelativeLayout>

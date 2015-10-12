@@ -88,6 +88,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -128,6 +130,9 @@ import org.kontalk.util.MessageUtils;
 import org.kontalk.util.Preferences;
 import org.kontalk.util.SystemUtils;
 import org.kontalk.util.XMPPUtils;
+
+import io.codetail.animation.SupportAnimator;
+import io.codetail.animation.ViewAnimationUtils;
 
 import static android.content.res.Configuration.KEYBOARDHIDDEN_NO;
 import static org.kontalk.service.msgcenter.MessageCenterService.PRIVACY_ACCEPT;
@@ -255,7 +260,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         Bundle args = new Bundle();
         args.putString("action", ComposeMessage.ACTION_VIEW_CONVERSATION);
         args.putParcelable("data",
-            ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
+                ContentUris.withAppendedId(Conversations.CONTENT_URI, threadId));
         f.setArguments(args);
         return f;
     }
@@ -684,8 +689,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(getActivity(),
-                        R.string.err_store_message_failed,
-                        Toast.LENGTH_LONG).show();
+                            R.string.err_store_message_failed,
+                            Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -1017,6 +1022,23 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
                 .build();
         }
         attachmentMenu.show();
+
+        /*View cardView = getView().findViewById(R.id.circular_card);
+        View container = getView().findViewById(R.id.container);
+        container.setVisibility(View.VISIBLE);
+
+        // get the center for the clipping circle
+        int cx = (cardView.getLeft() + cardView.getRight()) / 2;
+        int cy = (cardView.getTop() + cardView.getBottom()) / 2;
+
+        // get the final radius for the clipping circle
+        int finalRadius = Math.max(cardView.getWidth(), cardView.getHeight());
+
+        SupportAnimator animator =
+                ViewAnimationUtils.createCircularReveal(cardView, cx, cy, 0, finalRadius);
+        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+        animator.setDuration(500);
+        animator.start();*/
     }
 
     /** Starts activity for an image attachment. */
