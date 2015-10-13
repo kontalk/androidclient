@@ -50,7 +50,7 @@
   <string name="msg_authenticated">Vous êtes bien enregistré sur le réseau!</string>
   <string name="share">Partager</string>
   <string name="resend">Envoyer à nouveau</string>
-  <string name="copy_message_text">Copier le message</string>
+  <string name="copy_message_text">Copier le texte</string>
   <string name="delete_message">Supprimer le message</string>
   <string name="confirm_delete_all">Supprimer toutes les conversations</string>
   <string name="confirm_will_delete_all">Toutes les conversations seront supprimées.</string>
@@ -70,7 +70,7 @@
   <string name="hint_open_kbd_to_compose">Ouvrir le clavier pour écrire le message</string>
   <string name="view_image">Voir l\'image</string>
   <string name="title_message_options">Options du message</string>
-  <string name="menu_message_details">Voir les détails du message</string>
+  <string name="menu_message_details">Détails</string>
   <string name="title_message_details">Détails du message</string>
   <string name="message_type_label">Ecrire:\u0020</string>
   <string name="text_message">Message</string>
@@ -173,13 +173,13 @@
   <string name="menu_refresh">Rafraichir</string>
   <string name="menu_invite">Inviter des utilisateurs</string>
   <string name="title_error">Erreur</string>
-  <string name="msg_do_refresh">Utilisez le bouton de rafraîchissement pour mettre à jour la liste de contacts.</string>
+  <string name="msg_do_refresh">Déroulez vers le bas pour mettre à jour la liste de contacts.</string>
   <string name="msg_sync_progress">L\'annuaire se rafraîchit…</string>
   <string name="err_sync_failed">Impossible de rafraichir l\'annuaire des contacts. Veuillez réessayer plus tard.</string>
   <string name="err_sync_nonetwork">Réseau indisponible. Veuillez réessayer plus tard.</string>
   <string name="text_invite_message">Hey! Tu devrais essayer Kontalk une application de messagerie gratuite. Disponible sur F-droid la plateforme d\'application open-source ou Google Play Store https://play.google.com/store/apps/details?id=org.kontalk </string>
   <string name="text_contacts_empty">Les nouveaux utilisateurs seront ajouté a cette liste list automatiquement.\n\nUtiliser <b>Menu</b> &gt; <b>Inviter des utilisateurs</b> pour envoyer une invitation à rejoindre Kontalk.</string>
-  <string name="text_conversations_empty">Pour écrire un nouveau message utilise l\'icône <b>nouveau message</b> ci-dessus.</string>
+  <string name="text_conversations_empty">Pour écrire un nouveau message utilisez le bouton <b>nouveau message</b> ci-dessous.</string>
   <string name="notify_ticker_external_storage">Mémoire externe non disponible</string>
   <string name="notify_text_external_storage">Impossible d\'écrire sur la mémoire externe.</string>
   <string name="title_user_not_found">Utilisateur non trouvé</string>
@@ -368,7 +368,7 @@
   <string name="pref_title_image_resize">Redimensionnement de l\'image avant envoi</string>
   <string name="err_server_invalid_format">Format d\'adresse invalide.</string>
   <string name="err_no_contacts_app">Aucune application de contacts trouvé.</string>
-  <string name="warning_public_key">ATTENTION ! La clé personnelle pour cet utilisateur a changé de manière inattendue. Cliquez ici pour plus de détails.</string>
+  <string name="warning_public_key">La clé personnelle pour cet utilisateur a changé de manière inattendue !</string>
   <string name="title_public_key_warning">Changement de clé personnelle</string>
   <string name="msg_public_key_warning">La clé personnelle pour cet utilisateur a changé. S\'il vous plaît vérifier avec l\'utilisateur qu\'il/elle à réinstallé Kontalk ou régénéré sa clé intentionnellement, sinon la communication pourrait être compromise !</string>
 <string name="title_user_exists">L\'utilisateur existe</string>
@@ -393,9 +393,22 @@
     <string name="err_audio_record_noaudio">Le son n\'a pas été enregistré.</string>
     <string name="msg_importing_key">Importation de la clé personnelle…</string>
     <string name="menu_manual_verification">Vous avez déjà un code ?</string>
-    <string name="code_validation_intro_missed_call">Vous devriez recevoir un appel manqué de ce numéro brièvement :</string>
+    <string name="code_validation_intro_missed_call">Vous devriez recevoir un appel manqué de ce numéro brièvement. <b>NE REPONDEZ PAS S\'IL VOUS PLAIT.</b></string>
     <string name="code_validation_intro2_missed_call">S\'il vous plaît insérer les %d derniers chiffres du numéro dont vous allez être appelé.</string>
     <string name="button_validation_fallback">L\'appel n\'a pas été reçu ?</string>
     <string name="title_fallback">Des problèmes ?</string>
     <string name="msg_fallback">Nous allons essayer une autre façon de vérifier votre numéro de téléphone.</string>
-    </resources>
+    <string name="title_confirm_cancel_registration">Annuler l\'enregistrement ?</string>
+    <string name="confirm_cancel_registration">"Si vous retourner en arrière vous devrez recommencer l\'enregistremnet de zéro. Si vous avez besoin de passer à une autre appli,  il suffit d\'utiliser le bouton d\'accueil de l\'appareil."</string>
+    <string name="confirm_will_delete_threads">Les conversations sélectionnés seront supprimés.</string>
+    <string name="confirm_will_delete_messages">Les messages sélectionnés seront supprimés.</string>
+    <string name="pref_balloon_label_hangout">Hangout</string>
+    <string name="title_block_user_warning">Bloquer cet utilisateur, vraiment ?</string>
+    <string name="title_unblock_user_warning">Débloquer cet utilisateur, vraiment ?</string>
+    <string name="warning_button_details">DÉTAILS</string>
+    <plurals name="context_selected">
+	<item quantity="one">1 sélectionné</item>
+	<item quantity="other">%d sélectionné</item>
+</plurals>
+
+</resources>
