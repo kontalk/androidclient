@@ -4,7 +4,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:visibility="gone"
+    android:visibility="visible"
     android:layout_alignParentTop="true">
 
     <!-- Put more views here if you want, it's stock frame layout  -->
@@ -33,7 +33,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
+                android:layout_height="1px"
                 android:background="#000000" />
 
             <android.support.v7.widget.GridLayout
@@ -48,7 +48,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/ic_attach_picture"
+                    android:drawableTop="@drawable/attach_camera"
                     android:gravity="center"
                     android:text="Foto"
                     app:layout_columnWeight="1" />
@@ -56,21 +56,57 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/ic_attach_audio"
+                    android:drawableTop="@drawable/attach_gallery"
                     android:gravity="center"
-                    android:layout_marginLeft="8dp"
+                    android:text="Galleria"
+                    app:layout_columnWeight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/attach_video"
+                    android:gravity="center"
+                    android:text="Video"
+                    app:layout_columnWeight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/attach_audio"
+                    android:gravity="center"
                     android:text="Audio"
                     app:layout_columnWeight="1" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableTop="@drawable/ic_attach_contact"
+                    android:drawableTop="@drawable/attach_file"
                     android:gravity="center"
-                    android:layout_marginLeft="8dp"
-                    android:text="Contatti"
+                    android:text="File"
                     app:layout_columnWeight="1" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/attach_contact"
+                    android:gravity="center"
+                    android:text="Contatto"
+                    app:layout_columnWeight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/attach_location"
+                    android:gravity="center"
+                    android:text="Posizione"
+                    app:layout_columnWeight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/attach_hide1"
+                    android:gravity="center"
+                    app:layout_columnWeight="1" />
 
             </android.support.v7.widget.GridLayout>
 
