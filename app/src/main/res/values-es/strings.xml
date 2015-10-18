@@ -372,11 +372,11 @@
   <string name="title_public_key_warning">Cambió la clave personal</string>
   <string name="msg_public_key_warning">La clave personal de este usuario ha cambiado. Por favor verifique con esa persona que reinstaló Kontalk o que regeneró su clave de manera intencionada, en otro caso, ¡la comunicación puede estar comprometida!</string>
 <string name="title_user_exists">El usuario ya existe</string>
-    <string name="err_validation_user_exists"><b>Este número ya está registrado en Kontalk.</b> Si està registrado con otro dispositivo, continuar con este proceso desconectará aquel dispositivo de Kontalk. Por favor consulte nuestra documentación para copiar la cuenta entre diferentes dispositivos. Seleccione OK para continuar igualmente.</string>
+    <string name="err_validation_user_exists"><b>Este número ya está registrado en Kontalk.</b> Si está registrado con otro dispositivo, continuar con este proceso desconectará aquel dispositivo de Kontalk. Por favor consulte nuestra documentación para copiar la cuenta entre diferentes dispositivos. Seleccione OK para continuar igualmente.</string>
     <string name="pref_help">Ayuda</string>
     <string name="err_no_contact">Contacto no encontrado.</string>
 
-    <string name="warning_older_version">Tu compañer@ està usando una versión antigua de Kontalk. Algunas funciones podrían no estar operativas.</string>
+    <string name="warning_older_version">Tu compañer@ está usando una versión antigua de Kontalk. Algunas funciones podrían no estar operativas.</string>
     <string name="warning_user_blocked">Has bloqueado a este usuario.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha sido posible gracias a:</b></string>
