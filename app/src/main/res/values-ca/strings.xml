@@ -379,7 +379,7 @@ Useu <b>Menu</b> &gt; <b>Convida usuaris</b> per a enviar un missatge d\\\'invit
     <string name="err_no_contact">Usuari no trobat.</string>
 
     <string name="warning_older_version">Aquest contacte està utilitzant una versió antiga de Kontalk. Algunes funcionalitats poden no estar operatives.</string>
-    <string name="warning_user_blocked">Has bloquejat a aquest usuari.</string>
+    <string name="warning_user_blocked">Has bloquejat aquest usuari.</string>
 
     <string name="about_credits_devteam"><b>Kontalk ha arribat a tu gràcies a:</b></string>
     <string name="about_credits_gfx"><b>Gràfics/Iconografia</b></string>
