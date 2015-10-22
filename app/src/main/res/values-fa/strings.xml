@@ -40,7 +40,7 @@
     <string name="number_validation_intro2">اگر شما نمی‌توانید روی این دستگاه تماس‌ها یا پیامک دریافت کنید، یک شماره‌ی تلفن که مالک آن هستید وارد کنید: ما آن شماره را به این دستگاه پیوند خواهیم داد.</string>
     <string name="code_validation_intro">پس از اندکی شما باید یک پیامک یا یک تماس از این شماره دریافت کنید:</string>
     <string name="code_validation_intro2">لطفاً کدی را که دریافت می‌کنید یا می‌شنوید وارد کنید.</string>
-    <string name="code_validation_intro_missed_call">پس از اندکی شما باید یک تماس از دست رفته از این شماره دریافت کنید:</string>
+    <string name="code_validation_intro_missed_call">پس از اندکی شما باید یک تماس از دست رفته از این شماره دریافت کنید. <b>لطفاً تماس را پاسخ ندهید.</b></string>
     <string name="code_validation_intro2_missed_call">لطفاً آخرین %d رقم از شماره‌ای را که به وسیله‌ی آن با شما تماس گرفته خواهد شد وارد کنید.</string>
     <string name="code_validation_intro_manual">لطفاً کد تأیید را که دریافت کردید وارد کنید. لطفاً توجه داشته باشید که یک کد تأیید تنها یک‌بار استفاده می‌شود.</string>
     <string name="hint_validation_name">نام شما</string>
