@@ -38,7 +38,7 @@
   <string name="pref_title_network_uri">Dies übergeht die automatische Verwaltung der Serverliste</string>
   <string name="number_validation_intro1">Bitte Namen und Mobilfunknummer eingeben sowie den Ländercode auswählen. Alles Weitere folgt im nächsten Schritt.</string>
   <string name="number_validation_intro2">Falls Sie auf diesem Gerät keine Anrufe oder SMS empfangen können, geben Sie eine Ihnen gehörende Tel.Nr. an: Wir werden diese Nummer dann mit diesem Gerät hier verbinden.</string>
-  <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer bekommen:</string>
+  <string name="code_validation_intro">Sie sollten in Kürze eine SMS oder einen Anruf von dieser Nummer erhalten:</string>
   <string name="code_validation_intro2">Fügen Sie unten bitte den Code ein, den Sie erhalten bzw. gehört haben.</string>
   <string name="code_validation_intro_manual">Bitte fügen Sie den Verifikationscode ein den Sie bekommen haben. Beachten Sie bitte, dass ein Verfikationscode nur einmal verwendet werden kann.</string>
   <string name="hint_validation_name">Ihr Name</string>
