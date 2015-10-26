@@ -342,11 +342,11 @@
   <string name="msg_delete_account_progress">Suppression de votre compte…</string>
   <string name="msg_user_blocked">L\'utilisateur est bloqué.</string>
   <string name="msg_user_unblocked">L\'utilisateur a été bloqué.</string>
-  <string name="msg_block_user_warning"><b>S\'IL VOUS PLAIT LISEZ ATTENTIVEMENT!</b>\nVous êtes sur le point de bloquer cet utilisateur. Si vous le faites, cet utilisateur ne pourra pas vous envoyer des messages ou des médias jusqu\'à ce que vous le débloquer. Cet utilisateur ne pourra également pas voir votre statut ou la dernière présence connue et vous ne pourrez pas voir son statut aussi. Comme effet secondaire, vous ne pourrez pas lui envoyer des messages ou des médias.</string>
-  <string name="msg_unblock_user_warning"><b>S\'IL VOUS PLAIT LISEZ ATTENTIVEMENT!</b>\nVous êtes sur le point de débloquer cet utilisateur. Le déblocage lui permettra de vous envoyer des messages et voir votre statut et dernière présence connue.</string>
+  <string name="msg_block_user_warning">Vous êtes sur le point de bloquer cet utilisateur. Si vous le faites, cet utilisateur ne pourra pas vous envoyer des messages ou des médias jusqu\'à ce que vous le débloquer. Cet utilisateur ne pourra également pas voir votre statut ou la dernière présence connue et vous ne pourrez pas voir son statut aussi. Comme effet secondaire, vous ne pourrez pas lui envoyer des messages ou des médias.</string>
+  <string name="msg_unblock_user_warning">Vous êtes sur le point de débloquer cet utilisateur. Le déblocage lui permettra de vous envoyer des messages et voir votre statut et dernière présence connue.</string>
   <string name="notification_text_more">Taper ici pour en savoir plus</string>
   <string name="title_auth_error">Erreur d\'authentification</string>
-  <string name="msg_auth_error"><b>ATTENTION!</b>\nL\'authentification à un serveur Kontalk a échoué la dernière fois que nous avons essayé de se connecter. Ce pourrait être une panne temporaire du serveur, ou, plus probablement, le serveur refuse votre clé personnelle. Nous recommandons de supprimer votre compte Kontalk des paramètres du système Android et de vous enregistrer à nouveau (cependant vous perdrez tous vos messages Kontalk).</string>
+  <string name="msg_auth_error">L\'authentification à un serveur Kontalk a échoué la dernière fois que nous avons essayé de se connecter. Ce pourrait être une panne temporaire du serveur, ou, plus probablement, le serveur refuse votre clé personnelle. Nous recommandons de supprimer votre compte Kontalk des paramètres du système Android et de vous enregistrer à nouveau (cependant vous perdrez tous vos messages Kontalk).</string>
   <string name="warn_invite_no_app">Aucune application disponible pour inviter les utilisateurs.</string>
   <string name="pref_text_enter">Bouton retour à la ligne</string>
   <string name="pref_title_text_enter">Sélectionnez le comportement du bouton retour à la ligne du clavier</string>
