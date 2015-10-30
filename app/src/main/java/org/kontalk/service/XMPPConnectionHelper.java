@@ -127,6 +127,10 @@ public class XMPPConnectionHelper extends Thread {
         mRetryEnabled = enabled;
     }
 
+    public synchronized void reuseConnection(KontalkConnection connection) {
+        mConn = connection;
+    }
+
     @Override
     public synchronized void start() {
         mConnecting = true;
@@ -161,9 +165,8 @@ public class XMPPConnectionHelper extends Thread {
             }
         }
 
-        // recreate connection if closed
-        if (mConn == null || !mConn.isConnected()) {
-
+        // recreate connection if needed
+        if (mConn == null) {
             KeyStore trustStore = null;
             boolean acceptAnyCertificate = Preferences.getAcceptAnyCertificate(mContext);
             if (!acceptAnyCertificate)
@@ -200,9 +203,8 @@ public class XMPPConnectionHelper extends Thread {
         }
 
         // login
-        if ((!mLimited || forceLogin) && (key != null || token != null))
+        if (!mConn.isAuthenticated() && (!mLimited || forceLogin) && (key != null || token != null))
             mConn.login();
-
     }
 
     public void connect() {
