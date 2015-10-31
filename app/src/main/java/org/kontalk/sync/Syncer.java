@@ -528,8 +528,10 @@ public class Syncer {
                         else {
                             registeredValues.putNull(Users.FINGERPRINT);
                             registeredValues.putNull(Users.PUBLIC_KEY);
-                            if (entry.rosterName != null)
+                            // use roster name if no contact data available
+                            if (data == null && entry.rosterName != null) {
                                 registeredValues.put(Users.DISPLAY_NAME, entry.rosterName);
+                            }
                         }
 
                         // blocked status

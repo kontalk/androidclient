@@ -355,15 +355,16 @@ public class UsersProvider extends ContentProvider {
 
         int rc = db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
         if (rc == 0) {
+            ContentValues insertValues = new ContentValues(values);
             // insert new record
-            values.put(Users.HASH, XmppStringUtils.parseLocalpart(selectionArgs[0]));
-            values.put(Users.JID, selectionArgs[0]);
-            values.put(Users.NUMBER, selectionArgs[0]);
+            insertValues.put(Users.HASH, XmppStringUtils.parseLocalpart(selectionArgs[0]));
+            insertValues.put(Users.JID, selectionArgs[0]);
+            insertValues.put(Users.NUMBER, selectionArgs[0]);
             if (!values.containsKey(Users.DISPLAY_NAME))
-                values.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
-            values.put(Users.REGISTERED, true);
+                insertValues.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
+            insertValues.put(Users.REGISTERED, true);
 
-            db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, values);
+            db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, insertValues);
             return 1;
         }
 
