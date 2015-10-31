@@ -39,6 +39,8 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+
 import android.content.Context;
 import android.net.Uri;
 
@@ -180,20 +182,28 @@ public class KontalkBoxUploadConnection implements UploadConnection {
         return ie;
     }
 
-    private void setupClient(HttpsURLConnection conn, boolean acceptAnyCertificate)
+    private void setupClient(HttpsURLConnection conn, String mime, boolean encrypted, boolean acceptAnyCertificate)
         throws CertificateException, UnrecoverableKeyException,
         NoSuchAlgorithmException, KeyStoreException,
         KeyManagementException, NoSuchProviderException,
         IOException {
 
+        conn.setSSLSocketFactory(ClientHTTPConnection.setupSSLSocketFactory(mContext,
+            mPrivateKey, mCertificate, acceptAnyCertificate));
+        if (acceptAnyCertificate)
+            conn.setHostnameVerifier(new AllowAllHostnameVerifier());
+        conn.setRequestProperty("Content-Type", mime != null ? mime
+            : "application/octet-stream");
+        if (encrypted)
+            conn.setRequestProperty(HEADER_MESSAGE_FLAGS, "encrypted");
         // bug caused by Lighttpd
         conn.setRequestProperty("Expect", "100-continue");
+
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);
         conn.setDoOutput(true);
         conn.setDoInput(true);
-        conn.setSSLSocketFactory(ClientHTTPConnection.setupSSLSocketFactory(mContext,
-            mPrivateKey, mCertificate, acceptAnyCertificate));
+        conn.setRequestMethod("POST");
     }
 
     /** A message posting method. */
@@ -202,15 +212,8 @@ public class KontalkBoxUploadConnection implements UploadConnection {
 
         // create uri
         HttpsURLConnection conn = (HttpsURLConnection) new URL(mBaseUrl).openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", mime != null ? mime
-            : "application/octet-stream");
-
-        if (encrypted)
-            conn.setRequestProperty(HEADER_MESSAGE_FLAGS, "encrypted");
-
         try {
-            setupClient(conn, acceptAnyCertificate);
+            setupClient(conn, mime, encrypted, acceptAnyCertificate);
         }
         catch (Exception e) {
             throw new IOException("error setting up SSL connection", e);
