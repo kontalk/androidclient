@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipInputStream;
 
+import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
@@ -581,7 +582,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
                 }
             }
         }
-    };
+    } ;
 
     @Override
     public void onCreate() {
@@ -719,7 +720,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         }
 
         // stop all running tasks
-        if (mThreadPool != null && !restarting) {
+        if (mThreadPool != null) {
             mThreadPool.shutdownNow();
             mThreadPool = null;
         }
@@ -727,7 +728,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         // disable listeners
         if (mHelper != null)
             mHelper.setListener(null);
-        if (!restarting && mConnection != null)
+        if (mConnection != null)
             mConnection.removeConnectionListener(this);
 
         // abort connection helper (if any)
@@ -739,26 +740,15 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // disconnect from server (if any)
         if (mConnection != null) {
-            final KontalkConnection conn = mConnection;
-            if (!restarting) {
-                mConnection = null;
-                connectionLost(conn);
-            }
-
+            // disable ping manager
+            AndroidAdaptiveServerPingManager
+                .getInstanceFor(mConnection, this)
+                .setEnabled(false);
+            PingManager.getInstanceFor(mConnection)
+                .unregisterPingFailedListener(mPingFailedListener);
             // this is because of NetworkOnMainThreadException
-            DisconnectThread dt = new DisconnectThread(conn, restarting);
-            dt.start();
-            try {
-                dt.join(100);
-            }
-            catch (InterruptedException ignored) {
-            }
-            if (dt.isAlive() && restarting) {
-                // in this particular case, we were restarting
-                // but disconnect has gone bad, so we lose the connection
-                mConnection = null;
-                connectionLost(conn);
-            }
+            new DisconnectThread(mConnection).start();
+            mConnection = null;
         }
 
         // clear cached data from contacts
@@ -770,15 +760,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // release the wakelock
         mWakeLock.release();
-    }
-
-    private void connectionLost(XMPPConnection connection) {
-        // disable ping manager
-        AndroidAdaptiveServerPingManager
-            .getInstanceFor(connection, this)
-            .setEnabled(false);
-        PingManager.getInstanceFor(connection)
-            .unregisterPingFailedListener(mPingFailedListener);
     }
 
     private static final class AbortThread extends Thread {
@@ -800,21 +781,16 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
     }
 
     private static final class DisconnectThread extends Thread {
-        private final KontalkConnection mConn;
-        private final boolean mInstant;
+        private final AbstractXMPPConnection mConn;
 
-        public DisconnectThread(KontalkConnection conn, boolean instant) {
+        public DisconnectThread(AbstractXMPPConnection conn) {
             mConn = conn;
-            mInstant = instant;
         }
 
         @Override
         public void run() {
             try {
-                if (mInstant)
-                    mConn.instantShutdown();
-                else
-                    mConn.disconnect();
+                mConn.disconnect();
             }
             catch (Exception e) {
                 // ignored
@@ -1171,7 +1147,9 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
     /** Creates a connection to server if needed. */
     private synchronized void createConnection() {
-        if ((mConnection == null || !mConnection.isConnected()) && mHelper == null) {
+        if (mConnection == null && mHelper == null) {
+            mConnection = null;
+
             // acquire the wakelock
             mWakeLock.acquire();
 
@@ -1182,8 +1160,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
             mWaitingReceipt.clear();
 
             // setup task execution pool
-            if (mThreadPool == null)
-                mThreadPool = Executors.newCachedThreadPool();
+            mThreadPool = Executors.newCachedThreadPool();
 
             mInactive = false;
 
@@ -1196,7 +1173,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
             mHelper = new XMPPConnectionHelper(this, mServer, false);
             mHelper.setListener(this);
-            mHelper.reuseConnection(mConnection);
             mHelper.start();
         }
     }
@@ -1314,7 +1290,6 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
 
         // add message ack listener
         if (mConnection.isSmEnabled()) {
-            mConnection.removeAllStanzaAcknowledgedListeners();
             mConnection.addStanzaAcknowledgedListener(new MessageAckListener(this));
         }
         else {
