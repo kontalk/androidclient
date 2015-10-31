@@ -131,6 +131,12 @@ public final class Preferences {
         return value;
     }
 
+    public static boolean setRingtone(Context context, String uri) {
+        return sPreferences.edit()
+            .putString("pref_ringtone", uri)
+            .commit();
+    }
+
     public static String getServerURI(Context context) {
         return getString(context, "pref_network_uri", null);
     }

@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -40,6 +41,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -68,6 +70,7 @@ public final class PreferencesFragment extends RootPreferenceFragment {
     private static final String TAG = Kontalk.TAG;
 
     private static final int REQUEST_PICK_BACKGROUND = Activity.RESULT_FIRST_USER + 1;
+    private static final int REQUEST_PICK_RINGTONE = Activity.RESULT_FIRST_USER + 2;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -329,6 +332,33 @@ public final class PreferencesFragment extends RootPreferenceFragment {
             }
         });
 
+        // set ringtone
+        final Preference setRingtone = findPreference("pref_ringtone");
+        setRingtone.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                SharedPreferences prefs = PreferenceManager
+                    .getDefaultSharedPreferences(preference.getContext());
+
+                String _currentRingtone = prefs.getString(preference.getKey(),
+                    getString(R.string.pref_default_ringtone));
+                Uri currentRingtone = !TextUtils.isEmpty(_currentRingtone) ? Uri.parse(_currentRingtone) : null;
+
+                final Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+                i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentRingtone);
+                i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+                i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
+                i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true);
+                i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+                i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, preference.getTitle());
+
+                startActivityForResult(i, REQUEST_PICK_RINGTONE);
+                return true;
+            }
+        });
+
         // manual server address is handled in Application context
         // we just handle validation here
 
@@ -451,8 +481,18 @@ public final class PreferencesFragment extends RootPreferenceFragment {
                 }
             }
         }
-        else
+        else if (requestCode == REQUEST_PICK_RINGTONE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Context ctx = getActivity();
+                if (ctx != null) {
+                    Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                    Preferences.setRingtone(ctx, uri != null ? uri.toString() : "");
+                }
+            }
+        }
+        else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     private interface OnPassphraseChangedListener {
