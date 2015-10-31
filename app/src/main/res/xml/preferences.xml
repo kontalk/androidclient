@@ -118,13 +118,10 @@
             android:title="@string/pref_enable_notifications"
             android:defaultValue="@bool/pref_default_enable_notifications"
             android:layout="@layout/md_preference_custom"/>
-        <RingtonePreference android:key="pref_ringtone"
+        <Preference android:key="pref_ringtone"
             android:dependency="pref_enable_notifications"
             android:title="@string/pref_ringtone"
-            android:ringtoneType="notification"
             android:defaultValue="@string/pref_default_ringtone"
-            android:showDefault="true"
-            android:showSilent="true"
             android:layout="@layout/md_preference_custom"/>
         <com.afollestad.materialdialogs.prefs.MaterialListPreference
             android:key="pref_vibrate"
