@@ -45,6 +45,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -122,6 +124,8 @@ public class ClientHTTPConnection {
         conn.setDoInput(true);
         conn.setSSLSocketFactory(setupSSLSocketFactory(mContext,
             mPrivateKey, mCertificate, acceptAnyCertificate));
+        if (acceptAnyCertificate)
+            conn.setHostnameVerifier(new AllowAllHostnameVerifier());
     }
 
     public static SSLSocketFactory setupSSLSocketFactory(Context context,
