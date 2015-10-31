@@ -91,19 +91,19 @@ abstract class MessageCenterPacketListener implements StanzaListener {
 
     protected void sendBroadcast(Intent intent) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null && instance.isStarted())
+        if (instance != null)
             instance.mLocalBroadcastManager.sendBroadcast(intent);
     }
 
     protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null && instance.isStarted())
+        if (instance != null)
             instance.mLocalBroadcastManager.registerReceiver(receiver, filter);
     }
 
     protected void unregisterReceiver(BroadcastReceiver receiver) {
         MessageCenterService instance = mInstance.get();
-        if (instance != null && instance.isStarted())
+        if (instance != null)
             instance.mLocalBroadcastManager.unregisterReceiver(receiver);
     }
 
