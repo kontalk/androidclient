@@ -409,4 +409,6 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
 	<item quantity="other">1 選択済</item>
 </plurals>
 
-</resources>
+<string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
+    <string name="confirm_cancel_registration">戻る場合は、登録を最初から開始する必要があります。別のアプリに切り替える必要がある場合は、デバイスのホームボタンを使用するだけです。</string>
+    </resources>
