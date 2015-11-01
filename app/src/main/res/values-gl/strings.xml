@@ -144,7 +144,6 @@
   <string name="msg_draft_saved">Mensaxe gardada como borrador.</string>
   <string name="send_mime_not_supported">Tipo de ficheiro non soportado.</string>
   <string name="button_validate">Solicitar un código de verificación</string>
-  <string name="button_validation_code">Xa teño un código de verificación</string>
   <string name="button_validation_register">Verificar</string>
   <string name="notify_ticker_download_completed">Descarga completada</string>
   <string name="notify_title_download_completed">Descarga completada</string>

@@ -152,7 +152,6 @@
   <string name="msg_draft_saved">Порука сачувана као нацрт.</string>
   <string name="send_mime_not_supported">Тип фајла није подржан.</string>
   <string name="button_validate">Захтевај код за проверу</string>
-  <string name="button_validation_code">Већ имам код</string>
   <string name="button_validation_register">Провери</string>
   <string name="notify_ticker_download_completed">Преузимање завршено</string>
   <string name="notify_title_download_completed">Преузимање завршено</string>

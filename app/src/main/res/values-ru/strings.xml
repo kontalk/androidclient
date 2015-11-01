@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">Сообщение сохранено как черновик.</string>
   <string name="send_mime_not_supported">Тип файла не поддерживается.</string>
   <string name="button_validate">Запрос проверочного кода</string>
-  <string name="button_validation_code">У меня уже есть проверочный код</string>
   <string name="button_validation_register">Проверка</string>
   <string name="notify_ticker_download_completed">Загрузка завершена</string>
   <string name="notify_title_download_completed">Загрузка завершена</string>

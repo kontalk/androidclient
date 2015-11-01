@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">メッセージは下書きとして保存しました。</string>
   <string name="send_mime_not_supported">ファイルタイプがサポートされていません。</string>
   <string name="button_validate">登録</string>
-  <string name="button_validation_code">すでに検証コードを持っています</string>
   <string name="button_validation_register">検証</string>
   <string name="notify_ticker_download_completed">ダウンロードが完了しました</string>
   <string name="notify_title_download_completed">ダウンロードが完了しました</string>

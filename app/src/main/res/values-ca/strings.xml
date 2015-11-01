@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">El missatge s\'ha desat com a esborrany.</string>
   <string name="send_mime_not_supported">Aquest tipus de fitxer no està suportat.</string>
   <string name="button_validate">Registre</string>
-  <string name="button_validation_code">Ja tinc codi de verificació</string>
   <string name="button_validation_register">Verifica</string>
   <string name="notify_ticker_download_completed">Descàrrega completa</string>
   <string name="notify_title_download_completed">Descàrrega completa</string>

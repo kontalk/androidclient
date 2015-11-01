@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">Zpráva byla uložena jako rozepsaná.</string>
   <string name="send_mime_not_supported">Tento typ souboru není podporován.</string>
   <string name="button_validate">Registrovat</string>
-  <string name="button_validation_code">Již mám ověřovací kód</string>
   <string name="button_validation_register">Ověřit</string>
   <string name="notify_ticker_download_completed">Stahování bylo dokončeno</string>
   <string name="notify_title_download_completed">Stahování bylo dokončeno</string>

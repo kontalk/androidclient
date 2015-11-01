@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">Nachricht als Entwurf gespeichert.</string>
   <string name="send_mime_not_supported">Dieser Dateityp wird nicht unterstützt.</string>
   <string name="button_validate">Registrierung</string>
-  <string name="button_validation_code">Verifikationscode bereits vorhanden</string>
   <string name="button_validation_register">Verifizieren</string>
   <string name="notify_ticker_download_completed">Herunterladen abgeschlossen</string>
   <string name="notify_title_download_completed">Herunterladen abgeschlossen</string>

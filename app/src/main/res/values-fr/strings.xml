@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">Brouillon enregistré.</string>
   <string name="send_mime_not_supported">Type de fichier non supporté.</string>
   <string name="button_validate">Inscription</string>
-  <string name="button_validation_code">J\'ai déjà un code de vérification</string>
   <string name="button_validation_register">Vérifier</string>
   <string name="notify_ticker_download_completed">Téléchargement réussi</string>
   <string name="notify_title_download_completed">Téléchargement réussi</string>

@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">Bericht bewaard als concept.</string>
   <string name="send_mime_not_supported">Dit type bestand wordt niet ondersteund.</string>
   <string name="button_validate">Registreer</string>
-  <string name="button_validation_code">Ik heb al een verificatiecode</string>
   <string name="button_validation_register">Verifiëren</string>
   <string name="notify_ticker_download_completed">Downloaden voltooid</string>
   <string name="notify_title_download_completed">Downloaden voltooid</string>

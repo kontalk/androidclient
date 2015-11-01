@@ -152,7 +152,6 @@
   <string name="msg_draft_saved">Το μήνυμα αποθηκεύτηκε ως πρόχειρο.</string>
   <string name="send_mime_not_supported">Ο τύπος αρχείου δεν υποστηρίζεται.</string>
   <string name="button_validate">Αίτημα κωδικου επαλήθευσης </string>
-  <string name="button_validation_code">Έχω ήδη έναν κωδικό επαλήθευσης</string>
   <string name="button_validation_register">Επαλήθευση</string>
   <string name="notify_ticker_download_completed">Η λήψη ολοκληρώθηκε</string>
   <string name="notify_title_download_completed">Η λήψη ολοκληρώθηκε</string>

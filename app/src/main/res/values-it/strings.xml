@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">Messaggio salvato come bozza.</string>
   <string name="send_mime_not_supported">Tipo di file non è supportato.</string>
   <string name="button_validate">Registrati</string>
-  <string name="button_validation_code">Ho già un codice di verifica</string>
   <string name="button_validation_register">Verifica</string>
   <string name="notify_ticker_download_completed">Download completato</string>
   <string name="notify_title_download_completed">Download completato</string>
