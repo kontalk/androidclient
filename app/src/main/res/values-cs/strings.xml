@@ -408,7 +408,8 @@
     <string name="confirm_cancel_registration">Pokud stisknete tlačítko Zpět, budete muset začít registraci od začátku. Pokud se potřebujete přepnout do jiné aplikace, použijte tlačítko Domů.</string>
     <plurals name="context_selected">
 	<item quantity="one">1 označený</item>
-	<item quantity="other">%d označené</item>
+	<item quantity="few">%d označené</item>
+	<item quantity="other">%d označených</item>
 </plurals>
 
 </resources>
