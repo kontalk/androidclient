@@ -1214,8 +1214,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     private void stopQuery() {
         if (mQueryHandler != null) {
             // be sure to cancel all queries
-            mQueryHandler.abortOperation(MESSAGE_LIST_QUERY_TOKEN);
-            mQueryHandler.abortOperation(CONVERSATION_QUERY_TOKEN);
+            mQueryHandler.abort();
         }
     }
 
@@ -2803,6 +2802,12 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
 
         @Override
+        public synchronized void startQuery(int token, Object cookie, Uri uri, String[] projection, String selection, String[] selectionArgs, String orderBy) {
+            mCancel = false;
+            super.startQuery(token, cookie, uri, projection, selection, selectionArgs, orderBy);
+        }
+
+        @Override
         protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
             ComposeMessageFragment parent = mParent.get();
             if (parent == null || cursor == null || parent.isFinishing() || mCancel) {
@@ -2885,9 +2890,10 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
 
         }
 
-        public void abortOperation(int token) {
-            super.cancelOperation(token);
+        public synchronized void abort() {
             mCancel = true;
+            cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
+            cancelOperation(CONVERSATION_QUERY_TOKEN);
         }
     }
 
