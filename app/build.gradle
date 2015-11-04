@@ -19,6 +19,7 @@ task checkstyle(type: Checkstyle){
     exclude '**/CircularSeekBar.java',
         '**/KeyboardAwareRelativeLayout.java', '**/FrameLayoutFixed.java',
         '**/AbsListViewScrollDetector.java', '**/NoCacheMiniDnsResolver.java',
+        '**/XMPPTCPConnection.java',
         'main/java/com/**'
     def configProps = ['baseDir': projectDir.absolutePath]
     configProperties configProps
