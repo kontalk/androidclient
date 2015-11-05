@@ -44,9 +44,10 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -54,12 +55,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import lb.library.PinnedHeaderListView;
+
 
 /** Contacts list selection fragment. */
-public class ContactsListFragment extends ListFragment implements
+public class ContactsListFragment extends Fragment implements
         ContactsListAdapter.OnContentChangedListener,
         SwipeRefreshLayout.OnRefreshListener,
         ContactsSyncer {
@@ -74,6 +78,8 @@ public class ContactsListFragment extends ListFragment implements
     private Handler mHandler;
 
     private MenuItem mSyncButton;
+
+    private PinnedHeaderListView mList;
 
     private final RunnableBroadcastReceiver.ActionRunnable mPostSyncAction =
             new RunnableBroadcastReceiver.ActionRunnable() {
@@ -103,21 +109,36 @@ public class ContactsListFragment extends ListFragment implements
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mList = (PinnedHeaderListView) view.findViewById(android.R.id.list);
+        mList.setPinnedHeaderView(LayoutInflater.from(getActivity()).inflate(R.layout.pinned_header_listview_side_header, mList, false));
+        mList.setEmptyView(view.findViewById(android.R.id.empty));
+
         mRefresher = (SwipeRefreshLayout) view.findViewById(R.id.refresher);
         mRefresher.setOnRefreshListener(this);
 
         // http://nlopez.io/swiperefreshlayout-with-listview-done-right/
-        getListView().setOnScrollListener(new AbsListView.OnScrollListener() {
+        mList.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
             }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                ((PinnedHeaderListView) view).configureHeaderView(firstVisibleItem);
                 int topRowVerticalPosition =
-                    (view == null || view.getChildCount() == 0) ?
-                        0 : view.getChildAt(0).getTop();
+                        (view == null || view.getChildCount() == 0) ?
+                                0 : view.getChildAt(0).getTop();
                 mRefresher.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
+            }
+        });
+
+        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ContactPickerListener parent = (ContactPickerListener) getActivity();
+
+                if (parent != null)
+                    parent.onContactSelected(ContactsListFragment.this, ((ContactsListItem) view).getContact());
             }
         });
     }
@@ -128,9 +149,14 @@ public class ContactsListFragment extends ListFragment implements
 
         Activity parent = getActivity();
 
-        mListAdapter = new ContactsListAdapter(parent, getListView());
+        mListAdapter = new ContactsListAdapter(parent, mList);
+        int pinnedHeaderBackgroundColor = getResources().getColor(getResIdFromAttribute(getActivity(), android.R.attr.colorBackground));
+        mListAdapter.setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
+        mListAdapter.setPinnedHeaderTextColor(getResources().getColor(R.color.pinned_header_text));
+        mList.setEnableHeaderTransparencyChanges(true);
+
         mListAdapter.setOnContentChangedListener(this);
-        setListAdapter(mListAdapter);
+        mList.setAdapter(mListAdapter);
 
         mHandler = new Handler();
         mBroadcastManager = LocalBroadcastManager.getInstance(parent);
@@ -173,14 +199,6 @@ public class ContactsListFragment extends ListFragment implements
         super.onResume();
 
         startQuery();
-    }
-
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        ContactPickerListener parent = (ContactPickerListener) getActivity();
-
-        if (parent != null)
-            parent.onContactSelected(this, ((ContactsListItem) v).getContact());
     }
 
     @Override
@@ -321,6 +339,14 @@ public class ContactsListFragment extends ListFragment implements
         }
 
         private final Collator mCollator = Collator.getInstance();
+    }
+
+    public static int getResIdFromAttribute(final Activity activity, final int attr) {
+        if (attr == 0)
+            return 0;
+        final TypedValue typedValue = new TypedValue();
+        activity.getTheme().resolveAttribute(attr, typedValue, true);
+        return typedValue.resourceId;
     }
 
 }

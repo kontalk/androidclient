@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -16,33 +15,44 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
-  <style name="TextAppearance.Widget.ConversationCountBadge"
-      parent="@android:style/TextAppearance.Small.Inverse">
-    <item name="android:textAppearance">?android:attr/textAppearanceSmallInverse</item>
-    <item name="android:textColor">#ffffff</item>
-    <item name="android:textSize">12sp</item>
-    <item name="android:textStyle">bold</item>
-    <item name="android:background">@drawable/conversation_badge</item>
-    <item name="android:paddingLeft">4dp</item>
-    <item name="android:paddingRight">4dp</item>
-  </style>
+    <style name="TextAppearance.Widget.ConversationCountBadge" parent="@android:style/TextAppearance.Small.Inverse">
+        <item name="android:textAppearance">?android:attr/textAppearanceSmallInverse</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:background">@drawable/conversation_badge</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:paddingRight">4dp</item>
+    </style>
 
-  <style name="AvatarListItemStyle">
-    <item name="android:layout_width">@dimen/avatar_size</item>
-    <item name="android:layout_height">@dimen/avatar_size</item>
-    <item name="android:layout_marginLeft">16dp</item>
-    <item name="android:layout_marginRight">16dp</item>
-    <item name="android:layout_marginTop">16dp</item>
-  </style>
+    <style name="AvatarListItemStyle">
+        <item name="android:layout_width">@dimen/avatar_size</item>
+        <item name="android:layout_height">@dimen/avatar_size</item>
+        <item name="android:layout_marginLeft">16dp</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="android:layout_marginTop">16dp</item>
+    </style>
 
-  <style name="AvatarListItemTextStyle" parent="android:TextAppearance.Medium">
-    <item name="android:textSize">16sp</item>
-    <item name="android:paddingTop">16dp</item>
-    <item name="android:layout_marginRight">5dip</item>
-  </style>
+    <style name="AvatarListItemTextStyle" parent="android:TextAppearance.Medium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:layout_marginRight">5dip</item>
+    </style>
 
-  <style name="AvatarListItemSubtitleStyle" parent="android:TextAppearance.Small"/>
+    <style name="AvatarListItemSubtitleStyle" parent="android:TextAppearance.Small" />
 
+
+    <style name="PinnedHeader">
+        <item name="android:background">?android:colorBackground</item>
+        <item name="android:gravity">center_vertical|left</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:textAllCaps" tools:targetApi="ice_cream_sandwich">true</item>
+        <item name="textAllCaps">true</item>
+        <item name="android:textColor">#FF000000</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

@@ -26,19 +26,22 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
-        <ListView android:id="@android:id/list"
+        <lb.library.PinnedHeaderListView
+            android:id="@android:id/list"
             style="?android:attr/listViewStyle"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:drawSelectorOnTop="false"
             android:transcriptMode="disabled"
+            android:divider="@null"
+            android:dividerHeight="0dp"
             android:smoothScrollbar="false"
             android:scrollbarAlwaysDrawVerticalTrack="true"
             android:fadeScrollbars="false"
             android:fastScrollEnabled="true"
             android:fastScrollAlwaysVisible="true"
             android:scrollbarStyle="outsideOverlay"
-            android:visibility="gone"
+            android:visibility="visible"
             android:fadingEdgeLength="16dip" />
 
         <TextView android:id="@android:id/empty"
@@ -48,7 +51,8 @@
             android:padding="10dip"
             android:maxLines="20"
             android:text="@string/text_contacts_empty"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:visibility="visible"/>
 
     </LinearLayout>
 </android.support.v4.widget.SwipeRefreshLayout>
