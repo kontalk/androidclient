@@ -25,20 +25,16 @@
 
     <FrameLayout
         android:id="@+id/header_container"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
+        android:layout_width="@dimen/indexed_list_margin"
+        android:layout_height="@dimen/avatar_list_item_height"
         android:background="?android:attr/colorBackground">
-
         <include layout="@layout/pinned_header_listview_side_header" />
     </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center_vertical"
+        android:layout_height="wrap_content"
         android:minHeight="@dimen/avatar_list_item_height"
-        android:paddingEnd="?attr/listPreferredItemPaddingRight"
-        android:paddingRight="?attr/listPreferredItemPaddingRight"
         android:layout_toRightOf="@+id/header_container">
 
         <org.kontalk.ui.view.CircleContactBadge

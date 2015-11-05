@@ -21,6 +21,7 @@ package org.kontalk.data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -264,7 +265,7 @@ public class Contact {
             .width(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
             .height(context.getResources().getDimensionPixelSize(R.dimen.avatar_size))
             .endConfig()
-            .buildRect(contact.mName.substring(0, 1),
+            .buildRect(contact.mName.substring(0, 1).toUpperCase(Locale.US),
                 ColorGenerator.MATERIAL.getColor(contact.mJID));
     }
 

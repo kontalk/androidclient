@@ -18,6 +18,10 @@
 
 package org.kontalk.ui;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;

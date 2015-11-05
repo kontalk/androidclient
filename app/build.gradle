@@ -112,12 +112,10 @@ dependencies {
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     compile 'com.nispok:snackbar:2.11.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
-    compile "com.twotoasters.SectionCursorAdapter:library:1.0.1"
+    compile 'com.github.vlivanov:ListViewVariants:f606578467'
 
     googleplayCompile "com.google.android.gms:play-services-base:$googlePlayServicesVersion"
     googleplayCompile "com.google.android.gms:play-services-gcm:$googlePlayServicesVersion"
 
     testCompile 'junit:junit:4.+'
-
-    compile "com.github.acappelli:ListViewVariants:v.1.0.1"
 }

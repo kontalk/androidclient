@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView.RecyclerListener;
+import android.widget.AlphabetIndexer;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -43,7 +44,9 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
     private OnContentChangedListener mOnContentChangedListener;
 
     public ContactsListAdapter(Context context, ListView list) {
-        super(context, null, Contact.COLUMN_DISPLAY_NAME, false);
+        super(context, null, false);
+        setSectionIndexer(new AlphabetIndexer(null, Contact.COLUMN_DISPLAY_NAME,
+            "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
         mFactory = LayoutInflater.from(context);
 
         list.setRecyclerListener(new RecyclerListener() {
