@@ -186,6 +186,19 @@ public class KontalkConnection extends XMPPTCPConnection {
         }
     }
 
+    @Override
+    protected void processPacket(Stanza packet) {
+        if (packet instanceof Message) {
+            /*
+             * We are receiving a message. Suspend SM ack replies because we
+             * want to wait for our message listener to be invoked and have time
+             * to store the message to the database.
+             */
+            suspendSmAck();
+        }
+        super.processPacket(packet);
+    }
+
     /**
      * A custom ack predicate that allows ack after a message with a delivery
      * receipt, a receipt request or a body, or after 5 stanzas.
