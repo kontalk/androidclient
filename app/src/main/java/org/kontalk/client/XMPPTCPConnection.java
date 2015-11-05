@@ -100,7 +100,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -238,18 +237,12 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
     private long clientHandledStanzasCount = 0;
 
     /**
-     * The counter for stanzas not yet handled by the client because SM ack was
-     * suspended.
-     */
-    private long clientUnhandledStanzasCount = 0;
-
-    /**
      * Whether we have a pending ack request waiting for a reply.
      */
     private boolean ackPending;
 
     /**
-     * Object used to synchronize access to {@link #clientHandledStanzasCount}.
+     * Object used to synchronize access to {@link #smAckSuspend} et al.
      */
     private final Object clientHandledStanzasCountLock = new Object();
 
@@ -995,14 +988,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             try {
                                 parseAndProcessStanza(parser);
                             } finally {
-                                synchronized (clientHandledStanzasCountLock) {
-                                    if (!smAckSuspend) {
-                                        clientHandledStanzasCount = SMUtils.incrementHeight(clientHandledStanzasCount);
-                                    }
-                                    else {
-                                        clientUnhandledStanzasCount = SMUtils.incrementHeight(clientUnhandledStanzasCount);
-                                    }
-                                }
+                                clientHandledStanzasCount = SMUtils.incrementHeight(clientHandledStanzasCount);
                             }
                             break;
                         case "stream":
@@ -1097,7 +1083,6 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                                 smSessionId = null;
                             }
                             clientHandledStanzasCount = 0;
-                            clientUnhandledStanzasCount = 0;
                             ackPending = false;
                             smAckSuspend = false;
                             smWasEnabledAtLeastOnce = true;
@@ -1156,11 +1141,13 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                         case AckRequest.ELEMENT:
                             ParseStreamManagement.ackRequest(parser);
                             if (smEnabledSyncPoint.wasSuccessful()) {
-                                if (!smAckSuspend) {
-                                    sendSmAcknowledgementInternal();
-                                }
-                                else {
-                                    ackPending = true;
+                                synchronized (clientHandledStanzasCountLock) {
+                                    if (!smAckSuspend) {
+                                        sendSmAcknowledgementInternal();
+                                    }
+                                    else {
+                                        ackPending = true;
+                                    }
                                 }
                             }
                             else {
@@ -1806,22 +1793,12 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         synchronized (clientHandledStanzasCountLock) {
             if (smAckSuspend) {
                 smAckSuspend = false;
-                if (clientUnhandledStanzasCount > 0) {
-                    clientHandledStanzasCount = addHeight(clientHandledStanzasCount, clientUnhandledStanzasCount);
-                    clientUnhandledStanzasCount = 0;
-                    if (ackPending) {
-                        sendSmAcknowledgement();
-                        ackPending = false;
-                    }
+                if (ackPending) {
+                    sendSmAcknowledgement();
+                    ackPending = false;
                 }
             }
         }
-    }
-
-    private static long MASK_32_BIT = BigInteger.ONE.shiftLeft(32).subtract(BigInteger.ONE).longValue();
-
-    private static long addHeight(long height, long delta) {
-        return (height + delta) & MASK_32_BIT;
     }
 
 }
