@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -17,7 +18,10 @@
 
 <org.kontalk.ui.view.ContactsListItem xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/avatar_list_item_height"
+    android:paddingRight="?attr/listPreferredItemPaddingRight"
+    android:paddingEnd="?attr/listPreferredItemPaddingRight">
 
     <FrameLayout
         android:id="@+id/header_container"

@@ -355,15 +355,16 @@ public class UsersProvider extends ContentProvider {
 
         int rc = db.update(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, values, selection, selectionArgs);
         if (rc == 0) {
+            ContentValues insertValues = new ContentValues(values);
             // insert new record
-            values.put(Users.HASH, XmppStringUtils.parseLocalpart(selectionArgs[0]));
-            values.put(Users.JID, selectionArgs[0]);
-            values.put(Users.NUMBER, selectionArgs[0]);
+            insertValues.put(Users.HASH, XmppStringUtils.parseLocalpart(selectionArgs[0]));
+            insertValues.put(Users.JID, selectionArgs[0]);
+            insertValues.put(Users.NUMBER, selectionArgs[0]);
             if (!values.containsKey(Users.DISPLAY_NAME))
-                values.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
-            values.put(Users.REGISTERED, true);
+                insertValues.put(Users.DISPLAY_NAME, getContext().getString(R.string.peer_unknown));
+            insertValues.put(Users.REGISTERED, true);
 
-            db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, values);
+            db.insert(offline ? TABLE_USERS_OFFLINE : TABLE_USERS, null, insertValues);
             return 1;
         }
 
@@ -488,7 +489,7 @@ public class UsersProvider extends ContentProvider {
                         long contactId = phones.getLong(3);
                         String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
-                        addResyncContact(stm, onlineUpd, onlineIns,
+                        addResyncContact(db, stm, onlineUpd, onlineIns,
                             hash, number, jid, name,
                             lookupKey, contactId, false, null, null);
                         count++;
@@ -562,7 +563,7 @@ public class UsersProvider extends ContentProvider {
                             String jid = XMPPUtils.createLocalJID(getContext(), hash);
                             long contactId = phones.getLong(phones.getColumnIndex(BaseColumns._ID));
 
-                            addResyncContact(stm, onlineUpd, onlineIns,
+                            addResyncContact(db, stm, onlineUpd, onlineIns,
                                 hash, number, jid, name,
                                 null, contactId,
                                 false, null, null);
@@ -598,7 +599,7 @@ public class UsersProvider extends ContentProvider {
                 String hash = MessageUtils.sha1(ownNumber);
                 String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
-                addResyncContact(stm, onlineUpd, onlineIns,
+                addResyncContact(db, stm, onlineUpd, onlineIns,
                     hash, ownNumber, jid, ownName,
                     null, null,
                     true, publicKeyData, fingerprint);
@@ -625,7 +626,7 @@ public class UsersProvider extends ContentProvider {
         return count;
     }
 
-    private void addResyncContact(SQLiteStatement stm, SQLiteStatement onlineUpd, SQLiteStatement onlineIns,
+    private void addResyncContact(SQLiteDatabase db, SQLiteStatement stm, SQLiteStatement onlineUpd, SQLiteStatement onlineIns,
         String hash, String number, String jid, String displayName, String lookupKey,
         Long contactId, boolean registered, byte[] publicKey, String fingerprint) {
 
@@ -675,7 +676,7 @@ public class UsersProvider extends ContentProvider {
         else
             onlineUpd.bindNull(++i);
         onlineUpd.bindString(++i, hash);
-        int rows = executeUpdateDelete(onlineUpd);
+        int rows = executeUpdateDelete(db, onlineUpd);
 
         // no contact found, insert a new dummy one
         if (rows <= 0) {
@@ -933,7 +934,7 @@ public class UsersProvider extends ContentProvider {
 
     @TargetApi(11)
     private void beginTransaction(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= 11)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.beginTransactionNonExclusive();
         else
             // this is because API < 11 doesn't have beginTransactionNonExclusive()
@@ -941,20 +942,32 @@ public class UsersProvider extends ContentProvider {
     }
 
     private boolean setTransactionSuccessful(SQLiteDatabase db) {
-        if (android.os.Build.VERSION.SDK_INT >= 11)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.setTransactionSuccessful();
         return true;
     }
 
     private void endTransaction(SQLiteDatabase db, boolean success) {
-        if (android.os.Build.VERSION.SDK_INT >= 11)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
             db.endTransaction();
         else
             db.execSQL(success ? "COMMIT" : "ROLLBACK");
     }
 
-    private int executeUpdateDelete(SQLiteStatement stm) {
-        return stm.executeUpdateDelete();
+    private int executeUpdateDelete(SQLiteDatabase db, SQLiteStatement stm) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+            return stm.executeUpdateDelete();
+        }
+        else {
+            stm.execute();
+            SQLiteStatement changes = db.compileStatement("SELECT changes()");
+            try {
+                return (int) changes.simpleQueryForLong();
+            }
+            finally {
+                changes.close();
+            }
+        }
     }
 
     static {

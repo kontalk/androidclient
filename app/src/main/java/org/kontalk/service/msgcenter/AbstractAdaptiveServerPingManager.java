@@ -51,7 +51,7 @@ public abstract class AbstractAdaptiveServerPingManager extends Manager {
     /**
      * Interval for the next increase.
      */
-    protected static long mNextIncrease;
+    protected long mNextIncrease;
 
     protected AbstractAdaptiveServerPingManager(XMPPConnection connection) {
         super(connection);

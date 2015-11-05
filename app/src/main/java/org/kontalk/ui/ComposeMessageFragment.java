@@ -20,6 +20,7 @@ package org.kontalk.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -310,6 +311,8 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
     }
 
     public void reload() {
+        // be sure to cancel all queries
+        stopQuery();
         // hide the warning bar
         hideWarning();
         // reload data
@@ -348,7 +351,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-        mQueryHandler = new MessageListQueryHandler();
+        mQueryHandler = new MessageListQueryHandler(this);
         mHandler = new Handler();
 
         // list adapter creation is post-poned
@@ -1227,6 +1230,13 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         }
         catch (SQLiteException e) {
             Log.e(TAG, "query error", e);
+        }
+    }
+
+    private void stopQuery() {
+        if (mQueryHandler != null) {
+            // be sure to cancel all queries
+            mQueryHandler.abort();
         }
     }
 
@@ -2460,9 +2470,7 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         if (mListAdapter != null)
             mListAdapter.changeCursor(null);
 
-        // be sure to cancel all queries
-        mQueryHandler.cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
-        mQueryHandler.cancelOperation(CONVERSATION_QUERY_TOKEN);
+        stopQuery();
     }
 
     @Override
@@ -2543,94 +2551,6 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
             return true;
         }
         return false;
-    }
-
-    /** The conversation list query handler. */
-    // TODO convert to static class and use a weak reference to the context
-    private final class MessageListQueryHandler extends AsyncQueryHandler {
-        public MessageListQueryHandler() {
-            super(getActivity().getApplicationContext().getContentResolver());
-        }
-
-        @Override
-        protected synchronized void onQueryComplete(int token, Object cookie,
-                Cursor cursor) {
-            if (cursor == null || isFinishing()) {
-                // close cursor - if any
-                if (cursor != null)
-                    cursor.close();
-
-                Log.e(TAG, "query aborted or error!");
-                unregisterPeerObserver();
-                mListAdapter.changeCursor(null);
-                return;
-            }
-
-            switch (token) {
-                case MESSAGE_LIST_QUERY_TOKEN:
-
-                    // no messages to show - exit
-                    if (cursor.getCount() == 0
-                            && (mConversation == null ||
-                                // no draft
-                                (mConversation.getDraft() == null &&
-                                // no subscription request
-                                mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
-                                // no text in compose entry
-                                mComposer.getText().length() == 0))) {
-
-                        Log.i(TAG, "no data to view - exit");
-
-                        // close conversation
-                        closeConversation();
-
-                    }
-                    else {
-                        // see if we have to scroll to a specific message
-                        int newSelectionPos = -1;
-
-                        Bundle args = myArguments();
-                        if (args != null) {
-                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
-                                    -1);
-                            if (msgId > 0) {
-
-                                cursor.moveToPosition(-1);
-                                while (cursor.moveToNext()) {
-                                    long curId = cursor.getLong(CompositeMessage.COLUMN_ID);
-                                    if (curId == msgId) {
-                                        newSelectionPos = cursor.getPosition();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        mListAdapter.changeCursor(cursor);
-                        if (newSelectionPos > 0)
-                            getListView().setSelection(newSelectionPos);
-
-                        getActivity().setProgressBarIndeterminateVisibility(false);
-                        updateUI();
-                    }
-
-                    break;
-
-                case CONVERSATION_QUERY_TOKEN:
-                    if (cursor.moveToFirst()) {
-                        mConversation = Conversation.createFromCursor(
-                                getActivity(), cursor);
-                        onConversationCreated();
-                    }
-
-                    cursor.close();
-
-                    break;
-
-                default:
-                    Log.e(TAG, "onQueryComplete called with unknown token " + token);
-            }
-        }
     }
 
     public Conversation getConversation() {
@@ -2890,6 +2810,112 @@ public class ComposeMessageFragment extends ActionModeListFragment implements
         if (mMediaPlayerUpdater != null) {
             mHandler.removeCallbacks(mMediaPlayerUpdater);
             mMediaPlayerUpdater = null;
+        }
+    }
+
+    /** The conversation list query handler. */
+    private static final class MessageListQueryHandler extends AsyncQueryHandler {
+        private WeakReference<ComposeMessageFragment> mParent;
+        private boolean mCancel;
+
+        public MessageListQueryHandler(ComposeMessageFragment parent) {
+            super(parent.getActivity().getApplicationContext().getContentResolver());
+            mParent = new WeakReference<>(parent);
+        }
+
+        @Override
+        public synchronized void startQuery(int token, Object cookie, Uri uri, String[] projection, String selection, String[] selectionArgs, String orderBy) {
+            mCancel = false;
+            super.startQuery(token, cookie, uri, projection, selection, selectionArgs, orderBy);
+        }
+
+        @Override
+        protected synchronized void onQueryComplete(int token, Object cookie, Cursor cursor) {
+            ComposeMessageFragment parent = mParent.get();
+            if (parent == null || cursor == null || parent.isFinishing() || mCancel) {
+                // close cursor - if any
+                if (cursor != null)
+                    cursor.close();
+
+                mCancel = false;
+                if (parent != null) {
+                    parent.unregisterPeerObserver();
+                    parent.mListAdapter.changeCursor(null);
+                }
+                return;
+            }
+
+            switch (token) {
+                case MESSAGE_LIST_QUERY_TOKEN:
+
+                    // no messages to show - exit
+                    if (cursor.getCount() == 0
+                        && (parent.mConversation == null ||
+                        // no draft
+                        (parent.mConversation.getDraft() == null &&
+                            // no subscription request
+                            parent.mConversation.getRequestStatus() != Threads.REQUEST_WAITING &&
+                            // no text in compose entry
+                            parent.mComposer.getText().length() == 0))) {
+
+                        Log.i(TAG, "no data to view - exit");
+
+                        // close conversation
+                        parent.closeConversation();
+
+                    }
+                    else {
+                        // see if we have to scroll to a specific message
+                        int newSelectionPos = -1;
+
+                        Bundle args = parent.myArguments();
+                        if (args != null) {
+                            long msgId = args.getLong(ComposeMessage.EXTRA_MESSAGE,
+                                -1);
+                            if (msgId > 0) {
+
+                                cursor.moveToPosition(-1);
+                                while (cursor.moveToNext()) {
+                                    long curId = cursor.getLong(CompositeMessage.COLUMN_ID);
+                                    if (curId == msgId) {
+                                        newSelectionPos = cursor.getPosition();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        parent.mListAdapter.changeCursor(cursor);
+                        if (newSelectionPos > 0)
+                            parent.getListView().setSelection(newSelectionPos);
+
+                        parent.getActivity().setProgressBarIndeterminateVisibility(false);
+                        parent.updateUI();
+                    }
+
+                    break;
+
+                case CONVERSATION_QUERY_TOKEN:
+                    if (cursor.moveToFirst()) {
+                        parent.mConversation = Conversation.createFromCursor(
+                            parent.getActivity(), cursor);
+                        parent.onConversationCreated();
+                    }
+
+                    cursor.close();
+
+                    break;
+
+                default:
+                    Log.e(TAG, "onQueryComplete called with unknown token " + token);
+            }
+
+        }
+
+        public synchronized void abort() {
+            mCancel = true;
+            cancelOperation(MESSAGE_LIST_QUERY_TOKEN);
+            cancelOperation(CONVERSATION_QUERY_TOKEN);
         }
     }
 

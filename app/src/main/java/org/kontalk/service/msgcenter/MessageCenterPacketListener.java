@@ -22,9 +22,11 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.sm.StreamManagementException;
 
 import org.kontalk.Kontalk;
 import org.kontalk.client.EndpointServer;
@@ -208,6 +210,18 @@ abstract class MessageCenterPacketListener implements StanzaListener {
         MessageCenterService instance = mInstance.get();
         if (instance != null)
             instance.endKeyPairImport();
+    }
+
+    protected void resumeSmAck() {
+        MessageCenterService instance = mInstance.get();
+        if (instance != null && instance.mConnection != null) {
+            try {
+                instance.mConnection.resumeSmAck();
+            }
+            catch (SmackException ignored) {
+                // we don't really care
+            }
+        }
     }
 
 }

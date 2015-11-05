@@ -204,11 +204,12 @@ public class ContactsListFragment extends Fragment implements
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.contacts_list_menu, menu);
-
-        menu.findItem(R.id.menu_invite).setVisible(getActivity() instanceof ConversationsActivity);
-
         mSyncButton = menu.findItem(R.id.menu_refresh);
-        mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));
+
+        Context ctx = getActivity();
+        if (ctx != null)
+            mSyncButton.setVisible(!SyncAdapter.isActive(getActivity()));
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 

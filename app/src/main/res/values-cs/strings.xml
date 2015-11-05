@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">Zpráva byla uložena jako rozepsaná.</string>
   <string name="send_mime_not_supported">Tento typ souboru není podporován.</string>
   <string name="button_validate">Registrovat</string>
-  <string name="button_validation_code">Již mám ověřovací kód</string>
   <string name="button_validation_register">Ověřit</string>
   <string name="notify_ticker_download_completed">Stahování bylo dokončeno</string>
   <string name="notify_title_download_completed">Stahování bylo dokončeno</string>
@@ -342,11 +341,11 @@
   <string name="msg_delete_account_progress">Probíhá mazání vašeho účtu…</string>
   <string name="msg_user_blocked">Uživatel byl zablokován.</string>
   <string name="msg_user_unblocked">Uživatel byl odblokován.</string>
-  <string name="msg_block_user_warning">Chystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.<b>ČTĚTE PROSÍM POZORNĚ!</b>\nChystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
-  <string name="msg_unblock_user_warning">Chystáte se odblokovat tohoto uživatele. Odblokování tomuto uživateli umožní posílat vám zprávy a vidět váš status a čas, kdy jste byl/a naposledy online.<b>ČTĚTE PROSÍM POZORNĚ!</b>\nChystáte se odblokovat tohoto uživatele. Odblokování tomuto uživateli umožní posílat vám zprávy a vidět váš status a čas, kdy jste byl/a naposledy online.</string>
+  <string name="msg_block_user_warning">Chystáte se zablokovat tohoto uživatele. Pokud budete pokračovat, tento uživatel vám nebude moci poslat žádnou zprávu ani soubor dokud ho neodblokujete. Tento uživatel také neuvidí váš status a čas, kdy jste byl/a naposledy online, a vy zase neuvidíte jeho status. Jako vedlejší efekt nebudete moci ani vy poslat tomuto uživateli žádnou zprávu nebo soubor.</string>
+  <string name="msg_unblock_user_warning">Chystáte se odblokovat tohoto uživatele. Odblokování tomuto uživateli umožní posílat vám zprávy a vidět váš status a čas, kdy jste byl/a naposledy online.</string>
   <string name="notification_text_more">Klepněte zde, pokud chcete vědět víc</string>
   <string name="title_auth_error">Chyba při autentizaci</string>
-  <string name="msg_auth_error">Při posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).<b>UPOZORNĚNÍ!</b>\nPři posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
+  <string name="msg_auth_error">Při posledním pokusu o přihlášení k serveru Kontalk došlo k chybě. Může to být buď dočasnou nedostupností serveru, nebo, pravděpodobněji, server odmítá váš osobní klíč. Doporučujeme smazat váš Kontalk účet ze systému Android a zaregistrovat se znovu (přijdete ale o všechny zprávy v Kontalku).</string>
   <string name="warn_invite_no_app">Není dostupná žádná aplikace na pozvání uživatelů.</string>
   <string name="pref_text_enter">klávesa Enter</string>
   <string name="pref_title_text_enter">Zvolte chování klávesy Enter na klávesnici</string>
@@ -404,4 +403,12 @@
     <string name="title_block_user_warning">Opravdu zablokovat tohoto uživatele?</string>
     <string name="title_unblock_user_warning">Opravdu odblokovat tohoto uživatele?</string>
     <string name="warning_button_details">DETAILY</string>
-    </resources>
+    <string name="title_confirm_cancel_registration">Zrušit registraci?</string>
+    <string name="confirm_cancel_registration">Pokud stisknete tlačítko Zpět, budete muset začít registraci od začátku. Pokud se potřebujete přepnout do jiné aplikace, použijte tlačítko Domů.</string>
+    <plurals name="context_selected">
+	<item quantity="one">1 označený</item>
+	<item quantity="few">%d označené</item>
+	<item quantity="other">%d označených</item>
+</plurals>
+
+</resources>

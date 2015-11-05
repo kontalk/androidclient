@@ -151,7 +151,6 @@
   <string name="msg_draft_saved">メッセージは下書きとして保存しました。</string>
   <string name="send_mime_not_supported">ファイルタイプがサポートされていません。</string>
   <string name="button_validate">登録</string>
-  <string name="button_validation_code">すでに検証コードを持っています</string>
   <string name="button_validation_register">検証</string>
   <string name="notify_ticker_download_completed">ダウンロードが完了しました</string>
   <string name="notify_title_download_completed">ダウンロードが完了しました</string>
@@ -343,11 +342,11 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
   <string name="msg_delete_account_progress">あなたのアカウントを削除中…</string>
   <string name="msg_user_blocked">ユーザーはブロックされています。</string>
   <string name="msg_user_unblocked">ユーザーはブロック解除されています。</string>
-  <string name="msg_block_user_warning">このユーザーをブロックしようとしています。この場合、このユーザーはあなたがブロックを解除するまで、あなたにすべてのメッセージやメディアを送信することができません。このユーザーは、あなたのステータスや最後の既知の存在を参照することができなくなり、あなたも彼/彼女のステータスを見ることができなくなります。副作用として、彼/彼女にすべてのメッセージやメディアを送信することができなくなります。<b>よくお読みください!</b>\nあなたは、このユーザーをブロックしようとしています。この場合、このユーザーはあなたがブロックを解除するまで、あなたにすべてのメッセージやメディアを送信することができません。このユーザーは、あなたのステータスや最後の既知の存在を参照することができなくなり、あなたも彼/彼女のステータスを見ることができなくなります。副作用として、彼/彼女にすべてのメッセージやメディアを送信することができなくなります。</string>
-  <string name="msg_unblock_user_warning">このユーザーのブロックを解除しようとしています。ブロック解除すると、彼/彼女があなたにメッセージを送信したり、あなたのステータスや最後の既知の存在を参照することができるようになります。<b>よくお読みください!</b>\nあなたは、このユーザーのブロックを解除しようとしています。ブロック解除すると、彼/彼女があなたにメッセージを送信したり、あなたのステータスや最後の既知の存在を参照することができるようになります。</string>
+  <string name="msg_block_user_warning">このユーザーをブロックしようとしています。この場合、このユーザーはあなたがブロックを解除するまで、あなたにすべてのメッセージやメディアを送信することができません。このユーザーは、あなたのステータスや最後の既知の存在を参照することができなくなり、あなたも彼/彼女のステータスを見ることができなくなります。副作用として、彼/彼女にすべてのメッセージやメディアを送信することができなくなります。</string>
+  <string name="msg_unblock_user_warning">このユーザーのブロックを解除しようとしています。ブロック解除すると、彼/彼女があなたにメッセージを送信したり、あなたのステータスや最後の既知の存在を参照することができるようになります。</string>
   <string name="notification_text_more">さらに詳細はここをタップ</string>
   <string name="title_auth_error">認証エラー</string>
-  <string name="msg_auth_error">前回接続しようとした時に、Kontalk サーバーへの認証が失敗しました。一時的なサーバーの障害か、サーバーがあなたのパーソナルキーを拒否している可能性があります。Android のシステム設定からあなたの Kontalk アカウントを削除して、再度登録することをお勧めします (すべての Kontalk メッセージを失うことになります)。<b>警告!</b>\n最後に接続しようとした時に、Kontalk サーバーへの認証が失敗しました。一時的なサーバーの障害か、サーバーがあなたのパーソナルキーを拒否している可能性があります。Android のシステム設定からあなたの Kontalk アカウントを削除して、再度登録することをお勧めします (すべての Kontalk メッセージを失うことになります)。</string>
+  <string name="msg_auth_error">前回接続しようとした時に、Kontalk サーバーへの認証が失敗しました。一時的なサーバーの障害か、サーバーがあなたのパーソナルキーを拒否している可能性があります。Android のシステム設定からあなたの Kontalk アカウントを削除して、再度登録することをお勧めします (すべての Kontalk メッセージを失うことになります)。</string>
   <string name="warn_invite_no_app">ユーザーを招待するために利用可能なアプリケーションはありません。</string>
   <string name="pref_text_enter">Enter ボタン</string>
   <string name="pref_title_text_enter">キーボードの Enter ボタンの動作を選択してください</string>
@@ -409,4 +408,6 @@ https://play.google.com/store/apps/details?id=org.kontalk</string>
 	<item quantity="other">1 選択済</item>
 </plurals>
 
-</resources>
+<string name="title_confirm_cancel_registration">登録をキャンセルしますか?</string>
+    <string name="confirm_cancel_registration">戻る場合は、登録を最初から開始する必要があります。別のアプリに切り替える必要がある場合は、デバイスのホームボタンを使用するだけです。</string>
+    </resources>
