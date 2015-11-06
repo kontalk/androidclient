@@ -21,6 +21,7 @@ package org.kontalk.ui.adapter;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +61,17 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
 
     public interface OnContentChangedListener {
         void onContentChanged(ContactsListAdapter adapter);
+    }
+
+    public void setPinnedHeader(Context context) {
+        final TypedValue typedValue = new TypedValue();
+
+        context.getTheme().resolveAttribute(android.R.attr.colorBackground, typedValue, true);
+        int pinnedHeaderBackgroundColor = context.getResources().getColor(typedValue.resourceId);
+        setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
+
+        context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
+        setPinnedHeaderTextColor(typedValue.resourceId);
     }
 
     @Override

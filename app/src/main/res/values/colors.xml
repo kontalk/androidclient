@@ -58,6 +58,4 @@
     <color name="notification_name_color">@android:color/white</color>
 
     <color name="button_danger">#f44336</color>
-
-    <color name="pinned_header_text">#FF3c3c3c</color>
 </resources>
