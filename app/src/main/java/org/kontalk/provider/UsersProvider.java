@@ -79,6 +79,7 @@ public class UsersProvider extends ContentProvider {
     private static final int KEYS = 3;
     private static final int KEYS_JID = 4;
 
+    private long mLastResync;
     private DatabaseHelper dbHelper;
     private static final UriMatcher sUriMatcher;
     private static HashMap<String, String> usersProjectionMap;
@@ -194,7 +195,6 @@ public class UsersProvider extends ContentProvider {
             return (dbReader != null) ? dbReader : super.getReadableDatabase();
         }
     }
-
 
     @Override
     public boolean onCreate() {
@@ -322,16 +322,23 @@ public class UsersProvider extends ContentProvider {
         boolean commit = Boolean.parseBoolean(uri.getQueryParameter(Users.COMMIT));
 
         if (isResync) {
-            if (!bootstrap || dbHelper.isNew()) {
-                if (commit) {
-                    commit();
-                    return 0;
+            // we keep this synchronized to allow for the initial resync by the
+            // registration activity
+            synchronized (this) {
+                long diff = System.currentTimeMillis() - mLastResync;
+                if (diff > 1000 && (!bootstrap || dbHelper.isNew())) {
+                    if (commit) {
+                        commit();
+                        return 0;
+                    }
+                    else {
+                        return resync();
+                    }
                 }
-                else {
-                    return resync();
-                }
+
+                mLastResync = System.currentTimeMillis();
+                return 0;
             }
-            return 0;
         }
 
         // simple update
@@ -581,35 +588,37 @@ public class UsersProvider extends ContentProvider {
 
             // try to add account number with display name
             String ownNumber = Authenticator.getDefaultAccountName(getContext());
-            String ownName = Authenticator.getDefaultDisplayName(getContext());
-            String fingerprint = null;
-            byte[] publicKeyData = null;
-            try {
-                PersonalKey myKey = ((Kontalk) getContext().getApplicationContext())
-                    .getPersonalKey();
-                if (myKey != null) {
-                    fingerprint = myKey.getFingerprint();
-                    publicKeyData = myKey.getEncodedPublicKeyRing();
+            if (ownNumber != null) {
+                String ownName = Authenticator.getDefaultDisplayName(getContext());
+                String fingerprint = null;
+                byte[] publicKeyData = null;
+                try {
+                    PersonalKey myKey = ((Kontalk) getContext().getApplicationContext())
+                        .getPersonalKey();
+                    if (myKey != null) {
+                        fingerprint = myKey.getFingerprint();
+                        publicKeyData = myKey.getEncodedPublicKeyRing();
+                    }
                 }
-            }
-            catch (Exception e) {
-                Log.w(SyncAdapter.TAG, "unable to load personal key", e);
-            }
-            try {
-                String hash = MessageUtils.sha1(ownNumber);
-                String jid = XMPPUtils.createLocalJID(getContext(), hash);
+                catch (Exception e) {
+                    Log.w(SyncAdapter.TAG, "unable to load personal key", e);
+                }
+                try {
+                    String hash = MessageUtils.sha1(ownNumber);
+                    String jid = XMPPUtils.createLocalJID(getContext(), hash);
 
-                addResyncContact(db, stm, onlineUpd, onlineIns,
-                    hash, ownNumber, jid, ownName,
-                    null, null,
-                    true, publicKeyData, fingerprint);
-                count++;
-            }
-            catch (IllegalArgumentException iae) {
-                Log.w(SyncAdapter.TAG, "doing sync with no server?");
-            }
-            catch (SQLiteConstraintException sqe) {
-                // skip duplicate number
+                    addResyncContact(db, stm, onlineUpd, onlineIns,
+                        hash, ownNumber, jid, ownName,
+                        null, null,
+                        true, publicKeyData, fingerprint);
+                    count++;
+                }
+                catch (IllegalArgumentException iae) {
+                    Log.w(SyncAdapter.TAG, "doing sync with no server?");
+                }
+                catch (SQLiteConstraintException sqe) {
+                    // skip duplicate number
+                }
             }
 
             success = setTransactionSuccessful(db);
@@ -928,6 +937,14 @@ public class UsersProvider extends ContentProvider {
         values.put(Users.BLOCKED, blocked);
         context.getContentResolver().update(Users.CONTENT_URI.buildUpon()
             .appendPath(jid).build(), values, null, null);
+    }
+
+    public static int resync(Context context) {
+        // update users database
+        Uri uri = Users.CONTENT_URI.buildUpon()
+            .appendQueryParameter(Users.RESYNC, "true")
+            .build();
+        return context.getContentResolver().update(uri, new ContentValues(), null, null);
     }
 
     /* Transactions compatibility layer */
