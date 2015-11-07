@@ -70,8 +70,8 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
         int pinnedHeaderBackgroundColor = context.getResources().getColor(typedValue.resourceId);
         setPinnedHeaderBackgroundColor(pinnedHeaderBackgroundColor);
 
-        context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
-        setPinnedHeaderTextColor(typedValue.resourceId);
+        int textColor = context.getResources().getColor(R.color.pinned_header_text);
+        setPinnedHeaderTextColor(textColor);
     }
 
     @Override
