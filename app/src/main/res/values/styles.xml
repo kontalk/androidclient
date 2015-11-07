@@ -53,4 +53,5 @@
         <item name="android:textColor">@color/pinned_header_text</item>
         <item name="android:textSize">20sp</item>
     </style>
+
 </resources>

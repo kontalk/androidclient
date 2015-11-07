@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Kontalk Android client
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kontalk Android client
      Copyright (C) 2015 Kontalk Devteam <devteam@kontalk.org>
 
      This program is free software: you can redistribute it and/or modify
@@ -19,10 +20,8 @@
 
     <!-- default theme selector -->
     <style name="Theme.Light" parent="Base.Theme.Light">
-        <!--<item name="android:fastScrollThumbDrawable">@drawable/fastscroll_thumb_holo</item>
-        <item name="android:fastScrollTrackDrawable">@drawable/fastscroll_track_holo_light</item>-->
-        <item name="android:fastScrollThumbDrawable">@drawable/fastscroll_thumb_material</item>
-        <item name="android:fastScrollTrackDrawable">@drawable/fastscroll_track_material</item>
+        <item name="android:fastScrollThumbDrawable">@drawable/fastscroll_thumb_holo</item>
+        <item name="android:fastScrollTrackDrawable">@drawable/fastscroll_track_holo_light</item>
         <item name="android:fastScrollPreviewBackgroundRight">@drawable/fastscroller_material_preview</item>
     </style>
 
