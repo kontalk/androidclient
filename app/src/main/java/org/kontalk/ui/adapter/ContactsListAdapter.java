@@ -76,7 +76,7 @@ public class ContactsListAdapter extends SearchablePinnedHeaderCursorListViewAda
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        final View inflated = mFactory.inflate(R.layout.contacts_list_item, null);
+        final View inflated = mFactory.inflate(R.layout.contacts_list_item, parent, false);
         final ViewHolder holder = new ViewHolder();
         holder.headerView = (TextView) inflated.findViewById(R.id.header_text);
         holder.text1 = (TextView) inflated.findViewById(android.R.id.text1);
