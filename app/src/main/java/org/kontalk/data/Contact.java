@@ -34,12 +34,14 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.PhoneLookup;
@@ -176,6 +178,17 @@ public class Contact {
     }
 
     private final static ContactCache cache = new ContactCache();
+
+    public static void init(Context context, Handler handler) {
+        context.getContentResolver().registerContentObserver(Contacts.CONTENT_URI, false,
+            new ContentObserver(handler) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    invalidate();
+                }
+            }
+        );
+    }
 
     private Contact(long contactId, String lookupKey, String name, String number, String jid, boolean blocked) {
         mContactId = contactId;
