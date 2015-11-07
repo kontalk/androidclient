@@ -2151,7 +2151,7 @@ public class MessageCenterService extends Service implements ConnectionHelperLis
         return mHelper != null;
     }
 
-    private static boolean isOfflineMode(Context context) {
+    public static boolean isOfflineMode(Context context) {
         return Preferences.getOfflineMode(context);
     }
 
