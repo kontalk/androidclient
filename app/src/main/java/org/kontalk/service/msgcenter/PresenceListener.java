@@ -358,14 +358,19 @@ class PresenceListener extends MessageCenterPacketListener {
             values.putNull(Users.STATUS);
 
         // delay
-        long timestamp;
+        long timestamp = 0;
         DelayInformation delay = p.getExtension(DelayInformation.ELEMENT, DelayInformation.NAMESPACE);
-        if (delay != null)
+        if (delay != null) {
+            // delay from presence (rare)
             timestamp = delay.getStamp().getTime();
-        else
+        }
+        else if (p.isAvailable()) {
+            // logged in now
             timestamp = System.currentTimeMillis();
+        }
 
-        values.put(Users.LAST_SEEN, timestamp);
+        if (timestamp > 0)
+            values.put(Users.LAST_SEEN, timestamp);
 
         // public key extension (for fingerprint)
         PublicKeyPresence pkey = p.getExtension(PublicKeyPresence.ELEMENT_NAME, PublicKeyPresence.NAMESPACE);
